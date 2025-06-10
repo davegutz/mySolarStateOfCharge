@@ -84,7 +84,7 @@ void benign_zero(BatteryMonitor *Mon, Sensors *Sen) // BZ
   ap.cc_diff_slr = 1;  // Fc 1
   ap.ib_diff_slr = 1;  // Fd 1
   ap.fake_faults = 0;  // Ff 0
-  sp.put_ib_force(0); // Ff 0
+  sp.put_ib_force(IB_FORCE); // si / Ff IB_FORCE
   ap.ewhi_slr = 1;     // Fi
   ap.ewlo_slr = 1;     // Fo
   ap.ib_quiet_slr = 1; // Fq 1

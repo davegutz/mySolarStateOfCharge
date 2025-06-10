@@ -117,35 +117,6 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
             }
             break;
 
-        case ( 'S' ):
-            switch ( letter_1 )
-            {
-
-                case ( 'H' ):  //   SH<>: state of all hysteresis
-                    if ( ap.hys_state_p->success() )
-                    {
-                        Sen->Sim->hys_state(ap.hys_state);
-                        Sen->Flt->wrap_err_filt_state(-ap.hys_state);
-                    }
-                    break;
-
-                case ( 'q' ):  //*  Sq<>: scale capacity sim
-                    if ( sp.s_cap_sim_p->success() )
-                    {
-                        Sen->Sim->apply_cap_scale(sp.s_cap_sim());
-                        if ( sp.modeling() ) Mon->init_soc_ekf(Sen->Sim->soc());
-                    }
-                    break;
-            
-                case ( 'Q' ):  //*  SQ<>: scale capacity mon
-                    if ( sp.s_cap_mon_p->success() )
-                    {
-                        Mon->apply_cap_scale(sp.s_cap_mon());
-                    }
-                    break;      
-            }
-            break;
-
         case ( 'F' ):  // Fault stuff
             switch ( letter_1 )
             {
@@ -182,6 +153,47 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                 break;
                 default:
                 print_serial_header();
+            }
+            break;
+
+        case ( 'S' ):
+            switch ( letter_1 )
+            {
+
+                case ( 'H' ):  //   SH<>: state of all hysteresis
+                    if ( ap.hys_state_p->success() )
+                    {
+                        Sen->Sim->hys_state(ap.hys_state);
+                        Sen->Flt->wrap_err_filt_state(-ap.hys_state);
+                    }
+                    break;
+
+                case ( 'q' ):  //*  Sq<>: scale capacity sim
+                    if ( sp.s_cap_sim_p->success() )
+                    {
+                        Sen->Sim->apply_cap_scale(sp.s_cap_sim());
+                        if ( sp.modeling() ) Mon->init_soc_ekf(Sen->Sim->soc());
+                    }
+                    break;
+            
+                case ( 'Q' ):  //*  SQ<>: scale capacity mon
+                    if ( sp.s_cap_mon_p->success() )
+                    {
+                        Mon->apply_cap_scale(sp.s_cap_mon());
+                    }
+                    break;      
+            }
+            break;
+
+        case ( 's' ):
+            switch ( letter_1 )
+            {
+
+                case ( 'i' ):  //* si, force ib selection
+                    Sen->Flt->reset_all_faults();
+                    sp.put_ib_force(cp.cmd_str.substring(2).toInt());
+                    break;
+
             }
             break;
 

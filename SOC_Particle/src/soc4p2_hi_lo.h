@@ -22,7 +22,7 @@
 #define MODELING              0   // Nominal modeling bitmap (* 'Xm'), 0=all hdwe, 1+=Tb, 2+=Vb, 4+=Ib, 7=all model.  +240 for discn
 
 // Sensor biases
-#define CURR_BIAS_AMP        -0.37  // Calibration of amplified shunt sensor (* 'DA'), A, from 0.15 on 20250608
+#define CURR_BIAS_AMP        -1.00  // Calibration of amplified shunt sensor (* 'DA'), A, from 0.15 on 20250608
 #define CURR_SCALE_AMP         1.0  // Hardware to match data (* 'SA')
 #define CURR_BIAS_NOA        -0.15  // Calibration of non-amplified shunt sensor (* 'DB'), A
 #define CURR_SCALE_NOA         1.0  // Hardware to match data (* 'SB')
@@ -45,6 +45,7 @@
 #define VB_SENSE_R_HI         22000 // Vb high sense resistor, ohm (22000)
 #define VB_SCALE                1.0 // Scale Vb sensor (* 'SV')
 #define VTAB_BIAS               0.0 // Bias on voc_soc table (* 'Dw'), V
+#define IB_FORCE                 -1 // Force ib signal selection, -1 = noamp, 0 = logic, 1 = amp
 
 // Battery.  One 12 V 100 Ah battery bank would have NOM_UNIT_CAP 100, NS 1, and NP 1
 // Two 12 V 100 Ah series battery bank would have NOM_UNIT_CAP 100, NS 2, and NP 1

@@ -239,7 +239,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     bms_off_ = (temp_c_ <= chem_.low_t) || ( voltage_low_ && !Sen->Flt->vb_fa() && !sp.tweak_test() );    // KISS
     Sen->bms_off = bms_off_;
     ib_charge_ = ib_;
-    if ( bms_off_ && !bms_charging_ )
+    if ( bms_off_ && !bms_charging_ && sp.mod_vb())  // Don't let a single hard vb fail ruin count
         ib_charge_ = 0.;
     if ( bms_off_ && voltage_low_ )
         ib_ = 0.;

@@ -265,7 +265,7 @@ void SavedPars::initialize()
     V_[n_++] =(ib_scale_noa_p   = new FloatV("* ", "SB", rP_, "Slr noa",              "A",      -1e5, 1e5,  &ib_scale_noa_z,CURR_SCALE_NOA));
     V_[n_++] =(ib_disch_slr_p   = new FloatV("* ", "SD", rP_, "Slr disch",            "slr",    -1e5, 1e5,  &ib_disch_slr_z,CURR_SCALE_DISCH));
     #ifdef HDWE_IB_HI_LO
-        V_[n_++] =(ib_force_p      = new Int8tV("* ", "si", rP_, "curr sel mode",        "(-1, 0, 1)", -1, 1,  &ib_force_z, int8_t(0)));
+        V_[n_++] =(ib_force_p      = new Int8tV("* ", "si", rP_, "curr sel mode",        "(-1, 0, 1)", -1, 1,  &ib_force_z, int8_t(IB_FORCE)));
     #else
         V_[n_++] =(ib_force_p      = new Int8tV("* ", "si", rP_, "curr sel mode",        "(-1, 0, 1)", -1, 1,  &ib_force_z, int8_t(FAKE_FAULTS)));
     #endif

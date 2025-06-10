@@ -993,3 +993,5 @@ See 'State of Charge Monitor.odt' for full set of requirements, testing, discuss
   [1]:  Ma et. al., "Comparative Study of Non-Electrochemical Hysteresis Models for LiFePO4/Graphite Batteries," Journal of Power Electronics, Vol. 18, No. 5, pp. 1585-1594, September 2018.
 
 
+## TODO
+TODO:  Need pulldown on Vb so loss of signal is real.

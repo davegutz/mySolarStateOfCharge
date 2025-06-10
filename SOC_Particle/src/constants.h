@@ -66,9 +66,13 @@
 // Software configuration
 #undef SOFT_DEPLOY_PHOTON
 #undef SOFT_DEBUG_QUEUE
+#undef IB_FORCE
 
 // Setup
 #include "local_config.h"
+#ifndef IB_FORCE
+    #define IB_FORCE 0
+#endif
 const String unit = version + "_" + HDWE_UNIT;
 
 // Constants always defined
