@@ -379,6 +379,7 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
   VbHardFail  = new TFDelay(false, VB_HARD_SET, VB_HARD_RESET, T);
   VcHardFail  = new TFDelay(false, VC_HARD_SET, VC_HARD_RESET, T);
   QuietPer  = new TFDelay(false, QUIET_S, QUIET_R, T);
+  QuietPerFunc  = new TFDelay(false, QUIET_S, QUIET_R, T);
   WrapErrFilt = new LagTustin(T, WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
   WrapHi = new TFDelay(false, WRAP_HI_S, WRAP_HI_R, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
   WrapLo = new TFDelay(false, WRAP_LO_S, WRAP_LO_R, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
@@ -488,10 +489,12 @@ void Fault::ib_quiet(const boolean reset, Sensors *Sen)
 
   // 2-pole filter
   ib_quiet_ = QuietFilt->calculate(ib_rate_, reset_loc, min(Sen->T, MAX_T_Q_FILT));
+  ib_quiet_thr_ = QUIET_A * ap.ib_quiet_slr;
+  ib_is_quiet_ = !sp.mod_ib() && abs(ib_quiet_)<=ib_quiet_thr_ && !reset_loc;
+  ib_is_functional_ = QuietPerFunc->calculate(!ib_is_quiet_, QUIET_S, QUIET_R, Sen->T, reset_loc);
 
   // Fault
-  ib_quiet_thr_ = QUIET_A * ap.ib_quiet_slr;
-  faultAssign( !sp.mod_ib() && abs(ib_quiet_)<=ib_quiet_thr_ && !reset_loc, IB_DSCN_FLT );   // initializes false
+  faultAssign( ib_is_quiet_, IB_DSCN_FLT );   // initializes false
   failAssign( QuietPer->calculate(dscn_flt(), QUIET_S, QUIET_R, Sen->T, reset_loc), IB_DSCN_FA);
   #ifndef HDWE_PHOTON
     if ( sp.debug()==-13 ) debug_m13(Sen);
@@ -603,7 +606,12 @@ void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
     failAssign( (WrapHi->calculate(wrap_hi_flt(), WRAP_HI_S, WRAP_HI_R, Sen->T, reset_loc) && !vb_fa()), WRAP_HI_FA );  // not latched
     failAssign( (WrapLo->calculate(wrap_lo_flt(), WRAP_LO_S, WRAP_LO_R, Sen->T, reset_loc) && !vb_fa()), WRAP_LO_FA );  // not latched
   #endif
-  failAssign( (wrap_vb_fa() && !reset_loc) || (!ib_diff_fa() && wrap_m_and_n_fa()), WRAP_VB_FA);    // WRAP_VB_FA latches latches because vb is single sensor
+  vb_functional_fa_ = ( (vb_functional_fa_ || (ib_is_functional_ && Mon->bms_off())) &&
+                      !reset_all_faults_ );
+  failAssign( (wrap_vb_fa() && !reset_loc) ||
+              (!ib_diff_fa() && wrap_m_and_n_fa())  ||
+              (vb_functional_fa_),  // A soft Vb drift low confirmed by active Ib
+               WRAP_VB_FA);    // WRAP_VB_FA latches latches because vb is single sensor
 }
 
 void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
@@ -667,7 +675,8 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
   Serial.printf(" vc | cc_dif %d  %d 'x Fc ^'\n", vc_fa(), cc_diff_fa());
   Serial.printf(" ib n    %d  %d 'FI 1'\n", ib_noa_flt(), ib_noa_fa());
   Serial.printf(" ib m    %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa());
-  Serial.printf(" vb      %d  %d 'Fv 1  *SV, *Dc/*Dv'\n", vb_flt(), vb_fa());
+  Serial.printf(" vb      %d  %d 'Fv 1  *SV, *Dc/*Dv'.", vb_flt(), vb_fa());
+  Serial.printf(" vb_functional_fa %d\n", vb_functional_fa_);
   Serial.printf(" tb      %d  %d 'Ft 1'\n  ", tb_flt(), tb_fa());
   bitMapPrint(pr.buff, fltw_, NUM_FLT);
   Serial.print(pr.buff);
@@ -722,7 +731,8 @@ void Fault::pretty_print1(Sensors *Sen, BatteryMonitor *Mon)
   Serial1.printf(" cc_dif      %d 'Fc ^'\n", cc_diff_fa());
   Serial1.printf(" ibm     %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa());
   Serial1.printf(" ibn     %d  %d 'FI 1'\n", ib_noa_flt(), ib_noa_fa());
-  Serial1.printf(" vb      %d  %d 'Fv 1, *SV, *Dc/*Dv'\n", vb_flt(), vb_fa());
+  Serial1.printf(" vb      %d  %d 'Fv 1  *SV, *Dc/*Dv'.", vb_flt(), vb_fa());
+  Serial1.printf(" vb_functional_fa %d\n", vb_functional_fa_);
   Serial1.printf(" tb      %d  %d 'Ft 1'\n  ", tb_flt(), tb_fa());
   bitMapPrint(pr.buff, fltw_, NUM_FLT);
   Serial1.print(pr.buff);

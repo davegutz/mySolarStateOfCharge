@@ -994,4 +994,5 @@ See 'State of Charge Monitor.odt' for full set of requirements, testing, discuss
 
 
 ## TODO
-TODO:  Need pulldown on Vb so loss of signal is real.
+TODO:  Need pulldown on Vb so loss of signal is real.  Not sure this is possible
+TODO:  document Sen->ib_is_functional() in the DecisionTable file

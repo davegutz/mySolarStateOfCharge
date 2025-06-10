@@ -353,6 +353,7 @@ public:
   int8_t vb_sel_stat() { return vb_sel_stat_; };
   boolean vb_fa() { return failRead(VB_FA); };
   boolean vb_flt() { return faultRead(VB_FLT); };
+  boolean vb_functional_fa() { return vb_functional_fa_; };
   boolean vc_fa() { return failRead(VC_FA); };
   boolean vc_flt() { return faultRead(VC_FLT); };
   boolean wrap_m_and_n_fa() { return ( (failRead(WRAP_LO_M_FA) && failRead(WRAP_LO_N_FA)) ||
@@ -389,6 +390,7 @@ protected:
   TFDelay *IbNoAmpHardFail; // Persistence ib hard fail noa
   General2_Pole *QuietFilt; // Linear filter to test for quiet
   TFDelay *QuietPer;        // Persistence ib quiet disconnect detection
+  TFDelay *QuietPerFunc;    // Persistence ib quiet normal functional detection
   RateLagExp *QuietRate;    // Linear filter to calculate rate for quiet
   TFDelay *TbHardFail;      // Persistence Tb hard fail
   TFDelay *TbStaleFail;     // Persistence stale tb one-wire data
@@ -417,6 +419,8 @@ protected:
   uint16_t ib_decision_;    // ib_decision_hi_lo_, code (stops 0, stops on last decision)
   float ib_diff_;           // Current sensor difference error, A
   float ib_diff_f_;         // Filtered sensor difference error, A
+  boolean ib_is_functional_;// Ib is active, T=functional
+  boolean ib_is_quiet_;     // Ib is found to be quiet, T=quiet
   boolean ib_lo_active_;    // Battery low amp is in active range, T=active
   boolean ib_noa_hi_;       // ib noa above amp high limit, T=above hi
   boolean ib_noa_invalid_;  // Battery noa is invalid (hard failed)
@@ -431,6 +435,7 @@ protected:
   uint8_t *sp_preserving_;  // Saving fault buffer.   Stopped recording.  T=preserve
   int8_t tb_sel_stat_;      // Memory of Tb signal selection, 0=none, 1=sensor
   int8_t tb_sel_stat_last_; // past value
+  boolean vb_functional_fa_;// Memory of Vb functional failure, T=latched fail
   int8_t vb_sel_stat_;      // Memory of Vb signal selection, 0=none, 1=sensor
   int8_t vb_sel_stat_last_; // past value
 };
