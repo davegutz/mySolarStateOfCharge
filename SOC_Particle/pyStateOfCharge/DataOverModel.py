@@ -650,6 +650,17 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     return fig_list, fig_files
 
 
+def count_text_fields(line):
+    count = 0
+    tokens = line.split(',')
+    for token in tokens:
+        try:
+            float(token)
+        except ValueError:
+            count += 1
+    return count
+
+
 def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip=1, comment_str='#'):
     """First line with hdr_key defines the number of fields to be imported cleanly"""
     import os
@@ -673,10 +684,12 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
                             have_header_str = True  # write one title only
                             output.write(line)
                             num_fields = line.count(',')  # first line with hdr_key defines number of fields
+                            line_ref = line
             except IOError:
                 print("DataOverModel381:", line)  # last line
     # Data
     num_lines = 0
+    num_text_ref = 0
     num_lines_in = 0
     num_skips = 0
     length = 0
@@ -686,7 +699,15 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
             for line in input_file:
                 if line.__contains__(unit_key) and not line.__contains__('Config:'):
                     unit_key_found = True
+                    # if line.__contains__('946s868214.902'):
+                    #     print("line_ref:", line_ref)
+                    #     print("bad line:", line)
+                    #     exit(1)
+                    num_text = count_text_fields(line)
+                    if num_lines == 0:
+                        num_text_ref = num_text
                     if line.count(",") == num_fields and line.count(";") == 0 and \
+                            num_text == num_text_ref and \
                             re.search(r'[^a-zA-Z0-9+-_.:, ]', line[:-1]) is None and \
                             (num_lines == 0 or ((num_lines_in+1) % skip) == 0) and line.count(comment_str) == 0:
                         output.write(line)

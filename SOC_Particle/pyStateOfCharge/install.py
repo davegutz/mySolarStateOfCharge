@@ -33,7 +33,8 @@ GUI_TestSOC_Icon_path = os.path.join(os.getcwd(), 'GUI_TestSOC_Icon.png')
 if sys.platform == 'win32':
 
     # Check executable is local
-    if sys.executable.__contains__("venv" + os.path.sep + "bin" + os.path.sep + "python"):
+    x=1;
+    if sys.executable.__contains__("venv" + os.path.sep + "Scripts" + os.path.sep + "python"):
         pass
     else:
         print(Colors.fg.red, 'failed:  need to use local venv interpreter', Colors.reset)

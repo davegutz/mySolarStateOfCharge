@@ -4,3 +4,7 @@ SOC_Particle/target/*
 SOC_Particle/.vscode/*
 *.pyc
 *.ods#
+SOC_Particle/pyStateOfCharge/dist/*
+SOC_Particle/pyStateOfCharge/build/*
+*.spec
+*.xml
