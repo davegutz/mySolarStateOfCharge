@@ -8,3 +8,4 @@ SOC_Particle/pyStateOfCharge/dist/*
 SOC_Particle/pyStateOfCharge/build/*
 *.spec
 *.xml
+*.iml
