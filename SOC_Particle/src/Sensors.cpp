@@ -606,8 +606,8 @@ void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
     failAssign( (WrapHi->calculate(wrap_hi_flt(), WRAP_HI_S, WRAP_HI_R, Sen->T, reset_loc) && !vb_fa()), WRAP_HI_FA );  // not latched
     failAssign( (WrapLo->calculate(wrap_lo_flt(), WRAP_LO_S, WRAP_LO_R, Sen->T, reset_loc) && !vb_fa()), WRAP_LO_FA );  // not latched
   #endif
-  vb_functional_fa_ = ( (vb_functional_fa_ || (ib_is_functional_ && Mon->bms_off())) &&
-                      !reset_all_faults_ );
+  vb_functional_flt_ = ( ib_is_functional_ && Mon->bms_off() );
+  vb_functional_fa_ = ( (vb_functional_fa_ || vb_functional_flt_) && !reset_all_faults_ );
   failAssign( (wrap_vb_fa() && !reset_loc) ||
               (!ib_diff_fa() && wrap_m_and_n_fa())  ||
               (vb_functional_fa_),  // A soft Vb drift low confirmed by active Ib
@@ -687,6 +687,8 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
   Serial.printf("  fltw=%ld     falw=%ld\n", fltw_, falw_);
   if ( ap.fake_faults )
     Serial.printf("fake_faults=>redl\n");
+  if ( Sen->now < 1000000000 )
+    Serial.printf("**********WARN set UT (h;)***********\n");
 }
 void Fault::pretty_print1(Sensors *Sen, BatteryMonitor *Mon)
 {
@@ -744,6 +746,8 @@ void Fault::pretty_print1(Sensors *Sen, BatteryMonitor *Mon)
   if ( ap.fake_faults )
     Serial1.printf("fake_faults=>redl\n");
   Serial1.printf("vv0; to return\n");
+  if ( Sen->now < 1000000000 )
+    Serial1.printf("**********WARN set UT (h;)***********\n");
 }
 
 // Calculate selection for ib_decision_

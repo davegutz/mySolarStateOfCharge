@@ -354,6 +354,7 @@ public:
   boolean vb_fa() { return failRead(VB_FA); };
   boolean vb_flt() { return faultRead(VB_FLT); };
   boolean vb_functional_fa() { return vb_functional_fa_; };
+  boolean vb_functional_flt() { return vb_functional_flt_; };
   boolean vc_fa() { return failRead(VC_FA); };
   boolean vc_flt() { return faultRead(VC_FLT); };
   boolean wrap_m_and_n_fa() { return ( (failRead(WRAP_LO_M_FA) && failRead(WRAP_LO_N_FA)) ||
@@ -436,6 +437,7 @@ protected:
   int8_t tb_sel_stat_;      // Memory of Tb signal selection, 0=none, 1=sensor
   int8_t tb_sel_stat_last_; // past value
   boolean vb_functional_fa_;// Memory of Vb functional failure, T=latched fail
+  boolean vb_functional_flt_;// Transient Vb functional failure, T=faulted
   int8_t vb_sel_stat_;      // Memory of Vb signal selection, 0=none, 1=sensor
   int8_t vb_sel_stat_last_; // past value
 };

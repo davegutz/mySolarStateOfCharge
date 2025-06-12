@@ -5,7 +5,8 @@
 #define xstr(s) str(s)
 #define str(s) #s
 
-const String version = "g20241006";
+const String version = "g20250612";
+// g20250612 is catch functional Vb failure (soft) and revert voc(soc) for BB
 // g20241006 is fix for amp wrap windup limits
 // g20240909 is bug fix for noise sensitivity
 // g20240902 is initial release of HI_LO sensor configuration

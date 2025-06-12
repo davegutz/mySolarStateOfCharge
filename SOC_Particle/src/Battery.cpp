@@ -253,7 +253,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     voc_ = vb_ - dvdyn;
     if ( !ap.fake_faults )
     {
-        if ( (bms_off_ && voltage_low_) ||  Sen->Flt->vb_fa())
+        if ( (bms_off_ && voltage_low_) ||  Sen->Flt->vb_fa() )
         {
             voc_ = voc_stat_ = voc_filt_ = vb_;  // Keep high to avoid chatter with voc_stat_ used above in voltage_low
         }
@@ -276,6 +276,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     if ( eframe_ == 0 )
     {
         float ddq_dt = ib_charge_;
+        if ( Sen->Flt->vb_fa() || Sen->Flt->vb_functional_flt() ) ddq_dt = 0.;  // Freeze EKF with voltage fault
         dt_eframe_ = dt_ * float(ap.eframe_mult);  // Introduces noisy error if dt_ varies
         if ( ddq_dt>0. && !sp.tweak_test() ) ddq_dt *= coul_eff_;
         ddq_dt -= chem_.dqdt * q_capacity_ * T_rate;
