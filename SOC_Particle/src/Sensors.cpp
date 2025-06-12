@@ -687,8 +687,9 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
   Serial.printf("  fltw=%ld     falw=%ld\n", fltw_, falw_);
   if ( ap.fake_faults )
     Serial.printf("fake_faults=>redl\n");
-  if ( Sen->now < 1000000000 )
-    Serial.printf("**********WARN set UT (h;)***********\n");
+  Serial.printf("now=%llu\nlim=%llu\n", Sen->now, 1746684850783ULL);
+  if ( Sen->now < 1746684850783ULL )
+    Serial.printf("\n\n////////////////// WARN set UT (h;)\n\n");
 }
 void Fault::pretty_print1(Sensors *Sen, BatteryMonitor *Mon)
 {
@@ -746,8 +747,9 @@ void Fault::pretty_print1(Sensors *Sen, BatteryMonitor *Mon)
   if ( ap.fake_faults )
     Serial1.printf("fake_faults=>redl\n");
   Serial1.printf("vv0; to return\n");
-  if ( Sen->now < 1000000000 )
-    Serial1.printf("**********WARN set UT (h;)***********\n");
+  Serial1.printf("now=%llu\nlim=%llu\n", Sen->now, 1746684850783ULL);
+  if ( Sen->now < 1746684850783ULL )
+    Serial1.printf("\n\n////////////////// WARN set UT (h;)\n\n");
 }
 
 // Calculate selection for ib_decision_
