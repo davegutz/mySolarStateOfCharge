@@ -650,7 +650,7 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
     Serial.printf(" tb_s_st %d  vb_s_st %d  ib_s_st %d ib_decision_ %d\n", tb_sel_stat_, vb_sel_stat_, ib_sel_stat_, ib_decision_);
   #endif
   Serial.printf(" fake_faults %d latched_fail %d latched_fail_fake %d preserving %d\n\n", ap.fake_faults, latched_fail_, latched_fail_fake_, *sp_preserving_);
-  Serial.printf(" wrap_hi_or_lo-fa %d wrap_hi_and_lo_fa %d\n\n", wrap_hi_or_lo_fa(), wrap_hi_and_lo_fa());
+  Serial.printf(" wrap_hi_or_lo_fa %d wrap_hi_and_lo_fa %d\n\n", wrap_hi_or_lo_fa(), wrap_hi_and_lo_fa());
 
   #ifdef HDWE_IB_HI_LO
     Serial.printf("HDWE_IB_HI_LO Decisions\n");
