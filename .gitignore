@@ -9,3 +9,4 @@ SOC_Particle/pyStateOfCharge/build/*
 *.spec
 *.xml
 *.iml
+*.json
