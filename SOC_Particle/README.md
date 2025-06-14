@@ -994,5 +994,7 @@ See 'State of Charge Monitor.odt' for full set of requirements, testing, discuss
 
 
 ## TODO
-TODO:  Need pulldown on Vb so loss of signal is real.  Not sure this is possible
-TODO:  document Sen->ib_is_functional() in the DecisionTable file
+- [ ] Need pulldown on Vb so loss of signal is real.  Not sure this is possible
+- [ ] Document Sen->ib_is_functional() in the DecisionTable file
+- [ ] Consider a lower gain amp for the amp device
+- [ ] Resolve 'WARN' for mlissing UT

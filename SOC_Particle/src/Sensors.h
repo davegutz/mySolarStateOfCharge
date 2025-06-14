@@ -501,7 +501,6 @@ public:
   double control_time;        // Decimal time, seconds since 1/1/2021
   boolean display;            // Use display
   boolean bms_off;            // Calculated by BatteryMonitor, battery off, low voltage, switched by battery management system?
-  unsigned long long inst_time() { return inst_time_; }
   unsigned long long dt_ib(void) { return dt_ib_; };
   void select_all_hdwe_or_model(BatteryMonitor *Mon);  // Make final signal selection
   float ib() { return Ib / sp.nP(); };                            // Battery unit current, A
