@@ -524,6 +524,8 @@ public:
   float Ib_amp_noise();
   float Ib_noa_noise();
   float Ib_noise();
+  unsigned long long inst_millis() { return inst_millis_; };
+  unsigned long long inst_time() { return inst_time_; };
   void reset_temp(const boolean reset) { reset_temp_ = reset; };
   boolean reset_temp() { return ( reset_temp_ ); };
   unsigned long long sample_time_ib(void) { return sample_time_ib_; };
