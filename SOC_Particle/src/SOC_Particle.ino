@@ -168,7 +168,7 @@ void setup()
     sp.load_all();
   #endif
   sp.put_Time_now(max(sp.Time_now_z, (unsigned long)Time.now()));  // Synch with web when possible
-  Time.setTime(sp.Time_now_z);
+  Time.setTime( (time_t) (sp.Time_now_z) );
 
   // Peripherals (non-Photon2)
   // D6 - one-wire temp sensor

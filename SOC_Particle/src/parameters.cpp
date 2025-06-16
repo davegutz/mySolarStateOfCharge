@@ -280,7 +280,7 @@ void SavedPars::initialize()
     V_[n_++] =(s_cap_mon_p      = new FloatV("* ", "SQ", rP_, "Scalar cap Mon",       "slr",    0,    1000, &s_cap_mon_z,   1.));
     V_[n_++] =(s_cap_sim_p      = new FloatV("* ", "Sq", rP_, "Scalar cap Sim",       "slr",    0,    1000, &s_cap_sim_z,   1.));
     V_[n_++] =(Tb_bias_hdwe_p   = new FloatV("* ", "Dt", rP_, "Bias Tb sensor",       "dg C",   -500, 500,  &Tb_bias_hdwe_z,TEMP_BIAS));
-    V_[n_++] =(Time_now_p       = new ULongV("* ", "UT", rP_, "UNIX time epoch",      "sec",    0UL,  2100000000UL, &Time_now_z, 1669801880UL,  false));
+    V_[n_++] =(Time_now_p       = new ULongV("* ", "UT", rP_, "UNIX time epoch",      "sec",    1669801880UL,  2100000000UL, &Time_now_z, 1669801880UL,  false));
     V_[n_++] =(Type_p          = new Uint8tV("* ", "Xt", rP_, "Inj type",             "1sn 2sq 3tr 4 1C, 5 -1C, 8cs",  0,   10,  &type_z, 0));
     V_[n_++] =(T_state_model_p  = new FloatV("* ", "ts", rP_, "Tb Sim rate lim mem",  "dg C",   -10,  70,   &T_state_model_z,RATED_TEMP,       false));
     V_[n_++] =(T_state_p        = new FloatV("* ", "tm", rP_, "Tb rate lim mem",      "dg C",   -10,  70,   &T_state_z,     RATED_TEMP,         false));
