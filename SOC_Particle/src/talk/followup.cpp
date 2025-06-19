@@ -209,8 +209,8 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                   Serial1.printf(" time %ld hms:  %s -> ", sp.Time_now_z, buffer);
                   Time.setTime( (time_t) (sp.Time_now_z) );
                   time_long_2_str((time_t)sp.Time_now_z, buffer);
-                  Serial.printf(" time %ld hms:  %s -> \n", sp.Time_now_z, buffer);
-                  Serial1.printf(" time %ld hms:  %s -> \n", sp.Time_now_z, buffer);
+                  Serial.printf(" time %ld hms:  %s\n", sp.Time_now_z, buffer);
+                  Serial1.printf(" time %ld hms:  %s\n", sp.Time_now_z, buffer);
                 break;
 
             }

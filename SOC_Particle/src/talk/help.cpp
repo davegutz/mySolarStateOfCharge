@@ -168,7 +168,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sp.Time_now_p->print_help();  //* UT
   sp.Time_now_p->print1_help();  //* UT
   time_long_2_str((time_t)sp.Time_now_z, buffer);
-  Serial.printf(" time %ld hms:  %s -> \n", sp.Time_now_z, buffer);
+  Serial.printf(" time %ld hms:  %s\n", sp.Time_now_z, buffer);
   sp.debug_p->print_help();  // v
   sp.debug_p->print1_help();  // v
 

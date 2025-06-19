@@ -688,12 +688,6 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
   if ( ap.fake_faults )
     Serial.printf("fake_faults=>redl\n");
 
-  Serial.printf("now=%llu\nlim=%llu\n", Sen->now, 1746684850783ULL);
-  Serial.printf("sample_time_ib %llu\n", Sen->sample_time_ib());
-  Serial.printf("inst_millis %llu\n", Sen->inst_millis());
-  Serial.printf("inst_time %llu\n", Sen->inst_time()*1000);
-  Serial.printf("diff %llu\n", -Sen->inst_millis()+Sen->inst_time()*1000);
-  
   if ( Sen->now < 1746684850783ULL )
     Serial.printf("\n\n////////////////// WARN set UT (h;)\n\n");
 }
@@ -753,7 +747,6 @@ void Fault::pretty_print1(Sensors *Sen, BatteryMonitor *Mon)
   if ( ap.fake_faults )
     Serial1.printf("fake_faults=>redl\n");
   Serial1.printf("vv0; to return\n");
-  Serial1.printf("now=%llu\nlim=%llu\n", Sen->now, 1746684850783ULL);
   if ( Sen->now < 1746684850783ULL )
     Serial1.printf("\n\n////////////////// WARN set UT (h;)\n\n");
 }
