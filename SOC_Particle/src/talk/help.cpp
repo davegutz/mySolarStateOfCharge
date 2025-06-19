@@ -44,6 +44,7 @@ extern Flt_st mySum[NSUM];  // Summaries for saving charge history
 // Talk Help
 void talkH(BatteryMonitor *Mon, Sensors *Sen)
 {
+  char buffer[32];
   Serial.printf("No help photon for test. Look at code.\n");
   Serial.printf("\n\nHelp menu.  Omit '=' and end entry with ';'\n");
 
@@ -166,6 +167,8 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sp.ib_force_p->print_help();  //* si
   sp.Time_now_p->print_help();  //* UT
   sp.Time_now_p->print1_help();  //* UT
+  time_long_2_str((time_t)sp.Time_now_z, buffer);
+  Serial.printf(" time %ld hms:  %s -> \n", sp.Time_now_z, buffer);
   sp.debug_p->print_help();  // v
   sp.debug_p->print1_help();  // v
 
