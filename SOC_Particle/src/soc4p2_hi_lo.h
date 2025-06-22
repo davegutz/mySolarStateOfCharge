@@ -45,18 +45,19 @@
 #define VB_SENSE_R_HI         22000 // Vb high sense resistor, ohm (22000)
 #define VB_SCALE                1.0 // Scale Vb sensor (* 'SV')
 #define VTAB_BIAS              -0.4 // Bias on voc_soc table (* 'Dw'), V  (-0.4)
-#define IB_FORCE                 -1 // Force ib signal selection, -1 = noamp, 0 = logic, 1 = amp
+#define IB_FORCE                 -1 // Force ib signal selection, -1 = noamp, 0 =
 
 // Battery.  One 12 V 100 Ah battery bank would have NOM_UNIT_CAP 100, NS 1, and NP 1
 // Two 12 V 100 Ah series battery bank would have NOM_UNIT_CAP 100, NS 2, and NP 1
 // Four 12 V 200 Ah with two in parallel joined with two more in series
 //   would have  NOM_UNIT_CAP 200, NS 2, and NP 2
-#define COULOMBIC_EFF_SCALE   1.0     // Scalar on Coulombic efficiency of battery, fraction of charge that gets used (1.0)
-#define CHEM                  0       // Chemistry monitor code integer, 0=Battleborn, 1=CHINS-guest room, 2=CHINS-garage
-#define NOM_UNIT_CAP          108.4   // Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah
-#define HYS_SCALE             1.0     // Scalar on hysteresis (1.0)
-#define NS                    1.0     // Number of series batteries in bank.  Fractions scale and remember NOM_UNIT_CAP (* 'BS')
-#define NP                    1.0     // Number of parallel batteries in bank.  Fractions scale and remember NOM_UNIT_CAP (* 'BP')
+#define COULOMBIC_EFF_SCALE   1.0   // Scalar on Coulombic efficiency of battery, fraction of charge that gets used (1.0)
+#define CHEM                    0   // Chemistry monitor code integer, 0=Battleborn, 1=CHINS-guest room, 2=CHINS-garage
+#define NOM_UNIT_CAP        108.4   // Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah logic, 1 = amp
+#define CHEM_NOM_VSAT       13.35   // Nominal saturation voltage at 25C, V (13.35)
+#define HYS_SCALE             1.0   // Scalar on hysteresis (1.0)
+#define NS                    1.0   // Number of series batteries in bank.  Fractions scale and remember NOM_UNIT_CAP (* 'BS')
+#define NP                    1.0   // Number of parallel batteries in bank.  Fractions scale and remember NOM_UNIT_CAP (* 'BP')
 
 // Faults
 #define FAKE_FAULTS           true    // What to do with faults, T=detect and display them but don't change signals

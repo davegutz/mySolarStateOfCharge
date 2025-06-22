@@ -199,7 +199,7 @@ void Chemistry::assign_BB()
     vb_down_sim = 9.5;    // Shutoff point in Sim, V (9.5)
     vb_rising = 10.3;     // Shutoff point when off, V (10.3)
     vb_rising_sim = 9.75; // Shutoff point in Sim when off, V (9.75)
-    v_sat = 13.85;        // Saturation threshold at temperature, deg C (13.85)
+    v_sat = CHEM_NOM_VSAT;        // Saturation threshold at temperature, deg C (CHEM_NOM_VSAT)
 
     // VOC_SOC table
     assign_voc_soc(N_S, M_T, X_SOC, Y_T, T_VOC);
@@ -239,7 +239,7 @@ void Chemistry::assign_CH()
     vb_down_sim = 10.5;   // Shutoff point in Sim, V (10.5)
     vb_rising = 11.3;     // Shutoff point when off, V (11.3)
     vb_rising_sim = 10.75;// Shutoff point in Sim when off, V (10.75)
-    v_sat = 13.85;        // Saturation threshold at temperature, deg C (13.85)
+    v_sat = CHEM_NOM_VSAT;        // Saturation threshold at temperature, deg C (CHEM_NOM_VSAT)
 
     // VOC_SOC table
     assign_voc_soc(N_S, M_T, X_SOC, Y_T, T_VOC);

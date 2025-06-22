@@ -93,6 +93,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.print_mult_p->print_help();  //  DP
   ap.read_delay_p->print_help();  //  Dr
   ap.ds_voc_soc_p->print_help();  //  Ds
+  sp.vsat_add_p->print_help();  //  DS
   sp.Tb_bias_hdwe_p->print_help();  //* Dt
   sp.Tb_bias_hdwe_p->print1_help();  //* Dt
   ap.Tb_noise_amp_p->print_help();  // DT

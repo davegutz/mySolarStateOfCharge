@@ -322,6 +322,7 @@ public:
     Uint8tV *Type_p;
     FloatV *Vb_bias_hdwe_p;
     FloatV *Vb_scale_p;
+    FloatV *vsat_add_p;
 
     // SRAM storage state "retained" in SOC_Particle.ino.  Very few elements
     float amp_z;
@@ -355,6 +356,7 @@ public:
     float T_state_model_z;
     float Vb_bias_hdwe_z;
     float Vb_scale_z;
+    float vsat_add_z;             // Saturation voltage bias, V
 
 protected:
     SerialRAM *rP_;
