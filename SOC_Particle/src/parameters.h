@@ -198,6 +198,7 @@ public:
     float T_state_model() { return T_state_model_z; }
     float Vb_bias_hdwe() { return Vb_bias_hdwe_z; }
     float Vb_scale() { return Vb_scale_z; }
+    float Vsat_add() { return vsat_add_z; }
 
     // functions
     virtual void initialize();
