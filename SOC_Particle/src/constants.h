@@ -74,6 +74,9 @@
 #ifndef IB_FORCE
     #define IB_FORCE 0
 #endif
+#ifndef DISAB_TB_FA
+    #define DISAB_TB_FA false
+#endif
 const String unit = version + "_" + HDWE_UNIT;
 
 // Constants always defined

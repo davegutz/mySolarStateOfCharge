@@ -1139,12 +1139,13 @@ void Fault::tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, con
   {
     failAssign(false, TB_FA);
   }
-  if ( ap.disab_tb_fa || sp.mod_tb() )
+  if ( sp.mod_tb() )
   {
-    faultAssign( (Sen->Tb_model_filt<=_tb_min) || (Sen->Tb_model_filt>=_tb_max), TB_FLT);
+    faultAssign( ((Sen->Tb_model_filt<=_tb_min) || (Sen->Tb_model_filt>=_tb_max)) &&
+                 !ap.disab_tb_fa, TB_FLT);
     failAssign( tb_fa() || TbHardFail->calculate(tb_flt(), TB_HARD_SET, TB_HARD_RESET, Sen->T_temp, reset_loc), TB_FA);
   }
-  else if ( ap.disab_ib_fa )
+  else if ( ap.disab_tb_fa )
   {
     faultAssign( false, TB_FLT);
     failAssign( false, TB_FA); }
@@ -1437,6 +1438,7 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
   if ( sp.mod_ib() )
   {
     Ib = Ib_hdwe_model;
+    Ib_f = Ib;
     Ib_amp = Ib_amp_model;
     Ib_noa = Ib_noa_model;
     Vc = HALF_V3V3;
@@ -1446,6 +1448,7 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
   else
   {
     Ib = Ib_hdwe;
+    Ib_f = Ib_hdwe_f;
     Ib_amp = Ib_amp_hdwe;
     Ib_noa = Ib_noa_hdwe;
     Vc = Vc_hdwe;

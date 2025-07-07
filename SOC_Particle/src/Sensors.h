@@ -465,6 +465,7 @@ public:
   float Tb_model;             // Temperature used for battery bank temp in model, C
   float Tb_model_filt;        // Filtered, modeled battery bank temp, C
   float Ib;                   // Selected battery bank current, A
+  float Ib_f;                 // Selected filtered battery bank current, A
   float Ib_amp;               // Initial selected amp battery bank current, A
   float Ib_amp_hdwe;          // Sensed amp battery bank current, A
   float Ib_amp_hdwe_f;        // Sensed, filtered amp battery bank current, A
