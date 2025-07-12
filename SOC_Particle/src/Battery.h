@@ -44,10 +44,16 @@ const float VB_DC_DC = 13.5;      // DC-DC charger estimated voltage, V (13.5 < 
 #define EKF_CONV        1.5e-3    // EKF tracking error indicating convergence, V (1.5e-3)
 #define EKF_T_CONV      30.       // EKF set convergence test time, sec (30.)
 const float EKF_T_RESET = (EKF_T_CONV/2.); // EKF reset retest time, sec ('up 1, down 2')
-#define EKF_Q_SD_NORM   0.0015    // Standard deviation of normal EKF process uncertainty, V (0.0015)
-#define EKF_R_SD_NORM   0.5       // Standard deviation of normal EKF state uncertainty, fraction (0-1) (0.5)
-#define EKF_NOM_DT      0.1       // EKF nominal update time, s (initialization; actual value varies)
-#define EKF_EFRAME_MULT 20        // Multiframe rate consistent with READ_DELAY (20 for READ_DELAY=100) DE
+#ifndef EKF_Q_SD_NORM  // allow override in config file
+  #define EKF_Q_SD_NORM   0.0015    // Standard deviation of normal EKF process uncertainty, V (0.0015)
+#endif
+#ifndef EKF_R_SD_NORM  // allow override in config file
+  #define EKF_R_SD_NORM   0.5       // Standard deviation of normal EKF state uncertainty, fraction (0-1) (0.5)
+#endif
+  #define EKF_NOM_DT      0.1       // EKF nominal update time, s (initialization; actual value varies)
+#ifndef EKF_EFRAME_MULT  // allow override in config file
+  #define EKF_EFRAME_MULT 20        // Multiframe rate consistent with READ_DELAY (20 for READ_DELAY=100) ED
+#endif
 #define DF2             1.2       // Threshold to resest Coulomb Counter if different from ekf, fraction (0.20)
 #define TAU_Y_FILT      5.        // EKF y-filter time constant, sec (5.)
 #define MIN_Y_FILT      -0.5      // EKF y-filter minimum, V (-0.5)

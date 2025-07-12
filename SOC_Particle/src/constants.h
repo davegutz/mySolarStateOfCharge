@@ -63,6 +63,8 @@
 #undef TB_MAX
 #undef TB_MIN
 #undef CHEM_NOM_VSAT
+#undef IB_CHARGE_NOA
+#undef EKF_EFRAME_MULT_SUB
 
 // Software configuration
 #undef SOFT_DEPLOY_PHOTON

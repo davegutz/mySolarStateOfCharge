@@ -45,7 +45,7 @@
 #define VB_SENSE_R_HI         22000 // Vb high sense resistor, ohm (22000)
 #define VB_SCALE                1.0 // Scale Vb sensor (* 'SV')
 #define VTAB_BIAS              -0.4 // Bias on voc_soc table (* 'Dw'), V  (-0.4)
-#define IB_FORCE                 -1 // Force ib signal selection, -1 = noamp, 0 =
+//#define IB_FORCE                 -1 // Force ib signal selection, -1 = noamp, 0 =
 
 // Battery.  One 12 V 100 Ah battery bank would have NOM_UNIT_CAP 100, NS 1, and NP 1
 // Two 12 V 100 Ah series battery bank would have NOM_UNIT_CAP 100, NS 2, and NP 1
@@ -63,5 +63,14 @@
 #define FAKE_FAULTS           true    // What to do with faults, T=detect and display them but don't change signals
 #define CC_DIFF_SOC_DIS_THRESH  0.5   // Signal selection threshold for Coulomb counter EKF disagree test (0.2, 0.1 too small on truck)
 #define DISAB_TB_FA true
+
+// For shifty amp hardware using 1% resistors
+#define IB_CHARGE_NOA  // Use NOA for charge calculation, otherwise selected ib
+// TODO:  when isolate failure to noa, use amp for charge calculation
+
+// ekf tune
+#define EKF_Q_SD_NORM   0.0015    // Standard deviation of normal EKF process uncertainty, V (0.0015)
+#define EKF_R_SD_NORM   0.5       // Standard deviation of normal EKF state uncertainty, fraction (0-1) (0.5)
+#define EKF_EFRAME_MULT 20  // multiframe (20)
 
 #endif

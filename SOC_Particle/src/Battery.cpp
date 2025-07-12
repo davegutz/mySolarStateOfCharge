@@ -238,7 +238,11 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     bms_charging_ = ib_ > IB_MIN_UP;
     bms_off_ = (temp_c_ <= chem_.low_t) || ( voltage_low_ && !Sen->Flt->vb_fa() && !sp.tweak_test() );    // KISS
     Sen->bms_off = bms_off_;
+    float ib_charge_ekf = ib_;
     ib_charge_ = ib_;
+    #ifdef IB_CHARGE_NOA
+        if ( !sp.mod_ib() ) ib_charge_ = Sen->Ib_noa_hdwe/sp.nP();
+    #endif
     if ( bms_off_ && !bms_charging_ && sp.mod_vb())  // Don't let a single hard vb fail ruin count
         ib_charge_ = 0.;
     if ( bms_off_ && voltage_low_ )
@@ -275,7 +279,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     // EKF 1x1
     if ( eframe_ == 0 )
     {
-        float ddq_dt = ib_charge_;
+        float ddq_dt = ib_charge_ekf;
         if ( Sen->Flt->vb_fa() || Sen->Flt->vb_functional_flt() ) ddq_dt = 0.;  // Freeze EKF with voltage fault
         dt_eframe_ = dt_ * float(ap.eframe_mult);  // Introduces noisy error if dt_ varies
         if ( ddq_dt>0. && !sp.tweak_test() ) ddq_dt *= coul_eff_;
@@ -290,6 +294,13 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         // second order filter of the signal.   Anything more is 'gilding the lily'
         boolean conv = abs(y_filt_)<EKF_CONV && !cp.soft_reset;  // Initialize false
         EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_eframe_, EKF_T_RESET), cp.soft_reset);
+        if ( sp.debug()==37 )
+        {
+            Serial.printf("BatteryMonitor:ib,vb,voc_stat,voc(z_),  K_,y_,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
+                ib_, vb_, voc_stat_, voc_,     K_, y_, soc_ekf_, y_filt_, converged_ekf());
+            Serial1.printf("BM: ib,vb,voc_stat,voc(z_),  K_,y_,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
+                ib_, vb_, voc_stat_, voc_,     K_, y_, soc_ekf_, y_filt_, converged_ekf());
+        }
     }
     eframe_++;
     if ( reset_temp || cp.soft_reset || eframe_ >= ap.eframe_mult ) eframe_ = 0;  // '>=' allows changing ap.eframe_mult on the fly
@@ -306,17 +317,14 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     if ( sp.debug()==34 || sp.debug()==7 )
         Serial.printf("BatteryMonitor:dt,ib,voc_stat_tab,voc_stat,voc,voc_filt,dv_dyn,vb,   u,Fx,Bu,P,   z_,S_,K_,y_,soc_ekf, y_ekf_f, soc, conv,  %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,     %7.3f,%7.3f,%7.4f,%7.4f,       %7.3f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f, %7.4f,  %d,\n",
             dt_, ib_, voc_soc_, voc_stat_, voc_, voc_filt_, dv_dyn_, vb_,     u_, Fx_, Bu_, P_,    z_, S_, K_, y_, soc_ekf_, y_filt_, soc_, converged_ekf());
-    if ( sp.debug()==37 )
-        Serial.printf("BatteryMonitor:ib,vb,voc_stat,voc(z_),  K_,y_,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
-            ib_, vb_, voc_stat_, voc_,     K_, y_, soc_ekf_, y_filt_, converged_ekf());
     if ( sp.debug()==-24 ) Serial.printf("Mon:  ib%7.3f soc%8.4f reset_temp%d tau_ct%9.5f r_ct%7.3f r_0%7.3f dv_dyn%7.3f dv_hys%7.3f voc_soc%7.3f  voc_stat%7.3f voc%7.3f vb%7.3f ib _charge%7.3f ",
         ib_, soc_, reset_temp, chem_.tau_ct, chem_.r_ct, chem_.r_0, dv_dyn_, dv_hys_, voc_soc_, voc_stat_, voc_, vb_, ib_charge_);
     #endif
 
     // Charge time if used ekf 
-    if ( ib_charge_ > 0.1 )
+    if ( ib_charge_ekf > 0.1 )
         tcharge_ekf_ = min(NOM_UNIT_CAP / ib_charge_ * (1. - soc_ekf_), 24.);
-    else if ( ib_charge_ < -0.1 )
+    else if ( ib_charge_ekf < -0.1 )
         tcharge_ekf_ = max(NOM_UNIT_CAP / ib_charge_ * soc_ekf_, -24.);
     else if ( ib_charge_ >= 0. )
         tcharge_ekf_ = 24.*(1. - soc_ekf_);

@@ -76,12 +76,12 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sp.ib_bias_noa_p->print1_help();  //* DB
   sp.Vb_bias_hdwe_p->print_help();  //* Dc
   sp.Vb_bias_hdwe_p->print1_help();  //* Dc
-  ap.eframe_mult_p->print_help();  //  DE
   ap.sum_delay_p->print_help();  //  Dh
   Serial.printf("    set 'Dh0;' for nominal\n");
   sp.ib_bias_all_p->print_help();  //* DI
   sp.ib_bias_all_p->print1_help();  //* DI
   sp.ib_bias_amp_p->print_help();  //  Dm
+  ap.eframe_mult_p->print_help();  //  ED
   ap.ib_max_amp_p->print_help();  // Mm
   ap.ib_min_amp_p->print_help();  // Mn
   ap.Ib_amp_noise_amp_p->print_help();  // DM

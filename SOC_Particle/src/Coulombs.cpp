@@ -214,6 +214,7 @@ float Coulombs::count_coulombs(const double dt, const boolean reset_temp, const 
     }
     else
     {
+      if ( cp.inf_reset ) *sp_delta_q_ = 0.;
       delta_q_abs_ = *sp_delta_q_ / 2.;
       delta_q_inf_ = *sp_delta_q_;
       delta_q_neg_ = *sp_delta_q_;
