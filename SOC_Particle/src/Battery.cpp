@@ -267,6 +267,8 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     // Hysteresis model
     dv_hys_ = 0.;  // disable hys g20230530a
     voc_stat_ = voc_ - dv_hys_;
+    voc_stat_filt->assignCoeff(ap.voc_stat_filt);
+    voc_stat_f_ = voc_stat_filt->calculate(voc_stat_, reset_temp, dt_);
     ioc_ = ib_dyn;
     
 
@@ -285,7 +287,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         if ( ddq_dt>0. && !sp.tweak_test() ) ddq_dt *= coul_eff_;
         ddq_dt -= chem_.dqdt * q_capacity_ * T_rate;
         predict_ekf(ddq_dt);       // u = d(dq)/dt
-        update_ekf(voc_stat_, 0., 1.);  // z = voc_stat, estimated = voc_filtered = hx, predicted = est past
+        update_ekf(voc_stat_f_, 0., 1.);  // z = voc_stat, estimated = voc_filtered = hx, predicted = est past
         soc_ekf_ = x_ekf();             // x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
         q_ekf_ = soc_ekf_ * q_capacity_;
         delta_q_ekf_ = q_ekf_ - q_capacity_;
@@ -296,10 +298,10 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_eframe_, EKF_T_RESET), cp.soft_reset);
         if ( sp.debug()==37 )
         {
-            Serial.printf("BatteryMonitor:ib,vb,voc_stat,voc(z_),  K_,y_,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
-                ib_, vb_, voc_stat_, voc_,     K_, y_, soc_ekf_, y_filt_, converged_ekf());
-            Serial1.printf("BM: ib,vb,voc_stat,voc(z_),  K_,y_,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
-                ib_, vb_, voc_stat_, voc_,     K_, y_, soc_ekf_, y_filt_, converged_ekf());
+            Serial.printf("BatteryMonitor:ib,vb,voc_stat_f,voc(z_),  K_,y_,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
+                ib_, vb_, voc_stat_f_, voc_,     K_, y_, soc_ekf_, y_filt_, converged_ekf());
+            Serial1.printf("BM: ib,vb,voc_stat_f,voc(z_),  K_,y_,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
+                ib_, vb_, voc_stat_f_, voc_,     K_, y_, soc_ekf_, y_filt_, converged_ekf());
         }
     }
     eframe_++;

@@ -104,6 +104,7 @@ public:
     float vb_add;               // Fault injection bias, V
     float Vb_noise_amp;         // Vb bank noise amplitude model only, V pk-pk
     float vc_add;               // Shunt Vc/Vr Fault injection bias, V
+    float voc_stat_filt;        // voc_stat_filt time constant, s
     unsigned long int wait_inj; // Wait before start injection, ms
     FloatV *cc_diff_slr_p;
     FloatV *cycles_inj_p;
@@ -147,6 +148,7 @@ public:
     FloatV *ib_min_amp_p;
     FloatV *ib_max_noa_p;
     FloatV *ib_min_noa_p;
+    FloatV *voc_stat_filt_p;
 
 protected:
 };

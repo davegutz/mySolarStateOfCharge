@@ -44,6 +44,9 @@ const float VB_DC_DC = 13.5;      // DC-DC charger estimated voltage, V (13.5 < 
 #define EKF_CONV        1.5e-3    // EKF tracking error indicating convergence, V (1.5e-3)
 #define EKF_T_CONV      30.       // EKF set convergence test time, sec (30.)
 const float EKF_T_RESET = (EKF_T_CONV/2.); // EKF reset retest time, sec ('up 1, down 2')
+#ifndef VOC_STAT_FILT  // allow override in config file
+  #define VOC_STAT_FILT 15.  // voc_stat_f_ filtering for EKF
+#endif
 #ifndef EKF_Q_SD_NORM  // allow override in config file
   #define EKF_Q_SD_NORM   0.0015    // Standard deviation of normal EKF process uncertainty, V (0.0015)
 #endif
@@ -182,6 +185,7 @@ protected:
   TFDelay *EKF_converged;  // Time persistence
   RateLimit *T_RLim = new RateLimit();
   Iterator *ice_;      // Iteration control for EKF solver
+  LagTustin *voc_stat_filt = new LagTustin(EKF_NOM_DT, VOC_STAT_FILT, VB_MIN, VB_MAX);  // actual update time provided run time
   float amp_hrs_remaining_ekf_;  // Discharge amp*time left if drain to q_ekf=0, A-h
   float amp_hrs_remaining_soc_;  // Discharge amp*time left if drain soc_ to 0, A-h
   double dt_eframe_;   // Update time for EKF major frame
@@ -195,6 +199,7 @@ protected:
   float vb_model_rev_; // Reversionary model of vb, V
   float voc_filt_;     // Filtered, static model open circuit voltage, V
   float voc_soc_;      // Raw table lookup of voc, V
+  float voc_stat_f_;   // Filtered voc_stat for EKF use, V
   float y_filt_;       // Filtered EKF y value, V
   void ekf_predict(double *Fx, double *Bu);
   void ekf_update(double *hx, double *H);
