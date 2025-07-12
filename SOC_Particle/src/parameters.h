@@ -105,6 +105,9 @@ public:
     float Vb_noise_amp;         // Vb bank noise amplitude model only, V pk-pk
     float vc_add;               // Shunt Vc/Vr Fault injection bias, V
     float voc_stat_filt;        // voc_stat_filt time constant, s
+    float ekf_q;                // ekf_q scalar, slr
+    float ekf_r;                // ekf_r scalar, slr
+    float ekf_conv;             // ekf abs conv, v
     unsigned long int wait_inj; // Wait before start injection, ms
     FloatV *cc_diff_slr_p;
     FloatV *cycles_inj_p;
@@ -149,6 +152,9 @@ public:
     FloatV *ib_max_noa_p;
     FloatV *ib_min_noa_p;
     FloatV *voc_stat_filt_p;
+    FloatV *ekf_q_p;
+    FloatV *ekf_r_p;
+    FloatV *ekf_conv_p;
 
 protected:
 };

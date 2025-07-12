@@ -72,6 +72,7 @@
 #define EKF_Q_SD_NORM   0.0015  // Standard deviation of normal EKF process uncertainty, V (0.0015)
 #define EKF_R_SD_NORM   0.5     // Standard deviation of normal EKF state uncertainty, fraction (0-1) (0.5)
 #define EKF_EFRAME_MULT 20      // multiframe (20)
-#define VOC_STAT_FILT   15.     // voc_stat_f_ filtering for EKF (15) VF
+#define VOC_STAT_FILT   60.     // voc_stat_f_ filtering for EKF (15) VF
+#define EKF_CONV        1.5e-3  // EKF tracking error indicating convergence, V (1.5e-3)
 
 #endif

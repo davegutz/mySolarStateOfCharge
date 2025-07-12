@@ -294,7 +294,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         y_filt_ = y_filt->calculate(y_, reset_temp, min(dt_eframe_, EKF_T_RESET));
         // EKF convergence.  Audio industry found that detection of quietness requires no more than
         // second order filter of the signal.   Anything more is 'gilding the lily'
-        boolean conv = abs(y_filt_)<EKF_CONV && !cp.soft_reset;  // Initialize false
+        boolean conv = abs(y_filt_)<ap.ekf_conv && !cp.soft_reset;  // Initialize false
         EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_eframe_, EKF_T_RESET), cp.soft_reset);
         if ( sp.debug()==37 )
         {

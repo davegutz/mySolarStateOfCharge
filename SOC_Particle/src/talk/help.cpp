@@ -172,6 +172,12 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   Serial.printf(" time %ld hms:  %s\n", sp.Time_now_z, buffer);
   ap.voc_stat_filt_p->print_help();  // VS
   ap.voc_stat_filt_p->print1_help();  // VS
+  ap.ekf_q_p->print_help();  // VQ
+  ap.ekf_q_p->print1_help();  // VQ
+  ap.ekf_r_p->print_help();  // VR
+  ap.ekf_r_p->print1_help();  // VR
+  ap.ekf_conv_p->print_help();  // VC
+  ap.ekf_conv_p->print1_help();  // VC
   sp.debug_p->print_help();  // vv
   sp.debug_p->print1_help();  // vv
 

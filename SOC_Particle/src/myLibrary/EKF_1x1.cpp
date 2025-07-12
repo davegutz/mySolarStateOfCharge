@@ -26,6 +26,7 @@
 #include <math.h>
 #include "parameters.h"
 extern SavedPars sp; // Various parameters to be static at system level and saved through power cycle
+extern VolatilePars ap; // Various adjustment parameters shared at system level
 // extern int8_t debug();
 
 
@@ -54,7 +55,7 @@ void EKF_1x1::predict_ekf(double u)
   this->ekf_predict(&Fx_, &Bu_);
   x_ = Fx_*x_ + Bu_*u_;
   if ( isnan(P_) ) P_ = 0.;   // reset overflow
-  P_ = Fx_*P_*Fx_ + Q_;
+  P_ = Fx_*P_*Fx_ + Q_*ap.ekf_q*ap.ekf_q;
   x_prior_ = x_;
   P_prior_ = P_;
 }
@@ -119,7 +120,7 @@ void EKF_1x1::update_ekf(const double z, double x_min, double x_max)
   this->ekf_update(&hx_, &H_);
   z_ = z;
   double pht = P_*H_;
-  S_ = H_*pht + R_;
+  S_ = H_*pht + R_*ap.ekf_r*ap.ekf_r;
   if ( abs(S_) > 1e-12) K_ = pht / S_;  // Using last-good-value if S_ = 0
   y_ = z_ - hx_;
   x_ = max(min( x_ + K_*y_, x_max), x_min);
