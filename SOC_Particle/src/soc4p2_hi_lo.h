@@ -3,6 +3,7 @@
 // 0a10aced202194944a04c040  old device
 // 0a10aced202194944a04c094 new one
 #include "version.h"
+// deviceOS@5.6.0
 
 // Features config
 #define HDWE_UNIT               "soc4p2_hi_lo"
@@ -12,7 +13,7 @@
 #define HDWE_IB_HI_LO
 #define HDWE_2WIRE
 // #define SOFT_DEBUG_QUEUE
-// #define DEBUG_DETAIL                    // Use this to debug initialization using 'v-1;'
+#define DEBUG_DETAIL                    // Use this to debug initialization using 'v-1;'
 // #define LOGHANDLE
 
 // * = SRAM EEPROM adjustments, retained on power reset
@@ -54,7 +55,7 @@
 #define COULOMBIC_EFF_SCALE   1.0   // Scalar on Coulombic efficiency of battery, fraction of charge that gets used (1.0)
 #define CHEM                    0   // Chemistry monitor code integer, 0=Battleborn, 1=CHINS-guest room, 2=CHINS-garage
 #define NOM_UNIT_CAP        108.4   // Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah logic, 1 = amp
-#define CHEM_NOM_VSAT       13.35   // Nominal saturation voltage at 25C, V (13.35)
+#define CHEM_NOM_VSAT       13.85   // Nominal saturation voltage at 25C, V (13.35)
 #define HYS_SCALE             1.0   // Scalar on hysteresis (1.0)
 #define NS                    1.0   // Number of series batteries in bank.  Fractions scale and remember NOM_UNIT_CAP (* 'BS')
 #define NP                    1.0   // Number of parallel batteries in bank.  Fractions scale and remember NOM_UNIT_CAP (* 'BP')
@@ -72,7 +73,7 @@
 #define EKF_Q_SD_NORM   0.0015  // Standard deviation of normal EKF process uncertainty, V (0.0015)
 #define EKF_R_SD_NORM   0.5     // Standard deviation of normal EKF state uncertainty, fraction (0-1) (0.5)
 #define EKF_EFRAME_MULT 20      // multiframe (20)
-#define VOC_STAT_FILT   60.     // voc_stat_f_ filtering for EKF (15) VF
-#define EKF_CONV        1.5e-3  // EKF tracking error indicating convergence, V (1.5e-3)
+#define VOC_STAT_FILT   120.    // voc_stat_f_ filtering for EKF (120) VF
+#define EKF_CONV        0.05    // EKF tracking error indicating convergence, V (.05)
 
 #endif

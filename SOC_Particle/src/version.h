@@ -5,7 +5,7 @@
 #define xstr(s) str(s)
 #define str(s) #s
 
-const String version = "g20250612a";
+const String version = "g20250612a";  // deviceOS@5.6.0
 // g20250612 is catch functional Vb failure (soft) and revert voc(soc) for BB. 'a' is nom vsat sp
 // g20241006 is fix for amp wrap windup limits
 // g20240909 is bug fix for noise sensitivity

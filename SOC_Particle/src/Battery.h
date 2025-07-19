@@ -178,6 +178,7 @@ public:
   float vb_model_rev() { return vb_model_rev_; };
   float voc_filt() { return voc_filt_; };
   float voc_soc() { return voc_soc_; };
+  float voc_stat_f() { return voc_stat_f_; };
   double y_ekf() { return y_; };
   double y_ekf_filt() { return y_filt_; };
   double delta_q_ekf_;         // Charge deficit represented by charge calculated by ekf, C

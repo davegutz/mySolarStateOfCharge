@@ -275,7 +275,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     // Reversionary model
     vb_model_rev_ = voc_soc_ + dv_dyn_ + dv_hys_;
 
-// if ( sp.debug()==1 || sp.debug()==4) Serial.printf("ib_dyn%7.3f bms_off %d voltage_low %d bms_charging %d vb_fa %d tweak_test %d vb%7.3f voc_stat%7.3f voc_soc%7.3f voc%7.3f voc_filt%7.3f dvdyn%7.3f\n",
+// if ( sp.debug()==1 || sp.debug()==4) Serial.printf("ib_dyn%7.3f bms_off %d voltage_low %d bms_charging %d vb_fa %d tweak_test %d vb%7.3f voc_stat_f%7.3f voc_soc%7.3f voc%7.3f voc_filt%7.3f dvdyn%7.3f\n",
 //      ib_dyn, bms_off_, voltage_low_, bms_charging_, Sen->Flt->vb_fa(), sp.tweak_test(), vb_, voc_stat_, voc_soc_, voc_, voc_filt_, dvdyn);
 
     // EKF 1x1
@@ -287,7 +287,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         if ( ddq_dt>0. && !sp.tweak_test() ) ddq_dt *= coul_eff_;
         ddq_dt -= chem_.dqdt * q_capacity_ * T_rate;
         predict_ekf(ddq_dt);       // u = d(dq)/dt
-        update_ekf(voc_stat_f_, 0., 1.);  // z = voc_stat, estimated = voc_filtered = hx, predicted = est past
+        update_ekf(voc_stat_f_, 0., 1.);  // z = _f, estimated = voc_filtered = hx, predicted = est past
         soc_ekf_ = x_ekf();             // x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
         q_ekf_ = soc_ekf_ * q_capacity_;
         delta_q_ekf_ = q_ekf_ - q_capacity_;
@@ -298,10 +298,10 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_eframe_, EKF_T_RESET), cp.soft_reset);
         if ( sp.debug()==37 )
         {
-            Serial.printf("BatteryMonitor:ib,vb,voc_stat_f,voc(z_),  K_,y_,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
-                ib_, vb_, voc_stat_f_, voc_,     K_, y_, soc_ekf_, y_filt_, converged_ekf());
-            Serial1.printf("BM: ib,vb,voc_stat_f,voc(z_),  K_,y_,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
-                ib_, vb_, voc_stat_f_, voc_,     K_, y_, soc_ekf_, y_filt_, converged_ekf());
+            Serial.printf("BatteryMonitor:ib,vb,voc_stat_f,voc(z_),  K_,y_,soc,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
+                ib_, vb_, voc_stat_f_, voc_,     K_, y_, soc_, soc_ekf_, y_filt_, converged_ekf());
+            Serial1.printf("BM: ib,vb,voc_stat_f,voc(z_),  K_,y_,soc,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
+                ib_, vb_, voc_stat_f_, voc_,     K_, y_, soc_, soc_ekf_, y_filt_, converged_ekf());
         }
     }
     eframe_++;
@@ -312,14 +312,14 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     voc_filt_ = SdVb_->update(voc_);   // used for saturation test
 
     // if ( sp.debug()==13 || sp.debug()==2 || sp.debug()==4 )
-    //     Serial.printf("bms_off,soc,ib,vb,voc,voc_stat,voc_soc,dv_hys,dv_dyn,%d,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,\n",
-    //     bms_off_, soc_, ib_, vb_, voc_, voc_stat_, voc_soc_, dv_hys_, dv_dyn_);
+    //     Serial.printf("bms_off,soc,ib,vb,voc,_f,voc_soc,dv_hys,dv_dyn,%d,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,\n",
+    //     bms_off_, soc_, ib_, vb_, voc_, voc_stat_f_, voc_soc_, dv_hys_, dv_dyn_);
 
     #ifndef HDWE_PHOTON
     if ( sp.debug()==34 || sp.debug()==7 )
-        Serial.printf("BatteryMonitor:dt,ib,voc_stat_tab,voc_stat,voc,voc_filt,dv_dyn,vb,   u,Fx,Bu,P,   z_,S_,K_,y_,soc_ekf, y_ekf_f, soc, conv,  %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,     %7.3f,%7.3f,%7.4f,%7.4f,       %7.3f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f, %7.4f,  %d,\n",
+        Serial.printf("BatteryMonitor:dt,ib,voc_stat_tab,voc_stat_f,voc,voc_filt,dv_dyn,vb,   u,Fx,Bu,P,   z_,S_,K_,y_,soc_ekf, y_ekf_f, soc, conv,  %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,     %7.3f,%7.3f,%7.4f,%7.4f,       %7.3f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f, %7.4f,  %d,\n",
             dt_, ib_, voc_soc_, voc_stat_, voc_, voc_filt_, dv_dyn_, vb_,     u_, Fx_, Bu_, P_,    z_, S_, K_, y_, soc_ekf_, y_filt_, soc_, converged_ekf());
-    if ( sp.debug()==-24 ) Serial.printf("Mon:  ib%7.3f soc%8.4f reset_temp%d tau_ct%9.5f r_ct%7.3f r_0%7.3f dv_dyn%7.3f dv_hys%7.3f voc_soc%7.3f  voc_stat%7.3f voc%7.3f vb%7.3f ib _charge%7.3f ",
+    if ( sp.debug()==-24 ) Serial.printf("Mon:  ib%7.3f soc%8.4f reset_temp%d tau_ct%9.5f r_ct%7.3f r_0%7.3f dv_dyn%7.3f dv_hys%7.3f voc_soc%7.3f  voc_stat_f%7.3f voc%7.3f vb%7.3f ib _charge%7.3f ",
         ib_, soc_, reset_temp, chem_.tau_ct, chem_.r_ct, chem_.r_0, dv_dyn_, dv_hys_, voc_soc_, voc_stat_, voc_, vb_, ib_charge_);
     #endif
 
@@ -473,6 +473,7 @@ void BatteryMonitor::pretty_print(Sensors *Sen)
     Serial.printf("  voc_filt%7.3f V\n", voc_filt_);
     Serial.printf("  voc_soc%7.3f V\n", voc_soc_);
     Serial.printf("  voc_stat%7.3f V\n", voc_stat_);
+    Serial.printf("  voc_stat_f%7.3f V\n", voc_stat_f_);
     Serial.printf("  y_filt%7.3f Res EKF, V\n", y_filt_);
     Serial.printf(" *sp_s_cap_mon%7.3f Slr\n", sp.s_cap_mon());
     Serial.printf("  vb_model_rev%7.3f V\n", vb_model_rev_);

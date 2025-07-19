@@ -86,7 +86,8 @@ void Chemistry::assign_all_chm()
     //     4.00, 4.00, 12.30, 12.95, 13.05, 13.10, 13.15, 13.25, 13.30, 13.38, 13.42, 13.46, 13.50, 13.54, 13.56, 13.57, 13.82, 14.30};
     const uint8_t N_N = 5;                                          // Number of temperature breakpoints for x_soc_min table
     float X_SOC_MIN[N_N] = {5., 11.1, 20., 30., 40.};      // Temperature breakpoints for soc_min table
-    float T_SOC_MIN[N_N] = {0.10, 0.07, 0.05, 0.00, 0.20}; // soc_min(t).  At 40C BMS shuts off at 12V
+    float T_SOC_MIN[N_N] = {0.10, 0.07, 0.25, 0.25, 0.25}; // soc_min(t).  At 40C BMS shuts off at 12V
+    // float T_SOC_MIN[N_N] = {0.10, 0.07, 0.05, 0.00, 0.20}; // soc_min(t).  At 40C BMS shuts off at 12V
 
     // Battleborn Hysteresis
     const uint8_t M_H = 3;     // Number of soc breakpoints in r(soc, dv) table t_r, t_s
