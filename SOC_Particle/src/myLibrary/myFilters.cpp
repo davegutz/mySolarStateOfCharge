@@ -264,8 +264,7 @@ double RateLimit::calculate(const double in, const double Rmax, const double Rmi
   {
     past_ = in;
   }
-  double past = past_;
-  return ( ( RateLimit::calculate(in, Rmax, Rmin) - past) / T_ );
+  return ( RateLimit::calculate(in, Rmax, Rmin) );
 }
 
 

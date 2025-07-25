@@ -342,11 +342,11 @@ void wait_on_user_input(Adafruit_SSD1306 *display)
     {
       Serial.printf("\n\n");
       sp.pretty_print( false );
-      Serial.printf("Reset to defaults? [Y/n]:"); Serial1.printf("Reset to defaults? [Y/n]:");
+      Serial.printf("Reset to defaults? [y/n]:"); Serial1.printf("Reset to defaults? [y/n]:");
     }
-    else  // User is typing.  Ignore him until they answer 'Y', 'N', or 'n'.  But timeout seconds if they don't
+    else  // User is typing.  Ignore him until they answer 'Y', 'y', 'N', or 'n'.  But timeout seconds if they don't
     {
-      while ( answer!='Y' && answer!='N' && answer!='n' && count<30 )
+      while ( answer!='Y' &&  answer!='y' && answer!='N' && answer!='n' && count<30 )
       {
         if ( Serial.available() )
           answer=Serial.read();
@@ -366,9 +366,9 @@ void wait_on_user_input(Adafruit_SSD1306 *display)
   }
 
   // Wrap it up
-  if ( answer=='Y' )
+  if ( answer=='Y' || answer=='y' )
   {
-    Serial.printf("  Y\n\n"); Serial1.printf("  Y\n\n");
+    Serial.printf(" ...yes\n\n"); Serial1.printf(" ...yes\n\n");
     sp.set_nominal();
     sp.pretty_print( true );
     #ifdef HDWE_PHOTON2
@@ -408,7 +408,7 @@ void wait_on_user_input()
     {
       Serial.printf("\n\n");
       sp.pretty_print( false );
-      Serial.printf("Reset to defaults? [Y/n]:"); Serial1.printf("Reset to defaults? [Y/n]:");
+      Serial.printf("Reset to defaults? [y/n]:"); Serial1.printf("Reset to defaults? [y/n]:");
     }
     else  // User is typing.  Ignore him until they answer 'Y', 'N', or 'n'.  But timeout at 30 seconds if they don't
     {

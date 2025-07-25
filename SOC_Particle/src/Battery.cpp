@@ -222,7 +222,6 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     temp_c_ = Sen->Tb_filt;
     vsat_ = calc_vsat();
     dt_ =  Sen->T;
-    float T_rate = T_RLim->calculate(temp_c_, T_RLIM, T_RLIM, reset_temp, Sen->T);
     vb_ = Sen->vb();
     ib_ = Sen->ib();
     ib_ = max(min(ib_, IMAX_NUM), -IMAX_NUM);  // Overflow protection when ib_ past value used
@@ -282,10 +281,20 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     if ( eframe_ == 0 )
     {
         float ddq_dt = ib_charge_ekf;
+        // static float T_rate_lim_past = 0.;
+
         if ( Sen->Flt->vb_fa() || Sen->Flt->vb_functional_flt() ) ddq_dt = 0.;  // Freeze EKF with voltage fault
         dt_eframe_ = dt_ * float(ap.eframe_mult);  // Introduces noisy error if dt_ varies
         if ( ddq_dt>0. && !sp.tweak_test() ) ddq_dt *= coul_eff_;
-        ddq_dt -= chem_.dqdt * q_capacity_ * T_rate;
+
+        // // Protect EKF from noise with rate limit on temperature
+        // float T_rate_lim = T_RLim->calculate(temp_c_, T_RLIM, T_RLIM, reset_temp, dt_eframe_);
+        // float T_rate = (T_rate_lim - T_rate_lim_past) / dt_eframe_;
+        // if ( sp.debug()==36 ) Serial.printf("BM::calc: temp_c, T_rate_lim, T_RLIM, reset_temp, dt_eframe_, T_Rate: %7.4f,%7.4f,%7.4f,%d,%7.4f,%7.4f,\n",
+        //     temp_c_, T_rate_lim, T_RLIM, reset_temp, dt_eframe_, T_rate);
+        // T_rate_lim_past = T_rate_lim;
+
+        // ddq_dt -= chem_.dqdt * q_capacity_ * T_rate;
         predict_ekf(ddq_dt);       // u = d(dq)/dt
         update_ekf(voc_stat_f_, 0., 1.);  // z = _f, estimated = voc_filtered = hx, predicted = est past
         soc_ekf_ = x_ekf();             // x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
@@ -296,11 +305,11 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         // second order filter of the signal.   Anything more is 'gilding the lily'
         boolean conv = abs(y_filt_)<ap.ekf_conv && !cp.soft_reset;  // Initialize false
         EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_eframe_, EKF_T_RESET), cp.soft_reset);
-        if ( sp.debug()==37 )
+        if ( sp.debug()==36 || sp.debug()==37 )
         {
-            Serial.printf("BatteryMonitor:ib,vb,voc_stat_f,voc(z_),  K_,y_,soc,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
+            Serial.printf("BatteryMonitor:ib,vb,voc_stat_f,voc(z_),  K_,y_,soc,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %10.7f,%7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
                 ib_, vb_, voc_stat_f_, voc_,     K_, y_, soc_, soc_ekf_, y_filt_, converged_ekf());
-            Serial1.printf("BM: ib,vb,voc_stat_f,voc(z_),  K_,y_,soc,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
+            Serial1.printf("BM: ib,vb,voc_stat_37f,voc(z_),  K_,y_,soc,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %10.7f,%7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
                 ib_, vb_, voc_stat_f_, voc_,     K_, y_, soc_, soc_ekf_, y_filt_, converged_ekf());
         }
     }
@@ -317,7 +326,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
 
     #ifndef HDWE_PHOTON
     if ( sp.debug()==34 || sp.debug()==7 )
-        Serial.printf("BatteryMonitor:dt,ib,voc_stat_tab,voc_stat_f,voc,voc_filt,dv_dyn,vb,   u,Fx,Bu,P,   z_,S_,K_,y_,soc_ekf, y_ekf_f, soc, conv,  %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,     %7.3f,%7.3f,%7.4f,%7.4f,       %7.3f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f, %7.4f,  %d,\n",
+        Serial.printf("BatteryMonitor:dt,ib,voc_stat_tab,voc_stat_f,voc,voc_filt,dv_dyn,vb,   u,Fx,Bu,P,   z_,S_,K_,y_,soc_ekf, y_ekf_f, soc, conv,  %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,     %7.3f,%7.3f,%7.4f,%7.4f,       %7.3f,%7.4f,%10.7f,%7.4f,%7.4f,%7.4f, %7.4f,  %d,\n",
             dt_, ib_, voc_soc_, voc_stat_, voc_, voc_filt_, dv_dyn_, vb_,     u_, Fx_, Bu_, P_,    z_, S_, K_, y_, soc_ekf_, y_filt_, soc_, converged_ekf());
     if ( sp.debug()==-24 ) Serial.printf("Mon:  ib%7.3f soc%8.4f reset_temp%d tau_ct%9.5f r_ct%7.3f r_0%7.3f dv_dyn%7.3f dv_hys%7.3f voc_soc%7.3f  voc_stat_f%7.3f voc%7.3f vb%7.3f ib _charge%7.3f ",
         ib_, soc_, reset_temp, chem_.tau_ct, chem_.r_ct, chem_.r_0, dv_dyn_, dv_hys_, voc_soc_, voc_stat_, voc_, vb_, ib_charge_);

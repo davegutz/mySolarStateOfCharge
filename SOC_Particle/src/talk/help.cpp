@@ -203,6 +203,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
     Serial.printf("vv-24: Vb_hdwe_ac, Ib_hdwe\n");
     Serial.printf(" vv34: EKF detail\n");
     Serial.printf(" vv35: ChargeTransfer balance\n");
+    Serial.printf(" vv36: EKF short in EKF\n");
     Serial.printf(" vv37: EKF short\n");
     Serial.printf(" vv75: voc_low check mod\n");
     Serial.printf(" vv76: vb model\n");
