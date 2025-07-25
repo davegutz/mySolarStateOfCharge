@@ -18,7 +18,7 @@ public:
   // operators
   // functions
   virtual float interp(void);
-  void pretty_print(void);
+  void pretty_print();
 protected:
   unsigned int n1_;
   float *x_;
@@ -64,7 +64,7 @@ public:
   //operators
   //functions
   virtual float interp(float x, float y);
-  void pretty_print();
+  void pretty_print(const float dx, const float dy, const float dz);
 
 protected:
   unsigned int n2_;

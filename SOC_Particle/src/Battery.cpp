@@ -305,12 +305,12 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         // second order filter of the signal.   Anything more is 'gilding the lily'
         boolean conv = abs(y_filt_)<ap.ekf_conv && !cp.soft_reset;  // Initialize false
         EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_eframe_, EKF_T_RESET), cp.soft_reset);
-        if ( sp.debug()==36 || sp.debug()==37 )
+        if ( sp.debug()==37 )
         {
-            Serial.printf("BatteryMonitor:ib,vb,voc_stat_f,voc(z_),  K_,y_,soc,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %10.7f,%7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
-                ib_, vb_, voc_stat_f_, voc_,     K_, y_, soc_, soc_ekf_, y_filt_, converged_ekf());
-            Serial1.printf("BM: ib,vb,voc_stat_37f,voc(z_),  K_,y_,soc,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %10.7f,%7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
-                ib_, vb_, voc_stat_f_, voc_,     K_, y_, soc_, soc_ekf_, y_filt_, converged_ekf());
+            Serial.printf("BatteryMonitor:ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,soc,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
+                ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, soc_, soc_ekf_, y_filt_, converged_ekf());
+            Serial1.printf("BM: ib,vb,voc,voc_stat_f(z_),  hx_,H_,K_,y_,soc,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
+                ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, soc_, soc_ekf_, y_filt_, converged_ekf());
         }
     }
     eframe_++;
@@ -417,6 +417,13 @@ void BatteryMonitor::ekf_update(double *hx, double *H)
     *hx = Battery::calc_soc_voc(x_lim, temp_c_, &dv_dsoc_) + sp.Dw();
     // Jacodian of measurement function
     *H = dv_dsoc_;
+    if ( sp.debug()==36 )
+    {
+        Serial.printf("ekf_update:: x, temp, table, Dw, hx, H: %7.3f,%7.3f,%7.3f,%7.3f,%7.3f%7.3f\n",
+            x_lim, temp_c_, Battery::calc_soc_voc(x_lim, temp_c_, &dv_dsoc_), sp.Dw(), *hx, *H);
+        Serial1.printf("ekf_update:: x, temp, table, Dw, hx, H: %7.3f,%7.3f,%7.3f,%7.3f,%7.3f%7.3f\n",
+            x_lim, temp_c_, Battery::calc_soc_voc(x_lim, temp_c_, &dv_dsoc_), sp.Dw(), *hx, *H);
+    }
 }
 
 // Initialize
@@ -486,7 +493,7 @@ void BatteryMonitor::pretty_print(Sensors *Sen)
     Serial.printf("  y_filt%7.3f Res EKF, V\n", y_filt_);
     Serial.printf(" *sp_s_cap_mon%7.3f Slr\n", sp.s_cap_mon());
     Serial.printf("  vb_model_rev%7.3f V\n", vb_model_rev_);
-    this->Battery::Coulombs::pretty_print();
+    this->Battery::Coulombs::pretty_print(0., 0., sp.Dw());
 #else
      Serial.printf("BatteryMonitor: silent DEPLOY\n");
 #endif
@@ -913,7 +920,7 @@ void BatterySim::pretty_print(void)
     Serial.printf("  sat_ib_max%7.3f, A\n", sat_ib_max_);
     Serial.printf("  sat_ib_null%7.3f, A\n", sat_ib_null_);
     Serial.printf(" *sp_s_cap_sim%7.3f Slr\n", sp.s_cap_sim());
-    hys_->pretty_print();
+    hys_->pretty_print(0., 0., 0.);
 #else
      Serial.printf("BatterySim: silent DEPLOY\n");
 #endif

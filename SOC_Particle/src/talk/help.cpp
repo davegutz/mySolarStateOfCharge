@@ -68,6 +68,8 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   Serial.printf("\nC<?> Chg SOC e.g.:\n");
   ap.init_all_soc_p->print_help();  // Ca
   Serial.printf("  Cm=  model (& ekf if mod)- '(0-1.1)'\n"); 
+  ap.ekf_x_p->print_help();  // Ce
+  ap.ekf_x_p->print1_help();  // Ce
 
   Serial.printf("\nD/S<?> Adj e.g.:\n");
   sp.ib_bias_amp_p->print_help();  //* DA

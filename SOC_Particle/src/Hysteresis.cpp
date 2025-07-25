@@ -89,7 +89,7 @@ float Hysteresis::look_slr(const float dv, const float soc)
 }
 
 // Print
-void Hysteresis::pretty_print()
+void Hysteresis::pretty_print(const float dx, const float dy, const float dz)
 {
 #ifndef SOFT_DEPLOY_PHOTON
     float res = look_hys(0., 0.8);
@@ -106,7 +106,7 @@ void Hysteresis::pretty_print()
     Serial.printf("  slr%7.3f,\n", slr_);
     Serial.printf("  soc%8.4f\n", soc_);
     Serial.printf("  tau%10.1f, null, s\n", res*chem_->hys_cap);
-    chem_->pretty_print();
+    chem_->pretty_print(dx, dy, dz);
 #else
      Serial.printf("Hysteresis: silent DEPLOY\n");
 #endif

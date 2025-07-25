@@ -53,7 +53,7 @@ public:
   void assign_all_mod() { chem_.assign_all_chm(); };
   double calculate_capacity(const float temp_c);
   Chemistry *chem() { return &chem_; };
-  void chem_pretty_print () { chem_.pretty_print(); };
+  void chem_pretty_print (const float dx, const float dy, const float dz) { chem_.pretty_print(dx, dy, dz); };
   double coul_eff() { return ( coul_eff_ ); };
   void coul_eff(const double coul_eff) { coul_eff_ = coul_eff; };
   virtual float count_coulombs(const double dt, const boolean reset, const float temp_c, const float charge_curr,
@@ -64,7 +64,7 @@ public:
   double delta_q_neg() { return nice_zero(delta_q_neg_, 1e-6); }
   double delta_q_pos() { return nice_zero(delta_q_pos_, 1e-6); }
   uint8_t mod_code() { return chem_.mod_code; };
-  virtual void pretty_print();
+  virtual void pretty_print(const float dx, const float dy, const float dz);
   double q(){ return (q_); };
   float q_cap_rated(){ return (q_cap_rated_); };
   float q_cap_rated_scaled(){ return (q_cap_rated_scaled_); };

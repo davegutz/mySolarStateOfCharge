@@ -224,7 +224,7 @@ public:
   boolean cutback() { return model_cutback_; };
   double delta_q() { return *sp_delta_q_; };
   unsigned long int dt(void) { return sample_time_ - sample_time_z_; };
-  void hys_pretty_print () { hys_->pretty_print(); };
+  void hys_pretty_print () { hys_->pretty_print(0., 0., 0.); };
   float hys_state() { return hys_->dv_hys(); };
   void hys_state(const float st) { hys_->dv_hys(st); };
   void init_hys(const float hys) { hys_->init(hys); };

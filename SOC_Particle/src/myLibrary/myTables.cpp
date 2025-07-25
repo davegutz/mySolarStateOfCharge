@@ -314,17 +314,17 @@ static float  vTbl[24]  =
     sizeof(yTbl)/sizeof(float)) * 100. / 4.7;
 */
 
-void TableInterp2D::pretty_print()
+void TableInterp2D::pretty_print(const float dx, const float dy, const float dz)
 {
 #ifndef SOFT_DEPLOY_PHOTON
   unsigned int i, j;
-  Serial.printf("    y={"); for ( j=0; j<n2_; j++ ) Serial.printf("%7.3f, ", y_[j]); Serial.printf("};\n");
-  Serial.printf("    x={"); for ( i=0; i<n1_; i++ ) Serial.printf("%7.3f, ", x_[i]); Serial.printf("};\n");
+  Serial.printf("    y={"); for ( j=0; j<n2_; j++ ) Serial.printf("%7.3f, ", y_[j]+dy); Serial.printf("};\n");
+  Serial.printf("    x={"); for ( i=0; i<n1_; i++ ) Serial.printf("%7.3f, ", x_[i]+dx); Serial.printf("};\n");
   Serial.printf("    v={\n");
   for ( j=0; j<n2_; j++ )
   {
     Serial.printf("      {");
-    for ( i=0; i<n1_; i++ ) Serial.printf("%7.3f, ", v_[j*n1_+i]);
+    for ( i=0; i<n1_; i++ ) Serial.printf("%7.3f, ", v_[j*n1_+i]+dz);
     Serial.printf("},\n");
   }
   Serial.printf("      };\n");

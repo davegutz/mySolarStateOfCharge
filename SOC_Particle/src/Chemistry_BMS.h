@@ -83,7 +83,7 @@ public:
   void assign_voc_soc(const int _n_s, const int _m_t, float *x, float *y, float *t); // Worker bee VOC_SOC
   String decode(const uint8_t mod);
   float lookup_voc(const float soc, const float temp_c);
-  void pretty_print();
+  void pretty_print(const float dx, const float dy, const float dz);
 };
 
 

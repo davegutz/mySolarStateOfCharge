@@ -297,7 +297,7 @@ float Chemistry::lookup_voc(const float soc, const float temp_c)
 }
 
 // Pretty print
-void Chemistry::pretty_print(void)
+void Chemistry::pretty_print(const float dx, const float dy, const float dz)
 {
 #ifndef SOFT_DEPLOY_PHOTON
     Serial.printf("Chemistry:\n");
@@ -323,13 +323,13 @@ void Chemistry::pretty_print(void)
     Serial.printf("  tau_ct%7.3f, s\n", tau_ct);
     Serial.printf("  tau_sd%9.3g; EKF, s\n", tau_sd);
     Serial.printf("  voc(t, soc):\n");
-    voc_T_->pretty_print();
+    voc_T_->pretty_print(dx, dy, dz);
     Serial.printf("  soc_min(temp_c):\n");
     soc_min_T_->pretty_print();
     Serial.printf("  r(soc, dv):\n");
-    hys_T_->pretty_print();
+    hys_T_->pretty_print(0., 0., 0.);
     Serial.printf("  s(soc, dv):\n");
-    hys_Ts_->pretty_print();
+    hys_Ts_->pretty_print(0., 0., 0.);
     Serial.printf("  r_max(soc):\n");
     hys_Tx_->pretty_print();
     Serial.printf("  r_min(soc):\n");
@@ -338,3 +338,5 @@ void Chemistry::pretty_print(void)
      Serial.printf("Chemistry: silent DEPLOY\n");
 #endif
 }
+
+// TODO:  dx, dy, dz should be properties of Tables

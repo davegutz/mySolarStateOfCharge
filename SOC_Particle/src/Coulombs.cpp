@@ -51,7 +51,7 @@ Coulombs::~Coulombs() {}
 
 // operators
 // Pretty print
-void Coulombs::pretty_print(void)
+void Coulombs::pretty_print(const float dx, const float dy, const float dz)
 {
 #ifndef SOFT_DEPLOY_PHOTON
   Serial.printf("Coulombs:\n");
@@ -78,7 +78,7 @@ void Coulombs::pretty_print(void)
   Serial.printf("Coulombs (mod_code=%d) ", mod_code());
   Serial.printf("Coulombs: silent DEPLOY\n");
   Serial.printf(" Chemistry::\n");
-  chem_pretty_print();
+  chem_pretty_print(dx, dy, dz);
 #endif
 }
 

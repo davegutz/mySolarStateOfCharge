@@ -43,7 +43,7 @@ public:
   void init(const float dv_init);
   float look_hys(const float dv, const float soc);
   float look_slr(const float dv, const float soc);
-  void pretty_print();
+  void pretty_print(const float dx, const float dy, const float dz);
   float update(const double dt, const boolean init_high, const boolean init_low, const float e_wrap, const float hys_scale, const boolean reset);
   float ibs() { return ibs_; };
   float ioc() { return ioc_; };

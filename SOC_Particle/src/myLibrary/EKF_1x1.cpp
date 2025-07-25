@@ -124,15 +124,20 @@ void EKF_1x1::update_ekf(const double z, double x_min, double x_max)
   if ( abs(S_) > 1e-12) K_ = pht / S_;  // Using last-good-value if S_ = 0
   y_ = z_ - hx_;
   x_ = max(min( x_ + K_*y_, x_max), x_min);
+  if ( ap.ekf_x != 0. )
+  {
+    x_ = ap.ekf_x;
+    ap.ekf_x = 0.;
+  }
   double i_kh = 1. - K_*H_;
   P_ *= i_kh;
   x_post_ = x_;
   P_post_ = P_;
-  if ( sp.debug()==36 )
+  if ( sp.debug()==35 )
   {
-    Serial.printf("EKF_1x1::update_ekf: u_, z_, hx_, H_, S_, K_, y_  %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%10.7f,%7.4f,\n",
-      u_, z_, hx_, H_, S_, K_, y_);
-    Serial1.printf("EKF_1x1::update_ekf: u_, z_, hx_, H_, S_, K_, y_  %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%10.7f,%7.4f,\n",
-      u_, z_, hx_, H_, S_, K_, y_);
+    Serial.printf("EKF_1x1::update_ekf: u_, z_, hx_, x_, H_, S_, K_, y_  %7.4f, %7.4f, %7.4f,%7.4f, %7.4f, %7.4f,%10.7f,%7.4f,\n",
+      u_, z_, hx_, x_, H_, S_, K_, y_);
+    Serial1.printf("EKF_1x1::update_ekf: u_, z_, hx_, x_, H_, S_, K_, y_  %7.4f, %7.4f, %7.4f,%7.4f, %7.4f, %7.4f,%10.7f,%7.4f,\n",
+      u_, z_, hx_, x_, H_, S_, K_, y_);
   }
 }
