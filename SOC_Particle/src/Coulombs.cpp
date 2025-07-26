@@ -39,11 +39,14 @@ extern PublishPars pp;    // For publishing
 // class Coulombs
 Coulombs::Coulombs() {}
 Coulombs::Coulombs(double *sp_delta_q, float *sp_t_last, const float q_cap_rated, const float t_rlim,
-  const double s_coul_eff)
+  const double s_coul_eff, const float dx_voc, const float dy_voc, const float dz_voc)
   : q_(q_cap_rated), q_capacity_(q_cap_rated), q_cap_rated_(q_cap_rated), q_cap_rated_scaled_(q_cap_rated),
     q_min_(0.), sat_(true), soc_(1.), soc_min_(0.), sp_delta_q_(sp_delta_q), sp_t_last_(sp_t_last), t_rlim_(0.017),
     chem_()
     {
+      put_dx_voc(dx_voc);
+      put_dy_voc(dy_voc);
+      put_dz_voc(dz_voc);
       coul_eff_ = (chem_.coul_eff*s_coul_eff);
     }
 Coulombs::~Coulombs() {}
@@ -51,7 +54,7 @@ Coulombs::~Coulombs() {}
 
 // operators
 // Pretty print
-void Coulombs::pretty_print(const float dx, const float dy, const float dz)
+void Coulombs::pretty_print()
 {
 #ifndef SOFT_DEPLOY_PHOTON
   Serial.printf("Coulombs:\n");
@@ -78,7 +81,7 @@ void Coulombs::pretty_print(const float dx, const float dy, const float dz)
   Serial.printf("Coulombs (mod_code=%d) ", mod_code());
   Serial.printf("Coulombs: silent DEPLOY\n");
   Serial.printf(" Chemistry::\n");
-  chem_pretty_print(dx, dy, dz);
+  chem_pretty_print();
 #endif
 }
 

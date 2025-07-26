@@ -61,6 +61,8 @@ void benign_zero(BatteryMonitor *Mon, Sensors *Sen) // BZ
   sp.ib_bias_all_z = 0;     // DI 0
   ap.vb_add = NOM_VB_ADD;   // Dv 0
   ap.ds_voc_soc = NOM_DS;   // Ds 0
+  Sen->Sim->put_dx_voc(ap.ds_voc_soc);
+
   ap.Tb_bias_model = TEMP_BIAS; // D^
   ap.dv_voc_soc = NOM_DY;   // Dy
   ap.vc_add = NOM_VC_ADD;   // D3

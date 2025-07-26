@@ -37,8 +37,9 @@ extern PublishPars pp;  // For publishing
 
 // class Battery
 // constructors
-Battery::Battery(double *sp_delta_q, float *sp_t_last, const float d_voc_soc)
-    : Coulombs(sp_delta_q, sp_t_last, (NOM_UNIT_CAP*3600), T_RLIM, COULOMBIC_EFF_SCALE), bms_charging_(false),
+Battery::Battery(double *sp_delta_q, float *sp_t_last, const float d_voc_soc, const float dx_voc, const float dy_voc,
+                const float dz_voc)
+    : Coulombs(sp_delta_q, sp_t_last, (NOM_UNIT_CAP*3600), T_RLIM, COULOMBIC_EFF_SCALE, dx_voc, dy_voc, dz_voc), bms_charging_(false),
 	bms_off_(false), dt_(0.1), dv_dsoc_(0.3), dv_dyn_(0.), dv_hys_(0.), ib_(0.), ibs_(0.), ioc_(0.), print_now_(false),
     temp_c_(NOMINAL_TB), vb_(NOMINAL_VB), voc_(NOMINAL_VB), voc_stat_(NOMINAL_VB), voltage_low_(false), vsat_(NOMINAL_VB)
 {
@@ -145,8 +146,8 @@ float Battery::voc_soc_tab(const float soc, const float temp_c)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Battery monitor class
-BatteryMonitor::BatteryMonitor():
-    Battery(&sp.delta_q_z, &sp.T_state_z, VM),
+BatteryMonitor::BatteryMonitor(const float dx_voc, const float dy_voc, const float dz_voc):
+    Battery(&sp.delta_q_z, &sp.T_state_z, VM, dx_voc, dy_voc, dz_voc),
 	amp_hrs_remaining_ekf_(0.), amp_hrs_remaining_soc_(0.), dt_eframe_(0.1), eframe_(0), ib_charge_(0.), ib_past_(0.),
     q_ekf_(NOM_UNIT_CAP*3600.), soc_ekf_(1.0), tcharge_(0.), tcharge_ekf_(0.), voc_filt_(NOMINAL_VB), voc_soc_(NOMINAL_VB),
     y_filt_(0.)
@@ -227,7 +228,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     ib_ = max(min(ib_, IMAX_NUM), -IMAX_NUM);  // Overflow protection when ib_ past value used
 
     // Table lookup
-    voc_soc_ = voc_soc_tab(soc_, temp_c_) + sp.Dw();
+    voc_soc_ = voc_soc_tab(soc_, temp_c_);
 
     // Battery management system model
     if ( !bms_off_ )
@@ -307,10 +308,10 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_eframe_, EKF_T_RESET), cp.soft_reset);
         if ( sp.debug()==37 )
         {
-            Serial.printf("BatteryMonitor:ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,soc,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
-                ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, soc_, soc_ekf_, y_filt_, converged_ekf());
-            Serial1.printf("BM: ib,vb,voc,voc_stat_f(z_),  hx_,H_,K_,y_,soc,soc_ekf, y_ekf_f, conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%7.4f,%7.4f,%7.4f,  %d,\n",
-                ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, soc_, soc_ekf_, y_filt_, converged_ekf());
+            Serial.printf("BatteryMonitor, ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,P_,soc,soc_ekf,y_ekf_f,conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%11.8f,%7.4f,%7.4f,%7.4f,  %d,\n",
+                ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, P_, soc_, soc_ekf_, y_filt_, converged_ekf());
+            Serial1.printf("BatteryMonitor, ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,P_,soc,soc_ekf,y_ekf_f,conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%11.8f,%7.4f,%7.4f,%7.4f,  %d,\n",
+                ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, P_, soc_, soc_ekf_, y_filt_, converged_ekf());
         }
     }
     eframe_++;
@@ -414,15 +415,15 @@ void BatteryMonitor::ekf_update(double *hx, double *H)
 {
     // Measurement function hx(x), x=soc ideal capacitor
     float x_lim = max(min(x_, 1.0), 0.0);
-    *hx = Battery::calc_soc_voc(x_lim, temp_c_, &dv_dsoc_) + sp.Dw();
+    *hx = Battery::calc_soc_voc(x_lim, temp_c_, &dv_dsoc_);
     // Jacodian of measurement function
     *H = dv_dsoc_;
     if ( sp.debug()==36 )
     {
-        Serial.printf("ekf_update:: x, temp, table, Dw, hx, H: %7.3f,%7.3f,%7.3f,%7.3f,%7.3f%7.3f\n",
-            x_lim, temp_c_, Battery::calc_soc_voc(x_lim, temp_c_, &dv_dsoc_), sp.Dw(), *hx, *H);
-        Serial1.printf("ekf_update:: x, temp, table, Dw, hx, H: %7.3f,%7.3f,%7.3f,%7.3f,%7.3f%7.3f\n",
-            x_lim, temp_c_, Battery::calc_soc_voc(x_lim, temp_c_, &dv_dsoc_), sp.Dw(), *hx, *H);
+        Serial.printf("ekf_update:: x, temp, hx, H: %7.3f,%7.3f,%7.3f%7.3f\n",
+            x_lim, temp_c_, *hx, *H);
+        Serial1.printf("ekf_update:: x, temp, hx, H: %7.3f,%7.3f,%7.3f%7.3f\n",
+            x_lim, temp_c_, *hx, *H);
     }
 }
 
@@ -493,7 +494,7 @@ void BatteryMonitor::pretty_print(Sensors *Sen)
     Serial.printf("  y_filt%7.3f Res EKF, V\n", y_filt_);
     Serial.printf(" *sp_s_cap_mon%7.3f Slr\n", sp.s_cap_mon());
     Serial.printf("  vb_model_rev%7.3f V\n", vb_model_rev_);
-    this->Battery::Coulombs::pretty_print(0., 0., sp.Dw());
+    this->Battery::Coulombs::pretty_print();
 #else
      Serial.printf("BatteryMonitor: silent DEPLOY\n");
 #endif
@@ -556,13 +557,13 @@ boolean BatteryMonitor::solve_ekf(const boolean reset, const boolean reset_temp,
     // Solver
     static float soc_solved = 1.;
     float dv_dsoc;
-    float voc_solved = calc_soc_voc(soc_solved, Tb_avg, &dv_dsoc) + sp.Dw();  // Dw
+    float voc_solved = calc_soc_voc(soc_solved, Tb_avg, &dv_dsoc);
     ice_->init(1., soc_min_, 2*SOLV_ERR);
     while ( abs(ice_->e())>SOLV_ERR && ice_->count()<SOLV_MAX_COUNTS && abs(ice_->dx())>0. )
     {
         ice_->increment();
         soc_solved = ice_->x();
-        voc_solved = calc_soc_voc(soc_solved, Tb_avg, &dv_dsoc) + sp.Dw();  // Dw
+        voc_solved = calc_soc_voc(soc_solved, Tb_avg, &dv_dsoc);
         ice_->e(voc_solved - voc_stat_);
         ice_->iterate(sp.debug()==-1 && reset_temp, SOLV_SUCC_COUNTS, false);
     }
@@ -578,8 +579,8 @@ boolean BatteryMonitor::solve_ekf(const boolean reset, const boolean reset_temp,
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Battery model class for reference use mainly in regression testing
-BatterySim::BatterySim() :
-    Battery(&sp.delta_q_model_z, &sp.T_state_model_z, VS), duty_(0UL), ib_fut_(0.),
+BatterySim::BatterySim(const float dx_voc, const float dy_voc, const float dz_voc) :
+    Battery(&sp.delta_q_model_z, &sp.T_state_model_z, VS, dx_voc, dy_voc, dz_voc), duty_(0UL), ib_fut_(0.),
     ib_in_(0.), model_cutback_(true), q_(NOM_UNIT_CAP*3600.), sample_time_(0UL), sample_time_z_(0UL), sat_ib_max_(0.)
 {
     // ChargeTransfer dynamic model for EKF
@@ -742,8 +743,8 @@ float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean 
 float BatterySim::calc_soc_voc(const float soc, const float temp_c, float *dv_dsoc)
 {
     float voc;  // return value
-    *dv_dsoc = calc_soc_voc_slope(soc + ap.ds_voc_soc, temp_c);  // Ds
-    voc = chem_.lookup_voc(soc + ap.ds_voc_soc, temp_c);  // Ds
+    *dv_dsoc = calc_soc_voc_slope(soc, temp_c);  // Ds embedded in voc call
+    voc = chem_.lookup_voc(soc, temp_c);  // Ds embedded in voc call
     return voc;
 }
 

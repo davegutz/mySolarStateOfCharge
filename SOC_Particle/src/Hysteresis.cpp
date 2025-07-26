@@ -106,7 +106,7 @@ void Hysteresis::pretty_print(const float dx, const float dy, const float dz)
     Serial.printf("  slr%7.3f,\n", slr_);
     Serial.printf("  soc%8.4f\n", soc_);
     Serial.printf("  tau%10.1f, null, s\n", res*chem_->hys_cap);
-    chem_->pretty_print(dx, dy, dz);
+    chem_->pretty_print();
 #else
      Serial.printf("Hysteresis: silent DEPLOY\n");
 #endif

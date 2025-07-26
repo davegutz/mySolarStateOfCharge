@@ -347,7 +347,7 @@ void loop()
   static unsigned long long start = System.millis();
 
    // Monitor to count Coulombs and run EKF
-  static BatteryMonitor *Mon = new BatteryMonitor();
+  static BatteryMonitor *Mon = new BatteryMonitor(0., 0., sp.Dw());
 
   // Sensor conversions.  The embedded model 'Sim' is contained in Sensors
   unsigned long long time_now = (unsigned long long) Time.now();

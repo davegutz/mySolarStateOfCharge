@@ -270,7 +270,7 @@ v = {v11, v12, ...v1n, v21, v22, ...v2n, ...............  vm1, vm2, ...vmn}
 TableInterp2D::TableInterp2D() : TableInterp() {}
 TableInterp2D::TableInterp2D(const unsigned int n, const unsigned int m, float x[],
                              float y[], float v[])
-    : TableInterp(n, x)
+    : TableInterp(n, x), dx_(0.), dy_(0.), dz_(0.)
 {
   n2_ = m;
   y_ = new float[n2_];
@@ -294,7 +294,7 @@ TableInterp2D::~TableInterp2D()
 // functions
 float TableInterp2D::interp(float x, float y)
 {
-  return (tab2(x, y, x_, y_, v_, n1_, n2_));  // clips
+  return (tab2(x + dx_, y + dy_, x_, y_, v_, n1_, n2_) + dz_);  // clips
 }
 //tab2(float x1, float x2, float *v1, float *v2, float *y, int n1, int n2);
 /*
@@ -314,17 +314,17 @@ static float  vTbl[24]  =
     sizeof(yTbl)/sizeof(float)) * 100. / 4.7;
 */
 
-void TableInterp2D::pretty_print(const float dx, const float dy, const float dz)
+void TableInterp2D::pretty_print()
 {
 #ifndef SOFT_DEPLOY_PHOTON
   unsigned int i, j;
-  Serial.printf("    y={"); for ( j=0; j<n2_; j++ ) Serial.printf("%7.3f, ", y_[j]+dy); Serial.printf("};\n");
-  Serial.printf("    x={"); for ( i=0; i<n1_; i++ ) Serial.printf("%7.3f, ", x_[i]+dx); Serial.printf("};\n");
+  Serial.printf("    y={"); for ( j=0; j<n2_; j++ ) Serial.printf("%7.3f, ", y_[j] - dy_); Serial.printf("};\n");
+  Serial.printf("    x={"); for ( i=0; i<n1_; i++ ) Serial.printf("%7.3f, ", x_[i] - dx_); Serial.printf("};\n");
   Serial.printf("    v={\n");
   for ( j=0; j<n2_; j++ )
   {
     Serial.printf("      {");
-    for ( i=0; i<n1_; i++ ) Serial.printf("%7.3f, ", v_[j*n1_+i]+dz);
+    for ( i=0; i<n1_; i++ ) Serial.printf("%7.3f, ", v_[j*n1_+i] + dz_);
     Serial.printf("},\n");
   }
   Serial.printf("      };\n");

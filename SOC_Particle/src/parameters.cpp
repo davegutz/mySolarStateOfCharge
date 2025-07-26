@@ -104,7 +104,7 @@ VolatilePars::~VolatilePars(){}
 
 void  VolatilePars::initialize()
 {
-    #define NVOL 47
+    #define NVOL 48
     V_ = new Variable*[NVOL];
     V_[n_++] =(cc_diff_slr_p    = new FloatV("  ", "Fc", NULL,"Slr cc_diff thr",      "slr",    0,    1000, &cc_diff_slr,       1));
     V_[n_++] =(cycles_inj_p     = new FloatV("  ", "XC", NULL,"Number prog cycle",    "float",  0,    1000, &cycles_inj,        0));
@@ -152,7 +152,8 @@ void  VolatilePars::initialize()
     V_[n_++] =(ekf_q_p          = new FloatV("  ", "VQ", NULL,"EKF_Q_SD_NORM volt",   "slr",    0,    10000,&ekf_q,             1));
     V_[n_++] =(ekf_r_p          = new FloatV("  ", "VR", NULL,"EKF_R_SD_NORM frac",   "slr",    0,    10000,&ekf_r,             1));
     V_[n_++] =(ekf_conv_p       = new FloatV("  ", "VC", NULL,"ekf conv abs",         "v",      0,    1,    &ekf_conv,          EKF_CONV));
-    V_[n_++] =(ekf_x_p          = new FloatV("  ", "Ce", NULL,"ekf manual set",       "soc",    0,    1,    &ekf_x,             0));
+    V_[n_++] =(ekf_x_p          = new FloatV("  ", "Ce", NULL,"ekf x manual set",     "soc",    0,    1,    &ekf_x,             0));
+    V_[n_++] =(ekf_p_p          = new FloatV("  ", "Cp", NULL,"ekf P manual set",     "?",     -1e12, 1e12, &ekf_p,             0));
 
 }
 

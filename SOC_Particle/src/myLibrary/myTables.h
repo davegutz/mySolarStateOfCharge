@@ -62,11 +62,18 @@ public:
                 float y[], float v[]);
   ~TableInterp2D();
   //operators
+  void put_dx(const float inp) { dx_ = inp; }
+  void put_dy(const float inp) { dy_ = inp; }
+  void put_dz(const float inp) { dz_ = inp; }
+
   //functions
   virtual float interp(float x, float y);
-  void pretty_print(const float dx, const float dy, const float dz);
+  void pretty_print();
 
 protected:
+  float dx_;  // Bias on input into table lookup
+  float dy_;  // Bias on input into table lookup
+  float dz_;  // Bias on calculated output of table lookup
   unsigned int n2_;
   float *y_;
 };

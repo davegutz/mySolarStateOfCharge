@@ -57,6 +57,7 @@ void Chemistry::assign_all_chm()
     else
         Serial.printf("assign_all_mod:  unknown mod %d.  Type 'h' (Xm)\n", CHEM);
     r_ss = r_0 + r_ct;
+
 }
 
 
@@ -297,7 +298,7 @@ float Chemistry::lookup_voc(const float soc, const float temp_c)
 }
 
 // Pretty print
-void Chemistry::pretty_print(const float dx, const float dy, const float dz)
+void Chemistry::pretty_print()
 {
 #ifndef SOFT_DEPLOY_PHOTON
     Serial.printf("Chemistry:\n");
@@ -323,13 +324,13 @@ void Chemistry::pretty_print(const float dx, const float dy, const float dz)
     Serial.printf("  tau_ct%7.3f, s\n", tau_ct);
     Serial.printf("  tau_sd%9.3g; EKF, s\n", tau_sd);
     Serial.printf("  voc(t, soc):\n");
-    voc_T_->pretty_print(dx, dy, dz);
+    voc_T_->pretty_print();
     Serial.printf("  soc_min(temp_c):\n");
     soc_min_T_->pretty_print();
     Serial.printf("  r(soc, dv):\n");
-    hys_T_->pretty_print(0., 0., 0.);
+    hys_T_->pretty_print();
     Serial.printf("  s(soc, dv):\n");
-    hys_Ts_->pretty_print(0., 0., 0.);
+    hys_Ts_->pretty_print();
     Serial.printf("  r_max(soc):\n");
     hys_Tx_->pretty_print();
     Serial.printf("  r_min(soc):\n");

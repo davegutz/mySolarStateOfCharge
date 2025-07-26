@@ -60,6 +60,55 @@ void EKF_1x1::predict_ekf(double u)
   P_prior_ = P_;
 }
 
+// y <- C@x + D@u
+// Backward Euler integration of x
+void EKF_1x1::update_ekf(const double z, double x_min, double x_max)
+{
+  /*1x1 Extended Kalman Filter update
+  Inputs:
+    z   1x1 input, =voc, dynamic predicted by other model, V
+    R   1x1 Kalman state uncertainty
+    Q   1x1 Kalman process uncertainty
+    H   1x1 Jacobian sensitivity dV/dSOC
+  Outputs:
+    x   1x1 Kalman state variable = Vsoc (0-1 fraction)
+    hx  1x1 Output of observation function h(x)
+    y   1x1 Residual z-hx, V
+    P   1x1 Kalman uncertainty covariance
+    K   1x1 Kalman gain
+    S   1x1 system uncertainty
+    SI  1x1 system uncertainty inverse
+  */
+  this->ekf_update(&hx_, &H_);
+  z_ = z;
+  double pht = P_*H_;
+  S_ = H_*pht + R_*ap.ekf_r*ap.ekf_r;
+  if ( abs(S_) > 1e-12) K_ = pht / S_;  // Using last-good-value if S_ = 0
+  y_ = z_ - hx_;
+  x_ = max(min( x_ + K_*y_, x_max), x_min);
+  if ( ap.ekf_x != 0. )
+  {
+    x_ = ap.ekf_x;
+    ap.ekf_x = 0.;
+  }
+  double i_kh = 1. - K_*H_;
+  P_ *= i_kh;
+  if ( ap.ekf_p != 0. )
+  {
+    P_ = ap.ekf_p;
+    ap.ekf_p = 0.;
+  }
+  x_post_ = x_;
+  P_post_ = P_;
+  if ( sp.debug()==35 )
+  {
+    Serial.printf("EKF_1x1::update_ekf, u_,z_,hx_,x_,P_,H_,S_,K_,y_,  %7.4f, %7.4f, %7.4f,%7.4f,%11.8f, %7.4f, %7.4f,%10.7f,%7.4f,\n",
+      u_, z_, hx_, x_, P_, H_, S_, K_, y_);
+    Serial1.printf("EKF_1x1::update_ekf, u_,z_,hx_,x_,P_,H_,S_,K_,y_,  %7.4f, %7.4f, %7.4f,%7.4f,%11.8f, %7.4f, %7.4f,%10.7f,%7.4f,\n",
+      u_, z_, hx_, x_, P_, H_, S_, K_, y_);
+  }
+}
+
 // Initialize
 void EKF_1x1::init_ekf(double soc, double Pinit)
 {
@@ -97,47 +146,3 @@ void EKF_1x1::init_ekf(double soc, double Pinit)
   Serial.printf("unit_ekf,%13.3f,%7.3f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,\n",
     cTime, dt, Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_, x_prior_, P_prior_, x_post_, P_post_, hx_, H_);
  }
-
-// y <- C@x + D@u
-// Backward Euler integration of x
-void EKF_1x1::update_ekf(const double z, double x_min, double x_max)
-{
-  /*1x1 Extended Kalman Filter update
-  Inputs:
-    z   1x1 input, =voc, dynamic predicted by other model, V
-    R   1x1 Kalman state uncertainty
-    Q   1x1 Kalman process uncertainty
-    H   1x1 Jacobian sensitivity dV/dSOC
-  Outputs:
-    x   1x1 Kalman state variable = Vsoc (0-1 fraction)
-    hx  1x1 Output of observation function h(x)
-    y   1x1 Residual z-hx, V
-    P   1x1 Kalman uncertainty covariance
-    K   1x1 Kalman gain
-    S   1x1 system uncertainty
-    SI  1x1 system uncertainty inverse
-  */
-  this->ekf_update(&hx_, &H_);
-  z_ = z;
-  double pht = P_*H_;
-  S_ = H_*pht + R_*ap.ekf_r*ap.ekf_r;
-  if ( abs(S_) > 1e-12) K_ = pht / S_;  // Using last-good-value if S_ = 0
-  y_ = z_ - hx_;
-  x_ = max(min( x_ + K_*y_, x_max), x_min);
-  if ( ap.ekf_x != 0. )
-  {
-    x_ = ap.ekf_x;
-    ap.ekf_x = 0.;
-  }
-  double i_kh = 1. - K_*H_;
-  P_ *= i_kh;
-  x_post_ = x_;
-  P_post_ = P_;
-  if ( sp.debug()==35 )
-  {
-    Serial.printf("EKF_1x1::update_ekf: u_, z_, hx_, x_, H_, S_, K_, y_  %7.4f, %7.4f, %7.4f,%7.4f, %7.4f, %7.4f,%10.7f,%7.4f,\n",
-      u_, z_, hx_, x_, H_, S_, K_, y_);
-    Serial1.printf("EKF_1x1::update_ekf: u_, z_, hx_, x_, H_, S_, K_, y_  %7.4f, %7.4f, %7.4f,%7.4f, %7.4f, %7.4f,%10.7f,%7.4f,\n",
-      u_, z_, hx_, x_, H_, S_, K_, y_);
-  }
-}

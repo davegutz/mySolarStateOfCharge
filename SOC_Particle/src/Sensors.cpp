@@ -1262,7 +1262,7 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *T
     this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY, pins->VTb_pin);
   #endif
   this->TbSenseFilt = new General2_Pole(double(READ_DELAY)/1000., F_W_T, F_Z_T, -20.0, 150.);
-  this->Sim = new BatterySim();
+  this->Sim = new BatterySim(ap.ds_voc_soc, 0., 0.);
   this->elapsed_inj = 0ULL;
   this->start_inj = 0ULL;
   this->stop_inj = 0ULL;

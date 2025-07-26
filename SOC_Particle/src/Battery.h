@@ -92,7 +92,8 @@ class Battery : public Coulombs
 {
 public:
   Battery();
-  Battery(double *sp_delta_q, float *sp_t_last, const float d_voc_soc);
+  Battery(double *sp_delta_q, float *sp_t_last, const float d_voc_soc, const float dx_voc, const float dy_voc,
+                const float dz_voc);
   ~Battery();
   // operators
   // functions
@@ -150,7 +151,7 @@ protected:
 class BatteryMonitor: public Battery, public EKF_1x1
 {
 public:
-  BatteryMonitor();
+  BatteryMonitor(const float dx_voc, const float dy_voc, const float dz_voc);
   ~BatteryMonitor();
   // operators
   // functions
@@ -213,7 +214,7 @@ protected:
 class BatterySim: public Battery
 {
 public:
-  BatterySim();
+  BatterySim(const float dx_voc, const float dy_voc, const float dz_voc);
   ~BatterySim();
   // operators
   // functions

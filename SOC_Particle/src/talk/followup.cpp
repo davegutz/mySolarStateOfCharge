@@ -101,6 +101,13 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                     }
                     break;
 
+                case ( 's' ):  //   Ds<>:  Battery Sim dx_voc bias
+                    if ( ap.ds_voc_soc_p->success() )
+                    {
+                        Sen->Sim->put_dx_voc(ap.ds_voc_soc);  // validated
+                    }
+                    break;
+
                 case ( 't' ):  //*  Dt<>:  Temp bias change hardware
                     if ( sp.Tb_bias_hdwe_p->success() &&  sp.modeling()!=230 )  // modeling==230 is special regression test
                         cp.cmd_reset();
@@ -109,6 +116,13 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                 case ( 'v' ):  //     Dv<>:  voltage signal adder for faults
                     if ( ap.vb_add_p->success() )
                         ap.vb_add_p->print1();
+                    break;
+
+                case ( 'w' ):  //   Dw<>:  Battery Monitor dz_voc bias
+                    if ( sp.Dw_p->success() )
+                    {
+                        Mon->put_dz_voc(sp.Dw());  // validated
+                    }
                     break;
 
                 case ( '>' ):  //   D><>:  TALK sample time input
