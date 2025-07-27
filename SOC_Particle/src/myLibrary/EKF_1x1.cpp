@@ -45,6 +45,7 @@ void EKF_1x1::predict_ekf(double u, const boolean freeze)
   1x1 Extended Kalman Filter predict
   Inputs:
     u   1x1 input, =ib, A
+    freeze command to freeze x & P but calculate all else
     Bu  1x1 control transition, Ohms
     Fx  1x1 state transition, V/V
   Outputs:
@@ -54,7 +55,7 @@ void EKF_1x1::predict_ekf(double u, const boolean freeze)
   u_ = u;
   freeze_ = freeze;
   this->ekf_predict(&Fx_, &Bu_);
-  x_ = Fx_*x_ + Bu_*u_;
+  if ( !freeze_ ) x_ = Fx_*x_ + Bu_*u_;
   if ( isnan(P_) ) P_ = 0.;   // reset overflow
   P_ = Fx_*P_*Fx_ + Q_*ap.ekf_q*ap.ekf_q;
   x_prior_ = x_;
@@ -86,13 +87,14 @@ void EKF_1x1::update_ekf(const double z, double x_min, double x_max)
   S_ = H_*pht + R_*ap.ekf_r*ap.ekf_r;
   if ( abs(S_) > 1e-12) K_ = pht / S_;  // Using last-good-value if S_ = 0
   y_ = z_ - hx_;
-  x_ = max(min( x_ + K_*y_, x_max), x_min);
+  if ( !freeze_ ) x_ = max(min( x_ + K_*y_, x_max), x_min);
   if ( ap.ekf_x != 0. )
   {
     x_ = ap.ekf_x;
     ap.ekf_x = 0.;
   }
   double i_kh = 1. - K_*H_;
+  if ( freeze_ ) i_kh = 1.;
   P_ *= i_kh;
   if ( ap.ekf_p != 0. )
   {
@@ -103,9 +105,9 @@ void EKF_1x1::update_ekf(const double z, double x_min, double x_max)
   P_post_ = P_;
   if ( sp.debug()==35 )
   {
-    Serial.printf("EKF_1x1::update_ekf, u_,frz_,z_,hx_,x_Prior_,x_,Pp_,P_,H_,S_,K_,y_,  %7.4f, %d, %7.4f, %7.4f,%11.8f,%11.8f,%11.8f, %11.8f, %7.4f, %7.4f,%10.7f, %7.4f,\n",
+    Serial.printf("EKF_1x1::update_ekf, u_,freeze_,z_,hx_,x_Prior_,x_,P_prior_,P_,H_,S_,K_,y_,  %7.4f, %d, %7.4f, %7.4f,%13.10f,%13.10f,%13.10f, %13.10f, %7.4f, %7.4f,%10.7f, %7.4f,\n",
       u_, freeze_, z_, hx_, x_prior_, x_, P_, P_prior_, H_, S_, K_, y_);
-    Serial1.printf("EKF_1x1::update_ekf, u_,frz_,z_,hx_,x_Pr,ior_,x_,Pp_,P_,H_,S_,K_,y_,  %7.4f, %d, %7.4f, %7.4f,%11.8f,%11.8f,%11.8f, %11.8f, %7.4f, %7.4f,%10.7f, %7.4f,\n",
+    Serial1.printf("EKF_1x1::update_ekf, u_,freeze_,z_,hx_,x_Prior,ior_,x_,P_prior_,P_,H_,S_,K_,y_,  %7.4f, %d, %7.4f, %7.4f,%13.10f,%13.10f,%13.10f, %13.10f, %7.4f, %7.4f,%10.7f, %7.4f,\n",
       u_, freeze_, z_, hx_, x_prior_, x_, P_, P_prior_, H_, S_, K_, y_);
   }
 }
@@ -126,20 +128,20 @@ void EKF_1x1::init_ekf(double soc, double Pinit)
   Serial.printf("  u  %8.4f, A\n", u_);
   Serial.printf("  frz %d, T=frz\n", freeze_);
   Serial.printf("  z  %8.4f, V\n", z_);
-  Serial.printf("  R%11.8f\n", R_);
-  Serial.printf("  Q%11.8f\n", Q_);
+  Serial.printf("  R%13.10f\n", R_);
+  Serial.printf("  Q%13.10f\n", Q_);
   Serial.printf("  H   %7.3f\n", H_);
   Serial.printf("Out:\n");
-  Serial.printf("  xp %11.8f, Vsoc (0-1 fraction)\n", x_prior_);
-  Serial.printf("  x  %11.8f, Vsoc (0-1 fraction)\n", x_);
-  Serial.printf("  Fx %11.8f\n", Fx_);
-  Serial.printf("  Bu %11.8f\n", Bu_);
+  Serial.printf("  xp %13.10f, Vsoc (0-1 fraction)\n", x_prior_);
+  Serial.printf("  x  %13.10f, Vsoc (0-1 fraction)\n", x_);
+  Serial.printf("  Fx %13.10f\n", Fx_);
+  Serial.printf("  Bu %13.10f\n", Bu_);
   Serial.printf("  hx %8.4f\n", hx_);
   Serial.printf("  y   %8.4f, V\n", y_);
-  Serial.printf("  Pp%11.8f\n", P_prior_);
-  Serial.printf("  P%11.8f\n", P_);
-  Serial.printf("  K%11.8f\n", K_);
-  Serial.printf("  S%11.8f\n", S_);
+  Serial.printf("  Pp%13.10f\n", P_prior_);
+  Serial.printf("  P%13.10f\n", P_);
+  Serial.printf("  K%13.10f\n", K_);
+  Serial.printf("  S%13.10f\n", S_);
 #else
      Serial.printf("EKF_1x1: silent DEPLOY\n");
 #endif

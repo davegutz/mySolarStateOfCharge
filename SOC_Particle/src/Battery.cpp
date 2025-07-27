@@ -282,9 +282,9 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     if ( eframe_ == 0 )
     {
         float ddq_dt = ib_charge_ekf;
+        boolean freeze = Sen->Flt->vb_fa() || Sen->Flt->vb_functional_flt();  // Freeze EKF with voltage fault
         // static float T_rate_lim_past = 0.;
 
-        if ( Sen->Flt->vb_fa() || Sen->Flt->vb_functional_flt() ) ddq_dt = 0.;  // Freeze EKF with voltage fault
         dt_eframe_ = dt_ * float(ap.eframe_mult);  // Introduces noisy error if dt_ varies
         if ( ddq_dt>0. && !sp.tweak_test() ) ddq_dt *= coul_eff_;
 
@@ -296,7 +296,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         // T_rate_lim_past = T_rate_lim;
 
         // ddq_dt -= chem_.dqdt * q_capacity_ * T_rate;
-        predict_ekf(ddq_dt, false);       // u = d(dq)/dt
+        predict_ekf(ddq_dt, freeze);       // u = d(dq)/dt
         update_ekf(voc_stat_f_, 0., 1.);  // z = _f, estimated = voc_filtered = hx, predicted = est past
         soc_ekf_ = x_ekf();             // x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
         q_ekf_ = soc_ekf_ * q_capacity_;
