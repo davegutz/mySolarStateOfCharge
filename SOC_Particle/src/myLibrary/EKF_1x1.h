@@ -33,7 +33,7 @@ public:
   ~EKF_1x1();
   // operators
   // functions
-  void predict_ekf(const double u);
+  void predict_ekf(const double u, const boolean freeze);
   virtual void pretty_print(void);
   void serial_print(const unsigned long long now, const float dt);
   void update_ekf(const double z, double x_min, double x_max);
@@ -58,6 +58,7 @@ protected:
   double P_post_;
   double hx_; // Output of observation function h(x)
   double H_;  // Jacobian of h(x)
+  boolean freeze_;  // Command to freeze x_ and P_
   /*
     Implement this function for your EKF model.
     @param fx gets output of state-transition function f(x)
