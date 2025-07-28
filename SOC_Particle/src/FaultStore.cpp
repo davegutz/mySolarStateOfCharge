@@ -22,7 +22,7 @@
 // SOFTWARE.
 
 #include "application.h"
-#include "Fault.h"
+#include "FaultStore.h"
 #include "Sensors.h"
 
 extern SavedPars sp;       // Various parameters to be static at system level and saved through power cycle

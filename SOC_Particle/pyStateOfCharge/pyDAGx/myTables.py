@@ -213,11 +213,12 @@ class TableInterp2D:
      ...............
          vm1, vm2, ...vmn}"""
 
-    def __init__(self, x_, y_, v_):
+    def __init__(self, x_, y_, v_, Dw_=0.):
         self.n = len(x_)
         self.m = len(y_)
         self.x = x_
         self.y = y_
+        self.Dw = Dw_
         if len(v_) != self.n*self.m:
             raise Error("length of array 'v' =", len(v_),
                         " inconsistent with lengths of 'x' * 'y' = ", len(x_), "*", len(y_))
@@ -236,7 +237,7 @@ class TableInterp2D:
         temp2 = high2 * self.n + low1
         r0 = self.v[temp1] + dx1 * (self.v[low2*self.n + high1] - self.v[temp1])
         r1 = self.v[temp2] + dx1 * (self.v[high2*self.n + high1] - self.v[temp2])
-        return float(r0 + dx2 * (r1 - r0))
+        return float(r0 + dx2 * (r1 - r0)) + self.Dw
 
     # Reverse interpolation
     def r_interp(self, t_, y_, verbose=False):
@@ -252,7 +253,7 @@ class TableInterp2D:
                 ice.increment()
                 x_ = ice.x
                 v_solved = self.interp(x_, y_)
-                ice.e = v_solved - t_
+                ice.e = v_solved - (t_ - self.Dw)
                 ice.iterate(verbose=verbose, success_count=SOLV_SUCC_COUNTS, en_no_soln=True)
             return x_
         else:
@@ -286,7 +287,7 @@ class TableInterp2D:
             count = 1
             N = len(self.x)
             for X in self.x:
-                s += " {:7.3f}".format(self.interp(X, Y))
+                s += " {:7.3f}".format(self.interp(X, Y)+self.Dw)
                 if count < N:
                     s += ","
                     count += 1

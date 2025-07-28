@@ -45,7 +45,7 @@
 #define VB_SENSE_R_LO          4700 // Vb low sense resistor, ohm (4700)
 #define VB_SENSE_R_HI         22000 // Vb high sense resistor, ohm (22000)
 #define VB_SCALE                1.0 // Scale Vb sensor (* 'SV')
-#define VTAB_BIAS              -0.4 // Bias on voc_soc table (* 'Dw'), V  (-0.4)
+#define VTAB_BIAS               0.0 // Bias on voc_soc table (* 'Dw'), V  (0.0)
 //#define IB_FORCE                 -1 // Force ib signal selection, -1 = noamp, 0 =
 
 // Battery.  One 12 V 100 Ah battery bank would have NOM_UNIT_CAP 100, NS 1, and NP 1
@@ -74,6 +74,7 @@
 #define EKF_R_SD_NORM   0.5     // Standard deviation of normal EKF state uncertainty, fraction (0-1) (0.5)
 #define EKF_EFRAME_MULT 20      // multiframe (20)
 #define VOC_STAT_FILT   120.    // voc_stat_f_ filtering for EKF (120) VF
-// #define EKF_CONV        0.05    // EKF tracking error indicating convergence, V (.05)
+#define EKF_CONV        0.005    // EKF tracking error indicating convergence, V (.005)
+#define WRAP_SOC_HI_OFF     0.94        // Disable e_wrap_hi when saturated (0.94)
 
 #endif

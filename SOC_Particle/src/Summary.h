@@ -27,7 +27,7 @@
 
 #include "Sensors.h"
 #include "command.h"
-#include "Fault.h"
+#include "FaultStore.h"
 
 // Function prototypes
 void print_all_fault_buffer(const String code, struct Flt_st *sum, const uint16_t iflt, const uint16_t nflt);

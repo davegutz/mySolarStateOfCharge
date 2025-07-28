@@ -26,7 +26,7 @@
 
 #include "constants.h"
 #include "Battery.h"
-#include "Fault.h"
+#include "FaultStore.h"
 #include "PrinterPars.h"
 #include "Variable.h"
 #include "Cloud.h"
