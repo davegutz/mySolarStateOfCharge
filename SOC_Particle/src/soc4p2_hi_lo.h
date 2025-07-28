@@ -66,7 +66,7 @@
 #define DISAB_TB_FA true
 
 // For shifty amp hardware using 1% resistors
-#define IB_CHARGE_NOA  // Use NOA for charge calculation, otherwise selected ib
+#define IB_CHARGE_NOA  // Use NOA for charge calculation, otherwise selected ib. TODO:  better resistors for hi gain amp sensor
 // TODO:  when isolate failure to noa, use amp for charge calculation
 
 // ekf tune
