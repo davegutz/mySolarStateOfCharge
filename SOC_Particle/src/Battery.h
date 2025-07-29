@@ -192,7 +192,6 @@ protected:
   LagTustin *voc_stat_filt = new LagTustin(EKF_NOM_DT, VOC_STAT_FILT, VB_MIN, VB_MAX);  // actual update time provided run time
   float amp_hrs_remaining_ekf_;  // Discharge amp*time left if drain to q_ekf=0, A-h
   float amp_hrs_remaining_soc_;  // Discharge amp*time left if drain soc_ to 0, A-h
-  double dt_eframe_;   // Update time for EKF major frame
   uint8_t eframe_;     // Counter to run EKF slower than Coulomb Counter and ChargeTransfer models
   float ib_charge_;    // Current input avaiable for charging, A
   float ib_past_;      // Past value of current to synchronize e_wrap dynamics with model, A

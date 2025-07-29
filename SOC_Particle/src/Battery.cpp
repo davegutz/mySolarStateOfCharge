@@ -148,7 +148,7 @@ float Battery::voc_soc_tab(const float soc, const float temp_c)
 // Battery monitor class
 BatteryMonitor::BatteryMonitor(const float dx_voc, const float dy_voc, const float dz_voc):
     Battery(&sp.delta_q_z, &sp.T_state_z, VM, dx_voc, dy_voc, dz_voc),
-	amp_hrs_remaining_ekf_(0.), amp_hrs_remaining_soc_(0.), dt_eframe_(0.1), eframe_(0), ib_charge_(0.), ib_past_(0.),
+	amp_hrs_remaining_ekf_(0.), amp_hrs_remaining_soc_(0.), eframe_(0), ib_charge_(0.), ib_past_(0.),
     q_ekf_(NOM_UNIT_CAP*3600.), soc_ekf_(1.0), tcharge_(0.), tcharge_ekf_(0.), voc_filt_(NOMINAL_VB), voc_soc_(NOMINAL_VB),
     y_filt_(0.)
 {
@@ -281,18 +281,21 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     // EKF 1x1
     if ( eframe_ == 0 )
     {
+        static unsigned long long ekf_now_past = Sen->now;
         float ddq_dt = ib_charge_ekf;
         boolean freeze = Sen->Flt->vb_fa() || Sen->Flt->vb_functional_flt();  // Freeze EKF with voltage fault
         // static float T_rate_lim_past = 0.;
 
-        dt_eframe_ = dt_ * float(ap.eframe_mult);  // Introduces noisy error if dt_ varies
+        now_ekf_ = Sen->now;
+        dt_ekf_ = float(now_ekf_ - ekf_now_past) / 1e6;
+        ekf_now_past = now_ekf_;
         if ( ddq_dt>0. && !sp.tweak_test() ) ddq_dt *= coul_eff_;
 
         // // Protect EKF from noise with rate limit on temperature
-        // float T_rate_lim = T_RLim->calculate(temp_c_, T_RLIM, T_RLIM, reset_temp, dt_eframe_);
-        // float T_rate = (T_rate_lim - T_rate_lim_past) / dt_eframe_;
-        // if ( sp.debug()==36 ) Serial.printf("BM::calc: temp_c, T_rate_lim, T_RLIM, reset_temp, dt_eframe_, T_Rate: %7.4f,%7.4f,%7.4f,%d,%7.4f,%7.4f,\n",
-        //     temp_c_, T_rate_lim, T_RLIM, reset_temp, dt_eframe_, T_rate);
+        // float T_rate_lim = T_RLim->calculate(temp_c_, T_RLIM, T_RLIM, reset_temp, dt_ekf_);
+        // float T_rate = (T_rate_lim - T_rate_lim_past) / dt_ekf_;
+        // if ( sp.debug()==36 ) Serial.printf("BM::calc: temp_c, T_rate_lim, T_RLIM, reset_temp, dt_ekf_, T_Rate: %7.4f,%7.4f,%7.4f,%d,%7.4f,%7.4f,\n",
+        //     temp_c_, T_rate_lim, T_RLIM, reset_temp, dt_ekf_, T_rate);
         // T_rate_lim_past = T_rate_lim;
 
         // ddq_dt -= chem_.dqdt * q_capacity_ * T_rate;
@@ -301,11 +304,11 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         soc_ekf_ = x_ekf();             // x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
         q_ekf_ = soc_ekf_ * q_capacity_;
         delta_q_ekf_ = q_ekf_ - q_capacity_;
-        y_filt_ = y_filt->calculate(y_, reset_temp, min(dt_eframe_, EKF_T_RESET));
+        y_filt_ = y_filt->calculate(y_, reset_temp, min(dt_ekf_, EKF_T_RESET));
         // EKF convergence.  Audio industry found that detection of quietness requires no more than
         // second order filter of the signal.   Anything more is 'gilding the lily'
         boolean conv = abs(y_filt_)<ap.ekf_conv && !cp.soft_reset;  // Initialize false
-        EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_eframe_, EKF_T_RESET), cp.soft_reset);
+        EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_ekf_, EKF_T_RESET), cp.soft_reset);
         if ( sp.debug()==37 )
         {
             Serial.printf("BatteryMonitor, ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,P_,soc,soc_ekf,y_ekf_f,conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%11.8f,%7.4f,%7.4f,%7.4f,  %d,\n",
@@ -313,7 +316,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
             Serial1.printf("BatteryMonitor, ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,P_,soc,soc_ekf,y_ekf_f,conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%11.8f,%7.4f,%7.4f,%7.4f,  %d,\n",
                 ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, P_, soc_, soc_ekf_, y_filt_, converged_ekf());
         }
-        if ( (sp.debug()==3 || sp.debug()==4) && cp.publishS ) EKF_1x1::serial_print(Sen->now, dt_eframe_);  // print EKF in Read frame
+        if ( (sp.debug()==3 || sp.debug()==4) && cp.publishS ) EKF_1x1::serial_print();  // print EKF in Read frame
     }
     eframe_++;
     if ( reset_temp || cp.soft_reset || eframe_ >= ap.eframe_mult ) eframe_ = 0;  // '>=' allows changing ap.eframe_mult on the fly
@@ -401,13 +404,13 @@ float BatteryMonitor::calc_soc_voc(const float soc, const float temp_c, float *d
 // EKF model for predict
 void BatteryMonitor::ekf_predict(double *Fx_, double *Bu_)
 {
-    // Process model  dt_eframe_<<chem_.tau_sd
+    // Process model  dt_ekf_<<chem_.tau_sd
 
-    // Approximation to *Fx = exp(-dt_eframe_ / chem_.tau_sd);
-    *Fx_ = 1. - dt_eframe_ / chem_.tau_sd;
+    // Approximation to *Fx = exp(-dt_ekf_ / chem_.tau_sd);
+    *Fx_ = 1. - dt_ekf_ / chem_.tau_sd;
     
     // Approximation to *Bu = (1. - *Fx) * chem_.r_sd;
-    *Bu_ = dt_eframe_ / chem_.c_sd;
+    *Bu_ = dt_ekf_ / chem_.c_sd;
 }
 
 // EKF model for update

@@ -35,7 +35,7 @@ public:
   // functions
   void predict_ekf(const double u, const boolean freeze);
   virtual void pretty_print(void);
-  void serial_print(const unsigned long long now, const float dt);
+  void serial_print();
   void update_ekf(const double z, double x_min, double x_max);
   double x_ekf() { return ( x_ ); };
   double z_ekf() { return ( z_ ); };
@@ -59,6 +59,8 @@ protected:
   double hx_; // Output of observation function h(x)
   double H_;  // Jacobian of h(x)
   boolean freeze_;  // Command to freeze x_ and P_
+  unsigned long long now_ekf_;  // Time value extracted from sensors
+  double dt_ekf_;   // Update time for EKF major frame
   /*
     Implement this function for your EKF model.
     @param fx gets output of state-transition function f(x)

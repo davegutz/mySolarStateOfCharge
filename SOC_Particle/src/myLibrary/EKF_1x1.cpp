@@ -127,6 +127,7 @@ void EKF_1x1::init_ekf(double soc, double Pinit)
   Serial.printf("In:\n");
   Serial.printf("  u  %8.4f, A\n", u_);
   Serial.printf("  frz %d, T=frz\n", freeze_);
+  Serial.printf("  dt_ekf %8.4f, s\n", dt_ekf_);
   Serial.printf("  z  %8.4f, V\n", z_);
   Serial.printf("  R%13.10f\n", R_);
   Serial.printf("  Q%13.10f\n", Q_);
@@ -148,10 +149,10 @@ void EKF_1x1::init_ekf(double soc, double Pinit)
  }
 
 // Serial print
- void EKF_1x1::serial_print(const unsigned long long now, const float dt)
+ void EKF_1x1::serial_print()
  {
-  double cTime = double(now)/1000.;
+  double eTime = double(now_ekf_)/1000.;
 
   Serial.printf("unit_ekf,%13.3f,%7.3f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,\n",
-    cTime, dt, Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_, x_prior_, P_prior_, x_post_, P_post_, hx_, H_);
+    eTime, dt_ekf_, Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_, x_prior_, P_prior_, x_post_, P_post_, hx_, H_);
  }
