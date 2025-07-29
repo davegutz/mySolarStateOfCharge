@@ -88,7 +88,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
         plt.plot(sv.time, sv.soc, color='red', linestyle='--', label='soc_s'+test_str)
         plt.plot(mo.time, mo.soc, color='blue', linestyle='-.', label='soc'+ref_str)
         plt.plot(mv.time, mv.soc, color='green', linestyle=':', label='soc'+test_str)
-        plt.plot(mo.time, mo.soc_ekf, marker='^', markersize='5', markevery=32, linestyle='None', color='orange',
+        plt.plot(mo.time_e, mo.soc_ekf, marker='^', markersize='5', markevery=32, linestyle='None', color='orange',
                  label='soc_ekf'+ref_str)
         plt.plot(mv.time, mv.soc_ekf, marker='+', markersize='5', markevery=32, linestyle='None', color='cyan',
                  label='soc_ekf'+test_str)
@@ -314,7 +314,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mv.time, mv.soc, color='red', linestyle='--', label='soc'+test_str)
     plt.legend(loc=1)
     plt.subplot(222)
-    plt.plot(mo.time, mo.soc_ekf, color='green', linestyle='-', label='soc_ekf'+ref_str)
+    plt.plot(mo.time_e, mo.soc_ekf, color='green', linestyle='-', label='soc_ekf'+ref_str)
     plt.plot(mv.time, mv.soc_ekf, color='orange', linestyle='--', label='soc_ekf'+test_str)
     plt.legend(loc=1)
     plt.subplot(223)
@@ -326,7 +326,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mv.time, mv.soc, color='red', linestyle='--', label='soc'+test_str)
     plt.plot(mo.time, mo.soc_s, color='green', linestyle='-.', label='soc_s'+ref_str)
     plt.plot(mv.time, mv.soc_s, color='orange', linestyle=':', label='soc_s'+test_str)
-    plt.plot(mo.time, mo.soc_ekf, color='cyan', linestyle='-', label='soc_ekf'+ref_str)
+    plt.plot(mo.time_e, mo.soc_ekf, color='cyan', linestyle='-', label='soc_ekf'+ref_str)
     plt.plot(mv.time, mv.soc_ekf, color='black', linestyle='--', label='soc_ekf'+test_str)
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -339,7 +339,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mo.time, mo.soc, color='orange', linestyle='-', label='soc'+ref_str)
     plt.plot(mv.time, mv.soc, color='green', linestyle='--', label='soc'+test_str)
     plq(plt, smv, 'time', smv, 'soc_s', color='black', linestyle='-.', label='soc_s'+test_str)
-    plt.plot(mo.time, mo.soc_ekf, color='red', linestyle=':', label='soc_ekf'+ref_str)
+    plt.plot(mo.time_e, mo.soc_ekf, color='red', linestyle=':', label='soc_ekf'+ref_str)
     plt.plot(mv.time, mv.soc_ekf, color='cyan', linestyle=':', label='soc_ekf'+test_str)
     plt.legend(loc=1)
     plt.subplot(132)
@@ -807,8 +807,8 @@ class SavedData:
                     self.c_time_s = np.array(sel.c_time) - self.time_ref
                     i_end = min(i_end, len(self.c_time_s))
                 if ekf is not None:
-                    self.c_time_e = np.array(ekf.c_time) - self.time_ref
-                    i_end = min(i_end, len(self.c_time_e))
+                    self.time_e = np.array(ekf.c_time) - self.time_ref
+                    i_end = min(i_end, len(self.time_e))
             else:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
                 if sel is not None:
@@ -817,8 +817,8 @@ class SavedData:
                     i_end = min(i_end, i_end_sel)
                     self.zero_end = min(self.zero_end, i_end-1)
                 if ekf is not None:
-                    self.c_time_e = np.array(ekf.c_time) - self.time_ref
-                    i_end_ekf = np.where(self.c_time_e <= time_end)[0][-1] + 1
+                    self.time_e = np.array(ekf.c_time) - self.time_ref
+                    i_end_ekf = np.where(self.time_e <= time_end)[0][-1] + 1
                     i_end = min(i_end, i_end_ekf)
                     self.zero_end = min(self.zero_end, i_end - 1)
             self.cTime = self.cTime[:i_end]
@@ -1017,7 +1017,7 @@ class SavedData:
             if hasattr(sel, 'ib_dec'):
                 self.ib_dec = np.array(sel.ib_dec[:i_end])
         if ekf is None:
-            self.c_time_e = None
+            self.time_e = None
             self.Fx = None
             self.Bu = None
             self.Q = None
@@ -1036,7 +1036,7 @@ class SavedData:
             self.hx = None
             self.H = None
         else:
-            self.c_time_e = np.array(ekf.c_time[:i_end])
+            self.time_e = np.array(ekf.c_time[:i_end]) - self.time_ref
             self.Fx = np.array(ekf.Fx_[:i_end])
             self.Bu = np.array(ekf.Bu_[:i_end])
             self.Q = np.array(ekf.Q_[:i_end])

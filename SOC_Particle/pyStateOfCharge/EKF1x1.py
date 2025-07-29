@@ -50,6 +50,8 @@ class EKF1x1:
         s = prefix + "EKF1x1:\n"
         s += "  Inputs:\n"
         s += "  z = {:10.6g}\n".format(self.z_ekf)
+        s += "  Fx = {:13.10g}\n".format(self.Fx)
+        s += "  Bu = {:13.10g}\n".format(self.Bu)
         s += "  R = {:10.6g}\n".format(self.R)
         s += "  Q = {:10.6g}\n".format(self.Q)
         s += "  H = {:10.6g}\n".format(self.H)
