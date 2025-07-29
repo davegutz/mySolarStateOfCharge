@@ -344,7 +344,7 @@ void wait_on_user_input(Adafruit_SSD1306 *display)
       sp.pretty_print( false );
       Serial.printf("Reset to defaults? [y/n]:"); Serial1.printf("Reset to defaults? [y/n]:");
     }
-    else  // User is typing.  Ignore him until they answer 'Y', 'y', 'N', or 'n'.  But timeout seconds if they don't
+    else  // User is typing.  Ignore him until they answer 'Y', 'y', 'N', or 'n'.  But timeout seconds if they don't and assume 'N'
     {
       while ( answer!='Y' &&  answer!='y' && answer!='N' && answer!='n' && count<30 )
       {
