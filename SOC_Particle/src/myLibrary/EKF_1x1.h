@@ -59,7 +59,7 @@ protected:
   double hx_; // Output of observation function h(x)
   double H_;  // Jacobian of h(x)
   boolean freeze_;  // Command to freeze x_ and P_
-  unsigned long long now_ekf_;  // Time value extracted from sensors
+  unsigned long long now_ekf_;  // Time value extracted from sensors, ms
   double dt_ekf_;   // Update time for EKF major frame
   /*
     Implement this function for your EKF model.

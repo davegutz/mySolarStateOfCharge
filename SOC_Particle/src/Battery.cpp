@@ -287,7 +287,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         // static float T_rate_lim_past = 0.;
 
         now_ekf_ = Sen->now;
-        dt_ekf_ = float(now_ekf_ - ekf_now_past) / 1e6;
+        dt_ekf_ = float(now_ekf_ - ekf_now_past) / 1e3;
         ekf_now_past = now_ekf_;
         if ( ddq_dt>0. && !sp.tweak_test() ) ddq_dt *= coul_eff_;
 
