@@ -313,10 +313,10 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
             Serial1.printf("BatteryMonitor, ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,P_,soc,soc_ekf,y_ekf_f,conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%11.8f,%7.4f,%7.4f,%7.4f,  %d,\n",
                 ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, P_, soc_, soc_ekf_, y_filt_, converged_ekf());
         }
+        if ( (sp.debug()==3 || sp.debug()==4) && cp.publishS ) EKF_1x1::serial_print(Sen->now, dt_eframe_);  // print EKF in Read frame
     }
     eframe_++;
     if ( reset_temp || cp.soft_reset || eframe_ >= ap.eframe_mult ) eframe_ = 0;  // '>=' allows changing ap.eframe_mult on the fly
-    if ( (sp.debug()==3 || sp.debug()==4) && cp.publishS ) EKF_1x1::serial_print(Sen->now, dt_eframe_);  // print EKF in Read frame
 
     // Filter
     voc_filt_ = SdVb_->update(voc_);   // used for saturation test
@@ -399,15 +399,15 @@ float BatteryMonitor::calc_soc_voc(const float soc, const float temp_c, float *d
 }
 
 // EKF model for predict
-void BatteryMonitor::ekf_predict(double *Fx, double *Bu)
+void BatteryMonitor::ekf_predict(double *Fx_, double *Bu_)
 {
     // Process model  dt_eframe_<<chem_.tau_sd
 
     // Approximation to *Fx = exp(-dt_eframe_ / chem_.tau_sd);
-    *Fx = 1. - dt_eframe_ / chem_.tau_sd;
+    *Fx_ = 1. - dt_eframe_ / chem_.tau_sd;
     
     // Approximation to *Bu = (1. - *Fx) * chem_.r_sd;
-    *Bu = dt_eframe_ / chem_.c_sd;
+    *Bu_ = dt_eframe_ / chem_.c_sd;
 }
 
 // EKF model for update

@@ -71,6 +71,9 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
     Sen->Ib_model_in = sp.inj_bias() + sp.ib_bias_all();
   else
     Sen->Ib_model_in = Sen->Ib_hdwe;
+    #ifdef IB_CHARGE_NOA
+        if ( !sp.mod_ib() ) Sen->Ib_model_in = Sen->Ib_noa_hdwe;
+    #endif
   Sen->temp_load_and_filter(Sen, true);
   if ( sp.mod_tb() )
   {
