@@ -435,8 +435,8 @@ class BatteryMonitor(Battery, EKF1x1):
             if ddq_dt > 0. and not self.tweak_test:
                 ddq_dt *= self.chemistry.coul_eff
             # ddq_dt -= self.chemistry.dqdt*self.q_capacity*temp_rate  7/29/2025 to agree with c++ (noisy)
-            self.Q = self.scaler_q.calculate(ddq_dt)
-            self.R = self.scaler_r.calculate(ddq_dt)
+            # self.Q = self.scaler_q.calculate(ddq_dt)
+            # self.R = self.scaler_r.calculate(ddq_dt)
             self.Q = Battery.EKF_Q_SD_NORM**2  # override
             self.R = Battery.EKF_R_SD_NORM**2  # override
             # if reset and x_old is not None:
