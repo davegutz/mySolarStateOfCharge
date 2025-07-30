@@ -325,14 +325,6 @@ void TableInterp2D::pretty_print()
   for ( j=0; j<n2_; j++ )
   {
     Serial.printf("      {");
-    for ( i=0; i<n1_; i++ ) Serial.printf("%7.3f, ", v_[j*n1_+i]);
-    Serial.printf("},\n");
-  }
-  Serial.printf("      };\n");
-  Serial.printf("    v={\n");
-  for ( j=0; j<n2_; j++ )
-  {
-    Serial.printf("      {");
     for ( i=0; i<n1_; i++ ) Serial.printf("%7.3f, ", v_[j*n1_+i] + dz_);
     Serial.printf("},\n");
   }
