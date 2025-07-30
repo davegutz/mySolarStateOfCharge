@@ -318,8 +318,17 @@ void TableInterp2D::pretty_print()
 {
 #ifndef SOFT_DEPLOY_PHOTON
   unsigned int i, j;
+  Serial.printf("    dx%7.3f dy%7.3f dz%7.3f\n", dx_, dy_, dz_);
   Serial.printf("    y={"); for ( j=0; j<n2_; j++ ) Serial.printf("%7.3f, ", y_[j] - dy_); Serial.printf("};\n");
   Serial.printf("    x={"); for ( i=0; i<n1_; i++ ) Serial.printf("%7.3f, ", x_[i] - dx_); Serial.printf("};\n");
+  Serial.printf("    v={\n");
+  for ( j=0; j<n2_; j++ )
+  {
+    Serial.printf("      {");
+    for ( i=0; i<n1_; i++ ) Serial.printf("%7.3f, ", v_[j*n1_+i]);
+    Serial.printf("},\n");
+  }
+  Serial.printf("      };\n");
   Serial.printf("    v={\n");
   for ( j=0; j<n2_; j++ )
   {
