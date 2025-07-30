@@ -110,6 +110,7 @@ class Battery(Coulombs):
     WRAP_SOC_MOD_OFF = 0.85  # Disable e_wrap_lo when nearing saturated and moderate C_rate(0.85)
     WRAP_SOC_HI_SLR = 1000.  # Huge to disable e_wrap (1000)
     WRAP_SOC_LO_SLR = 60.  # Large to disable e_wrap (60. for startup)
+    IB_CHARGE_NOA = True  # Force calculations to use noa signal
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
@@ -374,6 +375,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vsat = calc_vsat(self.temp_c, self.chemistry.nom_vsat, self.chemistry.dvoc_dt)
         self.dt = dt
         self.ib_in = ib
+        if self.IB_CHARGE_NOA is True:
+            self.ib_in = ib_noa
         self.mod = rp.modeling
         self.Temp_Rlim.update(x=self.temp_c, reset=reset, dt=self.dt, max_=0.017, min_=-.017)
         temp_rate = self.Temp_Rlim.rate
