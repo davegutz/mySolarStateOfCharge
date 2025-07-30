@@ -88,7 +88,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
         plt.plot(sv.time, sv.soc, color='red', linestyle='--', label='soc_s'+test_str)
         plt.plot(mo.time, mo.soc, color='blue', linestyle='-.', label='soc'+ref_str)
         plt.plot(mv.time, mv.soc, color='green', linestyle=':', label='soc'+test_str)
-        plt.plot(mo.time_e, mo.soc_ekf, marker='^', markersize='5', markevery=32, linestyle='None', color='orange',
+        plt.plot(mo.time, mo.soc_ekf, marker='^', markersize='5', markevery=32, linestyle='None', color='orange',
                  label='soc_ekf'+ref_str)
         plt.plot(mv.time, mv.soc_ekf, marker='+', markersize='5', markevery=32, linestyle='None', color='cyan',
                  label='soc_ekf'+test_str)
@@ -314,7 +314,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mv.time, mv.soc, color='red', linestyle='--', label='soc'+test_str)
     plt.legend(loc=1)
     plt.subplot(222)
-    plt.plot(mo.time_e, mo.soc_ekf, color='green', linestyle='-', label='soc_ekf'+ref_str)
+    plt.plot(mo.time, mo.soc_ekf, color='green', linestyle='-', label='soc_ekf'+ref_str)
     plt.plot(mv.time, mv.soc_ekf, color='orange', linestyle='--', label='soc_ekf'+test_str)
     plt.legend(loc=1)
     plt.subplot(223)
@@ -326,7 +326,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mv.time, mv.soc, color='red', linestyle='--', label='soc'+test_str)
     plt.plot(mo.time, mo.soc_s, color='green', linestyle='-.', label='soc_s'+ref_str)
     plt.plot(mv.time, mv.soc_s, color='orange', linestyle=':', label='soc_s'+test_str)
-    plt.plot(mo.time_e, mo.soc_ekf, color='cyan', linestyle='-', label='soc_ekf'+ref_str)
+    plt.plot(mo.time, mo.soc_ekf, color='cyan', linestyle='-', label='soc_ekf'+ref_str)
     plt.plot(mv.time, mv.soc_ekf, color='black', linestyle='--', label='soc_ekf'+test_str)
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -339,7 +339,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mo.time, mo.soc, color='orange', linestyle='-', label='soc'+ref_str)
     plt.plot(mv.time, mv.soc, color='green', linestyle='--', label='soc'+test_str)
     plq(plt, smv, 'time', smv, 'soc_s', color='black', linestyle='-.', label='soc_s'+test_str)
-    plt.plot(mo.time_e, mo.soc_ekf, color='red', linestyle=':', label='soc_ekf'+ref_str)
+    plt.plot(mo.time, mo.soc_ekf, color='red', linestyle=':', label='soc_ekf'+ref_str)
     plt.plot(mv.time, mv.soc_ekf, color='cyan', linestyle=':', label='soc_ekf'+test_str)
     plt.legend(loc=1)
     plt.subplot(132)
@@ -797,6 +797,7 @@ class SavedData:
                     self.zero_end = 0
             self.time_ref = self.time[self.zero_end]
             self.time -= self.time_ref
+            print(f"Mon {self.time=}")
             self.time_min = self.time / 60.
             self.time_day = self.time / 3600. / 24.
 
@@ -805,25 +806,30 @@ class SavedData:
                 i_end = len(self.time)
                 if sel is not None:
                     self.c_time_s = np.array(sel.c_time) - self.time_ref
+                    print(f"seltrunc1 {self.c_time_s=}")
                     i_end = min(i_end, len(self.c_time_s))
                 if ekf is not None:
                     self.time_e = np.array(ekf.c_time) - self.time_ref
-                    i_end = min(i_end, len(self.time_e))
+                    print(f"ekftrunc1 {self.time_e=}")
+                    # i_end = min(i_end, len(self.time_e))  # EKF is framed slower
             else:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
                 if sel is not None:
                     self.c_time_s = np.array(sel.c_time) - self.time_ref
+                    print(f"seltrunc2 {self.c_time_s=}")
                     i_end_sel = np.where(self.c_time_s <= time_end)[0][-1] + 1
                     i_end = min(i_end, i_end_sel)
                     self.zero_end = min(self.zero_end, i_end-1)
                 if ekf is not None:
                     self.time_e = np.array(ekf.c_time) - self.time_ref
+                    print(f"ekftrunc2 {self.time_e=}")
                     i_end_ekf = np.where(self.time_e <= time_end)[0][-1] + 1
-                    i_end = min(i_end, i_end_ekf)
-                    self.zero_end = min(self.zero_end, i_end - 1)
+                    # i_end = min(i_end, i_end_ekf)  # EKF is framed slower
+                    # self.zero_end = min(self.zero_end, i_end - 1)
             self.cTime = self.cTime[:i_end]
             self.dt = np.array(data.dt[:i_end])
             self.time = np.array(self.time[:i_end])
+            print(f"Mon1 {self.time=}")
             self.ib = np.array(data.ib[:i_end])
             self.ioc = np.array(data.ib[:i_end])
             self.voc_soc = np.array(data.voc_soc[:i_end])
@@ -940,7 +946,8 @@ class SavedData:
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
-            self.c_time_s = np.array(sel.c_time[:i_end])
+            self.c_time_s = np.array(sel.c_time[:i_end]) - self.time_ref
+            print(f"sel2 {self.c_time_s=}")
             self.res = np.array(sel.res[:i_end])
             self.user_sel = np.array(sel.user_sel[:i_end])
             self.cc_dif = np.array(sel.cc_dif[:i_end])
@@ -1037,6 +1044,7 @@ class SavedData:
             self.H = None
         else:
             self.time_e = np.array(ekf.c_time[:i_end]) - self.time_ref
+            print(f"ekf3 {self.time_e=}")
             self.Fx = np.array(ekf.Fx_[:i_end])
             self.Bu = np.array(ekf.Bu_[:i_end])
             self.Q = np.array(ekf.Q_[:i_end])
@@ -1107,6 +1115,7 @@ class SavedDataSim:
             self.i = 0
             self.cTime = np.array(data.c_time)
             self.time = np.array(data.c_time) - time_ref
+            print(f"Sim {self.time=}")
             # Truncate
             if time_end is None:
                 i_end = len(self.time)
@@ -1114,6 +1123,7 @@ class SavedDataSim:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
             self.cTime = self.cTime[:i_end]
             self.time = self.time[:i_end]
+            print(f"Sim1 {self.time=}")
             self.time_min = self.time / 60.
             self.time_day = self.time / 3600. / 24.
 
