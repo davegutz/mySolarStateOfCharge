@@ -1617,7 +1617,7 @@ void Sensors::shunt_select_initial(const boolean reset)
     {
       Ib_model_in = Ib_hdwe;
       #ifdef IB_CHARGE_NOA
-        Ib_model_in = Sen->Ib_noa_hdwe;
+        Ib_model_in = Ib_noa_hdwe;
       #endif
     }
     // Otherwise it generates signals for feedback into monitor
