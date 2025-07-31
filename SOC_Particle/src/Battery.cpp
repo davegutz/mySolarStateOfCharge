@@ -238,11 +238,11 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     bms_charging_ = ib_ > IB_MIN_UP;
     bms_off_ = (temp_c_ <= chem_.low_t) || ( voltage_low_ && !Sen->Flt->vb_fa() && !sp.tweak_test() );    // KISS
     Sen->bms_off = bms_off_;
-    float ib_charge_ekf = ib_;
     ib_charge_ = ib_;
     #ifdef IB_CHARGE_NOA
         if ( !sp.mod_ib() ) ib_charge_ = Sen->Ib_noa_hdwe/sp.nP();
     #endif
+    float ib_charge_ekf = ib_charge_;
     if ( bms_off_ && !bms_charging_ && sp.mod_vb())  // Don't let a single hard vb fail ruin count
         ib_charge_ = 0.;
     if ( bms_off_ && voltage_low_ )
