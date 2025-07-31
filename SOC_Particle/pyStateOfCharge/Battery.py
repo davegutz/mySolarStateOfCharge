@@ -362,9 +362,11 @@ class BatteryMonitor(Battery, EKF1x1):
         self.soc_s = soc_s
 
     # BatteryMonitor::calculate()
-    def calculate(self, chem, temp_c, vb, ib, dt, reset, update_time_in, q_capacity=None, dc_dc_on=None,
-                  rp=None, u_old=None, z_old=None, x_old=None, bms_off_init=None, ib_amp=None, ib_noa=None,
-                  e_w_amp_0=None, e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None):
+    # It is assumed that ekf always runs slower than subsampled input data stream
+    # (EKF_EFRAME_MULT multi-frame always <= DP)
+    def calculate(self, chem, temp_c, vb, ib, dt, reset, update_time_in, calc_ekf, dt_ekf, q_capacity=None,
+                  dc_dc_on=None, rp=None, u_old=None, z_old=None, x_old=None, p_old=None, bms_off_init=None,
+                  ib_amp=None, ib_noa=None, e_w_amp_0=None, e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None):
         self.ib_amp = ib_amp
         self.ib_noa = ib_noa
         if self.chm != chem:
@@ -431,9 +433,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
 
         # EKF 1x1
-        self.eframe_mult = max(int(float(Battery.READ_DELAY)*float(Battery.EKF_EFRAME_MULT)/1000./self.dt + 0.9999), 1)
-        if self.eframe == 0:
-            self.dt_eframe = self.dt * float(self.eframe_mult)
+        if calc_ekf:
+            self.dt_eframe = dt_ekf
             ddq_dt = self.ib_charge
             if ddq_dt > 0. and not self.tweak_test:
                 ddq_dt *= self.chemistry.coul_eff
@@ -446,7 +447,7 @@ class BatteryMonitor(Battery, EKF1x1):
             if x_old is not None:
                 self.x_ekf = x_old
             self.predict_ekf(u=ddq_dt, u_old=u_old)  # u = d(q)/dt
-            self.update_ekf(z=self.voc_stat, x_min=0., x_max=1., z_old=z_old)  # z = voc, voc_filtered = hx
+            self.update_ekf(z=self.voc_stat, x_min=0., x_max=1., z_old=z_old, p_old=p_old)  # z = voc, voc_filtered = hx
             self.soc_ekf = self.x_ekf  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
             self.q_ekf = self.soc_ekf * self.q_capacity
             self.y_filt = self.y_filt_lag.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.EKF_T_RESET),
@@ -528,10 +529,11 @@ class BatteryMonitor(Battery, EKF1x1):
     def lag_ib(self, ib, reset):
         self.ib_lag = self.IbLag.calculate_tau(ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
-    def init_soc_ekf(self, soc):
+    def init_soc_ekf(self, soc, p):
         self.soc_ekf = soc
         self.init_ekf(soc, 0.0)
         self.q_ekf = self.soc_ekf * self.q_capacity
+        self.P = p
 
     def regauge(self, temp_c):
         if self.converged_ekf() and abs(self.soc_ekf - self.soc) > Battery.DF2:

@@ -95,7 +95,7 @@ class EKF1x1:
         self.x_prior = self.x_ekf
         self.P_prior = self.P
 
-    def update_ekf(self, z, x_min, x_max, z_old=None):
+    def update_ekf(self, z, x_min, x_max, z_old=None, p_old=None):
         """ 1x1 Extended Kalman Filter update
             Inputs:
                 z   1x1 input, =voc, dynamic predicted by other model, V
@@ -115,6 +115,8 @@ class EKF1x1:
             self.z_ekf = z_old
         else:
             self.z_ekf = z
+        if p_old:
+            self.P = p_old
         pht = self.P*self.H
         self.S = self.H*pht + self.R
         if abs(self.S) > 1e-12:

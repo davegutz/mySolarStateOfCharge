@@ -190,8 +190,10 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             reset = reset or reset_sel[i]
         mon_old.i = i
         T = None
+        T_ekf = None
         if i == 0:
             T = t[1] - t[0]
+            i_ekf = -1
         else:
             candidate_dt = t[i] - t[i-1]
             if candidate_dt > 1e-6:
@@ -243,7 +245,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             rp.t_last = Tb_
             mon.load(rp.delta_q, rp.t_last)
             mon.assign_temp_c(Tb_)
-            mon.init_soc_ekf(mon_old.soc_ekf[i])  # when modeling (assumed in python) ekf wants to equal model
+            mon.init_soc_ekf(mon_old.soc_ekf[i], mon_old.P[i])  # when modeling (assumed in python) ekf wants to equal model
             if hasattr(mon_old, 'e_wrap_m'):
                 e_w_amp_0 = mon_old.e_wrap_m[0]
             if hasattr(mon_old, 'e_wrap_m_filt'):
@@ -286,24 +288,35 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             vb_ = vb_fail
         else:
             vb_ = vb[i]
+        if (i_ekf+1 < len(mon_old.time_e)) and (mon_old.time_e[i_ekf+1] <= mon_old.time[i]):
+            if i_ekf == -1:
+                T_ekf = mon_old.time_e[1] - mon_old.time_e[0]
+            else:
+                T_ekf = mon_old.time_e[i_ekf + 1] - mon_old.time_e[i_ekf]
+            calc_ekf = True
+            i_ekf += 1
+        else:
+            calc_ekf = False
         if drive_ekf:
             u_old = mon_old.u[i]
             z_old = mon_old.z[i]
             x_old = mon_old.x[i]
+            p_old = mon_old.P[i]
         else:
             u_old = None
             z_old = None
             x_old = None
+            p_old = None
         if rp.modeling == 0:
-            mon.calculate(_chm_m, Tb_, vb_, ib_, T, rp=rp, reset=reset, update_time_in=update_time_in, u_old=u_old,
-                          z_old=z_old, x_old=x_old, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh,
-                          e_w_amp_0=e_w_amp_0, e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0,
-                          e_w_noa_filt_0=e_w_noa_filt_0)
+            mon.calculate(_chm_m, Tb_, vb_, ib_, T, calc_ekf=calc_ekf, dt_ekf=T_ekf, rp=rp, reset=reset,
+                          update_time_in=update_time_in, u_old=u_old, z_old=z_old, x_old=x_old, p_old=p_old,
+                          bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh, e_w_amp_0=e_w_amp_0,
+                          e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0)
         else:
-            mon.calculate(_chm_m, Tb_, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T, rp=rp,
-                          reset=reset, update_time_in=update_time_in, u_old=u_old, z_old=z_old, x_old=x_old,
-                          bms_off_init=bms_off_init, ib_amp=ibmm, ib_noa=ibnm,
-                          e_w_amp_0=e_w_amp_0, e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0,
+            mon.calculate(_chm_m, Tb_, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
+                          calc_ekf=calc_ekf, dt_ekf=T_ekf, rp=rp, reset=reset, update_time_in=update_time_in,
+                          u_old=u_old, z_old=z_old, x_old=x_old, p_old=p_old, bms_off_init=bms_off_init, ib_amp=ibmm,
+                          ib_noa=ibnm, e_w_amp_0=e_w_amp_0, e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0,
                           e_w_noa_filt_0=e_w_noa_filt_0)
         ib_charge = mon.ib_charge
         sat = is_sat(Tb_, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt, mon.chemistry.low_t)
