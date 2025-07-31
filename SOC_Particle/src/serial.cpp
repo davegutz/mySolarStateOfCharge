@@ -322,7 +322,7 @@ void wait_on_user_input(Adafruit_SSD1306 *display)
   uint8_t count = 0;
   uint16_t answer = '\r';
   // Get user input but timeout at 120 seconds if no response
-  while ( count<30 && answer!='Y' && answer!='n' && answer!='N' )
+  while ( count<30 && answer!='Y' && answer!='y' && answer!='n' && answer!='N' )
   {
     if ( answer=='\r')
     {
@@ -388,7 +388,7 @@ void wait_on_user_input()
   uint8_t count = 0;
   uint16_t answer = '\r';
   // Get user input but timeout at 120 seconds if no response
-  while ( count<30 && answer!='Y' && answer!='n' && answer!='N' )
+  while ( count<30 && answer!='Y' && answer!='y' && answer!='n' && answer!='N' )
   {
     if ( answer=='\r')
     {
@@ -412,7 +412,7 @@ void wait_on_user_input()
     }
     else  // User is typing.  Ignore him until they answer 'Y', 'N', or 'n'.  But timeout at 30 seconds if they don't
     {
-      while ( answer!='Y' && answer!='N' && answer!='n' && count<30 )
+      while ( answer!='Y' && answer!='y' && answer!='N' && answer!='n' && count<30 )
       {
         if ( Serial.available() )
           answer=Serial.read();
@@ -432,7 +432,7 @@ void wait_on_user_input()
   }
 
   // Wrap it up
-  if ( answer=='Y' )
+  if ( answer=='Y' || answer=='y' )
   {
     Serial.printf("  Y\n\n"); Serial1.printf("  Y\n\n");
     sp.set_nominal();
