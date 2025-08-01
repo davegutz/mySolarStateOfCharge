@@ -267,8 +267,6 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     // Hysteresis model
     dv_hys_ = 0.;  // disable hys g20230530a
     voc_stat_ = voc_ - dv_hys_;
-    voc_stat_filt->assignCoeff(ap.voc_stat_filt);
-    voc_stat_f_ = voc_stat_filt->calculate(voc_stat_, reset_temp, dt_);
     ioc_ = ib_dyn;
     
 
@@ -290,6 +288,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         dt_ekf_ = float(now_ekf_ - ekf_now_past) / 1e3;
         ekf_now_past = now_ekf_;
         if ( ddq_dt>0. && !sp.tweak_test() ) ddq_dt *= coul_eff_;
+        voc_stat_f_ = voc_stat_filt->calculate(voc_stat_, reset_temp, ap.voc_stat_filt, dt_ekf_);
 
         // // Protect EKF from noise with rate limit on temperature
         // float T_rate_lim = T_RLim->calculate(temp_c_, T_RLIM, T_RLIM, reset_temp, dt_ekf_);

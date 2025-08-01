@@ -251,6 +251,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.subplot(322)
     plt.plot(mo.time, mo.voc_stat, color='green', linestyle='-', label='voc_stat'+ref_str)
     plt.plot(mv.time, mv.voc_stat, color='orange', linestyle='--', label='voc_stat'+test_str)
+    plt.plot(mv.time, mv.voc_stat_f, color='red', linestyle=':', label='voc_stat_f'+test_str)
     plt.legend(loc=1)
     plt.subplot(323)
     plt.plot(mo.time, mo.voc, color='green', linestyle='-', label='voc'+ref_str)

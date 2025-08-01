@@ -111,6 +111,9 @@ class Battery(Coulombs):
     WRAP_SOC_HI_SLR = 1000.  # Huge to disable e_wrap (1000)
     WRAP_SOC_LO_SLR = 60.  # Large to disable e_wrap (60. for startup)
     IB_CHARGE_NOA = True  # Force calculations to use noa signal
+    VOC_STAT_FILT = 120.  # Clean up noise on Vb fed to EKF (120)
+    VB_MIN = 2.  # Signal selection hard fault threshold, V (0.  < 2. < 10 bms shutoff, reads ~3 without power when off)
+    VB_MAX = 17.  # Signal selection hard fault threshold, V (17. < VB_CONV_GAIN*4095)
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
@@ -142,6 +145,7 @@ class Battery(Coulombs):
         self.q = 0  # Charge, C
         self.voc = Battery.NOM_SYS_VOLT  # Model open circuit voltage, V
         self.voc_stat = self.voc  # Static model open circuit voltage from charge process, V
+        self.voc_stat_f = self.voc_stat
         self.dv_dyn = 0.  # Model current induced back emf, V
         self.vb = Battery.NOM_SYS_VOLT  # Battery voltage at post, V
         self.ib = 0.  # Current into battery post, A
@@ -200,6 +204,8 @@ class Battery(Coulombs):
         s += "  voc      ={:7.3f}  // Static model open circuit voltage, V\n".format(self.voc)
         s += "  voc_stat ={:7.3f}  // Static model open circuit voltage from table (reference), V\n"\
             .format(self.voc_stat)
+        s += "  voc_stat_f={:7.3f} // Static filtered model open circuit voltage from table (reference), V\n"\
+            .format(self.voc_stat_f)
         s += "  vsat =    {:7.3f}  // Saturation threshold at temperature, V\n".format(self.vsat)
         s += "  dv_dyn =  {:7.3f}  // Current-induced back emf, V\n".format(self.dv_dyn)
         s += "  q =       {:7.3f}  // Present charge available to use, except q_min_, C\n".format(self.q)
@@ -291,6 +297,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.R = Battery.EKF_R_SD_NORM * Battery.EKF_R_SD_NORM  # EKF state uncertainty
         self.soc_s = 0.  # Model information
         self.EKF_converged = TFDelay(False, Battery.EKF_T_CONV, Battery.EKF_T_RESET, Battery.EKF_NOM_DT)
+        self.voc_stat_filt = LagExp(self.EKF_NOM_DT, self.VOC_STAT_FILT, self.VB_MIN, self.VB_MAX)  # Lag to be run on sat to produce ib_lag.  T and tau set at run time
         self.y_filt_lag = LagTustin(0.1, Battery.TAU_Y_FILT, Battery.MIN_Y_FILT, Battery.MAX_Y_FILT)
         self.WrapErrFilt = LagTustin(0.1, Battery.WRAP_ERR_FILT, -Battery.MAX_WRAP_ERR_FILT, Battery.MAX_WRAP_ERR_FILT)
         self.y_filt = 0.
@@ -301,6 +308,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vb = 0.
         self.vb_model_rev = 0.
         self.voc_stat = 0.
+        self.voc_stat_f = 0.
         self.voc_soc = 0.
         self.voc = 0.
         self.voc_filt = 0.
@@ -338,6 +346,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ewnlo_thr = None
         self.ewmhi_thr = None
         self.ewmlo_thr = None
+        self.reset_ekf = None
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -423,6 +432,8 @@ class BatteryMonitor(Battery, EKF1x1):
         # Hysteresis model
         self.dv_hys = 0.
         self.voc_stat = self.voc - self.dv_hys
+        if reset:
+            self.voc_stat = z_old
         self.ioc = self.ib
 
         # Wrap logic
@@ -433,6 +444,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
 
         # EKF 1x1
+        self.reset_ekf = reset
         if calc_ekf:
             self.dt_eframe = dt_ekf
             ddq_dt = self.ib_charge
@@ -443,11 +455,12 @@ class BatteryMonitor(Battery, EKF1x1):
             # self.R = self.scaler_r.calculate(ddq_dt)
             self.Q = Battery.EKF_Q_SD_NORM**2  # override
             self.R = Battery.EKF_R_SD_NORM**2  # override
-            # if reset and x_old is not None:
+            # if self.reset_ekf and x_old is not None:
             if x_old is not None:
                 self.x_ekf = x_old
+            self.voc_stat_f = self.voc_stat_filt.calculate_tau(self.voc_stat, self.reset_ekf, self.dt_eframe, self.VOC_STAT_FILT)
             self.predict_ekf(u=ddq_dt, u_old=u_old)  # u = d(q)/dt
-            self.update_ekf(z=self.voc_stat, x_min=0., x_max=1., z_old=z_old, p_old=p_old)  # z = voc, voc_filtered = hx
+            self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1., z_old=z_old, p_old=p_old)  # z = voc, voc_filtered = hx
             self.soc_ekf = self.x_ekf  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
             self.q_ekf = self.soc_ekf * self.q_capacity
             self.y_filt = self.y_filt_lag.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.EKF_T_RESET),
@@ -459,7 +472,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.EKF_converged.calculate(conv, Battery.EKF_T_CONV, Battery.EKF_T_RESET,
                                          min(self.dt_eframe, Battery.EKF_T_RESET), False)
         self.eframe += 1
-        if reset or self.eframe >= self.eframe_mult:  # '>=' ensures reset with changes on the fly
+        if self.reset_ekf or self.eframe >= self.eframe_mult:  # '>=' ensures reset with changes on the fly
             self.eframe = 0
 
         # Filtered voc
@@ -559,6 +572,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.voc.append(self.voc)
         self.saved.voc_soc.append(self.voc_soc)
         self.saved.voc_stat.append(self.voc_stat)
+        self.saved.voc_stat_f.append(self.voc_stat_f)
         self.saved.soc.append(self.soc)
         self.saved.soc_ekf.append(self.soc_ekf)
         self.saved.Fx.append(self.Fx)
@@ -595,6 +609,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.soc_s.append(self.soc_s)
         self.saved.bms_off.append(self.bms_off)
         self.saved.reset.append(self.reset)
+        self.saved.reset_ekf.append(self.reset_ekf)
         self.saved.e_wrap.append(self.e_wrap)
         self.saved.e_wrap_filt.append(self.e_wrap_filt)
         self.saved.ib_amp.append(self.ib_amp)
@@ -1001,7 +1016,7 @@ class Looparound:
         self.ewhi_thr = self.Mon.chemistry.r_ss * self.wrap_hi_amp * ewsat_slr * ewmin_slr
         self.ewlo_thr = self.Mon.chemistry.r_ss * self.wrap_lo_amp * ewsat_slr * ewmin_slr
 
-        # sat logic screens out voc jumps when ib>0 when saturated
+        # sat logic screens out voc jump when ib>0 when saturated
         # wrap_hi and wrap_lo don't latch because need them available to check next ib sensor selection for dual ib sensor
         # wrap_vb latches because vb is single sensor  faultAssign( (e_wrap_filt_ >= ewhi_thr_ && !Mon->sat()), WRAP_HI_FLT);
 
@@ -1031,6 +1046,7 @@ class Saved:
         self.voc = []
         self.voc_soc = []
         self.voc_stat = []
+        self.voc_stat_f = []
         self.dv_hys = []
         self.tau_hys = []
         self.dv_dyn = []
@@ -1083,6 +1099,7 @@ class Saved:
         self.t_last = []  # Past value of battery temperature used for rate limit memory, deg C
         self.bms_off = []  # Voltage low without faults, battery management system has shut off battery
         self.reset = []  # Reset flag used for initialization
+        self.reset_ekf = []  # Reset flag used for initialization
         self.e_wrap = []  # Verification of wrap calculation, V
         self.e_wrap_filt = []  # Verification of filtered wrap calculation, V
         self.ib_lag = []  # Lagged ib, A

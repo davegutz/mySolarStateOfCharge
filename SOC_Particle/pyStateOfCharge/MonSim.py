@@ -33,7 +33,7 @@ import statistics as sts
 
 def save_clean_file(mon_ver, csv_file, unit_key):
     default_header_str = "unit,               hm,                  cTime,        dt,       sat,sel,mod,\
-      Tb,  vb,  ib,  ioc,  voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,ib_lag,voc_soc_new,"
+      Tb,  vb,  ib,  ioc,  voc_soc,    vsat,dv_dyn,voc_stat,voc_stat_f,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,ib_lag,voc_soc_new,"
     n = len(mon_ver.time)
     date_time_start = datetime.now()
     with open(csv_file, "w") as output:
@@ -183,6 +183,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
     # time loop
     now = t[0]
+    i_ekf = None
     for i in range(t_len):
         now = t[i]
         reset = (t[i] <= init_time) or (t[i] < 0. and t[0] > init_time)
@@ -299,14 +300,16 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             calc_ekf = False
         if drive_ekf:
             u_old = mon_old.u[i]
-            z_old = mon_old.z[i]
             x_old = mon_old.x[i]
             p_old = mon_old.P[i]
+            z_old = mon_old.z[i]
         else:
             u_old = None
-            z_old = None
             x_old = None
             p_old = None
+            z_old = None
+        if reset:
+            z_old = mon_old.z[0]
         if rp.modeling == 0:
             mon.calculate(_chm_m, Tb_, vb_, ib_, T, calc_ekf=calc_ekf, dt_ekf=T_ekf, rp=rp, reset=reset,
                           update_time_in=update_time_in, u_old=u_old, z_old=z_old, x_old=x_old, p_old=p_old,
@@ -314,10 +317,10 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0)
         else:
             mon.calculate(_chm_m, Tb_, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
-                          calc_ekf=calc_ekf, dt_ekf=T_ekf, rp=rp, reset=reset, update_time_in=update_time_in,
-                          u_old=u_old, z_old=z_old, x_old=x_old, p_old=p_old, bms_off_init=bms_off_init, ib_amp=ibmm,
-                          ib_noa=ibnm, e_w_amp_0=e_w_amp_0, e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0,
-                          e_w_noa_filt_0=e_w_noa_filt_0)
+                          calc_ekf=calc_ekf, dt_ekf=T_ekf, rp=rp, reset=reset,
+                          update_time_in=update_time_in, u_old=u_old, z_old=z_old, x_old=x_old, p_old=p_old,
+                          bms_off_init=bms_off_init, ib_amp=ibmm, ib_noa=ibnm, e_w_amp_0=e_w_amp_0,
+                          e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0)
         ib_charge = mon.ib_charge
         sat = is_sat(Tb_, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)

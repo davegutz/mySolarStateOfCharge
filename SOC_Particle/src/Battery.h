@@ -189,7 +189,7 @@ protected:
   TFDelay *EKF_converged;  // Time persistence
   RateLimit *T_RLim = new RateLimit();
   Iterator *ice_;      // Iteration control for EKF solver
-  LagTustin *voc_stat_filt = new LagTustin(EKF_NOM_DT, VOC_STAT_FILT, VB_MIN, VB_MAX);  // actual update time provided run time
+  LagExp *voc_stat_filt = new LagExp(EKF_NOM_DT, VOC_STAT_FILT, VB_MIN, VB_MAX);  // actual update time provided run time
   float amp_hrs_remaining_ekf_;  // Discharge amp*time left if drain to q_ekf=0, A-h
   float amp_hrs_remaining_soc_;  // Discharge amp*time left if drain soc_ to 0, A-h
   uint8_t eframe_;     // Counter to run EKF slower than Coulomb Counter and ChargeTransfer models
