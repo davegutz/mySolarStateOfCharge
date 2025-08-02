@@ -107,7 +107,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         t = sim_old.time
     else:
         t = mon_old.time
-    update_time_in = sts.mode(mon_old.dt)
     if t_max is not None:
         t_delt = t - t[0]
         t = t[np.where(t_delt <= t_max)]
@@ -234,19 +233,19 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         else:
             _chm_s = Bsim
         sim.calculate(chem=_chm_s, temp_c=Tb_, soc=sim.soc, curr_in=ib_in_s, dt=T, q_capacity=sim.q_capacity,
-                      dc_dc_on=dc_dc_on, reset=reset, update_time_in=update_time_in, rp=rp, sat_init=sat_s_init,
+                      dc_dc_on=dc_dc_on, reset=reset, rp=rp, sat_init=sat_s_init,
                       bms_off_init=bms_off_init)
         sim.count_coulombs(chem=_chm_s, dt=T, reset=reset, temp_c=Tb_, charge_curr=sim.ib_charge, sat=False, soc_s_init=soc_s_init,
                            mon_sat=mon.sat, mon_delta_q=mon.delta_q, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
 
         # EKF
+        reset_ekf = False
         if reset:
             mon.apply_soc(mon_old.soc[i], Tb_)
             rp.delta_q = mon.delta_q
             rp.t_last = Tb_
             mon.load(rp.delta_q, rp.t_last)
             mon.assign_temp_c(Tb_)
-            mon.init_soc_ekf(mon_old.soc_ekf[i], mon_old.P[i])  # when modeling (assumed in python) ekf wants to equal model
             if hasattr(mon_old, 'e_wrap_m'):
                 e_w_amp_0 = mon_old.e_wrap_m[0]
             if hasattr(mon_old, 'e_wrap_m_filt'):
@@ -255,6 +254,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                 e_w_noa_0 = mon_old.e_wrap_n[0]
             if hasattr(mon_old, 'e_wrap_n_filt'):
                 e_w_noa_filt_0 = mon_old.e_wrap_n_filt[0]
+            reset_ekf = True
 
         # Monitor calculations including ekf
         if Bmon is None:
@@ -289,6 +289,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             vb_ = vb_fail
         else:
             vb_ = vb[i]
+
+        # EKF sequencing logic
         if (i_ekf+1 < len(mon_old.time_e)) and (mon_old.time_e[i_ekf+1] <= mon_old.time[i]):
             if i_ekf == -1:
                 T_ekf = mon_old.time_e[1] - mon_old.time_e[0]
@@ -298,6 +300,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             i_ekf += 1
         else:
             calc_ekf = False
+        if i_ekf < 1:
+            reset_ekf = True
+            mon.init_soc_ekf(mon_old.soc_ekf[0], mon_old.P[0])  # when modeling (assumed in python) ekf wants to equal model
         if drive_ekf:
             u_old = mon_old.u[i]
             x_old = mon_old.x[i]
@@ -310,17 +315,22 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             z_old = None
         if reset:
             z_old = mon_old.z[0]
+
         if rp.modeling == 0:
+            print(f"{i=}   {i_ekf=}   {mon_old.time[i]=}   {mon_old.time_e[i_ekf]=}")
+            print(f"{reset=}   {reset_ekf=} {calc_ekf=}")
             mon.calculate(_chm_m, Tb_, vb_, ib_, T, calc_ekf=calc_ekf, dt_ekf=T_ekf, rp=rp, reset=reset,
-                          update_time_in=update_time_in, u_old=u_old, z_old=z_old, x_old=x_old, p_old=p_old,
+                          u_old=u_old, z_old=z_old, x_old=x_old, p_old=p_old,
                           bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh, e_w_amp_0=e_w_amp_0,
-                          e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0)
+                          e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
+                          reset_ekf=reset_ekf)
         else:
             mon.calculate(_chm_m, Tb_, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
                           calc_ekf=calc_ekf, dt_ekf=T_ekf, rp=rp, reset=reset,
-                          update_time_in=update_time_in, u_old=u_old, z_old=z_old, x_old=x_old, p_old=p_old,
+                          u_old=u_old, z_old=z_old, x_old=x_old, p_old=p_old,
                           bms_off_init=bms_off_init, ib_amp=ibmm, ib_noa=ibnm, e_w_amp_0=e_w_amp_0,
-                          e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0)
+                          e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
+                          reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge
         sat = is_sat(Tb_, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)

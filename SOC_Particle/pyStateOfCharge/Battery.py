@@ -246,7 +246,7 @@ class Battery(Coulombs):
         # print("soc=", soc, "temp_c=", temp_c, "dvoc=", self.dvoc, "voc=", voc)
         return voc, dv_dsoc
 
-    def calculate(self, chem, temp_c, soc, curr_in, dt, q_capacity, dc_dc_on, reset, update_time_in,  # BatterySim
+    def calculate(self, chem, temp_c, soc, curr_in, dt, q_capacity, dc_dc_on, reset,  # BatterySim
                   rp=None, sat_init=None, bms_off_init=None):
         # Battery
         raise NotImplementedError
@@ -373,9 +373,10 @@ class BatteryMonitor(Battery, EKF1x1):
     # BatteryMonitor::calculate()
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
-    def calculate(self, chem, temp_c, vb, ib, dt, reset, update_time_in, calc_ekf, dt_ekf, q_capacity=None,
+    def calculate(self, chem, temp_c, vb, ib, dt, reset, calc_ekf, dt_ekf, q_capacity=None,
                   dc_dc_on=None, rp=None, u_old=None, z_old=None, x_old=None, p_old=None, bms_off_init=None,
-                  ib_amp=None, ib_noa=None, e_w_amp_0=None, e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None):
+                  ib_amp=None, ib_noa=None, e_w_amp_0=None, e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None,
+                  reset_ekf=None):
         self.ib_amp = ib_amp
         self.ib_noa = ib_noa
         if self.chm != chem:
@@ -444,7 +445,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
 
         # EKF 1x1
-        self.reset_ekf = reset
+        self.reset_ekf = reset_ekf
         if calc_ekf:
             self.dt_eframe = dt_ekf
             ddq_dt = self.ib_charge
@@ -458,19 +459,22 @@ class BatteryMonitor(Battery, EKF1x1):
             # if self.reset_ekf and x_old is not None:
             if x_old is not None:
                 self.x_ekf = x_old
-            self.voc_stat_f = self.voc_stat_filt.calculate_tau(self.voc_stat, self.reset_ekf, self.dt_eframe, self.VOC_STAT_FILT)
-            self.predict_ekf(u=ddq_dt, u_old=u_old)  # u = d(q)/dt
-            self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1., z_old=z_old, p_old=p_old)  # z = voc, voc_filtered = hx
+            self.voc_stat_f = self.voc_stat_filt.calculate_tau(self.voc_stat, self.reset_ekf, self.dt_eframe,
+                                                               self.VOC_STAT_FILT)
+            self.predict_ekf(u=ddq_dt, u_old=u_old, reset=self.reset_ekf)  # u = d(q)/dt
+            self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1.,z_old=z_old,p_old=p_old,
+                            reset=self.reset_ekf)  # z = voc, voc_filtered = hx
+            print(f"\n\n{x_old=} {p_old=} {self.P=} {self.P_prior=} {self.P_post=} {self.x_ekf=}")
             self.soc_ekf = self.x_ekf  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
             self.q_ekf = self.soc_ekf * self.q_capacity
             self.y_filt = self.y_filt_lag.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.EKF_T_RESET),
-                                                    reset=False)
+                                                    reset=self.reset_ekf)
             self.y_filt2 = self.y_filt_2Ord.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.TMAX_FILT),
-                                                      reset=False)
+                                                      reset=self.reset_ekf)
             # EKF convergence
             conv = abs(self.y_filt) < Battery.EKF_CONV
             self.EKF_converged.calculate(conv, Battery.EKF_T_CONV, Battery.EKF_T_RESET,
-                                         min(self.dt_eframe, Battery.EKF_T_RESET), False)
+                                         min(self.dt_eframe, Battery.EKF_T_RESET), self.reset_ekf)
         self.eframe += 1
         if self.reset_ekf or self.eframe >= self.eframe_mult:  # '>=' ensures reset with changes on the fly
             self.eframe = 0
@@ -742,7 +746,7 @@ class BatterySim(Battery):
         return s
 
     # BatterySim::calculate()
-    def calculate(self, chem, temp_c, soc, curr_in, dt, q_capacity, dc_dc_on, reset, update_time_in,  # BatterySim
+    def calculate(self, chem, temp_c, soc, curr_in, dt, q_capacity, dc_dc_on, reset,   # BatterySim
                   rp=None, sat_init=None, bms_off_init=None):
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)

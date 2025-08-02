@@ -75,7 +75,7 @@ class EKF1x1:
         self.x_ekf = soc
         self.P = p_init
 
-    def predict_ekf(self, u, u_old=None):
+    def predict_ekf(self, u, u_old=None, reset=False):
         """1x1 Extended Kalman Filter predict
         Inputs:
             u   1x1 input, =ib, A
@@ -90,12 +90,13 @@ class EKF1x1:
         else:
             self.u_ekf = u
         self.Fx, self.Bu = self.ekf_predict()
-        self.x_ekf = self.Fx*self.x_ekf + self.Bu*self.u_ekf
-        self.P = self.Fx * self.P * self.Fx + self.Q
+        if reset is False:
+            self.x_ekf = self.Fx*self.x_ekf + self.Bu*self.u_ekf
+            self.P = self.Fx * self.P * self.Fx + self.Q
         self.x_prior = self.x_ekf
         self.P_prior = self.P
 
-    def update_ekf(self, z, x_min, x_max, z_old=None, p_old=None):
+    def update_ekf(self, z, x_min, x_max, z_old=None, p_old=None, reset=False):
         """ 1x1 Extended Kalman Filter update
             Inputs:
                 z   1x1 input, =voc, dynamic predicted by other model, V
@@ -122,9 +123,10 @@ class EKF1x1:
         if abs(self.S) > 1e-12:
             self.K = pht/self.S  # using last-good-value if S=0
         self.y_ekf = self.z_ekf - self.hx
-        self.x_ekf = max(min(self.x_ekf + self.K*self.y_ekf, x_max), x_min)
-        i_kh = 1 - self.K*self.H
-        self.P = i_kh*self.P
+        if reset is False:
+            self.x_ekf = max(min(self.x_ekf + self.K*self.y_ekf, x_max), x_min)
+            i_kh = 1 - self.K*self.H
+            self.P = i_kh*self.P
         self.x_post = self.x_ekf
         self.P_post = self.P
 
