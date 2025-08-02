@@ -48,7 +48,7 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 
 def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', label=None, marker=None,
-        markersize=None, markevery=None):
+        markersize=None, markevery=None, stairs=False):
     if (sx is not None and sy is not None and hasattr(sx, st) and hasattr(sy, yt) and
             len(getattr(sy, yt)) > 0 and getattr(sy, yt)[0] is not None):
         try:
@@ -56,8 +56,13 @@ def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', labe
         except TypeError:
             yscld = np.array(getattr(sy, yt)) * slr + add
         try:
-            plt_.plot(getattr(sx, st), yscld, color=color, linestyle=linestyle, label=label, marker=marker,
-                      markersize=markersize, markevery=markevery)
+            if stairs:
+                dt = getattr(sx, st)[-1] - getattr(sx, st)[-2]
+                x_in = np.append(getattr(sx, st), getattr(sx, st)[-1]+dt)
+                plt_.stairs(yscld, x_in, color=color, linestyle=linestyle, label=label)
+            else:
+                plt_.plot(getattr(sx, st), yscld, color=color, linestyle=linestyle, label=label, marker=marker,
+                          markersize=markersize, markevery=markevery)
         except ValueError:
             pass
 
@@ -128,8 +133,8 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
         plq(plt, mo, 'time', mo, 'e_wrap', color='black', linestyle='-', label='e_wrap'+ref_str)
         plq(plt, mv, 'time', mv, 'e_wrap', color='red', linestyle='--', label='e_wrap'+test_str)
         plq(plt, mo, 'time', mo, 'e_wrap_filt', color='black', linestyle='-.', label='e_wrap_filt'+ref_str)
-        plt.plot(mo.time, -mo.y_ekf, color='green', linestyle='-.', label='-y_ekf'+ref_str)
-        plq(plt, mo, 'time', mo, 'y_ekf_f', slr=-1, color='black', linestyle=':', label='-y_ekf_f'+ref_str)
+        plq(plt, mo, 'time', mo, 'y_ekf', slr=-1, color='green', linestyle='-.', label='-y_ekf'+ref_str, stairs=True)
+        plq(plt, mo, 'time', mo, 'y_ekf_f', slr=-1, color='black', linestyle=':', label='-y_ekf_f'+ref_str, stairs=True)
         plq(plt, mv, 'time', mv, 'y_ekf_f', slr=-1, color='red', linestyle=':', label='-y_ekf_f'+test_str)
         plt.legend(loc=1)
         plt.subplot(224)
@@ -256,11 +261,11 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.subplot(323)
     plt.plot(mo.time, mo.voc, color='green', linestyle='-', label='voc'+ref_str)
     plt.plot(mv.time, mv.voc, color='orange', linestyle='--', label='voc'+test_str)
-    plt.plot(mo.time, mo.voc_ekf, color='blue', linestyle='-.', label='voc_ekf'+ref_str)
+    plq(plt, mo, 'time', mo, 'voc_ekf', color='blue', linestyle='-.', label='voc_ekf'+ref_str, stairs=True)
     plt.plot(mv.time, mv.voc_ekf, color='red', linestyle=':', label='voc_ekf'+test_str)
     plt.legend(loc=1)
     plt.subplot(324)
-    plt.plot(mo.time, mo.y_ekf, color='green', linestyle='-', label='y_ekf'+ref_str)
+    plq(plt, mo, 'time', mo, 'y_ekf', color='green', linestyle='-', label='y_ekf'+ref_str, stairs=True)
     plt.plot(mv.time, mv.y_ekf, color='orange', linestyle='--', label='y_ekf'+test_str)
     plq(plt, mv, 'time', mv, 'y_filt', color='black', linestyle='-.', label='y_filt'+test_str)
     plq(plt, mv, 'time', mv, 'y_filt2', color='cyan', linestyle=':', label='y_filt2'+test_str)
