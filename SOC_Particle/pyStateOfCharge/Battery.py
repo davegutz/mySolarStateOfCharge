@@ -374,7 +374,7 @@ class BatteryMonitor(Battery, EKF1x1):
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
     def calculate(self, chem, temp_c, vb, ib, dt, reset, calc_ekf, dt_ekf, q_capacity=None,
-                  dc_dc_on=None, rp=None, u_old=None, z_old=None, x_old=None, p_old=None, bms_off_init=None,
+                  dc_dc_on=None, rp=None, bms_off_init=None,
                   ib_amp=None, ib_noa=None, e_w_amp_0=None, e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None,
                   reset_ekf=None):
         self.ib_amp = ib_amp
@@ -434,7 +434,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.dv_hys = 0.
         self.voc_stat = self.voc - self.dv_hys
         if reset:
-            self.voc_stat = z_old
+            self.voc_stat = self.voc
         self.ioc = self.ib
 
         # Wrap logic
@@ -457,14 +457,11 @@ class BatteryMonitor(Battery, EKF1x1):
             self.Q = Battery.EKF_Q_SD_NORM**2  # override
             self.R = Battery.EKF_R_SD_NORM**2  # override
             # if self.reset_ekf and x_old is not None:
-            if x_old is not None:
-                self.x_ekf = x_old
             self.voc_stat_f = self.voc_stat_filt.calculate_tau(self.voc_stat, self.reset_ekf, self.dt_eframe,
                                                                self.VOC_STAT_FILT)
-            self.predict_ekf(u=ddq_dt, u_old=u_old, reset=self.reset_ekf)  # u = d(q)/dt
-            self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1.,z_old=z_old,p_old=p_old,
-                            reset=self.reset_ekf)  # z = voc, voc_filtered = hx
-            print(f"\n\n{x_old=} {p_old=} {self.P=} {self.P_prior=} {self.P_post=} {self.x_ekf=}")
+            self.predict_ekf(u=ddq_dt, reset=self.reset_ekf)  # u = d(q)/dt
+            self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1., reset=self.reset_ekf)  # z = voc, voc_filtered = hx
+            print(f"\n\n {self.P=} {self.P_prior=} {self.P_post=} {self.x_ekf=}")
             self.soc_ekf = self.x_ekf  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
             self.q_ekf = self.soc_ekf * self.q_capacity
             self.y_filt = self.y_filt_lag.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.EKF_T_RESET),

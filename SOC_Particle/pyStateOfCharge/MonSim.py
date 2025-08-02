@@ -303,31 +303,15 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if i_ekf < 1:
             reset_ekf = True
             mon.init_soc_ekf(mon_old.soc_ekf[0], mon_old.P[0])  # when modeling (assumed in python) ekf wants to equal model
-        if drive_ekf:
-            u_old = mon_old.u[i]
-            x_old = mon_old.x[i]
-            p_old = mon_old.P[i]
-            z_old = mon_old.z[i]
-        else:
-            u_old = None
-            x_old = None
-            p_old = None
-            z_old = None
-        if reset:
-            z_old = mon_old.z[0]
 
         if rp.modeling == 0:
-            print(f"{i=}   {i_ekf=}   {mon_old.time[i]=}   {mon_old.time_e[i_ekf]=}")
-            print(f"{reset=}   {reset_ekf=} {calc_ekf=}")
             mon.calculate(_chm_m, Tb_, vb_, ib_, T, calc_ekf=calc_ekf, dt_ekf=T_ekf, rp=rp, reset=reset,
-                          u_old=u_old, z_old=z_old, x_old=x_old, p_old=p_old,
                           bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
                           reset_ekf=reset_ekf)
         else:
             mon.calculate(_chm_m, Tb_, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
                           calc_ekf=calc_ekf, dt_ekf=T_ekf, rp=rp, reset=reset,
-                          u_old=u_old, z_old=z_old, x_old=x_old, p_old=p_old,
                           bms_off_init=bms_off_init, ib_amp=ibmm, ib_noa=ibnm, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
                           reset_ekf=reset_ekf)

@@ -75,7 +75,7 @@ class EKF1x1:
         self.x_ekf = soc
         self.P = p_init
 
-    def predict_ekf(self, u, u_old=None, reset=False):
+    def predict_ekf(self, u, reset=False):
         """1x1 Extended Kalman Filter predict
         Inputs:
             u   1x1 input, =ib, A
@@ -85,10 +85,7 @@ class EKF1x1:
             x   1x1 Kalman state variable = Vsoc (0-1 fraction)
             P   1x1 Kalman probability
         """
-        if u_old:
-            self.u_ekf = u_old
-        else:
-            self.u_ekf = u
+        self.u_ekf = u
         self.Fx, self.Bu = self.ekf_predict()
         if reset is False:
             self.x_ekf = self.Fx*self.x_ekf + self.Bu*self.u_ekf
@@ -96,7 +93,7 @@ class EKF1x1:
         self.x_prior = self.x_ekf
         self.P_prior = self.P
 
-    def update_ekf(self, z, x_min, x_max, z_old=None, p_old=None, reset=False):
+    def update_ekf(self, z, x_min, x_max, reset=False):
         """ 1x1 Extended Kalman Filter update
             Inputs:
                 z   1x1 input, =voc, dynamic predicted by other model, V
@@ -112,12 +109,7 @@ class EKF1x1:
                 SI  1x1 system uncertainty inverse
         """
         self.hx, self.H = self.ekf_update()
-        if z_old:
-            self.z_ekf = z_old
-        else:
-            self.z_ekf = z
-        if p_old:
-            self.P = p_old
+        self.z_ekf = z
         pht = self.P*self.H
         self.S = self.H*pht + self.R
         if abs(self.S) > 1e-12:
