@@ -183,7 +183,7 @@ BatteryMonitor::~BatteryMonitor() {}
         voc_filt_       Filtered open circuit voltage for saturation detect, V
         ioc_            Best estimate of IOC charge current after hysteresis, A
         bms_off_        Calculated indication that the BMS has turned off charge current, T=off
-        voc_stat_       Static model open circuit voltage from table (reference), V\n
+        voc_stat_       Static model open circuit voltage est, should match voc(soc) except for hys, V\n
         Tb              Tb, deg C
         ib_             Battery terminal current, A
         vb_             Battery terminal voltage, V
