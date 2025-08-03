@@ -146,9 +146,9 @@ def ekf_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
             plt.subplot(224)
             plt.plot(mo.time, mo.voc_stat, color='red', linestyle='-', label='z=voc_stat' + ref_str)
             plt.plot(mv.time, mv.voc_stat_f, color='black', linestyle='--', label='z=voc_stat_f' + test_str)
-            plq(plt, mo, 'time', mo, 'voc_ekf', color='cyan', linestyle='-.', label='voc_ekf(soc) = Hx' + ref_str,
+            plq(plt, mo, 'time', mo, 'voc_ekf', color='cyan', linestyle='-.', label='voc_ekf(soc) = hx' + ref_str,
                 stairs=True)
-            plt.plot(mv.time, mv.voc_ekf, color='orange', linestyle=':', label='voc_ekf(soc) = Hx' + test_str)
+            plt.plot(mv.time, mv.voc_ekf, color='orange', linestyle=':', label='voc_ekf(soc) = hx' + test_str)
             plt.legend(loc=1)
 
     if mo.voc_soc is not None:

@@ -101,6 +101,7 @@ class EKF1x1:
                 Q   1x1 Kalman process uncertainty
                 H   1x1 Jacobian sensitivity dV/dSOC
             Outputs:
+                hx  1x1 Estimate of z, V
                 x   1x1 Kalman state variable = Vsoc (0-1 fraction)
                 y   1x1 Residual z-hx, V
                 P   1x1 Kalman uncertainty covariance

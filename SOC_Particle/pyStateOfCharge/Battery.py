@@ -246,8 +246,9 @@ class Battery(Coulombs):
         # print("soc=", soc, "temp_c=", temp_c, "dvoc=", self.dvoc, "voc=", voc)
         return voc, dv_dsoc
 
-    def calculate(self, chem, temp_c, soc, curr_in, dt, q_capacity, dc_dc_on, reset,  # BatterySim
-                  rp=None, sat_init=None, bms_off_init=None):
+    def calculate(self, chem, temp_c, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
+                  q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_0=None,
+                  e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, reset_ekf=None, soc=None, sat_init=None):
         # Battery
         raise NotImplementedError
 
@@ -373,10 +374,9 @@ class BatteryMonitor(Battery, EKF1x1):
     # BatteryMonitor::calculate()
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
-    def calculate(self, chem, temp_c, vb, ib, dt, reset, calc_ekf, dt_ekf, q_capacity=None,
-                  dc_dc_on=None, rp=None, bms_off_init=None,
-                  ib_amp=None, ib_noa=None, e_w_amp_0=None, e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None,
-                  reset_ekf=None):
+    def calculate(self, chem, temp_c, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
+                  q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_0=None,
+                  e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, reset_ekf=None, soc=None, sat_init=None):
         self.ib_amp = ib_amp
         self.ib_noa = ib_noa
         if self.chm != chem:
@@ -457,8 +457,12 @@ class BatteryMonitor(Battery, EKF1x1):
             self.Q = Battery.EKF_Q_SD_NORM**2  # override
             self.R = Battery.EKF_R_SD_NORM**2  # override
             # if self.reset_ekf and x_old is not None:
-            self.voc_stat_f = self.voc_stat_filt.calculate_tau(self.voc_stat, self.reset_ekf, self.dt_eframe,
-                                                               self.VOC_STAT_FILT)
+            if self.reset_ekf:
+                self.voc_stat_f = self.voc_stat_filt.calculate_tau(z_init, self.reset_ekf, self.dt_eframe,
+                                                                   self.VOC_STAT_FILT)
+            else:
+                self.voc_stat_f = self.voc_stat_filt.calculate_tau(self.voc_stat, self.reset_ekf, self.dt_eframe,
+                                                                   self.VOC_STAT_FILT)
             self.predict_ekf(u=ddq_dt, reset=self.reset_ekf)  # u = d(q)/dt
             self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1., reset=self.reset_ekf)  # z = voc, voc_filtered = hx
             print(f"\n\n {self.P=} {self.P_prior=} {self.P_post=} {self.x_ekf=}")
@@ -743,15 +747,16 @@ class BatterySim(Battery):
         return s
 
     # BatterySim::calculate()
-    def calculate(self, chem, temp_c, soc, curr_in, dt, q_capacity, dc_dc_on, reset,   # BatterySim
-                  rp=None, sat_init=None, bms_off_init=None):
+    def calculate(self, chem, temp_c, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
+                  q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_0=None,
+                  e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, reset_ekf=None, soc=None, sat_init=None):
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)
             self.chm = chem
 
         self.temp_c = temp_c
         self.dt = dt
-        self.ib_in = curr_in
+        self.ib_in = ib
         if reset:
             self.ib_fut = self.ib_in
         self.ib = max(min(self.ib_fut, Battery.IMAX_NUM), -Battery.IMAX_NUM)
@@ -764,7 +769,7 @@ class BatterySim(Battery):
         self.voc_stat = min(self.voc_stat + (soc - soc_lim) * self.dv_dsoc, self.vsat * 1.2)
 
         # Hysteresis model
-        self.hys.calculate_hys(curr_in, self.soc, self.chm)
+        self.hys.calculate_hys(ib, self.soc, self.chm)
         init_low = self.bms_off or (self.soc < (self.soc_min + Battery.HYS_SOC_MIN_MARG) and
                                     self.ib > Battery.HYS_IB_THR)
         self.dv_hys, self.tau_hys = self.hys.update(self.dt, init_high=self.sat, init_low=init_low, e_wrap=0.,

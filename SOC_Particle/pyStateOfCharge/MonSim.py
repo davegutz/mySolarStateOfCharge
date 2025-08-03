@@ -232,8 +232,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             _chm_s = chm_s[i]
         else:
             _chm_s = Bsim
-        sim.calculate(chem=_chm_s, temp_c=Tb_, soc=sim.soc, curr_in=ib_in_s, dt=T, q_capacity=sim.q_capacity,
-                      dc_dc_on=dc_dc_on, reset=reset, rp=rp, sat_init=sat_s_init,
+        sim.calculate(_chm_s, Tb_, None, ib_in_s, T, reset, None, None, None,
+                      soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=bms_off_init)
         sim.count_coulombs(chem=_chm_s, dt=T, reset=reset, temp_c=Tb_, charge_curr=sim.ib_charge, sat=False, soc_s_init=soc_s_init,
                            mon_sat=mon.sat, mon_delta_q=mon.delta_q, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
@@ -305,14 +305,14 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.init_soc_ekf(mon_old.soc_ekf[0], mon_old.P[0])  # when modeling (assumed in python) ekf wants to equal model
 
         if rp.modeling == 0:
-            mon.calculate(_chm_m, Tb_, vb_, ib_, T, calc_ekf=calc_ekf, dt_ekf=T_ekf, rp=rp, reset=reset,
-                          bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh, e_w_amp_0=e_w_amp_0,
+            mon.calculate(_chm_m, Tb_, vb_, ib_, T, reset, calc_ekf, T_ekf, mon_old.z[0],
+                          rp=rp, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
                           reset_ekf=reset_ekf)
         else:
             mon.calculate(_chm_m, Tb_, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
-                          calc_ekf=calc_ekf, dt_ekf=T_ekf, rp=rp, reset=reset,
-                          bms_off_init=bms_off_init, ib_amp=ibmm, ib_noa=ibnm, e_w_amp_0=e_w_amp_0,
+                          reset, calc_ekf, T_ekf, mon_old.z[0],
+                          rp=rp, bms_off_init=bms_off_init, ib_amp=ibmm, ib_noa=ibnm, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
                           reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge
