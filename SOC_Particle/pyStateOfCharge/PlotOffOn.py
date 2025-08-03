@@ -72,7 +72,7 @@ def off_on_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, 
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
-        fig_list.append(plt.figure())  # 8 off/on mon
+        fig_list.append(plt.figure())  # 8 off/on mon 1
         plt.subplot(321)
         plt.title(plot_title + ' off/on mon 1')
         plt.plot(mo.time, mo.vb, color='black', linestyle='-', label='vb' + ref_str)
@@ -99,6 +99,7 @@ def off_on_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, 
         plt.plot(smv.time, smv.ib_charge_s, linestyle='-.', color='blue', label='ib_charge_s' + ref_str)
         plt.plot(smv.time, smv.ib_charge_s, linestyle=':', color='orange', label='ib_charge_s' + test_str)
         plt.legend(loc=1)
+
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
