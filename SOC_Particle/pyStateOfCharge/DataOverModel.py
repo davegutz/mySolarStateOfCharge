@@ -1024,6 +1024,7 @@ class SavedData:
                 self.ib_dec = np.array(sel.ib_dec[:i_end])
         if ekf is None:
             self.time_e = None
+            self.dt_ekf = None
             self.Fx = None
             self.Bu = None
             self.Q = None
@@ -1043,6 +1044,7 @@ class SavedData:
             self.H = None
         else:
             self.time_e = np.array(ekf.c_time[:i_end]) - self.time_ref
+            self.dt_ekf = np.array(ekf.dt[:i_end])
             self.Fx = np.array(ekf.Fx_[:i_end])
             self.Bu = np.array(ekf.Bu_[:i_end])
             self.Q = np.array(ekf.Q_[:i_end])

@@ -465,7 +465,6 @@ class BatteryMonitor(Battery, EKF1x1):
                                                                    self.VOC_STAT_FILT)
             self.predict_ekf(u=ddq_dt, reset=self.reset_ekf)  # u = d(q)/dt
             self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1., reset=self.reset_ekf)  # z = voc, voc_filtered = hx
-            print(f"\n\n {self.P=} {self.P_prior=} {self.P_post=} {self.x_ekf=}")
             self.soc_ekf = self.x_ekf  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
             self.q_ekf = self.soc_ekf * self.q_capacity
             self.y_filt = self.y_filt_lag.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.EKF_T_RESET),
@@ -584,6 +583,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Bu.append(self.Bu)
         self.saved.P.append(self.P)
         self.saved.Q.append(self.Q)
+        self.saved.dt_eframe.append(self.dt_eframe)
         self.saved.R.append(self.R)
         self.saved.H.append(self.H)
         self.saved.S.append(self.S)
@@ -1063,6 +1063,7 @@ class Saved:
         self.Bu = []
         self.P = []
         self.Q = []
+        self.dt_eframe = []
         self.R = []
         self.H = []
         self.S = []
