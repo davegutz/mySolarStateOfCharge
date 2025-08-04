@@ -1616,7 +1616,7 @@ void Sensors::shunt_select_initial(const boolean reset)
     if ( !sp.mod_ib() )
     {
       Ib_model_in = Ib_hdwe;
-      #ifdef IB_CHARGE_NOA
+      #ifdef IB_CHARGE_NOA  // Force use of noa but have full signal selection logic on both for evaluation
         Ib_model_in = Ib_noa_hdwe;
       #endif
     }

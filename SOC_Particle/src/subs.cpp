@@ -71,7 +71,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
     Sen->Ib_model_in = sp.inj_bias() + sp.ib_bias_all();
   else
     Sen->Ib_model_in = Sen->Ib_hdwe;
-    #ifdef IB_CHARGE_NOA
+    #ifdef IB_CHARGE_NOA  // Force use of noa but have full signal selection logic on both for evaluation
         if ( !sp.mod_ib() ) Sen->Ib_model_in = Sen->Ib_noa_hdwe;
     #endif
   Sen->temp_load_and_filter(Sen, true);

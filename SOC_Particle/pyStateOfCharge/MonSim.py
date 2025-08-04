@@ -195,7 +195,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             T = t[1] - t[0]
             i_ekf = -1
         else:
-            candidate_dt = t[i] - t[i-1]
+            candidate_dt = t[i] - t[i-1]  # update
             if candidate_dt > 1e-6:
                 T = candidate_dt
         if dTb_in is not None:
@@ -204,7 +204,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             dTb = 0.
         # dc_dc_on = bool(lut_dc.interp(t[i]))
         dc_dc_on = False
-        Tb_ = Tb[i]+dTb
+        Tb_ = Tb[i] + dTb
         rp.modeling = modeling[i]
 
         # Basic reset model verification is to init to the input data
@@ -292,12 +292,12 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
         # EKF sequencing logic
         if (i_ekf+1 < len(mon_old.time_e)) and (mon_old.time_e[i_ekf+1] <= mon_old.time[i]):
-            if i_ekf == -1:
+            i_ekf += 1
+            if i_ekf < 1:
                 T_ekf = mon_old.time_e[1] - mon_old.time_e[0]
             else:
-                T_ekf = mon_old.time_e[i_ekf + 1] - mon_old.time_e[i_ekf]
+                T_ekf = mon_old.time_e[i_ekf] - mon_old.time_e[i_ekf-1]  # update
             calc_ekf = True
-            i_ekf += 1
         else:
             calc_ekf = False
         if i_ekf < 1:
@@ -305,7 +305,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.init_soc_ekf(mon_old.soc_ekf[0], mon_old.P[0])  # when modeling (assumed in python) ekf wants to equal model
 
         if rp.modeling == 0:
-            mon.calculate(_chm_m, Tb_, vb_, ib_, T, reset, calc_ekf, T_ekf, mon_old.z[0],
+            mon.calculate(_chm_m, Tb_, vb_, ib_, T, reset, calc_ekf, T_ekf, mon_old.z[i_ekf],
                           rp=rp, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
                           reset_ekf=reset_ekf)

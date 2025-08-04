@@ -226,6 +226,9 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     vb_ = Sen->vb();
     ib_ = Sen->ib();
     ib_ = max(min(ib_, IMAX_NUM), -IMAX_NUM);  // Overflow protection when ib_ past value used
+    #ifdef IB_CHARGE_NOA  // Force use of noa but have full signal selection logic on both for evaluation
+        if ( !sp.mod_ib() ) ib_ = Sen->Ib_noa_hdwe/sp.nP();
+    #endif
 
     // Table lookup
     voc_soc_ = voc_soc_tab(soc_, temp_c_);
@@ -239,9 +242,6 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     bms_off_ = (temp_c_ <= chem_.low_t) || ( voltage_low_ && !Sen->Flt->vb_fa() && !sp.tweak_test() );    // KISS
     Sen->bms_off = bms_off_;
     ib_charge_ = ib_;
-    #ifdef IB_CHARGE_NOA
-        if ( !sp.mod_ib() ) ib_charge_ = Sen->Ib_noa_hdwe/sp.nP();
-    #endif
     float ib_charge_ekf = ib_charge_;
     if ( bms_off_ && !bms_charging_ && sp.mod_vb())  // Don't let a single hard vb fail ruin count
         ib_charge_ = 0.;
