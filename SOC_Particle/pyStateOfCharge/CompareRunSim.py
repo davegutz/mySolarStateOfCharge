@@ -42,8 +42,8 @@ if sys.platform == 'darwin':
 plt.rcParams['axes.grid'] = True
 
 
-def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.):
-    print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n")
+def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=True):
+    print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
@@ -60,7 +60,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
     use_vb_raw = False
     dvoc_sim_in = 0.
     dvoc_mon_in = Dw
-    use_mon_soc_in = True
+    use_mon_soc_in = use_mon_soc_
 
     # detect running interactively
     # this is written to run in pwd of call
@@ -144,13 +144,16 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
 
 
 def main():
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20250804am_soc4p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 disch 20250804_95_soc4p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     time_end_in = None
     # time_end_in = 40
     data_only = False
+    # mon_soc_in = True
+    mon_soc_in = False
 
-    compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=data_only, time_end_in=time_end_in)
+    compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=data_only, time_end_in=time_end_in,
+                    use_mon_soc_=mon_soc_in)
 
 
 # import cProfile
