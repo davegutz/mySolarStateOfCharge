@@ -388,7 +388,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.dt = dt
         self.ib_in = ib
         if self.IB_CHARGE_NOA is True:
-            self.ib_in = ib_noa
+            self.ib_in = self.ib_noa
         self.mod = rp.modeling
         self.Temp_Rlim.update(x=self.temp_c, reset=reset, dt=self.dt, max_=0.017, min_=-.017)
         temp_rate = self.Temp_Rlim.rate

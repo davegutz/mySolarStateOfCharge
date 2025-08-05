@@ -210,6 +210,15 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     d_mod = rf.rec_append_fields(d_mod, 'tweak_sclr_amp', np.array(d_zero, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'tweak_sclr_noa', np.array(d_zero, dtype=float))
 
+    time_e = d_mod.time_ux.copy()
+    d_mod = rf.rec_append_fields(d_mod, 'time_e', np.array(time_e, dtype=float))
+    P = d_mod.time_ux.copy()*0.
+    d_mod = rf.rec_append_fields(d_mod, 'P', np.array(P, dtype=float))
+    z = d_mod.voc_stat.copy()
+    d_mod = rf.rec_append_fields(d_mod, 'z', np.array(z, dtype=float))
+    ibnm = d_mod.ib.copy()
+    d_mod = rf.rec_append_fields(d_mod, 'ibnm', np.array(ibnm, dtype=float))
+
     return d_mod
 
 
@@ -1213,10 +1222,10 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
 def main():
 
     # User inputs (multiple input_files allowed
-    data_file = '/home/daveg/google-drive/GitHubArchive/SOC_Particle/dataReduction/g20240909/soc2p2_hist_20241005.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/disch 20250805am_soc4p2_hi_lo_bb.csv'
     data_only = False
     mon_t = False
-    unit_key = 'g20240909_soc2p2_hi_lo_chg'
+    unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     dt_resample = 900
     Tb_force = None
     # Do this when running compare_hist_sim on run that schedule extracted assuming constant Tb
