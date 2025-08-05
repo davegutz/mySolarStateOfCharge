@@ -392,10 +392,15 @@ class Exec:
         if self.version is None:
             self.version = 'undefined'
         self.version_path = str(os.path.join(self.dataReduction_folder, self.version))
-        try:
-            os.makedirs(self.version_path, exist_ok=True)
-        except OSError:
-            tk.messagebox.showerror(title="Error", message="check google-drive available")
+        if not os.path.isdir(self.version_path):
+            tk.messagebox.showerror(title="Error",
+                                    message=self.version_path + " unavailable. Abort opening\nTurn on Drive & refresh" +
+                                                                " dataReduction Folder.")
+        else:
+            try:
+                os.makedirs(self.version_path, exist_ok=True)
+            except OSError:
+                tk.messagebox.showerror(title="Error", message="check " + self.version_path + " available")
         # Following need explicit shallow copy lines
         self.folder_button = myButton(master, text=self.dataReduction_folder[-20:],
                                       command=self.enter_data_reduction_folder, fg="blue", bg=bg_color)
@@ -435,7 +440,7 @@ class Exec:
     def enter_battery(self):
         answer = tk.simpledialog.askstring(title=self.level,
                                            prompt="Enter battery e.g. 'bb for Battleborn', 'ch' or 'chg' for CHINS:")
-        if answer is None or answer == ():
+        if answer is None or answer == () or answer == '':
             print('enter operation cancelled')
             return
         self.battery = answer
@@ -448,7 +453,7 @@ class Exec:
     def enter_data_reduction_folder(self):
         answer = tk.filedialog.askdirectory(title="Select a destination (i.e. Library) dataReduction folder",
                                             initialdir=self.dataReduction_folder)
-        if answer is None or answer == ():
+        if answer is None or answer == () or answer == '' or answer == '':
             print('enter operation cancelled')
             return
         self.dataReduction_folder = answer
@@ -462,7 +467,7 @@ class Exec:
                                            prompt="Enter unit e.g. 'pro0p', 'pro1a', 'pro2p2'"
                                                   "'pro2p2_hi_lo', 'pro3p2', 'pro3p2_hi_lo', 'pro4p2', 'soc0p', 'soc1a',"
                                                   "'soc2p2_hi_lo', 'soc3p2_hi_lo', 'soc4p2_hi_lo':")
-        if answer is None or answer == ():
+        if answer is None or answer == () or answer == '':
             print('enter operation cancelled')
             return
         self.unit = answer
@@ -476,7 +481,7 @@ class Exec:
     def enter_version(self):
         answer = tk.simpledialog.askstring(title=__file__, prompt="Enter version <vYYYYMMDD>:",
                                            initialvalue=self.version)
-        if answer is None or answer == ():
+        if answer is None or answer == () or answer == '':
             print('enter operation cancelled')
             return
         self.version = answer
@@ -1350,6 +1355,7 @@ if __name__ == '__main__':
     top_panel_right = tk.Frame(top_panel)
     top_panel_right.pack(side='left', expand=True, fill='both')
 
+    # Test/modeling row
     tk.Label(top_panel_left, text="Item", fg="blue", font=label_font).pack(pady=2)
     tk.Label(top_panel_left_ctr, text="Test", fg="blue", font=label_font).pack(pady=2)
     model_str = cf['others']['modeling']
