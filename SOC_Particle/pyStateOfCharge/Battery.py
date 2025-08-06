@@ -348,6 +348,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ewmhi_thr = None
         self.ewmlo_thr = None
         self.reset_ekf = None
+        self.voc_stat_ekf = 0.
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -376,7 +377,8 @@ class BatteryMonitor(Battery, EKF1x1):
     # (EKF_EFRAME_MULT multi-frame always <= DP)
     def calculate(self, chem, temp_c, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_0=None,
-                  e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, reset_ekf=None, soc=None, sat_init=None):
+                  e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, soc=None, sat_init=None,
+                  reset_ekf=None):
         self.ib_amp = ib_amp
         self.ib_noa = ib_noa
         if self.chm != chem:
@@ -447,6 +449,7 @@ class BatteryMonitor(Battery, EKF1x1):
         # EKF 1x1
         self.reset_ekf = reset_ekf
         if calc_ekf:
+            self.voc_stat_ekf = self.voc_stat
             self.dt_eframe = dt_ekf
             ddq_dt = self.ib_charge
             if ddq_dt > 0. and not self.tweak_test:
@@ -456,13 +459,9 @@ class BatteryMonitor(Battery, EKF1x1):
             # self.R = self.scaler_r.calculate(ddq_dt)
             self.Q = Battery.EKF_Q_SD_NORM**2  # override
             self.R = Battery.EKF_R_SD_NORM**2  # override
-            # if self.reset_ekf and x_old is not None:
-            if self.reset_ekf:
-                self.voc_stat_f = self.voc_stat_filt.calculate_tau(z_init, self.reset_ekf, self.dt_eframe,
-                                                                   self.VOC_STAT_FILT)
-            else:
-                self.voc_stat_f = self.voc_stat_filt.calculate_tau(self.voc_stat, self.reset_ekf, self.dt_eframe,
-                                                                   self.VOC_STAT_FILT)
+            self.voc_stat_f =\
+                self.voc_stat_filt.calculate_tau_seeded(self.voc_stat_ekf, z_init, self.reset_ekf, self.dt_eframe,
+                                                        self.VOC_STAT_FILT)
             self.predict_ekf(u=ddq_dt, reset=self.reset_ekf)  # u = d(q)/dt
             self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1., reset=self.reset_ekf)  # z = voc, voc_filtered = hx
             self.soc_ekf = self.x_ekf  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
@@ -584,6 +583,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.P.append(self.P)
         self.saved.Q.append(self.Q)
         self.saved.dt_eframe.append(self.dt_eframe)
+        self.saved.voc_stat_ekf.append(self.voc_stat_ekf)
         self.saved.R.append(self.R)
         self.saved.H.append(self.H)
         self.saved.S.append(self.S)
@@ -1064,6 +1064,7 @@ class Saved:
         self.P = []
         self.Q = []
         self.dt_eframe = []
+        self.voc_stat_ekf = []
         self.R = []
         self.H = []
         self.S = []

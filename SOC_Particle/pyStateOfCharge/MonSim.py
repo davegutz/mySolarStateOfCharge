@@ -305,7 +305,10 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.init_soc_ekf(mon_old.soc_ekf[0], mon_old.P[0])  # when modeling (assumed in python) ekf wants to equal model
 
         if rp.modeling == 0:
-            mon.calculate(_chm_m, Tb_, vb_, ib_, T, reset, calc_ekf, T_ekf, mon_old.z[i_ekf],
+            if reset_ekf:
+                z_init = mon_old.z[i_ekf]
+                # print(f"{i_ekf} {mon_old.time_e[i_ekf]} {mon_old.dt_ekf[i_ekf]} c {calc_ekf} r {reset_ekf} z {mon_old.z[i_ekf+1]} z_init {z_init}")
+            mon.calculate(_chm_m, Tb_, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init,
                           rp=rp, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
                           reset_ekf=reset_ekf)
