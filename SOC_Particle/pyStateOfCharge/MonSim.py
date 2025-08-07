@@ -324,6 +324,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if rp.modeling == 0:
             mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, temp_c=Tb_, charge_curr=ib_charge, sat=saturated,
                                use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
+            print(f"time {mon_old.time[i]} dsoc {mon_old.soc[i] - mon.soc} mon_old.ib_charge {mon_old.ib_charge[i]} ib_charge {ib_charge} {saturated=} {reset=} {T=} {Tb_=} {_chm_m=} {mon_old.soc[i]=} {mon.soc}")
         else:
             mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, temp_c=Tb_, charge_curr=ib_charge, sat=saturated,
                                use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
@@ -460,7 +461,9 @@ if __name__ == '__main__':
         if sel_file_clean:
             sel_old_raw = np.genfromtxt(sel_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
         mon_old = SavedData(data=mon_old_raw, sel=sel_old_raw, time_end=time_end, zero_zero=zero_zero_in,
-                            zero_thr=zero_thr_in)
+                            zero_thr=zero_thr_in, init_time_in=init_time_in)
+        # SavedData determines when to initialize
+        init_time = mon_old.init_time
 
         # Load _m v24 portion of real-time run (old)
         data_file_sim_clean = write_clean_file(data_file_old_txt, type_='_sim', hdr_key=hdr_key_sim,
@@ -470,15 +473,6 @@ if __name__ == '__main__':
             sim_old = SavedDataSim(time_ref=mon_old.time_ref, data=sim_old_raw, time_end=time_end)
         else:
             sim_old = None
-
-        # How to initialize
-        if mon_old.time[0] == 0.:  # no initialization flat detected at beginning of recording
-            init_time = 1.
-        else:
-            if init_time_in:
-                init_time = init_time_in
-            else:
-                init_time = -4.
 
         # New run
         mon_file_save = data_file_clean.replace(".csv", "_rep.csv")

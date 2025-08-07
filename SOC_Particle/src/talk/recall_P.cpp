@@ -69,6 +69,7 @@ boolean recall_P(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             Serial.printf ("\nM:"); Mon->pretty_print(Sen);
             Serial.printf ("M::"); Mon->EKF_1x1::pretty_print();
             Serial.printf ("\nmodeling %d\n", sp.modeling());
+            Serial.printf ("\nSen->T %9.6f\n", Sen->T);
             break;
 
         case ( 'M' ):  // PM:  Print shunt Amp
@@ -92,6 +93,7 @@ boolean recall_P(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             Serial.printf("\nmodeling=%d\n", sp.modeling());
             Serial.printf("S:");  Sen->Sim->pretty_print();
             // Serial.printf("S::"); Sen->Sim->Coulombs::pretty_print();
+            Serial.printf ("\nSen->T %9.6f\n", Sen->T);
             break;
 
         case ( 'V' ):  // PV:  Print all volatile

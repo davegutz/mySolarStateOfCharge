@@ -84,10 +84,12 @@ public:
 protected:
   boolean resetting_ = false;  // Sticky flag to coordinate user testing of coulomb counters, T=performing an external reset of counter
   double coul_eff_;   // Coulombic efficiency - the fraction of charging input that gets turned into usable Coulombs
+  double d_delta_q_;  // Change in charge for update, C
   double delta_q_abs_;// Total charge book-kept since reset, not reset on saturation, C
   double delta_q_inf_;// Charge since initialized, C
   double delta_q_neg_;// Total negative charge book-kept since reset, not reset on saturation, C
   double delta_q_pos_;// Total positive charge book-kept since reset, not reset on saturation, C
+  double dt_;         // Update time, s
   double q_;          // Present charge available to use, except q_min_, C
   double q_capacity_; // Saturation charge at temperature, C
   double q_cap_rated_;// Rated capacity at t_rated_, saved for future scaling, C

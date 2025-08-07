@@ -420,13 +420,6 @@ void BatteryMonitor::ekf_update(double *hx, double *H)
     *hx = Battery::calc_soc_voc(x_lim, temp_c_, &dv_dsoc_);
     // Jacodian of measurement function
     *H = dv_dsoc_;
-    if ( sp.debug()==36 )
-    {
-        Serial.printf("ekf_update:: x, temp, hx, H: %7.3f,%7.3f,%7.3f%7.3f\n",
-            x_lim, temp_c_, *hx, *H);
-        Serial1.printf("ekf_update:: x, temp, hx, H: %7.3f,%7.3f,%7.3f%7.3f\n",
-            x_lim, temp_c_, *hx, *H);
-    }
 }
 
 // Initialize
@@ -866,6 +859,14 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
     soc_ = q_ / q_capacity_;
     soc_min_ = chem_.soc_min_T_->interp(temp_lim);
     q_min_ = soc_min_ * q_capacity_;
+
+    if ( sp.debug()==36 )
+    {
+        Serial.printf("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
+            charge_curr, dt_, -chem_.dqdt*q_capacity_*(temp_lim - *sp_t_last_), coul_eff_, d_delta_q_, *sp_delta_q_, q_);
+        Serial1.printf("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
+            charge_curr, dt_, -chem_.dqdt*q_capacity_*(temp_lim - *sp_t_last_), coul_eff_, d_delta_q_, *sp_delta_q_, q_);
+    }
 
     // print_serial_sim
     if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)

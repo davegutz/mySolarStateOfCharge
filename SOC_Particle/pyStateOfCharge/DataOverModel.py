@@ -733,7 +733,8 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
 
 
 class SavedData:
-    def __init__(self, data=None, sel=None, ekf=None, time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None):
+    def __init__(self, data=None, sel=None, ekf=None, time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None,
+                 init_time_in=None):
         i_end = 0
         if data is None:
             self.i = 0
@@ -772,6 +773,7 @@ class SavedData:
             self.soc = None  # Coulomb Counter fraction of saturation charge (q_capacity_) available (0-1)
             self.time_ref = 0.  # Adjust time for start of ib input
             self.voc_soc_new = None  # For studies
+            self.init_time = None
         else:
             self.i = 0
             self.cTime = np.array(data.cTime)
@@ -805,6 +807,15 @@ class SavedData:
             self.time -= self.time_ref
             self.time_min = self.time / 60.
             self.time_day = self.time / 3600. / 24.
+
+            # Initialization time logic
+            if self.time[0] == 0.:  # no initialization flat detected at beginning of recording
+                self.init_time = 1.
+            else:
+                if init_time_in:
+                    self.init_time = init_time_in
+                else:
+                    self.init_time = -4.
 
             # Truncate
             if time_end is None:
@@ -844,7 +855,7 @@ class SavedData:
             IbLag = LagExp(1., ib_lag, -100., 100.)
             self.ib_lag = np.zeros(n)
             for i in range(n):
-                if i == 0:
+                if self.time[i] <= self.init_time:
                     lag_reset = True
                     T_lag = self.cTime[i+1] - self.cTime[i]
                 else:

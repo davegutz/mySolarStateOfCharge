@@ -137,6 +137,7 @@ class Coulombs:
         if charge_curr > 0. and not self.tweak_test:
             d_delta_q *= self.chemistry.coul_eff
         self.sat = sat
+        print(f"ddq {d_delta_q} cc {charge_curr} dt {dt}")
 
         # Rate limit temperature
         self.temp_lim = max(min(temp_c, self.t_last + self.temp_rlim*dt), self.t_last - self.temp_rlim*dt)
@@ -164,6 +165,7 @@ class Coulombs:
             self.delta_q = max(min(self.delta_q + d_delta_q - self.chemistry.dqdt*self.q_capacity*(self.temp_lim-self.t_last),
                                    0.0), -self.q_capacity*1.5)
             self.q = self.q_capacity + self.delta_q
+            print(f"ddq {d_delta_q} cc {charge_curr} dt {dt} q {self.q} qcrs {self.q_cap_rated_scaled}")
 
         # Normalize
         self.soc = self.q / self.q_capacity

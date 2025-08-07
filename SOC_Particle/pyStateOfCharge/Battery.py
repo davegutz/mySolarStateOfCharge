@@ -796,6 +796,7 @@ class BatterySim(Battery):
         if self.bms_off and voltage_low:
             self.ib = 0.
         self.ib_lag = self.IbLag.calculate_tau(self.ib, reset, self.dt, self.chemistry.ib_lag_tau)
+        print(f"IbLag.calculate_tau: ib {self.ib}, ib_lag {self.ib_lag} reset {reset}, dt {self.dt}, tau {self.chemistry.ib_lag_tau}")
 
         # Charge transfer dynamics
         self.vb = self.voc + (self.ChargeTransfer.calculate(self.ib, reset, dt)*self.chemistry.r_ct +

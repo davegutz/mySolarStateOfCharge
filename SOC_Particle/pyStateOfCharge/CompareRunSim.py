@@ -82,22 +82,14 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
         load_data(data_file, 1, unit_key, zero_zero_in, time_end_in, legacy=legacy_in)
 
     # How to initialize
-    if mon_old is not None:
-        if mon_old.time[0] == 0.:  # no initialization flat detected at beginning of recording
-            init_time = 1.
-        else:
-            if init_time_in:
-                init_time = init_time_in
-            else:
-                init_time = -4.
-    else:
+    if mon_old is None:
         tkinter.messagebox.showwarning(message="CompareRunSim:  Data missing.  See monitor window for info.")
         return None, None, None, None, None, None
 
     # New run
     mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
     mon_ver, sim_ver, sim_s_ver, mon, sim = \
-        replicate(mon_old, sim_old=sim_old, init_time=init_time, use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in,
+        replicate(mon_old, sim_old=sim_old, init_time=mon_old.init_time, use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in,
                   use_vb_raw=use_vb_raw, dvoc_sim=dvoc_sim_in, dvoc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
                   ds_voc_soc=ds_voc_soc_in)
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
@@ -154,8 +146,9 @@ def main():
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # The following are not implemented in GUI
     time_end_in = None
-    # time_end_in = 40
+    time_end_in = 5
     data_only = False
+    # data_only = True
     # mon_soc_in = True
     mon_soc_in = False
 
