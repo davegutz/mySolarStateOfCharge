@@ -52,7 +52,7 @@ String chat_cmd_from(String *source);
 boolean is_finished(const char in_char);
 void print_all_header(void);
 void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
-void print_serial_header(void);
+void print_rapid_string_header(void);
 void print_serial_sim_header(void);
 void print_signal_sel_header(void);
 void print_serial_ekf_header(void);

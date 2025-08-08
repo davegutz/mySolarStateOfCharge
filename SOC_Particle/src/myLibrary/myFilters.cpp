@@ -313,6 +313,7 @@ double DiscreteFilter::calculate(double input, int RESET)
 }
 void DiscreteFilter::rateState(double in) {}
 double DiscreteFilter::rateStateCalc(double in) { return (0); }
+double DiscreteFilter::rateStateCalc(double in, double, double) { return (0); }
 void DiscreteFilter::assignCoeff(double tau) {}
 double DiscreteFilter::state(void) { return (0); }
 
@@ -524,6 +525,7 @@ void RateLagExp::rateState(double in, const double T)
   assignCoeff(tau_);
   rateState(in);
 }
+void RateLagExp::rateState(double in, double, double) { return; }
 void RateLagExp::assignCoeff(double tau)
 {
   double eTt = exp(-T_ / tau_);
@@ -626,9 +628,26 @@ double LagExp::calculate(double in, int RESET, const double tau, const double T)
   LagExp::rateState(in);
   return (lstate_);
 }
+double LagExp::calculate(double in, int RESET, const double tau, const double T, const double max_rate, const double  min_rate)
+{
+  if (RESET > 0)
+  {
+    lstate_ = in;
+    rstate_ = in;
+  }
+  assignCoeff(tau, T);
+  LagExp::rateStateLim(in, max_rate, min_rate);
+  return (lstate_);
+}
 void LagExp::rateState(double in)
 {
   rate_ = c_ * (a_ * rstate_ + b_ * in - lstate_);
+  rstate_ = in;
+  lstate_ = fmax(fmin(lstate_ + T_ * rate_, max_), min_);
+}
+void LagExp::rateStateLim(double in, double max_rate, double min_rate)
+{
+  rate_ = max(min( c_ * (a_ * rstate_ + b_ * in - lstate_), max_rate), min_rate);
   rstate_ = in;
   lstate_ = fmax(fmin(lstate_ + T_ * rate_, max_), min_);
 }

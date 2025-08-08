@@ -459,9 +459,11 @@ public:
   float Vc;                   // Selected common reference voltage, V
   float Vc_hdwe;              // Sensed common reference voltage, V
   float Tb;                   // Selected battery bank temp, C
-  float Tb_filt;              // Selected filtered battery bank temp, C
+  float Tb_f;                 // Selected filtered battery bank temp, C
+  float Tb_f_rate;            // Selected filtered battery bank temp rate, C/s
   float Tb_hdwe;              // Sensed battery temp, C
   float Tb_hdwe_filt;         // Filtered, sensed battery temp, C
+  float Tb_hdwe_filt_rate;    // Filtered, sensed battery temp, C/s
   float Tb_model;             // Temperature used for battery bank temp in model, C
   float Tb_model_filt;        // Filtered, modeled battery bank temp, C
   float Ib;                   // Selected battery bank current, A
@@ -492,7 +494,7 @@ public:
   TempSensor* SensorTb;       // Tb sense
   Sync *Summarize;            // Handle to debug read time
   Sync *Talk;                 // Handle to debug talk time
-  General2_Pole* TbSenseFilt; // Linear filter for Tb. There are 1 Hz AAFs in hardware for Vb and Ib
+  LagExp* TbSenseFilt;        // Linear filter for Tb. There are 1 Hz AAFs in hardware for Vb and Ib
   SlidingDeadband *SdTb;      // Non-linear filter for Tb
   BatterySim *Sim;            // Used to model Vb and Ib.   Use Talk 'Xp?' to toggle model on/off
   unsigned long long elapsed_inj;  // Injection elapsed time, ms

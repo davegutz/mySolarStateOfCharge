@@ -69,8 +69,6 @@ def sim_s_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, f
         plt.subplot(334)
         plt.plot(so.time, so.Tb_s, color='magenta', linestyle='-', label='Tb_s'+ref_str)
         plt.plot(smv.time, smv.Tb_s, color='green', linestyle='--', label='Tb_s'+test_str)
-        plt.plot(so.time, so.Tbl_s, color='blue', linestyle='-.', label='Tbl_s'+ref_str)
-        plt.plot(smv.time, smv.Tbl_s, color='cyan', linestyle=':', label='Tbl_s'+test_str)
         plt.legend(loc=1)
         plt.subplot(335)
         plt.plot(so.time, so.dv_dyn_s, color='magenta', linestyle='-', label='dv_dyn_s'+ref_str)

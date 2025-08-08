@@ -39,7 +39,7 @@ class Sensors;
 
 #define RATED_TEMP      25.       // Temperature at NOM_UNIT_CAP, deg C (25)
 #define TCHARGE_DISPLAY_DEADBAND  0.1 // Inside this +/- deadband, charge time is displayed '---', A
-#define T_RLIM          0.017     // Temperature sensor rate limit to minimize jumps in Coulomb counting, deg C/s (0.017 allows 1 deg for 1 minute)
+#define T_RLIM         0.00085    // Temperature sensor rate limit to minimize jumps in Coulomb counting, deg C/s (0.00085 allows 0.05 deg for 1 minute)
 const float VB_DC_DC = 13.5;      // DC-DC charger estimated voltage, V (13.5 < v_sat = 13.85)
 #ifndef EKF_CONV  // allow override in config file
   #define EKF_CONV        1.5e-3    // EKF tracking error indicating convergence, V (1.5e-3)
@@ -112,8 +112,7 @@ public:
   float ioc() { return ioc_; };          // Hysteresis output current, A
   virtual void pretty_print();
   void print_signal(const boolean print) { print_now_ = print; };
-  float temp_c() { return temp_c_; };    // Battery temperature, deg C
-  float Tb() { return temp_c_; };        // Battery bank temperature, deg C
+  float tb() { return tb_; };            // Battery temp, C
   float vb() { return vb_; };            // Battery terminal voltage, V
   float voc() { return voc_; };
   float voc_stat() { return voc_stat_; };
@@ -131,7 +130,7 @@ protected:
   float ioc_;      // Hysteresis output current, A
   float nom_vsat_; // Nominal saturation threshold at 25C, V
   boolean print_now_; // Print command
-  float temp_c_;    // Battery temperature, deg C
+  float tb_;    // Battery temperature, deg C
   float vb_;       // Battery terminal voltage, V
   float voc_;      // Static model open circuit voltage, V
   float voc_stat_; // Static, table lookup value of voc before applying hysteresis, V
@@ -189,7 +188,7 @@ protected:
   TFDelay *EKF_converged;  // Time persistence
   RateLimit *T_RLim = new RateLimit();
   Iterator *ice_;      // Iteration control for EKF solver
-  LagExp *voc_stat_filt = new LagExp(EKF_NOM_DT, VOC_STAT_FILT, VB_MIN, VB_MAX);  // actual update time provided run time
+  LagExp *VocStatFilt = new LagExp(EKF_NOM_DT, VOC_STAT_FILT, VB_MIN, VB_MAX);  // actual update time provided run time
   float amp_hrs_remaining_ekf_;  // Discharge amp*time left if drain to q_ekf=0, A-h
   float amp_hrs_remaining_soc_;  // Discharge amp*time left if drain soc_ to 0, A-h
   uint8_t eframe_;     // Counter to run EKF slower than Coulomb Counter and ChargeTransfer models
@@ -234,7 +233,6 @@ public:
   void pretty_print(void);
   unsigned long int sample_time(void) { return sample_time_; };
   boolean saturated() { return model_saturated_; };
-  float t_last() { return *sp_t_last_; };
   float voc() { return voc_; };
   float voc_stat() { return voc_stat_; };
 protected:

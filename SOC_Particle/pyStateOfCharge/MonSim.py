@@ -69,7 +69,7 @@ def save_clean_file(mon_ver, csv_file, unit_key):
 
 
 def save_clean_file_sim(sim_ver, csv_file, unit_key):
-    header_str = "unit_m,c_time,Tb_s,Tbl_s,vsat_s,voc_stat_s,dv_dyn_s,vb_s,ib_s,sat_s,dq_s,\
+    header_str = "unit_m,c_time,Tb_s,vsat_s,voc_stat_s,dv_dyn_s,vb_s,ib_s,sat_s,dq_s,\
     soc_s,reset_s,"
     n = len(sim_ver.time)
     with open(csv_file, "w") as output:
@@ -78,7 +78,6 @@ def save_clean_file_sim(sim_ver, csv_file, unit_key):
             s = unit_key + ','
             s += "{:13.3f},".format(sim_ver.time[i])
             s += "{:5.2f},".format(sim_ver.Tb_s[i])
-            s += "{:5.2f},".format(sim_ver.Tbl_s[i])
             s += "{:8.3f},".format(sim_ver.vsat_s[i])
             s += "{:5.2f},".format(sim_ver.voc_stat_s[i])
             s += "{:5.2f},".format(sim_ver.dv_dyn_s[i])

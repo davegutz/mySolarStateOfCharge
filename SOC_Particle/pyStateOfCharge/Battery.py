@@ -165,7 +165,7 @@ class Battery(Coulombs):
         self.chemistry.coul_eff *= s_coul_eff
         self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.UNIT_CAP_RATED*scale_cap,
                                      min_=-Battery.UNIT_CAP_RATED*scale_cap, tau=self.chemistry.tau_ct)
-        self.temp_c = temp_c
+        self.Tb = temp_c
         self.saved = Saved()  # for plots and prints
         self.dv_hys = 0.  # Placeholder so BatterySim can be plotted
         self.tau_hys = 0.  # Placeholder so BatterySim can be plotted
@@ -185,7 +185,7 @@ class Battery(Coulombs):
         """Returns representation of the object"""
         s = prefix + "Battery:\n"
         s += "  chem    = {:7.3f}  // Chemistry: 0=Battleborn, 1=CHINS\n".format(self.chem)
-        s += "  temp_c  = {:7.3f}  // Battery temperature, deg C\n".format(self.temp_c)
+        s += "  tb  = {:7.3f}  // Battery temperature, deg C\n".format(self.Tb)
         s += "  dvoc_dt = {:9.6f}  // Change of VOC with operating temperature in range 0 - 50 C V/deg C\n"\
             .format(self.chemistry.dvoc_dt)
         s += "  r_0     = {:9.6f}  // Charge Transfer R0, ohms\n".format(self.chemistry.r_0)
@@ -221,13 +221,13 @@ class Battery(Coulombs):
         return s
 
     def assign_temp_c(self, temp_c):
-        self.temp_c = temp_c
+        self.Tb = temp_c
 
     def assign_soc(self, soc, voc):
         self.soc = soc
         self.voc = voc
         self.voc_stat = voc
-        self.vsat = self.chemistry.nom_vsat + (self.temp_c - self.chemistry.rated_temp) * self.chemistry.dvoc_dt
+        self.vsat = self.chemistry.nom_vsat + (self.Tb - self.chemistry.rated_temp) * self.chemistry.dvoc_dt
         self.sat = self.voc >= self.vsat
 
     def calc_h_jacobian(self, soc_lim, temp_c):
@@ -385,14 +385,14 @@ class BatteryMonitor(Battery, EKF1x1):
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
 
-        self.temp_c = temp_c
-        self.vsat = calc_vsat(self.temp_c, self.chemistry.nom_vsat, self.chemistry.dvoc_dt)
+        self.Tb = temp_c
+        self.vsat = calc_vsat(self.Tb, self.chemistry.nom_vsat, self.chemistry.dvoc_dt)
         self.dt = dt
         self.ib_in = ib
         if self.IB_CHARGE_NOA is True:
             self.ib_in = self.ib_noa
         self.mod = rp.modeling
-        self.Temp_Rlim.update(x=self.temp_c, reset=reset, dt=self.dt, max_=0.017, min_=-.017)
+        self.Temp_Rlim.update(x=self.Tb, reset=reset, dt=self.dt, max_=0.017, min_=-.017)
         temp_rate = self.Temp_Rlim.rate
         # Overflow protection since ib past value used
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
@@ -409,7 +409,7 @@ class BatteryMonitor(Battery, EKF1x1):
         if reset and bms_off_init is not None:
             self.bms_off = bms_off_init
         else:
-            self.bms_off = (self.temp_c <= self.chemistry.low_t) or (voltage_low and not rp.tweak_test())  # KISS
+            self.bms_off = (self.Tb <= self.chemistry.low_t) or (voltage_low and not rp.tweak_test())  # KISS
         self.ib_charge = self.ib
         if self.bms_off and not bms_charging:
             self.ib_charge = 0.
@@ -537,7 +537,7 @@ class BatteryMonitor(Battery, EKF1x1):
     def ekf_update(self):
         # Measurement function hx(x), x = soc ideal capacitor
         x_lim = max(min(self.x_ekf, 1.), 0.)
-        self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, temp_c=self.temp_c)
+        self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, temp_c=self.Tb)
         # Jacobian of measurement function
         self.H = self.dv_dsoc
         return self.hx, self.H
@@ -605,7 +605,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_voc_ekf = (self.voc - voc_ref) / voc_ref
         self.saved.e_soc_ekf.append(self.e_soc_ekf)
         self.saved.e_voc_ekf.append(self.e_voc_ekf)
-        self.saved.Tb.append(self.temp_c)
+        self.saved.Tb.append(self.Tb)
+        self.saved.Tb_fa.append(self.Tb_fa)
         self.saved.vsat.append(self.vsat)
         self.saved.voc_ekf.append(self.voc_ekf)
         self.saved.sat.append(int(self.sat))
@@ -754,7 +755,7 @@ class BatterySim(Battery):
             self.chemistry.assign_all_mod(chem, self.unit)
             self.chm = chem
 
-        self.temp_c = temp_c
+        self.Tb = temp_c
         self.dt = dt
         self.ib_in = ib
         if reset:
@@ -789,7 +790,7 @@ class BatterySim(Battery):
         if reset and bms_off_init is not None:
             self.bms_off = bms_off_init
         else:
-            self.bms_off = (self.temp_c < self.chemistry.low_t) or (voltage_low and not rp.tweak_test())
+            self.bms_off = (self.Tb < self.chemistry.low_t) or (voltage_low and not rp.tweak_test())
         ib_charge_fut = self.ib_in
         if self.bms_off and not bms_charging:
             ib_charge_fut = 0.
@@ -909,7 +910,7 @@ class BatterySim(Battery):
         self.saved.voc_stat.append(self.voc_stat)
         self.saved.soc.append(self.soc)
         self.saved.d_delta_q.append(self.d_delta_q)
-        self.saved.Tb.append(self.temp_c)
+        self.saved.Tb.append(self.Tb)
         self.saved.t_last.append(self.t_last)
         self.saved.vsat.append(self.vsat)
         self.saved.charge_curr.append(self.charge_curr)
@@ -924,8 +925,7 @@ class BatterySim(Battery):
         self.saved_s.chm_s.append(self.chm)
         self.saved_s.qcrs_s.append(self.q_cap_rated_scaled)
         self.saved_s.bmso_s.append(self.bms_off)
-        self.saved_s.Tb_s.append(self.temp_c)
-        self.saved_s.Tbl_s.append(self.temp_lim)
+        self.saved_s.Tb_s.append(self.Tb)
         self.saved_s.vsat_s.append(self.vsat)
         self.saved_s.voc_s.append(self.voc)
         self.saved_s.voc_stat_s.append(self.voc_stat)
@@ -1089,6 +1089,7 @@ class Saved:
         self.sel = []  # Current source selection, 0=amp, 1=no amp
         self.mod_data = []  # Configuration control code, 0=all hardware, 7=all simulated, +8 tweak test
         self.Tb = []  # Battery bank temperature, deg C
+        self.Tb_fa = []  # Battery bank filtered temperature, deg C
         self.vsat = []  # Monitor Bank saturation threshold at temperature, deg C
         self.dv_dyn = []  # Monitor Bank current induced back emf, V
         self.voc_stat = []  # Monitor Static bank open circuit voltage, V
@@ -1489,7 +1490,6 @@ class SavedS:
         self.qcrs_s = []
         self.bmso_s = []
         self.Tb_s = []
-        self.Tbl_s = []
         self.vsat_s = []
         self.voc_s = []
         self.voc_stat_s = []
@@ -1511,13 +1511,12 @@ class SavedS:
         self.reset_s = []
 
     def __str__(self):
-        s = "unit_m,c_time,Tb_s,Tbl_s,vsat_s,voc_stat_s,dv_dyn_s,vb_s,ib_s,sat_s,ddq_s,dq_s,q_s,qcap_s,soc_s,\
+        s = "unit_m,c_time,Tb_s,vsat_s,voc_stat_s,dv_dyn_s,vb_s,ib_s,sat_s,ddq_s,dq_s,q_s,qcap_s,soc_s,\
         reset_s,tau_s,\n"
         for i in range(len(self.time)):
             s += 'sim,'
             s += "{:13.3f},".format(self.time[i])
             s += "{:5.2f},".format(self.Tb_s[i])
-            s += "{:5.2f},".format(self.Tbl_s[i])
             s += "{:8.3f},".format(self.vsat_s[i])
             s += "{:5.2f},".format(self.voc_stat_s[i])
             s += "{:5.2f},".format(self.dv_dyn_s[i])

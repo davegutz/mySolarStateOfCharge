@@ -378,7 +378,7 @@ void loop()
   summarizing = Summarize->update(System.millis(), false) || boot_summ;
 
   // Sample temperature
-  // Outputs:   Sen->Tb,  Sen->Tb_filt
+  // Outputs:   Sen->Tb,  Sen->Tb_f
   if ( read_temp )
   {
     Log.info("read_temp");
@@ -429,18 +429,18 @@ void loop()
 
     // Read sensors, model signals, select between them, synthesize injection signals on current
     // Inputs:  sp.config, sp.sim_chm
-    // Outputs: Sen->Ib, Sen->Vb, Sen->Tb_filt, sp.inj_bias
+    // Outputs: Sen->Ib, Sen->Vb, Sen->Tb_f, sp.inj_bias
     sense_synth_select(reset, reset_temp, ReadSensors->now(), elapsed, myPins, Mon, Sen);
     Sen->T =  double(Sen->dt_ib())/1000.;
 
     // Calculate Ah remaining`
-    // Inputs:  sp.mon_chm, Sen->Ib, Sen->Vb, Sen->Tb_filt
+    // Inputs:  sp.mon_chm, Sen->Ib, Sen->Vb, Sen->Tb_f
     // States:  Mon.soc
     // Outputs: tcharge_wt, tcharge_ekf
     monitor(reset, reset_temp, now, Is_sat_delay, Mon, Sen);
 
     // Re-init Coulomb Counter to EKF if it is different than EKF or if never saturated
-    Mon->regauge(Sen->Tb_filt);
+    Mon->regauge(Sen->Tb_f);
 
     // Empty battery
     if ( sp.modeling_z && reset && Sen->Sim->q()<=0. ) Sen->Ib = 0.;

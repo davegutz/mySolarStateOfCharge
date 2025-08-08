@@ -104,7 +104,8 @@ public:
     float vb_add;               // Fault injection bias, V
     float Vb_noise_amp;         // Vb bank noise amplitude model only, V pk-pk
     float vc_add;               // Shunt Vc/Vr Fault injection bias, V
-    float voc_stat_filt;        // voc_stat_filt time constant, s
+    float voc_stat_filt;        // VocStatFilt time constant, s
+    float tb_filt;              // TbFilt time constant, s
     float ekf_q;                // ekf_q scalar, slr
     float ekf_r;                // ekf_r scalar, slr
     float ekf_conv;             // ekf abs conv, v
@@ -154,6 +155,7 @@ public:
     FloatV *ib_max_noa_p;
     FloatV *ib_min_noa_p;
     FloatV *voc_stat_filt_p;
+    FloatV *tb_filt_p;
     FloatV *ekf_q_p;
     FloatV *ekf_r_p;
     FloatV *ekf_conv_p;

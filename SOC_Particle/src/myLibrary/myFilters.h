@@ -177,6 +177,7 @@ public:
   virtual double calculate(double in, int RESET);
   virtual void assignCoeff(double tau);
   virtual void rateState(double in);
+  virtual double rateStateCalc(double in, const double max_rate, const double min_rate);
   virtual double rateStateCalc(double in);
   virtual double state(void);
 protected:
@@ -252,6 +253,7 @@ public:
   virtual double calculate(double in, int RESET);
   virtual void assignCoeff(double tau);
   virtual void rateState(double in);
+  virtual void rateState(double in, const double max_rate, const double min_rate);
   virtual double state(void);
 protected:
   double a_;
@@ -274,6 +276,7 @@ public:
   virtual void assignCoeff(double tau);
   virtual void rateState(double in);
   virtual void rateState(double in, const double T);
+  virtual void rateState(double in, const double max_rate, const double min_rate);
   virtual double state(void);
   double a() { return (a_); };
   double b() { return (b_); };
@@ -329,8 +332,10 @@ public:
   void absorb(LagExp *LE) { lstate_ = LE->lstate_; rstate_ = LE->rstate_; };
   virtual double calculate(double in, int RESET);
   virtual double calculate(double in, int RESET, const double tau, const double T);
+  virtual double calculate(double in, int RESET, const double tau, const double T, const double max_rate, const double  min_rate);
   virtual void assignCoeff(double tau, double T);
   virtual void rateState(double in);
+  virtual void rateStateLim(double in, double max_rate, double min_rate);
   double a() { return (a_); };
   double b() { return (b_); };
   double c() { return (c_); };

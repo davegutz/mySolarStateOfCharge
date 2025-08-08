@@ -930,7 +930,7 @@ class SavedData:
             self.Tb_h = None
             self.Tb_s = None
             self.mtb = None
-            self.Tb_f = None
+            self.Tb_fa = None
             self.vb_sel = None
             self.ib_rate = None
             self.ib_quiet = None
@@ -1010,7 +1010,7 @@ class SavedData:
             self.Tb_h = np.array(sel.Tb_h[:i_end])
             self.Tb_s = np.array(sel.Tb_s[:i_end])
             self.mtb = np.array(sel.mtb[:i_end])
-            self.Tb_f = np.array(sel.Tb_f[:i_end])
+            self.Tb_fa = np.array(sel.Tb_fa[:i_end])
             self.vb_sel = np.array(sel.vb_sel[:i_end])
             self.ib_rate = np.array(sel.ib_rate[:i_end])
             self.ib_quiet = np.array(sel.ib_quiet[:i_end])
@@ -1107,7 +1107,6 @@ class SavedDataSim:
             self.bms_off_s = None
             self.nS_s = None
             self.Tb_s = None
-            self.Tbl_s = None
             self.vsat_s = None
             self.voc_s = None
             self.voc_stat_s = None
@@ -1145,7 +1144,6 @@ class SavedDataSim:
             else:
                 self.nS_s = np.array(data.bmso_s[:i_end]) * 0 + 1
             self.Tb_s = data.Tb_s[:i_end]
-            self.Tbl_s = data.Tbl_s[:i_end]
             self.vb_s = data.vb_s[:i_end]
             self.vsat_s = data.vsat_s[:i_end]
             self.voc_stat_s = data.voc_stat_s[:i_end]
@@ -1165,8 +1163,6 @@ class SavedDataSim:
         s = "{},".format(self.unit[self.i])
         s += "{:13.3f},".format(self.cTime[self.i])
         s += "{:5.2f},".format(self.Tb_s[self.i])
-        s += "{:5.2f},".format(self.Tbl_s[self.i])
-        s += "{:5.2f},".format(self.Tbl_s[self.i])
         s += "{:8.3f},".format(self.vsat_s[self.i])
         s += "{:5.2f},".format(self.voc_stat_s[self.i])
         s += "{:5.2f},".format(self.dv_dyn_s[self.i])

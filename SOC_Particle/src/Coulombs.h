@@ -39,7 +39,7 @@ class Coulombs
 {
 public:
   Coulombs();
-  Coulombs(double *sp_delta_q, float *sp_t_last, const float q_cap_rated, const float t_rlim,
+  Coulombs(double *sp_delta_q, const float q_cap_rated,
     const double s_coul_eff, const float dx_voc, const float dy_voc, const float dz_voc);
   ~Coulombs();
   // operators
@@ -56,8 +56,8 @@ public:
   void chem_pretty_print () { chem_.pretty_print(); };
   double coul_eff() { return ( coul_eff_ ); };
   void coul_eff(const double coul_eff) { coul_eff_ = coul_eff; };
-  virtual float count_coulombs(const double dt, const boolean reset, const float temp_c, const float charge_curr,
-    const boolean sat, const double delta_q_ekf);
+  virtual float count_coulombs(const double dt, const boolean reset_temp, const float tb, const float tb_rate,
+    const float charge_curr, const boolean sat, const double delta_q_ekf);
   double delta_q() { return(*sp_delta_q_); };
   double delta_q_abs() { return nice_zero(delta_q_abs_, 1e-6); }
   double delta_q_inf() { return(delta_q_inf_); };
@@ -77,7 +77,6 @@ public:
   float soc_inf() { return(soc_inf_); };
   float soc_min() { return(soc_min_); };
   boolean sat() { return(sat_); };
-  float t_last() { return(*sp_t_last_); };
   double time_neg() { return(time_neg_); };
   double time_pos() { return(time_pos_); };
   virtual float vsat(void) = 0;
@@ -101,8 +100,8 @@ protected:
   float soc_inf_;     // Fraction of saturation charge (q_capacity_) available (-inf - inf)
   float soc_min_;     // As battery cools, the voltage drops and there appears a minimum soc it can deliver
   double *sp_delta_q_;// Charge since saturated, C
-  float *sp_t_last_;  // Last battery temperature for rate limit memory, deg C
-  float t_rlim_;      // Tb rate limit, deg C / s
+  float tb_;          // Temperature, deg C
+  float tb_rate_;     // Tb rate, deg C / s
   double time_neg_;   // Time spent accumulating delta_q_neg_, s
   double time_pos_;   // Time spent accumulating delta_q_pos_, s
   Chemistry chem_;    // Chemistry

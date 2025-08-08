@@ -109,8 +109,7 @@ const String unit = version + "_" + HDWE_UNIT;
 #define SCREEN_ADDRESS        0x3C      // See datasheet for Address; 0x3D for 128x64, (0x3C for 128x32)
 #define F_MAX_T               ChargeTransfer_T_MAX  // Maximum call update time sensors and coulomb counter (0.5)
 #define F_MAX_T_TEMP          18.0      // Maximum call update time filters (18.0)
-#define F_W_T                 0.05      // Temperature filter wn, r/s (0.05)   
-#define F_Z_T                 0.80      // Temperature filter zeta (0.80)
+#define TB_FILT               120.      // Temperature filter lag, s (120)
 #define F_W_I                 0.5       // Current filter wn, r/s (0.5)   
 #define F_Z_I                 0.80      // Current filter zeta (0.80)
 

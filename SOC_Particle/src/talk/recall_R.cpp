@@ -57,16 +57,16 @@ boolean recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
 
         case ( 'r' ):  // Rr:  small reset counters
             Serial.printf("CC reset\n");
-            Sen->Sim->apply_soc(1.0, Sen->Tb_filt);
-            Mon->apply_soc(1.0, Sen->Tb_filt);
+            Sen->Sim->apply_soc(1.0, Sen->Tb_f);
+            Mon->apply_soc(1.0, Sen->Tb_f);
             cp.cmd_reset();
             break;
 
         case ( 'R' ):  // RR:  large reset
             Serial.printf("RESET\n");
             Serial1.printf("RESET\n");
-            Sen->Sim->apply_soc(1.0, Sen->Tb_filt);
-            Mon->apply_soc(1.0, Sen->Tb_filt);
+            Sen->Sim->apply_soc(1.0, Sen->Tb_f);
+            Mon->apply_soc(1.0, Sen->Tb_f);
             cp.cmd_reset();
             Sen->ReadSensors->delay(READ_DELAY);
             Sen->Talk->delay(TALK_DELAY);

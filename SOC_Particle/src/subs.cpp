@@ -39,7 +39,7 @@ extern PublishPars pp;  // For publishing
 void harvest_temp_change(const float temp_c, BatteryMonitor *Mon, BatterySim *Sim)
 {
 #ifdef DEBUG_DETAIL
-if ( sp.debug()==-1 ) Serial.printf("entry harvest_temp_change:  Delta_q %10.1f temp_c %5.1f t_last %5.1f delta_q_model %10.1f temp_c_s %5.1f t_last_s %5.1f\n",
+if ( sp.debug()==-1 ) Serial.printf("entry harvest_temp_change:  Delta_q %10.1f temp_c %5.1f t_last %5.1f delta_q_model %10.1f tb_s %5.1f t_last_s %5.1f\n",
   sp.delta_q(), temp_c, sp.T_state(), sp.delta_q_model(), temp_c, sp.T_state_model());
 #endif
   sp.put_Delta_q(sp.delta_q() - Mon->dqdt() * Mon->q_capacity() * (temp_c - sp.T_state()));
@@ -47,7 +47,7 @@ if ( sp.debug()==-1 ) Serial.printf("entry harvest_temp_change:  Delta_q %10.1f 
   sp.put_delta_q_model(sp.delta_q_model() - Sim->dqdt() * Sim->q_capacity() * (temp_c - sp.T_state_model()));
   sp.put_T_state_model(temp_c);
 #ifdef DEBUG_DETAIL
-if ( sp.debug()==-1 ) Serial.printf("exit harvest_temp_change:  Delta_q %10.1f temp_c %5.1f t_last %5.1f delta_q_model %10.1f temp_c_s %5.1f t_last_s %5.1f\n",
+if ( sp.debug()==-1 ) Serial.printf("exit harvest_temp_change:  Delta_q %10.1f temp_c %5.1f t_last %5.1f delta_q_model %10.1f tb_s %5.1f t_last_s %5.1f\n",
   sp.delta_q(), temp_c, sp.T_state(), sp.delta_q_model(), temp_c, sp.T_state_model());
 #endif
 }
@@ -78,31 +78,31 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   if ( sp.mod_tb() )
   {
     Sen->Tb = Sen->Tb_model;
-    Sen->Tb_filt = Sen->Tb_model_filt;
+    Sen->Tb_f = Sen->Tb_model_filt;
   }
   else
   {
     Sen->Tb = Sen->Tb_hdwe;
-    Sen->Tb_filt = Sen->Tb_hdwe_filt;
+    Sen->Tb_f = Sen->Tb_hdwe_filt;
   }
   if ( use_soc_in )
-    Mon->apply_soc(soc_in, Sen->Tb_filt);  // saves sp.delta_q and sp.T_state
+    Mon->apply_soc(soc_in, Sen->Tb_f);  // saves sp.delta_q and sp.T_state
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 )
     { 
       Serial.printf("before harvest_temp, falw %ld tb_fa %d:", Sen->Flt->falw(), Sen->Flt->tb_fa()); debug_m1(Mon, Sen);
     }
   #endif
-  if ( !Sen->Flt->tb_fa() ) harvest_temp_change(Sen->Tb_filt, Mon, Sen->Sim);
+  if ( !Sen->Flt->tb_fa() ) harvest_temp_change(Sen->Tb_f, Mon, Sen->Sim);
   
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("after harvest_temp:"); debug_m1(Mon, Sen);}
   #endif
 
   if ( cp.soft_sim_hold )  
-    Sen->Sim->apply_delta_q_t(Sen->Sim->delta_q(), Sen->Sim->t_last());  // applies sp.delta_q and sp.T_state
+    Sen->Sim->apply_delta_q_t(Sen->Sim->delta_q(), Sen->Sim->tb());  // applies sp.delta_q and sp.T_state
   else
-    Sen->Sim->apply_delta_q_t(Mon->delta_q(), Mon->t_last());  // applies sp.delta_q and sp.T_state
+    Sen->Sim->apply_delta_q_t(Mon->delta_q(), Mon->tb());  // applies sp.delta_q and sp.T_state
 
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("S.a_d_q_t:"); debug_m1(Mon, Sen);}
@@ -115,7 +115,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #endif
   if ( !sp.mod_vb() )
   {
-    Sen->Sim->apply_soc(Sen->Sim->soc(), Sen->Tb_filt);
+    Sen->Sim->apply_soc(Sen->Sim->soc(), Sen->Tb_f);
   }
   // Call calculate twice because sat_ is a used-before-calculated (UBC)
   // Simple 'call twice' method because sat_ is discrete no analog which would require iteration
@@ -148,7 +148,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #endif
   if ( sp.mod_vb() && !cp.soft_sim_hold )
   {
-    Mon->apply_soc(Sen->Sim->soc(), Sen->Tb_filt);
+    Mon->apply_soc(Sen->Sim->soc(), Sen->Tb_f);
   }
   Mon->init_battery_mon(true, Sen);
   #ifdef DEBUG_DETAIL
@@ -161,7 +161,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.calc1:"); debug_m1(Mon, Sen);}
   #endif
-  Mon->count_coulombs(0., true, Mon->t_last(), 0., Mon->is_sat(true), 0.);
+  Mon->count_coulombs(0., true, Sen->Tb_f, 0., 0., Mon->is_sat(true), 0.);
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.c_c1:"); debug_m1(Mon, Sen);}
   #endif
@@ -169,7 +169,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.calc2:"); debug_m1(Mon, Sen);}
   #endif
-  Mon->count_coulombs(0., true, Mon->t_last(), 0., Mon->is_sat(true), 0.);
+  Mon->count_coulombs(0., true, Sen->Tb_f, 0., 0., Mon->is_sat(true), 0.);
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.c_c2:"); debug_m1(Mon, Sen);}
   #endif
@@ -211,13 +211,13 @@ void load_ib_vb(const boolean reset, const boolean reset_temp, Sensors *Sen, Pin
 }
 
 // Calculate Ah remaining for display to user
-// Inputs:  sp.mon_chm, Sen->Ib, Sen->Vb, Sen->Tb_filt
+// Inputs:  sp.mon_chm, Sen->Ib, Sen->Vb, Sen->Tb_f
 // States:  Mon.soc, Mon.soc_ekf
 // Outputs: tcharge_wt, tcharge_ekf, Voc, Voc_filt
 void  monitor(const boolean reset, const boolean reset_temp, const unsigned long long now,
   TFDelay *Is_sat_delay, BatteryMonitor *Mon, Sensors *Sen)
 {
-  // EKF - calculates temp_c_, voc_stat_, voc_ as functions of sensed parameters vb & ib (not soc)
+  // EKF - calculates tb_, voc_stat_, voc_ as functions of sensed parameters vb & ib (not soc)
   Mon->calculate(Sen, reset_temp);
 
   // Debounce saturation calculation done in ekf using voc model
@@ -226,7 +226,7 @@ void  monitor(const boolean reset, const boolean reset_temp, const unsigned long
 
   // Memory store
   // Initialize to ekf when not saturated
-  Mon->count_coulombs(Sen->T, reset_temp, Sen->Tb_filt, Mon->ib_charge(), Sen->saturated, Mon->delta_q_ekf());
+  Mon->count_coulombs(Sen->T, reset_temp, Sen->Tb_f, Sen->Tb_f_rate, Mon->ib_charge(), Sen->saturated, Mon->delta_q_ekf());
 
   // Charge charge time for display
   Mon->calc_charge_time(Mon->q(), Mon->q_capacity(), Sen->ib(), Mon->soc());
@@ -540,12 +540,12 @@ void oled_display(Sensors *Sen, BatteryMonitor *Mon)
 // Read sensors, model signals, select between them.
 // Sim used for any missing signals (Tb, Vb, Ib)
 //    Needed here in this location to have available a value for
-//    Sen->Tb_filt when called.   Recalculates Sen->Ib accounting for
+//    Sen->Tb_f when called.   Recalculates Sen->Ib accounting for
 //    saturation.  Sen->Ib is a feedback (used-before-calculated).
 // Inputs:  sp.config, sp.sim_chm, Sen->Tb, Sen->Ib_model_in
 // States:  Sim.soc
-// Outputs: Sim.temp_c_, Sen->Tb_filt, Sen->Ib, Sen->Ib_model,
-//   Sen->Vb_model, Sen->Tb_filt, sp.inj_bias
+// Outputs: Sim.tb_, Sen->Tb_f, Sen->Ib, Sen->Ib_model,
+//   Sen->Vb_model, Sen->Tb_f, sp.inj_bias
 void sense_synth_select(const boolean reset, const boolean reset_temp, const unsigned long long now, const unsigned long long elapsed,
   Pins *myPins, BatteryMonitor *Mon, Sensors *Sen)
 {
@@ -574,10 +574,10 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const uns
   Sen->Sim->init_battery_sim(reset, Sen);
 
   // Sim calculation
-  //  Inputs:  Sen->Tb_filt(past), Sen->Ib_model_in
+  //  Inputs:  Sen->Tb_f(past), Sen->Ib_model_in
   //  States: Sim->soc(past)
   //  Outputs:  Tb_hdwe, Ib_model, Vb_model, sp.inj_bias, Sim.model_saturated
-  Sen->Tb_model = Sen->Tb_model_filt = Sen->Sim->temp_c();
+  Sen->Tb_model = Sen->Tb_model_filt = Sen->Sim->tb();
   Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on, reset) * sp.nS() + Sen->Vb_add();
   Sen->Ib_model = Sen->Sim->ib_fut() * sp.nP();
   cp.model_cutback = Sen->Sim->cutback();
@@ -591,7 +591,7 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const uns
   //  Inputs:                                       --->   Outputs:
   //  Ib_model, Ib_hdwe, Vc_hdwe                    --->   Ib
   //  Vb_model, Vb_hdwe,                            --->   Vb
-  //  constant,         Tb_hdwe, Tb_hdwe_filt       --->   Tb, Tb_filt
+  //  constant,         Tb_hdwe, Tb_hdwe_filt       --->   Tb, Tb_f
   Sen->Flt->select_all_logic(Sen, Mon, reset);
   Sen->select_all_hdwe_or_model(Mon);
 
