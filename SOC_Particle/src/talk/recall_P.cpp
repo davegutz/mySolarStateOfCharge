@@ -41,7 +41,7 @@ boolean recall_P(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
     switch ( letter_1 )
     {
         case ( 'a' ):  // Pa:  Print all
-            chit("Pm;Ps;Pr;PM;PN;Hd;Pf;Q;", SOON);
+            chit("Pm;PS;Ps;Pr;PM;PN;Hd;Pf;Q;", SOON);
             break;
 
         case ( 'b' ):  // Pb:  Print Vb measure
@@ -87,6 +87,10 @@ boolean recall_P(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
 
         case ( 'r' ):  // Pr:  Print only off-nominal retained
             Serial.printf("\n"); sp.pretty_print( false );
+            break;
+
+        case ( 'S' ):  // PS:  Print Sensors
+            Serial.printf ("\nSensors::"); Sen->pretty_print();
             break;
 
         case ( 's' ):  // Ps:  Print sim

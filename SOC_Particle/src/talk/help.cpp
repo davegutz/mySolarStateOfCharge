@@ -151,6 +151,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   Serial.printf("  PN= "); Serial.printf("noa shunt\n");
   Serial.printf("  PR= "); Serial.printf("all retained adj\n");
   Serial.printf("  Pr= "); Serial.printf("off-nom ret adj\n");
+  Serial.printf("  PS= "); Serial.printf("Sensors\n");
   Serial.printf("  Ps= "); Serial.printf("Sim\n");
   Serial.printf("  PV= "); Serial.printf("all vol adj\n");
   Serial.printf("  Pv= "); Serial.printf("off-nom vol adj\n");

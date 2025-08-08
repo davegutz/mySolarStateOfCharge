@@ -1357,6 +1357,25 @@ void Sensors::ib_choose_hi_lo()
   }
 }
 
+// Pretty print
+void Sensors::pretty_print()
+{
+  Serial.printf(" Vb_raw%d; cnt\n", Vb_raw);
+  Serial.printf(" Vb%8.4f; V\n", Vb);
+  Serial.printf(" Vb_hdwe%8.4f; V\n", Vb_hdwe);
+  Serial.printf(" Vb_hdwe_f%8.4f; V\n", Vb_hdwe_f);
+  Serial.printf(" Vb_model%8.4f; V\n", Vb_model);
+  Serial.printf(" Vc%8.4f; V\n", Vc);
+  Serial.printf(" Vc_hdwe%8.4f; V\n", Vc_hdwe);
+  Serial.printf(" Tb%8.4f; C\n", Tb);
+  Serial.printf(" Tb_f%8.4f; C\n", Tb_f);
+  Serial.printf(" Tb_f_rate%10.6f; C/s\n", Tb_f_rate);
+  Serial.printf(" Tb_hdwe%8.4f; C\n", Tb_hdwe);
+  Serial.printf(" Tb_hdwe_filt%8.4f; C\n", Tb_hdwe_filt);
+  Serial.printf(" Tb_model%8.4f; C\n", Tb_model);
+  Serial.printf(" Tb_model_filt%8.4f; C\n", Tb_model_filt);
+}
+
 // Make final assignemnts
 void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
 {

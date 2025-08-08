@@ -528,6 +528,7 @@ public:
   float Ib_noise();
   unsigned long long inst_millis() { return inst_millis_; };
   unsigned long long inst_time() { return inst_time_; };
+  void pretty_print();
   void reset_temp(const boolean reset) { reset_temp_ = reset; };
   boolean reset_temp() { return ( reset_temp_ ); };
   unsigned long long sample_time_ib(void) { return sample_time_ib_; };
