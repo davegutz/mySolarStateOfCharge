@@ -180,13 +180,16 @@ void print_serial_sim_header(void)
 // sp.debug()==1 Temp
 void print_serial_temp_data(const boolean reset, Sensors *Sen)
 {
-  double cTime = double(Sen->now)/1000.;
-  Serial.printf("unit_t, %13.3f, %8.4f, %d, %8.4f,\n", cTime, Sen->Tb, reset, Sen->Tb_f);
+  if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  )
+  {
+    double cTime = double(Sen->now)/1000.;
+    Serial.printf("unit_temp, %13.3f, %8.4f, %d, %8.4f,\n", cTime, Sen->Tb, reset, Sen->Tb_f);
+  }
 }
 
   void print_serial_temp_header(void)
 {
-  if ( sp.debug()==1 ) // print_serial_temp_header
+  if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  )
     Serial.printf("unit_t, c_time, Tb, reset_temp,  Tb_f,\n");
 }
 
