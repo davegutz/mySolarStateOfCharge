@@ -54,6 +54,8 @@ void print_all_header(void);
 void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
 void print_rapid_string_header(void);
 void print_serial_sim_header(void);
+void print_serial_temp_header(void);
+void print_serial_temp_data(const boolean reset, Sensors *Sen);
 void print_signal_sel_header(void);
 void print_serial_ekf_header(void);
 void rapid_print(Sensors *Sen, BatteryMonitor *Mon);

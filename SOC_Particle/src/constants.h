@@ -160,7 +160,9 @@ const String unit = version + "_" + HDWE_UNIT;
 const float T_DESAT =         20;       // De-saturation time, sec
 #define TEMP_PARASITIC        true      // DS18 sensor power. true means leave it on all the time (true)
 #define TEMP_DELAY            1         // Time to block temperature sensor read in DS18 routine, ms (1)
-#define TEMP_INIT_DELAY       10000     // It takes 10 seconds first read of DS18 (10000)
+#ifndef TEMP_INIT_DELAY
+    #define TEMP_INIT_DELAY       10000     // It takes 10 seconds first read of DS18 (10000)
+#endif
 #define CC_DIFF_LO_SOC_SLR    4.        // Large to disable cc_diff
 #define TAU_ERR_FILT          5.        // Current sensor difference filter time constant, s (5.)
 #define MAX_ERR_FILT          10.       // Current sensor difference Filter maximum windup, A (10.)

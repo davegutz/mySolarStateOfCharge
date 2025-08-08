@@ -77,4 +77,7 @@
 #define EKF_CONV        0.025    // EKF tracking error indicating convergence, V (.005)
 #define WRAP_SOC_HI_OFF     0.94        // Disable e_wrap_hi when saturated (0.94)
 
+// Frame time for ADC read of thermistor is fast
+#define TEMP_INIT_DELAY 100     // It takes 10 seconds first read of DS18 (10000).  But we're using a thermistor with adc here
+
 #endif

@@ -389,6 +389,7 @@ void loop()
     #endif
     Sen->T_temp = ReadTemp->updateTime();
     Sen->temp_load_and_filter(Sen, reset_temp);
+    print_serial_temp_data(reset_temp, Sen);
   }
 
   // Sample Ib

@@ -117,6 +117,7 @@ boolean is_finished(const char in_char)
 void print_all_header(void)
 {
   print_rapid_string_header();
+  print_serial_temp_header();
   if ( sp.debug()==2  )
   {
     print_serial_sim_header();
@@ -174,6 +175,19 @@ void print_serial_sim_header(void)
 {
   if ( sp.debug()==2  || sp.debug()==3 || sp.debug()==4 ) // print_serial_sim_header
     Serial.printf("unit_m,  c_time,       chm_s, qcrs_s, bmso_s, Tb_s, vsat_s, voc_stat_s, dv_dyn_s, vb_s, ib_s, ib_in_s, ib_charge_s, ioc_s, sat_s, dq_s, soc_s, reset_s,\n");
+}
+
+// sp.debug()==1 Temp
+void print_serial_temp_data(const boolean reset, Sensors *Sen)
+{
+  double cTime = double(Sen->now)/1000.;
+  Serial.printf("unit_t, %13.3f, %8.4f, %d, %8.4f,\n", cTime, Sen->Tb, reset, Sen->Tb_f);
+}
+
+  void print_serial_temp_header(void)
+{
+  if ( sp.debug()==1 ) // print_serial_temp_header
+    Serial.printf("unit_t, c_time, Tb, reset_temp,  Tb_f,\n");
 }
 
 void print_signal_sel_header(void)

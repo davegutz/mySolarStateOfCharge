@@ -155,19 +155,23 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                 break;
                 case ( 1 ):  // l1:
                 print_rapid_string_header();
+                print_serial_temp_header();
                 break;
                 case ( 2 ):  // l2:
                 print_signal_sel_header();
                 print_serial_sim_header();
                 print_rapid_string_header();
+                print_serial_temp_header();
                 break;
                 case ( 3 ):  // l3:
                 print_serial_ekf_header();
                 print_serial_sim_header();
                 print_rapid_string_header();
+                print_serial_temp_header();
                 break;
                 default:
                 print_rapid_string_header();
+                print_serial_temp_header();
             }
             break;
 
