@@ -183,7 +183,7 @@ void print_serial_temp_data(const boolean reset, Sensors *Sen)
   if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  )
   {
     double cTime = double(Sen->now)/1000.;
-    Serial.printf("unit_temp, %13.3f, %8.4f, %d, %8.4f,\n", cTime, Sen->Tb, reset, Sen->Tb_f);
+    Serial.printf("temp_unit, %13.3f, %8.4f, %d, %8.4f,\n", cTime, Sen->Tb, reset, Sen->Tb_f);
   }
 }
 
