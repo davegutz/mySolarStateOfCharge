@@ -760,6 +760,7 @@ class SavedData:
             self.mod = None  # Configuration control code, 0=all hardware, 7=all simulated, +8 tweak test
             self.bms_off = None  # Battery management system off, T=off
             self.Tb = None  # Battery bank temperature, deg C
+            self.Tb_f = None  # Battery bank filtered temperature, deg C
             self.vsat = None  # Monitor Bank saturation threshold at temperature, deg C
             self.dv_dyn = None  # Monitor Bank current induced back emf, V
             self.dv_hys = None  # Drop across hysteresis, V
@@ -870,6 +871,7 @@ class SavedData:
             # self.ib_charge = self.ib * (bms_off_and_not_charging < 1)
             self.ib_charge = np.array(data.ib_charge[:i_end])
             self.Tb = np.array(data.Tb[:i_end])
+            self.Tb_f = np.array(data.Tb_f[:i_end])
             self.vsat = np.array(data.vsat[:i_end])
             self.dv_dyn = np.array(data.dv_dyn[:i_end])
             self.voc_stat = np.array(data.voc_stat[:i_end])

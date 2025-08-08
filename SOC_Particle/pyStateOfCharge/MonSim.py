@@ -27,6 +27,7 @@ from TFDelay import TFDelay
 from MonSimNomConfig import *  # Global config parameters.   Overwrite in your own calls for studies
 from datetime import datetime, timedelta
 from Scale import Scale
+from myFilters import LagExp
 from pyDAGx import myTables
 import statistics as sts
 
@@ -116,7 +117,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         vb = mon_old.vb
     # ib_past = mon_old.ib_past
     ib_in = mon_old.ib
-    Tb = mon_old.Tb
+    Tb_in = mon_old.Tb
+    Tb_f_in = mon_old.Tb_f
     soc_s_init = mon_old.soc_s[0]
     sat_init = mon_old.sat[0]
     dv_hys_init = mon_old.dv_hys[0]
@@ -140,14 +142,15 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     print("rp.modeling is ", rp.modeling)
     print('use_ib_mon is', use_ib_mon)
     tweak_test = rp.tweak_test()
-    temp_c = mon_old.Tb[0]
+    Tb0 = mon_old.Tb[0]
     lut_dTb = None
     if dTb_in is not None:
         dTb_in = np.array(dTb_in)
-        temp_c += dTb_in[1, 0]
+        Tb0 += dTb_in[1, 0]
         lut_dTb = myTables.TableInterp1D(np.array(dTb_in[0, :]), np.array(dTb_in[1, :]))
 
     # Setup
+    TbFilter = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
     if hasattr(mon_old, 'qcrs'):
         scale_mon = mon_old.qcrs[0] / (Battery.UNIT_CAP_RATED*3600)
     else:
@@ -162,12 +165,12 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             scale_sim *= scale_in
     s_q = Scale(1., 3., 0.000005, 0.00005)
     s_r = Scale(1., 3., 0.001, 1.)   # t_ib_fail = 1000
-    sim = BatterySim(mod_code=chm_s[0], temp_c=temp_c, scale=scale_sim, tweak_test=tweak_test,
+    sim = BatterySim(mod_code=chm_s[0], temp_c=Tb0, scale=scale_sim, tweak_test=tweak_test,
                      dv_hys=dv_hys_init, sres0=sres0, sresct=sresct, stauct=stauct_sim, scale_r_ss=scale_r_ss,
                      s_hys=s_hys_sim, dvoc=dvoc_sim, scale_hys_cap=scale_hys_cap_sim, s_coul_eff=s_coul_eff,
                      s_cap_chg=s_cap_chg, s_cap_dis=s_cap_dis, s_hys_chg=s_hys_chg, s_hys_dis=s_hys_dis,
                      cutback_gain_sclr=cutback_gain_sclr, ds_voc_soc=ds_voc_soc, unit=unit)
-    mon = BatteryMonitor(mod_code=chm_m[0], temp_c=temp_c, scale=scale_mon, tweak_test=tweak_test,
+    mon = BatteryMonitor(mod_code=chm_m[0], temp_c=Tb0, scale=scale_mon, tweak_test=tweak_test,
                          sres0=sres0, sresct=sresct, stauct=stauct_mon, scaler_q=s_q, scaler_r=s_r,
                          scale_r_ss=scale_r_ss, s_hys=s_hys_mon, dvoc=dvoc_mon, eframe_mult=eframe_mult,
                          s_coul_eff=s_coul_eff, unit=unit)
@@ -203,7 +206,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             dTb = 0.
         # dc_dc_on = bool(lut_dc.interp(t[i]))
         dc_dc_on = False
-        Tb_ = Tb[i] + dTb
+        Tb_f = TbFilter.calculate_tau_seeded(Tb_in[i], Tb_f_in[i], reset, T, Battery.TB_FILT)
+        mon.Tb_f = Tb_f
+        Tb_ = Tb_in[i] + dTb
         rp.modeling = modeling[i]
 
         # Basic reset model verification is to init to the input data

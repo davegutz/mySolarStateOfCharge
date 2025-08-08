@@ -114,6 +114,9 @@ class Battery(Coulombs):
     VOC_STAT_FILT = 120.  # Clean up noise on Vb fed to EKF (120)
     VB_MIN = 2.  # Signal selection hard fault threshold, V (0.  < 2. < 10 bms shutoff, reads ~3 without power when off)
     VB_MAX = 17.  # Signal selection hard fault threshold, V (17. < VB_CONV_GAIN*4095)
+    TB_MAX = 60.  # Signal selection hard fault threshold 2wire only, C (60.)
+    TB_MIN = -40.  # Signal selection hard fault threshold 2wire only, C (-40.)
+    TB_FILT = 120.  # Temperature filter lag, s (120)
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
@@ -606,7 +609,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.e_soc_ekf.append(self.e_soc_ekf)
         self.saved.e_voc_ekf.append(self.e_voc_ekf)
         self.saved.Tb.append(self.Tb)
-        self.saved.Tb_fa.append(self.Tb_fa)
+        self.saved.Tb_f.append(self.Tb_f)
         self.saved.vsat.append(self.vsat)
         self.saved.voc_ekf.append(self.voc_ekf)
         self.saved.sat.append(int(self.sat))
@@ -1089,7 +1092,7 @@ class Saved:
         self.sel = []  # Current source selection, 0=amp, 1=no amp
         self.mod_data = []  # Configuration control code, 0=all hardware, 7=all simulated, +8 tweak test
         self.Tb = []  # Battery bank temperature, deg C
-        self.Tb_fa = []  # Battery bank filtered temperature, deg C
+        self.Tb_f = []  # Battery bank filtered temperature, deg C
         self.vsat = []  # Monitor Bank saturation threshold at temperature, deg C
         self.dv_dyn = []  # Monitor Bank current induced back emf, V
         self.voc_stat = []  # Monitor Static bank open circuit voltage, V

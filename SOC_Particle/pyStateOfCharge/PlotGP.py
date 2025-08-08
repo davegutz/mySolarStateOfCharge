@@ -213,9 +213,9 @@ def gp_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.legend(loc=3)
     plt.subplot(339)
     plq(plt, mo, 'time', mo, 'Tb', color='blue', linestyle='-', label='Tb' + ref_str)
-    plq(plt, mo, 'time', mo, 'Tb_fa', color='cyan', linestyle='--', label='Tb_fa' + ref_str)
+    plq(plt, mo, 'time', mo, 'Tb_f', color='cyan', linestyle='--', label='Tb_f' + ref_str)
     plq(plt, mv, 'time', mv, 'Tb', color='black', linestyle='-.', label='Tb' + test_str)
-    plq(plt, mv, 'time', mv, 'Tb_fa', color='magenta', linestyle=':', label='Tb_fa' + test_str)
+    plq(plt, mv, 'time', mv, 'Tb_f', color='magenta', linestyle=':', label='Tb_f' + test_str)
     plt.legend(loc=3)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
