@@ -99,6 +99,8 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     hdr_key_sim = "unit_m,"  # Find one instance of title
     unit_key_sim = "unit_sim"
     temp_flt_file = 'flt_compareRunSim.txt'
+    hdr_key_temp = "unit_t"
+    unit_key_temp = "temp_unit"
 
     sync = find_sync(path_to_data)
 
@@ -120,6 +122,15 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         sel_raw = None
         print(f"load_data: returning sel_raw=None")
 
+    # Load temp (old)
+    temp_file_clean = write_clean_file(path_to_data, type_='_temp', hdr_key=hdr_key_temp,
+                                       unit_key=unit_key_temp, skip=skip)
+    if temp_file_clean and not v1_only:
+        temp_raw = np.genfromtxt(temp_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+    else:
+        temp_raw = None
+        print(f"load_data: returning temp_raw=None")
+
     # Load ekf (old)
     ekf_file_clean = write_clean_file(path_to_data, type_='_ekf', hdr_key=hdr_key_ekf,
                                       unit_key=unit_key_ekf, skip=skip)
@@ -129,7 +140,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         ekf_raw = None
         print(f"load_data: returning ekf_raw=None")
 
-    mon = SavedData(data=mon_raw, sel=sel_raw, ekf=ekf_raw, time_end=time_end_in, zero_zero=zero_zero_in,
+    mon = SavedData(data=mon_raw, sel=sel_raw, ekf=ekf_raw, temp=temp_raw, time_end=time_end_in, zero_zero=zero_zero_in,
                     zero_thr=zero_thr_in, sync_cTime=sync)
     if mon.chm is not None:
         chm = int(mon.chm[-1])

@@ -83,9 +83,8 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
         plt.legend(loc=1)
         plt.subplot(222)
         plt.plot(so.time, so.Tb_s, color='black', linestyle='-', label='Tb_s'+ref_str)
-
         plt.plot(sv.time, sv.Tb, color='red', linestyle='--', label='Tb_s'+test_str)
-        plt.plot(mo.time, mo.Tb, color='blue', linestyle='-.', label='Tb'+ref_str)
+        plq(plt, mo, 'time_t', mo, 'Tb', color='blue', linestyle='-.', label='Tb'+ref_str, stairs=True)
         plt.plot(mv.time, mv.Tb, color='green', linestyle=':', label='Tb'+test_str)
         plt.legend(loc=1)
         plt.subplot(223)
@@ -303,7 +302,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
         plt.plot(so.time, np.array(dv_hys_req)-0.1, color='orange', linestyle='--', label='dv_hys_req_s-0.1'+ref_str)
     plt.legend(loc=1)
     plt.subplot(326)
-    plt.plot(mo.time, mo.Tb, color='green', linestyle='-', label='temp_c'+ref_str)
+    plq(plt, mo, 'time_t', mo, 'Tb', color='green', linestyle='-', label='Tb'+ref_str, stairs=True)
     plt.plot(mv.time, mv.Tb, color='orange', linestyle='--', label='temp_c'+test_str)
     plt.plot(mo.time, mo.chm, color='black', linestyle='-', label='mon_chm'+ref_str)
     plq(plt, so, 'time', so, 'chm_s', color='cyan', linestyle='--', label='sim_chm'+ref_str)
@@ -378,7 +377,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mv.time, mv.soc, color='cyan', linestyle=':', label='soc'+test_str)
     plt.legend(loc=1)
     plt.subplot(313)
-    plt.plot(mo.time, mo.Tb, color='red', linestyle=':', label='Tb'+ref_str)
+    plt.plot(mo.time_t, mo.Tb, color='red', linestyle=':', label='Tb'+ref_str)
     plt.plot(mv.time, mv.Tb, color='cyan', linestyle=':', label='Tb'+test_str)
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -733,7 +732,7 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
 
 
 class SavedData:
-    def __init__(self, data=None, sel=None, ekf=None, time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None,
+    def __init__(self, data=None, sel=None, ekf=None, temp=None, time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None,
                  init_time_in=None):
         i_end = 0
         if data is None:
@@ -759,8 +758,8 @@ class SavedData:
             self.sel = None  # Current source selection, 0=amp, 1=no amp
             self.mod = None  # Configuration control code, 0=all hardware, 7=all simulated, +8 tweak test
             self.bms_off = None  # Battery management system off, T=off
-            self.Tb = None  # Battery bank temperature, deg C
-            self.Tb_f = None  # Battery bank filtered temperature, deg C
+            self.Tb_mon = None  # Battery bank temperature, deg C
+            self.Tb_f_mon = None  # Battery bank filtered temperature, deg C
             self.vsat = None  # Monitor Bank saturation threshold at temperature, deg C
             self.dv_dyn = None  # Monitor Bank current induced back emf, V
             self.dv_hys = None  # Drop across hysteresis, V
@@ -870,8 +869,8 @@ class SavedData:
             # bms_off_and_not_charging = self.bms_off * not_bms_off
             # self.ib_charge = self.ib * (bms_off_and_not_charging < 1)
             self.ib_charge = np.array(data.ib_charge[:i_end])
-            self.Tb = np.array(data.Tb[:i_end])
-            self.Tb_f = np.array(data.Tb_f[:i_end])
+            self.Tb_mon = np.array(data.Tb[:i_end])
+            self.Tb_f_mon = np.array(data.Tb_f[:i_end])
             self.vsat = np.array(data.vsat[:i_end])
             self.dv_dyn = np.array(data.dv_dyn[:i_end])
             self.voc_stat = np.array(data.voc_stat[:i_end])
@@ -1075,6 +1074,16 @@ class SavedData:
             self.P_post = np.array(ekf.P_post_[:i_end])
             self.hx = np.array(ekf.hx_[:i_end])
             self.H = np.array(ekf.H_[:i_end])
+        if temp is None:
+            self.time_t = None
+            self.reset_temp = None
+            self.Tb = None
+            self.Tb_f = None
+        else:
+            self.time_t = np.array(temp.c_time[:i_end]) - self.time_ref
+            self.reset_temp = np.array(temp.reset_temp[:i_end])
+            self.Tb = np.array(temp.Tb[:i_end])
+            self.Tb_f = np.array(temp.Tb_f[:i_end])
 
     def __str__(self):
         s = "{},".format(self.unit[self.i])

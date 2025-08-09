@@ -352,6 +352,9 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ewmlo_thr = None
         self.reset_ekf = None
         self.voc_stat_ekf = 0.
+        self.dt_temp = None
+        self.reset_temp = None
+        self.Tb_f = None
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -565,6 +568,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.time_min.append(time / 60.)
         self.saved.time_day.append(time / 3600. / 24.)
         self.saved.dt.append(dt)
+        self.saved.dt_temp.append(self.dt_temp)
+        self.saved.reset_temp.append(self.reset_temp)
         self.saved.chm.append(self.chm)
         self.saved.qcrs.append(self.q_cap_rated_scaled)
         self.saved.ib.append(self.ib)
@@ -1044,7 +1049,10 @@ class Saved:
         self.time = []
         self.time_min = []
         self.time_day = []
+        self.time_t = []
+        self.reset_temp = []
         self.dt = []
+        self.dt_temp = []
         self.chm = []
         self.qcrs = []
         self.bmso = []

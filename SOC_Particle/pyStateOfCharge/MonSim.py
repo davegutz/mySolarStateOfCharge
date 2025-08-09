@@ -119,6 +119,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     ib_in = mon_old.ib
     Tb_in = mon_old.Tb
     Tb_f_in = mon_old.Tb_f
+    Tb_in_mon = mon_old.Tb_mon
+    Tb_f_mon_in = mon_old.Tb_f_mon
     soc_s_init = mon_old.soc_s[0]
     sat_init = mon_old.sat[0]
     dv_hys_init = mon_old.dv_hys[0]
@@ -185,6 +187,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     # time loop
     now = t[0]
     i_ekf = None
+    i_temp = None
     for i in range(t_len):
         now = t[i]
         reset = (t[i] <= init_time) or (t[i] < 0. and t[0] > init_time)
@@ -196,6 +199,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if i == 0:
             T = t[1] - t[0]
             i_ekf = -1
+            i_temp = -1
+            mon.Tb_f = Tb_f_in[0]
+            mon.dt_temp = 0
         else:
             candidate_dt = t[i] - t[i-1]  # update
             if candidate_dt > 1e-6:
@@ -204,11 +210,19 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             dTb = lut_dTb.interp(t[i])
         else:
             dTb = 0.
+        # Get temperature data
+        if (i_temp+1 < len(mon_old.time_t)) and (mon_old.time_t[i_temp+1] <= mon_old.time[i]):
+            i_temp += 1
+            mon.reset_temp = (i_temp==0)
+            if i_temp>0:
+                mon.dt_temp = mon_old.time_t[i_temp] - mon_old.time_t[i_temp-1]
+            else:
+                mon.dt_temp = mon_old.time_t[1] - mon_old.time_t[0]
+            mon.Tb_f = TbFilter.calculate_tau_seeded(Tb_in[i_temp], Tb_f_in[0], mon.reset_temp, mon.dt_temp, Battery.TB_FILT)
+
         # dc_dc_on = bool(lut_dc.interp(t[i]))
         dc_dc_on = False
-        Tb_f = TbFilter.calculate_tau_seeded(Tb_in[i], Tb_f_in[i], reset, T, Battery.TB_FILT)
-        mon.Tb_f = Tb_f
-        Tb_ = Tb_in[i] + dTb
+        Tb_ = Tb_in_mon[i_temp] + dTb
         rp.modeling = modeling[i]
 
         # Basic reset model verification is to init to the input data
