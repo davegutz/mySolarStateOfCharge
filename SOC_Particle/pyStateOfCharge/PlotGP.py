@@ -212,7 +212,7 @@ def gp_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.xlabel('sec')
     plt.legend(loc=3)
     plt.subplot(339)
-    plq(plt, mo, 'time_t', mo, 'Tb', color='blue', linestyle='-', label='Tb' + ref_str, stairs=True)
+    plq(plt, mo, 'time', mo, 'Tb_mon', color='blue', linestyle='-', label='Tb' + ref_str)
     plq(plt, mo, 'time_t', mo, 'Tb_f', color='cyan', linestyle='--', label='Tb_f' + ref_str, stairs=True)
     plq(plt, mv, 'time', mv, 'Tb', color='black', linestyle='-.', label='Tb' + test_str)
     plq(plt, mv, 'time', mv, 'Tb_f', color='magenta', linestyle=':', label='Tb_f' + test_str)

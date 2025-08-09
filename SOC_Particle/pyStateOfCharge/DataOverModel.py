@@ -377,7 +377,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mv.time, mv.soc, color='cyan', linestyle=':', label='soc'+test_str)
     plt.legend(loc=1)
     plt.subplot(313)
-    plt.plot(mo.time_t, mo.Tb, color='red', linestyle=':', label='Tb'+ref_str)
+    plt.plot(mo.time, mo.Tb_mon, color='red', linestyle=':', label='Tb'+ref_str)
     plt.plot(mv.time, mv.Tb, color='cyan', linestyle=':', label='Tb'+test_str)
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -1077,12 +1077,12 @@ class SavedData:
         if temp is None:
             self.time_t = None
             self.reset_temp = None
-            self.Tb = None
+            self.Tb_t = None
             self.Tb_f = None
         else:
             self.time_t = np.array(temp.c_time[:i_end]) - self.time_ref
             self.reset_temp = np.array(temp.reset_temp[:i_end])
-            self.Tb = np.array(temp.Tb[:i_end])
+            self.Tb_t = np.array(temp.Tb[:i_end])
             self.Tb_f = np.array(temp.Tb_f[:i_end])
 
     def __str__(self):

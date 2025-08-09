@@ -355,6 +355,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.dt_temp = None
         self.reset_temp = None
         self.Tb_f = None
+        self.Tb_rate = None
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -455,6 +456,7 @@ class BatteryMonitor(Battery, EKF1x1):
         # EKF 1x1
         self.reset_ekf = reset_ekf
         if calc_ekf:
+            print(f"{reset_ekf=} {self.soc_ekf} {self.x_ekf=} {self.voc_stat_ekf=}")
             self.voc_stat_ekf = self.voc_stat
             self.dt_eframe = dt_ekf
             ddq_dt = self.ib_charge
@@ -480,6 +482,7 @@ class BatteryMonitor(Battery, EKF1x1):
             conv = abs(self.y_filt) < Battery.EKF_CONV
             self.EKF_converged.calculate(conv, Battery.EKF_T_CONV, Battery.EKF_T_RESET,
                                          min(self.dt_eframe, Battery.EKF_T_RESET), self.reset_ekf)
+            print(f"{reset_ekf=} {self.soc_ekf} {self.x_ekf=} {self.voc_stat_ekf=}")
         self.eframe += 1
         if self.reset_ekf or self.eframe >= self.eframe_mult:  # '>=' ensures reset with changes on the fly
             self.eframe = 0
@@ -615,6 +618,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.e_voc_ekf.append(self.e_voc_ekf)
         self.saved.Tb.append(self.Tb)
         self.saved.Tb_f.append(self.Tb_f)
+        self.saved.Tb_rate.append(self.Tb_rate)
         self.saved.vsat.append(self.vsat)
         self.saved.voc_ekf.append(self.voc_ekf)
         self.saved.sat.append(int(self.sat))
@@ -805,7 +809,6 @@ class BatterySim(Battery):
         if self.bms_off and voltage_low:
             self.ib = 0.
         self.ib_lag = self.IbLag.calculate_tau(self.ib, reset, self.dt, self.chemistry.ib_lag_tau)
-        print(f"IbLag.calculate_tau: ib {self.ib}, ib_lag {self.ib_lag} reset {reset}, dt {self.dt}, tau {self.chemistry.ib_lag_tau}")
 
         # Charge transfer dynamics
         self.vb = self.voc + (self.ChargeTransfer.calculate(self.ib, reset, dt)*self.chemistry.r_ct +
@@ -838,8 +841,8 @@ class BatterySim(Battery):
 
         return self.vb
 
-    def count_coulombs(self, chem, dt, reset, temp_c, charge_curr, sat, soc_s_init=None, mon_delta_q=None, mon_sat=None,
-                       use_soc_in=False, soc_in=0.):
+    def count_coulombs(self, chem, dt, reset, temp_c, charge_curr, sat, tb_rate=None, soc_s_init=None, mon_delta_q=None,
+                       mon_sat=None, use_soc_in=False, soc_in=0.):
         # BatterySim
         """Coulomb counter based on true=actual capacity
         Internal resistance of battery is a loss
@@ -863,12 +866,8 @@ class BatterySim(Battery):
         self.d_delta_q = self.charge_curr * dt
         if self.charge_curr > 0. and not self.tweak_test:
             self.d_delta_q *= self.chemistry.coul_eff
-
-        # Rate limit temperature
-        self.temp_lim = max(min(temp_c, self.t_last + self.temp_rlim*dt), self.t_last - self.temp_rlim*dt)
         if self.reset:
             self.temp_lim = temp_c
-            self.t_last = temp_c
             if soc_s_init and not self.mod:
                 self.delta_q = self.calculate_capacity(temp_c) * (soc_s_init - 1.)
 
@@ -882,13 +881,13 @@ class BatterySim(Battery):
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
 
         # Integration can go to -50%
-        self.q_capacity = self.calculate_capacity(self.temp_lim)
+        self.q_capacity = self.calculate_capacity(self.Tb_f)
         if use_soc_in:
             self.soc = soc_in
             self.q = self.q_capacity * self.soc
             self.delta_q = self.q - self.q_capacity
         else:
-            self.delta_q += self.d_delta_q - self.chemistry.dqdt*self.q_capacity*(self.temp_lim-self.t_last)
+            self.delta_q += self.d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_rate*dt
             self.delta_q = max(min(self.delta_q, 0.), -self.q_capacity*1.5)
             self.q = self.q_capacity + self.delta_q
 
@@ -1101,6 +1100,7 @@ class Saved:
         self.mod_data = []  # Configuration control code, 0=all hardware, 7=all simulated, +8 tweak test
         self.Tb = []  # Battery bank temperature, deg C
         self.Tb_f = []  # Battery bank filtered temperature, deg C
+        self.Tb_rate = []  # Temp rate, deg C / s
         self.vsat = []  # Monitor Bank saturation threshold at temperature, deg C
         self.dv_dyn = []  # Monitor Bank current induced back emf, V
         self.voc_stat = []  # Monitor Static bank open circuit voltage, V

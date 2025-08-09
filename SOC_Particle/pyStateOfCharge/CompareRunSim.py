@@ -142,7 +142,7 @@ def main():
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # The following are not implemented in GUI
     time_end_in = None
-    # time_end_in = 5
+    # time_end_in = 3
     data_only = False
     # data_only = True
     # mon_soc_in = True
