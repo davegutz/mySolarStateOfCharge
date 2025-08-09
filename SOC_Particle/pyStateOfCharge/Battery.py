@@ -169,6 +169,8 @@ class Battery(Coulombs):
         self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.UNIT_CAP_RATED*scale_cap,
                                      min_=-Battery.UNIT_CAP_RATED*scale_cap, tau=self.chemistry.tau_ct)
         self.Tb = temp_c
+        self.Tb_f = temp_c
+        self.Tb_rate = None
         self.saved = Saved()  # for plots and prints
         self.dv_hys = 0.  # Placeholder so BatterySim can be plotted
         self.tau_hys = 0.  # Placeholder so BatterySim can be plotted
@@ -354,8 +356,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.voc_stat_ekf = 0.
         self.dt_temp = None
         self.reset_temp = None
-        self.Tb_f = None
-        self.Tb_rate = None
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -575,6 +575,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.reset_temp.append(self.reset_temp)
         self.saved.chm.append(self.chm)
         self.saved.qcrs.append(self.q_cap_rated_scaled)
+        self.saved.delta_q.append(self.delta_q)
+        self.saved.dt.append(dt)
         self.saved.ib.append(self.ib)
         self.saved.ib_in.append(self.ib_in)
         self.saved.ib_charge.append(self.ib_charge)
@@ -946,6 +948,7 @@ class BatterySim(Battery):
         self.saved_s.ib_fut_s.append(self.ib_fut)
         self.saved_s.sat_s.append(int(self.sat))
         self.saved_s.dq_s.append(self.delta_q)
+        self.saved_s.q_s.append(self.q)
         self.saved_s.soc_s.append(self.soc)
         self.saved_s.reset_s.append(self.reset)
         self.saved_s.tau_s.append(self.tau_hys)

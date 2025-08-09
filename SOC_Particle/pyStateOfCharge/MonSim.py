@@ -220,6 +220,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                 mon.dt_temp = mon_old.time_t[1] - mon_old.time_t[0]
             mon.Tb_f = TbFilter.calculate_tau_seeded(Tb_in_t[i_temp], Tb_f_in[0], mon.reset_temp, mon.dt_temp, Battery.TB_FILT)
             mon.Tb_rate = TbFilter.rate
+            sim.Tb_f = mon.Tb_f
         else:
             mon.Tb_rate = 0.
 

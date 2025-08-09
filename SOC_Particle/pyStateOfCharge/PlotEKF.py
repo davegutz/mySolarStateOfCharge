@@ -142,7 +142,7 @@ def ekf_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
             plq(plt, mv, 'x_ekf', mv, 'hx', color='black', linestyle='--', label='hx(x)' + test_str)
             plt.legend(loc=1)
             plt.subplot(313)
-            plq(plt, mo, 'time', mo, 'dt', color='red', linestyle='-', label='dt' + ref_str)
+            plq(plt, mo, 'time', mo, 'dt', color='red', linestyle='-', label='dt' + ref_str, stairs=True)
             plq(plt, mv, 'time', mv, 'dt', color='black', linestyle='--', label='dt' + test_str, stairs=True)
             plq(plt, mo, 'time_e', mo, 'dt_ekf', color='blue', linestyle='-.', label='dt_eframe' + ref_str, stairs=True)
             plq(plt, mv, 'time', mv, 'dt_eframe', color='orange', linestyle=':', label='dt_eframe' + test_str, stairs=True)
