@@ -224,6 +224,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.Tb_rate = TbFilter.rate
             sim.Tb = mon.Tb
             sim.Tb_f = mon.Tb_f
+            print(f"{i=} time {mon_old.time[i]}  {i_temp=} time_t {mon_old.time_t[i_temp]}res_t {mon.reset_temp} Tb {Tb_in_t[i_temp]} Tb_ver {mon.Tb} Tb_f {Tb_f_mon_in[i_temp]} Tb_f_ver {mon.Tb_f}")
         else:
             mon.Tb_rate = 0.
 
