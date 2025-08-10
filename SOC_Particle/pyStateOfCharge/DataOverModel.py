@@ -1079,11 +1079,13 @@ class SavedData:
             self.reset_temp = None
             self.Tb_t = None
             self.Tb_f = None
+            self.Tb_f_rate = None
         else:
             self.time_t = np.array(temp.c_time[:i_end]) - self.time_ref
             self.reset_temp = np.array(temp.reset_temp[:i_end])
             self.Tb_t = np.array(temp.Tb[:i_end])
             self.Tb_f = np.array(temp.Tb_f[:i_end])
+            self.Tb_f_rate = np.array(temp.Tb_f_rate[:i_end])
 
     def __str__(self):
         s = "{},".format(self.unit[self.i])

@@ -154,7 +154,8 @@ def off_on_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, 
         plq(plt, smv, 'time', smv, 'Tb_f_s', add=2, color='green', linestyle=':', label='Tb_f_s' + test_str + ' +2')
         plt.legend(loc=2)
         plt.subplot(326)
-        plq(plt, mv, 'time', mv, 'Tb_rate', color='black', linestyle='-', label='Tb_rate' + ref_str)
+        plq(plt, mo, 'time_t', mo, 'Tb_f_rate', color='black', linestyle='-', label='Tb_f_rate' + ref_str, stairs=True)
+        plq(plt, mv, 'time', mv, 'Tb_rate', color='green', linestyle='--', label='Tb_rate' + test_str)
         plt.legend(loc=2)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
