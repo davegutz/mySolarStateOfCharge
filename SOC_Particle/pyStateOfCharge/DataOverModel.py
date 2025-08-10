@@ -1117,7 +1117,7 @@ class SavedDataSim:
             self.qcrs_s = None  # Unit capacity rated scaled, Coulombs
             self.bms_off_s = None
             self.nS_s = None
-            self.Tb_s = None
+            self.Tb_f_s = None
             self.vsat_s = None
             self.voc_s = None
             self.voc_stat_s = None
@@ -1154,7 +1154,7 @@ class SavedDataSim:
                 self.nS_s = np.array(data.nS_s[:i_end])
             else:
                 self.nS_s = np.array(data.bmso_s[:i_end]) * 0 + 1
-            self.Tb_s = data.Tb_s[:i_end]
+            self.Tb_f_s = data.Tb_f_s[:i_end]
             self.vb_s = data.vb_s[:i_end]
             self.vsat_s = data.vsat_s[:i_end]
             self.voc_stat_s = data.voc_stat_s[:i_end]
