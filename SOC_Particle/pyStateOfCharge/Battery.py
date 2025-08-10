@@ -453,7 +453,7 @@ class BatteryMonitor(Battery, EKF1x1):
         # EKF 1x1
         self.reset_ekf = reset_ekf
         if calc_ekf:
-            print(f"{reset_ekf=} {self.soc_ekf} {self.x_ekf=} {self.voc_stat_ekf=}")
+            # print(f"{reset_ekf=} {self.soc_ekf} {self.x_ekf=} {self.voc_stat_ekf=}")
             self.voc_stat_ekf = self.voc_stat
             self.dt_eframe = dt_ekf
             ddq_dt = self.ib_charge
@@ -479,7 +479,7 @@ class BatteryMonitor(Battery, EKF1x1):
             conv = abs(self.y_filt) < Battery.EKF_CONV
             self.EKF_converged.calculate(conv, Battery.EKF_T_CONV, Battery.EKF_T_RESET,
                                          min(self.dt_eframe, Battery.EKF_T_RESET), self.reset_ekf)
-            print(f"{reset_ekf=} {self.soc_ekf} {self.x_ekf=} {self.voc_stat_ekf=}")
+            # print(f"{reset_ekf=} {self.soc_ekf} {self.x_ekf=} {self.voc_stat_ekf=}")
         self.eframe += 1
         if self.reset_ekf or self.eframe >= self.eframe_mult:  # '>=' ensures reset with changes on the fly
             self.eframe = 0

@@ -201,7 +201,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             i_ekf = -1
             i_temp = -1
             mon.Tb_f = Tb_f_in[0]
-            mon.Tb = Tb_in[0]
+            mon.Tb = Tb_in_t[0]
             mon.dt_temp = 0
         else:
             candidate_dt = t[i] - t[i-1]  # update
@@ -224,7 +224,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.Tb_rate = TbFilter.rate
             sim.Tb = mon.Tb
             sim.Tb_f = mon.Tb_f
-            print(f"{i=} time {mon_old.time[i]}  {i_temp=} time_t {mon_old.time_t[i_temp]}res_t {mon.reset_temp} Tb {Tb_in_t[i_temp]} Tb_ver {mon.Tb} Tb_f {Tb_f_mon_in[i_temp]} Tb_f_ver {mon.Tb_f}")
+            # print(f"time {mon_old.time[i]} Tb_t{Tb_in_t[i_temp]} Tb {mon.Tb} Tb_f{mon_old.Tb_f[i_temp]}")
         else:
             mon.Tb_rate = 0.
 
@@ -334,7 +334,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if rp.modeling == 0:
             if reset_ekf:
                 z_init = mon_old.z[i_ekf]
-            print(f"{i=} {i_ekf=} {mon_old.time[i]} {mon_old.time_e[i_ekf]} dt {mon_old.dt_ekf[i_ekf]} calc {calc_ekf} res {reset_ekf} z_init {z_init}")
+            # print(f"{i=} {i_ekf=} {mon_old.time[i]} {mon_old.time_e[i_ekf]} dt {mon_old.dt_ekf[i_ekf]} calc {calc_ekf} res {reset_ekf} z_init {z_init}")
             mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, mon.Tb_rate,
                           rp=rp, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
@@ -362,6 +362,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         sim.save_s(t[i])
 
         # Print initial
+        verbose = False
         if i == 0 and verbose:
             print('time=', t[i])
             print('mon:  ', str(mon))
@@ -390,7 +391,14 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       "{:9.3f}".format(sim.saved.dv_hys[i]), "{:9.3f}".format(mon.saved.ib[i]), "{:12.7f}".format(mon.saved.soc[i]),
                       "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
 
-        # print('mon: t', t[i], 'voc', mon.voc, 'vsat', mon.vsat, 'sat', mon.sat, 'here sat', sat, 'here saturated', saturated)
+        # print(f"{i=} time {mon_old.time[i]}  {i_temp=} time_t {mon_old.time_t[i_temp]}res_t {mon.reset_temp} Tbmon{mon_old.Tb_mon[i]} Tb {Tb_in_t[i_temp]} Tb_ver {mon.Tb} Tb_f {Tb_f_mon_in[i_temp]} Tb_f_ver {mon.Tb_f}")
+        if i==0:
+            print(f"      time   reset_temp Tb_mon  Tb_t  Tb_ver       Tb_f    Tb_f_ver")
+        if mon.reset_temp is None:
+            mon.reset_temp = -1
+        print("{:9.3f}".format(t[i]), "{:4.0f}".format(float(mon.reset_temp)), "{:9.3f}".format(mon_old.Tb_mon[i]),
+              "{:9.3f}".format(Tb_in_t[i_temp]), "{:12.7f}".format(mon.Tb), "{:9.3f}".format(Tb_f_mon_in[i_temp]),
+              "{:9.3f}".format(mon.Tb_f))
 
     # Data
     if verbose:
