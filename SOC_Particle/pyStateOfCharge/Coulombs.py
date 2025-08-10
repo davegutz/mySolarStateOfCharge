@@ -164,6 +164,8 @@ class Coulombs:
             self.delta_q = max(min(self.delta_q + d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_rate*dt,
                                    0.0), -self.q_capacity*1.5)
             self.q = self.q_capacity + self.delta_q
+            if self.delta_q < -100.:
+                pass
 
         # Normalize
         self.soc = self.q / self.q_capacity

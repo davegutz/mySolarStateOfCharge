@@ -251,7 +251,7 @@ class Battery(Coulombs):
         # print("soc=", soc, "temp_c=", temp_c, "dvoc=", self.dvoc, "voc=", voc)
         return voc, dv_dsoc
 
-    def calculate(self, chem, temp_c, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_0=None,
                   e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, reset_ekf=None, soc=None, sat_init=None):
         # Battery
@@ -382,7 +382,7 @@ class BatteryMonitor(Battery, EKF1x1):
     # BatteryMonitor::calculate()
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
-    def calculate(self, chem, temp_c, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_0=None,
                   e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, soc=None, sat_init=None,
                   reset_ekf=None):
@@ -392,20 +392,17 @@ class BatteryMonitor(Battery, EKF1x1):
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
 
-        self.Tb = temp_c
-        self.vsat = calc_vsat(self.Tb, self.chemistry.nom_vsat, self.chemistry.dvoc_dt)
+        self.vsat = calc_vsat(self.Tb_f, self.chemistry.nom_vsat, self.chemistry.dvoc_dt)
         self.dt = dt
         self.ib_in = ib
         if self.IB_CHARGE_NOA is True:
             self.ib_in = self.ib_noa
         self.mod = rp.modeling
-        self.Temp_Rlim.update(x=self.Tb, reset=reset, dt=self.dt, max_=0.017, min_=-.017)
-        temp_rate = self.Temp_Rlim.rate
         # Overflow protection since ib past value used
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Table lookup
-        self.voc_soc, self.dv_dsoc = self.calc_soc_voc(self.soc, temp_c)
+        self.voc_soc, self.dv_dsoc = self.calc_soc_voc(self.soc, self.Tb_f)
 
         # Battery management system model (uses past value bms_off and voc_stat)
         if not self.bms_off:
@@ -416,7 +413,7 @@ class BatteryMonitor(Battery, EKF1x1):
         if reset and bms_off_init is not None:
             self.bms_off = bms_off_init
         else:
-            self.bms_off = (self.Tb <= self.chemistry.low_t) or (voltage_low and not rp.tweak_test())  # KISS
+            self.bms_off = (self.Tb_f <= self.chemistry.low_t) or (voltage_low and not rp.tweak_test())  # KISS
         self.ib_charge = self.ib
         if self.bms_off and not bms_charging:
             self.ib_charge = 0.
@@ -762,14 +759,13 @@ class BatterySim(Battery):
         return s
 
     # BatterySim::calculate()
-    def calculate(self, chem, temp_c, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_0=None,
                   e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, reset_ekf=None, soc=None, sat_init=None):
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)
             self.chm = chem
 
-        self.Tb = temp_c
         self.dt = dt
         self.ib_in = ib
         if reset:
@@ -779,7 +775,7 @@ class BatterySim(Battery):
         soc_lim = max(min(soc, 1.), -0.2)  # dag 9/3/2022
 
         # VOC-OCV model
-        self.voc_stat, self.dv_dsoc = self.calc_soc_voc(soc + Battery.D_SOC_S, temp_c)
+        self.voc_stat, self.dv_dsoc = self.calc_soc_voc(soc + Battery.D_SOC_S, self.Tb_f)
         # slightly beyond but don't windup
         self.voc_stat = min(self.voc_stat + (soc - soc_lim) * self.dv_dsoc, self.vsat * 1.2)
 
@@ -804,7 +800,7 @@ class BatterySim(Battery):
         if reset and bms_off_init is not None:
             self.bms_off = bms_off_init
         else:
-            self.bms_off = (self.Tb < self.chemistry.low_t) or (voltage_low and not rp.tweak_test())
+            self.bms_off = (self.Tb_f < self.chemistry.low_t) or (voltage_low and not rp.tweak_test())
         ib_charge_fut = self.ib_in
         if self.bms_off and not bms_charging:
             ib_charge_fut = 0.
@@ -822,7 +818,7 @@ class BatterySim(Battery):
         self.dv_dyn = self.vb - self.voc
 
         # Saturation logic, both full and empty
-        self.vsat = self.chemistry.nom_vsat + (temp_c - 25.) * self.chemistry.dvoc_dt
+        self.vsat = self.chemistry.nom_vsat + (self.Tb_f - 25.) * self.chemistry.dvoc_dt
         self.sat_ib_max = (self.sat_ib_null + (1 - self.soc - self.ds_voc_soc) * self.sat_cutback_gain *
                            rp.cutback_gain_scalar)
         if rp.tweak_test() or (not rp.modeling):
@@ -869,9 +865,8 @@ class BatterySim(Battery):
         if self.charge_curr > 0. and not self.tweak_test:
             self.d_delta_q *= self.chemistry.coul_eff
         if self.reset:
-            self.temp_lim = temp_c
             if soc_s_init and not self.mod:
-                self.delta_q = self.calculate_capacity(temp_c) * (soc_s_init - 1.)
+                self.delta_q = self.calculate_capacity(self.Tb_f) * (soc_s_init - 1.)
 
         # Saturation.   Goal is to set q_capacity and hold it so remembers last saturation status
         # detection
@@ -895,11 +890,10 @@ class BatterySim(Battery):
 
         # Normalize
         self.soc = self.q / self.q_capacity
-        self.soc_min = self.chemistry.lut_min_soc.interp(self.temp_lim)
+        self.soc_min = self.chemistry.lut_min_soc.interp(self.Tb_f)
         self.q_min = self.soc_min * self.q_capacity
 
         # Save and return
-        self.t_last = self.temp_lim
         return self.soc
 
     def save(self, time, dt):  # BatterySim
@@ -935,6 +929,7 @@ class BatterySim(Battery):
         self.saved_s.qcrs_s.append(self.q_cap_rated_scaled)
         self.saved_s.bmso_s.append(self.bms_off)
         self.saved_s.Tb_s.append(self.Tb)
+        self.saved_s.Tb_f_s.append(self.Tb_f)
         self.saved_s.vsat_s.append(self.vsat)
         self.saved_s.voc_s.append(self.voc)
         self.saved_s.voc_stat_s.append(self.voc_stat)
@@ -1504,6 +1499,7 @@ class SavedS:
         self.qcrs_s = []
         self.bmso_s = []
         self.Tb_s = []
+        self.Tb_f_s = []
         self.vsat_s = []
         self.voc_s = []
         self.voc_stat_s = []

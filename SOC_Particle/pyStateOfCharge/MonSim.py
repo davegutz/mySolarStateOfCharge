@@ -254,7 +254,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             _chm_s = chm_s[i]
         else:
             _chm_s = Bsim
-        sim.calculate(_chm_s, Tb_, None, ib_in_s, T, reset, None, None, None,
+        sim.calculate(_chm_s, None, ib_in_s, T, reset, None, None, None,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=bms_off_init)
         sim.count_coulombs(chem=_chm_s, dt=T, reset=reset, temp_c=Tb_, tb_rate=mon.Tb_rate, charge_curr=sim.ib_charge,
@@ -331,12 +331,12 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             if reset_ekf:
                 z_init = mon_old.z[i_ekf]
             print(f"{i=} {i_ekf=} {mon_old.time[i]} {mon_old.time_e[i_ekf]} dt {mon_old.dt_ekf[i_ekf]} calc {calc_ekf} res {reset_ekf} z_init {z_init}")
-            mon.calculate(_chm_m, mon.Tb_f, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, mon.Tb_rate,
+            mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, mon.Tb_rate,
                           rp=rp, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
                           reset_ekf=reset_ekf)
         else:
-            mon.calculate(_chm_m, mon.Tb_f, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
+            mon.calculate(_chm_m, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
                           reset, calc_ekf, T_ekf, mon_old.z[0], Tb_rate=mon.Tb_rate,
                           rp=rp, bms_off_init=bms_off_init, ib_amp=ibmm, ib_noa=ibnm, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,

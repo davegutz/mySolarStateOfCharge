@@ -814,7 +814,7 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
     if ( charge_curr>0. ) d_delta_q *= coul_eff_;
 
     // Rate limit temperature.  When modeling, initialize to no change
-    tb_ = Sen->Tb;
+    tb_ = Sen->Tb_f;
     tb_rate_ = Sen->Tb_f_rate;
     
     // Saturation and re-init.   Goal is to set q_capacity and hold it so remember last saturation status
