@@ -29,7 +29,6 @@ from datetime import datetime, timedelta
 from Scale import Scale
 from myFilters import LagExp
 from pyDAGx import myTables
-import statistics as sts
 
 
 def save_clean_file(mon_ver, csv_file, unit_key):
@@ -117,8 +116,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         vb = mon_old.vb
     # ib_past = mon_old.ib_past
     ib_in = mon_old.ib
-    Tb_in_t = mon_old.Tb_t
-    Tb_f_in = mon_old.Tb_f
+    Tb_t_in = mon_old.Tb_t
+    Tb_f_t_in = mon_old.Tb_f
+    Tb_f_rate_t_in = mon_old.Tb_f_rate
     Tb_in = mon_old.Tb_mon
     Tb_f_mon_in = mon_old.Tb_f_mon
     soc_s_init = mon_old.soc_s[0]
@@ -135,14 +135,11 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     rp = Retained()
     if hasattr(mon_old, 'mod_data'):
         modeling = mon_old.mod_data
-    # elif hasattr(mon_old, 'mod'):
-    #     modeling = int(mon_old.mod())
     else:
         modeling = 255 * np.ones(len(mon_old.time))
         print(f"what do we do now?  {rp.modeling=}")
         # exit(1)
-    print("rp.modeling is ", rp.modeling)
-    print('use_ib_mon is', use_ib_mon)
+    print("use_mon_soc is", use_mon_soc, "use_ib_mon is", use_ib_mon)
     tweak_test = rp.tweak_test()
     Tb0 = Tb_in[0]
     lut_dTb = None
@@ -188,6 +185,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     now = t[0]
     i_ekf = None
     i_temp = None
+    Tb_t_in_ = Tb_t_in[0]
+    Tb_f_t_in_ = Tb_f_t_in[0]
+    Tb_f_rate_t_in_ = Tb_f_rate_t_in[0]
     for i in range(t_len):
         now = t[i]
         reset = (t[i] <= init_time) or (t[i] < 0. and t[0] > init_time)
@@ -200,8 +200,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             T = t[1] - t[0]
             i_ekf = -1
             i_temp = -1
-            mon.Tb_f = Tb_f_in[0]
-            mon.Tb = Tb_in_t[0]
             mon.dt_temp = 0
         else:
             candidate_dt = t[i] - t[i-1]  # update
@@ -212,25 +210,28 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         else:
             dTb = 0.
         # Get temperature data
-        if (i_temp+1 < len(mon_old.time_t)) and (mon_old.time_t[i_temp+1] <= mon_old.time[i]):
+        Tb_f_mon = Tb_f_mon_in[i]
+        calc_time = (i_temp+1 < len(mon_old.time_t)) and (mon_old.time_t[i_temp+1] <= mon_old.time[i])
+        if calc_time:
             i_temp += 1
             mon.reset_temp = (i_temp==0)
             if i_temp>0:
                 mon.dt_temp = mon_old.time_t[i_temp] - mon_old.time_t[i_temp-1]
             else:
                 mon.dt_temp = mon_old.time_t[1] - mon_old.time_t[0]
-            mon.Tb = Tb_in_t[i_temp]
-            mon.Tb_f = TbFilter.calculate_tau_seeded(mon.Tb, Tb_f_in[0], mon.reset_temp, mon.dt_temp, Battery.TB_FILT)
-            mon.Tb_rate = TbFilter.rate
-            sim.Tb = mon.Tb
-            sim.Tb_f = mon.Tb_f
-            # print(f"time {mon_old.time[i]} Tb_t{Tb_in_t[i_temp]} Tb {mon.Tb} Tb_f{mon_old.Tb_f[i_temp]}")
+            Tb_t_in_ = Tb_t_in[i_temp]
+            Tb_f_t_in_ = Tb_f_t_in[i_temp]
+            Tb_f_rate_t_in_ = Tb_f_rate_t_in[i_temp]
         else:
             mon.Tb_rate = 0.
+        mon.Tb = Tb_t_in_
+        Tb_ = mon.Tb + dTb
+        mon.Tb_rate = TbFilter.rate
+        sim.Tb = Tb_t_in_
+        sim.Tb_f = mon.Tb_f
 
         # dc_dc_on = bool(lut_dc.interp(t[i]))
         dc_dc_on = False
-        Tb_ = Tb_in[i] + dTb
         rp.modeling = modeling[i]
 
         # Basic reset model verification is to init to the input data
@@ -331,6 +332,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             reset_ekf = True
             mon.init_soc_ekf(mon_old.x[0], mon_old.P[0])  # when modeling (assumed in python) ekf wants to equal model
 
+        if calc_time:
+            mon.Tb_f = TbFilter.calculate_tau_seeded(mon.Tb, Tb_f_t_in[0], mon.reset_temp, mon.dt_temp, Battery.TB_FILT)
+
         if rp.modeling == 0:
             if reset_ekf:
                 z_init = mon_old.z[i_ekf]
@@ -362,7 +366,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         sim.save_s(t[i])
 
         # Print initial
-        verbose = False
         if i == 0 and verbose:
             print('time=', t[i])
             print('mon:  ', str(mon))
@@ -390,15 +393,19 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       "{:4.0f}".format(sim.sat), "{:9.3f}".format(sim.hys.disabled), "{:9.3f}".format(sim.hys.dv_dot),
                       "{:9.3f}".format(sim.saved.dv_hys[i]), "{:9.3f}".format(mon.saved.ib[i]), "{:12.7f}".format(mon.saved.soc[i]),
                       "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
-
-        # print(f"{i=} time {mon_old.time[i]}  {i_temp=} time_t {mon_old.time_t[i_temp]}res_t {mon.reset_temp} Tbmon{mon_old.Tb_mon[i]} Tb {Tb_in_t[i_temp]} Tb_ver {mon.Tb} Tb_f {Tb_f_mon_in[i_temp]} Tb_f_ver {mon.Tb_f}")
+        # print(f"{i=} time {mon_old.time[i]}  {i_temp=} time_t {mon_old.time_t[i_temp]}res_t {mon.reset_temp} Tbmon{mon_old.Tb_mon[i]} Tb {Tb_t_in[i_temp]} Tb_ver {mon.Tb} Tb_f {Tb_f_mon_in[i_temp]} Tb_f_ver {mon.Tb_f}")
         if i==0:
-            print(f"      time   reset_temp Tb_mon  Tb_t  Tb_ver       Tb_f    Tb_f_ver")
+            print(
+                f"i      time    mod reset_temp i_temp  Tb_mon    Tb_t      Tb_ver    Tb_s_ver  Tb_f_mon  Tb_f     Tb_f_ver  Tb_rate_t   Tb_rate_ver")
         if mon.reset_temp is None:
             mon.reset_temp = -1
-        print("{:9.3f}".format(t[i]), "{:4.0f}".format(float(mon.reset_temp)), "{:9.3f}".format(mon_old.Tb_mon[i]),
-              "{:9.3f}".format(Tb_in_t[i_temp]), "{:12.7f}".format(mon.Tb), "{:9.3f}".format(Tb_f_mon_in[i_temp]),
-              "{:9.3f}".format(mon.Tb_f))
+        print("{:3d}".format(i), "{:9.3f}".format(t[i]), "{:4.0f}".format(rp.modeling), "{:8d}".format(mon.reset_temp),
+              "{:4d}".format(i_temp),
+              "{:11.3f}".format(mon_old.Tb_mon[i]), "{:9.3f}".format(Tb_t_in_), "{:9.3f}".format(mon.Tb), "{:9.3f}".format(sim.Tb),
+              "{:9.3f}".format(Tb_f_mon), "{:9.3f}".format(Tb_f_t_in_), "{:9.3f}".format(mon.Tb_f),
+              "{:9.3f}".format(Tb_f_rate_t_in_), "{:9.3f}".format(mon.Tb_rate),
+              )
+    print(f"i      time    mod reset_temp i_temp  Tb_mon    Tb_t      Tb_ver    Tb_s_ver  Tb_f_mon  Tb_f     Tb_f_ver  Tb_rate_t   Tb_rate_ver")
 
     # Data
     if verbose:
