@@ -51,14 +51,15 @@ String finish_request(const String in_str);
 String chat_cmd_from(String *source);
 boolean is_finished(const char in_char);
 void print_all_header(void);
-void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
-void print_rapid_string_header(void);
+void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp);
+void create_rapid_string_header(void);
 void print_serial_sim_header(void);
 void print_serial_temp_header(void);
 void print_serial_temp_data(const boolean reset, Sensors *Sen);
 void print_signal_sel_header(void);
 void print_serial_ekf_header(void);
 void rapid_print(Sensors *Sen, BatteryMonitor *Mon);
+void rapid_temp_print(Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp);
 void wait_on_user_input(Adafruit_SSD1306 *display);
 void wait_on_user_input();
 

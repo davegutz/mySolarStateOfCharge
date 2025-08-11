@@ -33,7 +33,6 @@ extern CommandPars cp;  // Various parameters shared at system level
 void create_rapid_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
   double cTime = double(Sen->now)/1000;
-  
   sprintf(pr.buff, "%s, %s,%13.3f,%6.3f, %d,%7.0f,%d, %d, %d, %d, %6.3f,%6.3f,%6.3f,%9.3f,%9.3f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,  %9.6f, %8.5f,%8.5f,%8.5f,%5.3f,", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
     CHEM, Mon->q_cap_rated_scaled(), pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
@@ -116,7 +115,7 @@ boolean is_finished(const char in_char)
 // Print consolidation
 void print_all_header(void)
 {
-  print_rapid_string_header();
+  create_rapid_string_header();
   print_serial_temp_header();
   if ( sp.debug()==2  )
   {
@@ -136,7 +135,7 @@ void print_all_header(void)
   }
 }
 
-void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
+void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp)
 {
   static uint8_t last_read_debug = 0;     // Remember first time with new debug to print headers
   if ( ( sp.debug()==1 || sp.debug()==2 || sp.debug()==3 || sp.debug()==4 ) )
@@ -154,13 +153,14 @@ void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
     if ( cp.publishS )
     {
       rapid_print(Sen, Mon);
+      rapid_temp_print(Sen, Mon, reset_temp);
       cp.num_v_print++;
     }
   }
   last_read_debug = sp.debug();
 }
 
-void print_rapid_string_header(void)
+void create_rapid_string_header(void)
 {
   if ( ( sp.debug()==1 || sp.debug()==2 || sp.debug()==3 || sp.debug()==4 ) )
   {
@@ -169,6 +169,12 @@ void print_rapid_string_header(void)
       Serial1.printf("unit,               hm,                  cTime,       dt,       chm,qcrs,sat,sel,mod,bmso, Tb, Tb_f, vb, ib,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,\n");
     #endif
   }
+}
+
+void print_serial_ekf_header(void)
+{
+  if ( sp.debug()==3 || sp.debug()==4 ) // print_serial_ekf_header
+    Serial.printf("unit_e,c_time,dt,Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_, x_prior_, P_prior_, x_post_, P_post_, hx_, H_,\n");
 }
 
 void print_serial_sim_header(void)
@@ -187,10 +193,13 @@ void print_serial_temp_data(const boolean reset, Sensors *Sen)
   }
 }
 
-  void print_serial_temp_header(void)
+void print_serial_temp_header(void)
 {
   if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  )
+  {
     Serial.printf("unit_t, c_time, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_f, Tb_f_rate,\n");
+    Serial.printf("unit1_t, c_time, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_f, Tb_f_rate,\n");
+  }
 }
 
 void print_signal_sel_header(void)
@@ -201,13 +210,6 @@ void print_signal_sel_header(void)
     Serial.printf("  fltw, falw, ib_rate, ib_quiet, tb_sel, ccd_thr, ewh_thr, ewl_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,\n");
 }
 
-void print_serial_ekf_header(void)
-{
-  if ( sp.debug()==3 || sp.debug()==4 ) // print_serial_ekf_header
-    Serial.printf("unit_e,c_time,dt,Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_, x_prior_, P_prior_, x_post_, P_post_, hx_, H_,\n");
-}
-
-
 // Inputs serial print
 void rapid_print(Sensors *Sen, BatteryMonitor *Mon)
 {
@@ -217,7 +219,12 @@ void rapid_print(Sensors *Sen, BatteryMonitor *Mon)
     Serial1.printf("%s\n", pr.buff);
   #endif
 }
-
+void rapid_temp_print(Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp)
+{
+  double cTime = double(Sen->now)/1000;
+  Serial.printf("temp1_unit, %13.3f, %8.4f, %8.4f, %8.4f, %d, %8.4f, %8.4f,\n",
+     cTime, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset_temp, Sen->Tb_f, Sen->Tb_f_rate);
+}
 
 /*
   Special handler for UART usb that uses built-in callback. SerialEvent occurs whenever a new data comes in the

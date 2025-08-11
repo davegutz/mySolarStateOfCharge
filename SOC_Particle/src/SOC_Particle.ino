@@ -464,7 +464,7 @@ void loop()
     }
 
     // Print
-    print_rapid_data(reset, Sen, Mon);
+    print_rapid_data(reset, Sen, Mon, reset_temp);
 
     Log.info("end read");
   }  // end read (high speed frame)
