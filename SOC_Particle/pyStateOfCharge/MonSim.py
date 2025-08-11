@@ -403,7 +403,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
               "{:4d}".format(i_temp),
               "{:11.3f}".format(mon_old.Tb_mon[i]), "{:9.3f}".format(Tb_t_in_), "{:9.3f}".format(mon.Tb), "{:9.3f}".format(sim.Tb),
               "{:9.3f}".format(Tb_f_mon), "{:9.3f}".format(Tb_f_t_in_), "{:9.3f}".format(mon.Tb_f),
-              "{:9.3f}".format(Tb_f_rate_t_in_), "{:9.3f}".format(mon.Tb_rate),
+              "{:12.6f}".format(Tb_f_rate_t_in_), "{:12.6f}".format(mon.Tb_rate),
               )
     print(f"i      time    mod reset_temp i_temp  Tb_mon    Tb_t      Tb_ver    Tb_s_ver  Tb_f_mon  Tb_f     Tb_f_ver  Tb_rate_t   Tb_rate_ver")
 
