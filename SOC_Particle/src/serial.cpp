@@ -188,7 +188,7 @@ void print_serial_temp_data(const boolean reset, Sensors *Sen)
 {
   if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  )
   {
-    double cTime = double(Sen->now)/1000.;
+    double cTime = double(Sen->now_temp)/1000.;
     Serial.printf("temp_unit, %13.3f, %9.5f, %9.5f, %9.5f, %d, %9.5f, %9.5f,\n",
       cTime, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_f, Sen->Tb_f_rate);
   }
@@ -222,7 +222,7 @@ void rapid_print(Sensors *Sen, BatteryMonitor *Mon)
 }
 void rapid_temp1_print(Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp)
 {
-  double cTime = double(Sen->now)/1000;
+  double cTime = double(Sen->now_temp)/1000;
   Serial.printf("temp1_unit, %13.3f, %9.5f, %9.5f, %9.5f, %d, %9.5f, %9.5f,\n",
      cTime, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset_temp, Sen->Tb_f, Sen->Tb_f_rate);
 }

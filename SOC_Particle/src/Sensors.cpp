@@ -84,6 +84,7 @@ float TempSensor::sample(Sensors *Sen)
     if ( count<MAX_TEMP_READS && TEMP_RANGE_CHECK<temp && temp<TEMP_RANGE_CHECK_MAX && !ap.fail_tb )
     {
       Tb_hdwe = SdTb->update(temp);
+      sample_time_ = System.millis();
       tb_stale_flt_ = false;
       if ( sp.debug()==16 ) Serial.printf("I:  t=%9.5f ct=%d, Tb_hdwe=%9.5f,\n", temp, count, Tb_hdwe);
     }
@@ -100,6 +101,7 @@ float TempSensor::sample(Sensors *Sen)
     if ( cp.tb_info.ready && TEMP_RANGE_CHECK<cp.tb_info.t_c && cp.tb_info.t_c<TEMP_RANGE_CHECK_MAX && !ap.fail_tb )
     {
       Tb_hdwe = SdTb->update(cp.tb_info.t_c);
+      sample_time_ = System.millis();
       tb_stale_flt_ = false;
       if ( sp.debug()==16 ) Serial.printf("I:  t=%9.5f ready=%d, Tb_hdwe=%9.5f,\n", cp.tb_info.t_c, cp.tb_info.ready, Tb_hdwe);
     }
@@ -114,6 +116,7 @@ float TempSensor::sample(Sensors *Sen)
   #elif defined(HDWE_2WIRE)
 
     float volt = float(analogRead(VTb_pin_))*VTB_CONV_GAIN;
+    sample_time_ = System.millis();
     float res = volt * float(HDWE_RS_2WIRE) / (V3V3 - volt);
 
     #ifdef USE_SH_2WIRE
@@ -1427,6 +1430,8 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
       Tb_f_rate = Tb_hdwe_filt_rate;
     }
   }
+  sample_time_tb_ = SensorTb->sample_time();
+  now_temp = sample_time_tb_ - inst_millis_ + inst_time_*1000;
 
   // vb
   if ( sp.mod_vb() )
@@ -1478,6 +1483,7 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
     dt_ib_ = dt_ib_hdwe_;
   }
   now = sample_time_ib_ - inst_millis_ + inst_time_*1000;
+
   if ( sp.debug()==62 ) Serial.printf(" Ib%7.3f Ib_hdwe%7.3f Ib_hdwe_model%7.3f Ib_amp%7.3f Ib_amp_model%7.3f Ib_amp_hdwe%7.3f Ib_noa%7.3f Ib_noa_model%7.3f Ib_noa_hdwe%7.3f\n",
    Ib, Ib_hdwe, Ib_hdwe_model, Ib_amp, Ib_amp_model, Ib_amp_hdwe, Ib_noa, Ib_noa_model, Ib_noa_hdwe);
 

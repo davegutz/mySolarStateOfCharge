@@ -88,12 +88,14 @@ public:
   // operators
   // functions
   boolean tb_stale_flt() { return tb_stale_flt_; };
+  unsigned long int sample_time() { return sample_time_; };
   float sample(Sensors *Sen);
   float noise();
 protected:
   SlidingDeadband *SdTb;
-  boolean tb_stale_flt_;   // One-wire did not update last pass
+  boolean tb_stale_flt_;  // One-wire did not update last pass
   uint16_t VTb_pin_;      // Using 2wire
+  unsigned long int sample_time_;  // Sample time
 };
 
 
@@ -483,6 +485,7 @@ public:
   float Ib_model_in;          // Battery bank current input to model (modified by cutback), A
   float Wb;                   // Sensed battery bank power, use to compare to other shunts, W
   unsigned long long now;     // Time at sample, ms
+  unsigned long long now_temp;// Time at sample, ms
   double T;                   // Update time, s
   boolean reset;              // Reset flag, T = reset
   double T_filt;              // Filter update time, s
@@ -565,6 +568,7 @@ protected:
   boolean reset_temp_;  // Keep track of temperature reset, stored for plotting, T=reset
   unsigned long long sample_time_ib_;       // Exact moment of selected Ib sample, ms
   unsigned long long sample_time_ib_hdwe_;  // Exact moment of Ib sample, ms
+  unsigned long long sample_time_tb_;       // Exact moment of selected Tb sample, ms
   unsigned long long sample_time_vb_;       // Exact moment of selected Vb sample, ms
   unsigned long long sample_time_vb_hdwe_;  // Exact moment of Vb sample, ms
   LagExp *SelFilt;      // Noise filter for calibration
