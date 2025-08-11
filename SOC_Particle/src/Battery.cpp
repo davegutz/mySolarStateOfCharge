@@ -283,7 +283,6 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         static unsigned long long ekf_now_past = Sen->now;
         float ddq_dt = ib_charge_ekf;
         boolean freeze = Sen->Flt->vb_fa() || Sen->Flt->vb_functional_flt();  // Freeze EKF with voltage fault
-        // static float T_rate_lim_past = 0.;
 
         now_ekf_ = Sen->now;
         dt_ekf_ = float(now_ekf_ - ekf_now_past) / 1e3;

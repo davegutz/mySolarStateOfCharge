@@ -394,18 +394,18 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       "{:9.3f}".format(sim.saved.dv_hys[i]), "{:9.3f}".format(mon.saved.ib[i]), "{:12.7f}".format(mon.saved.soc[i]),
                       "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
         # print(f"{i=} time {mon_old.time[i]}  {i_temp=} time_t {mon_old.time_t[i_temp]}res_t {mon.reset_temp} Tbmon{mon_old.Tb_mon[i]} Tb {Tb_t_in[i_temp]} Tb_ver {mon.Tb} Tb_f {Tb_f_mon_in[i_temp]} Tb_f_ver {mon.Tb_f}")
-        if i==0:
-            print(
-                f"i      time    mod reset_temp i_temp  Tb_mon    Tb_t      Tb_ver    Tb_s_ver  Tb_f_mon  Tb_f     Tb_f_ver  Tb_rate_t   Tb_rate_ver")
+        if i == 0:
+            hdr = "i      time    mod reset_temp i_temp  Tb_h        Tb_mon    Tb_t      Tb_ver    Tb_s_ver  Tb_f_mon  Tb_f     Tb_f_ver  Tb_rate_t   Tb_rate_ver"
+            print(hdr)
         if mon.reset_temp is None:
             mon.reset_temp = -1
         print("{:3d}".format(i), "{:9.3f}".format(t[i]), "{:4.0f}".format(rp.modeling), "{:8d}".format(mon.reset_temp),
-              "{:4d}".format(i_temp),
+              "{:4d}".format(i_temp), "{:11.3f}".format(mon_old.Tb_h[i]),
               "{:11.3f}".format(mon_old.Tb_mon[i]), "{:9.3f}".format(Tb_t_in_), "{:9.3f}".format(mon.Tb), "{:9.3f}".format(sim.Tb),
               "{:9.3f}".format(Tb_f_mon), "{:9.3f}".format(Tb_f_t_in_), "{:9.3f}".format(mon.Tb_f),
               "{:12.6f}".format(Tb_f_rate_t_in_), "{:12.6f}".format(mon.Tb_rate),
               )
-    print(f"i      time    mod reset_temp i_temp  Tb_mon    Tb_t      Tb_ver    Tb_s_ver  Tb_f_mon  Tb_f     Tb_f_ver  Tb_rate_t   Tb_rate_ver")
+    print(hdr)
 
     # Data
     if verbose:
