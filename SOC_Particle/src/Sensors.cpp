@@ -1400,11 +1400,13 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
     {
       Tb = NOMINAL_TB;
       Tb_f = NOMINAL_TB;
+      Tb_f_rate = 0.;
     }
     else
     {
       Tb = RATED_TEMP + Tb_noise() + ap.Tb_bias_model;
       Tb_f = RATED_TEMP + ap.Tb_bias_model;  // Simplifying assumption that Tb_f perfectly quiet - so don't have to make model of filter
+      Tb_f_rate = 0.;
     }
     #ifndef HDWE_PHOTON
       if ( sp.debug()==16) Serial.printf("Tb_noise %7.3f Tb%7.3f Tb_f%7.3f Tb_f%7.3f tb_fa %d\n", Tb_noise(), Tb, Tb_f, Tb_f, Flt->tb_fa());
@@ -1416,11 +1418,13 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
     {
       Tb = NOMINAL_TB;
       Tb_f = NOMINAL_TB;
+      Tb_f_rate = 0.;
     }
     else
     {
       Tb = Tb_hdwe;
       Tb_f = Tb_hdwe_filt;
+      Tb_f_rate = Tb_hdwe_filt_rate;
     }
   }
 
@@ -1662,10 +1666,9 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
   {
       Tb_hdwe = RATED_TEMP;
   }
+  Tb_hdwe += sp.Tb_bias_hdwe();
   Tb_hdwe_filt = TbSenseFilt->calculate(Tb_hdwe, reset_temp_, min(T_temp, F_MAX_T_TEMP), ap.tb_filt, T_RLIM, -T_RLIM);
   Tb_hdwe_filt_rate = TbSenseFilt->rate();
-  Tb_hdwe += sp.Tb_bias_hdwe();
-  Tb_hdwe_filt += sp.Tb_bias_hdwe();
 
   if ( sp.debug()==16 || (sp.debug()==-1 && reset_temp_) ) Serial.printf("reset_temp_,Tb_bias_hdwe_loc, RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, ready %d %7.3f %7.3f %7.3f %7.3f %d\n",
     reset_temp_, sp.Tb_bias_hdwe(), RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, cp.tb_info.ready);

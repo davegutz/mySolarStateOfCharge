@@ -37,7 +37,7 @@ extern PublishPars pp;  // For publishing
 
 // class Battery
 // constructors
-Battery::Battery(double *sp_delta_q, float *sp_t_last, const float d_voc_soc, const float dx_voc, const float dy_voc,
+Battery::Battery(double *sp_delta_q, const float d_voc_soc, const float dx_voc, const float dy_voc,
                 const float dz_voc)
     : Coulombs(sp_delta_q, (NOM_UNIT_CAP*3600), COULOMBIC_EFF_SCALE, dx_voc, dy_voc, dz_voc), bms_charging_(false),
 	bms_off_(false), dt_(0.1), dv_dsoc_(0.3), dv_dyn_(0.), dv_hys_(0.), ib_(0.), ibs_(0.), ioc_(0.), print_now_(false),
@@ -146,7 +146,7 @@ float Battery::voc_soc_tab(const float soc, const float temp_c)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Battery monitor class
 BatteryMonitor::BatteryMonitor(const float dx_voc, const float dy_voc, const float dz_voc):
-    Battery(&sp.delta_q_z, &sp.T_state_z, VM, dx_voc, dy_voc, dz_voc),
+    Battery(&sp.delta_q_z, VM, dx_voc, dy_voc, dz_voc),
 	amp_hrs_remaining_ekf_(0.), amp_hrs_remaining_soc_(0.), eframe_(0), ib_charge_(0.), ib_past_(0.),
     q_ekf_(NOM_UNIT_CAP*3600.), soc_ekf_(1.0), tcharge_(0.), tcharge_ekf_(0.), voc_filt_(NOMINAL_VB), voc_soc_(NOMINAL_VB),
     y_filt_(0.)
@@ -569,7 +569,7 @@ boolean BatteryMonitor::solve_ekf(const boolean reset, const boolean reset_temp,
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Battery model class for reference use mainly in regression testing
 BatterySim::BatterySim(const float dx_voc, const float dy_voc, const float dz_voc) :
-    Battery(&sp.delta_q_model_z, &sp.T_state_model_z, VS, dx_voc, dy_voc, dz_voc), duty_(0UL), ib_fut_(0.),
+    Battery(&sp.delta_q_model_z, VS, dx_voc, dy_voc, dz_voc), duty_(0UL), ib_fut_(0.),
     ib_in_(0.), model_cutback_(true), q_(NOM_UNIT_CAP*3600.), sample_time_(0UL), sample_time_z_(0UL), sat_ib_max_(0.)
 {
     // ChargeTransfer dynamic model for EKF
@@ -842,7 +842,7 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
         *sp_delta_q_ += d_delta_q - chem_.dqdt*q_capacity_*tb_rate_*dt_;
         *sp_delta_q_ = max(min(*sp_delta_q_, 0.), -q_capacity_*1.2);
     }
-    // if ( sp.debug()==-24 )Serial.printf("Sim:  charge_curr%7.3f d_delta_q%10.6f delta_q%10.1f temp_lim%7.3f t_last%7.3f\n", charge_curr, d_delta_q, *sp_delta_q_, temp_lim, *sp_t_last_);
+    // if ( sp.debug()==-24 )Serial.printf("Sim:  charge_curr%7.3f d_delta_q%10.6f delta_q%10.1f\n", charge_curr, d_delta_q, *sp_delta_q_);
     q_ = q_capacity_ + *sp_delta_q_;
 
     // Normalize

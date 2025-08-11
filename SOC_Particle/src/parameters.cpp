@@ -257,7 +257,7 @@ SavedPars::~SavedPars() {}
 
 void SavedPars::initialize()
 {
-    #define NSAV 32
+    #define NSAV 30
     V_ = new Variable*[NSAV];
     V_[n_++] =(amp_p            = new FloatV("* ", "Xa", rP_, "Inj amp",              "Amps pk",-1e6, 1e6,  &amp_z,         0));
     V_[n_++] =(cutback_gain_slr_p=new FloatV("* ", "Sk", rP_, "Cutback gain scalar",  "slr",    -1e6, 1e6,  &cutback_gain_slr_z,1));
@@ -290,8 +290,6 @@ void SavedPars::initialize()
     V_[n_++] =(Tb_bias_hdwe_p   = new FloatV("* ", "Dt", rP_, "Bias Tb sensor",       "dg C",   -500, 500,  &Tb_bias_hdwe_z,TEMP_BIAS));
     V_[n_++] =(Time_now_p       = new ULongV("* ", "UT", rP_, "UNIX time epoch",      "sec",    1669801880UL,  2100000000UL, &Time_now_z, 1669801880UL,  false));
     V_[n_++] =(Type_p          = new Uint8tV("* ", "Xt", rP_, "Inj type",             "1sn 2sq 3tr 4 1C, 5 -1C, 8cs",  0,   10,  &type_z, 0));
-    V_[n_++] =(T_state_model_p  = new FloatV("* ", "ts", rP_, "Tb Sim rate lim mem",  "dg C",   -10,  70,   &T_state_model_z,RATED_TEMP,       false));
-    V_[n_++] =(T_state_p        = new FloatV("* ", "tm", rP_, "Tb rate lim mem",      "dg C",   -10,  70,   &T_state_z,     RATED_TEMP,         false));
     V_[n_++] =(Vb_bias_hdwe_p   = new FloatV("* ", "Dc", rP_, "Bias Vb sensor",       "v",      -10,  70,   &Vb_bias_hdwe_z,VOLT_BIAS));
     V_[n_++] =(Vb_scale_p       = new FloatV("* ", "SV", rP_, "Scale Vb sensor",      "v",      -1e5, 1e5,  &Vb_scale_z,    VB_SCALE));
     V_[n_++] =(vsat_add_p       = new FloatV("  ", "DS", NULL,"Bias on nominal vsat", "v",      -2.,  2.,   &vsat_add_z,    0.));
@@ -443,14 +441,6 @@ void SavedPars::put_all_dynamic()
             break;
 
         case ( 2 ):
-            put_T_state();
-            break;
-
-        case ( 3 ):
-            put_T_state_model();
-            break;
-
-        case ( 4 ):
             put_Time_now(max( Time_now_z, (unsigned long)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
             blink = 0;
             break;

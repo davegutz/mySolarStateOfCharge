@@ -147,15 +147,15 @@ double Coulombs::calculate_capacity(const float temp_c)
 /* Coulombs::count_coulombs:  Count coulombs based on true=actual capacity
 Inputs:
   dt              Integration step, s
-  temp_lim        Battery temperature rate lagged and rate-limited, deg C
+  reset_temp      Temperature frame reset flag, T=resetting
+  tb              Battery temperature lagged and rate-limited, deg C
+  tb_rate         Battery temperature rate lagged and limited, deg C / s
   charge_curr     Charge, A
   sat             Indication that battery is saturated, T=saturated
-  tlast           Past value of battery temperature used for rate limit memory, deg C
   coul_eff        Coulombic efficiency - the fraction of charging input that gets turned into usable Coulombs
 Outputs:
   q_capacity_     Saturation charge at temperature, C
   *sp_delta_q_    Charge change since saturated, C
-  *sp_t_last_     Updated value of battery temperature used for rate limit memory, deg C
   resetting_      Sticky flag for initialization, T=reset
   soc_            Fraction of saturation charge (q_capacity_) available (0-1) 
   soc_min_        Estimated soc where battery BMS will shutoff current, fraction
@@ -225,7 +225,7 @@ float Coulombs::count_coulombs(const double dt, const boolean reset_temp, const 
       time_neg_ = 0.;
       time_pos_ = 0.;
     }
-    // if ( sp.debug()==-24 )Serial.printf("Mon:  charge_curr%7.3f d_delta_q%10.6f delta_q%10.1f temp_lim%7.3f t_last%7.3f\n", charge_curr, d_delta_q, *sp_delta_q_, temp_lim, *sp_t_last_);
+    // if ( sp.debug()==-24 )Serial.printf("Mon:  charge_curr%7.3f d_delta_q%10.6f delta_q%10.1f\n", charge_curr, d_delta_q);
     q_ = q_capacity_ + *sp_delta_q_;
     q_inf_ = q_capacity_ + delta_q_inf_;
 

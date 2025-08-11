@@ -92,7 +92,7 @@ class Battery : public Coulombs
 {
 public:
   Battery();
-  Battery(double *sp_delta_q, float *sp_t_last, const float d_voc_soc, const float dx_voc, const float dy_voc,
+  Battery(double *sp_delta_q, const float d_voc_soc, const float dx_voc, const float dy_voc,
                 const float dz_voc);
   ~Battery();
   // operators

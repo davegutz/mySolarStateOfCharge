@@ -36,19 +36,17 @@ extern PrinterPars pr;  // Print buffer
 extern PublishPars pp;  // For publishing
 
 // Harvest charge caused temperature change.   More charge becomes available as battery warms
-void harvest_temp_change(const float temp_c, BatteryMonitor *Mon, BatterySim *Sim)
+void harvest_temp_change(const float temp_c, BatteryMonitor *Mon, BatterySim *Sim, const float tb_rate, const float dt)
 {
 #ifdef DEBUG_DETAIL
-if ( sp.debug()==-1 ) Serial.printf("entry harvest_temp_change:  Delta_q %10.1f temp_c %5.1f t_last %5.1f delta_q_model %10.1f tb_s %5.1f t_last_s %5.1f\n",
-  sp.delta_q(), temp_c, sp.T_state(), sp.delta_q_model(), temp_c, sp.T_state_model());
+if ( sp.debug()==-1 ) Serial.printf("entry harvest_temp_change:  Delta_q %10.1f temp_c %5.1f delta_q_model %10.1f tb_s %5.1f\n",
+  sp.delta_q(), temp_c, sp.delta_q_model(), temp_c);
 #endif
-  sp.put_Delta_q(sp.delta_q() - Mon->dqdt() * Mon->q_capacity() * (temp_c - sp.T_state()));
-  sp.put_T_state(temp_c);
-  sp.put_delta_q_model(sp.delta_q_model() - Sim->dqdt() * Sim->q_capacity() * (temp_c - sp.T_state_model()));
-  sp.put_T_state_model(temp_c);
+  sp.put_Delta_q(sp.delta_q() - Mon->dqdt() * Mon->q_capacity() * tb_rate * dt);
+  sp.put_delta_q_model(sp.delta_q_model() - Sim->dqdt() * Sim->q_capacity() * tb_rate * dt);
 #ifdef DEBUG_DETAIL
-if ( sp.debug()==-1 ) Serial.printf("exit harvest_temp_change:  Delta_q %10.1f temp_c %5.1f t_last %5.1f delta_q_model %10.1f tb_s %5.1f t_last_s %5.1f\n",
-  sp.delta_q(), temp_c, sp.T_state(), sp.delta_q_model(), temp_c, sp.T_state_model());
+if ( sp.debug()==-1 ) Serial.printf("exit harvest_temp_change:  Delta_q %10.1f temp_c %5.1f delta_q_model %10.1f tb_s %5.1f\n",
+  sp.delta_q(), temp_c, sp.delta_q_model(), temp_c);
 #endif
 }
 
@@ -84,6 +82,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   {
     Sen->Tb = Sen->Tb_hdwe;
     Sen->Tb_f = Sen->Tb_hdwe_filt;
+    Sen->Tb_f_rate = Sen->Tb_hdwe_filt_rate;
   }
   if ( use_soc_in )
     Mon->apply_soc(soc_in, Sen->Tb_f);  // saves sp.delta_q and sp.T_state
@@ -93,7 +92,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
       Serial.printf("before harvest_temp, falw %ld tb_fa %d:", Sen->Flt->falw(), Sen->Flt->tb_fa()); debug_m1(Mon, Sen);
     }
   #endif
-  if ( !Sen->Flt->tb_fa() ) harvest_temp_change(Sen->Tb_f, Mon, Sen->Sim);
+  if ( !Sen->Flt->tb_fa() ) harvest_temp_change(Sen->Tb_f, Mon, Sen->Sim, Sen->Tb_f_rate, 0.);
   
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("after harvest_temp:"); debug_m1(Mon, Sen);}

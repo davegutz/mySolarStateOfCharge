@@ -208,8 +208,6 @@ public:
     float Tb_bias_hdwe() { return Tb_bias_hdwe_z; }
     unsigned long Time_now() { return Time_now_z; }
     uint8_t type() { return type_z; }
-    float T_state() { return T_state_z; }
-    float T_state_model() { return T_state_model_z; }
     float Vb_bias_hdwe() { return Vb_bias_hdwe_z; }
     float Vb_scale() { return Vb_scale_z; }
     float Vsat_add() { return vsat_add_z; }
@@ -287,20 +285,13 @@ public:
     void put_Tb_bias_hdwe(const float input) { Tb_bias_hdwe_p->check_set_put(input); }
     void put_Time_now(const unsigned long input) { Time_now_p->check_set_put(input); }
     void put_Type(const uint8_t input) { Type_p->check_set_put(input); }
-    void put_T_state(const float input) { T_state_p->check_set_put(input); }
-    void put_T_state_model(const float input) { T_state_model_p->check_set_put(input); }
     void put_Vb_bias_hdwe(const float input) { Vb_bias_hdwe_p->check_set_put(input); }
     void put_Vb_scale(const float input) { Vb_scale_p->check_set_put(input); }
     #ifndef HDWE_47L16_EERAM
         void put_modeling(const uint8_t input) { modeling_p->check_set_put(input); modeling_z = modeling();}
-        void put_T_state() {}
-        void put_T_state_model() {}
         void put_fault(const Flt_st input, const uint8_t i) { fault_[i].copy_to_Flt_ram_from(input); }
     #else
         void put_modeling(const uint8_t input) { modeling_p->check_set_put(input); }
-        void put_T_state() { T_state_p->check_set_put(T_state_z); }
-        void put_T_state_model() { T_state_p->check_set_put(T_state_model_z); }
-
         void put_fault(const Flt_st input, const uint8_t i) { fault_[i].put(input); }
     #endif
     //
@@ -332,8 +323,6 @@ public:
     FloatV *s_cap_sim_p;
     FloatV *Tb_bias_hdwe_p;
     ULongV *Time_now_p;
-    FloatV *T_state_p;
-    FloatV *T_state_model_p;
     Uint8tV *Type_p;
     FloatV *Vb_bias_hdwe_p;
     FloatV *Vb_scale_p;
@@ -367,8 +356,6 @@ public:
     float Tb_bias_hdwe_z;
     unsigned long Time_now_z;
     uint8_t type_z;
-    float T_state_z;
-    float T_state_model_z;
     float Vb_bias_hdwe_z;
     float Vb_scale_z;
     float vsat_add_z;             // Saturation voltage bias, V
