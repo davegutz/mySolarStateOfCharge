@@ -59,7 +59,7 @@ void print_serial_temp_data(const boolean reset, Sensors *Sen);
 void print_signal_sel_header(void);
 void print_serial_ekf_header(void);
 void rapid_print(Sensors *Sen, BatteryMonitor *Mon);
-void rapid_temp_print(Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp);
+void rapid_temp1_print(Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp);
 void wait_on_user_input(Adafruit_SSD1306 *display);
 void wait_on_user_input();
 

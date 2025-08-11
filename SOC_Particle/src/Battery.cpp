@@ -122,8 +122,8 @@ void Battery::pretty_print(void)
     Serial.printf("  sr%7.3f, slr\n", ap.slr_res);
     Serial.printf("  tau_ct%10.6f, s (=1/R/C)\n", chem_.tau_ct);
     Serial.printf("  tau_sd%9.3g, s\n", chem_.tau_sd);
-    Serial.printf("  tb%9.3g, dg C\n", tb_);
-    Serial.printf("  tb_rate%9.3g, s\n", tb_rate_);
+    Serial.printf("  tb%9.5g, dg C\n", tb_);
+    Serial.printf("  tb_rate%9.5g, s\n", tb_rate_);
     Serial.printf("  vb%7.3f, V\n", vb_);
     Serial.printf("  voc%7.3f, V\n", voc_);
     Serial.printf("  voc_stat%7.3f, V\n", voc_stat_);
@@ -861,7 +861,7 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
     if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)
     {
         double cTime = double(Sen->now)/1000.;
-        sprintf(pr.buff, "unit_sim, %13.3f, %d, %7.0f, %d, %7.5f, %7.5f,%7.5f,%7.5f,%8.5f, %7.3f,%7.3f,%7.3f,%7.3f,  %d,  %9.1f,  %8.5f, %d, %c",
+        sprintf(pr.buff, "unit_sim, %13.3f, %d, %7.0f, %d, %9.5f, %7.5f,%7.5f,%7.5f,%8.5f, %7.3f,%7.3f,%7.3f,%7.3f,  %d,  %9.1f,  %8.5f, %d, %c",
             cTime, CHEM, q_cap_rated_scaled_, bms_off_, tb_, vsat_, voc_stat_, dv_dyn_, vb_, ib_, ib_in_, ib_charge_, ioc_, model_saturated_, *sp_delta_q_, soc_, reset_temp,'\0');
         Serial.printf("%s\n", pr.buff);
     }

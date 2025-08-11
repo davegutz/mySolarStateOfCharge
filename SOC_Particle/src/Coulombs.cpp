@@ -79,7 +79,7 @@ void Coulombs::pretty_print()
   Serial.printf(" soc_min%8.4f\n", soc_min_);
   Serial.printf(" tb_%5.1f dg C\n", tb_);
   Serial.printf(" rated_t%5.1f dg C\n", chem_.rated_temp);
-  Serial.printf(" t_rlim%7.3f dg C / s\n", tb_rate_);
+  Serial.printf(" t_rlim%9.5f dg C / s\n", tb_rate_);
   Serial.printf("Coulombs (mod_code=%d) ", mod_code());
   Serial.printf("Coulombs: silent DEPLOY\n");
   Serial.printf(" Chemistry::\n");

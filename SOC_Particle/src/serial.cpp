@@ -33,7 +33,7 @@ extern CommandPars cp;  // Various parameters shared at system level
 void create_rapid_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
   double cTime = double(Sen->now)/1000;
-  sprintf(pr.buff, "%s, %s,%13.3f,%6.3f, %d,%7.0f,%d, %d, %d, %d, %6.3f,%6.3f,%6.3f,%9.3f,%9.3f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,  %9.6f, %8.5f,%8.5f,%8.5f,%5.3f,", \
+  sprintf(pr.buff, "%s, %s,%13.3f,%6.3f, %d,%7.0f,%d, %d, %d, %d, %9.5f,%9.5f,%6.3f,%9.3f,%9.3f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %8.5f,%8.5f,%8.5f,%5.3f,", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
     CHEM, Mon->q_cap_rated_scaled(), pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
     Sen->Tb, Sen->Tb_f, Mon->vb(), Mon->ib(), Mon->ib_charge(), Mon->voc_soc(), 
@@ -152,8 +152,8 @@ void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, co
     }
     if ( cp.publishS )
     {
+      rapid_temp1_print(Sen, Mon, reset_temp);
       rapid_print(Sen, Mon);
-      rapid_temp_print(Sen, Mon, reset_temp);
       cp.num_v_print++;
     }
   }
@@ -189,7 +189,8 @@ void print_serial_temp_data(const boolean reset, Sensors *Sen)
   if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  )
   {
     double cTime = double(Sen->now)/1000.;
-    Serial.printf("temp_unit, %13.3f, %8.4f, %8.4f, %8.4f, %d, %8.4f, %8.4f,\n", cTime, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_f, Sen->Tb_f_rate);
+    Serial.printf("temp_unit, %13.3f, %9.5f, %9.5f, %9.5f, %d, %9.5f, %9.5f,\n",
+      cTime, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_f, Sen->Tb_f_rate);
   }
 }
 
@@ -219,10 +220,10 @@ void rapid_print(Sensors *Sen, BatteryMonitor *Mon)
     Serial1.printf("%s\n", pr.buff);
   #endif
 }
-void rapid_temp_print(Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp)
+void rapid_temp1_print(Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp)
 {
   double cTime = double(Sen->now)/1000;
-  Serial.printf("temp1_unit, %13.3f, %8.4f, %8.4f, %8.4f, %d, %8.4f, %8.4f,\n",
+  Serial.printf("temp1_unit, %13.3f, %9.5f, %9.5f, %9.5f, %d, %9.5f, %9.5f,\n",
      cTime, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset_temp, Sen->Tb_f, Sen->Tb_f_rate);
 }
 

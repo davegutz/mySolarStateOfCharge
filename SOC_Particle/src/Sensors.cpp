@@ -85,7 +85,7 @@ float TempSensor::sample(Sensors *Sen)
     {
       Tb_hdwe = SdTb->update(temp);
       tb_stale_flt_ = false;
-      if ( sp.debug()==16 ) Serial.printf("I:  t=%7.3f ct=%d, Tb_hdwe=%7.3f,\n", temp, count, Tb_hdwe);
+      if ( sp.debug()==16 ) Serial.printf("I:  t=%9.5f ct=%d, Tb_hdwe=%9.5f,\n", temp, count, Tb_hdwe);
     }
     else
     {
@@ -101,7 +101,7 @@ float TempSensor::sample(Sensors *Sen)
     {
       Tb_hdwe = SdTb->update(cp.tb_info.t_c);
       tb_stale_flt_ = false;
-      if ( sp.debug()==16 ) Serial.printf("I:  t=%7.3f ready=%d, Tb_hdwe=%7.3f,\n", cp.tb_info.t_c, cp.tb_info.ready, Tb_hdwe);
+      if ( sp.debug()==16 ) Serial.printf("I:  t=%9.5f ready=%d, Tb_hdwe=%9.5f,\n", cp.tb_info.t_c, cp.tb_info.ready, Tb_hdwe);
     }
     else
     {
@@ -128,7 +128,7 @@ float TempSensor::sample(Sensors *Sen)
     #endif
 
     tb_stale_flt_ = false;
-    if ( sp.debug()==16 ) Serial.printf("I 2wire:  volt=%7.3f Tb_hdwe=%7.3f,\n", volt, Tb_hdwe);
+    if ( sp.debug()==16 ) Serial.printf("I 2wire:  volt=%7.3f Tb_hdwe=%9.5f,\n", volt, Tb_hdwe);
 
   #endif
 
@@ -635,7 +635,7 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
   Serial.printf(" dis_tb_fa %d  dis_vb_fa %d  dis_ib_fa %d\n", ap.disab_tb_fa, ap.disab_vb_fa, ap.disab_ib_fa);
   Serial.printf(" bms_off  %d\n\n", Mon->bms_off());
 
-  Serial.printf(" Tbh%7.3f Tbm=%7.3f sel%7.3f\n", Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb);
+  Serial.printf(" Tbh%9.5f Tbm=%9.5f sel%9.5f\n", Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb);
   Serial.printf(" Vbh%7.3f Vbm %7.3f sel%7.3f\n", Sen->Vb_hdwe, Sen->Vb_model, Sen->Vb);
   Serial.printf(" V3v3%7.3f\n", Sen->ShuntAmp->Vc()*2.);
   Serial.printf(" Imh%7.3f Imm %7.3f Ib%7.3f\n", Sen->Ib_amp_hdwe, Sen->Ib_amp_model, Sen->Ib);
@@ -703,7 +703,7 @@ void Fault::pretty_print1(Sensors *Sen, BatteryMonitor *Mon)
   Serial1.printf(" dis_tb_fa %d  dis_vb_fa %d  dis_ib_fa %d\n", ap.disab_tb_fa, ap.disab_vb_fa, ap.disab_ib_fa);
   Serial1.printf(" bms_off   %d\n\n", Mon->bms_off());
 
-  Serial1.printf(" Tbh=%7.3f  Tbm=%7.3f\n", Sen->Tb_hdwe, Sen->Tb_model);
+  Serial1.printf(" Tbh=%9.5f  Tbm=%9.5f\n", Sen->Tb_hdwe, Sen->Tb_model);
   Serial1.printf(" Vbh %7.3f  Vbm %7.3f\n", Sen->Vb_hdwe, Sen->Vb_model);
   Serial1.printf(" V3v3 %7.3f \n", Sen->ShuntAmp->Vc()*2.);
   Serial1.printf(" Imh %7.3f  Imm %7.3f\n", Sen->Ib_amp_hdwe, Sen->Ib_amp_model);
@@ -1367,13 +1367,13 @@ void Sensors::pretty_print()
   Serial.printf(" Vb_model%8.4f; V\n", Vb_model);
   Serial.printf(" Vc%8.4f; V\n", Vc);
   Serial.printf(" Vc_hdwe%8.4f; V\n", Vc_hdwe);
-  Serial.printf(" Tb%8.4f; C\n", Tb);
-  Serial.printf(" Tb_f%8.4f; C\n", Tb_f);
-  Serial.printf(" Tb_f_rate%10.6f; C/s\n", Tb_f_rate);
-  Serial.printf(" Tb_hdwe%8.4f; C\n", Tb_hdwe);
-  Serial.printf(" Tb_hdwe_filt%8.4f; C\n", Tb_hdwe_filt);
-  Serial.printf(" Tb_model%8.4f; C\n", Tb_model);
-  Serial.printf(" Tb_model_filt%8.4f; C\n", Tb_model_filt);
+  Serial.printf(" Tb%9.5f; C\n", Tb);
+  Serial.printf(" Tb_f%9.5f; C\n", Tb_f);
+  Serial.printf(" Tb_f_rate%9.5f; C/s\n", Tb_f_rate);
+  Serial.printf(" Tb_hdwe%9.5f; C\n", Tb_hdwe);
+  Serial.printf(" Tb_hdwe_filt%9.5f; C\n", Tb_hdwe_filt);
+  Serial.printf(" Tb_model%9.5f; C\n", Tb_model);
+  Serial.printf(" Tb_model_filt%9.5f; C\n", Tb_model_filt);
 }
 
 // Make final assignemnts
@@ -1409,7 +1409,7 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
       Tb_f_rate = 0.;
     }
     #ifndef HDWE_PHOTON
-      if ( sp.debug()==16) Serial.printf("Tb_noise %7.3f Tb%7.3f Tb_f%7.3f Tb_f%7.3f tb_fa %d\n", Tb_noise(), Tb, Tb_f, Tb_f, Flt->tb_fa());
+      if ( sp.debug()==16) Serial.printf("Tb_noise %9.5f Tb%9.5f Tb_f%9.5f Tb_f%9.5f tb_fa %d\n", Tb_noise(), Tb, Tb_f, Tb_f, Flt->tb_fa());
     #endif
   }
   else
@@ -1670,7 +1670,7 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
   Tb_hdwe_filt = TbSenseFilt->calculate(Tb_hdwe, reset_temp_, min(T_temp, F_MAX_T_TEMP), ap.tb_filt, T_RLIM, -T_RLIM);
   Tb_hdwe_filt_rate = TbSenseFilt->rate();
 
-  if ( sp.debug()==16 || (sp.debug()==-1 && reset_temp_) ) Serial.printf("reset_temp_,Tb_bias_hdwe_loc, RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, Tb_hdwe_filt_rate, ready %d %7.3f %7.3f %7.3f %7.3f %12.6f %d\n",
+  if ( sp.debug()==16 || (sp.debug()==-1 && reset_temp_) ) Serial.printf("reset_temp_,Tb_bias_hdwe_loc, RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, Tb_hdwe_filt_rate, ready %d %9.5f %9.5f %9.5f %9.5f %12.6f %d\n",
     reset_temp_, sp.Tb_bias_hdwe(), RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, Tb_hdwe_filt_rate, cp.tb_info.ready);
 
   #ifdef HDWE_2WIRE
