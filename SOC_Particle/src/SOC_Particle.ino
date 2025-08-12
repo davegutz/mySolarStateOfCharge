@@ -403,6 +403,7 @@ void loop()
       float T = float(t_us_now - t_us_last) / 1e6;
       t_us_last = t_us_now;
       Sen->ShuntAmp->sample(reset, T);
+      Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.);
       Sen->ShuntNoAmp->sample(reset, T);
     }
   #endif
