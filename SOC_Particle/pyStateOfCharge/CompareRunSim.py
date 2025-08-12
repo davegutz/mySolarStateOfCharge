@@ -144,8 +144,8 @@ def main():
     # The following are not implemented in GUI
     time_end_in = None
     # time_end_in = 19
-    data_only = False
-    # data_only = True
+    # data_only = False
+    data_only = True
     # mon_soc_in = True
     mon_soc_in = False
     verbose_in = False
