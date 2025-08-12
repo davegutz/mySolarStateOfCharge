@@ -40,6 +40,7 @@ void create_rapid_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
     Mon->vsat(), Mon->dv_dyn(), Mon->voc_stat(), Mon->hx(),
     Mon->y_ekf(),
     Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc(), Mon->soc_min());
+    Log.info("    create_rapid_string cTime=%9.3f", cTime);
 }
 
 
@@ -152,7 +153,9 @@ void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, co
     }
     if ( cp.publishS )
     {
+      Log.info("  print_rapid_data:  rapid_temp1_print");
       rapid_temp1_print(Sen, Mon, reset_temp);
+      Log.info("  print_rapid_data:  rapid_print");
       rapid_print(Sen, Mon);
       cp.num_v_print++;
     }
@@ -191,6 +194,7 @@ void print_serial_temp_data(const boolean reset, Sensors *Sen)
     double cTime = double(Sen->now_temp)/1000.;
     Serial.printf("temp_unit, %13.3f, %9.5f, %9.5f, %9.5f, %d, %9.5f, %9.5f,\n",
       cTime, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_f, Sen->Tb_f_rate);
+    Log.info("    print_serial_temp_data cTime=%9.3f", cTime);
   }
 }
 
@@ -225,6 +229,7 @@ void rapid_temp1_print(Sensors *Sen, BatteryMonitor *Mon, const boolean reset_te
   double cTime = double(Sen->now_temp)/1000;
   Serial.printf("temp1_unit, %13.3f, %9.5f, %9.5f, %9.5f, %d, %9.5f, %9.5f,\n",
      cTime, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset_temp, Sen->Tb_f, Sen->Tb_f_rate);
+  Log.info("    rapid_temp1_print cTime=%9.3f", cTime);
 }
 
 /*

@@ -14,7 +14,7 @@
 #define HDWE_2WIRE
 // #define SOFT_DEBUG_QUEUE
 #define DEBUG_DETAIL                    // Use this to debug initialization using 'v-1;'
-// #define LOGHANDLE
+#define LOGHANDLE
 
 // * = SRAM EEPROM adjustments, retained on power reset
 

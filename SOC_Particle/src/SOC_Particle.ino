@@ -381,14 +381,15 @@ void loop()
   // Outputs:   Sen->Tb,  Sen->Tb_f
   if ( read_temp )
   {
-    Log.info("read_temp");
     #ifdef HDWE_DS2482_1WIRE
         Ds2482.check();
         cp.tb_info.t_c = Ds2482.tempC(0);
         cp.tb_info.ready = Ds2482.ready();
     #endif
     Sen->T_temp = ReadTemp->updateTime();
+    Log.info("ino:  temp_load_and_filter");
     Sen->temp_load_and_filter(Sen, reset_temp);
+    Log.info("ino:  print_serial_temp_data");
     print_serial_temp_data(reset_temp, Sen);
   }
 
@@ -409,7 +410,7 @@ void loop()
   // Input all other sensors and do high rate calculations
   if ( read )
   {
-    Log.info("read");
+    Log.info("ino:  read");
     Sen->reset = reset;
     
     // Check for really slow data capture and run EKF each read frame
@@ -430,7 +431,8 @@ void loop()
 
     // Read sensors, model signals, select between them, synthesize injection signals on current
     // Inputs:  sp.config, sp.sim_chm
-    // Outputs: Sen->Ib, Sen->Vb, Sen->Tb_f, sp.inj_bias
+    // Outputs: Sen->Ib, Sen->Vb, sp.inj_bias
+    Log.info("ino:  sense_synth_select");
     sense_synth_select(reset, reset_temp, ReadSensors->now(), elapsed, myPins, Mon, Sen);
     Sen->T =  double(Sen->dt_ib())/1000.;
 
@@ -454,6 +456,7 @@ void loop()
     // Publish for variable print rate
     if ( cp.publishS )
     {
+      Log.info("ino:  assign_publist ReadSensors->now()=%lld", ReadSensors->now());
       assign_publist(&pp.pubList, ReadSensors->now(), unit, hm_string, Sen, num_timeouts, Mon);
       static boolean wrote_last_time = false;
       if ( wrote_last_time )
@@ -464,6 +467,7 @@ void loop()
     }
 
     // Print
+    Log.info("ino:  print_rapid_data");
     print_rapid_data(reset, Sen, Mon, reset_temp);
 
     Log.info("end read");
@@ -537,5 +541,6 @@ void loop()
   }
   cp.soft_reset = false;
   cp.soft_reset_sim = false;
+  Log.info("ino:  end loop\n\n\n");
 
 } // loop

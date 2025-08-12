@@ -65,7 +65,7 @@ TempSensor::~TempSensor() {}
 // functions
 float TempSensor::sample(Sensors *Sen)
 {
-  Log.info("top TempSensor::sample");
+  Log.info("  TempSensor::sample");
   // Read Sensor
   // MAXIM conversion 1-wire Tp plenum temperature
   static float Tb_hdwe = 0.;
@@ -117,6 +117,7 @@ float TempSensor::sample(Sensors *Sen)
 
     float volt = float(analogRead(VTb_pin_))*VTB_CONV_GAIN;
     sample_time_ = System.millis();
+    Log.info("  TempSensor::sample_time = %ld", sample_time_);
     float res = volt * float(HDWE_RS_2WIRE) / (V3V3 - volt);
 
     #ifdef USE_SH_2WIRE
@@ -1428,10 +1429,12 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
       Tb = Tb_hdwe;
       Tb_f = Tb_hdwe_filt;
       Tb_f_rate = Tb_hdwe_filt_rate;
+      Log.info("    select_all_hdwe_or_model:  Tb=Tb_hdwe=%9.5f Tb_f%9.5f Tb_f_rate%9.5f", Tb_hdwe, Tb_f, Tb_f_rate);
     }
   }
   sample_time_tb_ = SensorTb->sample_time();
   now_temp = sample_time_tb_ - inst_millis_ + inst_time_*1000;
+  Log.info("    select_all_hdwe_or_model:  now_temp%lld", now_temp);
 
   // vb
   if ( sp.mod_vb() )
@@ -1483,6 +1486,7 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
     dt_ib_ = dt_ib_hdwe_;
   }
   now = sample_time_ib_ - inst_millis_ + inst_time_*1000;
+  Log.info("    select_all_hdwe_or_model:  now%lld", now);
 
   if ( sp.debug()==62 ) Serial.printf(" Ib%7.3f Ib_hdwe%7.3f Ib_hdwe_model%7.3f Ib_amp%7.3f Ib_amp_model%7.3f Ib_amp_hdwe%7.3f Ib_noa%7.3f Ib_noa_model%7.3f Ib_noa_hdwe%7.3f\n",
    Ib, Ib_hdwe, Ib_hdwe_model, Ib_amp, Ib_amp_model, Ib_amp_hdwe, Ib_noa, Ib_noa_model, Ib_noa_hdwe);
@@ -1659,7 +1663,7 @@ void Sensors::shunt_select_initial(const boolean reset)
 // Load and filter Tb
 void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
 {
-  Log.info("top temp_load_and_filter");
+  Log.info("  temp_load_and_filter:  calling sample");
   reset_temp_ = reset_temp;
   #ifndef HDWE_BARE
     Tb_hdwe = SensorTb->sample(Sen);

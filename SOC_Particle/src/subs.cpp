@@ -592,7 +592,9 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const uns
   //  Ib_model, Ib_hdwe, Vc_hdwe                    --->   Ib
   //  Vb_model, Vb_hdwe,                            --->   Vb
   //  constant,         Tb_hdwe, Tb_hdwe_filt       --->   Tb, Tb_f
+  Log.info("  sense_synth_select:  select_all_logic");
   Sen->Flt->select_all_logic(Sen, Mon, reset);
+  Log.info("  sense_synth_select:  select_all_hdwe_or_model");
   Sen->select_all_hdwe_or_model(Mon);
 
   // Fault snap buffer management
@@ -628,6 +630,7 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const uns
   // Charge calculation and memory store
   // Inputs: Sim.model_saturated, Sen->Tb, Sen->Ib
   // States: Sim.soc
+  Log.info("  sense_synth_select:  Sen->Sim->count_coulombs");
   Sen->Sim->count_coulombs(Sen, reset_temp, Mon, false);
 
   // Injection test
