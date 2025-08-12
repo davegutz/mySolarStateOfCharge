@@ -202,8 +202,8 @@ void print_serial_temp_header(void)
 {
   if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  )
   {
-    Serial.printf("unit_t, c_time, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_f, Tb_f_rate,\n");
-    Serial.printf("unit1_t, c_time, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_f, Tb_f_rate,\n");
+    Serial.printf("unit_t, c_time, T_t, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_f, Tb_f_rate,\n");
+    Serial.printf("unit1_t, c_time, T_t, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_f, Tb_f_rate,\n");
   }
 }
 
