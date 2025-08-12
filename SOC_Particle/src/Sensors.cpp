@@ -117,6 +117,7 @@ float TempSensor::sample(Sensors *Sen)
 
     float volt = float(analogRead(VTb_pin_))*VTB_CONV_GAIN;
     sample_time_ = System.millis();
+
     float res = volt * float(HDWE_RS_2WIRE) / (V3V3 - volt);
 
     #ifdef USE_SH_2WIRE
@@ -1432,8 +1433,6 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
     }
   }
   sample_time_tb_ = SensorTb->sample_time();
-  now_temp = sample_time_tb_ - inst_millis_ + inst_time_*1000;
-  Log.info("    select_all_hdwe_or_model now_temp:  now_temp,%lld, cTime,%7.3f,", now_temp, double(now_temp)/1000.);
 
   // vb
   if ( sp.mod_vb() )
@@ -1666,7 +1665,8 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
   reset_temp_ = reset_temp;
   #ifndef HDWE_BARE
     Tb_hdwe = SensorTb->sample(Sen);
-    Log.info("  temp_load_and_filter: sample_time,%lld,cTime,%7.3f,", SensorTb->sample_time(), double(SensorTb->sample_time() - inst_millis_ + inst_time_*1000)/1000.);
+    now_temp = sample_time_tb_ - inst_millis_ + inst_time_*1000;
+    Log.info("    temp_load_and_filter:  now_temp,%lld, cTime,%7.3f,", now_temp, double(now_temp)/1000.);
   #else
     Tb_hdwe = RATED_TEMP;
   #endif
