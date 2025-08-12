@@ -88,14 +88,14 @@ public:
   // operators
   // functions
   boolean tb_stale_flt() { return tb_stale_flt_; };
-  unsigned long int sample_time() { return sample_time_; };
+  unsigned long long sample_time() { return sample_time_; };
   float sample(Sensors *Sen);
   float noise();
 protected:
   SlidingDeadband *SdTb;
   boolean tb_stale_flt_;  // One-wire did not update last pass
   uint16_t VTb_pin_;      // Using 2wire
-  unsigned long int sample_time_;  // Sample time
+  unsigned long long sample_time_;  // Sample time
 };
 
 
