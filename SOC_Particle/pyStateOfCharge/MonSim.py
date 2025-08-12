@@ -211,8 +211,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             dTb = 0.
         # Get temperature data
         Tb_f_mon = Tb_f_mon_in[i]
-        calc_time = (i_temp+1 < len(mon_old.time_t)) and (mon_old.time_t[i_temp+1] <= mon_old.time[i])
-        if calc_time:
+        calc_temp = (i_temp+1 < len(mon_old.time_t)) and (mon_old.time_t[i_temp+1] <= mon_old.time[i])
+        if calc_temp:
             i_temp += 1
             mon.reset_temp = (i_temp==0)
             if i_temp>0:
@@ -224,9 +224,13 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             Tb_f_rate_t_in_ = Tb_f_rate_t_in[i_temp]
         else:
             mon.Tb_rate = 0.
+            mon.Tb_rstate = 0.
+            mon.Tb_state = 0.
         mon.Tb = Tb_t_in_
         Tb_ = mon.Tb + dTb
         mon.Tb_rate = TbFilter.rate
+        mon.Tb_rstate = TbFilter.rstate
+        mon.Tb_state = TbFilter.state
         sim.Tb = Tb_t_in_
         sim.Tb_f = mon.Tb_f
 
@@ -332,7 +336,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             reset_ekf = True
             mon.init_soc_ekf(mon_old.x[0], mon_old.P[0])  # when modeling (assumed in python) ekf wants to equal model
 
-        if calc_time:
+        if calc_temp:
             mon.Tb_f = TbFilter.calculate_tau_seeded(mon.Tb, Tb_f_t_in[0], mon.reset_temp, mon.dt_temp, Battery.TB_FILT)
 
         if rp.modeling == 0:
@@ -395,8 +399,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
         # print(f"{i=} time {mon_old.time[i]}  {i_temp=} time_t {mon_old.time_t[i_temp]}res_t {mon.reset_temp} Tbmon{mon_old.Tb_mon[i]} Tb {Tb_t_in[i_temp]} Tb_ver {mon.Tb} Tb_f {Tb_f_mon_in[i_temp]} Tb_f_ver {mon.Tb_f}")
         if i == 0:
-            hdr = "i     time    mod  rst  i_t  T_t    Tb_hdw  Tb_mod  Tb_mon  Tb_t    Tb_ver  Tb_s_v Tb_f_mon  Tb_f  Tb_f_v  Tb_rate_t  Tb_rate_v"
-            print(hdr)
+            hdr = "i     time    mod  rst  i_t  T_t    Tb_hdw  Tb_mod  Tb_mon  Tb_t    Tb_ver  Tb_s_v Tb_f_mon  Tb_f  Tb_f_v  Tb_rate_t  Tb_rate_v Tb_rstate_v Tb_state_v"
+        print(hdr)
         if mon.reset_temp is None:
             mon.reset_temp = -1
         print("{:3d}".format(i), "{:8.3f}".format(t[i]), "{:3.0f}".format(rp.modeling),
@@ -404,7 +408,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
               "{:7.3f}".format(mon_old.Tb_hdw[i_temp]), "{:7.3f}".format(mon_old.Tb_mod[i_temp]),
               "{:7.3f}".format(mon_old.Tb_mon[i]), "{:7.3f}".format(Tb_t_in_), "{:7.3f}".format(mon.Tb), "{:7.3f}".format(sim.Tb),
               "{:7.3f}".format(Tb_f_mon), "{:7.3f}".format(Tb_f_t_in_), "{:7.3f}".format(mon.Tb_f),
-              "{:9.6f}".format(Tb_f_rate_t_in_), "{:9.6f}".format(mon.Tb_rate),
+              "{:9.6f}".format(Tb_f_rate_t_in_), "{:9.6f}".format(mon.Tb_rate), "{:9.6f}".format(mon.Tb_rstate),
+              "{:9.6f}".format(mon.Tb_state),
               )
     print(hdr)
 
