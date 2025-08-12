@@ -117,7 +117,7 @@ float TempSensor::sample(Sensors *Sen)
 
     float volt = float(analogRead(VTb_pin_))*VTB_CONV_GAIN;
     sample_time_ = System.millis();
-    Log.info("  TempSensor::sample_time,%ld,cTime,%7.3f,", sample_time_, double(now_temp)/1000.);
+    Log.info("  TempSensor::sample_time,%ld,cTime,%7.3f,", sample_time_, double(sample_time_)/1000.);
     float res = volt * float(HDWE_RS_2WIRE) / (V3V3 - volt);
 
     #ifdef USE_SH_2WIRE
@@ -265,7 +265,7 @@ void Shunt::sample(const boolean reset_loc, const float T)
     Vc_ =  float(Vc_raw_)*VC_CONV_GAIN + ap.vc_add;
   }
   sample_time_ = System.millis();
-  Log.info("  Shunt::sample_time,%ld,cTime,%7.3f,", sample_time_, double(sample_time_)/1000.);
+  Log.info("  Shunt::sample_time,%lld,cTime,%7.3f,", sample_time_, double(sample_time_)/1000.);
   Vo_raw_ = analogRead(vo_pin_);
   Vo_ =  float(Vo_raw_)*VO_CONV_GAIN;
   Vo_Vc_ = Vo_ - Vc_;
