@@ -119,7 +119,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     Tb_t_in = mon_old.Tb_t
     Tb_f_t_in = mon_old.Tb_f
     Tb_f_rate_t_in = mon_old.Tb_f_rate
-    Tb_in = mon_old.Tb_mon
     Tb_f_mon_in = mon_old.Tb_f_mon
     soc_s_init = mon_old.soc_s[0]
     sat_init = mon_old.sat[0]
@@ -141,7 +140,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         # exit(1)
     print("use_mon_soc is", use_mon_soc, "use_ib_mon is", use_ib_mon)
     tweak_test = rp.tweak_test()
-    Tb0 = Tb_in[0]
+    Tb0 = Tb_f_t_in[0]
     lut_dTb = None
     if dTb_in is not None:
         dTb_in = np.array(dTb_in)
@@ -406,7 +405,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     #           "{:7.3f}".format(mon.Tb_state), "{:7.3f}".format(mon.Tb_f),
     #           )
     # print(hdr)
-        hdr = "  i  time  rst ibc     ibc_v    soc       soc_v     qcrs     qcr s_v   dt      dt_v delqE delq_v"
+        hdr = "  i  time  rst ibc     ibc_v    soc       soc_v     qcrs     qcr s_v   dt      dt_v  delqE     delq_v    q_cap       soc"
         if i==0:
             print(hdr)
         mon_old.delta_q_est = -(1. - mon_old.soc[i]) * mon_old.qcrs[i]
@@ -415,7 +414,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
               "{:9.6f}".format(mon_old.soc[i]), "{:9.6f}".format(mon.soc),
               "{:8.0f}".format(mon_old.qcrs[i]), "{:8.0f}".format(mon.q_cap_rated_scaled),
               "{:7.3f}".format(mon_old.dt[i]), "{:7.3f}".format(mon.dt),
-              "{:7.3f}".format(mon_old.delta_q_est), "{:7.3f}".format(mon.delta_q),
+              "{:7.0f}".format(mon_old.delta_q_est), "{:7.0f}".format(mon.delta_q),
+              "{:7.0f}".format(mon.q_capacity), "{:9.6f}".format((mon.q_capacity+mon.delta_q)/mon.q_capacity),
               )
     print(hdr)
 
