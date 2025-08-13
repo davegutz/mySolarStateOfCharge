@@ -117,6 +117,7 @@ class Battery(Coulombs):
     TB_MAX = 60.  # Signal selection hard fault threshold 2wire only, C (60.)
     TB_MIN = -40.  # Signal selection hard fault threshold 2wire only, C (-40.)
     TB_FILT = 120.  # Temperature filter lag, s (120)
+    T_RLIM = 0.00085  # Temperature sensor rate limit to minimize jumps in Coulomb counting, deg C/s (0.00085 allows 0.05 deg for 1 minute)
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents

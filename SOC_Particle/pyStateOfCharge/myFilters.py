@@ -379,16 +379,21 @@ class LagExp(DiscreteFilter):
             self.b = 1.0 / meTt - self.tau / self.dt
             self.c = meTt / self.dt
 
-    def calc_state_(self, in_):
+    def calc_state_(self, in_, rmax, rmin):
         self.rate = self.c * (self.a * self.rstate + self.b * in_ - self.state)
+        if rmax and rmin:
+            self.rate = max(min(self.rate, rmax), rmin)
+            print(" state {:6.3f}".format(self.state), " rate {:9.6f}".format(self.rate), " dt {:9.6f}".format(self.dt), end='')
         self.rstate = in_
         self.state = max(min(self.state + self.dt * self.rate, self.max), self.min)
+        if rmax and rmin:
+            print(" state {:6.3f}".format(self.state))
         # print('in_', in_, 'rate', self.rate, 'state', self.state)
 
-    def calc_state(self, in_, dt):
+    def calc_state(self, in_, dt, rmax=None, rmin=None):
         self.dt = dt
         self.assign_coeff(self.tau)
-        self.calc_state_(in_)
+        self.calc_state_(in_, rmax, rmin)
 
     def calculate(self, in_, reset, dt):
         self.in_ = in_
@@ -409,13 +414,23 @@ class LagExp(DiscreteFilter):
         self.out_ = self.state
         return self.out_
 
-    def calculate_tau_seeded(self, in_, _out0, reset, dt, tau_):
+    def calculate_tau_seeded(self, in_, _out0, reset, dt, tau_, rmax=None, rmin=None):
         self.in_ = in_
         self.tau = tau_
-        self.calc_state(self.in_, dt)
+        self.calc_state(self.in_, dt, rmax, rmin)
         if reset:
             self.state = _out0
             self.rstate = in_
+        print("         calc_tau_seed: ",
+              "r{:3d}".format(reset),
+              " in_ {:6.3f}".format(in_),
+              " _out0 {:6.3f}".format(_out0),
+              " tau_ {:6.3f}".format(tau_),
+              " dt {:6.3f}".format(dt),
+              " rstate {:6.3f}".format(self.rstate),
+              " state {:6.3f}".format(self.state),
+              " rate {:9.6f}".format(self.rate),
+              )
         self.out_ = self.state
         # if reset:
         #     print(f"calculate_tau_seeded:  in {in_} out {_out0} dt {dt} state {self.state} rstate {self.rstate} out {self.out_}")
