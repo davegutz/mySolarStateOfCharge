@@ -97,7 +97,7 @@ void Coulombs::pretty_print()
 void Coulombs::apply_cap_scale(const float scale)
 {
   q_cap_rated_scaled_ = scale * q_cap_rated_;
-  q_capacity_ = calculate_capacity(tb_);
+  q_capacity_ = calculate_capacity(tb_);  // tb_ usually Tb_f to reduce electrical noise effects
   q_ = *sp_delta_q_ + q_capacity_; // preserve delta_q, deficit since last saturation (like real life)
   soc_ = q_ / q_capacity_;
   resetting_ = true;     // momentarily turn off saturation check

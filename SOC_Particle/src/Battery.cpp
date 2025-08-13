@@ -793,7 +793,7 @@ float BatterySim::calc_inj(const unsigned long long now, const uint8_t type, con
 Inputs:
     model_saturated Indicator of maximal cutback, T = cutback saturated
     Sen->T          Integration step, s
-    Sen->Tb         Battery bank temperature, deg C
+    Sen->Tb_f       Battery bank temperature, deg C (filtered to reduce electrical noise effects)
     Sen->Tb_rate    Battery bank temperature rate, deg C
     Sen->Ib         Selected battery bank current, A
     t_last          Past value of battery temperature used for rate limit memory, deg C
@@ -861,7 +861,7 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
     if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)
     {
         double cTime = double(Sen->now)/1000.;
-        sprintf(pr.buff, "unit_sim, %13.3f, %d, %7.0f, %d, %9.5f, %7.5f,%7.5f,%7.5f,%8.5f, %7.3f,%7.3f,%7.3f,%7.3f,  %d,  %9.1f,  %8.5f, %d, %c",
+        sprintf(pr.buff, "unit_sim, %13.3f, %d, %7.0f, %d, %9.5f, %7.5f,%7.5f,%7.5f,%8.5f, %7.3f,%7.3f,%7.3f,%7.3f,  %d,  %9.1f,  %10.7f, %d, %c",
             cTime, CHEM, q_cap_rated_scaled_, bms_off_, tb_, vsat_, voc_stat_, dv_dyn_, vb_, ib_, ib_in_, ib_charge_, ioc_, model_saturated_, *sp_delta_q_, soc_, reset_temp,'\0');
         Serial.printf("%s\n", pr.buff);
     }

@@ -33,7 +33,7 @@ extern CommandPars cp;  // Various parameters shared at system level
 void create_rapid_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
   double cTime = double(Sen->now)/1000;
-  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%7.0f,%d, %d, %d, %d, %9.5f,%9.5f,%6.3f,%9.3f,%9.3f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %8.5f,%8.5f,%8.5f,%5.3f,", \
+  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%7.0f,%d, %d, %d, %d, %9.5f,%9.5f,%6.3f,%9.3f,%9.3f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %10.7f,%10.7f,%10.7f,%5.3f,", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
     CHEM, Mon->q_cap_rated_scaled(), pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
     Sen->Tb, Sen->Tb_f, Mon->vb(), Mon->ib(), Mon->ib_charge(), Mon->voc_soc(), 
@@ -153,8 +153,6 @@ void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, co
     }
     if ( cp.publishS )
     {
-      Log.info("  print_rapid_data:  rapid_temp1_print");
-      rapid_temp1_print(Sen, Mon, reset_temp);
       Log.info("  print_rapid_data:  rapid_print");
       rapid_print(Sen, Mon);
       cp.num_v_print++;
@@ -223,13 +221,6 @@ void rapid_print(Sensors *Sen, BatteryMonitor *Mon)
   #ifdef HDWE_ARGON
     Serial1.printf("%s\n", pr.buff);
   #endif
-}
-void rapid_temp1_print(Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp)
-{
-  double cTime = double(Sen->now_temp)/1000;
-  Serial.printf("temp1_unit, %13.3f, %9.5f, %9.5f, %9.5f, %d, %9.5f, %9.5f,\n",
-     cTime, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset_temp, Sen->Tb_f, Sen->Tb_f_rate);
-  Log.info("    rapid_temp1_print cTime,%9.3f,", cTime);
 }
 
 /*

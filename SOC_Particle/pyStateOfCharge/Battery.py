@@ -915,7 +915,6 @@ class BatterySim(Battery):
         self.saved.soc.append(self.soc)
         self.saved.d_delta_q.append(self.d_delta_q)
         self.saved.Tb.append(self.Tb)
-        self.saved.t_last.append(self.t_last)
         self.saved.vsat.append(self.vsat)
         self.saved.charge_curr.append(self.charge_curr)
         self.saved.sat.append(int(self.model_saturated))

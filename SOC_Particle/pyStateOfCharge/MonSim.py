@@ -223,7 +223,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.Tb_rstate = 0.
             mon.Tb_state = 0.
         mon.Tb = Tb_t_in_
-        Tb_ = mon.Tb + dTb
+        Tb_ = mon.Tb_f + dTb
         sim.Tb = Tb_t_in_
         sim.Tb_f = mon.Tb_f
 
@@ -268,7 +268,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if reset:
             mon.apply_soc(mon_old.soc[i], Tb_)
             rp.delta_q = mon.delta_q
-            rp.t_last = Tb_
             mon.load(rp.delta_q, rp.t_last)
             mon.assign_temp_c(Tb_)
             if hasattr(mon_old, 'e_wrap_m'):
@@ -330,12 +329,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.init_soc_ekf(mon_old.x[0], mon_old.P[0])  # when modeling (assumed in python) ekf wants to equal model
 
         if calc_temp:
-            print("  \nif calc_temp:  ",
-                  " rst {:2d}".format(mon.reset_temp),
-                  end='')
             mon.Tb_f = TbFilter.calculate_tau_seeded(mon.Tb, Tb_f_t_in[i_temp], mon.reset_temp, mon.dt_temp,
                                                      Battery.TB_FILT, rmax=Battery.T_RLIM, rmin=-Battery.T_RLIM)
-            print("")
             mon.Tb_rate = TbFilter.rate
             mon.Tb_rstate = TbFilter.rstate
             mon.Tb_state = TbFilter.state
@@ -358,10 +353,10 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         sat = is_sat(Tb_, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
         if rp.modeling == 0:
-            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, temp_c=Tb_, tb_rate=mon.Tb_rate, charge_curr=ib_charge,
+            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb=Tb_, tb_rate=mon.Tb_rate, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
         else:
-            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, temp_c=Tb_, tb_rate=mon.Tb_rate, charge_curr=ib_charge,
+            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb=Tb_, tb_rate=mon.Tb_rate, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
         mon.assign_soc_s(sim.soc)
@@ -398,18 +393,29 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       "{:4.0f}".format(sim.sat), "{:9.3f}".format(sim.hys.disabled), "{:9.3f}".format(sim.hys.dv_dot),
                       "{:9.3f}".format(sim.saved.dv_hys[i]), "{:9.3f}".format(mon.saved.ib[i]), "{:12.7f}".format(mon.saved.soc[i]),
                       "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
-        # print(f"{i=} time {mon_old.time[i]}  {i_temp=} time_t {mon_old.time_t[i_temp]}res_t {mon.reset_temp} Tbmon{mon_old.Tb_mon[i]} Tb {Tb_t_in[i_temp]} Tb_ver {mon.Tb} Tb_f {Tb_f_mon_in[i_temp]} Tb_f_ver {mon.Tb_f}")
-        hdr = "  i  time  rst i_t  calc  T_t    Tb_t    Tb_ver  Tb_f  Tb_rate_t Tb_rate_v Tb_rstate_v Tb_state_v   Tb_f_v  "
-        if calc_temp:
+    #     hdr = "  i  time  rst i_t  calc  T_t    Tb_t    Tb_ver  Tb_f  Tb_rate_t Tb_rate_v Tb_rstate_v Tb_state_v   Tb_f_v  "
+    #     if calc_temp:
+    #         print(hdr)
+    #     if mon.reset_temp is None:
+    #         mon.reset_temp = -1
+    #     print("{:3d}".format(i), "{:6.3f}".format(t[i]),
+    #           "{:2d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp), "{:7.3f}".format(mon_old.Tt[i_temp]),
+    #           "{:7.3f}".format(Tb_t_in_), "{:7.3f}".format(mon.Tb),
+    #           "{:7.3f}".format(Tb_f_t_in_),
+    #           "{:9.6f}".format(Tb_f_rate_t_in_), "{:9.6f}".format(mon.Tb_rate), "{:7.3f}".format(mon.Tb_rstate),
+    #           "{:7.3f}".format(mon.Tb_state), "{:7.3f}".format(mon.Tb_f),
+    #           )
+    # print(hdr)
+        hdr = "  i  time  rst ibc     ibc_v    soc       soc_v     qcrs     qcr s_v   dt      dt_v delqE delq_v"
+        if i==0:
             print(hdr)
-        if mon.reset_temp is None:
-            mon.reset_temp = -1
-        print("{:3d}".format(i), "{:6.3f}".format(t[i]),
-              "{:2d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp), "{:7.3f}".format(mon_old.Tt[i_temp]),
-              "{:7.3f}".format(Tb_t_in_), "{:7.3f}".format(mon.Tb),
-              "{:7.3f}".format(Tb_f_t_in_),
-              "{:9.6f}".format(Tb_f_rate_t_in_), "{:9.6f}".format(mon.Tb_rate), "{:7.3f}".format(mon.Tb_rstate),
-              "{:7.3f}".format(mon.Tb_state), "{:7.3f}".format(mon.Tb_f),
+        mon_old.delta_q_est = -(1. - mon_old.soc[i]) * mon_old.qcrs[i]
+        print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),
+              "{:7.3f}".format(mon_old.ib_charge[i]), "{:7.3f}".format(mon.ib_charge),
+              "{:9.6f}".format(mon_old.soc[i]), "{:9.6f}".format(mon.soc),
+              "{:8.0f}".format(mon_old.qcrs[i]), "{:8.0f}".format(mon.q_cap_rated_scaled),
+              "{:7.3f}".format(mon_old.dt[i]), "{:7.3f}".format(mon.dt),
+              "{:7.3f}".format(mon_old.delta_q_est), "{:7.3f}".format(mon.delta_q),
               )
     print(hdr)
 

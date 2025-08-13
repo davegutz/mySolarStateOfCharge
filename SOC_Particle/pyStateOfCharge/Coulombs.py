@@ -28,7 +28,6 @@ class Coulombs:
         self.q_cap_rated = q_cap_rated
         self.q_cap_rated_scaled = q_cap_rated_scaled
         self.t_rated = t_rated
-        self.temp_rlim = temp_rlim
         self.delta_q = 0.
         self.q = 0.
         self.q_capacity = 0.
@@ -36,12 +35,11 @@ class Coulombs:
         self.soc = 1.
         self.resetting = True
         self.q_min = 0.
-        self.temp_lim = 0.
-        self.t_last = 0.
         self.sat = True
         self.chm = mod_code
         self.tweak_test = tweak_test
         self.reset = False
+        self.tb = 0.
         self.chemistry = Chemistry(mod_code=mod_code, dvoc=dvoc, unit=unit)
         self.chemistry.assign_all_mod(mod_code, unit=unit)
 
@@ -80,7 +78,7 @@ class Coulombs:
         resets all the model parameters.   This happens daily.   Then both the model and the battery
         are discharged by the same current so the delta_q will be the same."""
         self.q_cap_rated_scaled = scale * self.q_cap_rated
-        self.q_capacity = self.calculate_capacity(self.t_last)
+        self.q_capacity = self.calculate_capacity(self.tb)
         self.q = self.delta_q + self.q_capacity  # preserve self.delta_q, deficit since last saturation(like real life)
         self.soc = self.q / self.q_capacity
         self.resetting = True  # momentarily turn off saturation check
@@ -116,12 +114,12 @@ class Coulombs:
             res = 1
         return res
 
-    def count_coulombs(self, chem, dt, reset, temp_c, charge_curr, sat, tb_rate=None, soc_init=None, use_soc_in=False,
+    def count_coulombs(self, chem, dt, reset, tb, charge_curr, sat, tb_rate=None, soc_init=None, use_soc_in=False,
                        soc_in=0.):
         """Count coulombs based on true=actual capacity
         Inputs:
             dt              Integration step, s
-            temp_c          Battery temperature, deg C
+            tb              Battery temperature, deg C  (filtered usually to reduce electrical noise artifacts)
             charge_curr     Charge, A
             sat             Indicator that battery is saturated (VOC>threshold(temp)), T/F
             t_last          Past value of battery temperature used for rate limit memory, deg C
@@ -137,12 +135,7 @@ class Coulombs:
         if charge_curr > 0. and not self.tweak_test:
             d_delta_q *= self.chemistry.coul_eff
         self.sat = sat
-
-        # Rate limit temperature
-        self.temp_lim = max(min(temp_c, self.t_last + self.temp_rlim*dt), self.t_last - self.temp_rlim*dt)
-        if reset:
-            self.temp_lim = temp_c
-            self.t_last = temp_c
+        self.tb = tb
 
         # Saturation.   Goal is to set q_capacity and hold it so remembers last saturation status.
         if sat:
@@ -155,7 +148,7 @@ class Coulombs:
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
 
         # Integration
-        self.q_capacity = self.calculate_capacity(self.temp_lim)
+        self.q_capacity = self.calculate_capacity(tb)
         if use_soc_in:
             self.soc = soc_in
             self.q = self.q_capacity * self.soc
@@ -169,15 +162,13 @@ class Coulombs:
 
         # Normalize
         self.soc = self.q / self.q_capacity
-        self.soc_min = self.chemistry.lut_min_soc.interp(self.temp_lim)
+        self.soc_min = self.chemistry.lut_min_soc.interp(self.tb)
         self.q_min = self.soc_min * self.q_capacity
 
         # Save and return
-        self.t_last = self.temp_lim
         # print('Mon CC:  charge_curr', charge_curr, 'dt', dt, 'd_delta_q', d_delta_q,'temp_lim', self.temp_lim, 't_last', self.t_last, 'cap', self.q_capacity)
         return self.soc
 
     def load(self, delta_q, t_last):
         """Load states from retained memory"""
         self.delta_q = delta_q
-        self.t_last = t_last
