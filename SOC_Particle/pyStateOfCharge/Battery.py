@@ -171,7 +171,7 @@ class Battery(Coulombs):
                                      min_=-Battery.UNIT_CAP_RATED*scale_cap, tau=self.chemistry.tau_ct)
         self.Tb = temp_c
         self.Tb_f = temp_c
-        self.Tb_rate = None
+        self.Tb_f_rate = None
         self.saved = Saved()  # for plots and prints
         self.dv_hys = 0.  # Placeholder so BatterySim can be plotted
         self.tau_hys = 0.  # Placeholder so BatterySim can be plotted
@@ -466,7 +466,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.Q = Battery.EKF_Q_SD_NORM**2  # override
             self.R = Battery.EKF_R_SD_NORM**2  # override
             self.voc_stat_f =\
-                self.voc_stat_filt.calculate_tau_seeded(self.voc_stat_ekf, z_init, self.reset_ekf, self.dt_eframe,
+                self.voc_stat_filt.calculate_tau_seeded(self.voc_stat_ekf, z_init, 0., self.reset_ekf, self.dt_eframe,
                                                         self.VOC_STAT_FILT)
             self.predict_ekf(u=ddq_dt, reset=self.reset_ekf)  # u = d(q)/dt
             self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1., reset=self.reset_ekf)  # z = voc, voc_filtered = hx
@@ -618,7 +618,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.e_voc_ekf.append(self.e_voc_ekf)
         self.saved.Tb.append(self.Tb)
         self.saved.Tb_f.append(self.Tb_f)
-        self.saved.Tb_rate.append(self.Tb_rate)
+        self.saved.Tb_f_rate.append(self.Tb_f_rate)
         self.saved.vsat.append(self.vsat)
         self.saved.voc_ekf.append(self.voc_ekf)
         self.saved.sat.append(int(self.sat))
@@ -644,6 +644,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.ewmlo_thr.append(self.ewmlo_thr)
         self.saved.ewnhi_thr.append(self.ewnhi_thr)
         self.saved.ewnlo_thr.append(self.ewnlo_thr)
+        self.saved.q.append(self.q)
+        self.saved.q_capacity.append(self.q_capacity)
 
     def wrap(self, reset=True, ib_noa=0., ib_amp=0.,
              e_w_amp_0=None, e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None):
@@ -840,7 +842,7 @@ class BatterySim(Battery):
 
         return self.vb
 
-    def count_coulombs(self, chem, dt, reset, temp_c, charge_curr, sat, tb_rate=None, soc_s_init=None, mon_delta_q=None,
+    def count_coulombs(self, chem, dt, reset, temp_c, charge_curr, sat, tb_f_rate=None, soc_s_init=None, mon_delta_q=None,
                        mon_sat=None, use_soc_in=False, soc_in=0.):
         # BatterySim
         """Coulomb counter based on true=actual capacity
@@ -885,7 +887,7 @@ class BatterySim(Battery):
             self.q = self.q_capacity * self.soc
             self.delta_q = self.q - self.q_capacity
         else:
-            self.delta_q += self.d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_rate*dt
+            self.delta_q += self.d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_f_rate*dt
             self.delta_q = max(min(self.delta_q, 0.), -self.q_capacity*1.5)
             self.q = self.q_capacity + self.delta_q
 
@@ -1098,7 +1100,7 @@ class Saved:
         self.mod_data = []  # Configuration control code, 0=all hardware, 7=all simulated, +8 tweak test
         self.Tb = []  # Battery bank temperature, deg C
         self.Tb_f = []  # Battery bank filtered temperature, deg C
-        self.Tb_rate = []  # Temp rate, deg C / s
+        self.Tb_f_rate = []  # Temp rate, deg C / s
         self.vsat = []  # Monitor Bank saturation threshold at temperature, deg C
         self.dv_dyn = []  # Monitor Bank current induced back emf, V
         self.voc_stat = []  # Monitor Static bank open circuit voltage, V

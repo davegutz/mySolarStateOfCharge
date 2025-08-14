@@ -114,7 +114,7 @@ class Coulombs:
             res = 1
         return res
 
-    def count_coulombs(self, chem, dt, reset, tb, charge_curr, sat, tb_rate=None, soc_init=None, use_soc_in=False,
+    def count_coulombs(self, chem, dt, reset, tb, charge_curr, sat, tb_f_rate=None, soc_init=None, use_soc_in=False,
                        soc_in=0.):
         """Count coulombs based on true=actual capacity
         Inputs:
@@ -154,7 +154,7 @@ class Coulombs:
             self.q = self.q_capacity * self.soc
             self.delta_q = self.q - self.q_capacity
         else:
-            self.delta_q = max(min(self.delta_q + d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_rate*dt,
+            self.delta_q = max(min(self.delta_q + d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_f_rate*dt,
                                    0.0), -self.q_capacity*1.5)
             self.q = self.q_capacity + self.delta_q
             if self.delta_q < -100.:

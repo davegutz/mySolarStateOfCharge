@@ -218,7 +218,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             Tb_t_in_ = Tb_t_in[i_temp]
             Tb_f_t_in_ = Tb_f_t_in[i_temp]
             Tb_f_rate_t_in_ = Tb_f_rate_t_in[i_temp]
-            mon.Tb_rate = 0.
+            mon.Tb_f_rate = 0.
             mon.Tb_rstate = 0.
             mon.Tb_state = 0.
         mon.Tb = Tb_t_in_
@@ -258,7 +258,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         sim.calculate(_chm_s, None, ib_in_s, T, reset, None, None, None,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=bms_off_init)
-        sim.count_coulombs(chem=_chm_s, dt=T, reset=reset, temp_c=Tb_, tb_rate=mon.Tb_rate, charge_curr=sim.ib_charge,
+        sim.count_coulombs(chem=_chm_s, dt=T, reset=reset, temp_c=Tb_, tb_f_rate=mon.Tb_f_rate, charge_curr=sim.ib_charge,
                            sat=False, soc_s_init=soc_s_init, mon_sat=mon.sat, mon_delta_q=mon.delta_q,
                            use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
 
@@ -328,9 +328,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.init_soc_ekf(mon_old.x[0], mon_old.P[0])  # when modeling (assumed in python) ekf wants to equal model
 
         if calc_temp:
-            mon.Tb_f = TbFilter.calculate_tau_seeded(mon.Tb, Tb_f_t_in[i_temp], mon.reset_temp, mon.dt_temp,
+            mon.Tb_f = TbFilter.calculate_tau_seeded(mon.Tb, Tb_f_t_in[i_temp], Tb_f_rate_t_in[i_temp], mon.reset_temp, mon.dt_temp,
                                                      Battery.TB_FILT, rmax=Battery.T_RLIM, rmin=-Battery.T_RLIM)
-            mon.Tb_rate = TbFilter.rate
+            mon.Tb_f_rate = TbFilter.rate
             mon.Tb_rstate = TbFilter.rstate
             mon.Tb_state = TbFilter.state
 
@@ -338,13 +338,13 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             if reset_ekf:
                 z_init = mon_old.z[i_ekf]
             # print(f"{i=} {i_ekf=} {mon_old.time[i]} {mon_old.time_e[i_ekf]} dt {mon_old.dt_ekf[i_ekf]} calc {calc_ekf} res {reset_ekf} z_init {z_init}")
-            mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, mon.Tb_rate,
+            mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, mon.Tb_f_rate,
                           rp=rp, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
                           reset_ekf=reset_ekf)
         else:
             mon.calculate(_chm_m, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
-                          reset, calc_ekf, T_ekf, mon_old.z[0], Tb_rate=mon.Tb_rate,
+                          reset, calc_ekf, T_ekf, mon_old.z[0], Tb_f_rate=mon.Tb_f_rate,
                           rp=rp, bms_off_init=bms_off_init, ib_amp=ibmm, ib_noa=ibnm, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
                           reset_ekf=reset_ekf)
@@ -352,10 +352,10 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         sat = is_sat(Tb_, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
         if rp.modeling == 0:
-            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb=Tb_, tb_rate=mon.Tb_rate, charge_curr=ib_charge,
+            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb=Tb_, tb_f_rate=mon.Tb_f_rate, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
         else:
-            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb=Tb_, tb_rate=mon.Tb_rate, charge_curr=ib_charge,
+            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb=Tb_, tb_f_rate=mon.Tb_f_rate, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
         mon.assign_soc_s(sim.soc)
@@ -392,7 +392,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       "{:4.0f}".format(sim.sat), "{:9.3f}".format(sim.hys.disabled), "{:9.3f}".format(sim.hys.dv_dot),
                       "{:9.3f}".format(sim.saved.dv_hys[i]), "{:9.3f}".format(mon.saved.ib[i]), "{:12.7f}".format(mon.saved.soc[i]),
                       "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
-    #     hdr = "  i  time  rst i_t  calc  T_t    Tb_t    Tb_ver  Tb_f  Tb_rate_t Tb_rate_v Tb_rstate_v Tb_state_v   Tb_f_v  "
+    #     hdr = "  i  time  rst i_t  calc  T_t    Tb_t    Tb_ver  Tb_f  Tb_f_rate_t Tb_f_rate_v Tb_rstate_v Tb_state_v   Tb_f_v  "
     #     if calc_temp:
     #         print(hdr)
     #     if mon.reset_temp is None:
@@ -401,7 +401,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     #           "{:2d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp), "{:7.3f}".format(mon_old.Tt[i_temp]),
     #           "{:7.3f}".format(Tb_t_in_), "{:7.3f}".format(mon.Tb),
     #           "{:7.3f}".format(Tb_f_t_in_),
-    #           "{:9.6f}".format(Tb_f_rate_t_in_), "{:9.6f}".format(mon.Tb_rate), "{:7.3f}".format(mon.Tb_rstate),
+    #           "{:9.6f}".format(Tb_f_rate_t_in_), "{:9.6f}".format(mon.Tb_f_rate), "{:7.3f}".format(mon.Tb_rstate),
     #           "{:7.3f}".format(mon.Tb_state), "{:7.3f}".format(mon.Tb_f),
     #           )
     # print(hdr)
