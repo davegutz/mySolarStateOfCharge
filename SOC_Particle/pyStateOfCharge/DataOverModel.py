@@ -808,15 +808,6 @@ class SavedData:
             self.time_min = self.time / 60.
             self.time_day = self.time / 3600. / 24.
 
-            # Initialization time logic
-            if self.time[0] == 0.:  # no initialization flat detected at beginning of recording
-                self.init_time = 1.
-            else:
-                if init_time_in:
-                    self.init_time = init_time_in
-                else:
-                    self.init_time = -4.
-
             # Truncate
             if time_end is None:
                 i_end = len(self.time)
@@ -825,7 +816,6 @@ class SavedData:
                     i_end = min(i_end, len(self.c_time_s))
                 if ekf is not None:
                     self.time_e = np.array(ekf.c_time) - self.time_ref
-                    # i_end = min(i_end, len(self.time_e))  # EKF is framed slower
             else:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
                 if sel is not None:
@@ -835,9 +825,6 @@ class SavedData:
                     self.zero_end = min(self.zero_end, i_end-1)
                 if ekf is not None:
                     self.time_e = np.array(ekf.c_time) - self.time_ref
-                    i_end_ekf = np.where(self.time_e <= time_end)[0][-1] + 1
-                    # i_end = min(i_end, i_end_ekf)  # EKF is framed slower
-                    # self.zero_end = min(self.zero_end, i_end - 1)
             self.cTime = self.cTime[:i_end]
             self.dt = np.array(data.dt[:i_end])
             self.time = np.array(self.time[:i_end])
@@ -854,14 +841,6 @@ class SavedData:
             ib_lag = Chemistry_BMS.ib_lag(self.chm[0])
             IbLag = LagExp(1., ib_lag, -100., 100.)
             self.ib_lag = np.zeros(n)
-            for i in range(n):
-                if self.time[i] <= self.init_time:
-                    lag_reset = True
-                    T_lag = self.cTime[i+1] - self.cTime[i]
-                else:
-                    lag_reset = False
-                    T_lag = self.cTime[i] - self.cTime[i-1]
-                self.ib_lag[i] = IbLag.calculate_tau(float(self.ib[i]), lag_reset, T_lag, ib_lag)
             self.sel = np.array(data.sel[:i_end])
             self.mod_data = np.array(data.mod[:i_end])
             self.bms_off = np.array(data.bmso[:i_end])
@@ -1092,6 +1071,23 @@ class SavedData:
             self.Tb_t = np.array(temp.Tb[:i_end])
             self.Tb_f = np.array(temp.Tb_f[:i_end])
             self.Tb_f_rate = np.array(temp.Tb_f_rate[:i_end])
+
+        # Initialization time logic
+        if self.time[0] == 0.:  # no initialization flat detected at beginning of recording
+            self.init_time = 1.
+        else:
+            if init_time_in:
+                self.init_time = init_time_in
+            else:
+                self.init_time = -4.
+        for i in range(n):
+            if self.time[i] <= self.init_time:
+                lag_reset = True
+                T_lag = self.cTime[i+1] - self.cTime[i]
+            else:
+                lag_reset = False
+                T_lag = self.cTime[i] - self.cTime[i-1]
+            self.ib_lag[i] = IbLag.calculate_tau(float(self.ib[i]), lag_reset, T_lag, ib_lag)
 
     def __str__(self):
         s = "{},".format(self.unit[self.i])

@@ -48,7 +48,7 @@ class Retained:
 
 class Battery(Coulombs):
     # Battery constants
-    UNIT_CAP_RATED = 100.
+    UNIT_CAP_RATED = 108.4
     NOM_SYS_VOLT = 12.  # Nominal system output, V, at which the reported amps are used (12)
     mxeps_bb = 1.05  # Numerical maximum of coefficient model with scaled soc
     TCHARGE_DISPLAY_DEADBAND = 0.1  # Inside this +/- deadband, charge time is displayed '---', A
