@@ -342,17 +342,29 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                                                  mon_old.Tb_hdwe_filt_rate[i_temp], mon.reset_temp,
                                                  mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
                                                  rmin=-Battery.T_RLIM)
+            # mon.Tb_hdwe_filt = \
+            #     TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_old.Tb_lstate[i_temp],
+            #                                      mon_old.Tb_hdwe_filt_rate[i_temp], mon.reset_temp,
+            #                                      mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
+            #                                      rmin=-Battery.T_RLIM)
+            mon.Tba = TbSenseFilt.a
+            mon.Tbb = TbSenseFilt.b
+            mon.Tbc = TbSenseFilt.c
             mon.Tb_hdwe_filt_rate = TbSenseFilt.rate
             mon.Tb_rstate = TbSenseFilt.rstate
             mon.Tb_state = TbSenseFilt.state
 
-            print("reset   {:2.0f}  Tt {:9.7f}  Tb_hdwe   {:9.6f} Tb_hdwe_filt   {:9.6f} rstate   {:9.6f} lstate   {:9.6f} Tb_f   {:9.6f}".
+            print("reset   {:2.0f}  Tt {:9.7f}  Tb_hdwe   {:11.7f} Tb_hdwe_filt   {:11.7f} rstate   {:11.7f} lstate   {:11.7f} rate   {:11.7f} Tb_f   {:11.7f} Tba  {:9.7f} Tbb  {:9.7f} Tbc  {:9.7f} r*dt  {:9.8f}".
                   format(mon_old.reset_temp[i_temp], mon_old.Tt[i_temp], mon_old.Tb_hdwe[i_temp],
                          mon_old.Tb_hdwe_filt[i_temp],
-                         mon_old.Tb_rstate[i_temp], mon_old.Tb_lstate[i_temp], mon_old.Tb_f[i_temp]))
-            print("reset_v {:2d}  Tt {:9.7f}  Tb_hdwe_v {:9.6f} Tb_hdwe_filt_v {:9.6f} rstate_v {:9.6f} lstate_v {:9.6f} Tb_f_v {:9.6f}\n\n".
+                         mon_old.Tb_rstate[i_temp], mon_old.Tb_lstate[i_temp], mon_old.Tb_hdwe_filt_rate[i_temp],
+                         mon_old.Tb_f[i_temp],
+                         mon_old.Tba[i_temp], mon_old.Tbb[i_temp], mon_old.Tbc[i_temp],
+                         mon_old.Tb_hdwe_filt_rate[i_temp]*mon_old.Tt[i_temp]))
+            print("reset_v {:2d}  Tt {:9.7f}  Tb_hdwe_v {:11.7f} Tb_hdwe_filt_v {:11.7f} rstate_v {:11.7f} lstate_v {:11.7f} rate_v {:11.7f} Tb_f_v {:11.7f} Tba_v{:9.7f} Tbb_v{:9.7f} Tbc_v{:9.7f} r*dt_v{:9.8f}\n\n".
                   format(mon.reset_temp, mon.dt_temp, mon.Tb_hdwe, mon.Tb_hdwe_filt,
-                         mon.Tb_rstate, mon.Tb_state, mon.Tb_f))
+                         mon.Tb_rstate, mon.Tb_state, mon.Tb_hdwe_filt_rate, mon.Tb_f,
+                         mon.Tba, mon.Tbb, mon.Tbc,  mon.Tb_hdwe_filt_rate*mon.dt_temp))
 
         if rp.modeling == 0:
             if reset_ekf:

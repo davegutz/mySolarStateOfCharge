@@ -186,7 +186,6 @@ protected:
   LagTustin *y_filt = new LagTustin(2., WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
   SlidingDeadband *SdVb_;  // Sliding deadband filter for Vb
   TFDelay *EKF_converged;  // Time persistence
-  RateLimit *T_RLim = new RateLimit();
   Iterator *ice_;      // Iteration control for EKF solver
   LagExp *VocStatFilt = new LagExp(EKF_NOM_DT, VOC_STAT_FILT, VB_MIN, VB_MAX);  // actual update time provided run time
   float amp_hrs_remaining_ekf_;  // Discharge amp*time left if drain to q_ekf=0, A-h
