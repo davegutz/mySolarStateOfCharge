@@ -192,7 +192,7 @@ void print_serial_temp_data(const boolean reset, Sensors *Sen)
     double cTime = double(Sen->now_temp)/1000.;
     Serial.printf("temp_unit, %13.3f, %9.6f, %9.5f, %9.5f, %9.5f, %d, %9.5f, %9.5f, %9.5f,%9.5f,\n",
       cTime, Sen->T_temp, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_f, Sen->Tb_f_rate,
-      Sen->TbSenseFilt->rstate(), Sen->TbSenseFilt->state());
+      Sen->TbSenseFilt->rstate(), Sen->TbSenseFilt->lstate());
     Log.info("    print_serial_temp_data cTime,%9.3f,", cTime);
   }
 }
