@@ -33,10 +33,10 @@ extern CommandPars cp;  // Various parameters shared at system level
 void create_rapid_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
   double cTime = double(Sen->now)/1000;
-  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%7.0f,%d, %d, %d, %d, %9.5f,%9.5f,%6.3f,%9.3f,%9.3f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %10.7f,%10.7f,%10.7f,%5.3f,", \
+  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%7.0f,%d, %d, %d, %d, %9.5f,%9.5f,%9.5f, %6.3f,%9.3f,%9.3f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %10.7f,%10.7f,%10.7f,%5.3f,", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
     CHEM, Mon->q_cap_rated_scaled(), pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
-    Sen->Tb, Sen->Tb_f, Mon->vb(), Mon->ib(), Mon->ib_charge(), Mon->voc_soc(), 
+    Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate, Mon->vb(), Mon->ib(), Mon->ib_charge(), Mon->voc_soc(), 
     Mon->vsat(), Mon->dv_dyn(), Mon->voc_stat(), Mon->hx(),
     Mon->y_ekf(),
     Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc(), Mon->soc_min());
@@ -165,9 +165,9 @@ void create_rapid_string_header(void)
 {
   if ( ( sp.debug()==1 || sp.debug()==2 || sp.debug()==3 || sp.debug()==4 ) )
   {
-    Serial.printf ("unit,               hm,                  cTime,       dt,       chm,qcrs,sat,sel,mod,bmso, Tb, Tb_f, vb, ib,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,\n");
+    Serial.printf ("unit,               hm,                  cTime,       dt,       chm,qcrs,sat,sel,mod,bmso, Tb, Tb_f, Tb_f_rate, vb, ib,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,\n");
     #ifdef HDWE_ARGON
-      Serial1.printf("unit,               hm,                  cTime,       dt,       chm,qcrs,sat,sel,mod,bmso, Tb, Tb_f, vb, ib,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,\n");
+      Serial1.printf("unit,               hm,                  cTime,       dt,       chm,qcrs,sat,sel,mod,bmso, Tb, Tb_f, Tb_f_rate, vb, ib,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,\n");
     #endif
   }
 }
@@ -190,8 +190,8 @@ void print_serial_temp_data(const boolean reset, Sensors *Sen)
   if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  )
   {
     double cTime = double(Sen->now_temp)/1000.;
-    Serial.printf("temp_unit, %13.3f, %9.6f, %9.5f, %9.5f, %9.5f, %d, %9.5f, %9.5f, %9.5f, %9.5f,%9.5f,\n",
-      cTime, Sen->T_temp, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_hdwe_filt, Sen->Tb_f, Sen->Tb_f_rate,
+    Serial.printf("temp_unit, %13.3f, %9.6f, %9.5f, %9.5f, %9.5f, %d, %9.5f, %9.5f, %9.5f, %9.5f,\n",
+      cTime, Sen->T_temp, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_hdwe_filt, Sen->Tb_hdwe_filt_rate,
       Sen->TbSenseFilt->rstate(), Sen->TbSenseFilt->lstate());
     Log.info("    print_serial_temp_data cTime,%9.3f,", cTime);
   }
@@ -201,7 +201,7 @@ void print_serial_temp_header(void)
 {
   if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  )
   {
-    Serial.printf("unit_t, c_time, T_t, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_hdwe_filt, Tb_f, Tb_f_rate, TbF_rs, TbF_s,\n");
+    Serial.printf("unit_t, c_time, T_t, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_hdwe_filt, Tb_hdwe_filt_rate, TbF_rs, TbF_s,\n");
   }
 }
 
