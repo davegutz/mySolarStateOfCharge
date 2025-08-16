@@ -1057,7 +1057,7 @@ class SavedData:
             self.time_t = None
             self.reset_temp = None
             self.T_t = None
-            self.Tb_hdw = None
+            self.Tb_hdwe = None
             self.Tb_mod = None
             self.Tb_t = None
             self.Tb_f = None
@@ -1068,7 +1068,7 @@ class SavedData:
             self.time_t = np.array(temp.c_time[:i_end]) - self.time_ref
             self.reset_temp = np.array(temp.reset_temp[:i_end])
             self.Tt = np.array(temp.T_t[:i_end])
-            self.Tb_hdw = np.array(temp.Tb_hdw[:i_end])
+            self.Tb_hdwe = np.array(temp.Tb_hdw[:i_end])
             self.Tb_mod = np.array(temp.Tb_mod[:i_end])
             self.Tb_t = np.array(temp.Tb[:i_end])
             self.Tb_f = np.array(temp.Tb_f[:i_end])
