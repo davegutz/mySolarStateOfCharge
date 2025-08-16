@@ -189,6 +189,7 @@ class Battery(Coulombs):
         self.Tb_rstate = None
         self.Tb_state = None
         self.Tb_hdwe_filt = None
+        self.Tb_hdwe_filt_rate = None
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -652,6 +653,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_rstate.append(self.Tb_rstate)
         self.saved.Tb_lstate.append(self.Tb_state)
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
+        self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
 
     def wrap(self, reset=True, ib_noa=0., ib_amp=0.,
              e_w_amp_0=None, e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None):
@@ -1146,6 +1148,8 @@ class Saved:
         self.Tb_rstate = []
         self.Tb_lstate = []
         self.Tb_hdwe_filt = []
+        self.Tb_hdwe_filt_rate = []
+
 
 def overall_batt(mv, sv, filename,
                  mv1=None, sv1=None, suffix1=None, fig_files=None, plot_title=None, fig_list=None, suffix='',

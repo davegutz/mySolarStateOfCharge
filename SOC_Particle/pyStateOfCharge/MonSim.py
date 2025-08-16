@@ -118,8 +118,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     ib_in = mon_old.ib
     Tb_t_in = mon_old.Tb_t
     Tb_f_t_in = mon_old.Tb_f
-    Tb_f_rate_t_in = mon_old.Tb_f_rate
-    Tb_f_mon_in = mon_old.Tb_f_mon
+    Tb_f_rate_t_in = mon_old.Tb_hdwe_filt_rate
     soc_s_init = mon_old.soc_s[0]
     sat_init = mon_old.sat[0]
     dv_hys_init = mon_old.dv_hys[0]
@@ -201,8 +200,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             i_ekf = -1
             i_temp = -1
             mon.dt_temp = 0.
-            mon.Tb_hdwe = 0.
-            mon.Tb_hdwe_filt = mon_old.Tb_f[0]
+            mon.Tb_hdwe = mon_old.Tb_hdwe[0]
+            mon.Tb_hdwe_filt = mon_old.Tb_hdwe_filt[0]
+            mon.Tb_hdwe_filt_rate = mon_old.Tb_hdwe_filt_rate[0]
         else:
             candidate_dt = t[i] - t[i-1]  # update
             if candidate_dt > 1e-6:
@@ -334,23 +334,25 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.init_soc_ekf(mon_old.x[0], mon_old.P[0])  # when modeling (assumed in python) ekf wants to equal model
 
         if calc_temp:
-            mon.Tb_f = mon.Tb_hdwe_filt
+            mon.Tb = mon.Tb_hdwe  # past value
+            mon.Tb_f = mon.Tb_hdwe_filt  # past value
+            mon.Tb_f_rate = mon.Tb_hdwe_filt_rate  # past value
             mon.Tb_hdwe_filt = \
-                TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, Tb_f_t_in[i_temp], Tb_f_rate_t_in[i_temp], mon.reset_temp,
+                TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_old.Tb_hdwe_filt[i_temp],
+                                                 mon_old.Tb_hdwe_filt_rate[i_temp], mon.reset_temp,
                                                  mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
                                                  rmin=-Battery.T_RLIM)
-            mon.Tb_f_rate = TbSenseFilt.rate
+            mon.Tb_hdwe_filt_rate = TbSenseFilt.rate
             mon.Tb_rstate = TbSenseFilt.rstate
             mon.Tb_state = TbSenseFilt.state
 
-            print("\nreset   {:2.0f} Tb_hdwe  {:9.6f} Tb   {:9.6f} rstate   {:9.6f} lstate   {:9.6f} Tb_hdwe_filt   {:9.6f} Tb_f   {:9.6f}".
-                  format(mon_old.reset_temp[i_temp], mon_old.Tb_hdwe[i_temp], mon_old.Tb_t[i_temp],
-                         mon_old.Tb_rstate[i_temp], mon_old.Tb_lstate[i_temp], mon_old.Tb_lstate[i_temp],
-                         mon_old.Tb_f[i_temp]))
-            print("reset_v {:2d} Tb_hdwe_v{:9.6f} Tb_v {:9.6f} rstate_v {:9.6f} lstate_v {:9.6f} Tb_hdwe_filt_v {:9.6f} Tb_f_v {:9.6f}".
-                  format(mon.reset_temp, mon.Tb_hdwe, mon.Tb,
-                         mon.Tb_rstate, mon.Tb_state, mon.Tb_hdwe_filt,
-                         mon.Tb_f))
+            print("reset   {:2.0f}  Tt {:9.7f}  Tb_hdwe   {:9.6f} Tb_hdwe_filt   {:9.6f} rstate   {:9.6f} lstate   {:9.6f} Tb_f   {:9.6f}".
+                  format(mon_old.reset_temp[i_temp], mon_old.Tt[i_temp], mon_old.Tb_hdwe[i_temp],
+                         mon_old.Tb_hdwe_filt[i_temp],
+                         mon_old.Tb_rstate[i_temp], mon_old.Tb_lstate[i_temp], mon_old.Tb_f[i_temp]))
+            print("reset_v {:2d}  Tt {:9.7f}  Tb_hdwe_v {:9.6f} Tb_hdwe_filt_v {:9.6f} rstate_v {:9.6f} lstate_v {:9.6f} Tb_f_v {:9.6f}\n\n".
+                  format(mon.reset_temp, mon.dt_temp, mon.Tb_hdwe, mon.Tb_hdwe_filt,
+                         mon.Tb_rstate, mon.Tb_state, mon.Tb_f))
 
         if rp.modeling == 0:
             if reset_ekf:

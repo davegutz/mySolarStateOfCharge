@@ -759,7 +759,7 @@ class SavedData:
             self.mod = None  # Configuration control code, 0=all hardware, 7=all simulated, +8 tweak test
             self.bms_off = None  # Battery management system off, T=off
             self.Tb_mon = None  # Battery bank temperature, deg C
-            self.Tb_f_mon = None  # Battery bank filtered temperature, deg C
+            self.Tb_f = None  # Battery bank filtered temperature, deg C
             self.vsat = None  # Monitor Bank saturation threshold at temperature, deg C
             self.dv_dyn = None  # Monitor Bank current induced back emf, V
             self.dv_hys = None  # Drop across hysteresis, V
@@ -849,7 +849,7 @@ class SavedData:
             # self.ib_charge = self.ib * (bms_off_and_not_charging < 1)
             self.ib_charge = np.array(data.ib_charge[:i_end])
             self.Tb_mon = np.array(data.Tb[:i_end])
-            self.Tb_f_mon = np.array(data.Tb_f[:i_end])
+            self.Tb_f = np.array(data.Tb_f[:i_end])
             self.vsat = np.array(data.vsat[:i_end])
             self.dv_dyn = np.array(data.dv_dyn[:i_end])
             self.voc_stat = np.array(data.voc_stat[:i_end])
@@ -1060,8 +1060,8 @@ class SavedData:
             self.Tb_hdwe = None
             self.Tb_mod = None
             self.Tb_t = None
-            self.Tb_f = None
-            self.Tb_f_rate = None
+            self.Tb_hdwe_filt = None
+            self.Tb_hdwe_filt_rate = None
             self.Tb_rstate = None
             self.Tb_lstate = None
         else:
@@ -1071,8 +1071,8 @@ class SavedData:
             self.Tb_hdwe = np.array(temp.Tb_hdw[:i_end])
             self.Tb_mod = np.array(temp.Tb_mod[:i_end])
             self.Tb_t = np.array(temp.Tb[:i_end])
-            self.Tb_f = np.array(temp.Tb_f[:i_end])
-            self.Tb_f_rate = np.array(temp.Tb_f_rate[:i_end])
+            self.Tb_hdwe_filt = np.array(temp.Tb_hdwe_filt[:i_end])
+            self.Tb_hdwe_filt_rate = np.array(temp.Tb_hdwe_filt_rate[:i_end])
             self.Tb_rstate= np.array(temp.TbF_rs[:i_end])
             self.Tb_lstate= np.array(temp.TbF_s[:i_end])
 
