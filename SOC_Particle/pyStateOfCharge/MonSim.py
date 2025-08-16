@@ -343,22 +343,14 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.Tb_rstate = TbSenseFilt.rstate
             mon.Tb_state = TbSenseFilt.state
 
-            print("{:3d}".format(i), "{:6.3f}".format(t[i]),
-                  "{:2d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
-                  "{:7.3f}".format(mon_old.Tt[i_temp]),
-                  "{:9.6f}".format(mon.Tb_hdwe), "{:9.6f}".format(Tb_t_in_), "{:9.6f}".format(mon.Tb),
-                  "{:9.6f}".format(mon.Tb_hdwe_filt), "{:9.6f}".format(mon_old.Tb_f[i_temp]),
-                  "{:9.6f}".format(mon.Tb_f),
-                  "{:9.6f}".format(Tb_f_rate_t_in_), "{:9.6f}".format(mon.Tb_f_rate),
-                  "{:9.6f}".format(mon_old.Tb_rstate[i_temp]), "{:9.6f}".format(mon.Tb_rstate),
-                  "{:9.6f}".format(mon_old.Tb_lstate[i_temp]), "{:9.6f}".format(mon.Tb_state),
-                  )
-
-            print("reset_temp {:2d}".format(mon.reset_temp))
-            print("Tb_hdwe  {:9.6f} Tb   {:9.6f} rstate   {:9.6f} lstate   {:9.6f} Tb_hdwe_filt   {:9.6f} Tb_f   {:9.6f}".
-                  format(mon_old.Tb_hdwe[i_temp], mon_old.Tb_t[i_temp], mon_old.Tb_rstate[i_temp], mon_old.Tb_lstate[i_temp], mon_old.Tb_lstate[i_temp], mon_old.Tb_f[i_temp]))
-            print("Tb_hdwe_v{:9.6f} Tb_v {:9.6f} rstate_v {:9.6f} lstate_v {:9.6f} Tb_hdwe_filt_v {:9.6f} Tb_f_v {:9.6f}".
-                  format(mon.Tb_hdwe, mon.Tb, mon.Tb_rstate, mon.Tb_state, mon.Tb_hdwe_filt, mon.Tb_f))
+            print("\nreset   {:2.0f} Tb_hdwe  {:9.6f} Tb   {:9.6f} rstate   {:9.6f} lstate   {:9.6f} Tb_hdwe_filt   {:9.6f} Tb_f   {:9.6f}".
+                  format(mon_old.reset_temp[i_temp], mon_old.Tb_hdwe[i_temp], mon_old.Tb_t[i_temp],
+                         mon_old.Tb_rstate[i_temp], mon_old.Tb_lstate[i_temp], mon_old.Tb_lstate[i_temp],
+                         mon_old.Tb_f[i_temp]))
+            print("reset_v {:2d} Tb_hdwe_v{:9.6f} Tb_v {:9.6f} rstate_v {:9.6f} lstate_v {:9.6f} Tb_hdwe_filt_v {:9.6f} Tb_f_v {:9.6f}".
+                  format(mon.reset_temp, mon.Tb_hdwe, mon.Tb,
+                         mon.Tb_rstate, mon.Tb_state, mon.Tb_hdwe_filt,
+                         mon.Tb_f))
 
         if rp.modeling == 0:
             if reset_ekf:
@@ -419,21 +411,21 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       "{:9.3f}".format(sim.saved.dv_hys[i]), "{:9.3f}".format(mon.saved.ib[i]), "{:12.7f}".format(mon.saved.soc[i]),
                       "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
 
-        hdr = "  i  time  rst i_t  calc  T     Tb_hdwe   Tb       Tb_ver  Tb_hdwe_filt_v   Tb_f   Tb_f_v Tb_f_rate_t Tb_f_rate_v Tb_rstate Tb_rstate_v Tb_state Tb_state_v "
-        if calc_temp:
-            print(hdr)
-        if mon.reset_temp is None:
-            mon.reset_temp = -1
-        print("{:3d}".format(i), "{:6.3f}".format(t[i]),
-              "{:2d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
-              "{:7.3f}".format(mon_old.Tt[i_temp]),
-              "{:9.6f}".format(mon_old.Tb_hdwe[i_temp]), "{:9.6f}".format(Tb_t_in_), "{:9.6f}".format(mon.Tb),
-              "{:9.6f}".format(mon.Tb_hdwe_filt), "{:9.6f}".format(mon_old.Tb_f[i_temp]), "{:9.6f}".format(mon.Tb_f),
-              "{:9.6f}".format(Tb_f_rate_t_in_), "{:9.6f}".format(mon.Tb_f_rate),
-              "{:9.6f}".format(mon_old.Tb_rstate[i_temp]), "{:9.6f}".format(mon.Tb_rstate),
-              "{:9.6f}".format(mon_old.Tb_lstate[i_temp]), "{:9.6f}".format(mon.Tb_state),
-              )
-    print(hdr)
+    #     hdr = "  i  time  rst i_t  calc  T     Tb_hdwe   Tb       Tb_ver  Tb_hdwe_filt_v   Tb_f   Tb_f_v Tb_f_rate_t Tb_f_rate_v Tb_rstate Tb_rstate_v Tb_state Tb_state_v "
+    #     if calc_temp:
+    #         print(hdr)
+    #     if mon.reset_temp is None:
+    #         mon.reset_temp = -1
+    #     print("{:3d}".format(i), "{:6.3f}".format(t[i]),
+    #           "{:2d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
+    #           "{:7.3f}".format(mon_old.Tt[i_temp]),
+    #           "{:9.6f}".format(mon_old.Tb_hdwe[i_temp]), "{:9.6f}".format(Tb_t_in_), "{:9.6f}".format(mon.Tb),
+    #           "{:9.6f}".format(mon.Tb_hdwe_filt), "{:9.6f}".format(mon_old.Tb_f[i_temp]), "{:9.6f}".format(mon.Tb_f),
+    #           "{:9.6f}".format(Tb_f_rate_t_in_), "{:9.6f}".format(mon.Tb_f_rate),
+    #           "{:9.6f}".format(mon_old.Tb_rstate[i_temp]), "{:9.6f}".format(mon.Tb_rstate),
+    #           "{:9.6f}".format(mon_old.Tb_lstate[i_temp]), "{:9.6f}".format(mon.Tb_state),
+    #           )
+    # print(hdr)
 
     #     hdr = "  i  time  res rst ibc     ibc_v    soc       soc_v      dt      dt_v  delqE   delq_v    q_cap  q_cap_v   Tb_f  Tb_f_v  Tb_f_rate Tb_f_rate_v"
     #     if i == 0:
