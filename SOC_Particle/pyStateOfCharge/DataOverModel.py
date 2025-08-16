@@ -1062,6 +1062,8 @@ class SavedData:
             self.Tb_t = None
             self.Tb_f = None
             self.Tb_f_rate = None
+            self.Tb_rstate = None
+            self.Tb_lstate = None
         else:
             self.time_t = np.array(temp.c_time[:i_end]) - self.time_ref
             self.reset_temp = np.array(temp.reset_temp[:i_end])
@@ -1071,8 +1073,10 @@ class SavedData:
             self.Tb_t = np.array(temp.Tb[:i_end])
             self.Tb_f = np.array(temp.Tb_f[:i_end])
             self.Tb_f_rate = np.array(temp.Tb_f_rate[:i_end])
+            self.Tb_rstate= np.array(temp.TbF_rs[:i_end])
+            self.Tb_lstate= np.array(temp.TbF_s[:i_end])
 
-        # Initialization time logic
+            # Initialization time logic
         if self.time[0] == 0.:  # no initialization flat detected at beginning of recording
             self.init_time = 1.
         else:
