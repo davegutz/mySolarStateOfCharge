@@ -186,6 +186,8 @@ class Battery(Coulombs):
         self.voc_soc_new = 0.
         self.unit = unit
         self.scale_cap = scale_cap
+        self.Tb_rstate = None
+        self.Tb_state = None
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -646,6 +648,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.ewnlo_thr.append(self.ewnlo_thr)
         self.saved.q.append(self.q)
         self.saved.q_capacity.append(self.q_capacity)
+        self.saved.Tb_rstate.append(self.Tb_rstate)
+        self.saved.Tb_lstate.append(self.Tb_state)
 
     def wrap(self, reset=True, ib_noa=0., ib_amp=0.,
              e_w_amp_0=None, e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None):
@@ -1137,7 +1141,8 @@ class Saved:
         self.ewmlo_thr = []
         self.ewnhi_thr = []
         self.ewnlo_thr = []
-
+        self.Tb_rstate = []
+        self.Tb_lstate = []
 
 def overall_batt(mv, sv, filename,
                  mv1=None, sv1=None, suffix1=None, fig_files=None, plot_title=None, fig_list=None, suffix='',

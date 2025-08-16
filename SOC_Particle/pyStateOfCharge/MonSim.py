@@ -396,7 +396,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       "{:9.3f}".format(sim.saved.dv_hys[i]), "{:9.3f}".format(mon.saved.ib[i]), "{:12.7f}".format(mon.saved.soc[i]),
                       "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
 
-        hdr = "  i  time  rst i_t  calc  T      Tb       Tb_ver    Tb_f     Tb_f_v Tb_f_rate_t Tb_f_rate_v Tb_rstate_v Tb_state_v  "
+        hdr = "  i  time  rst i_t  calc  T      Tb       Tb_ver    Tb_f     Tb_f_v Tb_f_rate_t Tb_f_rate_v Tb_rstate Tb_rstate_v Tb_state Tb_state_v "
         if calc_temp:
             print(hdr)
         if mon.reset_temp is None:
@@ -406,8 +406,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
               "{:7.3f}".format(mon_old.Tt[i_temp]),
               "{:9.6f}".format(Tb_t_in_), "{:9.6f}".format(mon.Tb),
               "{:9.6f}".format(Tb_f_t_in_), "{:9.6f}".format(mon.Tb_f),
-              "{:9.6f}".format(Tb_f_rate_t_in_), "{:9.6f}".format(mon.Tb_f_rate), "{:7.3f}".format(mon.Tb_rstate),
-              "{:7.3f}".format(mon.Tb_state),
+              "{:9.6f}".format(Tb_f_rate_t_in_), "{:9.6f}".format(mon.Tb_f_rate),
+              "{:7.3f}".format(mon_old.Tb_rstate[i_temp]), "{:7.3f}".format(mon.Tb_rstate),
+              "{:7.3f}".format(mon_old.Tb_lstate[i_temp]), "{:7.3f}".format(mon.Tb_state),
               )
     print(hdr)
 
