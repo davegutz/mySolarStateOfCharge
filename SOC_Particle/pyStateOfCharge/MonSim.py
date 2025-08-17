@@ -176,7 +176,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     i_ekf = None
     i_temp = None
     hdr = None
-    Tb_f_temp_in = mon_old.Tb_f[0]
+    # Tb_f_temp_in = mon_old.Tb_f[0]
     Tb_f_rate_t_in_ = mon_old.Tb_hdwe_filt_rate[0]
     for i in range(t_len):
         now = t[i]
@@ -212,7 +212,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             # mon.reset_temp = (i_temp == 0)
             mon.reset_temp = (i_temp < 2)  # make sure temp init is longer than reset
             mon.dt_temp = mon_old.Tt[i_temp]
-            Tb_f_temp_in = mon_old.Tb_f[i_temp]
+            # Tb_f_temp_in = mon_old.Tb_f[i_temp]
             Tb_f_rate_t_in_ = mon_old.Tb_hdwe_filt_rate[i_temp]
             mon.Tb_f_rate = 0.
             mon.Tb_rstate = 0.
@@ -405,7 +405,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       "{:9.3f}".format(sim.saved.dv_hys[i]), "{:9.3f}".format(mon.saved.ib[i]), "{:12.7f}".format(mon.saved.soc[i]),
                       "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
 
-        print1 = True
+        print1 = False
         if print1:
             hdr = "  i  time  rst i_t  calc  T     Tb_hdwe   Tb_ver  Tb_hdwe_filt_v   Tb_f   Tb_f_v Tb_f_rate_t Tb_f_rate_v Tb_rstate Tb_rstate_v Tb_state Tb_state_v "
             if calc_temp:
@@ -420,9 +420,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                   "{:9.6f}".format(mon_old.Tb_lstate[i_temp]), "{:9.6f}".format(mon.Tb_state),
                   )
 
-        print2 = False
+        print2 = True
         if print2:
-            hdr = "  i  time  res rst ibc     ibc_v    soc       soc_v      dt      dt_v  delqE   delq_v    q_cap  q_cap_v   Tb_f  Tb_f_v  Tb_f_rate Tb_f_rate_v"
+            hdr = "  i  time  res rst ibc     ibc_v    soc       soc_v      dt    dt_v   delqE   delq_v q_cap   q_cap_v  Tb_hdwe   Tb_hdwe_v  Tb_hdwe_filt  Tb_hdwe_filt_v Tb_f       Tb_f_v      Tb_f_rate  Tb_f_rate_v"
             if i == 0:
                 print(hdr)
             mon_old.q_capacity = mon_old.qcrs[i]*(1. + 0.01*(mon_old.Tb_f[i_temp]-25.))
@@ -433,8 +433,10 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                   "{:7.3f}".format(mon_old.dt[i]), "{:7.3f}".format(mon.dt),
                   "{:7.0f}".format(mon_old.delta_q_est), "{:7.0f}".format(mon.delta_q),
                   "{:7.0f}".format(mon_old.q_capacity), "{:7.0f}".format(mon.q_capacity),
-                  "{:9.6f}".format(Tb_f_temp_in), "{:9.6f}".format(mon.Tb_f),
-                  "{:9.6f}".format(mon_old.Tb_f_rate[i_temp]), "{:9.6f}".format(mon.Tb_f_rate),
+                  "{:10.7f}".format(mon_old.Tb_hdwe[i_temp]), "{:10.7f}".format(mon.Tb_hdwe),
+                  "{:10.7f}".format(mon_old.Tb_hdwe_filt[i_temp]), "{:13.7f}".format(mon.Tb_hdwe_filt),
+                  "{:14.7f}".format(mon_old.Tb_f[i]), "{:10.7f}".format(mon.Tb_f),
+                  "{:10.7f}".format(mon_old.Tb_hdwe_filt_rate[i_temp]), "{:10.7f}".format(mon.Tb_f_rate),
                   )
     if print1:
         print(hdr)
