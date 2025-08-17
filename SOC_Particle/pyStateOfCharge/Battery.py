@@ -363,7 +363,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.reset_ekf = None
         self.voc_stat_ekf = 0.
         self.dt_temp = None
-        self.reset_temp = None
+        self.reset_temp = True
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""

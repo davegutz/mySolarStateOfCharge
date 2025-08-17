@@ -1059,7 +1059,7 @@ class SavedData:
             self.T_t = None
             self.Tb_hdwe = None
             self.Tb_mod = None
-            self.Tb_t = None
+            self.Tb_temp = None
             self.Tb_hdwe_filt = None
             self.Tb_hdwe_filt_rate = None
             self.Tb_rstate = None
@@ -1073,7 +1073,7 @@ class SavedData:
             self.Tt = np.array(temp.T_t[:i_end])
             self.Tb_hdwe = np.array(temp.Tb_hdw[:i_end])
             self.Tb_mod = np.array(temp.Tb_mod[:i_end])
-            self.Tb_t = np.array(temp.Tb[:i_end])
+            self.Tb_temp = np.array(temp.Tb[:i_end])
             self.Tb_hdwe_filt = np.array(temp.Tb_hdwe_filt[:i_end])
             self.Tb_hdwe_filt_rate = np.array(temp.Tb_hdwe_filt_rate[:i_end])
             self.Tb_rstate= np.array(temp.TbF_rs[:i_end])
