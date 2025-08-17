@@ -162,6 +162,8 @@ def off_on_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, 
         plt.subplot(326)
         plq(plt, mo, 'time_t', mo, 'Tb_hdwe_filt_rate', color='black', linestyle='-', label='Tb_hdwe_filt_rate' + ref_str, stairs=True)
         plq(plt, mv, 'time', mv, 'Tb_hdwe_filt_rate', color='green', linestyle='--', label='Tb_hdwe_filt_rate' + test_str)
+        plq(plt, mo, 'time', mo, 'Tb_f_rate', color='red', linestyle='-.', label='Tb_f_rate' + ref_str)
+        plq(plt, mv, 'time', mv, 'Tb_f_rate', color='blue', linestyle=':', label='Tb_f_rate' + test_str)
         plt.legend(loc=2)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)

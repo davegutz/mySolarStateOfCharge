@@ -760,6 +760,7 @@ class SavedData:
             self.bms_off = None  # Battery management system off, T=off
             self.Tb_mon = None  # Battery bank temperature, deg C
             self.Tb_f = None  # Battery bank filtered temperature, deg C
+            self.Tb_f_rate = None  # Battery bank filtered temperature, deg C
             self.vsat = None  # Monitor Bank saturation threshold at temperature, deg C
             self.dv_dyn = None  # Monitor Bank current induced back emf, V
             self.dv_hys = None  # Drop across hysteresis, V
@@ -850,6 +851,7 @@ class SavedData:
             self.ib_charge = np.array(data.ib_charge[:i_end])
             self.Tb_mon = np.array(data.Tb[:i_end])
             self.Tb_f = np.array(data.Tb_f[:i_end])
+            self.Tb_f_rate = np.array(data.Tb_f_rate[:i_end])
             self.vsat = np.array(data.vsat[:i_end])
             self.dv_dyn = np.array(data.dv_dyn[:i_end])
             self.voc_stat = np.array(data.voc_stat[:i_end])
