@@ -114,18 +114,13 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         vb = mon_old.vb_h
     else:
         vb = mon_old.vb
-    # ib_past = mon_old.ib_past
-    ib_in = mon_old.ib
-    soc_s_init = mon_old.soc_s[0]
-    sat_init = mon_old.sat[0]
-    dv_hys_init = mon_old.dv_hys[0]
     chm_m = mon_old.chm
     if sim_old is not None:
         chm_s = sim_old.chm_s
-        sat_s_init = sim_old.sat_s[0]
+        # sat_s_init = sim_old.sat_s[0]
     else:
         chm_s = chm_m
-        sat_s_init = mon_old.voc_stat[0] > mon_old.vsat[0]
+        # sat_s_init = mon_old.voc_stat[0] > mon_old.vsat[0]
     t_len = len(t)
     rp = Retained()
     if hasattr(mon_old, 'mod_data'):
@@ -160,7 +155,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     s_q = Scale(1., 3., 0.000005, 0.00005)
     s_r = Scale(1., 3., 0.001, 1.)   # t_ib_fail = 1000
     sim = BatterySim(mod_code=chm_s[0], temp_c=Tb0, scale=scale_sim, tweak_test=tweak_test,
-                     dv_hys=dv_hys_init, sres0=sres0, sresct=sresct, stauct=stauct_sim, scale_r_ss=scale_r_ss,
+                     dv_hys=mon_old.dv_hys[0], sres0=sres0, sresct=sresct, stauct=stauct_sim, scale_r_ss=scale_r_ss,
                      s_hys=s_hys_sim, dvoc=dvoc_sim, scale_hys_cap=scale_hys_cap_sim, s_coul_eff=s_coul_eff,
                      s_cap_chg=s_cap_chg, s_cap_dis=s_cap_dis, s_hys_chg=s_hys_chg, s_hys_dis=s_hys_dis,
                      cutback_gain_sclr=cutback_gain_sclr, ds_voc_soc=ds_voc_soc, unit=unit)
@@ -181,7 +176,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     i_ekf = None
     i_temp = None
     hdr = None
-    Tb_temp_in_ = mon_old.Tb_temp[0]
     Tb_f_temp_in = mon_old.Tb_f[0]
     Tb_f_rate_t_in_ = mon_old.Tb_hdwe_filt_rate[0]
     for i in range(t_len):
@@ -218,20 +212,16 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             # mon.reset_temp = (i_temp == 0)
             mon.reset_temp = (i_temp < 2)  # make sure temp init is longer than reset
             mon.dt_temp = mon_old.Tt[i_temp]
-            if i_temp > 0:
-                Tb_temp_in_ = mon_old.Tb_temp[i_temp-1]
-            else:
-                Tb_temp_in_ = mon_old.Tb_temp[i_temp]
             Tb_f_temp_in = mon_old.Tb_f[i_temp]
             Tb_f_rate_t_in_ = mon_old.Tb_hdwe_filt_rate[i_temp]
             mon.Tb_f_rate = 0.
             mon.Tb_rstate = 0.
             mon.Tb_state = 0.
             mon.Tb_hdwe = mon_old.Tb_hdwe[i_temp]
-        mon.Tb = Tb_temp_in_
+        mon.Tb = mon_old.Tb_temp[i_temp]
         Tb_ = mon.Tb + dTb
         Tb_f_ = mon.Tb_f + dTb
-        sim.Tb = Tb_temp_in_
+        sim.Tb = mon_old.Tb_temp[i_temp]
         sim.Tb_f = mon.Tb_f
 
         # dc_dc_on = bool(lut_dc.interp(t[i]))
@@ -250,13 +240,13 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             else:
                 sat_s_init = mon_old.voc_stat[0] > mon_old.vsat[0]
             sim.sat = sat_s_init
-            mon.sat = sat_init
+            mon.sat = mon_old.sat[0]
 
         # Models
         if sim_old is not None and not use_ib_mon:
             ib_in_s = sim_old.ib_in_s[i]
         else:
-            ib_in_s = ib_in[i]
+            ib_in_s = mon_old.ib[i]
         if Bsim is None:
             _chm_s = chm_s[i]
         else:
@@ -265,7 +255,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=bms_off_init)
         sim.count_coulombs(chem=_chm_s, dt=T, reset=reset, temp_c=Tb_f_, tb_f_rate=mon.Tb_f_rate, charge_curr=sim.ib_charge,
-                           sat=False, soc_s_init=soc_s_init, mon_sat=mon.sat, mon_delta_q=mon.delta_q,
+                           sat=False, soc_s_init=mon_old.soc_s[0], mon_sat=mon.sat, mon_delta_q=mon.delta_q,
                            use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
 
         # EKF
