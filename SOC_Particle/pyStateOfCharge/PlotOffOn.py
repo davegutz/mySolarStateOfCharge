@@ -148,8 +148,8 @@ def off_on_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, 
         f_add_str = str(f_add)
         ymax_int = int(ymax) + 1 + f_add
         diff = ymax_int - ymin
-        plq(plt, mo, 'time', mo, 'Tb_mon', color='black', linestyle='-', label='Tb_mon' + ref_str)
-        plq(plt, mo, 'time_t', mo, 'Tb_temp', color='orange', linestyle='--', label='Tb_temp' + ref_str, stairs=True)
+        plq(plt, mo, 'time_t', mo, 'Tb_hdwe', color='black', linestyle='-', label='Tb_hdwe' + ref_str, stairs=True)
+        plq(plt, mo, 'time', mo, 'Tb_mon', color='green', linestyle='--', label='Tb_mon' + ref_str)
         plq(plt, mv, 'time', mv, 'Tb', color='magenta', linestyle='-.', label='Tb' + test_str)
         plq(plt, smv, 'time', smv, 'Tb_s', color='cyan', linestyle=':', label='Tb_s' + test_str)
         plq(plt, mo, 'time', mo, 'Tb_f',  add=f_add, color='blue', linestyle='-', label='Tb_f' + ref_str + ' +' + f_add_str)
