@@ -655,6 +655,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.q_capacity.append(self.q_capacity)
         self.saved.Tb_rstate.append(self.Tb_rstate)
         self.saved.Tb_lstate.append(self.Tb_state)
+        self.saved.Tb_hdwe.append(self.Tb_hdwe)
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
         self.saved.Tba.append(self.Tba)
@@ -1153,6 +1154,7 @@ class Saved:
         self.ewnlo_thr = []
         self.Tb_rstate = []
         self.Tb_lstate = []
+        self.Tb_hdwe = []
         self.Tb_hdwe_filt = []
         self.Tb_hdwe_filt_rate = []
         self.Tba = []
