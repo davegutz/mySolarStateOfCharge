@@ -225,8 +225,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         reset = (t[i] <= init_time) or (t[i] < 0. and t[0] > init_time)
         if reset_sel is not None:
             reset = reset or reset_sel[i]
-        if mon.reset_temp is not None:
-            reset = reset or mon.reset_temp
+        # if mon.reset_temp is not None:
+        #     reset = reset or mon.reset_temp
         if reset:
             sim.apply_soc(mon_old.soc_s[i], Tb_f_)  # calculates delta_q
             sim.load(sim.delta_q)
@@ -421,18 +421,16 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
         print2 = True
         if print2:
-            hdr = "  i  time  res rst sa sa_v  ibc    ibc_v      soc      soc_v       dt  dt_v      delqE delq_v   q_cap q_cap_v    Tb_hdwe  Tb_hdwe_v     Tb_hdwe_filt Tb_hdwe_filt_v   Tb_f    Tb_f_v        Tb_f_rate  Tb_f_rate_v"
+            hdr = "  i  time  res rst sa sa_v  ibc    ibc_v      soc      soc_v       dt  dt_v      delq  delq_v   q_cap q_cap_v    Tb_hdwe  Tb_hdwe_v     Tb_hdwe_filt Tb_hdwe_filt_v   Tb_f    Tb_f_v        Tb_f_rate  Tb_f_rate_v"
             if i == 0:
                 print(hdr)
-            mon_old.q_capacity = mon_old.qcrs[i]*(1. + 0.01*(mon_old.Tb_f[i_temp]-25.))
-            mon_old.delta_q_est = -(1. - mon_old.soc[i]) * mon_old.q_capacity
             print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
                   "{:2.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
                   "{:9.3f}".format(mon_old.ib_charge[i]), "{:6.3f}".format(mon.ib_charge),
                   "{:11.6f}".format(mon_old.soc[i]), "{:8.6f}".format(mon.soc),
                   "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
-                  "{:9.1f}".format(mon_old.delta_q_est), "{:5.1f}".format(mon.delta_q),
-                  "{:9.0f}".format(mon_old.q_capacity), "{:6.0f}".format(mon.q_capacity),
+                  "{:9.1f}".format(mon_old.delta_q[i]), "{:5.1f}".format(mon.delta_q),
+                  "{:9.0f}".format(mon_old.q_capacity[i]), "{:6.0f}".format(mon.q_capacity),
                   "{:12.7f}".format(mon_old.Tb_hdwe[i_temp]), "{:10.7f}".format(mon.Tb_hdwe),
                   "{:13.7f}".format(mon_old.Tb_hdwe_filt[i_temp]), "{:10.7f}".format(mon.Tb_hdwe_filt),
                   "{:14.7f}".format(mon_old.Tb_f[i]), "{:10.7f}".format(mon.Tb_f),

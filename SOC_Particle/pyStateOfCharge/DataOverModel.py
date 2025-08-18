@@ -753,6 +753,8 @@ class SavedData:
             self.vb = None  # Bank voltage, V
             self.chm = None  # Battery chemistry code
             self.qcrs = None  # Unit capacity rated scaled, Coulombs
+            self.delta_q = None  # Change in charge for update, Coulombs
+            self.q_capacity = None  # Charge capacity at instant, Coulombs
             self.sat = None  # Indication that battery is saturated, T=saturated
             self.ib_lag = None  # Lagged indication that battery is saturated, 1=saturated
             self.sel = None  # Current source selection, 0=amp, 1=no amp
@@ -836,6 +838,10 @@ class SavedData:
             self.chm = np.array(data.chm[:i_end])
             if hasattr(data, 'qcrs'):
                 self.qcrs = data.qcrs[:i_end]
+            if hasattr(data, 'delta_q'):
+                self.delta_q = data.delta_q[:i_end]
+            if hasattr(data, 'qcap'):
+                self.q_capacity = data.qcap[:i_end]
             self.sat = np.array(data.sat[:i_end])
             # Lag for saturation
             n = len(self.cTime)
