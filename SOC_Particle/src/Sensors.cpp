@@ -1373,9 +1373,10 @@ void Sensors::pretty_print()
   Serial.printf(" Vc_hdwe%8.4f; V\n", Vc_hdwe);
   Serial.printf(" Tb%9.5f; C\n", Tb);
   Serial.printf(" Tb_f%9.5f; C\n", Tb_f);
-  Serial.printf(" Tb_f_rate%9.5f; C/s\n", Tb_f_rate);
+  Serial.printf(" Tb_f_rate%11.8f; C/s\n", Tb_f_rate);
   Serial.printf(" Tb_hdwe%9.5f; C\n", Tb_hdwe);
   Serial.printf(" Tb_hdwe_filt%9.5f; C\n", Tb_hdwe_filt);
+  Serial.printf(" Tb_hdwe_filt_rate%11.8f; C\n", Tb_hdwe_filt_rate);
   Serial.printf(" Tb_model%9.5f; C\n", Tb_model);
   Serial.printf(" Tb_model_filt%9.5f; C\n", Tb_model_filt);
 }
@@ -1429,7 +1430,7 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
       Tb = Tb_hdwe;
       Tb_f = Tb_hdwe_filt;
       Tb_f_rate = Tb_hdwe_filt_rate;
-      Log.info("    select_all_hdwe_or_model:  Tb=Tb_hdwe=%9.5f Tb_f%9.5f Tb_f_rate%9.5f", Tb_hdwe, Tb_f, Tb_f_rate);
+      Log.info("    select_all_hdwe_or_model:  Tb=Tb_hdwe=%9.5f Tb_f%9.5f Tb_f_rate%11.8f", Tb_hdwe, Tb_f, Tb_f_rate);
     }
   }
   sample_time_tb_ = SensorTb->sample_time();
@@ -1680,7 +1681,7 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
   Tb_hdwe_filt = TbSenseFilt->calculate(Tb_hdwe, reset_temp_, ap.tb_filt, min(T_temp, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
   Tb_hdwe_filt_rate = TbSenseFilt->rate();
 
-  if ( sp.debug()==16 || (sp.debug()==-1 && reset_temp_) ) Serial.printf("reset_temp_,Tb_bias_hdwe_loc, RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, Tb_hdwe_filt_rate, ready %d %9.5f %9.5f %9.5f %9.5f %12.6f %d\n",
+  if ( sp.debug()==16 || (sp.debug()==-1 && reset_temp_) ) Serial.printf("reset_temp_,Tb_bias_hdwe_loc, RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, Tb_hdwe_filt_rate, ready %d %9.5f %9.5f %9.5f %11.8f %12.6f %d\n",
     reset_temp_, sp.Tb_bias_hdwe(), RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, Tb_hdwe_filt_rate, cp.tb_info.ready);
 
   #ifdef HDWE_2WIRE
