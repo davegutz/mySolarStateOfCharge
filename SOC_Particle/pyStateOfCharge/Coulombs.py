@@ -58,8 +58,6 @@ class Coulombs:
         s += "  sat =          {:1.0f}          // Indication from caller that battery is saturated, T=saturated\n"\
             .format(self.sat)
         s += "  t_rated =    {:5.1f}         // Rated temperature, deg C\n".format(self. t_rated)
-        s += "  t_last =     {:5.1f}         // Last battery temperature for rate limit memory, deg C\n"\
-            .format(self.t_last)
         s += "  temp_rlim =     {:7.3f}       // Tbatt rate limit, deg C / s\n".format(self. temp_rlim)
         s += "  resetting =     {:d}          // Flag to test coulomb counters, T = external reset of counter\n"\
             .format(self.resetting)
@@ -122,7 +120,6 @@ class Coulombs:
             tb              Battery temperature, deg C  (filtered usually to reduce electrical noise artifacts)
             charge_curr     Charge, A
             sat             Indicator that battery is saturated (VOC>threshold(temp)), T/F
-            t_last          Past value of battery temperature used for rate limit memory, deg C
             coul_eff        Coulombic efficiency - the fraction of charging input that gets turned into usable Coulombs
             use_soc_in      Command to drive integrator with input mon_soc
             soc_in          Auxiliary integrator setting, fraction soc
@@ -154,11 +151,12 @@ class Coulombs:
             self.q = self.q_capacity * self.soc
             self.delta_q = self.q - self.q_capacity
         else:
-            self.delta_q = max(min(self.delta_q + d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_f_rate*dt,
-                                   0.0), -self.q_capacity*1.5)
-            self.q = self.q_capacity + self.delta_q
-            if self.delta_q < -100.:
-                pass
+            if not self.reset:
+                self.delta_q = max(min(self.delta_q + d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_f_rate*dt,
+                                       0.0), -self.q_capacity*1.5)
+                self.q = self.q_capacity + self.delta_q
+                if self.delta_q < -100.:
+                    pass
 
         # Normalize
         self.soc = self.q / self.q_capacity
@@ -166,9 +164,9 @@ class Coulombs:
         self.q_min = self.soc_min * self.q_capacity
 
         # Save and return
-        # print('Mon CC:  charge_curr', charge_curr, 'dt', dt, 'd_delta_q', d_delta_q,'temp_lim', self.temp_lim, 't_last', self.t_last, 'cap', self.q_capacity)
+        # print('Mon CC:  charge_curr', charge_curr, 'dt', dt, 'd_delta_q', d_delta_q,'temp_lim', self.temp_lim, 'cap', self.q_capacity)
         return self.soc
 
-    def load(self, delta_q, t_last):
+    def load(self, delta_q):
         """Load states from retained memory"""
         self.delta_q = delta_q

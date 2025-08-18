@@ -180,9 +180,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     # Tb_f_rate_t_in_ = mon_old.Tb_hdwe_filt_rate[0]
     for i in range(t_len):
         now = t[i]
-        reset = (t[i] <= init_time) or (t[i] < 0. and t[0] > init_time)
-        if reset_sel is not None:
-            reset = reset or reset_sel[i]
         mon_old.i = i
         T = None
         T_ekf = None
@@ -203,17 +200,14 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         else:
             dTb = 0.
         # Get temperature data
-        mon.Tb = mon.Tb_hdwe  # past value
-        mon.Tb_f = mon.Tb_hdwe_filt  # past value
-        mon.Tb_f_rate = mon.Tb_hdwe_filt_rate  # past value
         calc_temp = (i_temp+1 < len(mon_old.time_t)) and (mon_old.time_t[i_temp+1] <= mon_old.time[i])
         if calc_temp:
             i_temp += 1
-            # mon.reset_temp = (i_temp == 0)
+            mon.Tb = mon.Tb_hdwe  # past value
+            mon.Tb_f = mon.Tb_hdwe_filt  # past value
+            mon.Tb_f_rate = mon.Tb_hdwe_filt_rate  # past value
             mon.reset_temp = (i_temp < 2)  # make sure temp init is longer than reset
             mon.dt_temp = mon_old.Tt[i_temp]
-            # Tb_f_temp_in = mon_old.Tb_f[i_temp]
-            # Tb_f_rate_t_in_ = mon_old.Tb_hdwe_filt_rate[i_temp]
             mon.Tb_hdwe = mon_old.Tb_hdwe[i_temp]
         mon.Tb = mon_old.Tb_temp[i_temp]
         Tb_ = mon.Tb + dTb
@@ -228,10 +222,15 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         # Basic reset model verification is to init to the input data
         # Tried hard not to re-implement solvers in the Python verification  tool
         # Also, BTW, did not implement signal selection or tweak logic
-        if reset or mon.reset_temp:
-            sim.apply_soc(mon_old.soc_s[i], Tb_f_)
-            sim.load(sim.delta_q, Tb_)
-            sim.apply_delta_q_t(sim.delta_q, Tb_)
+        reset = (t[i] <= init_time) or (t[i] < 0. and t[0] > init_time)
+        if reset_sel is not None:
+            reset = reset or reset_sel[i]
+        if mon.reset_temp is not None:
+            reset = reset or mon.reset_temp
+        if reset:
+            sim.apply_soc(mon_old.soc_s[i], Tb_f_)  # calculates delta_q
+            sim.load(sim.delta_q)
+            sim.apply_delta_q_t(sim.delta_q, Tb_f_)
             if sim_old is not None:
                 sat_s_init = sim_old.sat_s[0]
             else:
@@ -261,7 +260,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if reset:
             mon.apply_soc(mon_old.soc[i], Tb_f_)
             rp.delta_q = mon.delta_q
-            mon.load(rp.delta_q, rp.t_last)
+            mon.load(rp.delta_q)
             mon.assign_temp_c(Tb_)
             if hasattr(mon_old, 'e_wrap_m'):
                 e_w_amp_0 = mon_old.e_wrap_m[0]
@@ -405,12 +404,12 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       "{:9.3f}".format(sim.saved.dv_hys[i]), "{:9.3f}".format(mon.saved.ib[i]), "{:12.7f}".format(mon.saved.soc[i]),
                       "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
 
-        print1 = True
+        print1 = False
         if print1:
-            hdr = "  i  time  rst i_t  calc  T     Tb_hdwe   Tb_ver  Tb_hdwe_filt_v   Tb_f   Tb_f_v Tb_f_rate_t Tb_f_rate_v Tb_rstate Tb_rstate_v Tb_state Tb_state_v "
+            hdr = "  i  time  r  r_t i_t  calc  T     Tb_hdwe   Tb_ver  Tb_hdwe_filt_v Tb_f   Tb_f_v Tb_f_rate_t Tb_f_rate_v Tb_rstate Tb_rstate_v Tb_state Tb_state_v "
             if calc_temp:
                 print(hdr)
-            print("{:3d}".format(i), "{:6.3f}".format(t[i]),
+            print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2d}".format(mon.reset),
                   "{:2d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
                   "{:7.3f}".format(mon_old.Tt[i_temp]),
                   "{:9.6f}".format(mon_old.Tb_hdwe[i_temp]), "{:9.6f}".format(mon.Tb),
@@ -420,14 +419,15 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                   "{:9.6f}".format(mon_old.Tb_lstate[i_temp]), "{:9.6f}".format(mon.Tb_state),
                   )
 
-        print2 = False
+        print2 = True
         if print2:
-            hdr = "  i  time  res rst   ibc    ibc_v      soc      soc_v       dt  dt_v      delqE delq_v   q_cap q_cap_v    Tb_hdwe  Tb_hdwe_v     Tb_hdwe_filt Tb_hdwe_filt_v   Tb_f    Tb_f_v        Tb_f_rate  Tb_f_rate_v"
+            hdr = "  i  time  res rst sa sa_v  ibc    ibc_v      soc      soc_v       dt  dt_v      delqE delq_v   q_cap q_cap_v    Tb_hdwe  Tb_hdwe_v     Tb_hdwe_filt Tb_hdwe_filt_v   Tb_f    Tb_f_v        Tb_f_rate  Tb_f_rate_v"
             if i == 0:
                 print(hdr)
             mon_old.q_capacity = mon_old.qcrs[i]*(1. + 0.01*(mon_old.Tb_f[i_temp]-25.))
             mon_old.delta_q_est = -(1. - mon_old.soc[i]) * mon_old.q_capacity
             print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
+                  "{:2.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
                   "{:9.3f}".format(mon_old.ib_charge[i]), "{:6.3f}".format(mon.ib_charge),
                   "{:11.6f}".format(mon_old.soc[i]), "{:8.6f}".format(mon.soc),
                   "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),

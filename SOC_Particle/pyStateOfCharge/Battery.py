@@ -37,9 +37,7 @@ class Retained:
     def __init__(self):
         self.cutback_gain_scalar = 1.
         self.delta_q = 0.
-        self.t_last = 25.
         self.delta_q_model = 0.
-        self.t_last_model = 25.
         self.modeling = 7  # assumed for this 'model'; over-ridden later
 
     def tweak_test(self):
@@ -867,7 +865,6 @@ class BatterySim(Battery):
             temp_c          Battery temperature, deg C
             charge_curr     Charge, A
             sat             Indicator that battery is saturated (VOC>threshold(temp)), T/F
-            t_last          Past value of battery temperature used for rate limit memory, deg C
             coul_eff_       Coulombic efficiency - the fraction of charging input that gets turned into usable Coulombs
             use_soc_in      Command to drive integrator with input mon_soc
             soc_in          Auxiliary integrator setting, fraction soc
@@ -902,9 +899,10 @@ class BatterySim(Battery):
             self.q = self.q_capacity * self.soc
             self.delta_q = self.q - self.q_capacity
         else:
-            self.delta_q += self.d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_f_rate*dt
-            self.delta_q = max(min(self.delta_q, 0.), -self.q_capacity*1.5)
-            self.q = self.q_capacity + self.delta_q
+            if not self.reset:
+                self.delta_q += self.d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_f_rate*dt
+                self.delta_q = max(min(self.delta_q, 0.), -self.q_capacity*1.5)
+                self.q = self.q_capacity + self.delta_q
 
         # Normalize
         self.soc = self.q / self.q_capacity
@@ -1132,7 +1130,6 @@ class Saved:
         self.q = []  # Present charge available to use, except q_min_, C
         self.delta_q = []  # Charge change since saturated, C
         self.q_capacity = []  # Saturation charge at temperature, C
-        self.t_last = []  # Past value of battery temperature used for rate limit memory, deg C
         self.bms_off = []  # Voltage low without faults, battery management system has shut off battery
         self.reset = []  # Reset flag used for initialization
         self.reset_ekf = []  # Reset flag used for initialization
