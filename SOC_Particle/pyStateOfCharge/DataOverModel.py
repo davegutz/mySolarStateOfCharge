@@ -813,7 +813,13 @@ class SavedData:
 
             # Truncate
             if time_end is None:
-                i_end = len(self.time)
+                if temp is not None:
+                    time_t = np.array(temp.c_time[:]) - self.time_ref
+                    Tt = np.array(temp.T_t[:])
+                    time_end = time_t[-1] + Tt[-1]
+                    i_end = np.where(self.time <= time_end)[0][-1] + 1
+                else:
+                    i_end = len(self.time)
                 if sel is not None:
                     self.c_time_s = np.array(sel.c_time) - self.time_ref
                     i_end = min(i_end, len(self.c_time_s))
