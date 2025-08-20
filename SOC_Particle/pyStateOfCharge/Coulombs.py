@@ -57,8 +57,8 @@ class Coulombs:
             .format(self.soc)
         s += "  sat =          {:1.0f}          // Indication from caller that battery is saturated, T=saturated\n"\
             .format(self.sat)
-        s += "  t_rated =    {:5.1f}         // Rated temperature, deg C\n".format(self. t_rated)
-        s += "  temp_rlim =     {:7.3f}       // Tbatt rate limit, deg C / s\n".format(self. temp_rlim)
+        s += "  t_rated =    {:5.1f}         // Rated temperature, deg C\n".format(self.t_rated)
+        # s += "  temp_rlim =     {:7.3f}       // Tbatt rate limit, deg C / s\n".format(self.temp_rlim)
         s += "  resetting =     {:d}          // Flag to test coulomb counters, T = external reset of counter\n"\
             .format(self.resetting)
         s += "  soc_min =    {:7.3f}       // Lowest soc for power delivery.   Arises with temp < 20 C\n"\
