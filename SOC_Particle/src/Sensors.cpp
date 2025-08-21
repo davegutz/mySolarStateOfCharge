@@ -1507,10 +1507,10 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
           Flt->LoopIbAmp->e_wrap_trim());
       Serial.printf("%s", pr.buff);
 
-        sprintf(pr.buff, "  %d,%8.5f,%8.5f,%8.5f, %d,%8.5f,  %d,%8.5f,%8.5f, %d,%8.5f,  %5.2f,%5.2f, %d, %5.2f, ",
+        sprintf(pr.buff, "  %d,%8.5f,%8.5f,%8.5f, %d,%8.5f,  %d,%8.5f,%8.5f, %d,%8.5f,  %5.2f,%5.2f, %d, %d, ",
             Flt->ib_sel_stat(), vc_hdwe(), ib_hdwe(), ib_hdwe_model(), sp.mod_ib(), ib(),
             Flt->vb_sel_stat(), vb_hdwe(), vb_model(), sp.mod_vb(), vb(),
-            Tb_hdwe, Tb, sp.mod_tb(), Tb_f);
+            Tb_hdwe, Tb_f, sp.mod_tb(), Flt->tb_fa());
 
       Serial.printf("%s", pr.buff);
 
