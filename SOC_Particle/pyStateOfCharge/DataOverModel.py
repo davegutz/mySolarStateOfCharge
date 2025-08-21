@@ -1078,9 +1078,6 @@ class SavedData:
             self.Tb_hdwe_filt_rate = None
             self.Tb_rstate = None
             self.Tb_lstate = None
-            self.Tba = None
-            self.Tbb = None
-            self.Tbc = None
         else:
             self.time_t = np.array(temp.c_time[:i_end]) - self.time_ref
             self.reset_temp = np.array(temp.reset_temp[:i_end])
@@ -1092,9 +1089,6 @@ class SavedData:
             self.Tb_hdwe_filt_rate = np.array(temp.Tb_hdwe_filt_rate[:i_end])
             self.Tb_rstate= np.array(temp.TbF_rs[:i_end])
             self.Tb_lstate= np.array(temp.TbF_s[:i_end])
-            self.Tba= np.array(temp.Tba[:i_end])
-            self.Tbb= np.array(temp.Tbb[:i_end])
-            self.Tbc= np.array(temp.Tbc[:i_end])
 
             # Initialization time logic
         if self.time[0] == 0.:  # no initialization flat detected at beginning of recording
