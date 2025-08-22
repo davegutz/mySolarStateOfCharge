@@ -190,6 +190,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             # mon.Tb_s = mon_old.Tb_s[0]
             mon.Tb_hdwe_filt = mon_old.Tb_hdwe_filt[0]
             mon.Tb_hdwe_filt_rate = mon_old.Tb_hdwe_filt_rate[0]
+            sim.Tb = mon_old.Tb_temp[0]
         else:
             candidate_dt = t[i] - t[i-1]  # update
             if candidate_dt > 1e-6:
@@ -212,12 +213,11 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.reset_temp = (i_temp < 2)  # make sure temp init is longer than reset
             mon.dt_temp = mon_old.Tt[i_temp]
             mon.Tb_hdwe = mon_old.Tb_hdwe[i_temp]
-            mon.Tb_hdwe = mon_old.Tb_hdwe[i_temp]
+            sim.Tb = mon_old.Tb_temp[i_temp]
         mon.Tb = mon_old.Tb_temp[i_temp]
         mon.Tb_s = mon_old.Tb_temp[i_temp]
         Tb_ = mon.Tb + dTb
         Tb_f_ = mon.Tb_f + dTb
-        sim.Tb = mon_old.Tb_temp[i_temp]
         sim.Tb_f = mon.Tb_f
 
         # dc_dc_on = bool(lut_dc.interp(t[i]))
@@ -235,7 +235,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if reset:
             sim.apply_soc(mon_old.soc_s[i], Tb_f_)  # calculates delta_q
             sim.load(sim.delta_q)
-            sim.assign_temp_c(Tb_f_)
+            sim.assign_temp_c(Tb_)
+            sim.assign_temp_c_f(Tb_f_)
             sim.apply_delta_q_t(sim.delta_q, Tb_f_)
             if sim_old is not None:
                 sat_s_init = sim_old.sat_s[0]

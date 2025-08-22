@@ -231,6 +231,9 @@ class Battery(Coulombs):
     def assign_temp_c(self, temp_c):
         self.Tb = temp_c
 
+    def assign_temp_c_f(self, temp_c):
+        self.Tb_f = temp_c
+
     def assign_soc(self, soc, voc):
         self.soc = soc
         self.voc = voc
