@@ -387,8 +387,14 @@ void loop()
         cp.tb_info.ready = Ds2482.ready();
     #endif
     Sen->T_temp = ReadTemp->updateTime();
+    if ( reset_temp )
+    {
+      Sen->Tb_model = Sen->Tb_model_filt = RATED_TEMP + ap.Tb_bias_model;
+    }
     Log.info("ino:  temp_load_and_filter");
     Sen->temp_load_and_filter(Sen, reset_temp);
+    Sen->select_temp(Mon);
+    Sen->Tb_model = Sen->Tb_model_filt = Sen->Sim->tb();
     Log.info("ino:  print_serial_temp_data");
     print_serial_temp_data(reset_temp, Sen);
   }

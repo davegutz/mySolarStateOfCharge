@@ -849,14 +849,14 @@ class BatterySim(Battery):
 
         return self.vb
 
-    def count_coulombs(self, chem, dt, reset, temp_c, charge_curr, sat, tb_f_rate=None, soc_s_init=None, mon_delta_q=None,
+    def count_coulombs(self, chem, dt, reset, tb, charge_curr, sat, tb_f_rate=None, soc_s_init=None, mon_delta_q=None,
                        mon_sat=None, use_soc_in=False, soc_in=0.):
         # BatterySim
         """Coulomb counter based on true=actual capacity
         Internal resistance of battery is a loss
         Inputs:
             dt              Integration step, s
-            temp_c          Battery temperature, deg C
+            tb              Battery temperature, deg C  (filtered usually to reduce electrical noise artifacts)
             charge_curr     Charge, A
             sat             Indicator that battery is saturated (VOC>threshold(temp)), T/F
             coul_eff_       Coulombic efficiency - the fraction of charging input that gets turned into usable Coulombs
@@ -876,6 +876,7 @@ class BatterySim(Battery):
         if self.reset:
             if soc_s_init and not self.mod:
                 self.delta_q = self.calculate_capacity(self.Tb_f) * (soc_s_init - 1.)
+        self.tb = tb
 
         # Saturation.   Goal is to set q_capacity and hold it so remembers last saturation status
         # detection
@@ -887,7 +888,7 @@ class BatterySim(Battery):
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
 
         # Integration can go to -50%
-        self.q_capacity = self.calculate_capacity(self.Tb_f)
+        self.q_capacity = self.calculate_capacity(self.tb)
         if use_soc_in:
             self.soc = soc_in
             self.q = self.q_capacity * self.soc
@@ -900,7 +901,7 @@ class BatterySim(Battery):
 
         # Normalize
         self.soc = self.q / self.q_capacity
-        self.soc_min = self.chemistry.lut_min_soc.interp(self.Tb_f)
+        self.soc_min = self.chemistry.lut_min_soc.interp(self.tb)
         self.q_min = self.soc_min * self.q_capacity
 
         # Save and return

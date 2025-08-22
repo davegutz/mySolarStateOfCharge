@@ -1382,21 +1382,8 @@ void Sensors::pretty_print()
 }
 
 // Make final assignemnts
-void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
+void Sensors::select_temp(BatteryMonitor *Mon)
 {
-
-  #ifdef HDWE_IB_HI_LO
-    // Reselect ib since may be changed
-    // Inputs:  ib_choice_, Ib_amp_hdwe, Ib_noa_hdwe, Ib_amp_model(past), Ib_noa_model(past)
-    // Outputs:  Ib_hdwe_model, Ib_hdwe
-    ib_choose_hi_lo();
-  #else
-    // Reselect ib since may be changed
-    // Inputs:  ib_sel_stat_, Ib_amp_hdwe, Ib_noa_hdwe, Ib_amp_model(past), Ib_noa_model(past)
-    // Outputs:  Ib_hdwe_model, Ib_hdwe
-    ib_choose_active_standby();
-  #endif
-
   // Final assignments
   // tb
   if ( sp.mod_tb() )
@@ -1430,11 +1417,29 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
       Tb = Tb_hdwe;
       Tb_f = Tb_hdwe_filt;
       Tb_f_rate = Tb_hdwe_filt_rate;
-      Log.info("    select_all_hdwe_or_model:  Tb=Tb_hdwe=%9.5f Tb_f%9.5f Tb_f_rate%11.8f", Tb_hdwe, Tb_f, Tb_f_rate);
+      Log.info("    select_volt_and_current:  Tb=Tb_hdwe=%9.5f Tb_f%9.5f Tb_f_rate%11.8f", Tb_hdwe, Tb_f, Tb_f_rate);
     }
   }
   sample_time_tb_ = SensorTb->sample_time();
+}
 
+// Make final assignemnts
+void Sensors::select_volt_and_current(BatteryMonitor *Mon)
+{
+
+  #ifdef HDWE_IB_HI_LO
+    // Reselect ib since may be changed
+    // Inputs:  ib_choice_, Ib_amp_hdwe, Ib_noa_hdwe, Ib_amp_model(past), Ib_noa_model(past)
+    // Outputs:  Ib_hdwe_model, Ib_hdwe
+    ib_choose_hi_lo();
+  #else
+    // Reselect ib since may be changed
+    // Inputs:  ib_sel_stat_, Ib_amp_hdwe, Ib_noa_hdwe, Ib_amp_model(past), Ib_noa_model(past)
+    // Outputs:  Ib_hdwe_model, Ib_hdwe
+    ib_choose_active_standby();
+  #endif
+
+  // Final assignments
   // vb
   if ( sp.mod_vb() )
   {
@@ -1485,7 +1490,7 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
     dt_ib_ = dt_ib_hdwe_;
   }
   now = sample_time_ib_ - inst_millis_ + inst_time_*1000;
-  Log.info("    select_all_hdwe_or_model now:  now,%lld, cTime,%7.3f,", now, double(now)/1000.);
+  Log.info("    select_volt_and_current now:  now,%lld, cTime,%7.3f,", now, double(now)/1000.);
 
   if ( sp.debug()==62 ) Serial.printf(" Ib%7.3f Ib_hdwe%7.3f Ib_hdwe_model%7.3f Ib_amp%7.3f Ib_amp_model%7.3f Ib_amp_hdwe%7.3f Ib_noa%7.3f Ib_noa_model%7.3f Ib_noa_hdwe%7.3f\n",
    Ib, Ib_hdwe, Ib_hdwe_model, Ib_amp, Ib_amp_model, Ib_amp_hdwe, Ib_noa, Ib_noa_model, Ib_noa_hdwe);
@@ -1507,10 +1512,10 @@ void Sensors::select_all_hdwe_or_model(BatteryMonitor *Mon)
           Flt->LoopIbAmp->e_wrap_trim());
       Serial.printf("%s", pr.buff);
 
-        sprintf(pr.buff, "  %d,%8.5f,%8.5f,%8.5f, %d,%8.5f,  %d,%8.5f,%8.5f, %d,%8.5f,  %5.2f,%5.2f, %d, %d, ",
+        sprintf(pr.buff, "  %d,%8.5f,%8.5f,%8.5f, %d,%8.5f,  %d,%8.5f,%8.5f, %d,%8.5f,  %d, %d, ",
             Flt->ib_sel_stat(), vc_hdwe(), ib_hdwe(), ib_hdwe_model(), sp.mod_ib(), ib(),
             Flt->vb_sel_stat(), vb_hdwe(), vb_model(), sp.mod_vb(), vb(),
-            Tb_hdwe, Tb_f, sp.mod_tb(), Flt->tb_fa());
+            sp.mod_tb(), Flt->tb_fa());
 
       Serial.printf("%s", pr.buff);
 

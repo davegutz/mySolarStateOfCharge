@@ -145,7 +145,7 @@ class Coulombs:
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
 
         # Integration
-        self.q_capacity = self.calculate_capacity(tb)
+        self.q_capacity = self.calculate_capacity(self.tb)
         if use_soc_in:
             self.soc = soc_in
             self.q = self.q_capacity * self.soc

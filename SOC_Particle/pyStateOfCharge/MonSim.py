@@ -235,6 +235,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if reset:
             sim.apply_soc(mon_old.soc_s[i], Tb_f_)  # calculates delta_q
             sim.load(sim.delta_q)
+            sim.assign_temp_c(Tb_f_)
             sim.apply_delta_q_t(sim.delta_q, Tb_f_)
             if sim_old is not None:
                 sat_s_init = sim_old.sat_s[0]
@@ -255,7 +256,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         sim.calculate(_chm_s, None, ib_in_s, T, reset, None, None, None,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=bms_off_init)
-        sim.count_coulombs(chem=_chm_s, dt=T, reset=reset, temp_c=Tb_f_, tb_f_rate=mon.Tb_f_rate, charge_curr=sim.ib_charge,
+        sim.count_coulombs(chem=_chm_s, dt=T, reset=reset, tb=Tb_f_, tb_f_rate=mon.Tb_f_rate, charge_curr=sim.ib_charge,
                            sat=False, soc_s_init=mon_old.soc_s[0], mon_sat=mon.sat, mon_delta_q=mon.delta_q,
                            use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
 

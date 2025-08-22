@@ -567,7 +567,6 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const uns
   // Sim initialize as needed from memory
   if ( reset_temp )
   {
-    Sen->Tb_model = Sen->Tb_model_filt = RATED_TEMP + ap.Tb_bias_model;
     initialize_all(Mon, Sen, 0., false);
   }
   Sen->Sim->apply_delta_q_t(reset);
@@ -577,7 +576,6 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const uns
   //  Inputs:  Sen->Tb_f(past), Sen->Ib_model_in
   //  States: Sim->soc(past)
   //  Outputs:  Tb_hdwe, Ib_model, Vb_model, sp.inj_bias, Sim.model_saturated
-  Sen->Tb_model = Sen->Tb_model_filt = Sen->Sim->tb();
   Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on, reset) * sp.nS() + Sen->Vb_add();
   Sen->Ib_model = Sen->Sim->ib_fut() * sp.nP();
   cp.model_cutback = Sen->Sim->cutback();
@@ -594,8 +592,8 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const uns
   //  constant,         Tb_hdwe, Tb_hdwe_filt       --->   Tb, Tb_f
   Log.info("  sense_synth_select:  select_all_logic");
   Sen->Flt->select_all_logic(Sen, Mon, reset);
-  Log.info("  sense_synth_select:  select_all_hdwe_or_model");
-  Sen->select_all_hdwe_or_model(Mon);
+  Log.info("  sense_synth_select:  select_volt_and_current");
+  Sen->select_volt_and_current(Mon);
 
   // Fault snap buffer management
   static uint8_t fails_repeated = 0;

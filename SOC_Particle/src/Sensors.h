@@ -508,7 +508,8 @@ public:
   boolean display;            // Use display
   boolean bms_off;            // Calculated by BatteryMonitor, battery off, low voltage, switched by battery management system?
   unsigned long long dt_ib(void) { return dt_ib_; };
-  void select_all_hdwe_or_model(BatteryMonitor *Mon);  // Make final signal selection
+  void select_temp(BatteryMonitor *Mon);  // Make final signal selection
+  void select_volt_and_current(BatteryMonitor *Mon);  // Make final signal selection
   float ib() { return Ib / sp.nP(); };                            // Battery unit current, A
   float ib_amp() { return Ib_amp / sp.nP(); };          // Battery amp unit current, A
   float ib_amp_hdwe() { return Ib_amp_hdwe / sp.nP(); };          // Battery amp unit current, A
