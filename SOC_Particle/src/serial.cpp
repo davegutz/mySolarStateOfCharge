@@ -189,9 +189,9 @@ void print_serial_temp_data(const boolean reset, Sensors *Sen)
   if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  )
   {
     double cTime = double(Sen->now_temp)/1000.;
-    Serial.printf("temp_unit, %13.3f, %11.7f, %11.7f, %11.7f, %11.7f, %d, %11.7f, %11.7f, %11.8f, %11.7f, %11.7f,\n",
+    Serial.printf("temp_unit, %13.3f, %11.7f, %11.7f, %11.7f, %11.7f, %d, %11.7f, %11.7f, %11.8f, %11.7f, %11.7f, %11.8f,\n",
       cTime, Sen->T_temp, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_hdwe_filt, Sen->Tb_f, Sen->Tb_hdwe_filt_rate,
-      Sen->TbSenseFilt->rstate(), Sen->TbSenseFilt->lstate());
+      Sen->TbSenseFilt->rstate(), Sen->TbSenseFilt->lstate(), Sen->Tb_f_rate);
     Log.info("    print_serial_temp_data cTime,%9.3f,", cTime);
   }
 }
@@ -200,7 +200,7 @@ void print_serial_temp_header(void)
 {
   if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  )
   {
-    Serial.printf("unit_t, c_time, T_t, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_hdwe_filt, Tb_f,  Tb_hdwe_filt_rate, TbF_rs, TbF_s,\n");
+    Serial.printf("unit_t, c_time, T_t, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_hdwe_filt, Tb_f,  Tb_hdwe_filt_rate, TbF_rs, TbF_s, Tb_f_rate,\n");
   }
 }
 
