@@ -47,9 +47,9 @@ void create_rapid_string_header(void)
 {
   if ( ( sp.debug()==1 || sp.debug()==2 || sp.debug()==3 || sp.debug()==4 ) )
   {
-    Serial.printf ("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb, Tb_f, Tb_f_rate, vb, ib,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
+    Serial.printf ("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb_rap, Tb_f_rap, Tb_f_rate_rap, vb, ib,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
     #ifdef HDWE_ARGON
-      Serial1.printf("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb, Tb_f, Tb_f_rate, vb, ib,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
+      Serial1.printf("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb_rap, Tb_f_rap, Tb_f_rate_rap, vb, ib,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
     #endif
   }
 }

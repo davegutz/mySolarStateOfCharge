@@ -142,8 +142,8 @@ def off_on_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, 
         plt.xlabel('sec')
         plt.legend(loc=2)
         plt.subplot(325)
-        ymax = max([max(sublist) for sublist in [mo.Tb_mon, mo.Tb_temp, mv.Tb, smv.Tb_s, mo.Tb_f, mo.Tb_f, smv.Tb_f_s]])
-        ymin = min([min(sublist) for sublist in [mo.Tb_mon, mo.Tb_temp, mv.Tb, smv.Tb_s, mo.Tb_f, mo.Tb_f, smv.Tb_f_s]])
+        ymax = max([max(sublist) for sublist in [mo.Tb_rap, mo.Tb, mv.Tb, smv.Tb_s, mo.Tb_f, mo.Tb_f, smv.Tb_f_s]])
+        ymin = min([min(sublist) for sublist in [mo.Tb_rap, mo.Tb, mv.Tb, smv.Tb_s, mo.Tb_f, mo.Tb_f, smv.Tb_f_s]])
         ymin_int = int(ymin)
         f_add = 2
         f_add_str = str(f_add)
@@ -151,7 +151,7 @@ def off_on_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, 
         diff = ymax_int - ymin
         plq(plt, mo, 'time_t', mo, 'Tb_hdwe', color='black', linestyle='-', label='Tb_hdwe' + ref_str, stairs=True)
         plq(plt, mv, 'time', mv, 'Tb_hdwe', color='green', linestyle='--', label='Tb_hdwe' + test_str)
-        # plq(plt, mo, 'time', mo, 'Tb_mon', color='green', linestyle='--', label='Tb_mon' + ref_str)
+        # plq(plt, mo, 'time', mo, 'Tb_rap', color='green', linestyle='--', label='Tb_mon' + ref_str)
         plq(plt, smv, 'time', smv, 'Tb_s', color='cyan', linestyle=':', label='Tb_s' + test_str)
         plq(plt, mo, 'time_t', mo, 'Tb_f',  add=f_add, color='orange', linestyle='-', label='Tb_f' + ref_str + ' +' + f_add_str, stairs=True)
         plq(plt, smv, 'time', smv, 'Tb_f_s', add=f_add, color='green', linestyle='--', label='Tb_f_s' + test_str + ' +' + f_add_str)

@@ -362,6 +362,9 @@ class BatteryMonitor(Battery, EKF1x1):
         self.voc_stat_ekf = 0.
         self.dt_temp = None
         self.reset_temp = True
+        self.Tb_rap = None
+        self.Tb_f_rap = None
+        self.Tb_f_rate_rap = None
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -624,6 +627,9 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb.append(self.Tb)
         self.saved.Tb_f.append(self.Tb_f)
         self.saved.Tb_f_rate.append(self.Tb_f_rate)
+        self.saved.Tb_rap.append(self.Tb_rap)
+        self.saved.Tb_f_rap.append(self.Tb_f_rap)
+        self.saved.Tb_f_rate_rap.append(self.Tb_f_rate_rap)
         self.saved.vsat.append(self.vsat)
         self.saved.voc_ekf.append(self.voc_ekf)
         self.saved.sat.append(int(self.sat))
@@ -1112,6 +1118,9 @@ class Saved:
         self.Tb = []  # Battery bank temperature, deg C
         self.Tb_f = []  # Battery bank filtered temperature, deg C
         self.Tb_f_rate = []  # Temp rate, deg C / s
+        self.Tb_rap = []  # Battery bank temperature, deg C
+        self.Tb_f_rap = []  # Battery bank filtered temperature, deg C
+        self.Tb_f_rate_rap = []  # Temp rate, deg C / s
         self.vsat = []  # Monitor Bank saturation threshold at temperature, deg C
         self.dv_dyn = []  # Monitor Bank current induced back emf, V
         self.voc_stat = []  # Monitor Static bank open circuit voltage, V

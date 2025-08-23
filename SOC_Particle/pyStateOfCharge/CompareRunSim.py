@@ -93,7 +93,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
         replicate(mon_old, sim_old=sim_old, init_time=mon_old.init_time, use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in,
                   use_vb_raw=use_vb_raw, dvoc_sim=dvoc_sim_in, dvoc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
                   ds_voc_soc=ds_voc_soc_in, verbose=verbose, scale_in=scale_in)
-    save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
+    save_clean_file(mon_ver.saved, mon_file_save, 'mon_rep' + date_)
 
     # Plots
     if data_only is False:
@@ -138,14 +138,14 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
 
 def main():
 
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20250822am_soc4p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20250822pm_soc4p2_hi_lo_bb.csv'
 
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # The following are not implemented in GUI
     time_end_in = None
     # time_end_in = 1.051
-    data_only = False
-    # data_only = True
+    # data_only = False
+    data_only = True
     # mon_soc_in = True
     mon_soc_in = False
     verbose_in = False

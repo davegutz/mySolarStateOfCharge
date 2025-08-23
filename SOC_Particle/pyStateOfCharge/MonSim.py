@@ -33,7 +33,7 @@ from pyDAGx import myTables
 
 def save_clean_file(mon_ver, csv_file, unit_key):
     default_header_str = "unit,               hm,                  cTime,        dt,       sat,sel,mod,\
-      Tb,  vb,  ib,  ioc,  voc_soc,    vsat,dv_dyn,voc_stat,voc_stat_f,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,ib_lag,voc_soc_new,"
+      Tb,Tb_rap,Tb_f,Tb_f_rap,Tb_f_rate,Tb_f_rate_rap, vb,  ib,  ioc,  voc_soc,    vsat,dv_dyn,voc_stat,voc_stat_f,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,ib_lag,voc_soc_new,"
     n = len(mon_ver.time)
     date_time_start = datetime.now()
     with open(csv_file, "w") as output:
@@ -43,12 +43,17 @@ def save_clean_file(mon_ver, csv_file, unit_key):
             dt_dt = timedelta(seconds=mon_ver.time[i]-mon_ver.time[0])
             time_stamp = date_time_start + dt_dt
             s += time_stamp.strftime("%Y-%m-%dT%H:%M:%S,")
-            s += "{:7.3f},".format(mon_ver.time[i])
+            s += "{:7.3f},".format(mon_ver.time[i] + mon_ver.time_ref)
             s += "{:7.3f},".format(mon_ver.dt[i])
             s += "{:1.0f},".format(mon_ver.sat[i])
             s += "{:1.0f},".format(mon_ver.sel[i])
             s += "{:1.0f},".format(mon_ver.mod_data[i])
-            s += "{:7.3f},".format(mon_ver.Tb[i])
+            s += "{:7.6f},".format(mon_ver.Tb[i])
+            s += "{:7.6f},".format(mon_ver.Tb_rap[i])
+            s += "{:7.6f},".format(mon_ver.Tb_f[i])
+            s += "{:7.6f},".format(mon_ver.Tb_f_rap[i])
+            s += "{:7.6f},".format(mon_ver.Tb_f_rate[i])
+            s += "{:7.6f},".format(mon_ver.Tb_f_rate_rap[i])
             s += "{:7.3f},".format(mon_ver.vb[i])
             s += "{:7.3f},".format(mon_ver.ib[i])
             s += "{:7.3f},".format(mon_ver.ioc[i])
@@ -163,6 +168,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                          sres0=sres0, sresct=sresct, stauct=stauct_mon, scaler_q=s_q, scaler_r=s_r,
                          scale_r_ss=scale_r_ss, s_hys=s_hys_mon, dvoc=dvoc_mon, eframe_mult=eframe_mult,
                          s_coul_eff=s_coul_eff, unit=unit)
+    mon.saved.time_ref = mon_old.time_ref
     # need Tb input.   perhaps need higher order to enforce basic type 1 response
     Is_sat_delay = TFDelay(in_=mon_old.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
     bms_off_init = mon_old.bms_off[0]
@@ -190,7 +196,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             # mon.Tb_s = mon_old.Tb_s[0]
             mon.Tb_hdwe_filt = mon_old.Tb_hdwe_filt[0]
             mon.Tb_hdwe_filt_rate = mon_old.Tb_hdwe_filt_rate[0]
-            sim.Tb = mon_old.Tb_temp[0]
+            sim.Tb = mon_old.Tb[0]
         else:
             candidate_dt = t[i] - t[i-1]  # update
             if candidate_dt > 1e-6:
@@ -207,16 +213,14 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             if i == 0:
                 mon.Tb_f = mon_old.Tb_f[0]
                 mon.Tb_f_rate = mon_old.Tb_f_rate[0]
-            else:
-                mon.Tb_f = mon.Tb_hdwe_filt  # past value
-                mon.Tb_f_rate = mon.Tb_hdwe_filt_rate  # past value
             mon.reset_temp = (i_temp < 2)  # make sure temp init is longer than reset
             mon.dt_temp = mon_old.Tt[i_temp]
             mon.Tb_hdwe = mon_old.Tb_hdwe[i_temp]
-            sim.Tb = mon_old.Tb_temp[i_temp]
-        mon.Tb = mon_old.Tb_temp[i_temp]
-        mon.Tb_s = mon_old.Tb_temp[i_temp]
+            sim.Tb = mon_old.Tb[i_temp]
+        mon.Tb = mon_old.Tb[i_temp]
+        mon.Tb_s = mon_old.Tb[i_temp]
         Tb_ = mon.Tb + dTb
+        mon.Tb_rap = Tb_
         Tb_f_ = mon.Tb_f + dTb
         sim.Tb_f = mon.Tb_f
 
@@ -333,24 +337,26 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                                                  mon_old.Tb_hdwe_filt_rate[i_temp], mon.reset_temp,
                                                  mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
                                                  rmin=-Battery.T_RLIM)
+            mon.Tb_f = mon.Tb_hdwe_filt
+            mon.Tb_f_rate = mon.Tb_hdwe_filt_rate
             mon.Tb_hdwe_filt_rate = TbSenseFilt.rate
             mon.Tb_rstate = TbSenseFilt.rstate
             mon.Tb_state = TbSenseFilt.state
 
             print3 = True
             if print3:
-                print("{:6.3f} reset   {:2.0f}  Tt {:9.7f}  Tb_hdwe  {:11.7f}  Tb_hdwe_filt   {:11.7f} rstate   {:11.7f} lstate   {:11.7f} hwfrate   {:11.7f} tbfrate   {:11.7f} Tb_mon{:8.3f} Tb_f   {:8.3f} Tb_temp{:8.3f}  ".
+                print("{:6.3f} reset   {:2.0f}  Tt {:9.7f}  Tb_hdwe  {:11.7f}  Tb_hdwe_filt   {:11.7f} rstate   {:11.7f} lstate   {:11.7f} hwfrate   {:11.7f} tbfrate   {:11.7f} Tb_rap  {:8.3f} Tb_f   {:8.3f}".
                       format(now, mon_old.reset_temp[i_temp], mon_old.Tt[i_temp],
                              mon_old.Tb_hdwe[i_temp],
                              mon_old.Tb_hdwe_filt[i_temp], mon_old.Tb_rstate[i_temp], mon_old.Tb_lstate[i_temp],
-                             mon_old.Tb_hdwe_filt_rate[i_temp], mon_old.Tb_f_rate[i],
-                             mon_old.Tb_mon[i], mon_old.Tb_f[i], mon_old.Tb_temp[i_temp]))
-                print("{:6.3f} reset_v {:2d}  Tt {:9.7f}  Tb_hdwe_v{:11.7f}  Tb_hdwe_filt_v {:11.7f} rstate_v {:11.7f} lstate_v {:11.7f} hwfrate_v {:11.7f} tbfrate_v {:11.7f} Tb_v  {:8.3f} Tb_f_v {:8.3f}\n\n".
+                             mon_old.Tb_hdwe_filt_rate[i_temp], mon_old.Tb_f_rate[i_temp],
+                             mon_old.Tb_rap[i], mon_old.Tb_f[i_temp]))
+                print("{:6.3f} reset_v {:2d}  Tt {:9.7f}  Tb_hdwe_v{:11.7f}  Tb_hdwe_filt_v {:11.7f} rstate_v {:11.7f} lstate_v {:11.7f} hwfrate_v {:11.7f} tbfrate_v {:11.7f} Tb_rap_v{:8.3f} Tb_f_v {:8.3f}\n\n".
                       format(now, mon.reset_temp, mon.dt_temp,
                              mon.Tb_hdwe,
                              mon.Tb_hdwe_filt, mon.Tb_rstate, mon.Tb_state,
                              mon.Tb_hdwe_filt_rate, mon.Tb_f_rate,
-                             mon.Tb, mon.Tb_f))
+                             mon.Tb_rap, mon.Tb_f))
 
         if rp.modeling == 0:
             if reset_ekf:
@@ -375,6 +381,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         else:
             mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb=Tb_f_, tb_f_rate=mon.Tb_f_rate, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
+        mon.Tb_f_rap = Tb_f_
+        mon.Tb_f_rate_rap = mon.Tb_f_rate
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
         mon.assign_soc_s(sim.soc)
         # Plot stuff
@@ -413,17 +421,21 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
         print1 = True
         if print1:
-            hdr = "  i  time  r  r_t i_t  calc   Tt      Tb_hdwe     Tb_hdwe_v    Tb_hdwe_filt  Tb_hdwe_filt_v     Tb_mon  Tb_v             Tb_f      Tb_f_v         Tb_f_rate   Tb_f_rate_v"
+            hdr = "  i  time  r  r_t i_t  calc   Tt      Tb_hdwe     Tb_hdwe_v         Tb   Tb_v                 Tb_rap Tb_rap_v      Tb_hdwe_filt  Tb_hdwe_filt_v     Tb_rap  Tb_rap_v         Tb_f      Tb_f_v         Tb_f_rap  Tb_f_rap_v     Tb_f_rate   Tb_f_rate_v    Tb_f_rate_rap   Tb_f_rate_rap_v"
             if calc_temp:
                 print(hdr)
             print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),
                   "{:2d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
                   "{:7.3f}".format(mon_old.Tt[i_temp]),
                   "{:13.7f}".format(mon_old.Tb_hdwe[i_temp]),  "{:11.7f}".format(mon.Tb_hdwe),
+                  "{:14.7f}".format(mon_old.Tb[i_temp]),  "{:11.7f}".format(mon.Tb),
+                  "{:14.7f}".format(mon_old.Tb_rap[i]), "{:11.7f}".format(mon.Tb_rap),
                   "{:14.7f}".format(mon_old.Tb_hdwe_filt[i_temp]),   "{:11.7f}".format(mon.Tb_hdwe_filt),
-                  "{:14.7f}".format(mon_old.Tb_mon[i]),   "{:11.7f}".format(mon.Tb),
-                  "{:14.7f}".format(mon_old.Tb_f[i]), "{:11.7f}".format(mon.Tb_f),
-                  "{:14.7f}".format(mon_old.Tb_f_rate[i]), "{:11.7f}".format(mon.Tb_f_rate),
+                  "{:14.7f}".format(mon_old.Tb_rap[i]),   "{:11.7f}".format(mon.Tb_rap),
+                  "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
+                  "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:11.7f}".format(mon.Tb_f_rap),
+                  "{:14.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate),
+                  "{:14.7f}".format(mon_old.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
                   )
 
         print2 = False
@@ -455,7 +467,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         print('mon:  ', str(mon))
         print('sim:  ', str(sim))
 
-    return mon.saved, sim.saved, sim.saved_s, mon, sim
+    return mon, sim, sim.saved_s, mon.saved, sim.saved
 
 
 if __name__ == '__main__':

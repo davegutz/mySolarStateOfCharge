@@ -377,7 +377,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mv.time, mv.soc, color='cyan', linestyle=':', label='soc'+test_str)
     plt.legend(loc=1)
     plt.subplot(313)
-    plt.plot(mo.time, mo.Tb_mon, color='red', linestyle=':', label='Tb'+ref_str)
+    plt.plot(mo.time, mo.Tb_rap, color='red', linestyle=':', label='Tb'+ref_str)
     plt.plot(mv.time, mv.Tb, color='cyan', linestyle=':', label='Tb'+test_str)
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -732,10 +732,10 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
 
 
 class SavedData:
-    def __init__(self, data=None, sel=None, ekf=None, temp=None, time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None,
+    def __init__(self, rap=None, sel=None, ekf=None, temp=None, time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None,
                  init_time_in=None):
         i_end = 0
-        if data is None:
+        if rap is None:
             self.i = 0
             self.time = None
             self.time_min = None
@@ -760,9 +760,9 @@ class SavedData:
             self.sel = None  # Current source selection, 0=amp, 1=no amp
             self.mod = None  # Configuration control code, 0=all hardware, 7=all simulated, +8 tweak test
             self.bms_off = None  # Battery management system off, T=off
-            self.Tb_mon = None  # Battery bank temperature, deg C
-            self.Tb_f = None  # Battery bank filtered temperature, deg C
-            self.Tb_f_rate = None  # Battery bank filtered temperature, deg C
+            self.Tb_rap = None  # Battery bank temperature, deg C
+            self.Tb_f_rap = None  # Battery bank filtered temperature, deg C
+            self.Tb_f_rate_rap = None  # Battery bank filtered temperature, deg C
             self.vsat = None  # Monitor Bank saturation threshold at temperature, deg C
             self.dv_dyn = None  # Monitor Bank current induced back emf, V
             self.dv_hys = None  # Drop across hysteresis, V
@@ -779,9 +779,9 @@ class SavedData:
             self.init_time = None
         else:
             self.i = 0
-            self.cTime = np.array(data.cTime)
-            self.time = np.array(data.cTime)
-            self.ib = np.array(data.ib)
+            self.cTime = np.array(rap.cTime)
+            self.time = np.array(rap.cTime)
+            self.ib = np.array(rap.ib)
             # manage data shape
             # Find first non-zero ib and use to adjust time
             # Ignore initial run of non-zero ib because resetting from previous run
@@ -835,45 +835,45 @@ class SavedData:
                 if ekf is not None:
                     self.time_e = np.array(ekf.c_time) - self.time_ref
             self.cTime = self.cTime[:i_end]
-            self.dt = np.array(data.dt[:i_end])
+            self.dt = np.array(rap.dt[:i_end])
             self.time = np.array(self.time[:i_end])
-            self.ib = np.array(data.ib[:i_end])
-            self.ioc = np.array(data.ib[:i_end])
-            self.voc_soc = np.array(data.voc_soc[:i_end])
-            self.vb = np.array(data.vb[:i_end])
-            self.chm = np.array(data.chm[:i_end])
-            if hasattr(data, 'qcrs'):
-                self.qcrs = data.qcrs[:i_end]
-            if hasattr(data, 'delta_q'):
-                self.delta_q = data.delta_q[:i_end]
-            if hasattr(data, 'qcap'):
-                self.q_capacity = data.qcap[:i_end]
-            self.sat = np.array(data.sat[:i_end])
+            self.ib = np.array(rap.ib[:i_end])
+            self.ioc = np.array(rap.ib[:i_end])
+            self.voc_soc = np.array(rap.voc_soc[:i_end])
+            self.vb = np.array(rap.vb[:i_end])
+            self.chm = np.array(rap.chm[:i_end])
+            if hasattr(rap, 'qcrs'):
+                self.qcrs = rap.qcrs[:i_end]
+            if hasattr(rap, 'delta_q'):
+                self.delta_q = rap.delta_q[:i_end]
+            if hasattr(rap, 'qcap'):
+                self.q_capacity = rap.qcap[:i_end]
+            self.sat = np.array(rap.sat[:i_end])
             # Lag for saturation
             n = len(self.cTime)
             ib_lag = Chemistry_BMS.ib_lag(self.chm[0])
             IbLag = LagExp(1., ib_lag, -100., 100.)
             self.ib_lag = np.zeros(n)
-            self.sel = np.array(data.sel[:i_end])
-            self.mod_data = np.array(data.mod[:i_end])
-            self.bms_off = np.array(data.bmso[:i_end])
+            self.sel = np.array(rap.sel[:i_end])
+            self.mod_data = np.array(rap.mod[:i_end])
+            self.bms_off = np.array(rap.bmso[:i_end])
             # not_bms_off = self.bms_off < 1
             # bms_off_and_not_charging = self.bms_off * not_bms_off
             # self.ib_charge = self.ib * (bms_off_and_not_charging < 1)
-            self.ib_charge = np.array(data.ib_charge[:i_end])
-            self.Tb_mon = np.array(data.Tb[:i_end])
-            self.Tb_f = np.array(data.Tb_f[:i_end])
-            self.Tb_f_rate = np.array(data.Tb_f_rate[:i_end])
-            self.vsat = np.array(data.vsat[:i_end])
-            self.dv_dyn = np.array(data.dv_dyn[:i_end])
-            self.voc_stat = np.array(data.voc_stat[:i_end])
+            self.ib_charge = np.array(rap.ib_charge[:i_end])
+            self.Tb_rap = np.array(rap.Tb_rap[:i_end])
+            self.Tb_f_rap = np.array(rap.Tb_f_rap[:i_end])
+            self.Tb_f_rate_rap = np.array(rap.Tb_f_rate_rap[:i_end])
+            self.vsat = np.array(rap.vsat[:i_end])
+            self.dv_dyn = np.array(rap.dv_dyn[:i_end])
+            self.voc_stat = np.array(rap.voc_stat[:i_end])
             self.voc = self.vb - self.dv_dyn
             self.dv_hys = self.voc - self.voc_stat
-            self.voc_ekf = np.array(data.voc_ekf[:i_end])
-            self.y_ekf = np.array(data.y_ekf[:i_end])
-            self.soc_s = np.array(data.soc_s[:i_end])
-            self.soc_ekf = np.array(data.soc_ekf[:i_end])
-            self.soc = np.array(data.soc[:i_end])
+            self.voc_ekf = np.array(rap.voc_ekf[:i_end])
+            self.y_ekf = np.array(rap.y_ekf[:i_end])
+            self.soc_s = np.array(rap.soc_s[:i_end])
+            self.soc_ekf = np.array(rap.soc_ekf[:i_end])
+            self.soc = np.array(rap.soc[:i_end])
             self.voc_soc_new = None
         if sel is None:
             self.c_time_s = None
@@ -1073,7 +1073,9 @@ class SavedData:
             self.T_t = None
             self.Tb_hdwe = None
             self.Tb_mod = None
-            self.Tb_temp = None
+            self.Tb = None
+            self.Tb_f = None
+            self.Tb_f_rate = None
             self.Tb_hdwe_filt = None
             self.Tb_hdwe_filt_rate = None
             self.Tb_rstate = None
@@ -1083,8 +1085,10 @@ class SavedData:
             self.reset_temp = np.array(temp.reset_temp[:i_end])
             self.Tt = np.array(temp.T_t[:i_end])
             self.Tb_hdwe = np.array(temp.Tb_hdw[:i_end])
+            self.Tb = np.array(temp.Tb[:i_end])
+            self.Tb_f = np.array(temp.Tb_f[:i_end])
+            self.Tb_f_rate = np.array(temp.Tb_f_rate[:i_end])
             self.Tb_mod = np.array(temp.Tb_mod[:i_end])
-            self.Tb_temp = np.array(temp.Tb[:i_end])
             self.Tb_hdwe_filt = np.array(temp.Tb_hdwe_filt[:i_end])
             self.Tb_hdwe_filt_rate = np.array(temp.Tb_hdwe_filt_rate[:i_end])
             self.Tb_rstate= np.array(temp.TbF_rs[:i_end])
