@@ -1062,6 +1062,7 @@ class Looparound:
 class Saved:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
     def __init__(self):
+        self.time_ref = None
         self.time = []
         self.time_min = []
         self.time_day = []
@@ -1516,6 +1517,7 @@ def overall_batt(mv, sv, filename,
 class SavedS:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
     def __init__(self):
+        self.time_ref = None
         self.time = []
         self.time_min = []
         self.time_day = []
