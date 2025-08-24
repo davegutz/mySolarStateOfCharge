@@ -342,16 +342,20 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.init_soc_ekf(mon_old.x[0], mon_old.P[0])  # when modeling (assumed in python) ekf wants to equal model
 
         if calc_temp:
+            if mon.reset_temp:
+                Tb_hdwe_filt_rate_past_ = mon_old.Tb_hdwe_filt_rate[i_temp]
+            else:
+                Tb_hdwe_filt_rate_past_ = mon.Tb_hdwe_filt_rate
             mon.Tb_hdwe_filt = \
                 TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_old.Tb_hdwe_filt[i_temp],
                                                  mon_old.Tb_hdwe_filt_rate[i_temp], mon.reset_temp,
                                                  mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
                                                  rmin=-Battery.T_RLIM)
+            mon.Tb_hdwe_filt_rate = TbSenseFilt.rate
+            mon.Tb_f_rate = Tb_hdwe_filt_rate_past_
             mon.Tb_rap = Tb_past_
             mon.Tb_f = mon.Tb_hdwe_filt
             Tb_f_ = mon.Tb_hdwe_filt
-            mon.Tb_f_rate = mon.Tb_hdwe_filt_rate
-            mon.Tb_hdwe_filt_rate = TbSenseFilt.rate
             mon.Tb_rstate = TbSenseFilt.rstate
             mon.Tb_state = TbSenseFilt.state
 
@@ -433,7 +437,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
         print1 = True
         if print1:
-            hdr = "  i  time  r  r_t i_t  calc   Tt      Tb_hdwe     Tb_hdwe_v         Tb   Tb_v                 Tb_        Tb_past_   Tb_hdwe_filt  Tb_hdwe_filt_v     Tb_rap  Tb_rap_v         Tb_f      Tb_f_v         Tb_f_rap  Tb_f_rap_v     Tb_f_rate   Tb_f_rate_v    Tb_f_rate_rap   Tb_f_rate_rap_v"
+            hdr = "  i  time  r  r_t i_t  calc   Tt      Tb_hdwe     Tb_hdwe_v         Tb   Tb_v                 Tb_        Tb_past_   Tb_hdwe_filt  Tb_hdwe_filt_v     Tb_rap  Tb_rap_v         Tb_f      Tb_f_v          Tb_f_rap  Tb_f_rap_v        Tb_h_f_r  Tb_h_f_r_v     Tb_f_rate Tb_f_rate_v      Tb_f_rate_rap Tb_f_rate_rap_v"
             if calc_temp:
                 print(hdr)
             print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),
@@ -446,6 +450,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                   "{:14.7f}".format(mon_old.Tb_rap[i]),   "{:11.7f}".format(mon.Tb_rap),
                   "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
                   "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:11.7f}".format(mon.Tb_f_rap),
+                  "{:14.7f}".format(mon_old.Tb_hdwe_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt_rate),
                   "{:14.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate),
                   "{:14.7f}".format(mon_old.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
                   )
