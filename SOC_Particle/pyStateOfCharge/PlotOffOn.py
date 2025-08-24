@@ -161,12 +161,16 @@ def off_on_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, 
         plt.ylim(ymin_int, )
         plt.legend(loc=2)
         plt.subplot(326)
+        from Battery import Battery
+        import numpy as np
+        mv.reset_temp_scl = np.array(mv.reset_temp) * Battery.T_RLIM
+        plq(plt, mo, 'time', mo, 'Tb_f_rate_rap', add=0.004, color='cyan', linestyle='-', label='Tb_f_rate_rap' + ref_str + '+ 0.004')
+        plq(plt, mv, 'time', mv, 'Tb_f_rate_rap', add=0.004, color='orange', linestyle='--', label='Tb_f_rate_rap' + test_str + '+ 0.004')
+        plq(plt, mo, 'time_t', mo, 'Tb_f_rate', add=0.002, color='red', linestyle='-', label='Tb_f_rate' + ref_str + '+ 0.002', stairs=True)
+        plq(plt, mv, 'time', mv, 'Tb_f_rate', add=0.002, color='blue', linestyle='--', label='Tb_f_rate' + test_str + '+ 0.002')
         plq(plt, mo, 'time_t', mo, 'Tb_hdwe_filt_rate', color='black', linestyle='-', label='Tb_hdwe_filt_rate' + ref_str, stairs=True)
         plq(plt, mv, 'time', mv, 'Tb_hdwe_filt_rate', color='green', linestyle='--', label='Tb_hdwe_filt_rate' + test_str)
-        plq(plt, mo, 'time_t', mo, 'Tb_f_rate', color='red', linestyle='-.', label='Tb_f_rate' + ref_str, stairs=True)
-        plq(plt, mv, 'time', mv, 'Tb_f_rate', color='blue', linestyle=':', label='Tb_f_rate' + test_str)
-        plq(plt, mo, 'time', mo, 'Tb_f_rate_rap', color='cyan', linestyle='-.', label='Tb_f_rate_rap' + ref_str)
-        plq(plt, mv, 'time', mv, 'Tb_f_rate_rap', color='orange', linestyle=':', label='Tb_f_rate_rap' + test_str)
+        plq(plt, mv, 'time', mv, 'reset_temp_scl', add=-0.002, color='green', linestyle='--', label='reset_temp' + test_str + '- 0.002')
         plt.legend(loc=2)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
