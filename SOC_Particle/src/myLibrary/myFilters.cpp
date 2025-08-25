@@ -9,6 +9,8 @@
  ****************************************************/
 #include "myFilters.h"
 #include "math.h"
+#include "parameters.h"
+extern SavedPars sp;    // Various parameters to be static at system level and saved through power cycle
 
 //#include <Arduino.h> //needed for Serial.println
 
@@ -637,6 +639,8 @@ double LagExp::calculate(double in, int RESET, const double tau, const double T,
   }
   assignCoeff(tau, T);
   LagExp::rateStateLim(in, max_rate, min_rate);
+  if ( sp.debug()==16 ) Serial.printf("LagExp::calculate:  rate, max_rate, min_rate, T, rstate, lstate %11.8f %11.8f %11.8f %11.8f %11.8f %11.8f\n",
+        max_rate, min_rate, rate_, T_, rstate_, lstate_);
   return (lstate_);
 }
 void LagExp::rateState(double in)
@@ -650,6 +654,8 @@ void LagExp::rateStateLim(double in, double max_rate, double min_rate)
   rate_ = max(min( c_ * (a_ * rstate_ + b_ * in - lstate_), max_rate), min_rate);
   rstate_ = in;
   lstate_ = fmax(fmin(lstate_ + T_ * rate_, max_), min_);
+  if ( sp.debug()==16 ) Serial.printf("LagExp::rateStateLim:  rate, max_rate, min_rate, T, rstate, lstate %11.8f %11.8f %11.8f %11.8f %11.8f %11.8f\n",
+        max_rate, min_rate, rate_, T_, rstate_, lstate_);
 }
 
 
