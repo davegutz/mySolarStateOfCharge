@@ -31,7 +31,9 @@ from myFilters import LagExp
 from pyDAGx import myTables
 
 
-def print_soc_debug(leader="", reset=None, mo_soc=None, mv_soc=None, mv_Tb_f=None, mv_q=None, mv_q_capacity=None):
+def print_soc_debug(leader="", time=None, reset=None, mo_soc=None, mv_soc=None, mv_Tb_f=None, mv_q=None, mv_q_capacity=None):
+    if time is not None:
+        print("\n\ntime {:7.3f}".format(time))
     print(leader, end='')
     print("reset {:2.0f}     mo.soc {:10.8f}    mon.soc {:10.8f}    mon.Tb_f_past {:10.8f}    mon.q {:10.3f}    mon.q_cap {:10.3f}".
           format(reset, mo_soc, mv_soc, mv_Tb_f, mv_q, mv_q_capacity))
@@ -252,7 +254,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     reset = True
     # Top of time loop
     for i in range(t_len):
-        print_soc_debug(leader="\n\ntop:                 ", reset=reset, mo_soc=mon_old.soc[i], mv_soc=mon.soc, mv_Tb_f=mon.Tb_f, mv_q=mon.q, mv_q_capacity=mon.q_capacity)
         now = t[i]
         mon_old.i = i
         T_ekf = None
@@ -294,7 +295,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             reset = reset or reset_sel[i]
         # if mon.reset_temp is not None:
         #     reset = reset or mon.reset_temp
-        print_soc_debug(leader="before reset:        ", reset=reset, mo_soc=mon_old.soc[i], mv_soc=mon.soc, mv_Tb_f=mon.Tb_f, mv_q=mon.q, mv_q_capacity=mon.q_capacity)
+        print_soc_debug(time=now, leader="before sim init:     ", reset=reset, mo_soc=mon_old.soc[i], mv_soc=mon.soc, mv_Tb_f=mon.Tb_f, mv_q=mon.q, mv_q_capacity=mon.q_capacity)
 
         if reset:
             sim.apply_soc(mon_old.soc_s[i], Tb_f_past_)  # calculates delta_q
@@ -376,7 +377,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             if hasattr(mon_old, 'e_wrap_n_filt'):
                 e_w_noa_filt_0 = mon_old.e_wrap_n_filt[0]
             reset_ekf = True
-        print_soc_debug(leader="after reset:         ", reset=reset, mo_soc=mon_old.soc[i], mv_soc=mon.soc, mv_Tb_f=mon.Tb_f, mv_q=mon.q, mv_q_capacity=mon.q_capacity)
+        print_soc_debug(leader="after mon_soc_apply  ", reset=reset, mo_soc=mon_old.soc[i], mv_soc=mon.soc, mv_Tb_f=mon.Tb_f, mv_q=mon.q, mv_q_capacity=mon.q_capacity)
 
         # Monitor calculations including ekf
         if Bmon is None:
