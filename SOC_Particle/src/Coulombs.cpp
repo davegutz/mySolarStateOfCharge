@@ -77,9 +77,9 @@ void Coulombs::pretty_print()
   Serial.printf(" soc%8.4f\n", soc_);
   Serial.printf(" soc_inf%8.4f\n", soc_inf_);
   Serial.printf(" soc_min%8.4f\n", soc_min_);
-  Serial.printf(" tb_%5.1f dg C\n", tb_);
+  Serial.printf(" tb_f_%5.1f dg C\n", tb_f_);
   Serial.printf(" rated_t%5.1f dg C\n", chem_.rated_temp);
-  Serial.printf(" t_rlim%9.5f dg C / s\n", tb_rate_);
+  Serial.printf(" tb_f_rate%9.5f dg C / s\n", tb_f_rate_);
   Serial.printf("Coulombs (mod_code=%d) ", mod_code());
   Serial.printf("Coulombs: silent DEPLOY\n");
   Serial.printf(" Chemistry::\n");
@@ -97,7 +97,7 @@ void Coulombs::pretty_print()
 void Coulombs::apply_cap_scale(const float scale)
 {
   q_cap_rated_scaled_ = scale * q_cap_rated_;
-  q_capacity_ = calculate_capacity(tb_);  // tb_ usually Tb_f to reduce electrical noise effects
+  q_capacity_ = calculate_capacity(tb_f_);  // tb_f_ usually Tb_f to reduce electrical noise effects
   q_ = *sp_delta_q_ + q_capacity_; // preserve delta_q, deficit since last saturation (like real life)
   soc_ = q_ / q_capacity_;
   resetting_ = true;     // momentarily turn off saturation check
@@ -116,12 +116,12 @@ void Coulombs::apply_delta_q(const double delta_q)
 void Coulombs::apply_delta_q_t(const boolean reset)
 {
   if ( !reset ) return;
-  q_capacity_ = calculate_capacity(tb_);
+  q_capacity_ = calculate_capacity(tb_f_);
   q_ = q_capacity_ + *sp_delta_q_;
   soc_ = q_ / q_capacity_;
   resetting_ = true;
 }
-void Coulombs::apply_delta_q_t(const double delta_q, const float temp_c)
+void Coulombs::apply_delta_q_t(const double delta_q, const float tb_f)
 {
   *sp_delta_q_ = delta_q;
   apply_delta_q_t(true);
@@ -129,26 +129,26 @@ void Coulombs::apply_delta_q_t(const double delta_q, const float temp_c)
 
 
 // Memory set, adjust book-keeping as needed.  delta_q preserved
-void Coulombs::apply_soc(const float soc, const float temp_c)
+void Coulombs::apply_soc(const float soc, const float tb_f)
 {
   soc_ = soc;
-  q_capacity_ = calculate_capacity(temp_c);
+  q_capacity_ = calculate_capacity(tb_f);
   q_ = soc*q_capacity_;
   *sp_delta_q_ = q_ - q_capacity_;
   resetting_ = true;     // momentarily turn off saturation check
 }
 
 // Capacity
-double Coulombs::calculate_capacity(const float temp_c)
+double Coulombs::calculate_capacity(const float tb_f)
 {
-  return( q_cap_rated_scaled_ * (1+chem_.dqdt*(temp_c - chem_.rated_temp)) );
+  return( q_cap_rated_scaled_ * (1+chem_.dqdt*(tb_f - chem_.rated_temp)) );
 }
 
 /* Coulombs::count_coulombs:  Count coulombs based on true=actual capacity
 Inputs:
   dt              Integration step, s
   reset_temp      Temperature frame reset flag, T=resetting
-  tb              Battery temperature lagged and rate-limited, deg C
+  tb_f            Battery temperature lagged and rate-limited, deg C
   tb_rate         Battery temperature rate lagged and limited, deg C / s
   charge_curr     Charge, A
   sat             Indication that battery is saturated, T=saturated
@@ -161,19 +161,19 @@ Outputs:
   soc_min_        Estimated soc where battery BMS will shutoff current, fraction
   q_min_          Estimated charge at low voltage shutdown, C\
 */
-float Coulombs::count_coulombs(const double dt, const boolean reset_temp, const float tb, const float tb_rate, const float charge_curr,
+float Coulombs::count_coulombs(const double dt, const boolean reset_temp, const float tb_f, const float tb_rate, const float charge_curr,
   const boolean sat, const double delta_q_ekf)
 {
     // Inputs
     dt_ = dt;
-    tb_ = tb;
-    tb_rate_ = tb_rate;
+    tb_f_ = tb_f;
+    tb_f_rate_ = tb_rate;
     d_delta_q_ = charge_curr * dt_;
 
     // State change
     double d_delta_q_inf = d_delta_q_;
     if ( charge_curr>0. ) d_delta_q_ *= coul_eff_;
-    d_delta_q_ -= chem_.dqdt*q_capacity_*tb_rate_*dt_;
+    d_delta_q_ -= chem_.dqdt*q_capacity_*tb_f_rate_*dt_;
     d_delta_q_inf = d_delta_q_;
     sat_ = sat;
 
@@ -197,7 +197,7 @@ float Coulombs::count_coulombs(const double dt, const boolean reset_temp, const 
     resetting_ = false;     // one pass flag
 
     // Integration.   Can go to negative
-    q_capacity_ = calculate_capacity(tb_);
+    q_capacity_ = calculate_capacity(tb_f_);
     if ( !reset_temp && !cp.inf_reset )
     {
       *sp_delta_q_ = max(min(*sp_delta_q_ + d_delta_q_, 0.0), -q_capacity_*1.5);
@@ -232,7 +232,7 @@ float Coulombs::count_coulombs(const double dt, const boolean reset_temp, const 
     // Normalize
     soc_ = q_ / q_capacity_;
     soc_inf_ = q_inf_ / q_capacity_;
-    soc_min_ = chem_.soc_min_T_->interp(tb_);
+    soc_min_ = chem_.soc_min_T_->interp(tb_f_);
     q_min_ = soc_min_ * q_capacity_;
 
     // Save and return
@@ -240,16 +240,16 @@ float Coulombs::count_coulombs(const double dt, const boolean reset_temp, const 
     if ( sp.debug()==36 )
     {
         Serial.printf("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
-            charge_curr, dt_, -chem_.dqdt*q_capacity_*tb_rate_*dt_, coul_eff_, d_delta_q_, *sp_delta_q_, q_);
+            charge_curr, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_, *sp_delta_q_, q_);
         Serial1.printf("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
-            charge_curr, dt_, -chem_.dqdt*q_capacity_*tb_rate_*dt_, coul_eff_, d_delta_q_, *sp_delta_q_, q_);
+            charge_curr, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_, *sp_delta_q_, q_);
     }
     if ( sp.debug()==-99 )
     {
-      Serial.printf("sat, dt_, tb_, charge_curr, dq, dqt+, ddq, q, soc_min soc, %d, %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%12.1f,%10.7f,%10.7f,\n",
-       sat, dt_, tb_, charge_curr, charge_curr * dt_, chem_.dqdt*q_capacity_*tb_rate_*dt_, d_delta_q_, q_, soc_min_, soc_);
-      Serial1.printf("sat, dt_, tb_, charge_curr, dq, dqt+, ddq, q, soc_min soc, %d, %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%12.1f,%10.7f,%10.7f,\n",
-       sat, dt_, tb_, charge_curr, charge_curr * dt_, chem_.dqdt*q_capacity_*tb_rate_*dt_, d_delta_q_, q_, soc_min_, soc_);
+      Serial.printf("sat, dt_, tb_f_, charge_curr, dq, dqt+, ddq, q, soc_min soc, %d, %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%12.1f,%10.7f,%10.7f,\n",
+       sat, dt_, tb_f_, charge_curr, charge_curr * dt_, chem_.dqdt*q_capacity_*tb_f_rate_*dt_, d_delta_q_, q_, soc_min_, soc_);
+      Serial1.printf("sat, dt_, tb_f_, charge_curr, dq, dqt+, ddq, q, soc_min soc, %d, %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%12.1f,%10.7f,%10.7f,\n",
+       sat, dt_, tb_f_, charge_curr, charge_curr * dt_, chem_.dqdt*q_capacity_*tb_f_rate_*dt_, d_delta_q_, q_, soc_min_, soc_);
     }
 
     return ( soc_ );

@@ -538,9 +538,9 @@ def overall_fault(mo, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plt.plot(mo.time_ux, mo.ib_sel, color='black', linestyle='-', label='ib_sel=ib_in')
     plt.plot(mv.time_ux, mv.ib_in, color='cyan', linestyle='--', label='ib_in_ver')
     plt.plot(smv.time_ux, smv.ib_in_s, color='orange', linestyle='-.', label='ib_in_s_ver')
-    plt.plot(mo.time_ux, mo.Tb, color='red', linestyle='-', label='temp_c')
-    plt.plot(mv.time_ux, mv.Tb, color='blue', linestyle='--', label='temp_c_ver')
-    plt.plot(smv.time_ux, mv.Tb, color='green', linestyle='-.', label='temp_c_s_ver')
+    plt.plot(mo.time_ux, mo.Tb, color='red', linestyle='-', label='Tb')
+    plt.plot(mv.time_ux, mv.Tb, color='blue', linestyle='--', label='Tb_ver')
+    plt.plot(smv.time_ux, mv.Tb, color='green', linestyle='-.', label='Tb_s_ver')
     plt.legend(loc=1)
     plt.subplot(332)
     plq(plt, mo, 'time_ux', mo, 'ioc', color='black', linestyle='-', label='ioc')
@@ -799,8 +799,8 @@ def bandaid(h, chm_in=0):
     return mon_old, sim_old
 
 
-def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, temp=None, t_rated=None):
-    q_cap = q_cap_rated_scaled * (1. + dqdt * (temp - t_rated))
+def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=None):
+    q_cap = q_cap_rated_scaled * (1. + dqdt * (tb_f - t_rated))
     return q_cap
 
 
@@ -817,11 +817,11 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
         bms_off_[i] = (h.Tb[i] < mon.chemistry.low_t) or ((h.voc_stat[i] < 10.5) and (h.ib[i] < Battery.IB_MIN_UP))
 
     # Correct for temp
-    q_cap = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, temp=h.Tb,
+    q_cap = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, tb_f=h.Tb,
                                t_rated=mon.chemistry.rated_temp)
     dq = (h.soc - 1.) * q_cap
     dq -= mon.chemistry.dqdt * q_cap * (temp_corr - h.Tb)
-    q_cap_r = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, temp=temp_corr,
+    q_cap_r = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, tb_f=temp_corr,
                                  t_rated=mon.chemistry.rated_temp)
     soc_r = 1. + dq / q_cap_r
     h = rf.rec_append_fields(h, 'soc_r', soc_r)

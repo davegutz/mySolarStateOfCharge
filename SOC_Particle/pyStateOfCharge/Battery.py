@@ -127,7 +127,7 @@ class Battery(Coulombs):
                             what gets delivered, e.g.Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
                             or 20 - 40 A for a 100 Ah battery"""
 
-    def __init__(self, q_cap_rated=UNIT_CAP_RATED*3600, temp_rlim=0.017, t_rated=25., temp_c=25., tweak_test=False,
+    def __init__(self, q_cap_rated=UNIT_CAP_RATED*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
                  sres0=1., sresct=1., stauct=1., scale_r_ss=1., s_hys=1., dvoc=0., mod_code=0, s_coul_eff=1.,
                  scale_cap=1., unit=None):
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
@@ -167,8 +167,8 @@ class Battery(Coulombs):
         self.chemistry.coul_eff *= s_coul_eff
         self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.UNIT_CAP_RATED*scale_cap,
                                      min_=-Battery.UNIT_CAP_RATED*scale_cap, tau=self.chemistry.tau_ct)
-        self.Tb = temp_c
-        self.Tb_f = temp_c
+        self.Tb = tb_f
+        self.Tb_f = tb_f
         self.Tb_f_rate = None
         self.saved = Saved()  # for plots and prints
         self.dv_hys = 0.  # Placeholder so BatterySim can be plotted
@@ -228,11 +228,11 @@ class Battery(Coulombs):
         s += Coulombs.__str__(self, prefix + 'Battery:')
         return s
 
-    def assign_temp_c(self, temp_c):
-        self.Tb = temp_c
+    def assign_tb(self, tb):
+        self.Tb = tb
 
-    def assign_temp_c_f(self, temp_c):
-        self.Tb_f = temp_c
+    def assign_tb_f(self, tb_f):
+        self.Tb_f = tb_f
 
     def assign_soc(self, soc, voc):
         self.soc = soc
@@ -241,20 +241,20 @@ class Battery(Coulombs):
         self.vsat = self.chemistry.nom_vsat + (self.Tb - self.chemistry.rated_temp) * self.chemistry.dvoc_dt
         self.sat = self.voc >= self.vsat
 
-    def calc_h_jacobian(self, soc_lim, temp_c):
+    def calc_h_jacobian(self, soc_lim, tb_f):
         if soc_lim > 0.5:
-            dv_dsoc = (self.chemistry.lookup_voc(soc_lim, temp_c) -
-                       self.chemistry.lookup_voc(soc_lim-0.01, temp_c)) / 0.01
+            dv_dsoc = (self.chemistry.lookup_voc(soc_lim, tb_f) -
+                       self.chemistry.lookup_voc(soc_lim-0.01, tb_f)) / 0.01
         else:
-            dv_dsoc = (self.chemistry.lookup_voc(soc_lim+0.01, temp_c) -
-                       self.chemistry.lookup_voc(soc_lim, temp_c)) / 0.01
+            dv_dsoc = (self.chemistry.lookup_voc(soc_lim+0.01, tb_f) -
+                       self.chemistry.lookup_voc(soc_lim, tb_f)) / 0.01
         return dv_dsoc
 
-    def calc_soc_voc(self, soc, temp_c):
+    def calc_soc_voc(self, soc, tb_f):
         """SOC-OCV curve fit method per Zhang, etal """
-        dv_dsoc = self.calc_h_jacobian(soc, temp_c)
-        voc = self.chemistry.lookup_voc(soc, temp_c)
-        # print("soc=", soc, "temp_c=", temp_c, "dvoc=", self.dvoc, "voc=", voc)
+        dv_dsoc = self.calc_h_jacobian(soc, tb_f)
+        voc = self.chemistry.lookup_voc(soc, tb_f)
+        # print("soc=", soc, "tb_f=", tb_f, "dvoc=", self.dvoc, "voc=", voc)
         return voc, dv_dsoc
 
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
@@ -271,11 +271,11 @@ class BatteryMonitor(Battery, EKF1x1):
     """Extend Battery class to make a monitor"""
 
     def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1.,
-                 temp_c=25., tweak_test=False, sres0=1., sresct=1., stauct=1.,
+                 tb_f=25., tweak_test=False, sres0=1., sresct=1., stauct=1.,
                  scaler_q=None, scaler_r=None, scale_r_ss=1., s_hys=1., dvoc=0., eframe_mult=Battery.cp_eframe_mult,
                  mod_code=0, s_coul_eff=1., unit=None, Sen=None):
         q_cap_rated_scaled = q_cap_rated * scale
-        Battery.__init__(self, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, temp_c=temp_c,
+        Battery.__init__(self, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, sres0=sres0, sresct=sresct, stauct=stauct, scale_r_ss=scale_r_ss,
                          s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, s_coul_eff=s_coul_eff, scale_cap=scale, unit=unit)
 
@@ -537,7 +537,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.amp_hrs_remaining_wt = 0.
         return self.tcharge
 
-    # def count_coulombs(self, dt=0., reset=False, temp_c=25., charge_curr=0., sat=True):
+    # def count_coulombs(self, dt=0., reset=False, tb_f=25., charge_curr=0., sat=True):
     #     raise NotImplementedError
 
     def converged_ekf(self):
@@ -552,7 +552,7 @@ class BatteryMonitor(Battery, EKF1x1):
     def ekf_update(self):
         # Measurement function hx(x), x = soc ideal capacitor
         x_lim = max(min(self.x_ekf, 1.), 0.)
-        self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, temp_c=self.Tb)
+        self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.Tb_f)
         # Jacobian of measurement function
         self.H = self.dv_dsoc
         return self.hx, self.H
@@ -566,10 +566,10 @@ class BatteryMonitor(Battery, EKF1x1):
         self.q_ekf = self.soc_ekf * self.q_capacity
         self.P = p
 
-    def regauge(self, temp_c):
+    def regauge(self, tb_f):
         if self.converged_ekf() and abs(self.soc_ekf - self.soc) > Battery.DF2:
             print("Resetting Coulomb Counter Monitor from ", self.soc, " to EKF=", self.soc_ekf, "...")
-            self.apply_soc(self.soc_ekf, temp_c)
+            self.apply_soc(self.soc_ekf, tb_f)
             print("confirmed ", self.soc)
 
     def save(self, time, dt, soc_ref, voc_ref):  # BatteryMonitor
@@ -718,10 +718,10 @@ class BatterySim(Battery):
     """Extend Battery class to make a model"""
 
     def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1., stauct=1.,
-                 temp_c=25., hys_scale=1., tweak_test=False, dv_hys=0., sres0=1., sresct=1., scale_r_ss=1.,
+                 tb_f=25., hys_scale=1., tweak_test=False, dv_hys=0., sres0=1., sresct=1., scale_r_ss=1.,
                  s_hys=1., dvoc=0., scale_hys_cap=1., mod_code=0, s_cap_chg=1., s_cap_dis=1., s_hys_chg=1.,
                  s_hys_dis=1., s_coul_eff=1., cutback_gain_sclr=1., ds_voc_soc=0., unit=None):
-        Battery.__init__(self, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, temp_c=temp_c,
+        Battery.__init__(self, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, sres0=sres0, sresct=sresct, stauct=stauct, scale_r_ss=scale_r_ss,
                          s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, s_coul_eff=s_coul_eff, scale_cap=scale,
                          unit=unit)
@@ -884,7 +884,7 @@ class BatterySim(Battery):
             self.d_delta_q *= self.chemistry.coul_eff
         if self.reset:
             if soc_s_init and not self.mod:
-                self.delta_q = self.calculate_capacity(self.Tb_f) * (soc_s_init - 1.)
+                self.delta_q = self.calculate_capacity(tb_f=self.Tb_f) * (soc_s_init - 1.)
         self.tb = tb
 
         # Saturation.   Goal is to set q_capacity and hold it so remembers last saturation status
@@ -897,7 +897,7 @@ class BatterySim(Battery):
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
 
         # Integration can go to -50%
-        self.q_capacity = self.calculate_capacity(self.tb)
+        self.q_capacity = self.calculate_capacity(tb_f=self.Tb_f)
         if use_soc_in:
             self.soc = soc_in
             self.q = self.q_capacity * self.soc
@@ -969,21 +969,21 @@ class BatterySim(Battery):
 
 
 # Other functions
-def is_sat(temp_c, voc, soc, nom_vsat, dvoc_dt, low_t):
-    vsat = sat_voc(temp_c, nom_vsat, dvoc_dt)
-    return temp_c > low_t and (voc >= vsat or soc >= Battery.mxeps_bb)
+def is_sat(tb_f, voc, soc, nom_vsat, dvoc_dt, low_t):
+    vsat = sat_voc(tb_f, nom_vsat, dvoc_dt)
+    return tb_f > low_t and (voc >= vsat or soc >= Battery.mxeps_bb)
 
 
-def calculate_capacity(temp_c, t_sat, q_sat, dqdt):
-    return q_sat * (1-dqdt*(temp_c - t_sat))
+def calculate_capacity(tb_f, t_rat, q_sat, dqdt):
+    return q_sat * (1-dqdt*(tb_f - t_rat))
 
 
-def calc_vsat(temp_c, vsat, dvoc_dt):
-    return sat_voc(temp_c, vsat, dvoc_dt)
+def calc_vsat(tb_f, vsat, dvoc_dt):
+    return sat_voc(tb_f, vsat, dvoc_dt)
 
 
-def sat_voc(temp_c, vsat, dvoc_dt):
-    return vsat + (temp_c-25.)*dvoc_dt
+def sat_voc(tb_f, vsat, dvoc_dt):
+    return vsat + (tb_f-25.)*dvoc_dt
 
 
 class Looparound:

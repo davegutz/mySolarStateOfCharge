@@ -303,7 +303,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.legend(loc=1)
     plt.subplot(326)
     plq(plt, mo, 'time_t', mo, 'Tb', color='green', linestyle='-', label='Tb'+ref_str, stairs=True)
-    plt.plot(mv.time, mv.Tb, color='orange', linestyle='--', label='temp_c'+test_str)
+    plt.plot(mv.time, mv.Tb, color='orange', linestyle='--', label='Tb'+test_str)
     plt.plot(mo.time, mo.chm, color='black', linestyle='-', label='mon_chm'+ref_str)
     plq(plt, so, 'time', so, 'chm_s', color='cyan', linestyle='--', label='sim_chm'+ref_str)
     plt.ylim(0., 50.)

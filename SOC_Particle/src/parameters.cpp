@@ -385,7 +385,7 @@ void SavedPars::pretty_print_modeling()
   Serial.printf(" 0x8   tweak_test %d\n", tweak_test());
   Serial.printf(" 0x4   current %d\n", mod_ib());
   Serial.printf(" 0x2   voltage %d\n", mod_vb());
-  Serial.printf(" 0x1   temp %d\n", mod_tb());
+  Serial.printf(" 0x1   temp %d\n", mod_tb_f());
 
   
   time_long_2_str((time_t)Time_now_z, buffer);

@@ -299,9 +299,9 @@ String Chemistry::decode(const uint8_t mod)
 }
 
 // lookup_voc
-float Chemistry::lookup_voc(const float soc, const float temp_c)
+float Chemistry::lookup_voc(const float soc, const float tb_f)
 {
-    return voc_T_->interp(soc, temp_c) + dvoc;
+    return voc_T_->interp(soc, tb_f) + dvoc;
 }
 
 // Pretty print
@@ -332,7 +332,7 @@ void Chemistry::pretty_print()
     Serial.printf("  tau_sd%9.3g; EKF, s\n", tau_sd);
     Serial.printf("  voc(t, soc):\n");
     voc_T_->pretty_print();
-    Serial.printf("  soc_min(temp_c):\n");
+    Serial.printf("  soc_min(tb_f):\n");
     soc_min_T_->pretty_print();
     Serial.printf("  r(soc, dv):\n");
     hys_T_->pretty_print();

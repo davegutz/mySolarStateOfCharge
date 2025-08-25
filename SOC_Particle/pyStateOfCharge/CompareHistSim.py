@@ -116,7 +116,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
         cc_diff_thr_, ewhi_thr_, ewlo_thr_, ib_diff_thr_, ib_quiet_thr_ = \
             fault_thr_bb(Tb, soc, voc_soc[i], voc_stat, C_rate, BB)
         ib_ = d_ra.ib[i]
-        temp_c = d_ra.Tb[i]
+        tb_f = d_ra.Tb[i]
         vb_ = d_ra.vb[i]
         voc_ = d_ra.voc[i]
         reset = i == 0
@@ -129,7 +129,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
         if reset and bms_off_init is not None:
             bms_off = bms_off_init
         else:
-            bms_off = (temp_c <= mon.chemistry.low_t) or (voltage_low and not rp.tweak_test())  # KISS
+            bms_off = (tb_f <= mon.chemistry.low_t) or (voltage_low and not rp.tweak_test())  # KISS
         ib_charge_ = ib_
         if bms_off and not bms_charging:
             ib_charge_ = 0.
@@ -767,14 +767,14 @@ def bandaid(h):
     return mon_old, sim_old
 
 
-def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, temp=None, t_rated=None):
-    q_cap = q_cap_rated_scaled * (1. + dqdt * (temp - t_rated))
+def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=None):
+    q_cap = q_cap_rated_scaled * (1. + dqdt * (tb_f - t_rated))
     return q_cap
 
 
 # Make an array useful for analysis (around temp) and add some metrics
-def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
-    h = raw[abs(raw.Tb - temp_corr) < tb_band]
+def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=100.):
+    h = raw[abs(raw.Tb - tb_forr) < tb_band]
 
     sat_ = np.copy(h.Tb)
     bms_off_ = np.copy(h.Tb)
@@ -785,16 +785,16 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
         bms_off_[i] = (h.Tb[i] < mon.chemistry.low_t) or ((h.voc_stat[i] < 10.5) and (h.ib[i] < Battery.IB_MIN_UP))
 
     # Correct for temp
-    q_cap = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, temp=h.Tb,
+    q_cap = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, tb_f=h.Tb,
                                t_rated=mon.chemistry.rated_temp)
     dq = (h.soc - 1.) * q_cap
-    dq -= mon.chemistry.dqdt * q_cap * (temp_corr - h.Tb)
-    q_cap_r = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, temp=temp_corr,
+    dq -= mon.chemistry.dqdt * q_cap * (tb_forr - h.Tb)
+    q_cap_r = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, tb_f=tb_forr,
                                  t_rated=mon.chemistry.rated_temp)
     soc_r = 1. + dq / q_cap_r
     h = rf.rec_append_fields(h, 'soc_r', soc_r)
-    h.voc_stat_r = h.voc_stat - (h.Tb - temp_corr) * mon.chemistry.dvoc_dt
-    h.voc_stat_rescaled_r = h.voc_stat_rescaled - (h.Tb - temp_corr) * mon.chemistry.dvoc_dt
+    h.voc_stat_r = h.voc_stat - (h.Tb - tb_forr) * mon.chemistry.dvoc_dt
+    h.voc_stat_rescaled_r = h.voc_stat_rescaled - (h.Tb - tb_forr) * mon.chemistry.dvoc_dt
 
     # delineate charging and discharging
     voc_stat_r_chg = np.copy(h.voc_stat)
@@ -863,7 +863,7 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
             ioc = hys_redesign.ioc
             dv_dot = hys_redesign.dv_dot
             voc_stat = voc - dvh
-            voc_stat_r = voc_stat - (tb - temp_corr) * mon.chemistry.dvoc_dt
+            voc_stat_r = voc_stat - (tb - tb_forr) * mon.chemistry.dvoc_dt
             dv_hys_redesign.append(dvh)
             res_redesign.append(res)
             ioc_redesign.append(max(min(ioc, 40.), -40.))

@@ -32,7 +32,7 @@ from pyDAGx import myTables
 
 
 def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
-    hdr = "  i  time   r r_t sa sa_v  ib_c   ib_c_v   soc      soc_v        dt    dt_v   delq     delq_v      q_cap  q_cap_v    Tb         Tb_v           Tb_f       Tb_f_v       Tb_f_rate  Tb_f_rate_v"
+    hdr = "  i  time   r r_t sa sa_v  ib_c   ib_c_v   soc      soc_v        dt    dt_v   delq     delq_v      qcrs   qcrs_v    q_cap  q_cap_v    Tb         Tb_v           Tb_f       Tb_f_v       Tb_f_rate  Tb_f_rate_v"
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
@@ -41,6 +41,7 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
           "{:11.6f}".format(mon_old.soc[i]), "{:8.6f}".format(mon.soc),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:9.1f}".format(mon_old.delta_q[i]), "{:5.1f}".format(mon.delta_q),
+          "{:9.0f}".format(mon_old.qcrs[i]), "{:6.0f}".format(mon.q_cap_rated_scaled),
           "{:9.0f}".format(mon_old.q_capacity[i]), "{:6.0f}".format(mon.q_capacity),
           "{:14.7f}".format(mon_old.Tb[i_temp]), "{:10.7f}".format(mon.Tb),
           "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
@@ -195,12 +196,12 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             scale_sim *= scale_in
     s_q = Scale(1., 3., 0.000005, 0.00005)
     s_r = Scale(1., 3., 0.001, 1.)   # t_ib_fail = 1000
-    sim = BatterySim(mod_code=chm_s[0], temp_c=Tb0, scale=scale_sim, tweak_test=tweak_test,
+    sim = BatterySim(mod_code=chm_s[0], tb_f=Tb0, scale=scale_sim, tweak_test=tweak_test,
                      dv_hys=mon_old.dv_hys[0], sres0=sres0, sresct=sresct, stauct=stauct_sim, scale_r_ss=scale_r_ss,
                      s_hys=s_hys_sim, dvoc=dvoc_sim, scale_hys_cap=scale_hys_cap_sim, s_coul_eff=s_coul_eff,
                      s_cap_chg=s_cap_chg, s_cap_dis=s_cap_dis, s_hys_chg=s_hys_chg, s_hys_dis=s_hys_dis,
                      cutback_gain_sclr=cutback_gain_sclr, ds_voc_soc=ds_voc_soc, unit=unit)
-    mon = BatteryMonitor(mod_code=chm_m[0], temp_c=Tb0, scale=scale_mon, tweak_test=tweak_test,
+    mon = BatteryMonitor(mod_code=chm_m[0], tb_f=Tb0, scale=scale_mon, tweak_test=tweak_test,
                          sres0=sres0, sresct=sresct, stauct=stauct_mon, scaler_q=s_q, scaler_r=s_r,
                          scale_r_ss=scale_r_ss, s_hys=s_hys_mon, dvoc=dvoc_mon, eframe_mult=eframe_mult,
                          s_coul_eff=s_coul_eff, unit=unit)
@@ -287,8 +288,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if reset:
             sim.apply_soc(mon_old.soc_s[i], Tb_f_past_)  # calculates delta_q
             sim.load(sim.delta_q)
-            sim.assign_temp_c(Tb_past_)
-            sim.assign_temp_c_f(Tb_f_past_)
+            sim.assign_tb(Tb_past_)
+            sim.assign_tb_f(Tb_f_past_)
             sim.apply_delta_q_t(sim.delta_q, Tb_f_past_)
             if sim_old is not None:
                 sat_s_init = sim_old.sat_s[0]
@@ -353,7 +354,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.apply_soc(mon_old.soc[i], Tb_f_)
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
-            mon.assign_temp_c(Tb_past_)
+            mon.assign_tb(Tb_past_)
             if hasattr(mon_old, 'e_wrap_m'):
                 e_w_amp_0 = mon_old.e_wrap_m[0]
             if hasattr(mon_old, 'e_wrap_m_filt'):

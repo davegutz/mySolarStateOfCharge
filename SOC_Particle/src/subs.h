@@ -112,7 +112,7 @@ struct Pins
 
 
 // Headers
-void harvest_temp_change(const float temp_c, BatteryMonitor *Mon, BatterySim *Sim, const float rate, const float dt);
+void harvest_temp_change(const float tb_f, BatteryMonitor *Mon, BatterySim *Sim, const float rate, const float dt);
 void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const boolean use_soc_in);
 void load_ib_vb(const boolean reset, const boolean reset_temp, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon);
 void monitor(const boolean reset, const boolean reset_temp, const unsigned long long now,

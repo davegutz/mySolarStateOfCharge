@@ -394,7 +394,7 @@ void loop()
     Log.info("ino:  temp_load_and_filter");
     Sen->temp_load_and_filter(Sen, reset_temp);
     Sen->select_temp(Mon);
-    Sen->Tb_model = Sen->Tb_model_filt = Sen->Sim->tb();
+    Sen->Tb_model = Sen->Tb_model_filt = Sen->Sim->tb_f();
     Log.info("ino:  print_serial_temp_data");
     print_serial_temp_data(reset_temp, Sen);
   }

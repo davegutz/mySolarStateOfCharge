@@ -36,17 +36,17 @@ extern PrinterPars pr;  // Print buffer
 extern PublishPars pp;  // For publishing
 
 // Harvest charge caused temperature change.   More charge becomes available as battery warms
-void harvest_temp_change(const float temp_c, BatteryMonitor *Mon, BatterySim *Sim, const float tb_rate, const float dt)
+void harvest_temp_change(const float tb_f, BatteryMonitor *Mon, BatterySim *Sim, const float tb_rate, const float dt)
 {
 #ifdef DEBUG_DETAIL
-if ( sp.debug()==-1 ) Serial.printf("entry harvest_temp_change:  Delta_q %10.1f temp_c %5.1f delta_q_model %10.1f tb_s %5.1f\n",
-  sp.delta_q(), temp_c, sp.delta_q_model(), temp_c);
+if ( sp.debug()==-1 ) Serial.printf("entry harvest_temp_change:  Delta_q %10.1f tb_f %5.1f delta_q_model %10.1f tb_s %5.1f\n",
+  sp.delta_q(), tb_f, sp.delta_q_model(), tb_f);
 #endif
   sp.put_Delta_q(sp.delta_q() - Mon->dqdt() * Mon->q_capacity() * tb_rate * dt);
   sp.put_delta_q_model(sp.delta_q_model() - Sim->dqdt() * Sim->q_capacity() * tb_rate * dt);
 #ifdef DEBUG_DETAIL
-if ( sp.debug()==-1 ) Serial.printf("exit harvest_temp_change:  Delta_q %10.1f temp_c %5.1f delta_q_model %10.1f tb_s %5.1f\n",
-  sp.delta_q(), temp_c, sp.delta_q_model(), temp_c);
+if ( sp.debug()==-1 ) Serial.printf("exit harvest_temp_change:  Delta_q %10.1f tb_f %5.1f delta_q_model %10.1f tb_s %5.1f\n",
+  sp.delta_q(), tb_f, sp.delta_q_model(), tb_f);
 #endif
 }
 
@@ -73,7 +73,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
         if ( !sp.mod_ib() ) Sen->Ib_model_in = Sen->Ib_noa_hdwe;
     #endif
   Sen->temp_load_and_filter(Sen, true);
-  if ( sp.mod_tb() )
+  if ( sp.mod_tb_f() )
   {
     Sen->Tb = Sen->Tb_model;
     Sen->Tb_f = Sen->Tb_model_filt;
@@ -100,9 +100,9 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #endif
 
   if ( cp.soft_sim_hold )  
-    Sen->Sim->apply_delta_q_t(Sen->Sim->delta_q(), Sen->Sim->tb());  // applies sp.delta_q and sp.T_state
+    Sen->Sim->apply_delta_q_t(Sen->Sim->delta_q(), Sen->Sim->tb_f());  // applies sp.delta_q and sp.T_state
   else
-    Sen->Sim->apply_delta_q_t(Mon->delta_q(), Mon->tb());  // applies sp.delta_q and sp.T_state
+    Sen->Sim->apply_delta_q_t(Mon->delta_q(), Mon->tb_f());  // applies sp.delta_q and sp.T_state
 
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("S.a_d_q_t:"); debug_m1(Mon, Sen);}
@@ -217,7 +217,7 @@ void load_ib_vb(const boolean reset, const boolean reset_temp, Sensors *Sen, Pin
 void  monitor(const boolean reset, const boolean reset_temp, const unsigned long long now,
   TFDelay *Is_sat_delay, BatteryMonitor *Mon, Sensors *Sen)
 {
-  // EKF - calculates tb_, voc_stat_, voc_ as functions of sensed parameters vb & ib (not soc)
+  // EKF - calculates tb_f_, voc_stat_, voc_ as functions of sensed parameters vb & ib (not soc)
   Mon->calculate(Sen, reset_temp);
 
   // Debounce saturation calculation done in ekf using voc model
@@ -544,7 +544,7 @@ void oled_display(Sensors *Sen, BatteryMonitor *Mon)
 //    saturation.  Sen->Ib is a feedback (used-before-calculated).
 // Inputs:  sp.config, sp.sim_chm, Sen->Tb, Sen->Ib_model_in
 // States:  Sim.soc
-// Outputs: Sim.tb_, Sen->Tb_f, Sen->Ib, Sen->Ib_model,
+// Outputs: Sim.tb_f_, Sen->Tb_f, Sen->Ib, Sen->Ib_model,
 //   Sen->Vb_model, Sen->Tb_f, sp.inj_bias
 void sense_synth_select(const boolean reset, const boolean reset_temp, const unsigned long long now, const unsigned long long elapsed,
   Pins *myPins, BatteryMonitor *Mon, Sensors *Sen)

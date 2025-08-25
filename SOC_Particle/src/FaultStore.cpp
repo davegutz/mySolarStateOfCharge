@@ -207,7 +207,7 @@ Flt_ram::~Flt_ram(){}
     get_vb_hdwe();
     get_ib_amp_hdwe();
     get_ib_noa_hdwe();
-    get_Tb();
+    get_tb_f();
     get_vb();
     get_ib();
     get_soc();
@@ -257,7 +257,7 @@ void Flt_ram::put(const Flt_st value)
     put_vb_hdwe();
     put_ib_amp_hdwe();
     put_ib_noa_hdwe();
-    put_Tb();
+    put_tb_f();
     put_vb();
     put_ib();
     put_soc();

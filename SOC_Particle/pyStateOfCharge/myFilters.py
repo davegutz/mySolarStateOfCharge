@@ -419,8 +419,8 @@ class LagExp(DiscreteFilter):
             self.rstate = in_
             self.rate = _rate0
         self.out_ = self.state
-        if reset and in_ > 15:
-            print(f"calculate_tau_seeded init:  r {reset} Tb_hdwe0 {in_} Tb_hdwe_filt0 {_out0} rate_0 {_rate0} dt {dt} state {self.state} rstate {self.rstate} out {self.out_}")
+        # if reset and in_ > 15:
+        #     print(f"calculate_tau_seeded init:  r {reset} Tb_hdwe0 {in_} Tb_hdwe_filt0 {_out0} rate_0 {_rate0} dt {dt} state {self.state} rstate {self.rstate} out {self.out_}")
         return self.out_
 
     def save(self, time):

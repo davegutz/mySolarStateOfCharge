@@ -72,7 +72,7 @@ public:
     void get_vb_hdwe()      { int16_t value;        rP_->get(vb_hdwe_eeram_.a16, value);      vb_hdwe = value; };
     void get_ib_amp_hdwe()  { int16_t value;        rP_->get(ib_amp_hdwe_eeram_.a16, value);  ib_amp_hdwe = value; };
     void get_ib_noa_hdwe()  { int16_t value;        rP_->get(ib_noa_hdwe_eeram_.a16, value);  ib_noa_hdwe = value; };
-    void get_Tb()           { int16_t value;        rP_->get(Tb_eeram_.a16, value);           Tb = value; };
+    void get_tb_f()           { int16_t value;        rP_->get(Tb_eeram_.a16, value);           Tb = value; };
     void get_vb()           { int16_t value;        rP_->get(vb_eeram_.a16, value);           vb = value; };
     void get_ib()           { int16_t value;        rP_->get(ib_eeram_.a16, value);           ib = value; };
     void get_soc()          { int16_t value;        rP_->get(soc_eeram_.a16, value);          soc = value; };
@@ -115,7 +115,7 @@ public:
     void put_vb_hdwe()      { rP_->put(vb_hdwe_eeram_.a16, vb_hdwe); };
     void put_ib_amp_hdwe()  { rP_->put(ib_amp_hdwe_eeram_.a16, ib_amp_hdwe); };
     void put_ib_noa_hdwe()  { rP_->put(ib_noa_hdwe_eeram_.a16, ib_noa_hdwe); };
-    void put_Tb()           { rP_->put(Tb_eeram_.a16, Tb); };
+    void put_tb_f()           { rP_->put(Tb_eeram_.a16, Tb); };
     void put_vb()           { rP_->put(vb_eeram_.a16, vb); };
     void put_ib()           { rP_->put(ib_eeram_.a16, ib); };
     void put_soc()          { rP_->put(soc_eeram_.a16, soc); };

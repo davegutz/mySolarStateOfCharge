@@ -76,38 +76,38 @@ class Coulombs:
         resets all the model parameters.   This happens daily.   Then both the model and the battery
         are discharged by the same current so the delta_q will be the same."""
         self.q_cap_rated_scaled = scale * self.q_cap_rated
-        self.q_capacity = self.calculate_capacity(self.tb)
+        self.q_capacity = self.calculate_capacity(tb_f=self.Tb_f)
         self.q = self.delta_q + self.q_capacity  # preserve self.delta_q, deficit since last saturation(like real life)
         self.soc = self.q / self.q_capacity
         self.resetting = True  # momentarily turn off saturation check
 
-    def apply_delta_q(self, delta_q, temp_c):
+    def apply_delta_q(self, delta_q, tb_f):
         """Memory set, adjust bookkeeping as needed.  delta_q, capacity, temp preserved"""
         self.delta_q = delta_q
-        self.q_capacity = self.calculate_capacity(temp_c)
+        self.q_capacity = self.calculate_capacity(tb_f=tb_f)
         self.q = self.delta_q + self.q_capacity
         self.soc = self.q / self.q_capacity
         self.resetting = True  # momentarily turn off saturation check
 
-    def apply_delta_q_t(self, delta_q, temp_c):
+    def apply_delta_q_t(self, delta_q, tb_f):
         self.delta_q = delta_q
-        self.q_capacity = self.calculate_capacity(temp_c)
+        self.q_capacity = self.calculate_capacity(tb_f=tb_f)
         self.q = self.q_capacity + self.delta_q
         self.soc = self.q / self.q_capacity
         self.resetting = True
 
-    def apply_soc(self, soc, temp_c):
+    def apply_soc(self, soc, tb_f):
         """Memory set, adjust bookkeeping as needed.  delta_q preserved"""
         self.soc = soc
-        self.q_capacity = self.calculate_capacity(temp_c)
+        self.q_capacity = self.calculate_capacity(tb_f=tb_f)
         self.q = soc*self.q_capacity
         self.delta_q = self.q - self.q_capacity
         self.resetting = True  # momentarily turn off saturation check
 
-    def calculate_capacity(self, temp_c):
+    def calculate_capacity(self, tb_f):
         """Capacity"""
         try:
-            res = self.q_cap_rated_scaled * (1. + self.chemistry.dqdt * (temp_c - self.chemistry.rated_temp))
+            res = self.q_cap_rated_scaled * (1. + self.chemistry.dqdt * (tb_f - self.chemistry.rated_temp))
         except IOError:
             res = 1
         return res
@@ -145,7 +145,7 @@ class Coulombs:
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
 
         # Integration
-        self.q_capacity = self.calculate_capacity(self.tb)
+        self.q_capacity = self.calculate_capacity(tb_f=self.tb)
         if use_soc_in:
             self.soc = soc_in
             self.q = self.q_capacity * self.soc

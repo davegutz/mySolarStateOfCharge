@@ -31,7 +31,7 @@ import os
 class DataC:
     def __init__(self, nom_unit_cap=1., temp=25., data=None, data_file=''):
         self.nom_unit_cap = nom_unit_cap
-        self.temp_c = temp
+        self.tb_f = temp
         self.data_file = data_file
         if data is None:
             self.soc = None
@@ -42,7 +42,7 @@ class DataC:
             self.vstat = np.array(data.vstat)
 
     def __str__(self):
-        s = 'nom_unit_cap={:7.3f}\ntemp={:7.3f}\ndata_file={:s}\n soc, voc_soc,\n'.format(self.nom_unit_cap, self.temp_c, self.data_file)
+        s = 'nom_unit_cap={:7.3f}\ntemp_f={:7.3f}\ndata_file={:s}\n soc, voc_soc,\n'.format(self.nom_unit_cap, self.tb_f, self.data_file)
         for i in np.arange(len(self.soc)):
             s += "{:7.3f}, {:7.3f},\n".format(self.soc[i], self.vstat[i])
         return s

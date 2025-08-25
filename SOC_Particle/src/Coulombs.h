@@ -47,16 +47,16 @@ public:
   void apply_cap_scale(const float scale);
   void apply_delta_q(const double delta_q);
   void apply_resetting(const boolean resetting){ resetting_ = resetting; };
-  void apply_soc(const float soc, const float temp_c);
+  void apply_soc(const float soc, const float tb_f);
   void apply_delta_q_t(const boolean reset);
-  void apply_delta_q_t(const double delta_q, const float temp_c);
+  void apply_delta_q_t(const double delta_q, const float tb_f);
   void assign_all_mod() { chem_.assign_all_chm(); };
-  double calculate_capacity(const float temp_c);
+  double calculate_capacity(const float tb_f);
   Chemistry *chem() { return &chem_; };
   void chem_pretty_print () { chem_.pretty_print(); };
   double coul_eff() { return ( coul_eff_ ); };
   void coul_eff(const double coul_eff) { coul_eff_ = coul_eff; };
-  virtual float count_coulombs(const double dt, const boolean reset_temp, const float tb, const float tb_rate,
+  virtual float count_coulombs(const double dt, const boolean reset_temp, const float tb_f, const float tb_rate,
     const float charge_curr, const boolean sat, const double delta_q_ekf);
   double delta_q() { return(*sp_delta_q_); };
   double delta_q_abs() { return nice_zero(delta_q_abs_, 1e-6); }
@@ -100,8 +100,8 @@ protected:
   float soc_inf_;     // Fraction of saturation charge (q_capacity_) available (-inf - inf)
   float soc_min_;     // As battery cools, the voltage drops and there appears a minimum soc it can deliver
   double *sp_delta_q_;// Charge since saturated, C
-  float tb_;          // Temperature, deg C
-  float tb_rate_;     // Tb rate, deg C / s
+  float tb_f_;        // Temperature, deg C
+  float tb_f_rate_;   // Tb rate, deg C / s
   double time_neg_;   // Time spent accumulating delta_q_neg_, s
   double time_pos_;   // Time spent accumulating delta_q_pos_, s
   Chemistry chem_;    // Chemistry
