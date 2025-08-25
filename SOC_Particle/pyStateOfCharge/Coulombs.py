@@ -112,12 +112,12 @@ class Coulombs:
             res = 1
         return res
 
-    def count_coulombs(self, chem, dt, reset, tb, charge_curr, sat, tb_f_rate=None, soc_init=None, use_soc_in=False,
+    def count_coulombs(self, chem, dt, reset, tb_f, charge_curr, sat, tb_f_rate=None, soc_init=None, use_soc_in=False,
                        soc_in=0.):
         """Count coulombs based on true=actual capacity
         Inputs:
             dt              Integration step, s
-            tb              Battery temperature, deg C  (filtered usually to reduce electrical noise artifacts)
+            tb_f            Battery temperature, deg C  (filtered usually to reduce electrical noise artifacts)
             charge_curr     Charge, A
             sat             Indicator that battery is saturated (VOC>threshold(temp)), T/F
             coul_eff        Coulombic efficiency - the fraction of charging input that gets turned into usable Coulombs
@@ -132,7 +132,7 @@ class Coulombs:
         if charge_curr > 0. and not self.tweak_test:
             d_delta_q *= self.chemistry.coul_eff
         self.sat = sat
-        self.tb = tb
+        self.tb_f = tb_f
 
         # Saturation.   Goal is to set q_capacity and hold it so remembers last saturation status.
         if sat:
@@ -145,7 +145,7 @@ class Coulombs:
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
 
         # Integration
-        self.q_capacity = self.calculate_capacity(tb_f=self.tb)
+        self.q_capacity = self.calculate_capacity(tb_f=self.tb_f)
         if use_soc_in:
             self.soc = soc_in
             self.q = self.q_capacity * self.soc
@@ -160,7 +160,7 @@ class Coulombs:
 
         # Normalize
         self.soc = self.q / self.q_capacity
-        self.soc_min = self.chemistry.lut_min_soc.interp(self.tb)
+        self.soc_min = self.chemistry.lut_min_soc.interp(self.tb_f)
         self.q_min = self.soc_min * self.q_capacity
 
         # Save and return
