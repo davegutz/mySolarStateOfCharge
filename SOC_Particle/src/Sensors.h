@@ -460,14 +460,14 @@ public:
   float Vb_model;             // Modeled battery bank voltage, V
   float Vc;                   // Selected common reference voltage, V
   float Vc_hdwe;              // Sensed common reference voltage, V
-  float Tb;                   // Selected battery bank temp, C
-  float Tb_f;                 // Selected filtered battery bank temp, C
-  float Tb_f_rate;            // Selected filtered battery bank temp rate, C/s
-  float Tb_hdwe;              // Sensed battery temp, C
-  float Tb_hdwe_filt;         // Filtered, sensed battery temp, C
-  float Tb_hdwe_filt_rate;    // Filtered, sensed battery temp, C/s
-  float Tb_model;             // Temperature used for battery bank temp in model, C
-  float Tb_model_filt;        // Filtered, modeled battery bank temp, C
+  double Tb;                   // Selected battery bank temp, C
+  double Tb_f;                // Selected filtered battery bank temp, C
+  double Tb_f_rate;            // Selected filtered battery bank temp rate, C/s
+  double Tb_hdwe;              // Sensed battery temp, C
+  double Tb_hdwe_filt;        // Filtered, sensed battery temp, C
+  double Tb_hdwe_filt_rate;    // Filtered, sensed battery temp, C/s
+  double Tb_model;             // Temperature used for battery bank temp in model, C
+  double Tb_model_filt;        // Filtered, modeled battery bank temp, C
   float Ib;                   // Selected battery bank current, A
   float Ib_f;                 // Selected filtered battery bank current, A
   float Ib_amp;               // Initial selected amp battery bank current, A
