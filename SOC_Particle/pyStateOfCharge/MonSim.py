@@ -235,11 +235,12 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     # mon.Tb_s = mon_old.Tb_s[0]
     mon.Tb_hdwe_filt = mon_old.Tb_hdwe_filt[0]
     mon.Tb_hdwe_filt_rate = mon_old.Tb_hdwe_filt_rate[0]
-    Tb_ = mon_old.Tb[0] + dTb
-    Tb_f_ = mon_old.Tb_f[0] + dTb
+    Tb_ = mon_old.Tb_rap[0] + dTb
+    Tb_f_ = mon_old.Tb_f_rap[0] + dTb
     Tb_f_rate_past_ = mon_old.Tb_f_rate[0]
     sim.Tb = mon_old.Tb[0]
-    mon.Tb_f = mon_old.Tb_f[0]
+    mon.Tb = mon_old.Tb_rap[0]
+    mon.Tb_f = mon_old.Tb_f_rap[0]
     mon.Tb_f_rate = mon_old.Tb_f_rate[0]
     Tb_past_ = Tb_
     Tb_f_past_ = Tb_f_
