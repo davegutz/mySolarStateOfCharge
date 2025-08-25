@@ -711,8 +711,8 @@ float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean 
         if ( sp.debug()==78 || sp.debug()==7 ) Serial.printf("BatterySim::calculate:,  dt_,tb_f,curr,soc_,voc,dv_dyn,vb,%7.3f,%7.3f,%7.3f,%8.4f,%7.3f,%7.3f,%7.3f,\n",
         dt_,tb_f_, ib_, soc_, voc_, dv_dyn_, vb_);
  
-        if ( sp.debug()==79 ) Serial.printf("reset, mod_ib, tb_f_, dvoc_dt, vsat_, voc, q_capacity, sat_ib_max, ib_fut, ib,=%d,%d,%7.3f,%7.3f,%7.3f,%7.3f, %10.1f, %7.3f, %7.3f, %7.3f,\n",
-            reset, sp.mod_ib(), tb_f_, chem_.dvoc_dt, vsat_, voc_, q_capacity_, sat_ib_max_, ib_fut_, ib_);
+        if ( sp.debug()==79 ) Serial.printf("reset, mod_ib, tb_f_, dvoc_dt, vsat_, voc, qcrs, q_capacity, sat_ib_max, ib_fut, ib,=%d,%d,%9.8f,%7.4f,%7.3f,%7.3f, %12.3f,%12.3f, %7.3f, %7.3f, %7.3f,\n",
+            reset, sp.mod_ib(), tb_f_, chem_.dvoc_dt, vsat_, voc_, q_cap_rated_scaled_, q_capacity_, sat_ib_max_, ib_fut_, ib_);
 
     #endif
 
