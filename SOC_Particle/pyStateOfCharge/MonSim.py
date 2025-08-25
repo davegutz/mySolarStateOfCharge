@@ -317,7 +317,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.Tb_rstate = TbSenseFilt.rstate
             mon.Tb_state = TbSenseFilt.state
 
-            print_each_update = False
+            print_each_update = True
             if print_each_update:
                 print("{:6.3f} reset   {:2.0f}  Tt {:9.7f}  Tb_hdwe  {:11.7f}  Tb_hdwe_filt   {:11.7f} rstate   {:11.7f} lstate   {:11.7f} hwfrate   {:11.7f} tbfrate   {:11.7f} Tb_rap  {:8.3f} Tb_f   {:8.3f}".
                       format(now, mon_old.reset_temp[i_temp], mon_old.Tt[i_temp],

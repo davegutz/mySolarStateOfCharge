@@ -186,7 +186,7 @@ void print_serial_sim_header(void)
 // sp.debug()==1 Temp
 void print_serial_temp_data(const boolean reset, Sensors *Sen)
 {
-  if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  )
+  if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  || sp.debug()==16 )
   {
     double cTime = double(Sen->now_temp)/1000.;
     Serial.printf("temp_unit, %13.3f, %11.7f, %11.7f, %11.7f, %11.7f, %d, %11.7f, %11.7f, %11.8f, %11.7f, %11.7f, %11.8f,\n",
