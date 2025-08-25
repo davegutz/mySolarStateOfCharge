@@ -141,7 +141,7 @@ void Coulombs::apply_soc(const float soc, const float tb_f)
 // Capacity
 double Coulombs::calculate_capacity(const float tb_f)
 {
-  return( q_cap_rated_scaled_ * (1+chem_.dqdt*(tb_f - chem_.rated_temp)) );
+  return( q_cap_rated_scaled_ * (1. + chem_.dqdt*(tb_f - chem_.rated_temp)) );
 }
 
 /* Coulombs::count_coulombs:  Count coulombs based on true=actual capacity
