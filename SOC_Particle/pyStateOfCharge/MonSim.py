@@ -283,12 +283,13 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.dt_temp = mon_old.Tt[i_temp]
             mon.Tb_hdwe = mon_old.Tb_hdwe[i_temp]
             sim.Tb = mon_old.Tb[i_temp]
-            Tb_f_rate_past_ = mon.Tb_f_rate
             mon.Tb = mon_old.Tb[i_temp]
             mon.Tb_s = mon_old.Tb[i_temp]
             if i_temp > 0:
                 Tb_past_ = Tb_
                 Tb_f_past_ = Tb_f_
+                # Tb_f_rate_past_ = mon.Tb_f_rate
+                Tb_f_rate_past_ = Tb_f_rate_
             Tb_ = mon.Tb + dTb
             Tb_f_ = mon.Tb_f + dTb
             sim.Tb_f = mon.Tb_f
@@ -322,8 +323,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.sat = mon_old.sat[0]
 
         if calc_temp:
-            print_soc_debug(time=now, leader="b temp filtr:    ", reset=reset, mo_soc=mon_old.soc[i],
-                            mv_soc=mon.soc,
+            print_soc_debug(time=now, leader="b temp filtr:    ", reset=reset, mo_soc=mon_old.soc[i], mv_soc=mon.soc,
                             mv_Tb_f=mon.Tb_f, Tb_f_past=Tb_f_past_, mv_q=mon.q, mv_q_capacity=mon.q_capacity)
             if mon.reset_temp:
                 Tb_f_rate_past = mon_old.Tb_hdwe_filt_rate[i_temp]
@@ -380,11 +380,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         reset_ekf = False
         z_init = None
         if reset:
-            # print(f" in mon soc apply:  {Tb_f_=} calling mon.apply_soc {Tb_f_past_=}")
             mon.apply_soc(mon_old.soc[i], Tb_f_)
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
-            mon.assign_tb(Tb_past_)
             if hasattr(mon_old, 'e_wrap_m'):
                 e_w_amp_0 = mon_old.e_wrap_m[0]
             if hasattr(mon_old, 'e_wrap_m_filt'):
