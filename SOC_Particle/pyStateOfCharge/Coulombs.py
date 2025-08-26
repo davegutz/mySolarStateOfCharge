@@ -99,6 +99,7 @@ class Coulombs:
     def apply_soc(self, soc, tb_f):
         """Memory set, adjust bookkeeping as needed.  delta_q preserved"""
         self.soc = soc
+        # print(f"apply_soc {tb_f=}")
         self.q_capacity = self.calculate_capacity(tb_f=tb_f)
         self.q = soc*self.q_capacity
         self.delta_q = self.q - self.q_capacity
@@ -108,6 +109,7 @@ class Coulombs:
         """Capacity"""
         try:
             res = self.q_cap_rated_scaled * (1. + self.chemistry.dqdt * (tb_f - self.chemistry.rated_temp))
+            # print(f"calculate_capacity: qcrs {self.q_cap_rated_scaled}  dqdt {self.chemistry.dqdt} rt {self.chemistry.rated_temp} cap  {res}")
         except IOError:
             res = 1
         return res
@@ -145,6 +147,7 @@ class Coulombs:
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
 
         # Integration
+        # print(f"cc call calculate_capacity {self.tb_f=}")
         self.q_capacity = self.calculate_capacity(tb_f=self.tb_f)
         if use_soc_in:
             self.soc = soc_in

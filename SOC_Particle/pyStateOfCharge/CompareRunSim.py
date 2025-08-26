@@ -152,8 +152,8 @@ def main():
     mon_soc_in = False
     verbose_in = False
     scale_in = 1.0
-    temp_his_in = False
-    # temp_his_in = True
+    # temp_his_in = False
+    temp_his_in = True
     soc_his_in = False
     # soc_his_in = True
 
