@@ -380,7 +380,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         reset_ekf = False
         z_init = None
         if reset:
-            mon.apply_soc(mon_old.soc[i], Tb_f_)
+            mon.apply_soc(mon_old.soc[i], Tb_f_past_)
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
             if hasattr(mon_old, 'e_wrap_m'):
@@ -464,6 +464,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         sat = is_sat(Tb_f_past_, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
         if rp.modeling == 0:
+            print_soc_debug(leader="befor mon.count_cou: ", reset=reset, mo_soc=mon_old.soc[i], mv_soc=mon.soc,
+                            mv_Tb_f=mon.Tb_f, Tb_f_past=Tb_f_past_, mv_q=mon.q, mv_q_capacity=mon.q_capacity)
             mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=Tb_f_past_, tb_f_rate=Tb_f_rate_past_, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
         else:

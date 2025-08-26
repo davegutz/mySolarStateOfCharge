@@ -146,16 +146,16 @@ def main():
     # The following are not implemented in GUI
     time_end_in = None
     # time_end_in = 1.051
-    # data_only = False
-    data_only = True
+    data_only = False
+    # data_only = True
     # mon_soc_in = True
     mon_soc_in = False
     verbose_in = False
     scale_in = 1.0
-    # temp_his_in = False
-    temp_his_in = True
-    soc_his_in = False
-    # soc_his_in = True
+    temp_his_in = False
+    # temp_his_in = True
+    # soc_his_in = False
+    soc_his_in = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=data_only, time_end_in=time_end_in,
                     use_mon_soc_=mon_soc_in, verbose=verbose_in, scale_in=scale_in,

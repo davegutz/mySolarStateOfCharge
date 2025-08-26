@@ -109,7 +109,7 @@ class Coulombs:
         """Capacity"""
         try:
             res = self.q_cap_rated_scaled * (1. + self.chemistry.dqdt * (tb_f - self.chemistry.rated_temp))
-            # print(f"calculate_capacity: qcrs {self.q_cap_rated_scaled}  dqdt {self.chemistry.dqdt} rt {self.chemistry.rated_temp} cap  {res}")
+            # print(f"calculate_capacity: qcrs {self.q_cap_rated_scaled}  {tb_f=} dqdt {self.chemistry.dqdt} rt {self.chemistry.rated_temp} cap  {res}")
         except IOError:
             res = 1
         return res
@@ -126,6 +126,7 @@ class Coulombs:
             use_soc_in      Command to drive integrator with input mon_soc
             soc_in          Auxiliary integrator setting, fraction soc
         """
+        # print(f"moncc0 {self.q_capacity=}")
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem)
             self.chm = chem
@@ -149,6 +150,7 @@ class Coulombs:
         # Integration
         # print(f"cc call calculate_capacity {self.tb_f=}")
         self.q_capacity = self.calculate_capacity(tb_f=self.tb_f)
+        # print(f"moncc1 {self.q_capacity=}")
         if use_soc_in:
             self.soc = soc_in
             self.q = self.q_capacity * self.soc
