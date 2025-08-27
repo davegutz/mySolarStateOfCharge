@@ -43,7 +43,8 @@ plt.rcParams['axes.grid'] = True
 
 
 def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=True,
-                    verbose=True, scale_in=None, request_temp_history=False, request_soc_history=False):
+                    verbose=True, scale_in=None, request_temp_history=False, request_soc_history=False,
+                    request_soc_s_history=False):
     print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
@@ -93,7 +94,8 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
         replicate(mon_old, sim_old=sim_old, init_time=mon_old.init_time, use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in,
                   use_vb_raw=use_vb_raw, dvoc_sim=dvoc_sim_in, dvoc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
                   ds_voc_soc=ds_voc_soc_in, verbose=verbose, scale_in=scale_in,
-                  request_temp_history=request_temp_history, request_soc_history=request_soc_history)
+                  request_temp_history=request_temp_history, request_soc_history=request_soc_history,
+                  request_soc_s_history=request_soc_s_history)
     pass
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
 
@@ -154,12 +156,15 @@ def main():
     scale_in = 1.0
     temp_his_in = False
     # temp_his_in = True
-    # soc_his_in = False
-    soc_his_in = True
+    soc_his_in = False
+    # soc_his_in = True
+    # soc_his_s_in = False
+    soc_his_s_in = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=data_only, time_end_in=time_end_in,
                     use_mon_soc_=mon_soc_in, verbose=verbose_in, scale_in=scale_in,
-                    request_temp_history=temp_his_in, request_soc_history=soc_his_in)
+                    request_temp_history=temp_his_in, request_soc_history=soc_his_in,
+                    request_soc_s_history=soc_his_s_in)
 
 
 # import cProfile

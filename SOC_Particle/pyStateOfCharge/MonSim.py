@@ -57,6 +57,31 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
          )
     return hdr
 
+def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
+    hdr = "  i  time   r r_t   sa       sa_s     ib_c             ib_s             ib_in_s         ib_charge_s      ioc_s            soc                   dt           delq                  qcrs             q_cap             Tb                        Tb_f                    Tb_f_rap                Tb_f_rate             "
+    if calc_temp:
+        print(hdr)
+    print("{:3d}".format(i), "{:6.3f}".format(t[i]),
+          "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
+          "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
+          "{:5.0f}".format(sim_old.sat_s[i]), "{:2.0f}".format(sim.sat),
+          "{:9.3f}".format(mon_old.ib_charge[i]), "{:6.3f}".format(mon.ib_charge),
+          "{:9.3f}".format(sim_old.ib_s[i]), "{:6.3f}".format(sim.ib),
+          "{:9.3f}".format(sim_old.ib_in_s[i]), "{:6.3f}".format(sim.ib_in),
+          "{:9.3f}".format(sim_old.ib_charge_s[i]), "{:6.3f}".format(sim.ib_charge),
+          "{:9.3f}".format(sim_old.ioc_s[i]), "{:6.3f}".format(sim.ioc),
+          "{:11.6f}".format(mon_old.soc[i]), "{:8.6f}".format(mon.soc),
+          "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
+          "{:9.1f}".format(mon_old.delta_q[i]), "{:5.1f}".format(mon.delta_q),
+          "{:9.0f}".format(mon_old.qcrs[i]), "{:6.0f}".format(mon.q_cap_rated_scaled),
+          "{:9.0f}".format(mon_old.q_capacity[i]), "{:6.0f}".format(mon.q_capacity),
+          "{:14.7f}".format(mon_old.Tb[i_temp]), "{:10.7f}".format(mon.Tb),
+          "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
+          "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
+          "{:12.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:10.7f}".format(mon.Tb_f_rate),
+         )
+    return hdr
+
 def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_):
     hdr = "  i  time  r  r_t i_t  calc   Tt      Tb_hdwe     Tb_hdwe_v         Tb   Tb_v                 Tb_        Tb_past_   Tb_hdwe_filt  Tb_hdwe_filt_v     Tb_rap  Tb_rap_v         Tb_f      Tb_f_v          Tb_f_rap  Tb_f_rap_v        Tb_h_f_r  Tb_h_f_r_v     Tb_f_rate Tb_f_rate_v      Tb_f_rate_rap Tb_f_rate_rap_v"
     if calc_temp:
@@ -151,7 +176,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
               verbose=True, t_max=None, eframe_mult=Battery.cp_eframe_mult, sres0=1., sresct=1., stauct_sim=1.,
               stauct_mon=1, use_vb_sim=False, scale_hys_cap_sim=1., s_cap_chg=1., s_cap_dis=1.,
               s_hys_chg=1., s_hys_dis=1., s_coul_eff=1., use_mon_soc=False, cutback_gain_sclr=1., ds_voc_soc=0.,
-              unit=None, request_temp_history=False, request_soc_history=False):
+              unit=None, request_temp_history=False, request_soc_history=False, request_soc_s_history=False):
     if sim_old is not None and len(sim_old.time) < len(mon_old.time):
         t = sim_old.time
     else:
@@ -224,6 +249,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     e_w_noa_filt_0 = None
     temp_hdr = None
     soc_hdr = None
+    soc_s_hdr = None
 
     # time loop initialization
     now = t[0]
@@ -259,6 +285,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         temp_hdr = print_temp_hist(0, 0, t, mon_old, mon, True, Tb_, Tb_past_)
     if request_soc_history:
         soc_hdr = print_soc_hist(0, 0, t, mon_old, mon, True)
+    if request_soc_s_history:
+        soc_s_hdr = print_soc_s_hist(0, 0, t, mon_old, mon, True, sim_old, sim)
 
     # Top of time loop
     for i in range(t_len):
@@ -518,6 +546,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if request_soc_history:
             soc_hdr = print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp)
 
+        if request_soc_s_history:
+            soc_s_hdr = print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim)
+
         prn_soc_debug(time=None, leader="end loop:            ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon)
 
@@ -525,6 +556,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         print(temp_hdr)
     if request_soc_history:
         print(soc_hdr)
+    if request_soc_s_history:
+        print(soc_s_hdr)
 
     # Data
     if verbose:
