@@ -53,6 +53,7 @@ boolean is_finished(const char in_char);
 void print_all_header(void);
 void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp);
 void create_rapid_string_header(void);
+void print_serial_sim(const boolean initializing_all, const boolean reset_temp, Sensors *Sen, BatterySim *Sim);
 void print_serial_sim_header(void);
 void print_serial_temp_header(void);
 void print_serial_temp_data(const boolean reset, Sensors *Sen);

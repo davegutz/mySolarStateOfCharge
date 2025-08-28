@@ -109,6 +109,10 @@ class Coulombs:
         """Capacity"""
         try:
             res = self.q_cap_rated_scaled * (1. + self.chemistry.dqdt * (tb_f - self.chemistry.rated_temp))
+            if self.reset:
+                pass
+            else:
+                pass
             # print(f"calculate_capacity: qcrs {self.q_cap_rated_scaled}  {tb_f=} dqdt {self.chemistry.dqdt} rt {self.chemistry.rated_temp} cap  {res}")
         except IOError:
             res = 1

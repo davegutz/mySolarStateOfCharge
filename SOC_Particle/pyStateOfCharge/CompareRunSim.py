@@ -43,7 +43,7 @@ plt.rcParams['axes.grid'] = True
 
 
 def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=True,
-                    verbose=True, scale_in=None, request_temp_history=False, request_soc_history=False,
+                    verbose=True, scale_in=None, s_hys_sim=1., request_temp_history=False, request_soc_history=False,
                     request_soc_s_history=False):
     print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n")
 
@@ -63,6 +63,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
     dvoc_sim_in = 0.
     dvoc_mon_in = Dw
     use_mon_soc_in = use_mon_soc_
+    s_hys_sim_in = s_hys_sim
 
     # detect running interactively
     # this is written to run in pwd of call
@@ -93,7 +94,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
     mon_ver, sim_ver, sim_s_ver, mon, sim = \
         replicate(mon_old, sim_old=sim_old, init_time=mon_old.init_time, use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in,
                   use_vb_raw=use_vb_raw, dvoc_sim=dvoc_sim_in, dvoc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
-                  ds_voc_soc=ds_voc_soc_in, verbose=verbose, scale_in=scale_in,
+                  ds_voc_soc=ds_voc_soc_in, verbose=verbose, scale_in=scale_in, s_hys_sim=s_hys_sim_in,
                   request_temp_history=request_temp_history, request_soc_history=request_soc_history,
                   request_soc_s_history=request_soc_s_history)
     pass
@@ -142,18 +143,22 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
 
 def main():
 
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20250825am_soc4p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20250827am_soc4p2_hi_lo_bb.csv'
 
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # The following are not implemented in GUI
+
     time_end_in = None
-    # time_end_in = 1.051
+    # time_end_in = 8
+
     # data_only = False
     data_only = True
+
     # mon_soc_in = True
     mon_soc_in = False
     verbose_in = False
     scale_in = 1.0
+
     temp_his_in = False
     # temp_his_in = True
     soc_his_in = False
@@ -161,8 +166,11 @@ def main():
     # soc_his_s_in = False
     soc_his_s_in = True
 
+    # s_hys_sim_in = 1.
+    s_hys_sim_in = 0.
+
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=data_only, time_end_in=time_end_in,
-                    use_mon_soc_=mon_soc_in, verbose=verbose_in, scale_in=scale_in,
+                    use_mon_soc_=mon_soc_in, verbose=verbose_in, scale_in=scale_in, s_hys_sim=s_hys_sim_in,
                     request_temp_history=temp_his_in, request_soc_history=soc_his_in,
                     request_soc_s_history=soc_his_s_in)
 

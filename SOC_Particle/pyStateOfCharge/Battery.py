@@ -188,6 +188,7 @@ class Battery(Coulombs):
         self.Tb_state = None
         self.Tb_hdwe_filt = None
         self.Tb_hdwe_filt_rate = None
+        self.reset = True
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -975,8 +976,8 @@ def is_sat(tb_f, voc, soc, nom_vsat, dvoc_dt, low_t):
     return tb_f > low_t and (voc >= vsat or soc >= Battery.mxeps_bb)
 
 
-def calculate_capacity(tb_f, t_rat, q_sat, dqdt):
-    return q_sat * (1-dqdt*(tb_f - t_rat))
+# def calculate_capacity(tb_f, t_rat, q_sat, dqdt):
+#     return q_sat * (1-dqdt*(tb_f - t_rat))
 
 
 def calc_vsat(tb_f, vsat, dvoc_dt):

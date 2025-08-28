@@ -228,6 +228,7 @@ public:
   void init_hys(const float hys) { hys_->init(hys); };
   float ib_charge() { return ib_charge_; };
   float ib_fut() { return ib_fut_; };
+  float ib_in() { return ib_in_; };
   void init_battery_sim(const boolean reset, Sensors *Sen);
   void pretty_print(void);
   unsigned long int sample_time(void) { return sample_time_; };

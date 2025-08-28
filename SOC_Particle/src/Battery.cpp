@@ -857,13 +857,7 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
     }
 
     // print_serial_sim
-    if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)
-    {
-        double cTime = double(Sen->now)/1000.;
-        sprintf(pr.buff, "unit_sim, %13.3f, %d, %7.0f, %d, %9.5f, %7.5f,%7.5f,%7.5f,%8.5f, %7.3f,%7.3f,%7.3f,%7.3f,  %d,  %9.1f,  %10.7f, %d, %c",
-            cTime, CHEM, q_cap_rated_scaled_, bms_off_, tb_f_, vsat_, voc_stat_, dv_dyn_, vb_, ib_, ib_in_, ib_charge_, ioc_, model_saturated_, *sp_delta_q_, soc_, reset_temp,'\0');
-        Serial.printf("%s\n", pr.buff);
-    }
+    print_serial_sim(initializing_all, reset_temp, Sen, this);
 
     // Save and return
     return ( soc_ );
