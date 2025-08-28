@@ -161,8 +161,11 @@ class Coulombs:
             self.delta_q = self.q - self.q_capacity
         else:
             if not self.reset:
-                self.delta_q = max(min(self.delta_q + d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_f_rate*dt,
-                                       0.0), -self.q_capacity*1.5)
+                # self.delta_q = max(min(self.delta_q + d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_f_rate*dt,
+                #                        0.0), -self.q_capacity*1.5)
+                #  Because delta_q is off of saturation and capacity book-kept elsewhere for soc, don't need to book
+                #  the temperature effect here
+                self.delta_q = max(min(self.delta_q + d_delta_q, 0.0), -self.q_capacity*1.5)
                 self.q = self.q_capacity + self.delta_q
                 if self.delta_q < -100.:
                     pass

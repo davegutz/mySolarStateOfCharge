@@ -173,7 +173,8 @@ float Coulombs::count_coulombs(const double dt, const boolean reset_temp, const 
     // State change
     double d_delta_q_inf = d_delta_q_;
     if ( charge_curr>0. ) d_delta_q_ *= coul_eff_;
-    d_delta_q_ -= chem_.dqdt*q_capacity_*tb_f_rate_*dt_;
+    // Capacity changes withi temperature so this effect would be double if used
+    // d_delta_q_ -= chem_.dqdt*q_capacity_*tb_f_rate_*dt_;
     d_delta_q_inf = d_delta_q_;
     sat_ = sat;
 
