@@ -33,10 +33,12 @@ extern CommandPars cp;  // Various parameters shared at system level
 void create_rapid_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
   double cTime = double(Sen->now)/1000;
-  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%9.2f,%9.2f,%d, %d, %d, %d, %11.8f,%11.8f,%11.8f, %6.3f,%9.3f,%9.3f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %10.7f,%10.7f,%10.7f,%5.3f,%9.2f,", \
+  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%9.2f,%9.2f,   %d, %d, %d, %d,   %11.8f,%11.8f,%11.8f,   %6.3f,%9.3f,%9.3f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %10.7f,%10.7f,%10.7f,%5.3f,%9.2f,", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
-    CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(), pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
-    Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate, Mon->vb(), Mon->ib(), Mon->ib_charge(), Mon->voc_soc(), 
+    CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(),
+    pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
+    Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate,
+    Mon->vb(), Mon->ib(), Mon->ib_charge(), Mon->voc_soc(), 
     Mon->vsat(), Mon->dv_dyn(), Mon->voc_stat(), Mon->hx(),
     Mon->y_ekf(),
     Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc(), Mon->soc_min(), Mon->delta_q());
