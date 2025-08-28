@@ -45,7 +45,7 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
           "{:2.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
           "{:9.3f}".format(mon_old.ib_charge[i]), "{:6.3f}".format(mon.ib_charge),
-          "{:11.6f}".format(mon_old.soc[i]), "{:8.6f}".format(mon.soc),
+          "{:11.7f}".format(mon_old.soc[i]), "{:8.7f}".format(mon.soc),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:9.1f}".format(mon_old.delta_q[i]), "{:5.1f}".format(mon.delta_q),
           "{:9.0f}".format(mon_old.qcrs[i]), "{:6.0f}".format(mon.q_cap_rated_scaled),
@@ -58,7 +58,7 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     return hdr
 
 def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
-    hdr = "  i  time   r r_t   sa       sa_s     ib_c             ib_s             ib_in_s         ib_charge_s      ioc_s            soc_s                soc                   dt           delq                  qcrs             q_cap             Tb                        Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate             "
+    hdr = "  i  time   r r_t   sa       sa_s     ib_c             ib_s             ib_in_s          ib_charge_s      ioc_s           soc_s                 soc                     dt              delq            qcrs             q_cap             Tb                        Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate             "
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]),
@@ -70,8 +70,8 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
           "{:9.3f}".format(sim_old.ib_in_s[i]), "{:6.3f}".format(sim.ib_in),
           "{:9.3f}".format(sim_old.ib_charge_s[i]), "{:6.3f}".format(sim.ib_charge),
           "{:9.3f}".format(sim_old.ioc_s[i]), "{:6.3f}".format(sim.ioc),
-          "{:11.6f}".format(mon_old.soc_s[i]), "{:8.6f}".format(mon.soc_s),
-          "{:11.6f}".format(mon_old.soc[i]), "{:8.6f}".format(mon.soc),
+          "{:11.7f}".format(mon_old.soc_s[i]), "{:8.7f}".format(mon.soc_s),
+          "{:11.7f}".format(mon_old.soc[i]), "{:8.7f}".format(mon.soc),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:9.1f}".format(mon_old.delta_q[i]), "{:5.1f}".format(mon.delta_q),
           "{:9.0f}".format(mon_old.qcrs[i]), "{:6.0f}".format(mon.q_cap_rated_scaled),
