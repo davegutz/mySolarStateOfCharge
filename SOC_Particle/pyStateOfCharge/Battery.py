@@ -746,7 +746,7 @@ class BatterySim(Battery):
         self.tweak_test = tweak_test
         self.voc = 0.  # Charging voltage, V
         self.d_delta_q = 0.  # Charging rate, Coulombs/sec
-        self.charge_curr = 0.  # Charge current, A
+        self.ib_charge = 0.  # Charge current, A
         self.saved_s = SavedS()  # for plots and prints
         self.ib_fut = 0.  # Future value of limited current, A
 
@@ -879,9 +879,9 @@ class BatterySim(Battery):
             self.chemistry.assign_all_mod(chem, self.unit)
             self.chm = chem
         self.reset = reset
-        self.charge_curr = charge_curr
-        self.d_delta_q = self.charge_curr * dt
-        if self.charge_curr > 0. and not self.tweak_test:
+        self.ib_charge = charge_curr
+        self.d_delta_q = self.ib_charge * dt
+        if self.ib_charge > 0. and not self.tweak_test:
             self.d_delta_q *= self.chemistry.coul_eff
         if self.reset:
             if soc_s_init and not self.mod:
@@ -939,7 +939,6 @@ class BatterySim(Battery):
         self.saved.d_delta_q.append(self.d_delta_q)
         self.saved.Tb.append(self.Tb)
         self.saved.vsat.append(self.vsat)
-        self.saved.charge_curr.append(self.charge_curr)
         self.saved.sat.append(int(self.model_saturated))
         self.saved.delta_q.append(self.delta_q)
         self.saved.q.append(self.q)
@@ -1138,7 +1137,7 @@ class Saved:
         self.soc_ekf = []  # Solved state of charge, fraction
         # self.soc = []  # Coulomb Counter fraction of saturation charge (q_capacity_) available (0-1)
         self.d_delta_q = []  # Charging rate, Coulombs/sec
-        self.charge_curr = []  # Charging current, A
+        self.ib_charge = []  # Charging current, A
         self.q = []  # Present charge available to use, except q_min_, C
         self.delta_q = []  # Charge change since saturated, C
         self.q_capacity = []  # Saturation charge at temperature, C
