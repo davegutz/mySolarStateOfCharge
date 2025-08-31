@@ -128,10 +128,13 @@ class Hysteresis:
 
         # Aliasing - return
         if self.tau < dt * 4.:
-            if self.ib >= 0:
-                self.dv_hys = dv_max
+            if self.disabled:
+                self.dv_hys = 0.
             else:
-                self.dv_hys = dv_min
+                if self.ib >= 0:
+                    self.dv_hys = dv_max
+                else:
+                    self.dv_hys = dv_min
             return self.dv_hys, self.tau
 
         # Reset if at endpoints.   e_wrap is an actual measurement of hysteresis if trust sensors.  But once

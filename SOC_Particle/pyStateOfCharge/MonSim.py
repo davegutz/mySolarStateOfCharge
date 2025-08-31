@@ -559,7 +559,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
         prn_soc_debug(time=None, leader="end loop:            ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
-        if now>.8:
+        if now>2:
             pass
         else:
             pass
