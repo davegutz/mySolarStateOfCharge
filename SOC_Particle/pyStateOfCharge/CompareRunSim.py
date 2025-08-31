@@ -149,7 +149,7 @@ def main():
     # The following are not implemented in GUI
 
     time_end_in = None
-    # time_end_in = 3.5
+    # time_end_in = 1.15
 
     data_only = False
     # data_only = True
@@ -159,12 +159,12 @@ def main():
     verbose_in = False
     scale_in = 1.0
 
-    temp_his_in = False
-    # temp_his_in = True
+    # temp_his_in = False
+    temp_his_in = True
     soc_his_in = False
     # soc_his_in = True
-    # soc_his_s_in = False
-    soc_his_s_in = True
+    soc_his_s_in = False
+    # soc_his_s_in = True
 
     # s_hys_sim_in = 1.
     s_hys_sim_in = 0.

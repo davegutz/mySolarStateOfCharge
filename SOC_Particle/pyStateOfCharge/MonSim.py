@@ -39,12 +39,12 @@ def prn_soc_debug(leader="", time=None, reset=None, i=None, i_temp=None, Tb_f_pa
           format(reset, mo.soc[i], mv.soc, smv.ib_charge, smv.Tb_f, smv.q_capacity, mv.soc_s, smv.soc, mv.Tb_f, Tb_f_past, mv.q, mv.q_capacity))
 
 def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
-    hdr = "  i  time   r r_t sa sa_v  ib_c   ib_c_v   soc      soc_v        dt    dt_v   delq     delq_v      qcrs   qcrs_v    q_cap  q_cap_v    Tb         Tb_v           Tb_f       Tb_f_v       Tb_f_rap   Tb_f_rap_v   Tb_f_rate  Tb_f_rate_v"
+    hdr = "  i  time   r r_t sa sa_v  ib_c   ib_c_v    soc      soc_v        dt    dt_v   delq     delq_v      qcrs   qcrs_v    q_cap  q_cap_v    Tb         Tb_v           Tb_f       Tb_f_v       Tb_f_rap   Tb_f_rap_v   Tb_f_rate  Tb_f_rate_v"
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
           "{:2.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
-          "{:9.3f}".format(mon_old.ib_charge[i]), "{:6.3f}".format(mon.ib_charge),
+          "{:9.3f}".format(mon_old.ib_charge[i]), "{:7.3f}".format(mon.ib_charge),
           "{:11.7f}".format(mon_old.soc[i]), "{:8.7f}".format(mon.soc),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:9.1f}".format(mon_old.delta_q[i]), "{:5.1f}".format(mon.delta_q),
@@ -58,25 +58,28 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     return hdr
 
 def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
-    hdr = "  i  time   r r_t   sa       sa_s     ib_c             ib_s             ib_in_s          ib_charge_s      ioc_s           soc_s                 soc                     dt              delq            qcrs             q_cap             Tb                        Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate             "
+    hdr = "  i  time   r r_t   sa       sa_s     ib_c              ib_s              ib_in_s           ib_charge_s       ioc_s            vb_s              voc_stat          vsat             soc_s                 soc                     dt              delq             delq_s          qcrs            q_cap             Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate             "
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]),
           "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
           "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
           "{:5.0f}".format(sim_old.sat_s[i]), "{:2.0f}".format(sim.sat),
-          "{:9.3f}".format(mon_old.ib_charge[i]), "{:6.3f}".format(mon.ib_charge),
-          "{:9.3f}".format(sim_old.ib_s[i]), "{:6.3f}".format(sim.ib),
-          "{:9.3f}".format(sim_old.ib_in_s[i]), "{:6.3f}".format(sim.ib_in),
-          "{:9.3f}".format(sim_old.ib_charge_s[i]), "{:6.3f}".format(sim.ib_charge),
-          "{:9.3f}".format(sim_old.ioc_s[i]), "{:6.3f}".format(sim.ioc),
+          "{:9.3f}".format(mon_old.ib_charge[i]), "{:7.3f}".format(mon.ib_charge),
+          "{:9.3f}".format(sim_old.ib_s[i]), "{:7.3f}".format(sim.ib),
+          "{:9.3f}".format(sim_old.ib_in_s[i]), "{:7.3f}".format(sim.ib_in),
+          "{:9.3f}".format(sim_old.ib_charge_s[i]), "{:7.3f}".format(sim.ib_charge),
+          "{:9.3f}".format(sim_old.ioc_s[i]), "{:7.3f}".format(sim.ioc),
+          "{:9.3f}".format(sim_old.vb_s[i]), "{:7.3f}".format(sim.vb),
+          "{:9.3f}".format(mon_old.voc_stat[i]), "{:7.3f}".format(mon.voc_stat),
+          "{:9.3f}".format(mon_old.vsat[i]), "{:7.3f}".format(mon.chemistry.nom_vsat),
           "{:11.7f}".format(mon_old.soc_s[i]), "{:8.7f}".format(sim.soc),
           "{:11.7f}".format(mon_old.soc[i]), "{:8.7f}".format(mon.soc),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:9.1f}".format(mon_old.delta_q[i]), "{:5.1f}".format(mon.delta_q),
+          "{:9.1f}".format(sim_old.dq_s[i]), "{:5.1f}".format(sim.delta_q),
           "{:9.0f}".format(mon_old.qcrs[i]), "{:6.0f}".format(mon.q_cap_rated_scaled),
           "{:9.0f}".format(mon_old.q_capacity[i]), "{:6.0f}".format(mon.q_capacity),
-          "{:14.7f}".format(mon_old.Tb[i_temp]), "{:10.7f}".format(mon.Tb),
           "{:14.7f}".format(sim_old.Tb_f_s[i]), "{:10.7f}".format(sim.Tb_f),
           "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
@@ -398,7 +401,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             _chm_s = Bsim
         prn_soc_debug(time=None, leader="befor sim.calculate: ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
-        sim.calculate(_chm_s, None, ib_in_s*0., T, reset, None, None, None,
+        sim.calculate(_chm_s, None, ib_in_s, T, reset, None, None, None,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=bms_off_init)
         prn_soc_debug(time=None, leader="after sim.calculate: ", reset=reset, i=i, i_temp=i_temp,
@@ -556,7 +559,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
         prn_soc_debug(time=None, leader="end loop:            ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
-        if now>20:
+        if now>.8:
             pass
         else:
             pass

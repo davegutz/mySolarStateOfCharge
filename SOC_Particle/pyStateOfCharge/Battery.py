@@ -235,12 +235,12 @@ class Battery(Coulombs):
     def assign_tb_f(self, tb_f):
         self.Tb_f = tb_f
 
-    def assign_soc(self, soc, voc):
-        self.soc = soc
-        self.voc = voc
-        self.voc_stat = voc
-        self.vsat = self.chemistry.nom_vsat + (self.Tb - self.chemistry.rated_temp) * self.chemistry.dvoc_dt
-        self.sat = self.voc >= self.vsat
+    # def assign_soc(self, soc, voc):
+    #     self.soc = soc
+    #     self.voc = voc
+    #     self.voc_stat = voc
+    #     self.vsat = self.chemistry.nom_vsat + (self.Tb - self.chemistry.rated_temp) * self.chemistry.dvoc_dt
+    #     self.sat = self.voc >= self.vsat
 
     def calc_h_jacobian(self, soc_lim, tb_f):
         if soc_lim > 0.5:
@@ -889,13 +889,18 @@ class BatterySim(Battery):
         self.Tb_f = tb_f
         self.Tb_f_rate = tb_f_rate
 
-        # Saturation.   Goal is to set q_capacity and hold it so remembers last saturation status
-        # detection
-        if not self.mod and mon_sat:
-            self.delta_q = mon_delta_q
+        # Saturation.   Goal is to set q_capacity and hold it so remembers last saturation status detection
+
+        #  deleted 8/29/2025
+        # if not self.mod and mon_sat:
+        #     self.delta_q = mon_delta_q
+
         if self.model_saturated:
             if reset:
-                self.delta_q = 0.  # Model is truth.   Saturate it then restart it to reset charge
+                if not self.mod and mon_sat:
+                    self.delta_q = mon_delta_q
+                else:
+                    self.delta_q = 0.  # Model is truth.   Saturate it then restart it to reset charge
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
 
         # Integration can go to -50%
