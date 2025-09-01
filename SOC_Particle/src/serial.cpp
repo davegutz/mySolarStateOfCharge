@@ -33,7 +33,7 @@ extern CommandPars cp;  // Various parameters shared at system level
 void create_rapid_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
   double cTime = double(Sen->now)/1000;
-  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%9.2f,%9.2f,   %d, %d, %d, %d,   %11.8f,%11.8f,%11.8f,   %6.3f,%9.3f,%9.3f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %10.7f,%10.7f,%10.7f,%5.3f,%9.2f,", \
+  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%9.2f,%9.2f,   %d, %d, %d, %d,   %11.8f,%11.8f,%11.8f,   %7.5f,%9.5f,%9.5f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %10.7f,%10.7f,%10.7f,%5.3f,%9.2f,", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
     CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(),
     pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
@@ -184,7 +184,7 @@ void print_serial_sim(const boolean initializing_all, const boolean reset_temp, 
     if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)
     {
         double cTime = double(Sen->now)/1000.;
-        sprintf(pr.buff, "unit_sim, %13.3f, %d, %9.2f, %d, %11.8f, %7.5f,%7.5f,%7.5f,%8.5f, %7.3f,%7.3f,%7.3f,%7.3f,  %d,  %9.2f, %9.2f,  %10.7f, %d, %c",
+        sprintf(pr.buff, "unit_sim, %13.3f, %d, %9.2f, %d, %11.8f, %7.5f,%7.5f,%7.5f,%8.5f, %7.5f,%7.5f,%7.5f,%7.5f,  %d,  %9.2f, %9.2f,  %10.7f, %d, %c",
             cTime, CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->tb_f(), Sim->vsat(), Sim->voc_stat(),
             Sim->dv_dyn(), Sim->vb(), Sim->ib(), Sim->ib_in(), Sim->ib_charge(), Sim->ioc(), Sim->saturated(),
             Sim->delta_q(), Sim->q_capacity(), Sim->soc(), reset_temp,'\0');
