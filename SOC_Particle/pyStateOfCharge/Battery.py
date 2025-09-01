@@ -954,6 +954,7 @@ class BatterySim(Battery):
         self.saved_s.time.append(time)
         self.saved_s.chm_s.append(self.chm)
         self.saved_s.qcrs_s.append(self.q_cap_rated_scaled)
+        self.saved_s.qcap_s.append(self.q_capacity)
         self.saved_s.bmso_s.append(self.bms_off)
         self.saved_s.Tb_s.append(self.Tb)
         self.saved_s.Tb_f_s.append(self.Tb_f)
@@ -1533,6 +1534,7 @@ class SavedS:
         self.c_time = []  # Control time, s
         self.chm_s = []
         self.qcrs_s = []
+        self.qcap_s = []
         self.bmso_s = []
         self.Tb_s = []
         self.Tb_f_s = []

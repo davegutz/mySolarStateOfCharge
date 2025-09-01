@@ -58,7 +58,7 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     return hdr
 
 def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
-    hdr = "  i  time   r r_t   sa       sa_s     ib_c              ib_s              ib_in_s           ib_charge_s       ioc_s            vb_s              voc_stat          vsat             soc_s                 soc                     dt              delq              delq_s           qcrs             q_cap             Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate             "
+    hdr = "  i  time   r r_t   sa       sa_s     ib_c              ib_s              ib_in_s           ib_charge_s       ioc_s            vb_s              voc_stat          vsat             soc_s                 soc                     dt              delq                   delq_s                 qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate             "
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]),
@@ -76,10 +76,11 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
           "{:11.7f}".format(mon_old.soc_s[i]), "{:8.7f}".format(sim.soc),
           "{:11.7f}".format(mon_old.soc[i]), "{:8.7f}".format(mon.soc),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
-          "{:9.1f}".format(mon_old.delta_q[i]), "{:7.1f}".format(mon.delta_q),
-          "{:9.1f}".format(sim_old.dq_s[i]), "{:7.1f}".format(sim.delta_q),
-          "{:9.0f}".format(mon_old.qcrs[i]), "{:6.0f}".format(mon.q_cap_rated_scaled),
-          "{:9.0f}".format(mon_old.q_capacity[i]), "{:6.0f}".format(mon.q_capacity),
+          "{:12.1f}".format(mon_old.delta_q[i]), "{:9.1f}".format(mon.delta_q),
+          "{:12.1f}".format(sim_old.dq_s[i]), "{:9.1f}".format(sim.delta_q),
+          "{:12.1f}".format(mon_old.qcrs[i]), "{:9.1f}".format(mon.q_cap_rated_scaled),
+          "{:12.1f}".format(mon_old.q_capacity[i]), "{:9.1f}".format(mon.q_capacity),
+          "{:12.1f}".format(sim_old.qcap_s[i]), "{:9.1f}".format(sim.q_capacity),
           "{:14.7f}".format(sim_old.Tb_f_s[i]), "{:10.7f}".format(sim.Tb_f),
           "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),

@@ -1141,6 +1141,7 @@ class SavedDataSim:
             self.cTime = None  # Control time, s
             self.chm_s = None
             self.qcrs_s = None  # Unit capacity rated scaled, Coulombs
+            self.qcap_s = None  # Unit capacity rated scaled, Coulombs
             self.bms_off_s = None
             self.nS_s = None
             self.Tb_f_s = None
@@ -1193,6 +1194,7 @@ class SavedDataSim:
             self.ioc_s = data.ioc_s[:i_end]
             self.sat_s = data.sat_s[:i_end]
             self.dq_s = data.dq_s[:i_end]
+            self.qcap_s = data.q_cap_s[:i_end]
             self.soc_s = data.soc_s[:i_end]
             self.reset_s = data.reset_s[:i_end]
 
