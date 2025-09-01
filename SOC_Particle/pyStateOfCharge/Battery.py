@@ -859,7 +859,7 @@ class BatterySim(Battery):
 
         return self.vb
 
-    def count_coulombs(self, chem, dt, reset, tb_f, charge_curr, sat, tb_f_rate=None, soc_s_init=None, mon_delta_q=None,
+    def count_coulombs(self, chem, dt, reset, tb_f, charge_curr, sat, tb_f_rate=None, soc_s_init=None, sim_delta_q=None,
                        mon_sat=None, use_soc_in=False, soc_in=0.):
         # BatterySim
         """Coulomb counter based on true=actual capacity
@@ -880,13 +880,13 @@ class BatterySim(Battery):
             self.chm = chem
         self.reset = reset
         self.ib_charge = charge_curr
+        self.Tb_f = tb_f
         self.d_delta_q = self.ib_charge * dt
         if self.ib_charge > 0. and not self.tweak_test:
             self.d_delta_q *= self.chemistry.coul_eff
         if self.reset:
             if soc_s_init and not self.mod:
                 self.delta_q = self.calculate_capacity(tb_f=self.Tb_f) * (soc_s_init - 1.)
-        self.Tb_f = tb_f
         self.Tb_f_rate = tb_f_rate
 
         # Saturation.   Goal is to set q_capacity and hold it so remembers last saturation status detection
@@ -898,7 +898,7 @@ class BatterySim(Battery):
         if self.model_saturated:
             if reset:
                 if not self.mod and mon_sat:
-                    self.delta_q = mon_delta_q
+                    self.delta_q = sim_delta_q
                 else:
                     self.delta_q = 0.  # Model is truth.   Saturate it then restart it to reset charge
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
