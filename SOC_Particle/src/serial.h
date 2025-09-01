@@ -55,8 +55,9 @@ void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, co
 void create_rapid_string_header(void);
 void print_serial_sim(const boolean initializing_all, const boolean reset_temp, Sensors *Sen, BatterySim *Sim);
 void print_serial_sim_header(void);
-void print_serial_temp_header(void);
 void print_serial_temp_data(const boolean reset, Sensors *Sen);
+void print_serial_temp_header(void);
+void print_signal_sel_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
 void print_signal_sel_header(void);
 void print_serial_ekf_header(void);
 void rapid_print(Sensors *Sen, BatteryMonitor *Mon);

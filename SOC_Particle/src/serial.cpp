@@ -219,6 +219,40 @@ void print_serial_temp_header(void)
   }
 }
 
+// print_signal_select for data collection
+void print_signal_sel_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
+{
+  if ( (sp.debug()==2 || sp.debug()==4 || sp.debug()==61 )  && cp.publishS )
+  {
+      double cTime = double(Sen->now)/1000.;
+
+      sprintf(pr.buff, "unit_sel,%13.3f, %d, %d,  %10.7f, %8.5f,%8.5f,%8.5f,%8.5f,%8.5f, %8.5f,%8.5f, ",
+          cTime, reset, sp.ib_force(),
+          Sen->Flt->cc_diff(),
+          Sen->ib_amp_hdwe(), Sen->ib_noa_hdwe(), Sen->ib_amp_model(), Sen->ib_noa_model(), Sen->ib_model(), 
+          Sen->Flt->ib_diff(), Sen->Flt->ib_diff_f());
+      Serial.printf("%s", pr.buff);
+
+      sprintf(pr.buff, "  %7.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,",
+          Mon->voc_soc(), Sen->Flt->e_wrap(), Sen->Flt->e_wrap_filt(), Sen->Flt->e_wrap_m(), Sen->Flt->e_wrap_m_filt(), Sen->Flt->e_wrap_n(), Sen->Flt->e_wrap_n_filt(),
+          Sen->Flt->LoopIbAmp->e_wrap_trim());
+      Serial.printf("%s", pr.buff);
+
+        sprintf(pr.buff, "  %d,%8.5f,%8.5f,%8.5f, %d,%8.5f,  %d,%8.5f,%8.5f, %d,%8.5f,  %d, %d, ",
+            Sen->Flt->ib_sel_stat(), Sen->vc_hdwe(), Sen->ib_hdwe(), Sen->ib_hdwe_model(), sp.mod_ib(), Sen->ib(),
+            Sen->Flt->vb_sel_stat(), Sen->vb_hdwe(), Sen->vb_model(), sp.mod_vb(), Sen->vb(),
+            sp.mod_tb_f(), Sen->Flt->tb_fa());
+
+      Serial.printf("%s", pr.buff);
+
+      sprintf(pr.buff, "%ld, %ld, %7.3f, %7.3f, %d, %9.6f,%7.3f,%7.3f,%7.3f,%7.3f,%d,%d,%7.3f,%d,",
+          Sen->Flt->fltw(), Sen->Flt->falw(), Sen->Flt->ib_rate(), Sen->Flt->ib_quiet(), Sen->Flt->tb_sel_status(),
+          Sen->Flt->cc_diff_thr(), Sen->Flt->ewhi_thr(), Sen->Flt->ewlo_thr(), Sen->Flt->ib_diff_thr(), Sen->Flt->ib_quiet_thr(), Sen->Flt->preserving(), ap.fake_faults,
+          Mon->y_ekf_filt(), Sen->Flt->ib_decision());
+      Serial.printf("%s\n", pr.buff);
+  }
+}
+
 void print_signal_sel_header(void)
 {
   if ( sp.debug()==2 || sp.debug()==4 ) // print_signal_sel_header

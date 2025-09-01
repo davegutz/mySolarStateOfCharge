@@ -1496,35 +1496,8 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
    Ib, Ib_hdwe, Ib_hdwe_model, Ib_amp, Ib_amp_model, Ib_amp_hdwe, Ib_noa, Ib_noa_model, Ib_noa_hdwe);
 
   // print_signal_select for data collection
-  if ( (sp.debug()==2 || sp.debug()==4 || sp.debug()==61 )  && cp.publishS )
-  {
-      double cTime = double(now)/1000.;
+  print_signal_sel_data(reset, this, Mon);
 
-      sprintf(pr.buff, "unit_sel,%13.3f, %d, %d,  %10.7f, %8.5f,%8.5f,%8.5f,%8.5f,%8.5f, %8.5f,%8.5f, ",
-          cTime, reset, sp.ib_force(),
-          Flt->cc_diff(),
-          ib_amp_hdwe(), ib_noa_hdwe(), ib_amp_model(), ib_noa_model(), ib_model(), 
-          Flt->ib_diff(), Flt->ib_diff_f());
-      Serial.printf("%s", pr.buff);
-
-      sprintf(pr.buff, "  %7.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,",
-          Mon->voc_soc(), Flt->e_wrap(), Flt->e_wrap_filt(), Flt->e_wrap_m(), Flt->e_wrap_m_filt(), Flt->e_wrap_n(), Flt->e_wrap_n_filt(),
-          Flt->LoopIbAmp->e_wrap_trim());
-      Serial.printf("%s", pr.buff);
-
-        sprintf(pr.buff, "  %d,%8.5f,%8.5f,%8.5f, %d,%8.5f,  %d,%8.5f,%8.5f, %d,%8.5f,  %d, %d, ",
-            Flt->ib_sel_stat(), vc_hdwe(), ib_hdwe(), ib_hdwe_model(), sp.mod_ib(), ib(),
-            Flt->vb_sel_stat(), vb_hdwe(), vb_model(), sp.mod_vb(), vb(),
-            sp.mod_tb_f(), Flt->tb_fa());
-
-      Serial.printf("%s", pr.buff);
-
-      sprintf(pr.buff, "%ld, %ld, %7.3f, %7.3f, %d, %9.6f,%7.3f,%7.3f,%7.3f,%7.3f,%d,%d,%7.3f,%d,",
-          Flt->fltw(), Flt->falw(), Flt->ib_rate(), Flt->ib_quiet(), Flt->tb_sel_status(),
-          Flt->cc_diff_thr(), Flt->ewhi_thr(), Flt->ewlo_thr(), Flt->ib_diff_thr(), Flt->ib_quiet_thr(), Flt->preserving(), ap.fake_faults,
-          Mon->y_ekf_filt(), Flt->ib_decision());
-      Serial.printf("%s\n", pr.buff);
-  }
 }
 
 // Selection print debug
