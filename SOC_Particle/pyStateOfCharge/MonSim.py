@@ -417,13 +417,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             _chm_s = Bsim
         prn_soc_debug(time=None, leader="befor sim.calculate: ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
-        if i==0:
-            dv_dyn_s_r_0 = (sim_old.dv_dyn_s[1] - sim_old.dv_dyn_s[0]) / T
-        else:
-            dv_dyn_s_r_0 = (sim_old.dv_dyn_s[i] - sim_old.dv_dyn_s[i-1]) / T
         sim.calculate(_chm_s, None, ib_in_s, T, reset, None, None, None,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
-                      bms_off_init=bms_off_init, dv_dyn_0=sim_old.dv_dyn_s[i], dv_dyn_r_0=dv_dyn_s_r_0)
+                      bms_off_init=bms_off_init, dv_dyn_0=sim_old.dv_dyn_s[i])
         prn_soc_debug(time=None, leader="after sim.calculate: ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
         sim.count_coulombs(chem=_chm_s, dt=T, reset=reset, tb_f=sim.Tb_f, tb_f_rate=Tb_f_rate_past_, charge_curr=sim.ib_charge,
