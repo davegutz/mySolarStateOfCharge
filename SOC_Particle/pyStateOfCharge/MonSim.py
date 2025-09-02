@@ -58,7 +58,7 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     return hdr
 
 def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
-    hdr = "  i  time   r r_t   sa       sa_s   ib_c               ib_s               ib_in_s            ib_charge_s        ioc_s             vb_s               voc_stat           vsat                soc                   soc_s                   dt              delq                   delq_s                 qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate             "
+    hdr = "  i  time   r r_t   sa       sa_s   ib_c               ib_s               ib_in_s            ib_charge_s        ioc_s             vb                 vb_s               voc_stat           voc_stat_s         voc_s              dv_dyn_s           vsat                soc                   soc_s                   dt              delq                   delq_s                 qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate             "
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]),
@@ -70,8 +70,12 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
           "{:9.5f}".format(sim_old.ib_in_s[i]), "{:8.5f}".format(sim.ib_in),
           "{:9.5f}".format(sim_old.ib_charge_s[i]), "{:8.5f}".format(sim.ib_charge),
           "{:9.5f}".format(sim_old.ioc_s[i]), "{:8.5f}".format(sim.ioc),
+          "{:9.5f}".format(mon_old.vb[i]), "{:8.5f}".format(mon.vb),
           "{:9.5f}".format(sim_old.vb_s[i]), "{:8.5f}".format(sim.vb),
           "{:9.5f}".format(mon_old.voc_stat[i]), "{:8.5f}".format(mon.voc_stat),
+          "{:9.5f}".format(sim_old.voc_stat_s[i]), "{:8.5f}".format(sim.voc_stat),
+          "{:9.5f}".format(sim_old.voc_s[i]), "{:8.5f}".format(sim.voc),
+          "{:9.5f}".format(sim_old.dv_dyn_s[i]), "{:8.5f}".format(sim.dv_dyn),
           "{:9.5f}".format(mon_old.vsat[i]), "{:8.5f}".format(mon.chemistry.nom_vsat),
           "{:11.7f}".format(mon_old.soc[i]), "{:8.7f}".format(mon.soc),
           "{:11.7f}".format(mon_old.soc_s[i]), "{:8.7f}".format(sim.soc),
@@ -287,7 +291,17 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     mon.Tb_rap = Tb_past_
     mon.Tb_f_rap = Tb_f_past_
     mon.Tb_f_rate_rap = Tb_f_rate_past_
+    mon.ib = mon_old.ib[0]
+    mon.ib_charge = mon_old.ib_charge[0]
+    mon.vb = mon_old.vb[0]
     mon.reset = True
+    sim.dv_dyn = sim_old.dv_dyn_s[0]
+    sim.ib_in = sim_old.ib_in_s[0]
+    sim.ib = sim_old.ib_s[0]
+    sim.ib_charge = sim_old.ib_charge_s[0]
+    sim.ioc = sim_old.ioc_s[0]
+    sim.vb = sim_old.vb_s[0]
+    sim.voc = sim_old.voc_s[0]
     if request_temp_history:
         temp_hdr = print_temp_hist(0, 0, t, mon_old, mon, True, Tb_, Tb_past_)
     if request_soc_history:
@@ -403,9 +417,13 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             _chm_s = Bsim
         prn_soc_debug(time=None, leader="befor sim.calculate: ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
+        if i==0:
+            dv_dyn_s_r_0 = (sim_old.dv_dyn_s[1] - sim_old.dv_dyn_s[0]) / T
+        else:
+            dv_dyn_s_r_0 = (sim_old.dv_dyn_s[i] - sim_old.dv_dyn_s[i-1]) / T
         sim.calculate(_chm_s, None, ib_in_s, T, reset, None, None, None,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
-                      bms_off_init=bms_off_init)
+                      bms_off_init=bms_off_init, dv_dyn_0=sim_old.dv_dyn_s[i], dv_dyn_r_0=dv_dyn_s_r_0)
         prn_soc_debug(time=None, leader="after sim.calculate: ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
         sim.count_coulombs(chem=_chm_s, dt=T, reset=reset, tb_f=sim.Tb_f, tb_f_rate=Tb_f_rate_past_, charge_curr=sim.ib_charge,

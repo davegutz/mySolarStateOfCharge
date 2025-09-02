@@ -781,7 +781,8 @@ class BatterySim(Battery):
     # BatterySim::calculate()
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_0=None,
-                  e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, reset_ekf=None, soc=None, sat_init=None):
+                  e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, reset_ekf=None, soc=None, sat_init=None,
+                  dv_dyn_0=None, dv_dyn_r_0=0.):
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)
             self.chm = chem
@@ -829,8 +830,8 @@ class BatterySim(Battery):
         self.ib_lag = self.IbLag.calculate_tau(self.ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
         # Charge transfer dynamics
-        self.vb = self.voc + (self.ChargeTransfer.calculate(self.ib, reset, dt)*self.chemistry.r_ct +
-                              self.ib*self.chemistry.r_0)
+        self.vb = self.voc + (self.ChargeTransfer.calculate_seeded(self.ib*self.chemistry.r_ct, dv_dyn_0, dv_dyn_r_0,
+                                                                   reset, dt) + self.ib*self.chemistry.r_0)
         if self.bms_off:
             self.vb = self.voc
         if self.bms_off and dc_dc_on:
