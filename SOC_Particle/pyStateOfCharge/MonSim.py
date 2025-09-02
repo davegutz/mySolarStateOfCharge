@@ -407,19 +407,45 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                           Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
 
         # Models
-        if sim_old is not None and not use_ib_mon:
-            ib_in_s = sim_old.ib_in_s[i]
+        if i == 0:
+            if sim_old is not None and not use_ib_mon:
+                ib_in_s = sim_old.ib_in_s[1]
+                ib_in_s_past = sim_old.ib_in_s[0]
+            else:
+                ib_in_s = mon_old.ib[1]
+                ib_in_s_past = mon_old.ib[0]
         else:
-            ib_in_s = mon_old.ib[i]
+            if sim_old is not None and not use_ib_mon:
+                ib_in_s = sim_old.ib_in_s[i]
+                ib_in_s_past = sim_old.ib_in_s[i-1]
+            else:
+                ib_in_s = mon_old.ib[i]
+                ib_in_s_past = mon_old.ib[i - 1]
         if Bsim is None:
             _chm_s = chm_s[i]
         else:
             _chm_s = Bsim
+        if i == 0:
+            dv_dyn_past = sim_old.dv_dyn_s[0]
+            dv_dyn_rate_init = (sim_old.dv_dyn_s[1] - sim_old.dv_dyn_s[0]) / T
+        else:
+            dv_dyn_past = sim_old.dv_dyn_s[i-1]
+            dv_dyn_rate_init = (sim_old.dv_dyn_s[i] - sim_old.dv_dyn_s[i-1]) / T
         prn_soc_debug(time=None, leader="befor sim.calculate: ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
-        sim.calculate(_chm_s, None, ib_in_s, T, reset, None, None, None,
+        if reset:
+            if i == 0:
+                ib_dyn_init = (sim_old.dv_dyn_s[1] - ib_in_s * sim.chemistry.r_0) / sim.chemistry.r_ct
+                ib_dyn_init_past = (sim_old.dv_dyn_s[1] - ib_in_s * sim.chemistry.r_0) / sim.chemistry.r_ct
+                ib_dyn_rate_init = (ib_dyn_init - ib_dyn_init_past) / T
+            else:
+                ib_dyn_init = (sim_old.dv_dyn_s[i] - ib_in_s * sim.chemistry.r_0) / sim.chemistry.r_ct
+                ib_dyn_init_past = (sim_old.dv_dyn_s[i-1] - ib_in_s * sim.chemistry.r_0) / sim.chemistry.r_ct
+                ib_dyn_rate_init = (ib_dyn_init - ib_dyn_init_past) / T
+        sim.calculate(_chm_s, None, ib_in_s, T, reset, None, None,
+                      ib_dyn_init, ib_dyn_rate_init=ib_dyn_rate_init,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
-                      bms_off_init=bms_off_init, dv_dyn_0=sim_old.dv_dyn_s[i])
+                      bms_off_init=bms_off_init, dv_dyn_past=dv_dyn_past, dv_dyn_0=sim_old.dv_dyn_s[i])
         prn_soc_debug(time=None, leader="after sim.calculate: ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
         sim.count_coulombs(chem=_chm_s, dt=T, reset=reset, tb_f=sim.Tb_f, tb_f_rate=Tb_f_rate_past_, charge_curr=sim.ib_charge,

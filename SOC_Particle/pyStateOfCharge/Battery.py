@@ -149,6 +149,7 @@ class Battery(Coulombs):
         self.voc_stat = self.voc  # Static model open circuit voltage from charge process, V
         self.voc_stat_f = self.voc_stat
         self.dv_dyn = 0.  # Model current induced back emf, V
+        self.ib_dyn = 0.  # Model current induced back emf before resistance multiply, A
         self.vb = Battery.NOM_SYS_VOLT  # Battery voltage at post, V
         self.ib = 0.  # Current into battery post, A
         self.ib_in = 0.  # Current into calculate, A
@@ -165,8 +166,6 @@ class Battery(Coulombs):
         self.chemistry.r_ct *= sresct
         self.chemistry.r_ss *= scale_r_ss
         self.chemistry.coul_eff *= s_coul_eff
-        self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.UNIT_CAP_RATED*scale_cap,
-                                     min_=-Battery.UNIT_CAP_RATED*scale_cap, tau=self.chemistry.tau_ct)
         self.Tb = tb_f
         self.Tb_f = tb_f
         self.Tb_f_rate = None
@@ -317,6 +316,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.y_filt_2Ord = General2Pole(0.1, Battery.WN_Y_FILT, Battery.ZETA_Y_FILT, Battery.MIN_Y_FILT,
                                         Battery.MAX_Y_FILT)
         self.y_filt2 = 0.
+        self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.UNIT_CAP_RATED*scale,
+                                     min_=-Battery.UNIT_CAP_RATED*scale, tau=self.chemistry.tau_ct)
         self.ib = 0.
         self.vb = 0.
         self.vb_model_rev = 0.
@@ -592,6 +593,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.dv_hys.append(self.dv_hys)
         self.saved.tau_hys.append(self.tau_hys)
         self.saved.dv_dyn.append(self.dv_dyn)
+        self.saved.ib_dyn.append(self.ib_dyn)
         self.saved.voc.append(self.voc)
         self.saved.voc_soc.append(self.voc_soc)
         self.saved.voc_stat.append(self.voc_stat)
@@ -745,6 +747,8 @@ class BatterySim(Battery):
                               chemistry=self.chemistry)  # Battery hysteresis model - drift of voc
         self.tweak_test = tweak_test
         self.voc = 0.  # Charging voltage, V
+        self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, tau=self.chemistry.tau_ct,
+                                     max_=Battery.UNIT_CAP_RATED*scale, min_=-Battery.UNIT_CAP_RATED*scale)
         self.d_delta_q = 0.  # Charging rate, Coulombs/sec
         self.ib_charge = 0.  # Charge current, A
         self.saved_s = SavedS()  # for plots and prints
@@ -779,10 +783,10 @@ class BatterySim(Battery):
         return s
 
     # BatterySim::calculate()
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, ib_dyn_init, ib_dyn_rate_init=0.,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_0=None,
                   e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, reset_ekf=None, soc=None, sat_init=None,
-                  dv_dyn_0=None):
+                  dv_dyn_past = None, dv_dyn_0=None):
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)
             self.chm = chem
@@ -830,10 +834,14 @@ class BatterySim(Battery):
         self.ib_lag = self.IbLag.calculate_tau(self.ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
         # Charge transfer dynamics
-        if reset:
-            dv_dyn_0 -= self.ib*self.chemistry.r_0
-        self.vb = self.voc + (self.ChargeTransfer.calculate_seeded(self.ib*self.chemistry.r_ct, dv_dyn_0,
-                                                                   reset, dt) + self.ib*self.chemistry.r_0)
+        self.vb = (self.voc + \
+            self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_init, ib_dyn_rate_init, reset, dt,
+                                                     self.chemistry.tau_ct) * self.chemistry.r_ct
+                   + self.ib*self.chemistry.r_0)
+        # self.vb = self.voc + (self.ChargeTransfer.calculate_seeded(self.ib*self.chemistry.r_ct,
+        #                                                            ib_past*self.chemistry.r_ct,
+        #                                                            dv_dyn_0 - self.ib*self.chemistry.r_0,
+        #                                                            reset, dt) + self.ib*self.chemistry.r_0)
         if reset:
             print(f"{self.vb-self.voc=}")
         if self.bms_off:
@@ -943,6 +951,7 @@ class BatterySim(Battery):
         self.saved.dv_hys.append(self.dv_hys)
         self.saved.tau_hys.append(self.tau_hys)
         self.saved.dv_dyn.append(self.dv_dyn)
+        self.saved.ib_dyn.append(self.ib_dyn)
         self.saved.voc.append(self.voc)
         self.saved.voc_stat.append(self.voc_stat)
         self.saved.soc.append(self.soc)
@@ -1099,6 +1108,7 @@ class Saved:
         self.dv_hys = []
         self.tau_hys = []
         self.dv_dyn = []
+        self.ib_dyn = []
         self.soc = []
         self.soc_ekf = []
         self.voc = []
@@ -1138,6 +1148,7 @@ class Saved:
         self.Tb_f_rate_rap = []  # Temp rate, deg C / s
         self.vsat = []  # Monitor Bank saturation threshold at temperature, deg C
         self.dv_dyn = []  # Monitor Bank current induced back emf, V
+        self.ib_dyn = []  # Monitor Bank current induced back emf before resistance multiply, A
         self.voc_stat = []  # Monitor Static bank open circuit voltage, V
         self.voc = []  # Monitor Static bank open circuit voltage, V
         self.voc_ekf = []  # Monitor bank solved static open circuit voltage, V

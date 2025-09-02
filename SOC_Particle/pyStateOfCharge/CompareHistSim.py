@@ -98,6 +98,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     dt = []
     ib_charge = []
     dv_dyn = []
+    ib_dyn = []
     bms_off_init = False
     bms_off = False
     rp = Retained()

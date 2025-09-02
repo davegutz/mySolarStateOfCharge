@@ -866,6 +866,7 @@ class SavedData:
             self.Tb_f_rate_rap = np.array(rap.Tb_f_rate_rap[:i_end])
             self.vsat = np.array(rap.vsat[:i_end])
             self.dv_dyn = np.array(rap.dv_dyn[:i_end])
+            self.ib_dyn = np.array(rap.ib_dyn[:i_end])
             self.voc_stat = np.array(rap.voc_stat[:i_end])
             self.voc = self.vb - self.dv_dyn
             self.dv_hys = self.voc - self.voc_stat
