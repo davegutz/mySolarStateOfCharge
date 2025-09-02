@@ -109,6 +109,7 @@ public:
   float dv_dyn() { return dv_dyn_; };
   float ib() { return ib_; };            // Battery terminal current, A
   float ibs() { return ibs_; };          // Hysteresis input current, A
+  float ib_dyn() { return ib_dyn_; };    // Battery terminal current lagged by charge transfer, A
   float ioc() { return ioc_; };          // Hysteresis output current, A
   virtual void pretty_print();
   void print_signal(const boolean print) { print_now_ = print; };
@@ -127,6 +128,7 @@ protected:
   float dv_hys_;   // Hysteresis state, voc-voc_out, V
   float ib_;       // Battery terminal current, A
   float ibs_;      // Hysteresis input current, A
+  float ib_dyn_;   // ib lagged by charge transfer, A
   float ioc_;      // Hysteresis output current, A
   float nom_vsat_; // Nominal saturation threshold at 25C, V
   boolean print_now_; // Print command

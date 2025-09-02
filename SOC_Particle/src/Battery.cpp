@@ -250,10 +250,11 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     if ( reset_temp ) ib_past_ = ib_;
 
     // Dynamic emf. vb_ is stale when running with model
-    float ib_dyn;
-    if (sp.mod_vb()) ib_dyn = ib_past_;
-    else ib_dyn = ib_;
-    float dvdyn = (ChargeTransfer_->calculate(ib_dyn, reset_temp, chem_.tau_ct, dt_)*chem_.r_ct*ap.slr_res + ib_dyn*chem_.r_0*ap.slr_res);
+    float ib_dyn_in;
+    if (sp.mod_vb()) ib_dyn_in = ib_past_;
+    else ib_dyn_in = ib_;
+    ib_dyn_ = ChargeTransfer_->calculate(ib_dyn_in, reset_temp, chem_.tau_ct, dt_);
+    float dvdyn = (ib_dyn_*chem_.r_ct*ap.slr_res + ib_dyn_in*chem_.r_0*ap.slr_res);
     voc_ = vb_ - dvdyn;
     if ( !ap.fake_faults )
     {
@@ -267,7 +268,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     // Hysteresis model
     dv_hys_ = 0.;  // disable hys g20230530a
     voc_stat_ = voc_ - dv_hys_;
-    ioc_ = ib_dyn;
+    ioc_ = ib_dyn_in;
     
 
     // Reversionary model
@@ -673,7 +674,9 @@ float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean 
         ib_ = 0.;
 
     // ChargeTransfer dynamic model for model, reverse version to generate sensor inputs
-    float dvdyn = (ChargeTransfer_->calculate(ib_, reset, chem_.tau_ct, dt_)*chem_.r_ct*ap.slr_res + ib_*chem_.r_0*ap.slr_res);
+    ib_dyn_ = ChargeTransfer_->calculate(ib_, reset, chem_.tau_ct, dt_);
+    float dvdyn = (ib_dyn_*chem_.r_ct*ap.slr_res + ib_*chem_.r_0*ap.slr_res);
+
     vb_ = voc_ + dvdyn;
 
     // Special cases override
