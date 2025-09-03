@@ -67,6 +67,8 @@ def off_on_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, 
         plt.plot(so.time, so.ib_s, linestyle='-', color='black', label='ib_s' + ref_str)
         plq(plt, sv, 'time', sv, 'ib', linestyle='--', color='orange', label='ib_s' + test_str)
         plq(plt, sv, 'time', sv, 'ib_s', linestyle='--', color='orange', label='ib_s' + test_str)
+        plq(plt, so, 'time', so, 'ib_dyn_s', linestyle='-', color='blue', label='ib_dyn_s' + ref_str)
+        plq(plt, sv, 'time', sv, 'ib_dyn', linestyle='--', color='red', label='ib_dyn_s' + test_str)
         plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)

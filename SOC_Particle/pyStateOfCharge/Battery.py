@@ -173,6 +173,7 @@ class Battery(Coulombs):
         self.dv_hys = 0.  # Placeholder so BatterySim can be plotted
         self.tau_hys = 0.  # Placeholder so BatterySim can be plotted
         self.dv_dyn = 0.  # Placeholder so BatterySim can be plotted
+        self.ib_dyn = 0.  # Placeholder so BatterySim can be plotted
         self.bms_off = False
         self.mod = 7
         self.sel = 0
@@ -208,6 +209,7 @@ class Battery(Coulombs):
         s += "  bms_off  = {:7.1f}      // BMS off\n".format(self.bms_off)
         s += "  dv_dsoc = {:9.6f}  // Derivative scaled, V/fraction\n".format(self.dv_dsoc)
         s += "  ib =      {:7.3f}  // Battery terminal current, A\n".format(self.ib)
+        s += "  ib_dyn =  {:7.3f}  // Current-induced back emf in current, A\n".format(self.ib_dyn)
         s += "  vb =      {:7.3f}  // Battery terminal voltage, V\n".format(self.vb)
         s += "  voc      ={:7.3f}  // Static model open circuit voltage, V\n".format(self.voc)
         s += "  voc_stat ={:7.3f}  // Static model open circuit voltage from table (reference), V\n"\
@@ -328,6 +330,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.voc_filt = 0.
         self.vsat = 0.
         self.dv_dyn = 0.
+        self.ib_dyn = 0.
         self.voc_ekf = 0.
         self.Temp_Rlim = RateLimit()
         self.eframe = 0
@@ -396,7 +399,7 @@ class BatteryMonitor(Battery, EKF1x1):
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_0=None,
                   e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, soc=None, sat_init=None,
-                  reset_ekf=None):
+                  reset_ekf=None, ib_dyn_init=None, ib_dyn_rate_init=None):
         self.ib_amp = ib_amp
         self.ib_noa = ib_noa
         if self.chm != chem:
@@ -436,12 +439,14 @@ class BatteryMonitor(Battery, EKF1x1):
 
         # Dynamic emf
         if rp.modeling:
-            ib_dyn = self.ib_past
+            ib_dc = self.ib_past
         else:
-            ib_dyn = self.ib
+            ib_dc = self.ib
         self.vb = vb
-        self.voc = self.vb - (self.ChargeTransfer.calculate(ib_dyn, reset, dt)*self.chemistry.r_ct +
-                              ib_dyn*self.chemistry.r_0)
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_init, ib_dyn_rate_init, reset, dt,
+                                                     self.chemistry.tau_ct)
+        self.vb = self.voc + self.ib_dyn*self.chemistry.r_ct + self.ib*self.chemistry.r_0
+        self.voc = self.vb - (self.ib_dyn*self.chemistry.r_ct + ib_dc*self.chemistry.r_0)
         if self.bms_off and voltage_low:
             self.voc_stat = self.vb
             self.voc = self.vb
@@ -783,10 +788,10 @@ class BatterySim(Battery):
         return s
 
     # BatterySim::calculate()
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, ib_dyn_init, ib_dyn_rate_init=0.,
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_0=None,
                   e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, reset_ekf=None, soc=None, sat_init=None,
-                  dv_dyn_past = None, dv_dyn_0=None):
+                  dv_dyn_past = None, dv_dyn_0=None, ib_dyn_init=None, ib_dyn_rate_init=0.):
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)
             self.chm = chem
@@ -834,16 +839,9 @@ class BatterySim(Battery):
         self.ib_lag = self.IbLag.calculate_tau(self.ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
         # Charge transfer dynamics
-        self.vb = (self.voc + \
-            self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_init, ib_dyn_rate_init, reset, dt,
-                                                     self.chemistry.tau_ct) * self.chemistry.r_ct
-                   + self.ib*self.chemistry.r_0)
-        # self.vb = self.voc + (self.ChargeTransfer.calculate_seeded(self.ib*self.chemistry.r_ct,
-        #                                                            ib_past*self.chemistry.r_ct,
-        #                                                            dv_dyn_0 - self.ib*self.chemistry.r_0,
-        #                                                            reset, dt) + self.ib*self.chemistry.r_0)
-        if reset:
-            print(f"{self.vb-self.voc=}")
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_init, ib_dyn_rate_init, reset, dt,
+                                                     self.chemistry.tau_ct)
+        self.vb = self.voc + self.ib_dyn*self.chemistry.r_ct + self.ib*self.chemistry.r_0
         if self.bms_off:
             self.vb = self.voc
         if self.bms_off and dc_dc_on:
@@ -976,6 +974,7 @@ class BatterySim(Battery):
         self.saved_s.voc_s.append(self.voc)
         self.saved_s.voc_stat_s.append(self.voc_stat)
         self.saved_s.dv_dyn_s.append(self.dv_dyn)
+        self.saved_s.ib_dyn_s.append(self.ib_dyn)
         self.saved_s.dv_hys_s.append(self.dv_hys)
         self.saved_s.tau_hys_s.append(self.tau_hys)
         self.saved_s.vb_s.append(self.vb)
@@ -1563,6 +1562,7 @@ class SavedS:
         self.tau_s = []
         self.vb_s = []
         self.ib_s = []
+        self.ib_dyn_s = []
         self.ib_in_s = []
         self.ib_charge_s = []
         self.ib_fut_s = []
@@ -1575,7 +1575,7 @@ class SavedS:
         self.reset_s = []
 
     def __str__(self):
-        s = "unit_m,c_time,Tb_s,vsat_s,voc_stat_s,dv_dyn_s,vb_s,ib_s,sat_s,ddq_s,dq_s,q_s,qcap_s,soc_s,\
+        s = "unit_m,c_time,Tb_s,vsat_s,voc_stat_s,dv_dyn_s,vb_s,ib_s,ib_dyn_s,sat_s,ddq_s,dq_s,q_s,qcap_s,soc_s,\
         reset_s,tau_s,\n"
         for i in range(len(self.time)):
             s += 'sim,'
@@ -1586,6 +1586,7 @@ class SavedS:
             s += "{:5.2f},".format(self.dv_dyn_s[i])
             s += "{:5.2f},".format(self.vb_s[i])
             s += "{:8.3f},".format(self.ib_s[i])
+            s += "{:8.3f},".format(self.ib_dyn_s[i])
             s += "{:8.3f},".format(self.ib_in_s[i])
             s += "{:8.3f},".format(self.ib_fut_s[i])
             s += "{:1.0f},".format(self.sat_s[i])

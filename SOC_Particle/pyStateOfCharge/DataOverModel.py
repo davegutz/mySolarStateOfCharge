@@ -1156,6 +1156,7 @@ class SavedDataSim:
             self.ib_charge_s = None
             self.ioc_s = None
             self.ib_s = None
+            self.ib_dyn_s = None
             self.sat_s = None
             self.dq_s = None
             self.soc_s = None
@@ -1190,6 +1191,7 @@ class SavedDataSim:
             self.voc_s = self.vb_s - self.dv_dyn_s
             self.dv_hys_s = self.voc_s - self.voc_stat_s
             self.ib_s = data.ib_s[:i_end]
+            self.ib_dyn_s = data.ib_dyn_s[:i_end]
             self.ib_in_s = data.ib_in_s[:i_end]
             self.ib_charge_s = data.ib_charge_s[:i_end]
             self.ioc_s = data.ioc_s[:i_end]
@@ -1208,6 +1210,7 @@ class SavedDataSim:
         s += "{:5.2f},".format(self.dv_dyn_s[self.i])
         s += "{:5.2f},".format(self.vb_s[self.i])
         s += "{:8.3f},".format(self.ib_s[self.i])
+        s += "{:8.3f},".format(self.ib_dyn_s[self.i])
         s += "{:7.3f},".format(self.sat_s[self.i])
         # s += "{:5.3f},".format(self.ddq_s[self.i])
         s += "{:5.3f},".format(self.dq_s[self.i])
