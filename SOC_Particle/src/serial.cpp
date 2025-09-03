@@ -33,12 +33,12 @@ extern CommandPars cp;  // Various parameters shared at system level
 void create_rapid_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
   double cTime = double(Sen->now)/1000;
-  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%9.2f,%9.2f,   %d, %d, %d, %d,   %11.8f,%11.8f,%11.8f,   %7.5f,%9.5f,%9.5f,%9.5f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %10.7f,%10.7f,%10.7f,%5.3f,%9.2f,", \
+  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%9.2f,%9.2f,   %d, %d, %d, %d,   %11.8f,%11.8f,%11.8f,   %7.5f,%9.5f,%9.5f,%9.5f,%9.5f,%9.5f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %10.7f,%10.7f,%10.7f,%5.3f,%9.2f,", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
     CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(),
     pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
     Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate,
-    Mon->vb(), Mon->ib(), Mon->ib_dyn(), Mon->ib_dyn_rate(), Mon->ib_charge(), Mon->voc_soc(), 
+    Mon->vb(), Mon->ib(), Mon->ib_dyn(), Mon->ib_dyn_rate(), Mon->chargeTransfer_rstate(), Mon->chargeTransfer_lstate(), Mon->ib_charge(), Mon->voc_soc(), 
     Mon->vsat(), Mon->dv_dyn(), Mon->voc_stat(), Mon->hx(),
     Mon->y_ekf(),
     Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc(), Mon->soc_min(), Mon->delta_q());
@@ -49,9 +49,9 @@ void create_rapid_string_header(void)
 {
   if ( ( sp.debug()==1 || sp.debug()==2 || sp.debug()==3 || sp.debug()==4 ) )
   {
-    Serial.printf ("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb_rap, Tb_f_rap, Tb_f_rate_rap, vb, ib, ib_dyn, ib_dyn_rate,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
+    Serial.printf ("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb_rap, Tb_f_rap, Tb_f_rate_rap, vb, ib, ib_dyn, ib_dyn_rate, ib_dyn_rs, ib_dyn_s,  ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
     #ifdef HDWE_ARGON
-      Serial1.printf("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb_rap, Tb_f_rap, Tb_f_rate_rap, vb, ib, ib_dyn, ib_dyn_rate,  ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
+      Serial1.printf("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb_rap, Tb_f_rap, Tb_f_rate_rap, vb, ib, ib_dyn, ib_dyn_rate,  ib_dyn_rs, ib_dyn_s,  ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
     #endif
   }
 }
@@ -184,9 +184,9 @@ void print_serial_sim(const boolean initializing_all, const boolean reset_temp, 
     if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)
     {
         double cTime = double(Sen->now)/1000.;
-        sprintf(pr.buff, "unit_sim, %13.3f, %d, %9.2f, %d, %11.8f, %7.5f,%7.5f,%7.5f,%8.5f, %7.5f,%7.5f,%7.5f,%7.5f,%7.5f,%7.5f,  %d,  %9.2f, %9.2f,  %10.7f, %d, %c",
+        sprintf(pr.buff, "unit_sim, %13.3f, %d, %9.2f, %d, %11.8f, %7.5f,%7.5f,%7.5f,%8.5f, %7.5f,%7.5f,%7.5f,%7.5f,%7.5f,%7.5f,%7.5f,%7.5f,  %d,  %9.2f, %9.2f,  %10.7f, %d, %c",
             cTime, CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->tb_f(), Sim->vsat(), Sim->voc_stat(),
-            Sim->dv_dyn(), Sim->vb(), Sim->ib(), Sim->ib_dyn(), Sim->ib_dyn_rate(), Sim->ib_in(), Sim->ib_charge(), Sim->ioc(), Sim->saturated(),
+            Sim->dv_dyn(), Sim->vb(), Sim->ib(), Sim->ib_dyn(), Sim->ib_dyn_rate(), Sim->chargeTransfer_rstate(), Sim->chargeTransfer_lstate(), Sim->ib_in(), Sim->ib_charge(), Sim->ioc(), Sim->saturated(),
             Sim->delta_q(), Sim->q_capacity(), Sim->soc(), reset_temp,'\0');
         Serial.printf("%s\n", pr.buff);
     }
@@ -195,7 +195,7 @@ void print_serial_sim(const boolean initializing_all, const boolean reset_temp, 
 void print_serial_sim_header(void)
 {
   if ( sp.debug()==2  || sp.debug()==3 || sp.debug()==4 ) // print_serial_sim_header
-    Serial.printf("unit_m,  c_time,       chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, dv_dyn_s, vb_s, ib_s, ib_dyn_s, ib_dyn_rate_s, ib_in_s, ib_charge_s, ioc_s, sat_s, dq_s, q_cap_s, soc_s, reset_s,\n");
+    Serial.printf("unit_m,  c_time,       chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, dv_dyn_s, vb_s, ib_s, ib_dyn_s, ib_dyn_rate_s, ib_dyn_rstate_s, ib_dyn_lstate_s, ib_in_s, ib_charge_s, ioc_s, sat_s, dq_s, q_cap_s, soc_s, reset_s,\n");
 }
 
 // sp.debug()==1 Temp

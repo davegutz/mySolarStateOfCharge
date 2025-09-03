@@ -102,6 +102,8 @@ public:
   float calc_soc_voc_slope(float soc, float tb_f);
   float calc_vsat(void);
   virtual float calculate(const float tb_f, const float soc_frac, float curr_in, const double dt, const boolean dc_dc_on);
+  float chargeTransfer_rstate() { return ChargeTransfer_->rstate(); };
+  float chargeTransfer_lstate() { return ChargeTransfer_->lstate(); };
   float C_rate() { return ib_ / NOM_UNIT_CAP; }
   String decode(const uint8_t mod);
   float dqdt() { return chem_.dqdt; };
