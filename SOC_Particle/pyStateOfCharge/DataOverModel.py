@@ -868,6 +868,8 @@ class SavedData:
             self.dv_dyn = np.array(rap.dv_dyn[:i_end])
             self.ib_dyn = np.array(rap.ib_dyn[:i_end])
             self.ib_dyn_rate = np.array(rap.ib_dyn_rate[:i_end])
+            self.ib_dyn_rstate = np.array(rap.ib_dyn_rs[:i_end])
+            self.ib_dyn_lstate = np.array(rap.ib_dyn_s[:i_end])
             self.voc_stat = np.array(rap.voc_stat[:i_end])
             self.voc = self.vb - self.dv_dyn
             self.dv_hys = self.voc - self.voc_stat
@@ -1159,6 +1161,8 @@ class SavedDataSim:
             self.ib_s = None
             self.ib_dyn_s = None
             self.ib_dyn_rate_s = None
+            self.ib_dyn_rstate_s = None
+            self.ib_dyn_lstate_s = None
             self.sat_s = None
             self.dq_s = None
             self.soc_s = None
@@ -1195,6 +1199,8 @@ class SavedDataSim:
             self.ib_s = data.ib_s[:i_end]
             self.ib_dyn_s = data.ib_dyn_s[:i_end]
             self.ib_dyn_rate_s = data.ib_dyn_rate_s[:i_end]
+            self.ib_dyn_rstate_s = data.ib_dyn_rstate_s[:i_end]
+            self.ib_dyn_lstate_s = data.ib_dyn_lstate_s[:i_end]
             self.ib_in_s = data.ib_in_s[:i_end]
             self.ib_charge_s = data.ib_charge_s[:i_end]
             self.ioc_s = data.ioc_s[:i_end]
