@@ -867,6 +867,7 @@ class SavedData:
             self.vsat = np.array(rap.vsat[:i_end])
             self.dv_dyn = np.array(rap.dv_dyn[:i_end])
             self.ib_dyn = np.array(rap.ib_dyn[:i_end])
+            self.ib_dyn_rate = np.array(rap.ib_dyn_rate[:i_end])
             self.voc_stat = np.array(rap.voc_stat[:i_end])
             self.voc = self.vb - self.dv_dyn
             self.dv_hys = self.voc - self.voc_stat
@@ -1157,6 +1158,7 @@ class SavedDataSim:
             self.ioc_s = None
             self.ib_s = None
             self.ib_dyn_s = None
+            self.ib_dyn_rate_s = None
             self.sat_s = None
             self.dq_s = None
             self.soc_s = None
@@ -1192,6 +1194,7 @@ class SavedDataSim:
             self.dv_hys_s = self.voc_s - self.voc_stat_s
             self.ib_s = data.ib_s[:i_end]
             self.ib_dyn_s = data.ib_dyn_s[:i_end]
+            self.ib_dyn_rate_s = data.ib_dyn_rate_s[:i_end]
             self.ib_in_s = data.ib_in_s[:i_end]
             self.ib_charge_s = data.ib_charge_s[:i_end]
             self.ioc_s = data.ioc_s[:i_end]
@@ -1211,6 +1214,7 @@ class SavedDataSim:
         s += "{:5.2f},".format(self.vb_s[self.i])
         s += "{:8.3f},".format(self.ib_s[self.i])
         s += "{:8.3f},".format(self.ib_dyn_s[self.i])
+        s += "{:8.3f},".format(self.ib_dyn_rate_s[self.i])
         s += "{:7.3f},".format(self.sat_s[self.i])
         # s += "{:5.3f},".format(self.ddq_s[self.i])
         s += "{:5.3f},".format(self.dq_s[self.i])

@@ -150,6 +150,7 @@ class Battery(Coulombs):
         self.voc_stat_f = self.voc_stat
         self.dv_dyn = 0.  # Model current induced back emf, V
         self.ib_dyn = 0.  # Model current induced back emf before resistance multiply, A
+        self.ib_dyn_rate = 0.  # Model current rate induced back emf before resistance multiply, A
         self.vb = Battery.NOM_SYS_VOLT  # Battery voltage at post, V
         self.ib = 0.  # Current into battery post, A
         self.ib_in = 0.  # Current into calculate, A
@@ -174,6 +175,7 @@ class Battery(Coulombs):
         self.tau_hys = 0.  # Placeholder so BatterySim can be plotted
         self.dv_dyn = 0.  # Placeholder so BatterySim can be plotted
         self.ib_dyn = 0.  # Placeholder so BatterySim can be plotted
+        self.ib_dyn_rate = 0.  # Placeholder so BatterySim can be plotted
         self.bms_off = False
         self.mod = 7
         self.sel = 0
@@ -210,6 +212,7 @@ class Battery(Coulombs):
         s += "  dv_dsoc = {:9.6f}  // Derivative scaled, V/fraction\n".format(self.dv_dsoc)
         s += "  ib =      {:7.3f}  // Battery terminal current, A\n".format(self.ib)
         s += "  ib_dyn =  {:7.3f}  // Current-induced back emf in current, A\n".format(self.ib_dyn)
+        s += "  ib_dyn_rate =  {:7.3f}  // Current-induced back emf rate in current, A\n".format(self.ib_dyn_rate)
         s += "  vb =      {:7.3f}  // Battery terminal voltage, V\n".format(self.vb)
         s += "  voc      ={:7.3f}  // Static model open circuit voltage, V\n".format(self.voc)
         s += "  voc_stat ={:7.3f}  // Static model open circuit voltage from table (reference), V\n"\
@@ -331,6 +334,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vsat = 0.
         self.dv_dyn = 0.
         self.ib_dyn = 0.
+        self.ib_dyn_rate = 0.
         self.voc_ekf = 0.
         self.Temp_Rlim = RateLimit()
         self.eframe = 0
@@ -445,6 +449,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vb = vb
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_init, ib_dyn_rate_init, reset, dt,
                                                      self.chemistry.tau_ct)
+        self.ib_dyn_rate = self.ChargeTransfer.rate
         self.vb = self.voc + self.ib_dyn*self.chemistry.r_ct + self.ib*self.chemistry.r_0
         self.voc = self.vb - (self.ib_dyn*self.chemistry.r_ct + ib_dc*self.chemistry.r_0)
         if self.bms_off and voltage_low:
@@ -599,6 +604,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.tau_hys.append(self.tau_hys)
         self.saved.dv_dyn.append(self.dv_dyn)
         self.saved.ib_dyn.append(self.ib_dyn)
+        self.saved.ib_dyn_rate.append(self.ib_dyn_rate)
         self.saved.voc.append(self.voc)
         self.saved.voc_soc.append(self.voc_soc)
         self.saved.voc_stat.append(self.voc_stat)
@@ -841,6 +847,7 @@ class BatterySim(Battery):
         # Charge transfer dynamics
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_init, ib_dyn_rate_init, reset, dt,
                                                      self.chemistry.tau_ct)
+        self.ib_dyn_rate = self.ChargeTransfer.rate
         self.vb = self.voc + self.ib_dyn*self.chemistry.r_ct + self.ib*self.chemistry.r_0
         if self.bms_off:
             self.vb = self.voc
@@ -950,6 +957,7 @@ class BatterySim(Battery):
         self.saved.tau_hys.append(self.tau_hys)
         self.saved.dv_dyn.append(self.dv_dyn)
         self.saved.ib_dyn.append(self.ib_dyn)
+        self.saved.ib_dyn_rate.append(self.ib_dyn_rate)
         self.saved.voc.append(self.voc)
         self.saved.voc_stat.append(self.voc_stat)
         self.saved.soc.append(self.soc)
@@ -975,6 +983,7 @@ class BatterySim(Battery):
         self.saved_s.voc_stat_s.append(self.voc_stat)
         self.saved_s.dv_dyn_s.append(self.dv_dyn)
         self.saved_s.ib_dyn_s.append(self.ib_dyn)
+        self.saved_s.ib_dyn_rate_s.append(self.ib_dyn_rate)
         self.saved_s.dv_hys_s.append(self.dv_hys)
         self.saved_s.tau_hys_s.append(self.tau_hys)
         self.saved_s.vb_s.append(self.vb)
@@ -1108,6 +1117,7 @@ class Saved:
         self.tau_hys = []
         self.dv_dyn = []
         self.ib_dyn = []
+        self.ib_dyn_rate = []
         self.soc = []
         self.soc_ekf = []
         self.voc = []
@@ -1148,6 +1158,7 @@ class Saved:
         self.vsat = []  # Monitor Bank saturation threshold at temperature, deg C
         self.dv_dyn = []  # Monitor Bank current induced back emf, V
         self.ib_dyn = []  # Monitor Bank current induced back emf before resistance multiply, A
+        self.ib_dyn_rate = []  # Monitor Bank current induced back emf rate before resistance multiply, A
         self.voc_stat = []  # Monitor Static bank open circuit voltage, V
         self.voc = []  # Monitor Static bank open circuit voltage, V
         self.voc_ekf = []  # Monitor bank solved static open circuit voltage, V
@@ -1563,6 +1574,7 @@ class SavedS:
         self.vb_s = []
         self.ib_s = []
         self.ib_dyn_s = []
+        self.ib_dyn_rate_s = []
         self.ib_in_s = []
         self.ib_charge_s = []
         self.ib_fut_s = []
@@ -1575,7 +1587,7 @@ class SavedS:
         self.reset_s = []
 
     def __str__(self):
-        s = "unit_m,c_time,Tb_s,vsat_s,voc_stat_s,dv_dyn_s,vb_s,ib_s,ib_dyn_s,sat_s,ddq_s,dq_s,q_s,qcap_s,soc_s,\
+        s = "unit_m,c_time,Tb_s,vsat_s,voc_stat_s,dv_dyn_s,vb_s,ib_s,ib_dyn_s,ib_dyn_rate_s,sat_s,ddq_s,dq_s,q_s,qcap_s,soc_s,\
         reset_s,tau_s,\n"
         for i in range(len(self.time)):
             s += 'sim,'
@@ -1587,6 +1599,7 @@ class SavedS:
             s += "{:5.2f},".format(self.vb_s[i])
             s += "{:8.3f},".format(self.ib_s[i])
             s += "{:8.3f},".format(self.ib_dyn_s[i])
+            s += "{:8.3f},".format(self.ib_dyn_rate_s[i])
             s += "{:8.3f},".format(self.ib_in_s[i])
             s += "{:8.3f},".format(self.ib_fut_s[i])
             s += "{:1.0f},".format(self.sat_s[i])
