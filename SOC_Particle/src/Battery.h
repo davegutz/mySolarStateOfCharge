@@ -104,6 +104,9 @@ public:
   virtual float calculate(const float tb_f, const float soc_frac, float curr_in, const double dt, const boolean dc_dc_on);
   float chargeTransfer_rstate() { return ChargeTransfer_->rstate(); };
   float chargeTransfer_lstate() { return ChargeTransfer_->lstate(); };
+  float chargeTransfer_a() { return ChargeTransfer_->a(); };
+  float chargeTransfer_b() { return ChargeTransfer_->b(); };
+  float chargeTransfer_c() { return ChargeTransfer_->c(); };
   float C_rate() { return ib_ / NOM_UNIT_CAP; }
   String decode(const uint8_t mod);
   float dqdt() { return chem_.dqdt; };

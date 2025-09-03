@@ -628,6 +628,8 @@ double LagExp::calculate(double in, int RESET, const double tau, const double T)
   }
   assignCoeff(tau, T);
   LagExp::rateState(in);
+  if ( sp.debug()==17 ) Serial.printf("LagExp::calculate:  rate, T, rstate, lstate, tau, a, b, c %11.8f %11.8f %11.8f %11.8f %11.8f %11.8f %11.8f %11.8f\n",
+        rate_, T_, rstate_, lstate_, tau_, a_, b_, c_);
   return (lstate_);
 }
 double LagExp::calculate(double in, int RESET, const double tau, const double T, const double max_rate, const double  min_rate)
