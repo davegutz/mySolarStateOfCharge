@@ -835,12 +835,11 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
             *sp_delta_q_ = 0.;
         }
     }
-    reset_temp_past = reset_temp;
     resetting_ = false;     // one pass flag
 
     // Integration can go to -20%
     q_capacity_ = calculate_capacity(tb_f_);
-    if ( !reset_temp )
+    if ( !reset_temp_past )
     {
         // Capacity changes with temperature so this effect would be double if used
         // *sp_delta_q_ += d_delta_q - chem_.dqdt*q_capacity_*tb_f_rate_*dt_;
@@ -867,6 +866,7 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
     print_serial_sim(initializing_all, reset_temp, Sen, this);
 
     // Save and return
+    reset_temp_past = reset_temp;
     return ( soc_ );
 }
 

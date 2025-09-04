@@ -907,7 +907,7 @@ class BatterySim(Battery):
 
         return self.vb
 
-    def count_coulombs(self, chem, dt, reset_temp, tb_f, charge_curr, sat, tb_f_rate=None, soc_s_init=None, mon_delta_q=None,
+    def count_coulombs(self, chem, dt, reset_temp, tb_f, charge_curr, sat, tb_f_rate=None, soc_s_init=None, sim_delta_q=None,
                        mon_sat=None, use_soc_in=False, soc_in=0.):
         # BatterySim
         """Coulomb counter based on true=actual capacity
@@ -939,19 +939,19 @@ class BatterySim(Battery):
         # But if not modeling in real world, set to Monitor when Monitor saturated and reset_temp to EKF otherwise static boolean
         if not self.mod:  # Real world init to track Monitor
             if mon_sat or self.reset_temp_past:
-                self.apply_delta_q_brief(mon_delta_q)
+                self.apply_delta_q_brief(sim_delta_q)
             elif self.model_saturated: # Modeling initializes on reset_temp to Tb=RATED_TEMP
                 if reset_temp:
                     self.delta_q = 0.
-        self.reset_temp_past = reset_temp
         self.resetting = False  # one pass flag
 
         # Integration can go to - 20 %
         self.q_capacity = self.calculate_capacity(self.Tb_f)
-        if not reset_temp:
+        if not self.reset_temp_past:
             # Capacity changes with temperature so this effect would be double if used
             self.delta_q += self.d_delta_q
-            self.delta_q = max(min( self.delta_q, 0.), -self.q_capacity * 1.2);
+            self.delta_q = max(min( self.delta_q, 0.), -self.q_capacity * 1.2)
+            # print(f"cc  ib_charge {self.ib_charge} dt {dt} d_delta_q {self.d_delta_q} delta_q {self.delta_q}")
         self.q = self.q_capacity + self.delta_q
 
         # Normalize
@@ -959,6 +959,7 @@ class BatterySim(Battery):
         self.soc_min = self.chemistry.lut_min_soc.interp(self.Tb_f)
         self.q_min = self.soc_min * self.q_capacity
 
+        self.reset_temp_past = reset_temp
         return self.soc
 
     def count_coulombs_old(self, chem, dt, reset, tb_f, charge_curr, sat, tb_f_rate=None, soc_s_init=None, mon_delta_q=None,
