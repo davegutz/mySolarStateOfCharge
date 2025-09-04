@@ -1477,7 +1477,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
     Ib_noa = Ib_noa_model;
     Vc = HALF_V3V3;
     sample_time_ib_ = Sim->sample_time();
-    dt_ib_ = Sim->dt();
+    dt_ib_ = Sim->dt_long();
   }
   else
   {
