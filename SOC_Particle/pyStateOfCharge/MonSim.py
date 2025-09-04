@@ -58,35 +58,25 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     return hdr
 
 def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
-    hdr = "  i  time   r r_t   sa       sa_s   dt_s              ib_in_s              ib_s                  ib_dyn_a_s           ib_dyn_b_s           ib_dyn_c_s           ib_dyn_rate_s       ib_dyn_rstate_s      ib_dyn_lstate_s      ib_dyn_s             ib_charge_s          ioc_s                vb                   vb_s                 voc_stat             voc_stat_s           voc_s                 dv_dyn_s            vsat                 soc                   soc_s                   dt                delq                   delq_s               qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate             "
+    hdr = "  i  time   r r_t   sa       sa_s     dt              dt_s           ib_in_s              ib_s                ib_dyn_rate_s         ib_dyn_rstate_s      ib_dyn_lstate_s      ib_dyn_s             ib_charge_s          ioc_s               soc                   soc_s                      delq                   delq_s              qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate              vb                   vb_s                 voc_stat             voc_stat_s           voc_s                 dv_dyn_s            vsat                 "
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]),
           "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
           "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
           "{:5.0f}".format(sim_old.sat_s[i]), "{:2.0f}".format(sim.sat),
-          "{:9.3f}".format(sim_old.dt[i]), "{:5.3f}".format(sim.dt),
+          "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
+          "{:9.3f}".format(sim_old.dt_s[i]), "{:5.3f}".format(sim.dt),
           "{:10.5f}".format(sim_old.ib_in_s[i]), "{:9.5f}".format(sim.ib_in),
           "{:10.5f}".format(sim_old.ib_s[i]), "{:9.5f}".format(sim.ib),
-          "{:10.7f}".format(sim_old.ib_dyn_a_s[i]), "{:9.7f}".format(sim.ib_dyn_a),
-          "{:10.7f}".format(sim_old.ib_dyn_b_s[i]), "{:9.7f}".format(sim.ib_dyn_b),
-          "{:10.7f}".format(sim_old.ib_dyn_c_s[i]), "{:9.7f}".format(sim.ib_dyn_c),
           "{:10.5f}".format(sim_old.ib_dyn_rate_s[i]), "{:9.5f}".format(sim.ib_dyn_rate),
           "{:10.5f}".format(sim_old.ib_dyn_rstate_s[i]), "{:9.5f}".format(sim.ib_dyn_rstate),
           "{:10.5f}".format(sim_old.ib_dyn_lstate_s[i]), "{:9.5f}".format(sim.ib_dyn_lstate),
           "{:10.5f}".format(sim_old.ib_dyn_s[i]), "{:9.5f}".format(sim.ib_dyn),
           "{:10.5f}".format(sim_old.ib_charge_s[i]), "{:9.5f}".format(sim.ib_charge),
           "{:10.5f}".format(sim_old.ioc_s[i]), "{:9.5f}".format(sim.ioc),
-          "{:10.5f}".format(mon_old.vb[i]), "{:9.5f}".format(mon.vb),
-          "{:10.5f}".format(sim_old.vb_s[i]), "{:9.5f}".format(sim.vb),
-          "{:10.5f}".format(mon_old.voc_stat[i]), "{:9.5f}".format(mon.voc_stat),
-          "{:10.5f}".format(sim_old.voc_stat_s[i]), "{:9.5f}".format(sim.voc_stat),
-          "{:10.5f}".format(sim_old.voc_s[i]), "{:9.5f}".format(sim.voc),
-          "{:10.5f}".format(sim_old.dv_dyn_s[i]), "{:9.5f}".format(sim.dv_dyn),
-          "{:10.5f}".format(mon_old.vsat[i]), "{:9.5f}".format(mon.chemistry.nom_vsat),
           "{:11.7f}".format(mon_old.soc[i]), "{:8.7f}".format(mon.soc),
           "{:11.7f}".format(mon_old.soc_s[i]), "{:8.7f}".format(sim.soc),
-          "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:12.1f}".format(mon_old.delta_q[i]), "{:9.1f}".format(mon.delta_q),
           "{:12.1f}".format(sim_old.dq_s[i]), "{:9.1f}".format(sim.delta_q),
           "{:12.1f}".format(mon_old.qcrs[i]), "{:9.1f}".format(mon.q_cap_rated_scaled),
@@ -96,7 +86,14 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
           "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
           "{:12.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:10.7f}".format(mon.Tb_f_rate),
-         )
+          "{:10.5f}".format(mon_old.vb[i]), "{:9.5f}".format(mon.vb),
+          "{:10.5f}".format(sim_old.vb_s[i]), "{:9.5f}".format(sim.vb),
+          "{:10.5f}".format(mon_old.voc_stat[i]), "{:9.5f}".format(mon.voc_stat),
+          "{:10.5f}".format(sim_old.voc_stat_s[i]), "{:9.5f}".format(sim.voc_stat),
+          "{:10.5f}".format(sim_old.voc_s[i]), "{:9.5f}".format(sim.voc),
+          "{:10.5f}".format(sim_old.dv_dyn_s[i]), "{:9.5f}".format(sim.dv_dyn),
+          "{:10.5f}".format(mon_old.vsat[i]), "{:9.5f}".format(mon.chemistry.nom_vsat),
+          )
     return hdr
 
 def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_):
@@ -280,6 +277,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     i_temp = -1
     mon.dt_temp = 0.
     T = mon_old.dt[0]
+    Ts = sim_old.dt_s[0]
     if dTb_in is not None:
         dTb = lut_dTb.interp(t[0])
     else:
@@ -335,6 +333,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             dTb = lut_dTb.interp(t[i])
         else:
             dTb = 0.
+        Ts = sim_old.dt_s[i]
         # Get temperature data
         calc_temp = (i_temp+1 < len(mon_old.time_t)) and (mon_old.time_t[i_temp+1] <= mon_old.time[i])
         if calc_temp:
@@ -449,13 +448,13 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if reset:
             ib_dyn_init = sim_old.ib_dyn_s[i]
             ib_dyn_rate_init = sim_old.ib_dyn_rate_s[i]
-        sim.calculate(_chm_s, None, ib_in_s, T, reset, None, None,
+        sim.calculate(_chm_s, None, ib_in_s, Ts, reset, None, None,
                       ib_dyn_init=ib_dyn_init, ib_dyn_rate_init=ib_dyn_rate_init,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=bms_off_init, dv_dyn_past=dv_dyn_past, dv_dyn_0=sim_old.dv_dyn_s[i])
         prn_soc_debug(time=None, leader="after sim.calculate: ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
-        sim.count_coulombs(chem=_chm_s, dt=T, reset=reset, tb_f=sim.Tb_f, tb_f_rate=Tb_f_rate_past_, charge_curr=sim.ib_charge,
+        sim.count_coulombs(chem=_chm_s, dt=Ts, reset=reset, tb_f=sim.Tb_f, tb_f_rate=Tb_f_rate_past_, charge_curr=sim.ib_charge,
                            sat=False, soc_s_init=sim_old.soc_s[i], mon_sat=mon.sat, sim_delta_q=sim.delta_q,
                            use_soc_in=use_mon_soc, soc_in=sim_old.soc_s[i])
         prn_soc_debug(time=None, leader="after sim.count_cou: ", reset=reset, i=i, i_temp=i_temp,

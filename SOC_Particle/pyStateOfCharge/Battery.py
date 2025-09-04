@@ -470,7 +470,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_dyn_a = self.ChargeTransfer.a
         self.ib_dyn_b = self.ChargeTransfer.b
         self.ib_dyn_c = self.ChargeTransfer.c
-        self.vb = self.voc + self.ib_dyn*self.chemistry.r_ct + self.ib*self.chemistry.r_0
         self.voc = self.vb - (self.ib_dyn*self.chemistry.r_ct + ib_dc*self.chemistry.r_0)
         if self.bms_off and voltage_low:
             self.voc_stat = self.vb

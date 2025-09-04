@@ -1143,7 +1143,7 @@ class SavedDataSim:
             self.time_day = None
             self.unit = None  # text title
             self.cTime = None  # Control time, s
-            self.dt = None
+            self.dt_s = None
             self.chm_s = None
             self.qcrs_s = None  # Unit capacity rated scaled, Coulombs
             self.qcap_s = None  # Unit capacity rated scaled, Coulombs
@@ -1179,7 +1179,7 @@ class SavedDataSim:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
             self.cTime = self.cTime[:i_end]
             self.time = self.time[:i_end]
-            self.dt = self.dt[:i_end]
+            self.dt_s = data.dt_s[:i_end]
             self.time_min = self.time / 60.
             self.time_day = self.time / 3600. / 24.
 
