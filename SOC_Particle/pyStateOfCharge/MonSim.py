@@ -92,7 +92,7 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
           "{:10.5f}".format(sim_old.voc_stat_s[i]), "{:9.5f}".format(sim.voc_stat),
           "{:10.5f}".format(sim_old.voc_s[i]), "{:9.5f}".format(sim.voc),
           "{:10.5f}".format(sim_old.dv_dyn_s[i]), "{:9.5f}".format(sim.dv_dyn),
-          "{:10.5f}".format(mon_old.vsat[i]), "{:9.5f}".format(mon.chemistry.nom_vsat),
+          "{:10.5f}".format(mon_old.vsat[i]), "{:9.5f}".format(mon.vsat),
           )
     return hdr
 
@@ -549,7 +549,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         prn_soc_debug(time=None, leader="after mon.calculate: ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
         ib_charge = mon.ib_charge
-        sat = is_sat(Tb_f_past_, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt, mon.chemistry.low_t)
+        sat = is_sat(Tb_f_past_, mon.chemistry.rated_temp, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat,
+                     mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
         if rp.modeling == 0:
             prn_soc_debug(time=None, leader="befor mon.count_cou: ", reset=reset, i=i, i_temp=i_temp,

@@ -425,7 +425,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
 
-        self.vsat = calc_vsat(self.Tb_f, self.chemistry.nom_vsat, self.chemistry.dvoc_dt)
+        self.vsat = self.chemistry.nom_vsat + (self.Tb_f - 25.) * self.chemistry.dvoc_dt
         self.dt = dt
         self.ib_in = ib
         if self.IB_CHARGE_NOA is True:
@@ -885,7 +885,7 @@ class BatterySim(Battery):
         self.dv_dyn = self.vb - self.voc
 
         # Saturation logic, both full and empty
-        self.vsat = self.chemistry.nom_vsat + (self.Tb_f - 25.) * self.chemistry.dvoc_dt
+        self.vsat = sat_voc(self.Tb_f, self.chemistry.rated_temp, self.chemistry.nom_vsat, self.chemistry.dvoc_dt)
         self.sat_ib_max = (self.sat_ib_null + (1 - self.soc - self.ds_voc_soc) * self.sat_cutback_gain *
                            rp.cutback_gain_scalar)
         if rp.tweak_test() or (not rp.modeling):
@@ -1036,8 +1036,8 @@ class BatterySim(Battery):
 
 
 # Other functions
-def is_sat(tb_f, voc, soc, nom_vsat, dvoc_dt, low_t):
-    vsat = sat_voc(tb_f, nom_vsat, dvoc_dt)
+def is_sat(tb_f, rated_temp, voc, soc, nom_vsat, dvoc_dt, low_t):
+    vsat = sat_voc(tb_f, rated_temp, nom_vsat, dvoc_dt)
     return tb_f > low_t and (voc >= vsat or soc >= Battery.mxeps_bb)
 
 
@@ -1045,12 +1045,12 @@ def is_sat(tb_f, voc, soc, nom_vsat, dvoc_dt, low_t):
 #     return q_sat * (1-dqdt*(tb_f - t_rat))
 
 
-def calc_vsat(tb_f, vsat, dvoc_dt):
-    return sat_voc(tb_f, vsat, dvoc_dt)
+def calc_vsat(tb_f, rated_temp, vsat, dvoc_dt):
+    return sat_voc(tb_f, rated_temp, vsat, dvoc_dt)
 
 
-def sat_voc(tb_f, vsat, dvoc_dt):
-    return vsat + (tb_f-25.)*dvoc_dt
+def sat_voc(tb_f, rated_temp, vsat, dvoc_dt):
+    return vsat + (tb_f-rated_temp)*dvoc_dt
 
 
 class Looparound:
