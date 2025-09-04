@@ -454,7 +454,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       bms_off_init=bms_off_init, dv_dyn_past=dv_dyn_past, dv_dyn_0=sim_old.dv_dyn_s[i])
         prn_soc_debug(time=None, leader="after sim.calculate: ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
-        sim.count_coulombs(chem=_chm_s, dt=Ts, reset=reset, tb_f=sim.Tb_f, tb_f_rate=Tb_f_rate_past_, charge_curr=sim.ib_charge,
+        sim.count_coulombs(chem=_chm_s, dt=Ts, reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=Tb_f_rate_past_, charge_curr=sim.ib_charge,
                            sat=False, soc_s_init=sim_old.soc_s[i], mon_sat=mon.sat, mon_delta_q=mon.delta_q,
                            use_soc_in=use_mon_soc, soc_in=sim_old.soc_s[i])
         prn_soc_debug(time=None, leader="after sim.count_cou: ", reset=reset, i=i, i_temp=i_temp,
