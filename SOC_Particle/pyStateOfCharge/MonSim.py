@@ -58,13 +58,14 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     return hdr
 
 def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
-    hdr = "  i  time   r r_t   sa       sa_s   ib_in_s              ib_s                  ib_dyn_a_s           ib_dyn_b_s           ib_dyn_c_s           ib_dyn_rate_s       ib_dyn_rstate_s      ib_dyn_lstate_s      ib_dyn_s             ib_charge_s          ioc_s                vb                   vb_s                 voc_stat             voc_stat_s           voc_s                 dv_dyn_s            vsat                 soc                   soc_s                   dt                delq                   delq_s               qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate             "
+    hdr = "  i  time   r r_t   sa       sa_s   dt_s              ib_in_s              ib_s                  ib_dyn_a_s           ib_dyn_b_s           ib_dyn_c_s           ib_dyn_rate_s       ib_dyn_rstate_s      ib_dyn_lstate_s      ib_dyn_s             ib_charge_s          ioc_s                vb                   vb_s                 voc_stat             voc_stat_s           voc_s                 dv_dyn_s            vsat                 soc                   soc_s                   dt                delq                   delq_s               qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate             "
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]),
           "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
           "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
           "{:5.0f}".format(sim_old.sat_s[i]), "{:2.0f}".format(sim.sat),
+          "{:9.3f}".format(sim_old.dt[i]), "{:5.3f}".format(sim.dt),
           "{:10.5f}".format(sim_old.ib_in_s[i]), "{:9.5f}".format(sim.ib_in),
           "{:10.5f}".format(sim_old.ib_s[i]), "{:9.5f}".format(sim.ib),
           "{:10.7f}".format(sim_old.ib_dyn_a_s[i]), "{:9.7f}".format(sim.ib_dyn_a),

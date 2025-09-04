@@ -1605,6 +1605,7 @@ class SavedS:
         self.time_day = []
         self.unit = []  # text title
         self.c_time = []  # Control time, s
+        self.dt = []
         self.chm_s = []
         self.qcrs_s = []
         self.qcap_s = []
@@ -1644,6 +1645,7 @@ class SavedS:
         for i in range(len(self.time)):
             s += 'sim,'
             s += "{:13.3f},".format(self.time[i])
+            s += "{:7.3f},".format(self.dt[i])
             s += "{:5.2f},".format(self.Tb_s[i])
             s += "{:8.3f},".format(self.vsat_s[i])
             s += "{:5.2f},".format(self.voc_stat_s[i])

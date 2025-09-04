@@ -110,6 +110,7 @@ public:
   float C_rate() { return ib_ / NOM_UNIT_CAP; }
   String decode(const uint8_t mod);
   float dqdt() { return chem_.dqdt; };
+  float dt() { return dt_; };
   float dv_dsoc() { return dv_dsoc_; };
   float dv_dyn() { return dv_dyn_; };
   float ib() { return ib_; };            // Battery terminal current, A
