@@ -149,7 +149,7 @@ def main():
     # The following are not implemented in GUI
 
     # time_end_in = None
-    time_end_in = 1.2
+    time_end_in = 3
 
     # data_only = False
     data_only = True

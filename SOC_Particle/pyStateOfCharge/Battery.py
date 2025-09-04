@@ -184,6 +184,8 @@ class Battery(Coulombs):
         self.ib_dyn_rstate = 0.  # Placeholder so BatterySim can be plotted
         self.ib_dyn_lstate = 0.  # Placeholder so BatterySim can be plotted
         self.ib_dyn_a = 0.  # Placeholder so BatterySim can be plotted
+        self.ib_dyn_b = 0.  # Placeholder so BatterySim can be plotted
+        self.ib_dyn_c = 0.  # Placeholder so BatterySim can be plotted
         self.bms_off = False
         self.mod = 7
         self.sel = 0
@@ -346,6 +348,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_dyn_rstate = 0.
         self.ib_dyn_lstate = 0.
         self.ib_dyn_a = 0.
+        self.ib_dyn_b = 0.
+        self.ib_dyn_c = 0.
         self.voc_ekf = 0.
         self.Temp_Rlim = RateLimit()
         self.eframe = 0
@@ -464,6 +468,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
         self.ib_dyn_a = self.ChargeTransfer.a
+        self.ib_dyn_b = self.ChargeTransfer.b
+        self.ib_dyn_c = self.ChargeTransfer.c
         self.vb = self.voc + self.ib_dyn*self.chemistry.r_ct + self.ib*self.chemistry.r_0
         self.voc = self.vb - (self.ib_dyn*self.chemistry.r_ct + ib_dc*self.chemistry.r_0)
         if self.bms_off and voltage_low:
@@ -622,6 +628,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.ib_dyn_rstate.append(self.ib_dyn_rstate)
         self.saved.ib_dyn_lstate.append(self.ib_dyn_lstate)
         self.saved.ib_dyn_a.append(self.ib_dyn_a)
+        self.saved.ib_dyn_b.append(self.ib_dyn_b)
+        self.saved.ib_dyn_c.append(self.ib_dyn_c)
         self.saved.voc.append(self.voc)
         self.saved.voc_soc.append(self.voc_soc)
         self.saved.voc_stat.append(self.voc_stat)
@@ -868,6 +876,8 @@ class BatterySim(Battery):
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
         self.ib_dyn_a = self.ChargeTransfer.a
+        self.ib_dyn_b = self.ChargeTransfer.b
+        self.ib_dyn_c = self.ChargeTransfer.c
         self.vb = self.voc + self.ib_dyn*self.chemistry.r_ct + self.ib*self.chemistry.r_0
         if self.bms_off:
             self.vb = self.voc
@@ -1148,6 +1158,8 @@ class Saved:
         self.ib_dyn_rstate = []
         self.ib_dyn_lstate = []
         self.ib_dyn_a = []
+        self.ib_dyn_b = []
+        self.ib_dyn_c = []
         self.soc = []
         self.soc_ekf = []
         self.voc = []
@@ -1192,6 +1204,8 @@ class Saved:
         self.ib_dyn_rstate = []  # Monitor Bank current, A
         self.ib_dyn_lstate = []  # Monitor Bank current, A
         self.ib_dyn_a = []  # Monitor Bank current, A
+        self.ib_dyn_b = []  # Monitor Bank current, A
+        self.ib_dyn_c = []  # Monitor Bank current, A
         self.voc_stat = []  # Monitor Static bank open circuit voltage, V
         self.voc = []  # Monitor Static bank open circuit voltage, V
         self.voc_ekf = []  # Monitor bank solved static open circuit voltage, V
