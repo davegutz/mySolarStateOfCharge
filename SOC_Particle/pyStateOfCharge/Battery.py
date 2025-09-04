@@ -788,6 +788,7 @@ class BatterySim(Battery):
         self.ib_charge = 0.  # Charge current, A
         self.saved_s = SavedS()  # for plots and prints
         self.ib_fut = 0.  # Future value of limited current, A
+        self.reset_temp_past = True
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -906,7 +907,46 @@ class BatterySim(Battery):
 
         return self.vb
 
-    def count_coulombs(self, chem, dt, reset, tb_f, charge_curr, sat, tb_f_rate=None, soc_s_init=None, sim_delta_q=None,
+    def count_coulombs(self, chem, dt, reset, tb_f, ib_charge, sat, tb_f_rate=None, soc_s_init=None, mon_delta_q=None,
+                       mon_sat=None, use_soc_in=False, soc_in=0.):
+        self.charge_curr = ib_charge
+        self.d_delta_q = self.charge_curr * dt
+        if self.charge_curr > 0.:
+            self.d_delta_q *= self.chemistry.coul_eff
+
+        # Rate limit temperature.  When modeling, initialize to no change
+        self.tb_f = tb_f
+        self.tb_f_rate = tb_f_rate
+
+        # Saturation and re - init.Goal is to set q_capacity and hold it so remember last saturation status
+        # But if not modeling in real world, set to Monitor when Monitor saturated and reset_temp to EKF otherwise static boolean
+        if not self.mod:  # Real world init to track Monitor
+            if mon_sat or self.reset_temp_past:
+                self.apply_delta_q(mon_delta_q)
+            elif self.model_saturated: # Modeling initializes on reset_temp to Tb=RATED_TEMP
+                if self.reset_temp:
+                    self.delta_q_ = 0.
+        self.reset_temp_past = reset_temp
+        self.resetting = False  # one pass flag
+
+        # Integration can go to - 20 %
+        self.q_capacity = calculate_capacity(self.tb_f)
+        if not reset_temp:
+            # Capacity changes with temperature so this effect would be double if used
+            self.delta_q += self.d_delta_q
+            self.delta_q = max(min( self.delta_q, 0.), -self.q_capacity * 1.2);
+        self.q = self.q_capacity + self.delta_q
+
+        # Normalize
+        self.soc = self.q / self.q_capacity
+        self.soc_min = self.chemistry.soc_min_T.interp(self.tb_f)
+        self.q_min = self.soc_min * self.q_capacity
+
+        return self.soc
+
+
+
+        def count_coulombs(self, chem, dt, reset, tb_f, charge_curr, sat, tb_f_rate=None, soc_s_init=None, mon_delta_q=None,
                        mon_sat=None, use_soc_in=False, soc_in=0.):
         # BatterySim
         """Coulomb counter based on true=actual capacity
@@ -942,10 +982,13 @@ class BatterySim(Battery):
         # if not self.mod and mon_sat:
         #     self.delta_q = mon_delta_q
 
+        if ( Mon->sat() || reset_temp_past )
+            apply_delta_q(Mon->delta_q());
+
         if self.model_saturated:
             if reset:
-                if not self.mod and mon_sat:
-                    self.delta_q = sim_delta_q
+                if not self.mod:
+                    self.delta_q = mon_delta_q
                 else:
                     self.delta_q = 0.  # Model is truth.   Saturate it then restart it to reset charge
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
