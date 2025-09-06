@@ -143,13 +143,13 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
 
 def main():
 
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20250904am_soc4p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20250905am_soc4p2_hi_lo_bb.csv'
 
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # The following are not implemented in GUI
 
-    # time_end_in = None
-    time_end_in = 4
+    time_end_in = None
+    # time_end_in = 4
 
     # data_only = False
     data_only = True
@@ -161,10 +161,10 @@ def main():
 
     temp_his_in = False
     # temp_his_in = True
-    soc_his_in = False
-    # soc_his_in = True
-    # soc_his_s_in = False
-    soc_his_s_in = True
+    # soc_his_in = False
+    soc_his_in = True
+    soc_his_s_in = False
+    # soc_his_s_in = True
 
     # s_hys_sim_in = 1.
     s_hys_sim_in = 0.

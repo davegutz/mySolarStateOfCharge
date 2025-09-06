@@ -29,6 +29,7 @@ class Coulombs:
         self.q_cap_rated_scaled = q_cap_rated_scaled
         self.t_rated = t_rated
         self.delta_q = 0.
+        self.d_delta_q = 0.
         self.q = 0.
         self.q_capacity = 0.
         self.soc_min = 0.
@@ -40,6 +41,7 @@ class Coulombs:
         self.tweak_test = tweak_test
         self.reset = False
         self.tb = 0.
+        self.tb_f = 0.
         self.chemistry = Chemistry(mod_code=mod_code, dvoc=dvoc, unit=unit)
         self.chemistry.assign_all_mod(mod_code, unit=unit)
 
@@ -83,6 +85,7 @@ class Coulombs:
 
     # Memory set, adjust book - keeping as needed.delta_q, capacity, temp preserved void
     def apply_delta_q_brief(self, delta_q):
+        print(f"apply_delta_q_brief {delta_q=}")
         self.delta_q = delta_q
         self.q = self.delta_q + self.q_capacity
         self.soc = self.q / self.q_capacity
@@ -90,6 +93,7 @@ class Coulombs:
 
     def apply_delta_q(self, delta_q, tb_f):
         """Memory set, adjust bookkeeping as needed.  delta_q, capacity, temp preserved"""
+        print(f"apply_delta_q {delta_q=}")
         self.delta_q = delta_q
         self.q_capacity = self.calculate_capacity(tb_f=tb_f)
         self.q = self.delta_q + self.q_capacity
@@ -97,6 +101,7 @@ class Coulombs:
         self.resetting = True  # momentarily turn off saturation check
 
     def apply_delta_q_t(self, delta_q, tb_f):
+        print(f"apply_delta_q_t {delta_q=}")
         self.delta_q = delta_q
         self.q_capacity = self.calculate_capacity(tb_f=tb_f)
         self.q = self.q_capacity + self.delta_q
@@ -106,11 +111,12 @@ class Coulombs:
     def apply_soc(self, soc, tb_f):
         """Memory set, adjust bookkeeping as needed.  delta_q preserved"""
         self.soc = soc
-        # print(f"apply_soc {tb_f=}")
         self.q_capacity = self.calculate_capacity(tb_f=tb_f)
         self.q = soc*self.q_capacity
         self.delta_q = self.q - self.q_capacity
+        print(f"apply_soc {self.delta_q=}")
         self.resetting = True  # momentarily turn off saturation check
+        print(f"apply_soc {tb_f=} {soc=} cap={self.q_capacity} q {self.q} delta_q {self.delta_q}")
 
     def calculate_capacity(self, tb_f):
         """Capacity"""
@@ -142,20 +148,18 @@ class Coulombs:
             self.chemistry.assign_all_mod(chem)
             self.chm = chem
         self.reset = reset
-        d_delta_q = charge_curr * dt
+        self.d_delta_q = charge_curr * dt
         if charge_curr > 0. and not self.tweak_test:
-            d_delta_q *= self.chemistry.coul_eff
+            self.d_delta_q *= self.chemistry.coul_eff
         self.sat = sat
         self.tb_f = tb_f
 
         # Saturation.   Goal is to set q_capacity and hold it so remembers last saturation status.
         if sat:
-            if d_delta_q > 0:
-                d_delta_q = 0.
+            if self.d_delta_q > 0:
+                self.d_delta_q = 0.
                 if ~self.resetting:
                     self.delta_q = 0.
-        # elif reset:
-        #     self.delta_q = 0.
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
 
         # Integration
@@ -167,12 +171,14 @@ class Coulombs:
             self.q = self.q_capacity * self.soc
             self.delta_q = self.q - self.q_capacity
         else:
-            if not self.reset:
+            if not self.resetting:
                 # self.delta_q = max(min(self.delta_q + d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_f_rate*dt,
                 #                        0.0), -self.q_capacity*1.5)
                 #  Because delta_q is off of saturation and capacity book-kept elsewhere for soc, don't need to book
                 #  the temperature effect here
-                self.delta_q = max(min(self.delta_q + d_delta_q, 0.0), -self.q_capacity*1.5)
+                self.delta_q = max(min(self.delta_q + self.d_delta_q, 0.0), -self.q_capacity*1.5)
+                print(f"mon count {self.delta_q=}")
+
                 self.q = self.q_capacity + self.delta_q
                 if self.delta_q < -100.:
                     pass
@@ -188,4 +194,5 @@ class Coulombs:
 
     def load(self, delta_q):
         """Load states from retained memory"""
+        print(f"load {delta_q=}")
         self.delta_q = delta_q

@@ -613,6 +613,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.chm.append(self.chm)
         self.saved.qcrs.append(self.q_cap_rated_scaled)
         self.saved.delta_q.append(self.delta_q)
+        self.saved.d_delta_q.append(self.delta_q)
         self.saved.dt.append(dt)
         self.saved.ib.append(self.ib)
         self.saved.ib_in.append(self.ib_in)
@@ -1273,6 +1274,7 @@ class Saved:
         self.ib_charge = []  # Charging current, A
         self.q = []  # Present charge available to use, except q_min_, C
         self.delta_q = []  # Charge change since saturated, C
+        self.d_delta_q = []  # Charge change since saturated, C
         self.q_capacity = []  # Saturation charge at temperature, C
         self.bms_off = []  # Voltage low without faults, battery management system has shut off battery
         self.reset = []  # Reset flag used for initialization
