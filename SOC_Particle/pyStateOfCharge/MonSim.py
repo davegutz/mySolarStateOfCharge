@@ -141,13 +141,13 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_):
     return hdr
 
 def print_volt_hist(i, i_temp, t, mon_old, mon, calc_temp):
-    hdr = "  i  time   r r_t sa      ib_charge             soc                  dt              Tb_f                      Tb_f_rap                 voc_soc"
+    hdr = "  i  time   r r_t sa      ib_charge             soc                      dt              Tb_f                      Tb_f_rap                 voc_soc"
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
           "{:2.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
           "{:10.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
-          "{:11.5f}".format(mon_old.soc[i]), "{:8.5f}".format(mon.soc),
+          "{:13.7f}".format(mon_old.soc[i]), "{:10.7f}".format(mon.soc),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),

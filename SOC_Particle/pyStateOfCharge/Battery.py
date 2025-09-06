@@ -442,7 +442,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
 
         # Table lookup
-        self.voc_soc, self.dv_dsoc = self.calc_soc_voc(self.soc, self.Tb_f)
+        self.voc_soc, self.dv_dsoc = self.calc_soc_voc(self.soc, self.Tb_f_rap)
 
         # Battery management system model (uses past value bms_off and voc_stat)
         if not self.bms_off:
