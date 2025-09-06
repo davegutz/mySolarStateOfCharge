@@ -146,7 +146,7 @@ float Hysteresis::update(const double dt, const boolean init_high, const boolean
 
     // Normal ODE integration
     dv_hys_ += dv_dot_ * dt;
-    dv_hys_ = max(min(dv_hys_, dv_max), dv_min);
-    return (dv_hys_ * (hys_scale)); // Scale on output only.   Don't retain it for feedback to ode
+    dv_hys_ = max(min(dv_hys_, dv_max), dv_min)* hys_scale;
+    return ( dv_hys_ ); // Scale on output only.   Don't retain it for feedback to ode
 }
 
