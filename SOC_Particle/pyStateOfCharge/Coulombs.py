@@ -85,7 +85,6 @@ class Coulombs:
 
     # Memory set, adjust book - keeping as needed.delta_q, capacity, temp preserved void
     def apply_delta_q_brief(self, delta_q):
-        print(f"apply_delta_q_brief {delta_q=}")
         self.delta_q = delta_q
         self.q = self.delta_q + self.q_capacity
         self.soc = self.q / self.q_capacity
@@ -93,7 +92,6 @@ class Coulombs:
 
     def apply_delta_q(self, delta_q, tb_f):
         """Memory set, adjust bookkeeping as needed.  delta_q, capacity, temp preserved"""
-        print(f"apply_delta_q {delta_q=}")
         self.delta_q = delta_q
         self.q_capacity = self.calculate_capacity(tb_f=tb_f)
         self.q = self.delta_q + self.q_capacity
@@ -101,7 +99,6 @@ class Coulombs:
         self.resetting = True  # momentarily turn off saturation check
 
     def apply_delta_q_t(self, delta_q, tb_f):
-        print(f"apply_delta_q_t {delta_q=}")
         self.delta_q = delta_q
         self.q_capacity = self.calculate_capacity(tb_f=tb_f)
         self.q = self.q_capacity + self.delta_q
@@ -114,9 +111,7 @@ class Coulombs:
         self.q_capacity = self.calculate_capacity(tb_f=tb_f)
         self.q = soc*self.q_capacity
         self.delta_q = self.q - self.q_capacity
-        print(f"apply_soc {self.delta_q=}")
         self.resetting = True  # momentarily turn off saturation check
-        print(f"apply_soc {tb_f=} {soc=} cap={self.q_capacity} q {self.q} delta_q {self.delta_q}")
 
     def calculate_capacity(self, tb_f):
         """Capacity"""
@@ -126,7 +121,6 @@ class Coulombs:
                 pass
             else:
                 pass
-            # print(f"calculate_capacity: qcrs {self.q_cap_rated_scaled}  {tb_f=} dqdt {self.chemistry.dqdt} rt {self.chemistry.rated_temp} cap  {res}")
         except IOError:
             res = 1
         return res
@@ -143,7 +137,6 @@ class Coulombs:
             use_soc_in      Command to drive integrator with input mon_soc
             soc_in          Auxiliary integrator setting, fraction soc
         """
-        # print(f"moncc0 {self.q_capacity=}")
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem)
             self.chm = chem
@@ -163,21 +156,18 @@ class Coulombs:
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
 
         # Integration
-        # print(f"cc call calculate_capacity {self.tb_f=}")
         self.q_capacity = self.calculate_capacity(tb_f=self.tb_f)
-        # print(f"moncc1 {self.q_capacity=}")
         if use_soc_in:
             self.soc = soc_in
             self.q = self.q_capacity * self.soc
             self.delta_q = self.q - self.q_capacity
         else:
-            if not self.resetting:
+            if not self.resetting and not self.reset:
                 # self.delta_q = max(min(self.delta_q + d_delta_q - self.chemistry.dqdt*self.q_capacity*tb_f_rate*dt,
                 #                        0.0), -self.q_capacity*1.5)
                 #  Because delta_q is off of saturation and capacity book-kept elsewhere for soc, don't need to book
                 #  the temperature effect here
                 self.delta_q = max(min(self.delta_q + self.d_delta_q, 0.0), -self.q_capacity*1.5)
-                print(f"mon count {self.delta_q=}")
 
                 self.q = self.q_capacity + self.delta_q
                 if self.delta_q < -100.:
@@ -194,5 +184,4 @@ class Coulombs:
 
     def load(self, delta_q):
         """Load states from retained memory"""
-        print(f"load {delta_q=}")
         self.delta_q = delta_q

@@ -39,7 +39,7 @@ def prn_soc_debug(leader="", time=None, reset=None, i=None, i_temp=None, Tb_f_pa
           format(reset, mo.soc[i], mv.soc, smv.ib_charge, smv.Tb_f, smv.q_capacity, mv.soc_s, smv.soc, mv.Tb_f, Tb_f_past, mv.q, mv.q_capacity))
 
 def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
-    hdr = "  i  time   r r_t sa      ib_charge             soc                  dt                i * dt * coul_eff      ddq                  delq                   qcrs                   q_cap                  Tb                        Tb_f                      Tb_f_rap                 Tb_f_rate  "
+    hdr = "  i  time   r r_t sa      ib_charge             soc                  dt                i * dt * coul_eff    Tb_f                      Tb_f_rap                    ddq                  delq                   qcrs                   q_cap                  Tb                        Tb_f_rate  "
     if calc_temp:
         print(hdr)
     if i > 0:
@@ -58,13 +58,13 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
           "{:11.5f}".format(mon_old.soc[i]), "{:8.5f}".format(mon.soc),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:12.4f}".format(i_dt_old), "{:9.4f}".format(i_dt_new),
+          "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
+          "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
           "{:12.4f}".format(d_dq), "{:9.4f}".format(mon.d_delta_q),
           "{:12.4f}".format(mon_old.delta_q[i]), "{:9.4f}".format(mon.delta_q),
           "{:12.1f}".format(mon_old.qcrs[i]), "{:9.1f}".format(mon.q_cap_rated_scaled),
           "{:12.1f}".format(mon_old.q_capacity[i]), "{:9.1f}".format(mon.q_capacity),
           "{:14.7f}".format(mon_old.Tb[i_temp]), "{:10.7f}".format(mon.Tb),
-          "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
-          "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
           "{:12.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:10.7f}".format(mon.Tb_f_rate),
          )
     return hdr
@@ -489,7 +489,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         reset_ekf = False
         z_init = None
         if reset:
-            mon.apply_soc(mon_old.soc[i], Tb_f_past_)
+            mon.apply_delta_q_t(mon_old.delta_q[i], mon_old.Tb_f_rap[i])
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
             if hasattr(mon_old, 'e_wrap_m'):

@@ -952,7 +952,6 @@ class BatterySim(Battery):
             # Capacity changes with temperature so this effect would be double if used
             self.delta_q += self.d_delta_q
             self.delta_q = max(min( self.delta_q, 0.), -self.q_capacity * 1.2)
-            # print(f"cc  ib_charge {self.ib_charge} dt {dt} d_delta_q {self.d_delta_q} delta_q {self.delta_q}")
         self.q = self.q_capacity + self.delta_q
 
         # Normalize
