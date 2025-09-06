@@ -434,6 +434,13 @@ class BatteryMonitor(Battery, EKF1x1):
         # Overflow protection since ib past value used
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
+        # Wrap logic
+        self.wrap(reset=reset, ib_amp=ib_amp, ib_noa=ib_noa, e_w_amp_0=e_w_amp_0, e_w_amp_filt_0=e_w_amp_filt_0,
+                  e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0)
+
+        # Reversionary model
+        self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
+
         # Table lookup
         self.voc_soc, self.dv_dsoc = self.calc_soc_voc(self.soc, self.Tb_f)
 
@@ -482,13 +489,6 @@ class BatteryMonitor(Battery, EKF1x1):
         if reset:
             self.voc_stat = self.voc
         self.ioc = self.ib
-
-        # Wrap logic
-        self.wrap(reset=reset, ib_amp=ib_amp, ib_noa=ib_noa, e_w_amp_0=e_w_amp_0, e_w_amp_filt_0=e_w_amp_filt_0,
-                  e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0)
-
-        # Reversionary model
-        self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
 
         # EKF 1x1
         self.reset_ekf = reset_ekf

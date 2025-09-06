@@ -140,6 +140,21 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_):
           )
     return hdr
 
+def print_volt_hist(i, i_temp, t, mon_old, mon, calc_temp):
+    hdr = "  i  time   r r_t sa      ib_charge             soc                  dt              Tb_f                      Tb_f_rap                 voc_soc"
+    if calc_temp:
+        print(hdr)
+    print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
+          "{:2.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
+          "{:10.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
+          "{:11.5f}".format(mon_old.soc[i]), "{:8.5f}".format(mon.soc),
+          "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
+          "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
+          "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
+          "{:11.5f}".format(mon_old.voc_soc[i]), "{:9.5f}".format(mon.voc_soc),
+          )
+    return hdr
+
 def save_clean_file(mon_ver, csv_file, unit_key):
     default_header_str = "unit,               hm,                  cTime,        dt,       sat,sel,mod,\
       Tb,Tb_rap,Tb_f,Tb_f_rap,Tb_f_rate,Tb_f_rate_rap, vb,  ib,  ib_dyn, ib_dyn_rate, ioc,  voc_soc,    vsat,dv_dyn,voc_stat,voc_stat_f,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,ib_lag,voc_soc_new,"
@@ -216,7 +231,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
               verbose=True, t_max=None, eframe_mult=Battery.cp_eframe_mult, sres0=1., sresct=1., stauct_sim=1.,
               stauct_mon=1, use_vb_sim=False, scale_hys_cap_sim=1., s_cap_chg=1., s_cap_dis=1.,
               s_hys_chg=1., s_hys_dis=1., s_coul_eff=1., use_mon_soc=False, cutback_gain_sclr=1., ds_voc_soc=0.,
-              unit=None, request_temp_history=False, request_soc_history=False, request_soc_s_history=False):
+              unit=None, request_volt_history=False, request_temp_history=False, request_soc_history=False, request_soc_s_history=False):
     if sim_old is not None and len(sim_old.time) < len(mon_old.time):
         t = sim_old.time
     else:
@@ -308,6 +323,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     mon.Tb_hdwe = mon_old.Tb_hdwe[0]
     mon.Tb_hdwe_filt = mon_old.Tb_hdwe_filt[0]
     mon.Tb_hdwe_filt_rate = mon_old.Tb_hdwe_filt_rate[0]
+    mon.e_wrap = mon_old.e_wrap[0]
+    mon.voc_soc = mon_old.voc_soc[0]
+    mon.voc_stat = mon.voc_soc - mon.e_wrap
     Tb_ = mon_old.Tb[0]
     Tb_f_ = mon_old.Tb_f[0]
     Tb_f_rate_ = mon_old.Tb_f_rate[0]
@@ -339,6 +357,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     sim.ib_dyn = sim_old.ib_dyn_s[0]
     sim.ib_dyn_rate = sim_old.ib_dyn_rate_s[0]
     sim.soc = sim_old.soc_s[0]
+    if request_volt_history:
+        volt_hdr = print_volt_hist(0, 0, t, mon_old, mon, True)
     if request_temp_history:
         temp_hdr = print_temp_hist(0, 0, t, mon_old, mon, True, Tb_, Tb_past_)
     if request_soc_history:
@@ -625,6 +645,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       "{:9.3f}".format(sim.saved.dv_hys[i]), "{:9.3f}".format(mon.saved.ib[i]), "{:12.7f}".format(mon.saved.soc[i]),
                       "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
 
+        if request_volt_history:
+            volt_hdr = print_volt_hist(i, i_temp, t, mon_old, mon, calc_temp)
+
         if request_temp_history:
             temp_hdr = print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_)
 
@@ -640,6 +663,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             pass
         else:
             pass
+    if request_volt_history:
+        print(volt_hdr)
     if request_temp_history:
         print(temp_hdr)
     if request_soc_history:
