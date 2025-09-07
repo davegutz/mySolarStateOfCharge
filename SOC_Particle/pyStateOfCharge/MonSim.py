@@ -30,73 +30,7 @@ from Scale import Scale
 from myFilters import LagExp
 from pyDAGx import myTables
 from MonSimPrint import *
-
-def save_clean_file(mon_ver, csv_file, unit_key):
-    default_header_str = "unit,               hm,                  cTime,        dt,       sat,sel,mod,\
-      Tb,Tb_rap,Tb_f,Tb_f_rap,Tb_f_rate,Tb_f_rate_rap, vb,  ib,  ib_dyn, ib_dyn_rate, ioc,  voc_soc,    vsat,dv_dyn,voc_stat,voc_stat_f,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,ib_lag,voc_soc_new,"
-    n = len(mon_ver.time)
-    date_time_start = datetime.now()
-    with open(csv_file, "w") as output:
-        output.write(default_header_str + "\n")
-        for i in range(n):
-            s = unit_key + ','
-            dt_dt = timedelta(seconds=mon_ver.time[i]-mon_ver.time[0])
-            time_stamp = date_time_start + dt_dt
-            s += time_stamp.strftime("%Y-%m-%dT%H:%M:%S,")
-            s += "{:7.3f},".format(mon_ver.time[i] + mon_ver.time_ref)
-            s += "{:7.3f},".format(mon_ver.dt[i])
-            s += "{:1.0f},".format(mon_ver.sat[i])
-            s += "{:1.0f},".format(mon_ver.sel[i])
-            s += "{:1.0f},".format(mon_ver.mod_data[i])
-            s += "{:7.6f},".format(mon_ver.Tb[i])
-            s += "{:7.6f},".format(mon_ver.Tb_rap[i])
-            s += "{:7.6f},".format(mon_ver.Tb_f[i])
-            s += "{:7.6f},".format(mon_ver.Tb_f_rap[i])
-            s += "{:7.6f},".format(mon_ver.Tb_f_rate[i])
-            s += "{:7.6f},".format(mon_ver.Tb_f_rate_rap[i])
-            s += "{:7.3f},".format(mon_ver.vb[i])
-            s += "{:7.3f},".format(mon_ver.ib[i])
-            s += "{:7.3f},".format(mon_ver.ib_dyn[i])
-            s += "{:7.3f},".format(mon_ver.ib_dyn_rate[i])
-            s += "{:7.3f},".format(mon_ver.ioc[i])
-            s += "{:7.3f},".format(mon_ver.voc_soc[i])
-            s += "{:7.3f},".format(mon_ver.vsat[i])
-            s += "{:7.3f},".format(mon_ver.dv_dyn[i])
-            s += "{:7.3f},".format(mon_ver.voc_stat[i])
-            s += "{:7.3f},".format(mon_ver.voc_ekf[i])
-            s += "{:7.3f},".format(mon_ver.y_ekf[i])
-            s += "{:7.3f},".format(mon_ver.soc_s[i])
-            s += "{:7.3f},".format(mon_ver.soc_ekf[i])
-            s += "{:7.3f},".format(mon_ver.soc[i])
-            s += "{:7.5f},".format(mon_ver.ib_lag[i])
-            s += "{:7.3f},".format(mon_ver.voc_soc_new[i])
-            s += "\n"
-            output.write(s)
-        print("Wrote(save_clean_file):", csv_file)
-
-
-def save_clean_file_sim(sim_ver, csv_file, unit_key):
-    header_str = "unit_m,c_time,Tb_s,vsat_s,voc_stat_s,dv_dyn_s,vb_s,ib_s,sat_s,dq_s,\
-    soc_s,reset_s,"
-    n = len(sim_ver.time)
-    with open(csv_file, "w") as output:
-        output.write(header_str + "\n")
-        for i in range(n):
-            s = unit_key + ','
-            s += "{:13.3f},".format(sim_ver.time[i])
-            s += "{:5.2f},".format(sim_ver.Tb_s[i])
-            s += "{:8.3f},".format(sim_ver.vsat_s[i])
-            s += "{:5.2f},".format(sim_ver.voc_stat_s[i])
-            s += "{:5.2f},".format(sim_ver.dv_dyn_s[i])
-            s += "{:5.2f},".format(sim_ver.vb_s[i])
-            s += "{:8.3f},".format(sim_ver.ib_s[i])
-            s += "{:7.3f},".format(sim_ver.sat_s[i])
-            s += "{:5.3f},".format(sim_ver.dq_s[i])
-            s += "{:7.3f},".format(sim_ver.soc_s[i])
-            s += "{:7.3f},".format(sim_ver.reset_s[i])
-            s += "\n"
-            output.write(s)
-        print("Wrote(save_clean_file_sim):", csv_file)
+from MonSimClasses import *
 
 #  Replicate the application in its entirety here.
 #  There are no 'bank' parameters anywhere in this model.   It is assumed that all inputs from the application have
@@ -107,7 +41,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
               verbose=True, t_max=None, eframe_mult=Battery.cp_eframe_mult, sres0=1., sresct=1., stauct_sim=1.,
               stauct_mon=1, use_vb_sim=False, scale_hys_cap_sim=1., s_cap_chg=1., s_cap_dis=1.,
               s_hys_chg=1., s_hys_dis=1., s_coul_eff=1., use_mon_soc=False, cutback_gain_sclr=1., ds_voc_soc=0.,
-              unit=None, request_ekf_history=False, request_volt_history=False, request_temp_history=False, request_soc_history=False, request_soc_s_history=False):
+              unit=None, request_history=None):
     if sim_old is not None and len(sim_old.time) < len(mon_old.time):
         t = sim_old.time
     else:
@@ -135,19 +69,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         # exit(1)
     print("use_mon_soc is", use_mon_soc, "use_ib_mon is", use_ib_mon)
     tweak_test = rp.tweak_test()
-    Tb0 = mon_old.Tb_f[0]
-    Tb0_s =  mon_old.Tb_mod[0]
-    lut_dTb = None
-    if dTb_in is not None:
-        dTb_in = np.array(dTb_in)
-        Tb0 += dTb_in[1, 0]
-        lut_dTb = myTables.TableInterp1D(np.array(dTb_in[0, :]), np.array(dTb_in[1, :]))
-        dTb = lut_dTb.interp(t[0])
-    else:
-        dTb = 0.
-
-    # Setup
-    TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
+    ST = TbSense(mon_ref=mon_old, dTb_in=dTb_in)
     if hasattr(mon_old, 'qcrs'):
         scale_mon = mon_old.qcrs[0] / (Battery.UNIT_CAP_RATED*3600)
     else:
@@ -162,16 +84,16 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             scale_sim *= scale_in
     s_q = Scale(1., 3., 0.000005, 0.00005)
     s_r = Scale(1., 3., 0.001, 1.)   # t_ib_fail = 1000
-    sim = BatterySim(mod_code=chm_s[0], tb_f=Tb0_s, scale=scale_sim, tweak_test=tweak_test,
+    sim = BatterySim(mod_code=chm_s[0], tb_f=ST.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
                      dv_hys=mon_old.dv_hys[0], sres0=sres0, sresct=sresct, stauct=stauct_sim, scale_r_ss=scale_r_ss,
                      s_hys=s_hys_sim, dvoc=dvoc_sim, scale_hys_cap=scale_hys_cap_sim, s_coul_eff=s_coul_eff,
                      s_cap_chg=s_cap_chg, s_cap_dis=s_cap_dis, s_hys_chg=s_hys_chg, s_hys_dis=s_hys_dis,
                      cutback_gain_sclr=cutback_gain_sclr, ds_voc_soc=ds_voc_soc, unit=unit, mon_ref=mon_old,
                      sim_ref=sim_old)
-    mon = BatteryMonitor(mod_code=chm_m[0], tb_f=Tb0, scale=scale_mon, tweak_test=tweak_test,
+    mon = BatteryMonitor(mod_code=chm_m[0], tb_f=ST.Tb0, scale=scale_mon, tweak_test=tweak_test,
                          sres0=sres0, sresct=sresct, stauct=stauct_mon, scaler_q=s_q, scaler_r=s_r,
                          scale_r_ss=scale_r_ss, s_hys=s_hys_mon, dvoc=dvoc_mon, eframe_mult=eframe_mult,
-                         s_coul_eff=s_coul_eff, unit=unit, ref=mon_old, dTb=dTb)
+                         s_coul_eff=s_coul_eff, unit=unit, ref=mon_old, dTb=ST.dTb)
     mon.saved.time_ref = mon_old.time_ref
     sim.saved_s.time_ref = mon_old.time_ref
     # need Tb input.   perhaps need higher order to enforce basic type 1 response
@@ -190,22 +112,12 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     i_ekf = -1
     i_temp = -1
     T = mon_old.dt[0]
-    Tb_ = mon_old.Tb[0]
-    Tb_f_ = mon_old.Tb_f[0]
-    Tb_f_rate_ = mon_old.Tb_f_rate[0]
-    Tb_past_ = mon_old.Tb_rap[0] + dTb
-    Tb_f_past_ = mon_old.Tb_f_rap[0] + dTb
-    Tb_f_rate_past_ = mon_old.Tb_f_rate_rap[0]
-    if request_ekf_history:
-        ekf_hdr = print_ekf_hist(0, 0, i_ekf, t, mon_old, mon, True)
-    if request_volt_history:
-        volt_hdr = print_volt_hist(0, 0, 0, t, mon_old, mon, True)
-    if request_temp_history:
-        temp_hdr = print_temp_hist(0, 0, t, mon_old, mon, True, Tb_, Tb_past_)
-    if request_soc_history:
-        soc_hdr = print_soc_hist(0, 0, t, mon_old, mon, True)
-    if request_soc_s_history:
-        soc_s_hdr = print_soc_s_hist(0, 0, t, mon_old, mon, True, sim_old, sim)
+    hdr = None
+
+    # Print debug information
+    if request_history is not None and request_history > 0:
+        hdr = print_hist(request_history, 0, i_temp, i_ekf, t, mon_old, mon, True, True,
+                         ST.Tb, ST.Tb_past, sim_old, sim)
 
     # Top of time loop
     for i in range(t_len):
@@ -216,11 +128,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             candidate_dt = t[i] - t[i-1]  # update
             if candidate_dt > 1e-6:
                 T = candidate_dt
-        if dTb_in is not None:
-            dTb = lut_dTb.interp(t[i])
-        else:
-            dTb = 0.
+
         # Get temperature data
+        dTb = ST.calc_dTb(i)
         calc_temp = (i_temp+1 < len(mon_old.time_t)) and (mon_old.time_t[i_temp+1] <= mon_old.time[i])
         if calc_temp:
             i_temp += 1
@@ -232,12 +142,11 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.Tb = mon_old.Tb[i_temp]
             mon.Tb_s = mon_old.Tb[i_temp]
             if i_temp > 0:
-                Tb_past_ = Tb_
-                Tb_f_past_ = Tb_f_
-                Tb_f_rate_past_ = Tb_f_rate_
-            Tb_ = mon.Tb + dTb
-            Tb_f_ = mon.Tb_f + dTb
-            sim.Tb_f = mon_old.Tb_mod[i_temp]
+                ST.set_past_values()
+            ST.update(mon.Tb, mon.Tb_f)
+
+        # Input
+        sim.Tb_f = mon_old.Tb_mod[i_temp]
 
         # dc_dc_on = bool(lut_dc.interp(t[i]))
         dc_dc_on = False
@@ -252,14 +161,14 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         # if mon.reset_temp is not None:
         #     reset = reset or mon.reset_temp
             prn_soc_debug(time=now, leader="before sim init:     ", reset=reset, i=i,
-                          Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
+                          Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
 
         if reset:
-            sim.apply_soc(mon_old.soc_s[i], Tb_f_past_)  # calculates delta_q
+            sim.apply_soc(mon_old.soc_s[i], ST.Tb_f_past)  # calculates delta_q
             sim.load(sim.delta_q)
             sim.assign_tb(sim.Tb)
             sim.assign_tb_f(sim.Tb_f)
-            sim.apply_delta_q_t(sim.delta_q, Tb_f_past_)
+            sim.apply_delta_q_t(sim.delta_q, ST.Tb_f_past)
             if sim_old is not None:
                 sat_s_init = sim_old.sat_s[0]
             else:
@@ -269,82 +178,57 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
         if calc_temp:
             prn_soc_debug(time=None, leader="b temp filtr:    ", reset=reset, i=i,
-                          Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
-            if mon.reset_temp:
-                Tb_f_rate_past = mon_old.Tb_hdwe_filt_rate[i_temp]
-            else:
-                Tb_f_rate_past = mon.Tb_hdwe_filt_rate
+                          Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
             mon.Tb_hdwe_filt = \
-                TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_old.Tb_hdwe_filt[i_temp],
+                ST.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_old.Tb_hdwe_filt[i_temp],
                                                  mon_old.Tb_hdwe_filt_rate[i_temp], mon.reset_temp,
                                                  mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
                                                  rmin=-Battery.T_RLIM)
-            mon.Tb_hdwe_filt_rate = TbSenseFilt.rate
+            mon.Tb_hdwe_filt_rate = ST.TbSenseFilt.rate
             mon.Tb_f_rate = mon.Tb_hdwe_filt_rate
-            mon.Tb_rap = Tb_past_
+            mon.Tb_rap = ST.Tb_past
             mon.Tb_f = mon.Tb_hdwe_filt
-            Tb_f_ = mon.Tb_hdwe_filt
-            mon.Tb_rstate = TbSenseFilt.rstate
-            mon.Tb_state = TbSenseFilt.state
+            ST.Tb_f = mon.Tb_hdwe_filt
+            mon.Tb_rstate = ST.TbSenseFilt.rstate
+            mon.Tb_state = ST.TbSenseFilt.state
 
-            print_each_update = False
-            if print_each_update:
-                print("{:6.3f} reset   {:2.0f}  Tt {:9.7f}  Tb_hdwe  {:11.7f}  Tb_hdwe_filt   {:11.7f} rstate   {:11.7f} lstate   {:11.7f} hwfrate   {:11.7f} tbfrate   {:11.7f} Tb_rap  {:8.3f} Tb_f   {:8.3f}".
-                      format(now, mon_old.reset_temp[i_temp], mon_old.Tt[i_temp],
-                             mon_old.Tb_hdwe[i_temp],
-                             mon_old.Tb_hdwe_filt[i_temp], mon_old.Tb_rstate[i_temp], mon_old.Tb_lstate[i_temp],
-                             mon_old.Tb_hdwe_filt_rate[i_temp], mon_old.Tb_f_rate[i_temp],
-                             mon_old.Tb_rap[i], mon_old.Tb_f[i_temp]))
-                print("{:6.3f} reset_v {:2d}  Tt {:9.7f}  Tb_hdwe_v{:11.7f}  Tb_hdwe_filt_v {:11.7f} rstate_v {:11.7f} lstate_v {:11.7f} hwfrate_v {:11.7f} tbfrate_v {:11.7f} Tb_rap_v{:8.3f} Tb_f_v {:8.3f}\n\n".
-                      format(now, mon.reset_temp, mon.dt_temp,
-                             mon.Tb_hdwe,
-                             mon.Tb_hdwe_filt, mon.Tb_rstate, mon.Tb_state,
-                             mon.Tb_hdwe_filt_rate, mon.Tb_f_rate,
-                             mon.Tb_rap, mon.Tb_f))
             prn_soc_debug(time=None, leader="a temp filtr:    ", reset=reset, i=i,
-                          Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
+                          Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
 
         # Models
         if i == 0:
             if sim_old is not None and not use_ib_mon:
                 ib_in_s = sim_old.ib_in_s[1]
-                ib_in_s_past = sim_old.ib_in_s[0]
             else:
                 ib_in_s = mon_old.ib[1]
-                ib_in_s_past = mon_old.ib[0]
         else:
             if sim_old is not None and not use_ib_mon:
                 ib_in_s = sim_old.ib_in_s[i]
-                ib_in_s_past = sim_old.ib_in_s[i-1]
             else:
                 ib_in_s = mon_old.ib[i]
-                ib_in_s_past = mon_old.ib[i - 1]
         if Bsim is None:
             _chm_s = chm_s[i]
         else:
             _chm_s = Bsim
         if i == 0:
             dv_dyn_past = sim_old.dv_dyn_s[0]
-            dv_dyn_rate_init = (sim_old.dv_dyn_s[1] - sim_old.dv_dyn_s[0]) / T
         else:
             dv_dyn_past = sim_old.dv_dyn_s[i-1]
-            dv_dyn_rate_init = (sim_old.dv_dyn_s[i] - sim_old.dv_dyn_s[i-1]) / T
         prn_soc_debug(time=None, leader="befor sim.calculate: ", reset=reset, i=i,
-                      Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
-        if reset:
-            ib_dyn_init = sim_old.ib_dyn_s[i]
-            ib_dyn_rate_init = sim_old.ib_dyn_rate_s[i]
+                      Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
+        ib_dyn_init = sim_old.ib_dyn_s[i]
+        ib_dyn_rate_init = sim_old.ib_dyn_rate_s[i]
         sim.calculate(_chm_s, None, ib_in_s, sim_old.dt_s[i], reset, None, None,
                       ib_dyn_init=ib_dyn_init, ib_dyn_rate_init=ib_dyn_rate_init,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=bms_off_init, dv_dyn_past=dv_dyn_past, dv_dyn_0=sim_old.dv_dyn_s[i])
         prn_soc_debug(time=None, leader="after sim.calculate: ", reset=reset, i=i,
-                      Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
-        sim.count_coulombs(chem=_chm_s, dt=sim_old.dt_s[i], reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=Tb_f_rate_past_,
+                      Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
+        sim.count_coulombs(chem=_chm_s, dt=sim_old.dt_s[i], reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=ST.Tb_f_rate_past,
                            charge_curr=sim.ib_charge, sat=False, soc_s_init=sim_old.soc_s[i], mon_sat=mon.sat,
                            sim_delta_q=sim_old.dq_s[i], use_soc_in=use_mon_soc, soc_in=sim_old.soc_s[i])
         prn_soc_debug(time=None, leader="after sim.count_cou: ", reset=reset, i=i,
-                      Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
+                      Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
 
         # EKF
         reset_ekf = False
@@ -363,7 +247,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                 e_w_noa_filt_0 = mon_old.e_wrap_n_filt[0]
             reset_ekf = True
         prn_soc_debug(time=None, leader="after mon_soc_apply  ", reset=reset, i=i,
-                      Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
+                      Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
 
         # Monitor calculations including ekf
         if Bmon is None:
@@ -377,7 +261,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                 ib_ = mon_old.ib_sel[i]
             else:
                 ib_ = mon_old.ib[i]
-
         # Raw current handling
         ibmm = None
         ibnm = None
@@ -391,7 +274,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             ibmh = mon_old.ibmh[i]
         if hasattr(mon_old, 'ibnm'):
             ibnh = mon_old.ibnh[i]
-
         if use_vb_sim:
             vb_ = sim.vb
         elif t_vb_fail and t[i] >= t_vb_fail:
@@ -399,7 +281,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         else:
             vb_ = vb[i]
 
-        # EKF sequencing logic
+        # Monitor EKF sequencing logic
         if (i_ekf+1 < len(mon_old.time_e)) and (mon_old.time_e[i_ekf+1] <= mon_old.time[i]):
             i_ekf += 1
             if i_ekf < 1:
@@ -414,46 +296,50 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             if calc_ekf:
                 mon.init_soc_ekf(mon_old)  # when modeling (assumed in python) ekf wants to equal model
 
+        # Monitor calculate
         if rp.modeling == 0:
             if reset_ekf:
                 z_init = mon_old.z[i_ekf]
             # print(f"{i=}   {i_ekf=}   t {mon_old.time[i]}   te {mon_old.time_e[i_ekf]}    dt {mon_old.dt_ekf[i_ekf]}     calc {calc_ekf}      res_ekf {reset_ekf}      z_init {z_init}")
             prn_soc_debug(time=None, leader="before mon.calculate ", reset=reset, i=i,
-                          Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
+                          Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
             if reset:
                 ib_dyn_init = mon_old.ib_dyn[i]
                 ib_dyn_rate_init = mon_old.ib_dyn_rate[i]
-            mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, Tb_f_rate_past_,
+            mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, ST.Tb_f_rate_past,
                           rp=rp, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
                           reset_ekf=reset_ekf, ib_dyn_init=ib_dyn_init, ib_dyn_rate_init=ib_dyn_rate_init)
         else:
             mon.calculate(_chm_m, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
-                          reset, calc_ekf, T_ekf, mon_old.z[0], Tb_f_rate_past_,
+                          reset, calc_ekf, T_ekf, mon_old.z[0], ST.Tb_f_rate_past,
                           rp=rp, bms_off_init=bms_off_init, ib_amp=ibmm, ib_noa=ibnm, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
                           reset_ekf=reset_ekf)
         prn_soc_debug(time=None, leader="after mon.calculate: ", reset=reset, i=i,
-                      Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
+                      Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
         ib_charge = mon.ib_charge
-        sat = is_sat(Tb_f_past_, mon.chemistry.rated_temp, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat,
+        sat = is_sat(ST.Tb_f_past, mon.chemistry.rated_temp, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat,
                      mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
+
+        # Monitor count
         if rp.modeling == 0:
             prn_soc_debug(time=None, leader="befor mon.count_cou: ", reset=reset, i=i,
-                          Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
-            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=Tb_f_past_, tb_f_rate=Tb_f_rate_past_, charge_curr=ib_charge,
+                          Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
+            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=ST.Tb_f_past, tb_f_rate=ST.Tb_f_rate_past, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
         else:
-            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=Tb_f_past_, tb_f_rate=Tb_f_rate_past_, charge_curr=ib_charge,
+            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=ST.Tb_f_past, tb_f_rate=ST.Tb_f_rate_past, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
         prn_soc_debug(time=None, leader="after mon.count_cou: ", reset=reset, i=i,
-                      Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
-        mon.Tb_f_rap = Tb_f_past_
-        mon.Tb_f_rate_rap = Tb_f_rate_past_
+                      Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
+        mon.Tb_f_rap = ST.Tb_f_past
+        mon.Tb_f_rate_rap = ST.Tb_f_rate_past
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
         mon.assign_soc_s(sim.soc)
-        # Plot stuff
+
+        # Save plot info
         mon.save(t[i], T, mon.soc, sim.voc)
         sim.save(t[i], T)
         sim.save_s(t[i])
@@ -464,60 +350,22 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             print('mon:  ', str(mon))
             print('time=', t[i])
             print('sim:  ', str(sim))
-        # if t[i]>29495:
-        #     print('time=', t[i])
-        #     print('mon:  ', str(mon))
-        #     print('time=', t[i])
-        #     print('sim:  ', str(sim))
-        #     print(t[i])
-        if verbose:
-            if sim_old is not None:
-                print("{:9.3f}".format(t[i]), "{:4.0f}".format(mon_old.chm[i]), "{:4.0f}".format(sim_old.chm_s[i]),
-                      "{:9.3f}".format(sim_old.ib_in_s[i]), "{:9.3f}".format(sim_old.dv_hys_s[i]),
-                      "{:9.3f}".format(mon_old.ib[i]), "{:12.7f}".format(mon_old.soc[i]), "{:9.3f}".format(mon_old.dv_hys[i]),
-                      "{:9.3f}".format(sim.saved_s.ib_in_s[i]), "{:9.3f}".format(sim.hys.ibs), "{:9.3f}".format(sim.hys.ioc),
-                      "{:4.0f}".format(sim.sat), "{:9.3f}".format(sim.hys.disabled), "{:9.3f}".format(sim.hys.dv_dot),
-                      "{:9.3f}".format(sim.saved.dv_hys[i]), "{:9.3f}".format(mon.saved.ib[i]), "{:12.7f}".format(mon.saved.soc[i]),
-                      "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
-            else:
-                print("{:9.3f}".format(t[i]), "{:4.0f}".format(mon_old.chm[i]),
-                      "{:9.3f}".format(mon_old.ib[i]), "{:12.7f}".format(mon_old.soc[i]), "{:9.3f}".format(mon_old.dv_hys[i]),
-                      "{:9.3f}".format(sim.saved_s.ib_in_s[i]), "{:9.3f}".format(sim.hys.ibs), "{:9.3f}".format(sim.hys.ioc),
-                      "{:4.0f}".format(sim.sat), "{:9.3f}".format(sim.hys.disabled), "{:9.3f}".format(sim.hys.dv_dot),
-                      "{:9.3f}".format(sim.saved.dv_hys[i]), "{:9.3f}".format(mon.saved.ib[i]), "{:12.7f}".format(mon.saved.soc[i]),
-                      "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
-
-        if request_ekf_history:
-            ekf_hdr = print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf)
-
-        if request_volt_history:
-            volt_hdr = print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp)
-
-        if request_temp_history:
-            temp_hdr = print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_)
-
-        if request_soc_history:
-            soc_hdr = print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp)
-
-        if request_soc_s_history:
-            soc_s_hdr = print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim)
+        if request_history is not None and request_history > 0:
+            hdr = print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf,
+                             ST.Tb, ST.Tb_past, sim_old, sim)
 
         prn_soc_debug(time=None, leader="end loop:            ", reset=reset, i=i,
-                      Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
+                      Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
+
+        # pick a pass to run debugger to a time
         if now>2:
             pass
         else:
             pass
-    if request_ekf_history:
-        print(ekf_hdr)
-    if request_volt_history:
-        print(volt_hdr)
-    if request_temp_history:
-        print(temp_hdr)
-    if request_soc_history:
-        print(soc_hdr)
-    if request_soc_s_history:
-        print(soc_s_hdr)
+
+    # Final hdr print
+    if request_history is not None and request_history > 0:
+        print(hdr)
 
     # Data
     if verbose:

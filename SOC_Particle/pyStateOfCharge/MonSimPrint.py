@@ -30,6 +30,23 @@ def prn_soc_debug(leader="", time=None, reset=None, i=None, Tb_f_past=None, mo=N
     print("reset {:2.0f}     mo.soc {:10.8f}    mon.soc {:10.8f} sim.ib_charge {:7.3f}  sim.Tb_f {:10.8f} sim.q_cap {:9.2f} mon.soc_s {:10.8f}   sim.soc {:10.8f}   mon.Tb_f {:10.8f}  Tb_f_past_ {:10.8f}    mon.q {:10.3f}    mon.q_cap {:10.3f}".
           format(reset, mo.soc[i], mv.soc, smv.ib_charge, smv.Tb_f, smv.q_capacity, mv.soc_s, smv.soc, mv.Tb_f, Tb_f_past, mv.q, mv.q_capacity))
 
+def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, Tb, Tb_past, sim_old, sim):
+    hdr = None
+    match request_history:
+        case 0:
+            hdr = ''
+        case 1:
+            hdr = print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf)
+        case 2:
+            hdr = print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp)
+        case 3:
+            hdr = print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim)
+        case 4:
+            hdr = print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb, Tb_past)
+        case 5:
+            hdr = print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp)
+    return hdr
+
 def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf):
     hdr = "  i  time   r r_t  i_e  r_e  c_e  sa      ib_charge             soc                      soc_ekf               y_ekf                voc_ekf                Tb_f                      Tb_f_rap                  x_ekf                hx"
     if calc_ekf:
@@ -170,3 +187,71 @@ def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp):
           "{:11.5f}".format(mon_old.y_ekf[i]), "{:9.5f}".format(mon.y_ekf),
           )
     return hdr
+
+def save_clean_file(mon_ver, csv_file, unit_key):
+    default_header_str = "unit,               hm,                  cTime,        dt,       sat,sel,mod,\
+      Tb,Tb_rap,Tb_f,Tb_f_rap,Tb_f_rate,Tb_f_rate_rap, vb,  ib,  ib_dyn, ib_dyn_rate, ioc,  voc_soc,    vsat,dv_dyn,voc_stat,voc_stat_f,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,ib_lag,voc_soc_new,"
+    n = len(mon_ver.time)
+    date_time_start = datetime.now()
+    with open(csv_file, "w") as output:
+        output.write(default_header_str + "\n")
+        for i in range(n):
+            s = unit_key + ','
+            dt_dt = timedelta(seconds=mon_ver.time[i]-mon_ver.time[0])
+            time_stamp = date_time_start + dt_dt
+            s += time_stamp.strftime("%Y-%m-%dT%H:%M:%S,")
+            s += "{:7.3f},".format(mon_ver.time[i] + mon_ver.time_ref)
+            s += "{:7.3f},".format(mon_ver.dt[i])
+            s += "{:1.0f},".format(mon_ver.sat[i])
+            s += "{:1.0f},".format(mon_ver.sel[i])
+            s += "{:1.0f},".format(mon_ver.mod_data[i])
+            s += "{:7.6f},".format(mon_ver.Tb[i])
+            s += "{:7.6f},".format(mon_ver.Tb_rap[i])
+            s += "{:7.6f},".format(mon_ver.Tb_f[i])
+            s += "{:7.6f},".format(mon_ver.Tb_f_rap[i])
+            s += "{:7.6f},".format(mon_ver.Tb_f_rate[i])
+            s += "{:7.6f},".format(mon_ver.Tb_f_rate_rap[i])
+            s += "{:7.3f},".format(mon_ver.vb[i])
+            s += "{:7.3f},".format(mon_ver.ib[i])
+            s += "{:7.3f},".format(mon_ver.ib_dyn[i])
+            s += "{:7.3f},".format(mon_ver.ib_dyn_rate[i])
+            s += "{:7.3f},".format(mon_ver.ioc[i])
+            s += "{:7.3f},".format(mon_ver.voc_soc[i])
+            s += "{:7.3f},".format(mon_ver.vsat[i])
+            s += "{:7.3f},".format(mon_ver.dv_dyn[i])
+            s += "{:7.3f},".format(mon_ver.voc_stat[i])
+            s += "{:7.3f},".format(mon_ver.voc_ekf[i])
+            s += "{:7.3f},".format(mon_ver.y_ekf[i])
+            s += "{:7.3f},".format(mon_ver.soc_s[i])
+            s += "{:7.3f},".format(mon_ver.soc_ekf[i])
+            s += "{:7.3f},".format(mon_ver.soc[i])
+            s += "{:7.5f},".format(mon_ver.ib_lag[i])
+            s += "{:7.3f},".format(mon_ver.voc_soc_new[i])
+            s += "\n"
+            output.write(s)
+        print("Wrote(save_clean_file):", csv_file)
+
+def save_clean_file_sim(sim_ver, csv_file, unit_key):
+    header_str = "unit_m,c_time,Tb_s,vsat_s,voc_stat_s,dv_dyn_s,vb_s,ib_s,sat_s,dq_s,\
+    soc_s,reset_s,"
+    n = len(sim_ver.time)
+    with open(csv_file, "w") as output:
+        output.write(header_str + "\n")
+        for i in range(n):
+            s = unit_key + ','
+            s += "{:13.3f},".format(sim_ver.time[i])
+            s += "{:5.2f},".format(sim_ver.Tb_s[i])
+            s += "{:8.3f},".format(sim_ver.vsat_s[i])
+            s += "{:5.2f},".format(sim_ver.voc_stat_s[i])
+            s += "{:5.2f},".format(sim_ver.dv_dyn_s[i])
+            s += "{:5.2f},".format(sim_ver.vb_s[i])
+            s += "{:8.3f},".format(sim_ver.ib_s[i])
+            s += "{:7.3f},".format(sim_ver.sat_s[i])
+            s += "{:5.3f},".format(sim_ver.dq_s[i])
+            s += "{:7.3f},".format(sim_ver.soc_s[i])
+            s += "{:7.3f},".format(sim_ver.reset_s[i])
+            s += "\n"
+            output.write(s)
+        print("Wrote(save_clean_file_sim):", csv_file)
+
+
