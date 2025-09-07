@@ -1,0 +1,172 @@
+# MonSimPring:  Debug prints for MonSim
+# Copyright (C) 2025 Dave Gutz
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation;
+# version 2.1 of the License.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# Lesser General Public License for more details.
+#
+# See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
+
+""" Python model of what's installed on the Particle Photon.  Includes
+a monitor object (MON) and a simulation object (SIM).   The monitor is
+the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
+Coulomb Counter built in."""
+
+import numpy as np
+from numpy.random import randn
+from datetime import datetime, timedelta
+
+def prn_soc_debug(leader="", time=None, reset=None, i=None, Tb_f_past=None, mo=None, mv=None, smv=None):
+    return
+    if time is not None:
+        print("\n\ntime {:7.3f}".format(time))
+    print(leader, end='')
+    print("reset {:2.0f}     mo.soc {:10.8f}    mon.soc {:10.8f} sim.ib_charge {:7.3f}  sim.Tb_f {:10.8f} sim.q_cap {:9.2f} mon.soc_s {:10.8f}   sim.soc {:10.8f}   mon.Tb_f {:10.8f}  Tb_f_past_ {:10.8f}    mon.q {:10.3f}    mon.q_cap {:10.3f}".
+          format(reset, mo.soc[i], mv.soc, smv.ib_charge, smv.Tb_f, smv.q_capacity, mv.soc_s, smv.soc, mv.Tb_f, Tb_f_past, mv.q, mv.q_capacity))
+
+def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf):
+    hdr = "  i  time   r r_t  i_e  r_e  c_e  sa      ib_charge             soc                      soc_ekf               y_ekf                voc_ekf                Tb_f                      Tb_f_rap                  x_ekf                hx"
+    if calc_ekf:
+        print(hdr)
+    print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
+          "{:3d}".format(i_ekf), "{:4d}".format(mon.reset_ekf), "{:4d}".format(calc_ekf),
+          "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
+          "{:10.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
+          "{:13.7f}".format(mon_old.soc[i]), "{:10.7f}".format(mon.soc),
+          "{:11.5f}".format(mon_old.soc_ekf[i]), "{:9.5f}".format(mon.soc_ekf),
+          "{:11.5f}".format(mon_old.y_ekf[i]), "{:9.5f}".format(mon.y_ekf),
+          "{:11.5f}".format(mon_old.voc_ekf[i]), "{:9.5f}".format(mon.voc_ekf),
+          "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
+          "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
+          "{:11.5f}".format(mon_old.x[i_ekf]), "{:9.5f}".format(mon.x_ekf),
+          "{:11.5f}".format(mon_old.hx[i_ekf]), "{:9.5f}".format(mon.hx),
+          )
+    return hdr
+
+def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
+    hdr = "  i  time   r r_t sa      ib_charge             soc                  dt                i * dt * coul_eff    Tb_f                      Tb_f_rap                    ddq                  delq                   qcrs                   q_cap                  Tb                        Tb_f_rate  "
+    if calc_temp:
+        print(hdr)
+    if i > 0:
+        d_dq = mon_old.delta_q[i]-mon_old.delta_q[i-1]
+    else:
+        d_dq = mon_old.delta_q[i+1]-mon_old.delta_q[i]
+    i_dt_old = mon_old.dt[i] * mon_old.ib_charge[i]
+    i_dt_new = mon.dt * mon.ib_charge
+    coul_eff = 0.9985
+    if mon.ib_charge > 0:
+        i_dt_old *= coul_eff
+        i_dt_new *= coul_eff
+    print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
+          "{:2.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
+          "{:10.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
+          "{:11.5f}".format(mon_old.soc[i]), "{:8.5f}".format(mon.soc),
+          "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
+          "{:12.4f}".format(i_dt_old), "{:9.4f}".format(i_dt_new),
+          "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
+          "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
+          "{:12.4f}".format(d_dq), "{:9.4f}".format(mon.d_delta_q),
+          "{:12.4f}".format(mon_old.delta_q[i]), "{:9.4f}".format(mon.delta_q),
+          "{:12.1f}".format(mon_old.qcrs[i]), "{:9.1f}".format(mon.q_cap_rated_scaled),
+          "{:12.1f}".format(mon_old.q_capacity[i]), "{:9.1f}".format(mon.q_capacity),
+          "{:14.7f}".format(mon_old.Tb[i_temp]), "{:10.7f}".format(mon.Tb),
+          "{:12.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:10.7f}".format(mon.Tb_f_rate),
+         )
+    return hdr
+
+def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
+    hdr = "  i  time   r r_t   sa       sa_s     dt              dt_s           ib_in_s              ib_s                ib_dyn_rate_s         ib_dyn_rstate_s      ib_dyn_lstate_s      ib_dyn_s             ib_charge_s          ioc_s                 soc                  soc_s                delq                     i * dt_s * coul_eff    d_delq_s             delq_s                 qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate              vb                   vb_s                 voc_stat             voc_stat_s           voc_s                 dv_dyn_s            vsat                 "
+    if calc_temp:
+        print(hdr)
+    if i > 0:
+        d_dq_s = sim_old.dq_s[i]-sim_old.dq_s[i-1]
+    else:
+        d_dq_s = sim_old.dq_s[i+1]-sim_old.dq_s[i]
+    i_dt_old = sim_old.dt_s[i] * sim_old.ib_charge_s[i]
+    i_dt_new = sim.dt * sim.ib_charge
+    coul_eff = 0.9985
+    if sim.ib_charge > 0:
+        i_dt_old *= coul_eff
+        i_dt_new *= coul_eff
+    print("{:3d}".format(i), "{:6.3f}".format(t[i]),
+          "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
+          "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
+          "{:5.0f}".format(sim_old.sat_s[i]), "{:2.0f}".format(sim.sat),
+          "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
+          "{:9.3f}".format(sim_old.dt_s[i]), "{:5.3f}".format(sim.dt),
+          "{:10.5f}".format(sim_old.ib_in_s[i]), "{:9.5f}".format(sim.ib_in),
+          "{:10.5f}".format(sim_old.ib_s[i]), "{:9.5f}".format(sim.ib),
+          "{:10.5f}".format(sim_old.ib_dyn_rate_s[i]), "{:9.5f}".format(sim.ib_dyn_rate),
+          "{:10.5f}".format(sim_old.ib_dyn_rstate_s[i]), "{:9.5f}".format(sim.ib_dyn_rstate),
+          "{:10.5f}".format(sim_old.ib_dyn_lstate_s[i]), "{:9.5f}".format(sim.ib_dyn_lstate),
+          "{:10.5f}".format(sim_old.ib_dyn_s[i]), "{:9.5f}".format(sim.ib_dyn),
+          "{:10.5f}".format(sim_old.ib_charge_s[i]), "{:9.5f}".format(sim.ib_charge),
+          "{:10.5f}".format(sim_old.ioc_s[i]), "{:9.5f}".format(sim.ioc),
+          "{:11.5f}".format(mon_old.soc[i]), "{:8.5f}".format(mon.soc),
+          "{:11.5f}".format(mon_old.soc_s[i]), "{:8.5f}".format(sim.soc),
+          "{:12.4f}".format(mon_old.delta_q[i]), "{:9.4f}".format(mon.delta_q),
+          "{:12.4f}".format(i_dt_old), "{:9.4f}".format(i_dt_new),
+          "{:12.4f}".format(d_dq_s), "{:9.4f}".format(sim.d_delta_q),
+          "{:12.4f}".format(sim_old.dq_s[i]), "{:9.4f}".format(sim.delta_q),
+          "{:12.1f}".format(mon_old.qcrs[i]), "{:9.1f}".format(mon.q_cap_rated_scaled),
+          "{:12.1f}".format(mon_old.q_capacity[i]), "{:9.1f}".format(mon.q_capacity),
+          "{:12.1f}".format(sim_old.qcap_s[i]), "{:9.1f}".format(sim.q_capacity),
+          "{:14.7f}".format(sim_old.Tb_f_s[i]), "{:10.7f}".format(sim.Tb_f),
+          "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
+          "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
+          "{:12.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:10.7f}".format(mon.Tb_f_rate),
+          "{:10.5f}".format(mon_old.vb[i]), "{:9.5f}".format(mon.vb),
+          "{:10.5f}".format(sim_old.vb_s[i]), "{:9.5f}".format(sim.vb),
+          "{:10.5f}".format(mon_old.voc_stat[i]), "{:9.5f}".format(mon.voc_stat),
+          "{:10.5f}".format(sim_old.voc_stat_s[i]), "{:9.5f}".format(sim.voc_stat),
+          "{:10.5f}".format(sim_old.voc_s[i]), "{:9.5f}".format(sim.voc),
+          "{:10.5f}".format(sim_old.dv_dyn_s[i]), "{:9.5f}".format(sim.dv_dyn),
+          "{:10.5f}".format(mon_old.vsat[i]), "{:9.5f}".format(mon.vsat),
+          )
+    return hdr
+
+def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_):
+    hdr = "  i  time  r  r_t i_t  calc   Tt      Tb_hdwe     Tb_hdwe_v         Tb   Tb_v                 Tb_        Tb_past_   Tb_hdwe_filt  Tb_hdwe_filt_v     Tb_rap  Tb_rap_v         Tb_f      Tb_f_v          Tb_f_rap  Tb_f_rap_v        Tb_h_f_r  Tb_h_f_r_v     Tb_f_rate Tb_f_rate_v      Tb_f_rate_rap Tb_f_rate_rap_v"
+    if calc_temp:
+        print(hdr)
+    print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),
+          "{:2d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
+          "{:7.3f}".format(mon_old.Tt[i_temp]),
+          "{:13.7f}".format(mon_old.Tb_hdwe[i_temp]), "{:11.7f}".format(mon.Tb_hdwe),
+          "{:14.7f}".format(mon_old.Tb[i_temp]), "{:11.7f}".format(mon.Tb),
+          "{:14.7f}".format(Tb_), "{:11.7f}".format(Tb_past_),
+          "{:14.7f}".format(mon_old.Tb_hdwe_filt[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt),
+          "{:14.7f}".format(mon_old.Tb_rap[i]), "{:11.7f}".format(mon.Tb_rap),
+          "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
+          "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:11.7f}".format(mon.Tb_f_rap),
+          "{:14.7f}".format(mon_old.Tb_hdwe_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt_rate),
+          "{:14.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate),
+          "{:14.7f}".format(mon_old.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
+          )
+    return hdr
+
+def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp):
+    hdr = "  i  time   r r_t  i_e  r_e  sa      ib_charge             soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               soc_ekf               y_ekf"
+    if calc_temp:
+        print(hdr)
+    print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
+          "{:3d}".format(i_ekf), "{:4d}".format(mon.reset_ekf),
+          "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
+          "{:10.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
+          "{:13.7f}".format(mon_old.soc[i]), "{:10.7f}".format(mon.soc),
+          "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
+          "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
+          "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
+          "{:11.5f}".format(mon_old.voc_soc[i]), "{:9.5f}".format(mon.voc_soc),
+          "{:11.5f}".format(mon_old.voc[i]), "{:9.5f}".format(mon.voc),
+          "{:11.5f}".format(mon_old.voc_stat[i]), "{:9.5f}".format(mon.voc_stat),
+          "{:11.5f}".format(mon_old.soc_ekf[i]), "{:9.5f}".format(mon.soc_ekf),
+          "{:11.5f}".format(mon_old.y_ekf[i]), "{:9.5f}".format(mon.y_ekf),
+          )
+    return hdr

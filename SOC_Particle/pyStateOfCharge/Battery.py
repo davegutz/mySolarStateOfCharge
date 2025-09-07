@@ -288,7 +288,7 @@ class BatteryMonitor(Battery, EKF1x1):
     def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1.,
                  tb_f=25., tweak_test=False, sres0=1., sresct=1., stauct=1.,
                  scaler_q=None, scaler_r=None, scale_r_ss=1., s_hys=1., dvoc=0., eframe_mult=Battery.cp_eframe_mult,
-                 mod_code=0, s_coul_eff=1., unit=None, Sen=None):
+                 mod_code=0, s_coul_eff=1., unit=None, Sen=None, ref=None, dTb=None):
         q_cap_rated_scaled = q_cap_rated * scale
         Battery.__init__(self, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, sres0=sres0, sresct=sresct, stauct=stauct, scale_r_ss=scale_r_ss,
@@ -389,6 +389,32 @@ class BatteryMonitor(Battery, EKF1x1):
         self.Tb_rap = None
         self.Tb_f_rap = None
         self.Tb_f_rate_rap = None
+        self.dt_temp = 0.
+        if ref is not None:
+            self.Tb_hdwe = ref.Tb_hdwe[0]
+            self.Tb_hdwe_filt = ref.Tb_hdwe_filt[0]
+            self.Tb_hdwe_filt_rate = ref.Tb_hdwe_filt_rate[0]
+            self.e_wrap = ref.e_wrap[0]
+            self.voc_soc = ref.voc_soc[0]
+            self.voc_stat = self.voc_soc - self.e_wrap
+            self.Tb = ref.Tb[0]
+            self.Tb_f = ref.Tb_f[0]
+            self.Tb_f_rate = ref.Tb_f_rate[0]
+            self.Tb_rap = ref.Tb_rap[0] + dTb
+            self.Tb_f_rap = ref.Tb_f_rap[0] + dTb
+            self.Tb_f_rate_rap = ref.Tb_f_rate_rap[0]
+            self.ib = ref.ib[0]
+            self.ib_dyn = ref.ib_dyn[0]
+            self.ib_dyn_rate = ref.ib_dyn_rate[0]
+            self.ib_charge = ref.ib_charge[0]
+            self.vb = ref.vb[0]
+            self.soc = ref.soc[0]
+            self.reset = True
+            self.sat = ref.sat[0]
+            self.reset_ekf = True
+            self.init_soc_ekf(ref)
+            self.voc_ekf = ref.hx[0]
+            self.voc_stat_f = ref.voc_stat[0]
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -761,7 +787,8 @@ class BatterySim(Battery):
     def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1., stauct=1.,
                  tb_f=25., hys_scale=1., tweak_test=False, dv_hys=0., sres0=1., sresct=1., scale_r_ss=1.,
                  s_hys=1., dvoc=0., scale_hys_cap=1., mod_code=0, s_cap_chg=1., s_cap_dis=1., s_hys_chg=1.,
-                 s_hys_dis=1., s_coul_eff=1., cutback_gain_sclr=1., ds_voc_soc=0., unit=None):
+                 s_hys_dis=1., s_coul_eff=1., cutback_gain_sclr=1., ds_voc_soc=0., unit=None,
+                 mon_ref=None, sim_ref=None):
         Battery.__init__(self, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, sres0=sres0, sresct=sresct, stauct=stauct, scale_r_ss=scale_r_ss,
                          s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, s_coul_eff=s_coul_eff, scale_cap=scale,
@@ -792,6 +819,18 @@ class BatterySim(Battery):
         self.saved_s = SavedS()  # for plots and prints
         self.ib_fut = 0.  # Future value of limited current, A
         self.reset_temp_past = True
+        if sim_ref is not None:
+            self.Tb = mon_ref.Tb[0]
+            self.dv_dyn = sim_ref.dv_dyn_s[0]
+            self.ib_in = sim_ref.ib_in_s[0]
+            self.ib = sim_ref.ib_s[0]
+            self.ib_charge = sim_ref.ib_charge_s[0]
+            self.ioc = sim_ref.ioc_s[0]
+            self.vb = sim_ref.vb_s[0]
+            self.voc = sim_ref.voc_s[0]
+            self.ib_dyn = sim_ref.ib_dyn_s[0]
+            self.ib_dyn_rate = sim_ref.ib_dyn_rate_s[0]
+            self.soc = sim_ref.soc_s[0]
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
