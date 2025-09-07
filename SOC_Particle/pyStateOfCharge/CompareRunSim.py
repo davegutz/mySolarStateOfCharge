@@ -44,12 +44,12 @@ plt.rcParams['axes.grid'] = True
 
 def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=True,
                     verbose=True, scale_in=None, s_hys_sim=1., request_volt_history=False, request_temp_history=False,
-                    request_soc_history=False, request_soc_s_history=False):
+                    request_soc_history=False, request_soc_s_history=False, request_ekf_history=False):
     print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
-    
+
     # Transient  inputs
     zero_zero_in = False
     init_time_in = None
@@ -96,7 +96,8 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
                   use_vb_raw=use_vb_raw, dvoc_sim=dvoc_sim_in, dvoc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
                   ds_voc_soc=ds_voc_soc_in, verbose=verbose, scale_in=scale_in, s_hys_sim=s_hys_sim_in,
                   request_temp_history=request_temp_history, request_soc_history=request_soc_history,
-                  request_soc_s_history=request_soc_s_history, request_volt_history=request_volt_history)
+                  request_soc_s_history=request_soc_s_history, request_volt_history=request_volt_history,
+                  request_ekf_history=request_ekf_history)
     pass
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
 
@@ -143,24 +144,32 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
 
 def main():
 
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20250905am_soc4p2_hi_lo_bb.csv'
+    import sys
+    if sys.platform == 'linux':
+        gdrive = '/home/daveg/gdrive/'
+    else:
+        gdrive = 'G:/My Drive/'
+
+    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20250905am_soc4p2_hi_lo_bb.csv'
+    gdrive = '/home/daveg/Documents/'
+    data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
 
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # The following are not implemented in GUI
 
     time_end_in = None
-    # time_end_in = 1.3
+    # time_end_in = 15
 
-    # data_only = False
-    data_only = True
+    # plots = False
+    plots = True
 
     # mon_soc_in = True
     mon_soc_in = False
     verbose_in = False
     scale_in = 1.0
 
-    # volt_his_in = False
-    volt_his_in = True
+    volt_his_in = False
+    # volt_his_in = True
     temp_his_in = False
     # temp_his_in = True
     soc_his_in = False
@@ -171,10 +180,14 @@ def main():
     # s_hys_sim_in = 1.
     s_hys_sim_in = 0.
 
-    compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=data_only, time_end_in=time_end_in,
+    # ekf_his_in = False
+    ekf_his_in = True
+
+    compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=mon_soc_in, verbose=verbose_in, scale_in=scale_in, s_hys_sim=s_hys_sim_in,
                     request_temp_history=temp_his_in, request_soc_history=soc_his_in,
-                    request_volt_history=volt_his_in, request_soc_s_history=soc_his_s_in)
+                    request_volt_history=volt_his_in, request_soc_s_history=soc_his_s_in,
+                    request_ekf_history=ekf_his_in)
 
 
 # import cProfile

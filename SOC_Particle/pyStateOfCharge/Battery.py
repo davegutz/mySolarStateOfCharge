@@ -583,7 +583,7 @@ class BatteryMonitor(Battery, EKF1x1):
     def ekf_update(self):
         # Measurement function hx(x), x = soc ideal capacitor
         x_lim = max(min(self.x_ekf, 1.), 0.)
-        self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.Tb_f)
+        self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.Tb_f_rap)
         # Jacobian of measurement function
         self.H = self.dv_dsoc
         return self.hx, self.H
@@ -591,11 +591,13 @@ class BatteryMonitor(Battery, EKF1x1):
     def lag_ib(self, ib, reset):
         self.ib_lag = self.IbLag.calculate_tau(ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
-    def init_soc_ekf(self, soc, p):
-        self.soc_ekf = soc
-        self.init_ekf(soc, 0.0)
-        self.q_ekf = self.soc_ekf * self.q_capacity
-        self.P = p
+    def init_soc_ekf(self, mon):
+        self.soc_ekf = mon.soc_ekf[0]
+        self.y_ekf = mon.y_ekf[0]
+        self.init_ekf(mon.x[0], 0.0)
+        self.q_ekf = self.soc * self.q_capacity
+        self.P = mon.P[0]
+        self.hx = mon.hx[0]
 
     def regauge(self, tb_f):
         if self.converged_ekf() and abs(self.soc_ekf - self.soc) > Battery.DF2:

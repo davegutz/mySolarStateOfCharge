@@ -38,6 +38,25 @@ def prn_soc_debug(leader="", time=None, reset=None, i=None, i_temp=None, Tb_f_pa
     print("reset {:2.0f}     mo.soc {:10.8f}    mon.soc {:10.8f} sim.ib_charge {:7.3f}  sim.Tb_f {:10.8f} sim.q_cap {:9.2f} mon.soc_s {:10.8f}   sim.soc {:10.8f}   mon.Tb_f {:10.8f}  Tb_f_past_ {:10.8f}    mon.q {:10.3f}    mon.q_cap {:10.3f}".
           format(reset, mo.soc[i], mv.soc, smv.ib_charge, smv.Tb_f, smv.q_capacity, mv.soc_s, smv.soc, mv.Tb_f, Tb_f_past, mv.q, mv.q_capacity))
 
+def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf):
+    hdr = "  i  time   r r_t  i_e  r_e  c_e  sa      ib_charge             soc                      soc_ekf               y_ekf                voc_ekf                Tb_f                      Tb_f_rap                  x_ekf                hx"
+    if calc_ekf:
+        print(hdr)
+    print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
+          "{:3d}".format(i_ekf), "{:4d}".format(mon.reset_ekf), "{:4d}".format(calc_ekf),
+          "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
+          "{:10.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
+          "{:13.7f}".format(mon_old.soc[i]), "{:10.7f}".format(mon.soc),
+          "{:11.5f}".format(mon_old.soc_ekf[i]), "{:9.5f}".format(mon.soc_ekf),
+          "{:11.5f}".format(mon_old.y_ekf[i]), "{:9.5f}".format(mon.y_ekf),
+          "{:11.5f}".format(mon_old.voc_ekf[i]), "{:9.5f}".format(mon.voc_ekf),
+          "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
+          "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
+          "{:11.5f}".format(mon_old.x[i_ekf]), "{:9.5f}".format(mon.x_ekf),
+          "{:11.5f}".format(mon_old.hx[i_ekf]), "{:9.5f}".format(mon.hx),
+          )
+    return hdr
+
 def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     hdr = "  i  time   r r_t sa      ib_charge             soc                  dt                i * dt * coul_eff    Tb_f                      Tb_f_rap                    ddq                  delq                   qcrs                   q_cap                  Tb                        Tb_f_rate  "
     if calc_temp:
@@ -140,12 +159,13 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_):
           )
     return hdr
 
-def print_volt_hist(i, i_temp, t, mon_old, mon, calc_temp):
-    hdr = "  i  time   r r_t sa      ib_charge             soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               dv_hys"
+def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp):
+    hdr = "  i  time   r r_t  i_e  r_e  sa      ib_charge             soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               soc_ekf               y_ekf"
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
-          "{:2.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
+          "{:3d}".format(i_ekf), "{:4d}".format(mon.reset_ekf),
+          "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
           "{:10.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
           "{:13.7f}".format(mon_old.soc[i]), "{:10.7f}".format(mon.soc),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
@@ -154,7 +174,8 @@ def print_volt_hist(i, i_temp, t, mon_old, mon, calc_temp):
           "{:11.5f}".format(mon_old.voc_soc[i]), "{:9.5f}".format(mon.voc_soc),
           "{:11.5f}".format(mon_old.voc[i]), "{:9.5f}".format(mon.voc),
           "{:11.5f}".format(mon_old.voc_stat[i]), "{:9.5f}".format(mon.voc_stat),
-          "{:11.5f}".format(mon_old.dv_hys[i]), "{:9.5f}".format(mon.dv_hys),
+          "{:11.5f}".format(mon_old.soc_ekf[i]), "{:9.5f}".format(mon.soc_ekf),
+          "{:11.5f}".format(mon_old.y_ekf[i]), "{:9.5f}".format(mon.y_ekf),
           )
     return hdr
 
@@ -234,7 +255,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
               verbose=True, t_max=None, eframe_mult=Battery.cp_eframe_mult, sres0=1., sresct=1., stauct_sim=1.,
               stauct_mon=1, use_vb_sim=False, scale_hys_cap_sim=1., s_cap_chg=1., s_cap_dis=1.,
               s_hys_chg=1., s_hys_dis=1., s_coul_eff=1., use_mon_soc=False, cutback_gain_sclr=1., ds_voc_soc=0.,
-              unit=None, request_volt_history=False, request_temp_history=False, request_soc_history=False, request_soc_s_history=False):
+              unit=None, request_ekf_history=False, request_volt_history=False, request_temp_history=False, request_soc_history=False, request_soc_s_history=False):
     if sim_old is not None and len(sim_old.time) < len(mon_old.time):
         t = sim_old.time
     else:
@@ -312,9 +333,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
     # time loop initialization
     now = t[0]
-    i_ekf = None
-    i_temp = None
-    hdr = None
     i_ekf = -1
     i_temp = -1
     mon.dt_temp = 0.
@@ -350,6 +368,10 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     mon.soc = mon_old.soc[0]
     mon.reset = True
     mon.sat = mon_old.sat[0]
+    mon.reset_ekf = True
+    mon.init_soc_ekf(mon_old)
+    mon.voc_ekf = mon_old.hx[0]
+    mon.voc_stat_f = mon_old.voc_stat[0]
     sim.dv_dyn = sim_old.dv_dyn_s[0]
     sim.ib_in = sim_old.ib_in_s[0]
     sim.ib = sim_old.ib_s[0]
@@ -360,8 +382,10 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     sim.ib_dyn = sim_old.ib_dyn_s[0]
     sim.ib_dyn_rate = sim_old.ib_dyn_rate_s[0]
     sim.soc = sim_old.soc_s[0]
+    if request_ekf_history:
+        ekf_hdr = print_ekf_hist(0, 0, i_ekf, t, mon_old, mon, True)
     if request_volt_history:
-        volt_hdr = print_volt_hist(0, 0, t, mon_old, mon, True)
+        volt_hdr = print_volt_hist(0, 0, 0, t, mon_old, mon, True)
     if request_temp_history:
         temp_hdr = print_temp_hist(0, 0, t, mon_old, mon, True, Tb_, Tb_past_)
     if request_soc_history:
@@ -571,14 +595,15 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             calc_ekf = True
         else:
             calc_ekf = False
-        if i_ekf < 1:
+        if i_ekf == 0:
             reset_ekf = True
-            mon.init_soc_ekf(mon_old.x[0], mon_old.P[0])  # when modeling (assumed in python) ekf wants to equal model
+            if calc_ekf:
+                mon.init_soc_ekf(mon_old)  # when modeling (assumed in python) ekf wants to equal model
 
         if rp.modeling == 0:
             if reset_ekf:
                 z_init = mon_old.z[i_ekf]
-            # print(f"{i=} {i_ekf=} {mon_old.time[i]} {mon_old.time_e[i_ekf]} dt {mon_old.dt_ekf[i_ekf]} calc {calc_ekf} res {reset_ekf} z_init {z_init}")
+            # print(f"{i=}   {i_ekf=}   t {mon_old.time[i]}   te {mon_old.time_e[i_ekf]}    dt {mon_old.dt_ekf[i_ekf]}     calc {calc_ekf}      res_ekf {reset_ekf}      z_init {z_init}")
             prn_soc_debug(time=None, leader="before mon.calculate ", reset=reset, i=i, i_temp=i_temp,
                           Tb_f_past=Tb_f_past_, mo=mon_old, mv=mon, smv=sim)
             if reset:
@@ -648,8 +673,11 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                       "{:9.3f}".format(sim.saved.dv_hys[i]), "{:9.3f}".format(mon.saved.ib[i]), "{:12.7f}".format(mon.saved.soc[i]),
                       "{:4.0f}".format(mon.sat), "{:9.3f}".format(mon.saved.dv_hys[i]))
 
+        if request_ekf_history:
+            ekf_hdr = print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf)
+
         if request_volt_history:
-            volt_hdr = print_volt_hist(i, i_temp, t, mon_old, mon, calc_temp)
+            volt_hdr = print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp)
 
         if request_temp_history:
             temp_hdr = print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_)
@@ -666,6 +694,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             pass
         else:
             pass
+    if request_ekf_history:
+        print(ekf_hdr)
     if request_volt_history:
         print(volt_hdr)
     if request_temp_history:
