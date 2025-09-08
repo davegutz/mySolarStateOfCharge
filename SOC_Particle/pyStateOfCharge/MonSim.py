@@ -53,7 +53,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     9. Run CompareHistSim etc.
     10. dv_hys jitter around 0 in reference data  ***->0*dv_hys before return instead of in return
     11. voltage resolutions off/on mon 1
-    
+
     """
     if sim_old is not None and len(sim_old.time) < len(mon_old.time):
         t = sim_old.time

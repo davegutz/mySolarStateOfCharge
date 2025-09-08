@@ -44,7 +44,7 @@ def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, ca
         case 4:
             hdr = print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb, Tb_past)
         case 5:
-            hdr = print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp)
+            hdr = print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, sim_old, sim)
     return hdr
 
 def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf):
@@ -170,14 +170,31 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_):
           )
     return hdr
 
-def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp):
-    hdr = "  i  time   r r_t  i_e  r_e  sa      ib_charge             soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               soc_ekf               y_ekf"
+def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, sim_old, sim):
+    from pyDAGx import myTables
+
+    lut_vb = myTables.TableInterp1D(np.array(mon_old.time), np.array(mon_old.vb))
+
+    voc_req = lut_vb.interp(t[i]) - sim_old.dv_dyn_s[i]
+    voc_stat_req = sim_old.voc_stat_s[i]
+    dv_hys_req = voc_req - sim_old.voc_stat_s[i]
+
+    voc_req_v = lut_vb.interp(t[i]) - sim.dv_dyn
+    voc_stat_req_v = sim.voc_stat
+    dv_hys_req_v = voc_req_v - sim.voc_stat_f
+
+    hdr = "  i  time   r r_t  i_e  r_e  sa      ib_charge               dv_hys                 dv_hys_s              voc_req                voc_stat_req            dv_hys_req           soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               soc_ekf               y_ekf"
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
           "{:3d}".format(i_ekf), "{:4d}".format(mon.reset_ekf),
           "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
           "{:10.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
+          "{:13.5f}".format(mon_old.dv_hys[i]), "{:8.5f}".format(mon.dv_hys),
+          "{:13.5f}".format(sim_old.dv_hys_s[i]), "{:8.5f}".format(sim.dv_hys),
+          "{:13.5f}".format(voc_req), "{:8.5f}".format(voc_req_v),
+          "{:13.5f}".format(voc_stat_req), "{:8.5f}".format(voc_stat_req_v),
+          "{:13.5f}".format(dv_hys_req), "{:8.5f}".format(dv_hys_req_v),
           "{:13.7f}".format(mon_old.soc[i]), "{:10.7f}".format(mon.soc),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
