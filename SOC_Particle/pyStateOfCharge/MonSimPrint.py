@@ -48,11 +48,13 @@ def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, ca
     return hdr
 
 def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf):
-    hdr = "  i  time   r r_t  i_e  r_e  c_e  sa      ib_charge             soc                      soc_ekf               y_ekf                voc_ekf                Tb_f                      Tb_f_rap                  x_ekf                hx"
+    hdr = "  i  time   r r_t  i_e  r_e  c_e   dt_ekf         sa      ib_charge             soc                      soc_ekf               y_ekf                voc_ekf                Tb_f                      Tb_f_rap                  x_ekf                hx"
+    i_ekf = max(i_ekf, 0)
     if calc_ekf:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
           "{:3d}".format(i_ekf), "{:4d}".format(mon.reset_ekf), "{:4d}".format(calc_ekf),
+          "{:9.3f}".format(mon_old.dt_ekf[i_ekf]), "{:5.3f}".format(mon.dt_eframe),
           "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
           "{:10.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
           "{:13.7f}".format(mon_old.soc[i]), "{:10.7f}".format(mon.soc),

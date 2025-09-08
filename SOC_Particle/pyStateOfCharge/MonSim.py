@@ -20,15 +20,12 @@ Coulomb Counter built in."""
 
 import numpy as np
 from numpy.random import randn
-import Battery
-from Battery import Battery, BatteryMonitor, BatterySim, is_sat, Retained
+from Battery import BatteryMonitor, BatterySim, is_sat, Retained
 from Battery import overall_batt
 from TFDelay import TFDelay
 from MonSimNomConfig import *  # Global config parameters.   Overwrite in your own calls for studies
 from datetime import datetime, timedelta
 from Scale import Scale
-from myFilters import LagExp
-from pyDAGx import myTables
 from MonSimPrint import *
 from MonSimClasses import *
 
@@ -42,6 +39,22 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
               stauct_mon=1, use_vb_sim=False, scale_hys_cap_sim=1., s_cap_chg=1., s_cap_dis=1.,
               s_hys_chg=1., s_hys_dis=1., s_coul_eff=1., use_mon_soc=False, cutback_gain_sclr=1., ds_voc_soc=0.,
               unit=None, request_history=None):
+
+    """TODO:
+    1. Current sense class
+    2. *** Fig. 9 EKF 2a:  dt_eframe at 0 ****->i_ekf = -1 --> i_ekf=max(i_ekf, 0) in MonSimPrint.py
+    2. *** Fig. 9 EKF 2a:  dt_eframe at i_ekf=0 is = 4.882 while ref is 5.255. *** dt_eframe[0] = dt_ekf[0]
+    3. *** Fig. 5 Dom 4a:  TB ver needs past value. *** Plotted wrong thing.  Tb-->Tb_rap and Tb_rap_ver
+    4. *** Fig. 7 EKF 1:  Bu_ver at 0.  Fixed by dt_eframe fix
+    5. Fig. 2 Dom 2: dv_hys plots not intelligible
+    6. Fig. 1 1a: e_wrap filter initialization.   Need filt_rates from Noa and Amp filters.  LoopIbNoa and Amp e_wrap_rate()
+    7. Fig. 9 EKF 2a: hx(soc) negative slope?
+    8. Fig. 10 EKF 3:  voc_ekv (hx) not equal at 0
+    9. Run CompareHistSim etc.
+    10. dv_hys jitter around 0 in reference data  ***->0*dv_hys before return instead of in return
+    11. voltage resolutions off/on mon 1
+    
+    """
     if sim_old is not None and len(sim_old.time) < len(mon_old.time):
         t = sim_old.time
     else:
@@ -103,9 +116,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     e_w_amp_filt_0 = None
     e_w_noa_0 = None
     e_w_noa_filt_0 = None
-    temp_hdr = None
-    soc_hdr = None
-    soc_s_hdr = None
 
     # time loop initialization
     now = t[0]
@@ -130,7 +140,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                 T = candidate_dt
 
         # Get temperature data
-        dTb = ST.calc_dTb(i)
         calc_temp = (i_temp+1 < len(mon_old.time_t)) and (mon_old.time_t[i_temp+1] <= mon_old.time[i])
         if calc_temp:
             i_temp += 1
@@ -147,8 +156,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
         # Input
         sim.Tb_f = mon_old.Tb_mod[i_temp]
-
-        # dc_dc_on = bool(lut_dc.interp(t[i]))
         dc_dc_on = False
         rp.modeling = modeling[i]
 
@@ -285,10 +292,11 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if (i_ekf+1 < len(mon_old.time_e)) and (mon_old.time_e[i_ekf+1] <= mon_old.time[i]):
             i_ekf += 1
             if i_ekf < 1:
-                T_ekf = mon_old.time_e[1] - mon_old.time_e[0]
+                T_ekf = mon_old.dt_ekf[i_ekf]
             else:
                 T_ekf = mon_old.time_e[i_ekf] - mon_old.time_e[i_ekf-1]  # update
             calc_ekf = True
+            print(f"{T_ekf=}")
         else:
             calc_ekf = False
         if i_ekf == 0:

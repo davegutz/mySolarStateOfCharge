@@ -624,6 +624,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.q_ekf = self.soc * self.q_capacity
         self.P = mon.P[0]
         self.hx = mon.hx[0]
+        self.dt_eframe = mon.dt_ekf[0]
 
     def regauge(self, tb_f):
         if self.converged_ekf() and abs(self.soc_ekf - self.soc) > Battery.DF2:

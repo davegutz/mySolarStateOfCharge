@@ -378,8 +378,8 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mv.time, mv.soc, color='black', linestyle=':', label='soc'+test_str)
     plt.legend(loc=1)
     plt.subplot(313)
-    plt.plot(mo.time, mo.Tb_rap, color='red', linestyle=':', label='Tb'+ref_str)
-    plt.plot(mv.time, mv.Tb, color='cyan', linestyle=':', label='Tb'+test_str)
+    plt.plot(mo.time, mo.Tb_rap, color='red', linestyle='-', label='Tb_rap'+ref_str)
+    plt.plot(mv.time, mv.Tb_rap, color='cyan', linestyle='--', label='Tb_rap'+test_str)
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
