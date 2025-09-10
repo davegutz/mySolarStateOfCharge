@@ -358,6 +358,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.sdb_voc = SlidingDeadband(Battery.HDB_VBATT)
         self.e_wrap = 0.
         self.e_wrap_filt = 0.
+        self.e_wrap_rate = 0.
         self.reset_past = True
         self.ib_past = 0.
         self.ib_amp = None
@@ -709,6 +710,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.reset_ekf.append(self.reset_ekf)
         self.saved.e_wrap.append(self.e_wrap)
         self.saved.e_wrap_filt.append(self.e_wrap_filt)
+        self.saved.e_wrap_rate.append(self.e_wrap_rate)
         self.saved.ib_amp.append(self.ib_amp)
         self.saved.e_wrap_m.append(self.e_wrap_m)
         self.saved.e_wrap_m_filt.append(self.e_wrap_m_filt)
@@ -737,6 +739,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap = self.voc_soc - self.voc_stat
         self.e_wrap_filt = self.WrapErrFilt.calculate(in_=self.e_wrap, dt=min(self.dt, Battery.F_MAX_T_WRAP),
                                                       reset=reset)
+        self.e_wrap_rate = self.WrapErrFilt.rate
+
         # e_wrap scalars normally calculated in Sensors
         if self.soc >= Battery.WRAP_SOC_HI_OFF:
             ewsat_slr = Battery.WRAP_SOC_HI_SLR
@@ -760,6 +764,7 @@ class BatteryMonitor(Battery, EKF1x1):
                                      ewsat_slr=ewsat_slr, e_w_0=e_w_noa_0, e_w_filt_0=e_w_noa_filt_0)
             self.e_wrap_n = self.LoopIbNoa.e_wrap
             self.e_wrap_n_filt = self.LoopIbNoa.e_wrap_filt
+            self.e_wrap_n_rate = self.LoopIbNoa.e_wrap_rate
             self.e_wrap_n_trim = self.LoopIbNoa.e_wrap_trim
             self.ewnhi_thr = self.LoopIbNoa.ewhi_thr
             self.ewnlo_thr = self.LoopIbNoa.ewlo_thr
@@ -779,6 +784,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ewmlo_thr = self.LoopIbAmp.ewlo_thr
             self.e_wrap_m = self.LoopIbAmp.e_wrap
             self.e_wrap_m_filt = self.LoopIbAmp.e_wrap_filt
+            self.e_wrap_m_rate = self.LoopIbAmp.e_wrap_rate
             self.e_wrap_m_trim = self.LoopIbAmp.e_wrap_trim
 
 
@@ -1160,6 +1166,7 @@ class Looparound:
         self.dt = 0.
         self.e_wrap = 0.
         self.e_wrap_filt = 0.
+        self.e_wrap_rate = 0.
         self.wrap_hi_amp = wrap_hi_amp
         self.wrap_lo_amp = wrap_lo_amp
         self.e_wrap_trim = 0.
@@ -1203,6 +1210,7 @@ class Looparound:
         self.e_wrap_trimmed = self.e_wrap + self.e_wrap_trim
         self.e_wrap_filt = self.WrapErrFilt.calculate(in_=self.e_wrap_trimmed, reset=self.reset,
                                                       dt=min(self.dt, Battery.F_MAX_T_WRAP))
+        self.e_wrap_rate = self.WrapErrFilt.rate
 
         # if loop_gain > 0.:
         #     print(f"{self.reset=} {self.ib=} {self.dt=} {trim_init=} {self.e_wrap_trim=} {self.e_wrap_trimmed=} {self.e_wrap_filt=}")
@@ -1322,6 +1330,7 @@ class Saved:
         self.reset_ekf = []  # Reset flag used for initialization
         self.e_wrap = []  # Verification of wrap calculation, V
         self.e_wrap_filt = []  # Verification of filtered wrap calculation, V
+        self.e_wrap_rate = []  # Verification of filtered wrap rate calculation, V/s
         self.ib_lag = []  # Lagged ib, A
         self.voc_soc_new = []  # New schedule values
         self.ib_amp = []

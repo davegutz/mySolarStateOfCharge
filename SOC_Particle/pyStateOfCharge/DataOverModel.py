@@ -539,9 +539,11 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mo, 'time', mo, 'e_wrap_filt', color='black', linestyle='-', label='e_wrap_filt' + ref_str)
     plq(plt, mo, 'time', mo, 'e_w_f', color='black', linestyle='-', label='e_wrap_filt' + ref_str)
     plq(plt, mv, 'time', mv, 'e_wrap', color='red', linestyle='-.', label='e_wrap' + test_str)
+    plq(plt, mo, 'time', mo, 'e_wrap_rate', color='black', linestyle=':', label='e_wrap_rate' + ref_str)
     plq(plt, mv, 'time', mv, 'e_wrap_filt', color='blue', linestyle='--', label='e_wrap_filt' + test_str)
     plq(plt, mo, 'time', mo, 'e_wrap_n', color='green', linestyle='-', label='e_wrap_n' + ref_str)
     plq(plt, mv, 'time', mv, 'e_wrap_n', color='pink', linestyle='-.', label='e_wrap_n' + test_str)
+    plq(plt, mv, 'time', mv, 'e_wrap_rate', color='blue', linestyle=':', label='e_wrap_rate' + test_str)
     plq(plt, mo, 'time', mo, 'e_wrap_n_filt', color='black', linestyle='-', label='e_wrap_n_filt' + ref_str)
     plq(plt, mo, 'time', mo, 'e_wn_f', color='black', linestyle='-', label='e_wrap_n_filt' + ref_str)
     plq(plt, mv, 'time', mv, 'e_wrap_n_filt', color='green', linestyle='--', label='e_wrap_n_filt' + test_str)
@@ -898,6 +900,7 @@ class SavedData:
             self.voc_soc_sel = None
             self.e_wrap = None
             self.e_wrap_filt = None
+            self.e_wrap_rate = None
             self.e_wrap_m = None
             self.e_wrap_m_filt = None
             self.e_wrap_n = None
@@ -973,6 +976,7 @@ class SavedData:
             self.voc_soc_sel = np.array(sel.voc_soc[:i_end])
             self.e_wrap = np.array(sel.e_w[:i_end])
             self.e_wrap_filt = np.array(sel.e_w_f[:i_end])
+            self.e_wrap_rate = np.array(sel.e_w_r[:i_end])
             if hasattr(sel, 'e_wm'):
                 self.e_wrap_m = np.array(sel.e_wm[:i_end])
             if hasattr(sel, 'e_wm_f'):
