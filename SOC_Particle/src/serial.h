@@ -45,21 +45,21 @@ extern PublishPars pp;  // For publishing
 extern CommandPars cp;  // Various parameters to be static at system level
 
 // Headers
-void create_rapid_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon);
+void print_rapid_create_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon);
 void delay_no_block(const unsigned long long int interval);
 String finish_request(const String in_str);
 String chat_cmd_from(String *source);
 boolean is_finished(const char in_char);
 void print_all_header(void);
 void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp);
-void create_rapid_string_header(void);
-void print_serial_sim(const boolean initializing_all, const boolean reset_temp, Sensors *Sen, BatterySim *Sim);
-void print_serial_sim_header(void);
-void print_serial_temp_data(const boolean reset, Sensors *Sen);
-void print_serial_temp_header(void);
-void print_signal_sel_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
+void print_rapid_header(void);
+void print_sim_serial(const boolean initializing_all, const boolean reset_temp, Sensors *Sen, BatterySim *Sim);
+void print_sim_header(void);
+void print_temp_serial(const boolean reset, Sensors *Sen);
+void print_temp_header(void);
+void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
 void print_signal_sel_header(void);
-void print_serial_ekf_header(void);
+void print_ekf_header(void);
 void rapid_print(Sensors *Sen, BatteryMonitor *Mon);
 void wait_on_user_input(Adafruit_SSD1306 *display);
 void wait_on_user_input();

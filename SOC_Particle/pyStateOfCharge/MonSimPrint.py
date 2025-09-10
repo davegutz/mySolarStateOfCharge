@@ -171,18 +171,13 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_):
     return hdr
 
 def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, sim_old, sim):
-    from pyDAGx import myTables
-
-    lut_vb = myTables.TableInterp1D(np.array(mon_old.time), np.array(mon_old.vb))
-
-    voc_req = lut_vb.interp(t[i]) - sim_old.dv_dyn_s[i]
+    # Not sure what these mean.  Also appear in plot 'Dom 2'
+    voc_req = sim_old.vb_s[i] - sim_old.dv_dyn_s[i]
     voc_stat_req = sim_old.voc_stat_s[i]
     dv_hys_req = voc_req - sim_old.voc_stat_s[i]
-
-    voc_req_v = lut_vb.interp(t[i]) - sim.dv_dyn
+    voc_req_v = sim.vb - sim.dv_dyn
     voc_stat_req_v = sim.voc_stat
-    dv_hys_req_v = voc_req_v - sim.voc_stat_f
-
+    dv_hys_req_v = voc_req_v - sim.voc_stat
     hdr = "  i  time   r r_t  i_e  r_e  sa      ib_charge               dv_hys                 dv_hys_s              voc_req                voc_stat_req            dv_hys_req           soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               soc_ekf               y_ekf"
     if calc_temp:
         print(hdr)

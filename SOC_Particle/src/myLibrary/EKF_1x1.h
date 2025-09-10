@@ -35,7 +35,7 @@ public:
   // functions
   void predict_ekf(const double u, const boolean freeze);
   virtual void pretty_print(void);
-  void serial_print();
+  void print_ekf_serial();
   void update_ekf(const double z, double x_min, double x_max);
   double x_ekf() { return ( x_ ); };
   double z_ekf() { return ( z_ ); };

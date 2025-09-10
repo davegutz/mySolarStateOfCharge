@@ -148,8 +148,8 @@ def main():
         gdrive = 'G:/My Drive/'
 
     data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20250905am_soc4p2_hi_lo_bb.csv'
-    gdrive = '/home/daveg/Documents/'
-    data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
+    # gdrive = '/home/daveg/Documents/'
+    # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
 
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # The following are not implemented in GUI
@@ -157,8 +157,8 @@ def main():
     time_end_in = None
     # time_end_in = 11
 
-    plots = False
-    # plots = True
+    # plots = False
+    plots = True
 
     # s_hys_sim_in = 1.
     s_hys_sim_in = 0.

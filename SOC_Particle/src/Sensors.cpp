@@ -277,7 +277,7 @@ void Shunt::sample(const boolean reset_loc, const float T)
 // Class Looparound
 Looparound::Looparound(BatteryMonitor *Mon, Sensors *Sen, const float wrap_hi_amp, const float wrap_lo_amp, const double wrap_trim_gain,
     const float imax, const float imin, const float err_max):
-  chem_(Mon->chem()), e_wrap_(0.), e_wrap_filt_(0.), e_wrap_trim_(0.), e_wrap_trimmed_(0.), hi_fail_(false), hi_fault_(false), ib_(0.),
+  chem_(Mon->chem()), e_wrap_(0.), e_wrap_filt_(0.), e_wrap_rate_(0.), e_wrap_trim_(0.), e_wrap_trimmed_(0.), hi_fail_(false), hi_fault_(false), ib_(0.),
   ib_past_(0), imax_(imax), imin_(imin), lo_fail_(false), lo_fault_(false), Mon_(Mon), reset_(false), Sen_(Sen), voc_(0.), wrap_hi_amp_(wrap_hi_amp), wrap_lo_amp_(wrap_lo_amp),
   wrap_trim_gain_(wrap_trim_gain)
 {
@@ -321,6 +321,7 @@ void Looparound::calculate(const boolean reset, const float ib, Sensors *Sen)
   // e_wrap using present values
   e_wrap_trimmed_ = e_wrap_ + e_wrap_trim_;
   e_wrap_filt_ = WrapErrFilt_->calculate(e_wrap_trimmed_, reset_, min(Sen_->T, F_MAX_T_WRAP));
+  e_wrap_rate_ = WrapErrFilt_->rate();
 
   // Thresholds. Scalars are calculated by Flt->wrap_scalars()
   ewhi_thr_ = Mon_->r_ss() * wrap_hi_amp_ * ap.ewhi_slr * Sen_->Flt->ewsat_slr() * Sen_->Flt->ewmin_slr();
@@ -594,6 +595,7 @@ void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
   #ifdef HDWE_IB_HI_LO
     e_wrap_ = scale_select(Sen->Ib_noa_hdwe, Sen->sel_brk_hdwe, LoopIbAmp->e_wrap(), LoopIbNoa->e_wrap());
     e_wrap_filt_ = scale_select(Sen->Ib_noa_hdwe, Sen->sel_brk_hdwe, LoopIbAmp->e_wrap_filt(), LoopIbNoa->e_wrap_filt());
+    e_wrap_rate_ = scale_select(Sen->Ib_noa_hdwe, Sen->sel_brk_hdwe, LoopIbAmp->e_wrap_rate(), LoopIbNoa->e_wrap_rate());
     faultAssign( ( wrap_hi_m_flt() && wrap_hi_n_flt() && !Mon->sat() ), WRAP_HI_FLT);
     faultAssign( ( wrap_lo_m_flt() && wrap_lo_n_flt() ), WRAP_LO_FLT);
     failAssign( ( wrap_hi_m_fa() && wrap_hi_n_fa() && !Mon->sat() ), WRAP_HI_FA);
@@ -601,6 +603,7 @@ void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
   #else
     e_wrap_ = Mon->voc_soc() - Mon->voc_stat();
     e_wrap_filt_ = WrapErrFilt->calculate(e_wrap_, reset_loc, min(Sen->T, F_MAX_T_WRAP));
+    e_wrap_rate_ = WrapErrFilt->rate();
     // sat logic screens out voc jumps when ib>0 when saturated
     // wrap_hi and wrap_lo don't latch because need them available to check next ib sensor selection for dual ib sensor
     // wrap_vb latches because vb is single sensor
@@ -1496,7 +1499,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
    Ib, Ib_hdwe, Ib_hdwe_model, Ib_amp, Ib_amp_model, Ib_amp_hdwe, Ib_noa, Ib_noa_model, Ib_noa_hdwe);
 
   // print_signal_select for data collection
-  print_signal_sel_data(reset, this, Mon);
+  print_signal_sel_serial(reset, this, Mon);
 
 }
 

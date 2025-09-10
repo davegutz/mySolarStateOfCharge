@@ -154,24 +154,24 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                 // Serial.printf("SOCu_s-90  ,SOCu_fa-90  ,Ishunt_amp  ,Ishunt_noa  ,Vb_fo*10-110  ,voc_s*10-110  ,dv_dyn_s*10  ,v_s*10-110  , voc_dyn*10-110,,,,,,,,,,,\n");
                 break;
                 case ( 1 ):  // l1:
-                create_rapid_string_header();
-                print_serial_temp_header();
+                print_rapid_header();
+                print_temp_header();
                 break;
                 case ( 2 ):  // l2:
                 print_signal_sel_header();
-                print_serial_sim_header();
-                create_rapid_string_header();
-                print_serial_temp_header();
+                print_sim_header();
+                print_rapid_header();
+                print_temp_header();
                 break;
                 case ( 3 ):  // l3:
-                print_serial_ekf_header();
-                print_serial_sim_header();
-                create_rapid_string_header();
-                print_serial_temp_header();
+                print_ekf_header();
+                print_sim_header();
+                print_rapid_header();
+                print_temp_header();
                 break;
                 default:
-                create_rapid_string_header();
-                print_serial_temp_header();
+                print_rapid_header();
+                print_temp_header();
             }
             break;
 

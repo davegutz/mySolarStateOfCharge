@@ -309,7 +309,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
             Serial1.printf("BatteryMonitor, ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,P_,soc,soc_ekf,y_ekf_f,conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%11.8f,%7.4f,%7.4f,%7.4f,  %d,\n",
                 ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, P_, soc_, soc_ekf_, y_filt_, converged_ekf());
         }
-        if ( sp.debug()==3 || sp.debug()==4 ) EKF_1x1::serial_print();  // print EKF in Read frame
+        if ( sp.debug()==3 || sp.debug()==4 ) EKF_1x1::print_ekf_serial();  // print EKF in Read frame
     }
     eframe_++;
     if ( reset_temp || cp.soft_reset || eframe_ >= ap.eframe_mult ) eframe_ = 0;  // '>=' allows changing ap.eframe_mult on the fly
@@ -862,8 +862,8 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
             charge_curr, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_, *sp_delta_q_, q_);
     }
 
-    // print_serial_sim
-    print_serial_sim(initializing_all, reset_temp, Sen, this);
+    // print_sim_serial
+    print_sim_serial(initializing_all, reset_temp, Sen, this);
 
     // Save and return
     reset_temp_past = reset_temp;

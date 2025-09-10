@@ -221,6 +221,7 @@ public:
   void calculate(const boolean reset, const float ib, Sensors *Sen);
   float e_wrap() { return e_wrap_; };
   float e_wrap_filt() { return e_wrap_filt_; };
+  float e_wrap_rate() { return e_wrap_rate_; };
   float e_wrap_trim() { return e_wrap_trim_; };
   uint8_t hi_fail() { return hi_fail_; };
   uint8_t hi_fault() { return hi_fault_; };
@@ -232,6 +233,7 @@ protected:
   LagExp *ChargeTransfer_;  // ChargeTransfer model {ib, vb} --> {voc}, ioc=ib for Battery version
   float e_wrap_;            // Wrap error, V
   float e_wrap_filt_;       // Wrap error, V
+  float e_wrap_rate_;       // Wrap error rate, V/s
   float e_wrap_trim_;       // Trimmer, V
   float e_wrap_trimmed_;    // Trimmer applied to e_wrap_, V
   float ewhi_thr_;          // Threshold e_wrap failed high, V
@@ -283,6 +285,7 @@ public:
   float e_wrap_m_filt() { return LoopIbAmp->e_wrap_filt(); };
   float e_wrap_n() { return LoopIbNoa->e_wrap(); };
   float e_wrap_n_filt() { return LoopIbNoa->e_wrap_filt(); };
+  float e_wrap_rate() { return e_wrap_rate_; };
   float ewmin_slr() { return ewmin_slr_; };
   float ewsat_slr() { return ewsat_slr_; };
   uint32_t fltw() { return fltw_; };
@@ -411,6 +414,7 @@ protected:
   float ewsat_slr_;         // Scale wrap detection thresh when voc(soc) saturated, scalar
   float e_wrap_;            // Wrap error, V
   float e_wrap_filt_;       // Wrap error, V
+  float e_wrap_rate_;       // Wrap error rate, V/s
   uint32_t fltw_;           // Bitmapped faults
   uint32_t falw_;           // Bitmapped fails
   boolean ib_amp_hi_;       // ib amp near it's range limit, T=near hi

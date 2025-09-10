@@ -46,14 +46,15 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     2. *** Fig. 9 EKF 2a:  dt_eframe at i_ekf=0 is = 4.882 while ref is 5.255. *** dt_eframe[0] = dt_ekf[0]
     3. *** Fig. 5 Dom 4a:  TB ver needs past value. *** Plotted wrong thing.  Tb-->Tb_rap and Tb_rap_ver
     4. *** Fig. 7 EKF 1:  Bu_ver at 0.  Fixed by dt_eframe fix
-    5. Fig. 2 Dom 2: dv_hys plots not intelligible
+    5. *** Fig. 2 Dom 2: dv_hys plots not intelligible.  Not sure what these mean
     6. Fig. 1 1a: e_wrap filter initialization.   Need filt_rates from Noa and Amp filters.  LoopIbNoa and Amp e_wrap_rate()
     7. Fig. 9 EKF 2a: hx(soc) negative slope?
     8. Fig. 10 EKF 3:  voc_ekv (hx) not equal at 0
     9. Run CompareHistSim etc.
     10. dv_hys jitter around 0 in reference data  ***->0*dv_hys before return instead of in return
     11. voltage resolutions off/on mon 1
-
+    12. Can reorder execution so header printed before any relevant data?  Deleting first two rows of data before headers causes data mismatch in sim
+    13. Discarded sim data ('vv0') causes issue.  Don't record/save local entered data.
     """
     if sim_old is not None and len(sim_old.time) < len(mon_old.time):
         t = sim_old.time
