@@ -22,15 +22,22 @@ import numpy as np
 from numpy.random import randn
 from datetime import datetime, timedelta
 
-def prn_soc_debug(leader="", time=None, reset=None, i=None, Tb_f_past=None, mo=None, mv=None, smv=None):
+def prn_soc_debug(leader="", time=None, reset=None, i=None, i_temp=None, Tb_f_past=None, mon_old=None, mon=None, smv=None):
     return
     if time is not None:
         print("\n\ntime {:7.3f}".format(time))
-    print(leader, end='')
-    print("reset {:2.0f}     mo.soc {:10.8f}    mon.soc {:10.8f} sim.ib_charge {:7.3f}  sim.Tb_f {:10.8f} sim.q_cap {:9.2f} mon.soc_s {:10.8f}   sim.soc {:10.8f}   mon.Tb_f {:10.8f}  Tb_f_past_ {:10.8f}    mon.q {:10.3f}    mon.q_cap {:10.3f}".
-          format(reset, mo.soc[i], mv.soc, smv.ib_charge, smv.Tb_f, smv.q_capacity, mv.soc_s, smv.soc, mv.Tb_f, Tb_f_past, mv.q, mv.q_capacity))
+    print("                                                                                              " + leader, end='')
+    print(
+"{:14.7f}".format(mon_old.Tb_hdwe_filt[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt),
+"{:14.7f}".format(mon_old.Tb_rap[i]), "{:11.7f}".format(mon.Tb_rap),
+"{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
+"{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:11.7f}".format(mon.Tb_f_rap),
+"{:14.7f}".format(mon_old.Tb_hdwe_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt_rate),
+"{:14.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate),
+"{:14.7f}".format(mon_old.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
+    )
 
-def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, Tb, Tb_past, sim_old, sim):
+def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, Tb, Tb_past, sim_old, sim, ST):
     hdr = None
     match request_history:
         case 0:
@@ -42,7 +49,7 @@ def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, ca
         case 3:
             hdr = print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim)
         case 4:
-            hdr = print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb, Tb_past)
+            hdr = print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb, Tb_past, ST)
         case 5:
             hdr = print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, sim_old, sim)
     return hdr
@@ -150,8 +157,8 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
           )
     return hdr
 
-def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_):
-    hdr = "  i  time  r  r_t i_t  calc   Tt      Tb_hdwe                    Tb                         Tb_                        Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                  Tb_f_rate_rap  "
+def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, ST):
+    hdr = "  i  time  r  r_t i_t  calc   Tt      Tb_hdwe                    Tb                         Tb_                        Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap  "
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),
@@ -165,7 +172,7 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_):
           "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
           "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:11.7f}".format(mon.Tb_f_rap),
           "{:14.7f}".format(mon_old.Tb_hdwe_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt_rate),
-          "{:14.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate),
+          "{:14.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate), "{:11.7f}".format(ST.Tb_f_rate),
           "{:14.7f}".format(mon_old.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
           )
     return hdr
