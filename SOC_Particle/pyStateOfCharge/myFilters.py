@@ -412,14 +412,13 @@ class LagExp(DiscreteFilter):
         self.out_ = self.state
         return self.out_
 
-    def calculate_tau_seeded(self, in_, _out_reset, _rate_reset, reset, dt, tau_, rmax=None, rmin=None):
+    def calculate_tau_seeded(self, in_, _out_reset, reset, dt, tau_, rmax=None, rmin=None):
         self.in_ = in_
         self.tau = tau_
         self.reset = reset
         if self.reset:
             self.state = _out_reset
             self.rstate = in_
-            self.rate = _rate_reset
         self.calc_state(self.in_, dt, rmax, rmin)
         self.out_ = self.state
         # if self.reset and in_ < 5 and dt < 1.:

@@ -496,7 +496,7 @@ class BatteryMonitor(Battery, EKF1x1):
         else:
             ib_dc = self.ib
         self.vb = vb
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_init, ib_dyn_rate_init, reset, dt,
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_init, reset, dt,
                                                      self.chemistry.tau_ct)
         self.ib_dyn_rate = self.ChargeTransfer.rate
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
@@ -532,7 +532,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.Q = Battery.EKF_Q_SD_NORM**2  # override
             self.R = Battery.EKF_R_SD_NORM**2  # override
             self.voc_stat_f =\
-                self.voc_stat_filt.calculate_tau_seeded(self.voc_stat_ekf, z_init, 0., self.reset_ekf, self.dt_eframe,
+                self.voc_stat_filt.calculate_tau_seeded(self.voc_stat_ekf, z_init, self.reset_ekf, self.dt_eframe,
                                                         self.VOC_STAT_FILT)
             self.predict_ekf(u=ddq_dt, reset=self.reset_ekf)  # u = d(q)/dt
             self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1., reset=self.reset_ekf)  # z = voc, voc_filtered = hx
@@ -919,7 +919,7 @@ class BatterySim(Battery):
         self.ib_lag = self.IbLag.calculate_tau(self.ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
         # Charge transfer dynamics
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_init, ib_dyn_rate_init, reset, dt,
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_init, reset, dt,
                                                      self.chemistry.tau_ct)
         self.ib_dyn_rate = self.ChargeTransfer.rate
         self.ib_dyn_rstate = self.ChargeTransfer.rstate

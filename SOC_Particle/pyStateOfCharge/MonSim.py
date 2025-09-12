@@ -193,7 +193,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                           Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
             mon.Tb_hdwe_filt = \
                 ST.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_old.Tb_hdwe_filt[i_temp],
-                                                 mon_old.Tb_hdwe_filt_rate[i_temp], mon.reset_temp,
+                                                 mon.reset_temp,
                                                  mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
                                                  rmin=-Battery.T_RLIM)
             mon.Tb_hdwe_filt_rate = ST.TbSenseFilt.rate
