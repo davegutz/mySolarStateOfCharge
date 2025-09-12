@@ -380,7 +380,7 @@ class LagExp(DiscreteFilter):
             self.b = 1.0 / meTt - self.tau / self.dt
             self.c = meTt / self.dt
 
-    def calc_state_(self, in_, rmax, rmin):
+    def calc_states(self, in_, rmax, rmin):
         self.rate = self.c * (self.a * self.rstate + self.b * in_ - self.state)
         if rmax and rmin:
             self.rate = max(min(self.rate, rmax), rmin)
@@ -388,17 +388,17 @@ class LagExp(DiscreteFilter):
             self.rstate = in_
             self.state = max(min(self.state + self.dt * self.rate, self.max), self.min)
 
-    def calc_state(self, in_, dt, rmax=None, rmin=None):
+    def calc_all(self, in_, dt, rmax=None, rmin=None):
         self.dt = dt
         self.assign_coeff(self.tau)
-        self.calc_state_(in_, rmax, rmin)
+        self.calc_states(in_, rmax, rmin)
 
     def calculate(self, in_, reset, dt):
         self.in_ = in_
         if reset:
             self.state = self.in_
             self.rstate = self.in_
-        self.calc_state(self.in_, dt)
+        self.calc_all(self.in_, dt)
         self.out_ = self.state
         return self.out_
 
@@ -408,18 +408,18 @@ class LagExp(DiscreteFilter):
         if reset:
             self.state = self.in_
             self.rstate = self.in_
-        self.calc_state(self.in_, dt)
+        self.calc_all(self.in_, dt)
         self.out_ = self.state
         return self.out_
 
     def calculate_tau_seeded(self, in_, _out_reset, reset, dt, tau_, rmax=None, rmin=None):
         self.in_ = in_
-        self.tau = tau_
         self.reset = reset
+        self.tau = tau_
         if self.reset:
             self.state = _out_reset
-            self.rstate = in_
-        self.calc_state(self.in_, dt, rmax, rmin)
+            self.rstate = self.in_
+        self.calc_all(self.in_, dt, rmax, rmin)
         self.out_ = self.state
         # if self.reset and in_ < 5 and dt < 1.:
         #     print("seed    r{:3d}".format(self.reset), "                                             ib       {:7.5f}".format(in_),
@@ -477,16 +477,16 @@ class RateLagExp(DiscreteFilter):
             self.b = 1.0 / meTt - self.tau / self.dt
             self.c = meTt / self.dt
 
-    def calc_state_(self, in_):
+    def calc_states(self, in_):
         self.rate = self.c * (self.a * self.rstate + self.b * in_ - self.state)
         self.rstate = in_
         self.state = max(min(self.state + self.dt * self.rate, self.max), self.min)
         # print('in_', in_, 'rate', self.rate, 'state', self.state)
 
-    def calc_state(self, in_, dt):
+    def calc_all(self, in_, dt):
         self.dt = dt
         self.assign_coeff(self.tau)
-        self.calc_state_(in_)
+        self.calc_states(in_)
 
     def calculate(self, in_, reset, dt):
         self.in_ = in_
@@ -503,7 +503,7 @@ class RateLagExp(DiscreteFilter):
         if reset:
             self.state = self.in_
             self.rstate = self.in_
-        self.calc_state(self.in_, dt)
+        self.calc_all(self.in_, dt)
         self.out_ = self.state
         return self.out_
 
@@ -552,20 +552,20 @@ class LagTustin(DiscreteFilter):
         self.a = 2.0 / (2.0 * self.tau + self.dt)
         self.b = (2.0 * self.tau - self.dt) / (2.0 * self.tau + self.dt)
 
-    def calc_state_(self, in_):
+    def calc_states(self, in_):
         self.rate = max(min(self.a * (in_ - self.state), self.max), self.min)
         self.state = max(min(in_ * (1.0 - self.b) + self.state * self.b, self.max), self.min)
 
-    def calc_state(self, in_, dt):
+    def calc_all(self, in_, dt):
         self.dt = dt
         self.assign_coeff(self.tau)
-        self.calc_state_(in_)
+        self.calc_states(in_)
 
     def calculate(self, in_, reset, dt):
         self.in_ = in_
         if reset:
             self.state = self.in_
-        self.calc_state(self.in_, dt)
+        self.calc_all(self.in_, dt)
         self.out_ = self.state
         return self.out_
 
