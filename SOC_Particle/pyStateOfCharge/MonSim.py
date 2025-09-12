@@ -163,15 +163,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         # Basic reset model verification is to init to the input data
         # Tried hard not to re-implement solvers in the Python verification  tool
         # Also, BTW, did not implement signal selection or tweak logic
-        if (t[i] <= init_time) or (t[i] < 0. and t[0] > init_time):
-            reset = True
-        else:
-            reset = False
+        reset = bool((t[i] <= init_time) or (t[i] < 0. and t[0] > init_time))
         if reset_sel is not None:
-            if reset is True or reset_sel[i] > 0.:
-                reset = True
-            else:
-                reset = False
+            reset = reset or bool(reset_sel[i] > 0.)
         prn_soc_debug(time=now, leader="before sim init:     ", reset=reset, i=i,
                       Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
 
@@ -301,7 +295,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             else:
                 T_ekf = mon_old.time_e[i_ekf] - mon_old.time_e[i_ekf-1]  # update
             calc_ekf = True
-            print(f"{T_ekf=}")
         else:
             calc_ekf = False
         if i_ekf == 0:
