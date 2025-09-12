@@ -151,7 +151,7 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
     return hdr
 
 def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_):
-    hdr = "  i  time  r  r_t i_t  calc   Tt      Tb_hdwe     Tb_hdwe_v         Tb   Tb_v                 Tb_        Tb_past_   Tb_hdwe_filt  Tb_hdwe_filt_v     Tb_rap  Tb_rap_v         Tb_f      Tb_f_v          Tb_f_rap  Tb_f_rap_v        Tb_h_f_r  Tb_h_f_r_v     Tb_f_rate Tb_f_rate_v      Tb_f_rate_rap Tb_f_rate_rap_v"
+    hdr = "  i  time  r  r_t i_t  calc   Tt      Tb_hdwe                    Tb                         Tb_                        Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                  Tb_f_rate_rap  "
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),
@@ -171,25 +171,17 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_):
     return hdr
 
 def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, sim_old, sim):
-    # Not sure what these mean.  Also appear in plot 'Dom 2'
-    voc_req = sim_old.vb_s[i] - sim_old.dv_dyn_s[i]
-    voc_stat_req = sim_old.voc_stat_s[i]
-    dv_hys_req = voc_req - sim_old.voc_stat_s[i]
-    voc_req_v = sim.vb - sim.dv_dyn
-    voc_stat_req_v = sim.voc_stat
-    dv_hys_req_v = voc_req_v - sim.voc_stat
-    hdr = "  i  time   r r_t  i_e  r_e  sa      ib_charge               dv_hys                 dv_hys_s              voc_req                voc_stat_req            dv_hys_req           soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               soc_ekf               y_ekf"
+    hdr = "  i  time   r r_t  i_e  r_e  sa      ib_charge            ib                   ib_dyn               ib_dyn_rate           dv_dyn                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               soc_ekf               y_ekf"
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
           "{:3d}".format(i_ekf), "{:4d}".format(mon.reset_ekf),
           "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
           "{:10.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
-          "{:13.5f}".format(mon_old.dv_hys[i]), "{:8.5f}".format(mon.dv_hys),
-          "{:13.5f}".format(sim_old.dv_hys_s[i]), "{:8.5f}".format(sim.dv_hys),
-          "{:13.5f}".format(voc_req), "{:8.5f}".format(voc_req_v),
-          "{:13.5f}".format(voc_stat_req), "{:8.5f}".format(voc_stat_req_v),
-          "{:13.5f}".format(dv_hys_req), "{:8.5f}".format(dv_hys_req_v),
+          "{:10.5f}".format(mon_old.ib[i]), "{:9.5f}".format(mon.ib),
+          "{:10.5f}".format(mon_old.ib_dyn[i]), "{:9.5f}".format(mon.ib_dyn),
+          "{:10.5f}".format(mon_old.ib_dyn_rate[i]), "{:9.5f}".format(mon.ib_dyn_rate),
+          "{:13.7f}".format(mon_old.dv_dyn[i]), "{:10.7f}".format(mon.dv_dyn),
           "{:13.7f}".format(mon_old.soc[i]), "{:10.7f}".format(mon.soc),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),

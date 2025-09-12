@@ -347,6 +347,7 @@ class LagExp(DiscreteFilter):
         self.b = 0.
         self.c = 0.
         self.rate = 0.
+        self.reset = True
         self.rstate = 0.
         self.state = 0.
         self.assign_coeff(tau)
@@ -383,8 +384,9 @@ class LagExp(DiscreteFilter):
         self.rate = self.c * (self.a * self.rstate + self.b * in_ - self.state)
         if rmax and rmin:
             self.rate = max(min(self.rate, rmax), rmin)
-        self.rstate = in_
-        self.state = max(min(self.state + self.dt * self.rate, self.max), self.min)
+        if not self.reset:
+            self.rstate = in_
+            self.state = max(min(self.state + self.dt * self.rate, self.max), self.min)
 
     def calc_state(self, in_, dt, rmax=None, rmin=None):
         self.dt = dt
@@ -410,17 +412,20 @@ class LagExp(DiscreteFilter):
         self.out_ = self.state
         return self.out_
 
-    def calculate_tau_seeded(self, in_, _out0, _rate0, reset, dt, tau_, rmax=None, rmin=None):
+    def calculate_tau_seeded(self, in_, _out_reset, _rate_reset, reset, dt, tau_, rmax=None, rmin=None):
         self.in_ = in_
         self.tau = tau_
-        self.calc_state(self.in_, dt, rmax, rmin)
-        if reset:
-            self.state = _out0
+        self.reset = reset
+        if self.reset:
+            self.state = _out_reset
             self.rstate = in_
-            self.rate = _rate0
+            self.rate = _rate_reset
+        self.calc_state(self.in_, dt, rmax, rmin)
         self.out_ = self.state
-        # if reset and in_ > 15:
-        #     print(f"calculate_tau_seeded init:  r {reset} Tb_hdwe0 {in_} Tb_hdwe_filt0 {_out0} rate_0 {_rate0} dt {dt} state {self.state} rstate {self.rstate} out {self.out_}")
+        # if self.reset and in_ < 5 and dt < 1.:
+        #     print("seed    r{:3d}".format(self.reset), "                                             ib       {:7.5f}".format(in_),
+        #           "   ib_dyn    {:7.5f}".format(self.out_), "   ib_dr    {:7.5f}".format(self.rate),
+        #           "       ib_reset {:7.5f}".format(in_), "    ib_dyn_reset {:7.5f}".format(_out_reset), "   rate_reset {:7.5f}".format(_rate_reset), "dt {:5.3f}".format(dt))
         return self.out_
 
     def save(self, time):

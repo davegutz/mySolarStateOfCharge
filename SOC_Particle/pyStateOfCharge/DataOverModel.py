@@ -272,34 +272,8 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.subplot(325)
     plt.plot(mo.time, mo.dv_hys, color='green', linestyle='-', label='dv_hys'+ref_str)
     plt.plot(mv.time, mv.dv_hys, color='cyan', linestyle='--', label='dv_hys'+test_str)
-    if hasattr(sv, 'time'):
-        from pyDAGx import myTables
-        lut_vb = myTables.TableInterp1D(np.array(mo.time), np.array(mo.vb))
-        n = len(sv.time)
-        voc_req = np.zeros((n, 1))
-        dv_hys_req = np.zeros((n, 1))
-        voc_stat_req = np.zeros((n, 1))
-        if hasattr(smv, 'dv_dyn_s'):
-            for i in range(n):
-                voc_req[i] = lut_vb.interp(sv.time[i]) - smv.dv_dyn_s[i]
-                voc_stat_req[i] = smv.voc_stat_s[i]
-                dv_hys_req[i] = voc_req[i] - smv.voc_stat_s[i]
-            plt.plot(smv.time, np.array(smv.dv_hys_s)+0.1, color='red', linestyle='-', label='dv_hys_s'+test_str+'+0.1')
-            plt.plot(sv.time, np.array(dv_hys_req)+0.1, color='black', linestyle='--', label='dv_hys_req_s'+test_str+'+0.1')
-
-    if so is not None:
-        from pyDAGx import myTables
-        lut_vb = myTables.TableInterp1D(np.array(mo.time), np.array(mo.vb))
-        n = len(so.time)
-        voc_req = np.zeros((n, 1))
-        dv_hys_req = np.zeros((n, 1))
-        voc_stat_req = np.zeros((n, 1))
-        for i in range(n):
-            voc_req[i] = lut_vb.interp(so.time[i]) - so.dv_dyn_s[i]
-            voc_stat_req[i] = so.voc_stat_s[i]
-            dv_hys_req[i] = voc_req[i] - so.voc_stat_s[i]
-        plt.plot(so.time, np.array(so.dv_hys_s)-0.1, color='magenta',  linestyle='-', label='dv_hys_s-0.1'+ref_str)
-        plt.plot(so.time, np.array(dv_hys_req)-0.1, color='orange', linestyle='--', label='dv_hys_req_s-0.1'+ref_str)
+    plt.plot(smv.time, np.array(smv.dv_hys_s)+0.1, color='red', linestyle='-', label='dv_hys_s'+test_str+'+0.1')
+    plt.plot(so.time, np.array(so.dv_hys_s)-0.1, color='magenta',  linestyle='-', label='dv_hys_s-0.1'+ref_str)
     plt.legend(loc=1)
     plt.subplot(326)
     plq(plt, mo, 'time_t', mo, 'Tb', color='green', linestyle='-', label='Tb'+ref_str, stairs=True)

@@ -163,13 +163,17 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         # Basic reset model verification is to init to the input data
         # Tried hard not to re-implement solvers in the Python verification  tool
         # Also, BTW, did not implement signal selection or tweak logic
-        reset = (t[i] <= init_time) or (t[i] < 0. and t[0] > init_time)
+        if (t[i] <= init_time) or (t[i] < 0. and t[0] > init_time):
+            reset = True
+        else:
+            reset = False
         if reset_sel is not None:
-            reset = reset or reset_sel[i]
-        # if mon.reset_temp is not None:
-        #     reset = reset or mon.reset_temp
-            prn_soc_debug(time=now, leader="before sim init:     ", reset=reset, i=i,
-                          Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
+            if reset is True or reset_sel[i] > 0.:
+                reset = True
+            else:
+                reset = False
+        prn_soc_debug(time=now, leader="before sim init:     ", reset=reset, i=i,
+                      Tb_f_past=ST.Tb_f_past, mo=mon_old, mv=mon, smv=sim)
 
         if reset:
             sim.apply_soc(mon_old.soc_s[i], ST.Tb_f_past)  # calculates delta_q
