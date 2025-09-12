@@ -58,7 +58,6 @@ class TbSense:
         self.Tb_past = self.Tb
         self.Tb_f_past = self.Tb_f
         self.Tb_f_rate_past = self.Tb_f_rate
-        print(f"update:  Tb_f_rate {self.Tb_f_rate} Tb_f_rate_past {self.Tb_f_rate_past}")
 
     def assign(self, mon_Tb, mon_Tb_f, mon_Tb_f_rate):
         self.Tb = mon_Tb + self.dTb

@@ -611,6 +611,10 @@ class BatteryMonitor(Battery, EKF1x1):
         # Measurement function hx(x), x = soc ideal capacitor
         x_lim = max(min(self.x_ekf, 1.), 0.)
         self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.Tb_f_rap)
+        print("ekf_update                                                                                                                                                                                            Tb_f_rap {:10.7f}".format(self.Tb_f_rap),
+              " x {:10.5f}".format(x_lim),
+              "     hx {:10.5f}".format(self.hx),
+              )
         # Jacobian of measurement function
         self.H = self.dv_dsoc
         return self.hx, self.H

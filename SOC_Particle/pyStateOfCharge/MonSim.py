@@ -55,6 +55,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     11. voltage resolutions off/on mon 1
     12. Can reorder execution so header printed before any relevant data?  Deleting first two rows of data before headers causes data mismatch in sim
     13. Discarded sim data ('vv0') causes issue.  Don't record/save local entered data.
+    14. Fig. 2a, 3 EKF: hx_ver not right at beginning
     """
     if sim_old is not None and len(sim_old.time) < len(mon_old.time):
         t = sim_old.time
@@ -153,12 +154,10 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             sim.Tb = mon_old.Tb[i_temp]
             mon.Tb = mon_old.Tb[i_temp]
             mon.Tb_s = mon_old.Tb[i_temp]
-            print(f" before update Tb_f_rate {ST.Tb_f_rate} mon.Tb_f_rate {mon.Tb_f_rate} mon.Tb_f_rate_rap {mon.Tb_f_rate_rap}")
             if i_temp > 0:
                 ST.update()
             mon.Tb_f_rap = ST.Tb_f_past
             mon.Tb_f_rate_rap = ST.Tb_f_rate_past
-            print(f" after  update Tb_f_rate {ST.Tb_f_rate} mon.Tb_f_rate {mon.Tb_f_rate} mon.Tb_f_rate_rap {mon.Tb_f_rate_rap}")
 
         # Input
         sim.Tb_f = mon_old.Tb_mod[i_temp]
@@ -197,7 +196,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                                                  rmin=-Battery.T_RLIM)
             mon.Tb_hdwe_filt_rate = ST.TbSenseFilt.rate
             mon.Tb_f_rate = mon.Tb_hdwe_filt_rate
-            print(f"Tb_h_f_r {mon.Tb_hdwe_filt_rate} Tb_f_rate {mon.Tb_f_rate}")
             mon.Tb_rap = ST.Tb_past
             mon.Tb_f = mon.Tb_hdwe_filt
             ST.Tb_f = mon.Tb_hdwe_filt
@@ -347,10 +345,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
         prn_soc_debug(time=None, leader="after mon.count_cou: ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
-        # mon.Tb_f_rap = ST.Tb_f_past
-        # mon.Tb_f_rate_rap = ST.Tb_f_rate_past
-        if calc_temp:
-            print(f"Tb_f_rate_past {ST.Tb_f_rate_past} Tb_f_rate_rap {mon.Tb_f_rate_rap}")
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
         mon.assign_soc_s(sim.soc)
         prn_soc_debug(time=None, leader="after mon.assign   : ", reset=reset, i=i, i_temp=i_temp,
