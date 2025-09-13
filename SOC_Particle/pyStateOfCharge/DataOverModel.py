@@ -664,9 +664,8 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
                     if line.__contains__(hdr_key):
                         if have_header_str is None:
                             have_header_str = True  # write one title only
-                            output.write(line)
+                            output.write('skip,' + line)
                             num_fields = line.count(',')  # first line with hdr_key defines number of fields
-                            line_ref = line
             except IOError:
                 print("DataOverModel381:", line)  # last line
     # Data
@@ -674,7 +673,6 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
     num_text_ref = 0
     num_lines_in = 0
     num_skips = 0
-    length = 0
     unit_key_found = False
     with (open(path_to_data, "r", encoding='cp437') as input_file):  # reads all characters even bad ones
         with open(csv_file, "a") as output:
@@ -692,11 +690,13 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
                             num_text == num_text_ref and \
                             re.search(r'[^a-zA-Z0-9+-_.:, ]', line[:-1]) is None and \
                             (num_lines == 0 or ((num_lines_in+1) % skip) == 0) and line.count(comment_str) == 0:
-                        output.write(line)
+                        output.write('0,' + line)
                         num_lines += 1
                     else:
                         print('discarding: ', line)
                         num_skips += 1
+                        output.write('1,' + line)
+                        num_lines += 1
                     num_lines_in += 1
     if not num_lines:
         csv_file = None
@@ -704,7 +704,7 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
         if not unit_key_found:
             print("W(write_clean_file):  unit_key not found in ", basename, ".  Looking with '{:s}'".format(unit_key))
     else:
-        print("Wrote(write_clean_file):", csv_file, num_lines, "lines", num_skips, "skips", length, "fields")
+        print("Wrote(write_clean_file):", csv_file, num_lines, "lines", num_skips, "skips", num_fields, "fields")
     return csv_file
 
 
@@ -713,6 +713,7 @@ class SavedData:
                  init_time_in=None):
         i_end = 0
         if rap is None:
+            self.skip_rap = None
             self.i = 0
             self.time = None
             self.time_min = None
@@ -755,6 +756,7 @@ class SavedData:
             self.voc_soc_new = None  # For studies
             self.init_time = None
         else:
+            self.skip_rap = np.array(rap.skip)
             self.i = 0
             self.cTime = np.array(rap.cTime)
             self.time = np.array(rap.cTime)
@@ -857,6 +859,7 @@ class SavedData:
             self.soc = np.array(rap.soc[:i_end])
             self.voc_soc_new = None
         if sel is None:
+            self.skip_sel = None
             self.c_time_s = None
             self.res = None
             self.user_sel = None
@@ -933,6 +936,7 @@ class SavedData:
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
+            self.skip_sel = np.array(sel.skip[:i_end])
             self.c_time_s = np.array(sel.c_time[:i_end]) - self.time_ref
             self.res = np.array(sel.res[:i_end])
             self.user_sel = np.array(sel.user_sel[:i_end])
@@ -1011,6 +1015,7 @@ class SavedData:
             if hasattr(sel, 'ib_dec'):
                 self.ib_dec = np.array(sel.ib_dec[:i_end])
         if ekf is None:
+            self.skip_e = None
             self.time_e = None
             self.dt_ekf = None
             self.Fx = None
@@ -1025,12 +1030,14 @@ class SavedData:
             self.y = None
             self.z = None
             self.x_prior = None
+            self.frz = None
             self.P_prior = None
             self.x_post = None
             self.P_post = None
             self.hx = None
             self.H = None
         else:
+            self.skip_e = np.array(ekf.skip[:i_end])
             self.time_e = np.array(ekf.c_time[:i_end]) - self.time_ref
             self.dt_ekf = np.array(ekf.dt[:i_end])
             self.Fx = np.array(ekf.Fx_[:i_end])
@@ -1045,12 +1052,14 @@ class SavedData:
             self.y = np.array(ekf.y_[:i_end])
             self.z = np.array(ekf.z_[:i_end])
             self.x_prior = np.array(ekf.x_prior_[:i_end])
+            self.frz = np.array(ekf.frz_[:i_end])
             self.P_prior = np.array(ekf.P_prior_[:i_end])
             self.x_post = np.array(ekf.x_post_[:i_end])
             self.P_post = np.array(ekf.P_post_[:i_end])
             self.hx = np.array(ekf.hx_[:i_end])
             self.H = np.array(ekf.H_[:i_end])
         if temp is None:
+            self.skip_t = None
             self.time_t = None
             self.reset_temp = None
             self.T_t = None
@@ -1064,6 +1073,7 @@ class SavedData:
             self.Tb_rstate = None
             self.Tb_lstate = None
         else:
+            self.skip_t = np.array(temp.skip[:i_end])
             self.time_t = np.array(temp.c_time[:i_end]) - self.time_ref
             self.reset_temp = np.array(temp.reset_temp[:i_end])
             self.Tt = np.array(temp.T_t[:i_end])
@@ -1116,6 +1126,7 @@ class SavedData:
 class SavedDataSim:
     def __init__(self, time_ref, data=None, time_end=None):
         if data is None:
+            self.skip_s = None
             self.i = 0
             self.time = None
             self.time_min = None
@@ -1158,6 +1169,7 @@ class SavedDataSim:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
             self.cTime = self.cTime[:i_end]
             self.time = self.time[:i_end]
+            self.skip_s =  data.skip[:i_end]
             self.dt_s = data.dt_s[:i_end]
             self.time_min = self.time / 60.
             self.time_day = self.time / 3600. / 24.
