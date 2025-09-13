@@ -54,7 +54,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     10. dv_hys jitter around 0 in reference data  ***->0*dv_hys before return instead of in return
     11. voltage resolutions off/on mon 1
     12. Can reorder execution so header printed before any relevant data?  Deleting first two rows of data before headers causes data mismatch in sim
-    13. Discarded sim data ('vv0') causes issue.  Don't record/save local entered data.
+    13. *** Discarded sim data ('vv0') causes issue.  Don't record/save local entered data.  Fixed by 'skip' logic
     14. Fig. 2a, 3 EKF: hx_ver not right at beginning
     """
     if sim_old is not None and len(sim_old.time) < len(mon_old.time):
