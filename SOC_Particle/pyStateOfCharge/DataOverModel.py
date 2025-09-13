@@ -756,7 +756,7 @@ class SavedData:
             self.voc_soc_new = None  # For studies
             self.init_time = None
         else:
-            self.skip_rap = np.array(rap.skip)
+            self.skip_rap = np.bool(np.array(rap.skip))
             self.i = 0
             self.cTime = np.array(rap.cTime)
             self.time = np.array(rap.cTime)
@@ -936,7 +936,7 @@ class SavedData:
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
-            self.skip_sel = np.array(sel.skip[:i_end])
+            self.skip_sel = np.array(np.bool(sel.skip[:i_end]))
             self.c_time_s = np.array(sel.c_time[:i_end]) - self.time_ref
             self.res = np.array(sel.res[:i_end])
             self.user_sel = np.array(sel.user_sel[:i_end])
@@ -1037,7 +1037,7 @@ class SavedData:
             self.hx = None
             self.H = None
         else:
-            self.skip_e = np.array(ekf.skip[:i_end])
+            self.skip_e = np.array(np.bool(ekf.skip[:i_end]))
             self.time_e = np.array(ekf.c_time[:i_end]) - self.time_ref
             self.dt_ekf = np.array(ekf.dt[:i_end])
             self.Fx = np.array(ekf.Fx_[:i_end])
@@ -1052,7 +1052,7 @@ class SavedData:
             self.y = np.array(ekf.y_[:i_end])
             self.z = np.array(ekf.z_[:i_end])
             self.x_prior = np.array(ekf.x_prior_[:i_end])
-            self.frz = np.array(ekf.frz_[:i_end])
+            self.frz = np.array(np.bool(ekf.frz_[:i_end]))
             self.P_prior = np.array(ekf.P_prior_[:i_end])
             self.x_post = np.array(ekf.x_post_[:i_end])
             self.P_post = np.array(ekf.P_post_[:i_end])
@@ -1073,7 +1073,7 @@ class SavedData:
             self.Tb_rstate = None
             self.Tb_lstate = None
         else:
-            self.skip_t = np.array(temp.skip[:i_end])
+            self.skip_t = np.array(np.bool(temp.skip[:i_end]))
             self.time_t = np.array(temp.c_time[:i_end]) - self.time_ref
             self.reset_temp = np.array(temp.reset_temp[:i_end])
             self.Tt = np.array(temp.T_t[:i_end])
@@ -1169,7 +1169,7 @@ class SavedDataSim:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
             self.cTime = self.cTime[:i_end]
             self.time = self.time[:i_end]
-            self.skip_s =  data.skip[:i_end]
+            self.skip_s =  np.bool(data.skip[:i_end])
             self.dt_s = data.dt_s[:i_end]
             self.time_min = self.time / 60.
             self.time_day = self.time / 3600. / 24.

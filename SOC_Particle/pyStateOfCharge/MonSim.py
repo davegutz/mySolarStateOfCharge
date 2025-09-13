@@ -350,6 +350,10 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         prn_soc_debug(time=None, leader="after mon.assign   : ", reset=reset, i=i, i_temp=i_temp,
                       Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
 
+        # Break is data integrity questionable
+        if mon_old.skip_e[i_ekf] or mon_old.skip_t[i_temp] or mon_old.skip_sel[i_ekf] or mon_old.skip_rap[i] or sim_old.skip_s[i]:
+            break
+
         # Save plot info
         mon.save(t[i], T, mon.soc, sim.voc)
         sim.save(t[i], T)
@@ -381,6 +385,11 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     # Final hdr print
     if request_history is not None and request_history > 0:
         print(hdr)
+    if mon_old.skip_e[i_ekf] or mon_old.skip_t[i_temp] or mon_old.skip_sel[i_ekf] or mon_old.skip_rap[i] or sim_old.skip_s[i]:
+        print(f"\n\n************** Data integrity degraded by skip.  A digit could have been inserted anywhere in data.  Break.")
+        print("   now {:5.3f}".format(now),
+              "   time_end {:5.3f}\n\n".format(t[-1]),
+              )
 
     # Data
     if verbose:
