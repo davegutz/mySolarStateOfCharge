@@ -174,14 +174,14 @@ void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, co
 void print_ekf_header(void)
 {
   if ( sp.debug()==3 || sp.debug()==4 ) // print_ekf_header
-    Serial.printf("unit_e,c_time,dt,Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_, x_prior_, P_prior_, x_post_, P_post_, hx_, H_,\n");
+    Serial.printf("unit_e,c_time,dt,Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_, x_prior_, P_prior_, x_post_, P_post_, hx_, H_, frz_\n");
 }
  void EKF_1x1::print_ekf_serial()
  {
   double eTime = double(now_ekf_)/1000.;
 
-  Serial.printf("unit_ekf,%13.3f,%7.3f,%13.10f,%13.10f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,\n",
-    eTime, dt_ekf_, Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_, x_prior_, P_prior_, x_post_, P_post_, hx_, H_);
+  Serial.printf("unit_ekf,%13.3f,%7.3f,%13.10f,%13.10f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%d,\n",
+    eTime, dt_ekf_, Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_, x_prior_, P_prior_, x_post_, P_post_, hx_, H_, freeze_);
  }
 
 // print sim for data collection
