@@ -86,7 +86,7 @@ class SyncInfo:
 
 # Load from files
 def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_batt_cap=Battery.UNIT_CAP_RATED,
-              legacy=False, v1_only=False, zero_thr_in=0.02, sync_to_cTime=False):
+              legacy=False, v1_only=False, zero_thr_in=0.02):
 
     print(f"load_data: \n{path_to_data=}\n{skip=}\n{unit_key=}\n{zero_zero_in=}\n{time_end_in=}\n{rated_batt_cap=}\n"
           f"{legacy=}\n{v1_only=}")

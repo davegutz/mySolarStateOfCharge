@@ -23,7 +23,7 @@ from Chemistry_BMS import Chemistry
 class Coulombs:
     """Coulomb Counting"""
 
-    def __init__(self, q_cap_rated, q_cap_rated_scaled, t_rated, temp_rlim=0.017, tweak_test=False, mod_code=0, dvoc=0.,
+    def __init__(self, q_cap_rated, q_cap_rated_scaled, t_rated, tweak_test=False, mod_code=0, dvoc=0.,
                  unit=None):
         self.q_cap_rated = q_cap_rated
         self.q_cap_rated_scaled = q_cap_rated_scaled
@@ -83,7 +83,7 @@ class Coulombs:
         self.soc = self.q / self.q_capacity
         self.resetting = True  # momentarily turn off saturation check
 
-    # Memory set, adjust book - keeping as needed.delta_q, capacity, temp preserved void
+    # Memory set, adjust bookkeeping as needed.delta_q, capacity, temp preserved void
     def apply_delta_q_brief(self, delta_q):
         self.delta_q = delta_q
         self.q = self.delta_q + self.q_capacity
@@ -125,7 +125,7 @@ class Coulombs:
             res = 1
         return res
 
-    def count_coulombs(self, chem, dt, reset, tb_f, charge_curr, sat, tb_f_rate=None, soc_init=None, use_soc_in=False,
+    def count_coulombs(self, chem, dt, reset, tb_f, charge_curr, sat, use_soc_in=False,
                        soc_in=0.):
         """Count coulombs based on true=actual capacity
         Inputs:

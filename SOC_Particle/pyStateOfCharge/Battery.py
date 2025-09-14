@@ -137,8 +137,7 @@ class Battery(Coulombs):
         so equation error when soc<=0 to match data.    See Battery.h
         """
         # Parents
-        Coulombs.__init__(self, q_cap_rated,  q_cap_rated, t_rated, temp_rlim, tweak_test, mod_code=mod_code, dvoc=dvoc,
-                          unit=unit)
+        Coulombs.__init__(self, q_cap_rated,  q_cap_rated, t_rated, temp_rlim, tweak_test, dvoc=dvoc, unit=unit)
 
         # Defaults
         self.chem = mod_code

@@ -18,24 +18,25 @@ a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 
-import numpy as np
-from numpy.random import randn
 from datetime import datetime, timedelta
 
-def prn_soc_debug(leader="", time=None, reset=None, i=None, i_temp=None, Tb_f_past=None, mon_old=None, mon=None, smv=None):
-    return
-    if time is not None:
-        print("\n\ntime {:7.3f}".format(time))
-    print("                                                                                              " + leader, end='')
-    print(
-"{:14.7f}".format(mon_old.Tb_hdwe_filt[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt),
-"{:14.7f}".format(mon_old.Tb_rap[i]), "{:11.7f}".format(mon.Tb_rap),
-"{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
-"{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:11.7f}".format(mon.Tb_f_rap),
-"{:14.7f}".format(mon_old.Tb_hdwe_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt_rate),
-"{:14.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate),
-"{:14.7f}".format(mon_old.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
-    )
+def prn_soc_debug(leader="", time=None, i=None, i_temp=None, mon_old=None, mon=None):
+    execute = True
+    if execute:
+        return
+    else:
+        if time is not None:
+            print("\n\ntime {:7.3f}".format(time))
+        print("                                                                                              " + leader, end='')
+        print(
+    "{:14.7f}".format(mon_old.Tb_hdwe_filt[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt),
+    "{:14.7f}".format(mon_old.Tb_rap[i]), "{:11.7f}".format(mon.Tb_rap),
+    "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
+    "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:11.7f}".format(mon.Tb_f_rap),
+    "{:14.7f}".format(mon_old.Tb_hdwe_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt_rate),
+    "{:14.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate),
+    "{:14.7f}".format(mon_old.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
+        )
 
 def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, Tb, Tb_past, sim_old, sim, ST):
     hdr = None
@@ -51,7 +52,7 @@ def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, ca
         case 4:
             hdr = print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb, Tb_past, ST)
         case 5:
-            hdr = print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, sim_old, sim)
+            hdr = print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp)
     return hdr
 
 def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf):
@@ -179,7 +180,7 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, ST):
           )
     return hdr
 
-def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, sim_old, sim):
+def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp):
     hdr = "  i  time   r r_t  i_e  r_e  sa      ib_charge            ib                   ib_dyn               ib_dyn_rate           dv_dyn                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               soc_ekf               y_ekf"
     if calc_temp:
         print(hdr)

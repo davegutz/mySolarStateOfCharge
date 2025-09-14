@@ -169,8 +169,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         reset = bool((t[i] <= init_time) or (t[i] < 0. and t[0] > init_time))
         if reset_sel is not None:
             reset = reset or bool(reset_sel[i] > 0.)
-        prn_soc_debug(time=now, leader="before sim init:     ", reset=reset, i=i, i_temp=i_temp,
-                      Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
+        prn_soc_debug(time=now, leader="before sim init:     ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
         if reset:
             sim.apply_soc(mon_old.soc_s[i], ST.Tb_f_past)  # calculates delta_q
@@ -185,8 +184,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.sat = mon_old.sat[0]
 
         if calc_temp:
-            prn_soc_debug(time=None, leader="b temp filtr:    ", reset=reset, i=i, i_temp=i_temp,
-                          Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
+            prn_soc_debug(time=now, leader="b temp filtr:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
             mon.Tb_hdwe_filt = \
                 ST.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_old.Tb_hdwe_filt[i_temp],
                                                  mon.reset_temp,
@@ -201,8 +199,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.Tb_rstate = ST.TbSenseFilt.rstate
             mon.Tb_state = ST.TbSenseFilt.state
 
-            prn_soc_debug(time=None, leader="a temp filtr:    ", reset=reset, i=i, i_temp=i_temp,
-                          Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
+            prn_soc_debug(time=now, leader="a temp filtr:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
         # Models
         if i == 0:
@@ -223,21 +220,18 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             dv_dyn_past = sim_old.dv_dyn_s[0]
         else:
             dv_dyn_past = sim_old.dv_dyn_s[i-1]
-        prn_soc_debug(time=None, leader="befor sim.calculate: ", reset=reset, i=i, i_temp=i_temp,
-                      Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
+        prn_soc_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
         ib_dyn_init = sim_old.ib_dyn_s[i]
         ib_dyn_rate_init = sim_old.ib_dyn_rate_s[i]
         sim.calculate(_chm_s, None, ib_in_s, sim_old.dt_s[i], reset, None, None,
                       ib_dyn_init=ib_dyn_init, ib_dyn_rate_init=ib_dyn_rate_init,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=bms_off_init, dv_dyn_past=dv_dyn_past, dv_dyn_0=sim_old.dv_dyn_s[i])
-        prn_soc_debug(time=None, leader="after sim.calculate: ", reset=reset, i=i, i_temp=i_temp,
-                      Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
+        prn_soc_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
         sim.count_coulombs(chem=_chm_s, dt=sim_old.dt_s[i], reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=ST.Tb_f_rate_past,
                            charge_curr=sim.ib_charge, sat=False, soc_s_init=sim_old.soc_s[i], mon_sat=mon.sat,
                            sim_delta_q=sim_old.dq_s[i], use_soc_in=use_mon_soc, soc_in=sim_old.soc_s[i])
-        prn_soc_debug(time=None, leader="after sim.count_cou: ", reset=reset, i=i, i_temp=i_temp,
-                      Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
+        prn_soc_debug(time=now, leader="after sim.count_cou:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
         # EKF
         reset_ekf = False
@@ -255,8 +249,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             if hasattr(mon_old, 'e_wrap_n_filt'):
                 e_w_noa_filt_0 = mon_old.e_wrap_n_filt[0]
             reset_ekf = True
-        prn_soc_debug(time=None, leader="after mon_soc_apply  ", reset=reset, i=i, i_temp=i_temp,
-                      Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
+        prn_soc_debug(time=now, leader="after mon_soc_apply  ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
         # Monitor calculations including ekf
         if Bmon is None:
@@ -311,8 +304,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                 z_init = mon_old.z[i_ekf]
 
             # print(f"{i=}   {i_ekf=}   t {mon_old.time[i]}   te {mon_old.time_e[i_ekf]}    dt {mon_old.dt_ekf[i_ekf]}     calc {calc_ekf}      res_ekf {reset_ekf}      z_init {z_init}")
-            prn_soc_debug(time=None, leader="before mon.calculate ", reset=reset, i=i, i_temp=i_temp,
-                          Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
             if reset:
                 ib_dyn_init = mon_old.ib_dyn[i]
                 ib_dyn_rate_init = mon_old.ib_dyn_rate[i]
@@ -326,8 +317,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                           rp=rp, bms_off_init=bms_off_init, ib_amp=ibmm, ib_noa=ibnm, e_w_amp_0=e_w_amp_0,
                           e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
                           reset_ekf=reset_ekf)
-        prn_soc_debug(time=None, leader="after mon.calculate: ", reset=reset, i=i, i_temp=i_temp,
-                      Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
         ib_charge = mon.ib_charge
         sat = is_sat(ST.Tb_f_past, mon.chemistry.rated_temp, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat,
                      mon.chemistry.dvoc_dt, mon.chemistry.low_t)
@@ -335,19 +324,13 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
         # Monitor count
         if rp.modeling == 0:
-            prn_soc_debug(time=None, leader="befor mon.count_cou: ", reset=reset, i=i, i_temp=i_temp,
-                          Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
-            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=ST.Tb_f_past, tb_f_rate=ST.Tb_f_rate_past, charge_curr=ib_charge,
+            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=ST.Tb_f_past, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
         else:
-            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=ST.Tb_f_past, tb_f_rate=ST.Tb_f_rate_past, charge_curr=ib_charge,
+            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=ST.Tb_f_past, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
-        prn_soc_debug(time=None, leader="after mon.count_cou: ", reset=reset, i=i, i_temp=i_temp,
-                      Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
         mon.assign_soc_s(sim.soc)
-        prn_soc_debug(time=None, leader="after mon.assign   : ", reset=reset, i=i, i_temp=i_temp,
-                      Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
 
         # Break is data integrity questionable
         if mon_old.skip_e[i_ekf] or mon_old.skip_t[i_temp] or mon_old.skip_sel[i_ekf] or mon_old.skip_rap[i] or sim_old.skip_s[i]:
@@ -370,8 +353,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             hdr = print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf,
                              ST.Tb, ST.Tb_past, sim_old, sim, ST)
 
-        prn_soc_debug(time=None, leader="end loop:            ", reset=reset, i=i, i_temp=i_temp,
-                      Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)
+        prn_soc_debug(time=now, leader="end loop:", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
         # pick a pass to run debugger to a time
         if i >= 206:

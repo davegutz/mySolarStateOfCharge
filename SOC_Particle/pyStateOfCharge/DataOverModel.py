@@ -712,7 +712,9 @@ class SavedData:
                  init_time_in=None):
         i_end = 0
         n = None
+        ib_lag = None
         if rap is None:
+            IbLag = None
             self.skip_rap = None
             self.i = 0
             self.time = None
@@ -1096,7 +1098,7 @@ class SavedData:
     def __str__(self):
         s = "{},".format(self.unit[self.i])
         s += "{},".format(self.hm[self.i])
-        s += "{:13.3f},".format(self.cTime[self.i])
+        # s += "{:13.3f},".format(self.cTime[self.i])
         s += "{:8.3f},".format(self.ib[self.i])
         s += "{:7.2f},".format(self.vsat[self.i])
         s += "{:5.2f},".format(self.dv_dyn[self.i])
@@ -1190,7 +1192,7 @@ class SavedDataSim:
 
     def __str__(self):
         s = "{},".format(self.unit[self.i])
-        s += "{:13.3f},".format(self.cTime[self.i])
+        # s += "{:13.3f},".format(self.cTime[self.i])
         s += "{:5.2f},".format(self.Tb_s[self.i])
         s += "{:8.3f},".format(self.vsat_s[self.i])
         s += "{:5.2f},".format(self.voc_stat_s[self.i])
