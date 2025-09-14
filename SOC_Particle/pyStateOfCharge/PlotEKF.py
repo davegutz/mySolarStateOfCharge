@@ -134,7 +134,7 @@ def ekf_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
             plq(plt, mv, 'time', mv, 'voc_stat', add=-0.0,  color='black', linestyle='--', label='voc_stat-0.0' + test_str, stairs=True)
             plq(plt, mo, 'time_e', mo, 'z', color='cyan', linestyle='-', label='z=voc_stat_f' + ref_str, stairs=True)
             plq(plt, mv, 'time', mv, 'z_ekf', color='orange', linestyle='--', label='z=voc_stat_f' + test_str, stairs=True)
-            plq(plt, mo, 'time_e', mo, 'hx', color='magenta', linestyle='-', label='hx(x)' + ref_str)
+            plq(plt, mo, 'time_e', mo, 'hx', color='magenta', linestyle='-', label='hx(x)' + ref_str, stairs=True)
             plq(plt, mv, 'time', mv, 'hx', color='green', linestyle='--', label='hx(x)' + test_str, stairs=True)
             plt.legend(loc=1)
             plt.subplot(312)

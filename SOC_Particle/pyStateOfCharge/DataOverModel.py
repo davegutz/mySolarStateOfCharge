@@ -711,6 +711,7 @@ class SavedData:
     def __init__(self, rap=None, sel=None, ekf=None, temp=None, time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None,
                  init_time_in=None):
         i_end = 0
+        n = None
         if rap is None:
             self.skip_rap = None
             self.i = 0
@@ -730,7 +731,7 @@ class SavedData:
             self.vb = None  # Bank voltage, V
             self.chm = None  # Battery chemistry code
             self.qcrs = None  # Unit capacity rated scaled, Coulombs
-            self.delta_q = None  # Change in charge for update, Coulombs
+            self.delta_q = None  # Change in the charge for update, Coulombs
             self.q_capacity = None  # Charge capacity at instant, Coulombs
             self.sat = None  # Indication that battery is saturated, T=saturated
             self.ib_lag = None  # Lagged indication that battery is saturated, 1=saturated
@@ -808,7 +809,7 @@ class SavedData:
                 if sel is not None:
                     self.c_time_s = np.array(sel.c_time) - self.time_ref
                     i_end_sel = np.where(self.c_time_s <= time_end)[0][-1] + 1
-                    i_end = min(i_end, i_end_sel)
+                    i_end = min(min(i_end), min(i_end_sel))
                     self.zero_end = min(self.zero_end, i_end-1)
                 if ekf is not None:
                     self.time_e = np.array(ekf.c_time) - self.time_ref
@@ -896,7 +897,6 @@ class SavedData:
             self.ib_h = None
             self.ib_s = None
             self.mib = None
-            # self.ib = np.append(np.array(self.ib_past[1:]), self.ib_past[-1])  # shift time to present
             self.ib_sel = None
             self.vb_h = None
             self.vb_s = None
@@ -983,8 +983,6 @@ class SavedData:
             self.vb_s = np.array(sel.vb_s[:i_end])
             self.mvb = np.array(sel.mvb[:i_end])
             self.vb = np.array(sel.vb[:i_end])
-            # self.Tb_h = np.array(sel.Tb_h[:i_end])
-            # self.Tb_s = np.array(sel.Tb_s[:i_end])
             self.mtb = np.array(sel.mtb[:i_end])
             self.Tb_fa = np.array(sel.Tb_fa[:i_end])
             self.vb_sel = np.array(sel.vb_sel[:i_end])

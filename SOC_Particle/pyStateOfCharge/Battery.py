@@ -288,7 +288,7 @@ class BatteryMonitor(Battery, EKF1x1):
     def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1.,
                  tb_f=25., tweak_test=False, sres0=1., sresct=1., stauct=1.,
                  scaler_q=None, scaler_r=None, scale_r_ss=1., s_hys=1., dvoc=0., eframe_mult=Battery.cp_eframe_mult,
-                 mod_code=0, s_coul_eff=1., unit=None, Sen=None, ref=None, dTb=None):
+                 mod_code=0, s_coul_eff=1., unit=None, ref=None, dTb=None):
         q_cap_rated_scaled = q_cap_rated * scale
         Battery.__init__(self, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, sres0=sres0, sresct=sresct, stauct=stauct, scale_r_ss=scale_r_ss,
@@ -370,14 +370,14 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap_n_filt = None
         self.e_wrap_n_trim = None
         self.ib_noa_rate = None
+        self.e_wrap_n_rate = None
+        self.e_wrap_m_rate = None
         self.disable_amp_fault = None
         self.IbAmpRate = RateLagExp(dt=0.1, tau=Battery.WRAP_ERR_FILT/4., min_=-Battery.MAX_WRAP_ERR_FILT,
                                     max_=Battery.MAX_WRAP_ERR_FILT)
-        self.LoopIbAmp = Looparound(Mon_=self, Sen_=Sen, wrap_hi_amp=Battery.WRAP_HI_AMP,
-                                    wrap_lo_amp=Battery.WRAP_LO_AMP,
+        self.LoopIbAmp = Looparound(Mon_=self, wrap_hi_amp=Battery.WRAP_HI_AMP, wrap_lo_amp=Battery.WRAP_LO_AMP,
                                     max_err=Battery.MAX_WRAP_ERR_FILT*Battery.WRAP_LO_AMP/Battery.WRAP_LO_NOA)
-        self.LoopIbNoa = Looparound(Mon_=self, Sen_=Sen, wrap_hi_amp=Battery.WRAP_HI_NOA,
-                                    wrap_lo_amp=Battery.WRAP_LO_NOA,
+        self.LoopIbNoa = Looparound(Mon_=self, wrap_hi_amp=Battery.WRAP_HI_NOA, wrap_lo_amp=Battery.WRAP_LO_NOA,
                                     max_err=Battery.MAX_WRAP_ERR_FILT)
         self.ewnhi_thr = None
         self.ewnlo_thr = None
@@ -460,15 +460,14 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vsat = self.chemistry.nom_vsat + (self.Tb_f - 25.) * self.chemistry.dvoc_dt
         self.dt = dt
         self.ib_in = ib
-        if self.IB_CHARGE_NOA is True:
+        if self.IB_CHARGE_NOA:
             self.ib_in = self.ib_noa
         self.mod = rp.modeling
         # Overflow protection since ib past value used
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        self.wrap(reset=reset, ib_amp=ib_amp, ib_noa=ib_noa, e_w_amp_0=e_w_amp_0, e_w_amp_filt_0=e_w_amp_filt_0,
-                  e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0)
+        self.wrap(reset=reset, ib_amp=ib_amp, ib_noa=ib_noa)
 
         # Reversionary model
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
@@ -744,8 +743,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
 
-    def wrap(self, reset=True, ib_noa=0., ib_amp=0.,
-             e_w_amp_0=None, e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None):
+    def wrap(self, reset=True, ib_noa=0., ib_amp=0.):
         """Wrap logic"""
         self.e_wrap = self.voc_soc - self.voc_stat
         self.e_wrap_filt = self.WrapErrFilt.calculate(in_=self.e_wrap, dt=min(self.dt, Battery.F_MAX_T_WRAP),
@@ -772,7 +770,7 @@ class BatteryMonitor(Battery, EKF1x1):
         if self.ib_noa is not None:
             self.LoopIbNoa.calculate(reset=reset, ib=ib_noa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr,
-                                     ewsat_slr=ewsat_slr, e_w_0=e_w_noa_0, e_w_filt_0=e_w_noa_filt_0)
+                                     ewsat_slr=ewsat_slr)
             self.e_wrap_n = self.LoopIbNoa.e_wrap
             self.e_wrap_n_filt = self.LoopIbNoa.e_wrap_filt
             self.e_wrap_n_rate = self.LoopIbNoa.e_wrap_rate
@@ -803,7 +801,7 @@ class BatterySim(Battery):
     """Extend Battery class to make a model"""
 
     def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1., stauct=1.,
-                 tb_f=25., hys_scale=1., tweak_test=False, dv_hys=0., sres0=1., sresct=1., scale_r_ss=1.,
+                 tb_f=25., tweak_test=False, dv_hys=0., sres0=1., sresct=1., scale_r_ss=1.,
                  s_hys=1., dvoc=0., scale_hys_cap=1., mod_code=0, s_cap_chg=1., s_cap_dis=1., s_hys_chg=1.,
                  s_hys_dis=1., s_coul_eff=1., cutback_gain_sclr=1., ds_voc_soc=0., unit=None,
                  mon_ref=None, sim_ref=None):
@@ -1021,71 +1019,6 @@ class BatterySim(Battery):
         self.reset_temp_past = reset_temp
         return self.soc
 
-    def count_coulombs_old(self, chem, dt, reset, tb_f, charge_curr, sat, tb_f_rate=None, soc_s_init=None, mon_delta_q=None,
-                       mon_sat=None, use_soc_in=False, soc_in=0.):
-        # BatterySim
-        """Coulomb counter based on true=actual capacity
-        Internal resistance of battery is a loss
-        Inputs:
-            dt              Integration step, s
-            tb_f            Battery temperature, deg C  (filtered usually to reduce electrical noise artifacts)
-            charge_curr     Charge, A
-            sat             Indicator that battery is saturated (VOC>threshold(temp)), T/F
-            coul_eff_       Coulombic efficiency - the fraction of charging input that gets turned into usable Coulombs
-            use_soc_in      Command to drive integrator with input mon_soc
-            soc_in          Auxiliary integrator setting, fraction soc
-        Outputs:
-            soc     State of charge, fraction (0-1.5)
-        """
-        if self.chm != chem:
-            self.chemistry.assign_all_mod(chem, self.unit)
-            self.chm = chem
-        self.reset = reset
-        self.ib_charge = charge_curr
-        self.Tb_f = tb_f
-        self.d_delta_q = self.ib_charge * dt
-        if self.ib_charge > 0. and not self.tweak_test:
-            self.d_delta_q *= self.chemistry.coul_eff
-        if self.reset:
-            if soc_s_init and not self.mod:
-                self.delta_q = self.calculate_capacity(tb_f=self.Tb_f) * (soc_s_init - 1.)
-        self.Tb_f_rate = tb_f_rate
-
-        # Saturation.   Goal is to set q_capacity and hold it so remembers last saturation status detection
-
-        #  deleted 8/29/2025
-        # if not self.mod and mon_sat:
-        #     self.delta_q = mon_delta_q
-        if self.model_saturated:
-            if reset:
-                if not self.mod:
-                    self.delta_q = mon_delta_q
-                else:
-                    self.delta_q = 0.  # Model is truth.   Saturate it then restart it to reset charge
-        self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
-
-        # Integration can go to -50%
-        self.q_capacity = self.calculate_capacity(tb_f=self.Tb_f)
-        if use_soc_in:
-            self.soc = soc_in
-            self.q = self.q_capacity * self.soc
-            self.delta_q = self.q - self.q_capacity
-        else:
-            if not self.reset:
-                #  Because delta_q is off of saturation and capacity book-kept elsewhere for soc, don't need to book
-                #  the temperature effect here
-                # self.delta_q += self.d_delta_q - self.chemistry.dqdt*self.q_capacity*self.Tb_f_rate*dt
-                self.delta_q += self.d_delta_q
-                self.delta_q = max(min(self.delta_q, 0.), -self.q_capacity*1.5)
-                self.q = self.q_capacity + self.delta_q
-        # Normalize
-        self.soc = self.q / self.q_capacity
-        self.soc_min = self.chemistry.lut_min_soc.interp(self.Tb_f)
-        self.q_min = self.soc_min * self.q_capacity
-
-        # Save and return
-        return self.soc
-
     def save(self, time, dt):  # BatterySim
         self.saved.time.append(time)
         self.saved.dt.append(dt)
@@ -1170,7 +1103,7 @@ def sat_voc(tb_f, rated_temp, vsat, dvoc_dt):
 class Looparound:
     """Compare predicted voltage to actual and track toward zero to eliminate biases """
 
-    def __init__(self, Mon_, Sen_, wrap_hi_amp=0., wrap_lo_amp=0., max_err=None):
+    def __init__(self, Mon_, wrap_hi_amp=0., wrap_lo_amp=0., max_err=None):
         self.Mon = Mon_
         self.reset = True
         self.zero = False
@@ -1203,8 +1136,7 @@ class Looparound:
         self.ChargeTransfer.absorb(other.ChargeTransfer)
 
     # Update the loop
-    def calculate(self, reset=True, ib=0., loop_gain=0., dt=None, ewsat_slr=1., ewmin_slr=1.,
-                  e_w_0=None, e_w_filt_0=None, zero=None):
+    def calculate(self, reset=True, ib=0., loop_gain=0., dt=None, ewsat_slr=1., ewmin_slr=1.):
         self.ib = ib
         self.reset = reset
         self.dt = dt

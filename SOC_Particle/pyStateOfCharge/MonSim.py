@@ -18,13 +18,10 @@ a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 
-import numpy as np
-from numpy.random import randn
 from Battery import BatteryMonitor, BatterySim, is_sat, Retained
 from Battery import overall_batt
 from TFDelay import TFDelay
 from MonSimNomConfig import *  # Global config parameters.   Overwrite in your own calls for studies
-from datetime import datetime, timedelta
 from Scale import Scale
 from MonSimPrint import *
 from MonSimClasses import *
@@ -34,7 +31,7 @@ from MonSimClasses import *
 #  been converted to the single battery unit 12v form, S1P1, lower-case nomenclature.
 def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2,
               t_ib_fail=None, ib_fail=0., use_ib_mon=False, scale_in=None, Bsim=None, Bmon=None, use_vb_raw=False,
-              scale_r_ss=1., s_hys_sim=1., s_hys_mon=1., dvoc_sim=0., dvoc_mon=0., drive_ekf=False, dTb_in=None,
+              scale_r_ss=1., s_hys_sim=1., s_hys_mon=1., dvoc_sim=0., dvoc_mon=0., dTb_in=None,
               verbose=True, t_max=None, eframe_mult=Battery.cp_eframe_mult, sres0=1., sresct=1., stauct_sim=1.,
               stauct_mon=1, use_vb_sim=False, scale_hys_cap_sim=1., s_cap_chg=1., s_cap_dis=1.,
               s_hys_chg=1., s_hys_dis=1., s_coul_eff=1., use_mon_soc=False, cutback_gain_sclr=1., ds_voc_soc=0.,
@@ -121,10 +118,12 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
     # time loop initialization
     now = t[0]
+    i = None
     i_ekf = -1
     i_temp = -1
     T = mon_old.dt[0]
     hdr = None
+    sat_s_init = None
 
     # Print debug information
     if request_history is not None and request_history > 0:
@@ -179,10 +178,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             sim.assign_tb(sim.Tb)
             sim.assign_tb_f(sim.Tb_f)
             sim.apply_delta_q_t(sim.delta_q, ST.Tb_f_past)
+            sat_s_init = mon_old.voc_stat[0] > mon_old.vsat[0]
             if sim_old is not None:
                 sat_s_init = sim_old.sat_s[0]
-            else:
-                sat_s_init = mon_old.voc_stat[0] > mon_old.vsat[0]
             sim.sat = sat_s_init
             mon.sat = mon_old.sat[0]
 
@@ -486,7 +484,7 @@ if __name__ == '__main__':
         sel_old_raw = None
         if sel_file_clean:
             sel_old_raw = np.genfromtxt(sel_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-        mon_old = SavedData(data=mon_old_raw, sel=sel_old_raw, time_end=time_end, zero_zero=zero_zero_in,
+        mon_old = SavedData(rap=mon_old_raw, sel=sel_old_raw, time_end=time_end, zero_zero=zero_zero_in,
                             zero_thr=zero_thr_in, init_time_in=init_time_in)
         # SavedData determines when to initialize
         init_time = mon_old.init_time
