@@ -416,6 +416,11 @@ class BatteryMonitor(Battery, EKF1x1):
             self.init_soc_ekf(ref)
             self.voc_ekf = ref.hx[0]
             self.voc_stat_f = ref.voc_stat[0]
+            self.x = ref.x[0]
+            self.x_prior = ref.x_prior[0]
+            self.soc_ekf = ref.soc_ekf[0]
+            self.z_ekf = ref.z[0]
+            self.z = ref.z[0]
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -611,6 +616,10 @@ class BatteryMonitor(Battery, EKF1x1):
         # Measurement function hx(x), x = soc ideal capacitor
         x_lim = max(min(self.x_ekf, 1.), 0.)
         self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.Tb_f_rap)
+        print("update Battery:                                                                                                                                                                                                               Tb_f_rap   {:10.7f}".format(self.Tb_f_rap),
+              "    x_ekf  {:10.5f}".format(self.x_ekf),
+              "   hx      {:10.5f}  update Battery".format(self.hx),
+              )
         # Jacobian of measurement function
         self.H = self.dv_dsoc
         return self.hx, self.H
@@ -618,14 +627,16 @@ class BatteryMonitor(Battery, EKF1x1):
     def lag_ib(self, ib, reset):
         self.ib_lag = self.IbLag.calculate_tau(ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
-    def init_soc_ekf(self, mon):
-        self.soc_ekf = mon.soc_ekf[0]
-        self.y_ekf = mon.y_ekf[0]
-        self.init_ekf(mon.x[0], 0.0)
+    def init_soc_ekf(self, mon_old):
+        self.soc_ekf = mon_old.soc_ekf[0]
+        self.y_ekf = mon_old.y_ekf[0]
+        self.init_ekf(mon_old.x[0], 0.0)
         self.q_ekf = self.soc * self.q_capacity
-        self.P = mon.P[0]
-        self.hx = mon.hx[0]
-        self.dt_eframe = mon.dt_ekf[0]
+        self.P = mon_old.P[0]
+        self.hx = mon_old.hx[0]
+        self.dt_eframe = mon_old.dt_ekf[0]
+        self.x = mon_old.x[0]
+        self.x_prior = mon_old.x_prior[0]
 
     def regauge(self, tb_f):
         if self.converged_ekf() and abs(self.soc_ekf - self.soc) > Battery.DF2:

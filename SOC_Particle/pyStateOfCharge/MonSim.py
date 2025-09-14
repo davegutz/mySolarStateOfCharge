@@ -311,6 +311,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if rp.modeling == 0:
             if reset_ekf:
                 z_init = mon_old.z[i_ekf]
+
             # print(f"{i=}   {i_ekf=}   t {mon_old.time[i]}   te {mon_old.time_e[i_ekf]}    dt {mon_old.dt_ekf[i_ekf]}     calc {calc_ekf}      res_ekf {reset_ekf}      z_init {z_init}")
             prn_soc_debug(time=None, leader="before mon.calculate ", reset=reset, i=i, i_temp=i_temp,
                           Tb_f_past=ST.Tb_f_past, mon_old=mon_old, mon=mon, smv=sim)

@@ -90,12 +90,11 @@ class EKF1x1:
         if not reset:
             self.x_ekf = self.Fx*self.x_ekf + self.Bu*self.u_ekf
             self.P = self.Fx * self.P * self.Fx + self.Q
-        # print("predict:                                                                                                                                                                                            Tb_f_rap {:10.7f}".format(self.Tb_f_rap),
-        #       " x {:10.5f}".format(self.x_ekf),
-        #       "     hx {:10.5f}".format(self.hx),
-        #       )
-        self.x_prior = self.x_ekf
-        self.P_prior = self.P
+            self.x_prior = self.x_ekf
+            self.P_prior = self.P
+        print("predict ekf:                                                                                                                                                                                                                  Tb_f_rap   {:10.7f}".format(self.Tb_f_rap),
+              "    x_ekf  {:10.5f}                        predict ekf".format(self.x_ekf),
+              )
 
     def update_ekf(self, z, x_min, x_max, reset=False):
         """ 1x1 Extended Kalman Filter update
@@ -114,26 +113,25 @@ class EKF1x1:
                 SI  1x1 system uncertainty inverse
         """
         self.hx, self.H = self.ekf_update()
-        # print("update:                                                                                                                                                                                            Tb_f_rap {:10.7f}".format(self.Tb_f_rap),
-        #       " x {:10.5f}".format(self.x_ekf),
-        #       "     hx {:10.5f}".format(self.hx),
-        #       )
+        print("update ekf:                                                                                                                                                                                                                   Tb_f_rap   {:10.7f}".format(self.Tb_f_rap),
+              "    x_ekf  {:10.5f}".format(self.x_ekf),
+              "   hx      {:10.5f}  update ekf".format(self.hx),
+              )
         self.z_ekf = z
         pht = self.P*self.H
         self.S = self.H*pht + self.R
         if abs(self.S) > 1e-12:
             self.K = pht/self.S  # using last-good-value if S=0
-        self.y_ekf = self.z_ekf - self.hx
         if not reset:
+            self.y_ekf = self.z_ekf - self.hx
             self.x_ekf = max(min(self.x_ekf + self.K*self.y_ekf, x_max), x_min)
             i_kh = 1 - self.K*self.H
             self.P = i_kh*self.P
-        # print("update 2:                                                                                                                                                                                            Tb_f_rap {:10.7f}".format(self.Tb_f_rap),
-        #       " x {:10.5f}".format(self.x_ekf),
-        #       "     hx {:10.5f}".format(self.hx),
-        #       )
-        self.x_post = self.x_ekf
-        self.P_post = self.P
+            self.x_post = self.x_ekf
+            self.P_post = self.P
+        print("update ekf 2:                                                                                                                                                                                                                 Tb_f_rap   {:10.7f}".format(self.Tb_f_rap),
+              "    x_ekf  {:10.5f}                        update ekf 2".format(self.x_ekf),
+              )
 
     def h_jacobian(self, x_ekf):
         # implemented by child
