@@ -513,11 +513,9 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mo, 'time', mo, 'e_wrap_filt', color='black', linestyle='-', label='e_wrap_filt' + ref_str)
     plq(plt, mo, 'time', mo, 'e_w_f', color='black', linestyle='-', label='e_wrap_filt' + ref_str)
     plq(plt, mv, 'time', mv, 'e_wrap', color='red', linestyle='-.', label='e_wrap' + test_str)
-    plq(plt, mo, 'time', mo, 'e_wrap_rate', color='black', linestyle=':', label='e_wrap_rate' + ref_str)
     plq(plt, mv, 'time', mv, 'e_wrap_filt', color='blue', linestyle='--', label='e_wrap_filt' + test_str)
     plq(plt, mo, 'time', mo, 'e_wrap_n', color='green', linestyle='-', label='e_wrap_n' + ref_str)
     plq(plt, mv, 'time', mv, 'e_wrap_n', color='pink', linestyle='-.', label='e_wrap_n' + test_str)
-    plq(plt, mv, 'time', mv, 'e_wrap_rate', color='blue', linestyle=':', label='e_wrap_rate' + test_str)
     plq(plt, mo, 'time', mo, 'e_wrap_n_filt', color='black', linestyle='-', label='e_wrap_n_filt' + ref_str)
     plq(plt, mo, 'time', mo, 'e_wn_f', color='black', linestyle='-', label='e_wrap_n_filt' + ref_str)
     plq(plt, mv, 'time', mv, 'e_wrap_n_filt', color='green', linestyle='--', label='e_wrap_n_filt' + test_str)
@@ -674,6 +672,7 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
     num_lines_in = 0
     num_skips = 0
     unit_key_found = False
+    skipped_last = False
     with (open(path_to_data, "r", encoding='cp437') as input_file):  # reads all characters even bad ones
         with open(csv_file, "a") as output:
             for line in input_file:
@@ -690,13 +689,13 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
                             num_text == num_text_ref and \
                             re.search(r'[^a-zA-Z0-9+-_.:, ]', line[:-1]) is None and \
                             (num_lines == 0 or ((num_lines_in+1) % skip) == 0) and line.count(comment_str) == 0:
-                        output.write('0,' + line)
+                        output.write("{:2d},".format(skipped_last) + line)
                         num_lines += 1
+                        skipped_last = False
                     else:
                         print('discarding: ', line)
                         num_skips += 1
-                        output.write('1,' + line)
-                        num_lines += 1
+                        skipped_last = True
                     num_lines_in += 1
     if not num_lines:
         csv_file = None
@@ -847,8 +846,6 @@ class SavedData:
             self.dv_dyn = np.array(rap.dv_dyn[:i_end])
             self.ib_dyn = np.array(rap.ib_dyn[:i_end])
             self.ib_dyn_rate = np.array(rap.ib_dyn_rate[:i_end])
-            self.ib_dyn_rstate = np.array(rap.ib_dyn_rs[:i_end])
-            self.ib_dyn_lstate = np.array(rap.ib_dyn_s[:i_end])
             self.voc_stat = np.array(rap.voc_stat[:i_end])
             self.voc = self.vb - self.dv_dyn
             self.dv_hys = self.voc - self.voc_stat
@@ -877,7 +874,6 @@ class SavedData:
             self.voc_soc_sel = None
             self.e_wrap = None
             self.e_wrap_filt = None
-            self.e_wrap_rate = None
             self.e_wrap_m = None
             self.e_wrap_m_filt = None
             self.e_wrap_n = None
@@ -954,7 +950,6 @@ class SavedData:
             self.voc_soc_sel = np.array(sel.voc_soc[:i_end])
             self.e_wrap = np.array(sel.e_w[:i_end])
             self.e_wrap_filt = np.array(sel.e_w_f[:i_end])
-            self.e_wrap_rate = np.array(sel.e_w_r[:i_end])
             if hasattr(sel, 'e_wm'):
                 self.e_wrap_m = np.array(sel.e_wm[:i_end])
             if hasattr(sel, 'e_wm_f'):
@@ -1070,8 +1065,6 @@ class SavedData:
             self.Tb_f_rate = None
             self.Tb_hdwe_filt = None
             self.Tb_hdwe_filt_rate = None
-            self.Tb_rstate = None
-            self.Tb_lstate = None
         else:
             self.skip_t = np.array(np.bool(temp.skip[:i_end]))
             self.time_t = np.array(temp.c_time[:i_end]) - self.time_ref
@@ -1084,8 +1077,6 @@ class SavedData:
             self.Tb_mod = np.array(temp.Tb_mod[:i_end])
             self.Tb_hdwe_filt = np.array(temp.Tb_hdwe_filt[:i_end])
             self.Tb_hdwe_filt_rate = np.array(temp.Tb_hdwe_filt_rate[:i_end])
-            self.Tb_rstate= np.array(temp.TbF_rs[:i_end])
-            self.Tb_lstate= np.array(temp.TbF_s[:i_end])
 
             # Initialization time logic
         if self.time[0] == 0.:  # no initialization flat detected at beginning of recording
@@ -1152,8 +1143,6 @@ class SavedDataSim:
             self.ib_s = None
             self.ib_dyn_s = None
             self.ib_dyn_rate_s = None
-            self.ib_dyn_rstate_s = None
-            self.ib_dyn_lstate_s = None
             self.sat_s = None
             self.dq_s = None
             self.soc_s = None
@@ -1192,11 +1181,6 @@ class SavedDataSim:
             self.ib_s = data.ib_s[:i_end]
             self.ib_dyn_s = data.ib_dyn_s[:i_end]
             self.ib_dyn_rate_s = data.ib_dyn_rate_s[:i_end]
-            self.ib_dyn_rstate_s = data.ib_dyn_rstate_s[:i_end]
-            self.ib_dyn_lstate_s = data.ib_dyn_lstate_s[:i_end]
-            self.ib_dyn_a_s = data.ib_dyn_a_s[:i_end]
-            self.ib_dyn_b_s = data.ib_dyn_b_s[:i_end]
-            self.ib_dyn_c_s = data.ib_dyn_c_s[:i_end]
             self.ib_in_s = data.ib_in_s[:i_end]
             self.ib_charge_s = data.ib_charge_s[:i_end]
             self.ioc_s = data.ioc_s[:i_end]
