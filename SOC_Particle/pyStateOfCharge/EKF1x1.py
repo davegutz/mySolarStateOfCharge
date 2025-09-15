@@ -44,6 +44,8 @@ class EKF1x1:
         self.P_prior = self.P
         self.x_post = self.x_ekf
         self.P_post = self.P
+        self.tb_f_for_hx = 25.
+        self.x_for_hx = 1.
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -112,11 +114,7 @@ class EKF1x1:
                 S   1x1 system uncertainty
                 SI  1x1 system uncertainty inverse
         """
-        self.hx, self.H = self.ekf_update()
-        print("update ekf:                                                                                                                                                                                                                   Tb_f_rap   {:10.7f}".format(self.Tb_f_rap),
-              "    x_ekf  {:10.5f}".format(self.x_ekf),
-              "   hx      {:10.5f}  update ekf".format(self.hx),
-              )
+        self.hx, self.H, self.tb_f_for_hx, self.x_for_hx = self.ekf_update()
         self.z_ekf = z
         pht = self.P*self.H
         self.S = self.H*pht + self.R

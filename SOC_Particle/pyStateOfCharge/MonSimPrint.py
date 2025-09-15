@@ -56,7 +56,7 @@ def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, ca
     return hdr
 
 def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf):
-    hdr = "  i  time   r r_t  i_e  r_e  c_e   dt_ekf         sa      ib_charge             soc                      soc_ekf               y_ekf                voc_ekf                Tb_f                      x_prior          frz     Tb_f_rap                  x_ekf                hx                    z         z_ekf"
+    hdr = "  i  time   r r_t  i_e  r_e  c_e   dt_ekf         sa      ib_charge             soc                    soc_ekf                 y_ekf                voc_ekf                Tb_f                    x_prior             fr     Tb_f_rap                x_ekf                    tb_f_for_hx            x_for_hx                  hx                    z         z_ekf"
     i_ekf = max(i_ekf, 0)
     if calc_ekf:
         print(hdr)
@@ -66,14 +66,16 @@ def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf):
           "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
           "{:10.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
           "{:13.7f}".format(mon_old.soc[i]), "{:10.7f}".format(mon.soc),
-          "{:11.5f}".format(mon_old.soc_ekf[i]), "{:9.5f}".format(mon.soc_ekf),
+          "{:11.7f}".format(mon_old.soc_ekf[i]), "{:9.7f}".format(mon.soc_ekf),
           "{:11.5f}".format(mon_old.y_ekf[i]), "{:9.5f}".format(mon.y_ekf),
           "{:11.5f}".format(mon_old.voc_ekf[i]), "{:9.5f}".format(mon.voc_ekf),
           "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
-          "{:11.5f}".format(mon_old.x_prior[i_ekf]), "{:9.5f}".format(mon.x_prior), "{:2.0f}".format(mon_old.frz[i_ekf]),
+          "{:11.7f}".format(mon_old.x_prior[i_ekf]), "{:9.7f}".format(mon.x_prior), "{:2.0f}".format(mon_old.frz[i_ekf]),
           "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
-          "{:11.5f}".format(mon_old.x[i_ekf]), "{:9.5f}".format(mon.x_ekf),
-          "{:11.5f}".format(mon_old.hx[i_ekf]), "{:9.5f}".format(mon.hx),
+          "{:11.7f}".format(mon_old.x[i_ekf]), "{:9.7f}".format(mon.x_ekf),
+          "{:14.6f}".format(mon_old.tb_f_for_hx[i_temp]), "{:10.6f}".format(mon.tb_f_for_hx),
+          "{:11.7f}".format(mon_old.x_for_hx[i_ekf]), "{:9.7f}".format(mon.x_for_hx),
+          "{:14.5f}".format(mon_old.hx[i_ekf]), "{:9.5f}".format(mon.hx),
           "{:11.5f}".format(mon_old.z[i_ekf]), "{:9.5f}".format(mon.z_ekf),
           )
     return hdr

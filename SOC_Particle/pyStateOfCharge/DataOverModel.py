@@ -1031,6 +1031,8 @@ class SavedData:
             self.P_post = None
             self.hx = None
             self.H = None
+            self.tb_f_for_hx = None
+            self.x_for_hx = None
         else:
             self.skip_e = np.array(np.bool(ekf.skip[:i_end]))
             self.time_e = np.array(ekf.c_time[:i_end]) - self.time_ref
@@ -1053,6 +1055,8 @@ class SavedData:
             self.P_post = np.array(ekf.P_post_[:i_end])
             self.hx = np.array(ekf.hx_[:i_end])
             self.H = np.array(ekf.H_[:i_end])
+            self.tb_f_for_hx = np.array(ekf.tb_f_hx_[:i_end])
+            self.x_for_hx = np.array(ekf.x_for_hx_[:i_end])
         if temp is None:
             self.skip_t = None
             self.time_t = None

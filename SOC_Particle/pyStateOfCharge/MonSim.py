@@ -119,6 +119,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     # time loop initialization
     now = t[0]
     i = None
+    reset_ekf = True
     i_ekf = -1
     i_temp = -1
     T = mon_old.dt[0]
@@ -234,7 +235,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         prn_soc_debug(time=now, leader="after sim.count_cou:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
         # EKF
-        reset_ekf = False
         z_init = None
         if reset:
             mon.apply_delta_q_t(mon_old.delta_q[i], mon_old.Tb_f_rap[i])
@@ -248,7 +248,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                 e_w_noa_0 = mon_old.e_wrap_n[0]
             if hasattr(mon_old, 'e_wrap_n_filt'):
                 e_w_noa_filt_0 = mon_old.e_wrap_n_filt[0]
-            reset_ekf = True
         prn_soc_debug(time=now, leader="after mon_soc_apply  ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
         # Monitor calculations including ekf
@@ -362,6 +361,10 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             pass
         else:
             pass
+
+        # Finish loop
+        if calc_ekf:
+            reset_ekf = False
 
     # Final hdr print
     if request_history is not None and request_history > 0:

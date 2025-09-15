@@ -614,13 +614,15 @@ class BatteryMonitor(Battery, EKF1x1):
         # Measurement function hx(x), x = soc ideal capacitor
         x_lim = max(min(self.x_ekf, 1.), 0.)
         self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.Tb_f_rap)
+        self.tb_f_for_hx = self.Tb_f_rap
+        self.x_for_hx = x_lim
         print("update Battery:                                                                                                                                                                                                               Tb_f_rap   {:10.7f}".format(self.Tb_f_rap),
               "    x_ekf  {:10.5f}".format(self.x_ekf),
               "   hx      {:10.5f}  update Battery".format(self.hx),
               )
         # Jacobian of measurement function
         self.H = self.dv_dsoc
-        return self.hx, self.H
+        return self.hx, self.H, self.tb_f_for_hx, self.x_for_hx
 
     def lag_ib(self, ib, reset):
         self.ib_lag = self.IbLag.calculate_tau(ib, reset, self.dt, self.chemistry.ib_lag_tau)
@@ -702,6 +704,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_voc_ekf = (self.voc - voc_ref) / voc_ref
         self.saved.e_soc_ekf.append(self.e_soc_ekf)
         self.saved.e_voc_ekf.append(self.e_voc_ekf)
+        self.saved.tb_f_for_hx.append(self.tb_f_for_hx)
+        self.saved.x_for_hx.append(self.x_for_hx)
         self.saved.Tb.append(self.Tb)
         self.saved.Tb_f.append(self.Tb_f)
         self.saved.Tb_f_rate.append(self.Tb_f_rate)
@@ -1232,6 +1236,8 @@ class Saved:
         self.P_post = []
         self.e_soc_ekf = []
         self.e_voc_ekf = []
+        self.tb_f_for_hx = []
+        self.x_for_hx = []
         self.ib = []  # Bank current, A
         self.vb = []  # Bank voltage, V
         self.sat = []  # Indication that battery is saturated, T=saturated
