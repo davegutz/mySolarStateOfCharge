@@ -81,7 +81,7 @@ void EKF_1x1::update_ekf(const double z, double x_min, double x_max)
     S   1x1 system uncertainty
     SI  1x1 system uncertainty inverse
   */
-  this->ekf_update(&hx_, &H_);
+  this->ekf_update(&hx_, &H_, &x_for_hx_, &Tb_f_for_hx_);
   z_ = z;
   double pht = P_*H_;
   S_ = H_*pht + R_*ap.ekf_r*ap.ekf_r;

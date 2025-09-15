@@ -407,13 +407,15 @@ void BatteryMonitor::ekf_predict(double *Fx_, double *Bu_)
 }
 
 // EKF model for update
-void BatteryMonitor::ekf_update(double *hx, double *H)
+void BatteryMonitor::ekf_update(double *hx, double *H, float *x, float *tb)
 {
     // Measurement function hx(x), x=soc ideal capacitor
     float x_lim = max(min(x_, 1.0), 0.0);
     *hx = Battery::calc_soc_voc(x_lim, tb_f_, &dv_dsoc_);
     // Jacodian of measurement function
     *H = dv_dsoc_;
+    *x = x_;
+    *tb = tb_f_;
 }
 
 // Initialize

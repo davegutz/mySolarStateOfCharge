@@ -213,7 +213,7 @@ protected:
   float voc_stat_f_;   // Filtered voc_stat for EKF use, V
   float y_filt_;       // Filtered EKF y value, V
   void ekf_predict(double *Fx_, double *Bu_);
-  void ekf_update(double *hx, double *H);
+  void ekf_update(double *hx, double *H, float *x, float *tb_f);
 };
 
 

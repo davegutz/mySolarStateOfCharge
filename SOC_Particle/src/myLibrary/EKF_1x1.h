@@ -36,8 +36,10 @@ public:
   void predict_ekf(const double u, const boolean freeze);
   virtual void pretty_print(void);
   void print_ekf_serial();
+  float Tb_f_for_hx() { return ( Tb_f_for_hx_); };
   void update_ekf(const double z, double x_min, double x_max);
   double x_ekf() { return ( x_ ); };
+  float x_f_for_hx() { return ( x_for_hx_); };
   double z_ekf() { return ( z_ ); };
   void init_ekf(double soc, double Pinit);
 protected:
@@ -61,6 +63,8 @@ protected:
   boolean freeze_;  // Command to freeze x_ and P_
   unsigned long long now_ekf_;  // Time value extracted from sensors, ms
   double dt_ekf_;   // Update time for EKF major frame
+  float Tb_f_for_hx_;  // Tb_f used for the hx_ calculation, C
+  float x_for_hx_;     // soc used for the hx_ calculation, scalar
   /*
     Implement this function for your EKF model.
     @param fx gets output of state-transition function f(x)
@@ -69,7 +73,7 @@ protected:
     @param H gets Jacobian of h(x)
   */
   virtual void ekf_predict(double *Fx, double *Bu) = 0;
-  virtual void ekf_update(double *hx, double *H) = 0;
+  virtual void ekf_update(double *hx, double *H, float *x, float *tb_f) = 0;
 };
 
 // Methods
