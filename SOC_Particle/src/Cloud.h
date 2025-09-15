@@ -9,7 +9,7 @@ struct Publish
   uint32_t now;
   String unit;
   String hm_string;
-  float Tb;
+  double Tb;
   float Ib;
   float Voc;
   boolean sat;

@@ -68,7 +68,7 @@ float TempSensor::sample(Sensors *Sen)
   Log.info("  TempSensor::sample");
   // Read Sensor
   // MAXIM conversion 1-wire Tp plenum temperature
-  static float Tb_hdwe = 0.;
+  static double Tb_hdwe = 0.;
 
   #ifdef HDWE_DS18B20_SWIRE
     uint8_t count = 0;

@@ -98,10 +98,10 @@ public:
   // operators
   // functions
   boolean bms_off() { return bms_off_; };
-  virtual float calc_soc_voc(const float soc, const float tb_f, float *dv_dsoc);
-  float calc_soc_voc_slope(float soc, float tb_f);
+  virtual float calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc);
+  float calc_soc_voc_slope(float soc, double tb_f);
   float calc_vsat(void);
-  virtual float calculate(const float tb_f, const float soc_frac, float curr_in, const double dt, const boolean dc_dc_on);
+  virtual float calculate(const double tb_f, const float soc_frac, float curr_in, const double dt, const boolean dc_dc_on);
   float chargeTransfer_rstate() { return ChargeTransfer_->rstate(); };
   float chargeTransfer_lstate() { return ChargeTransfer_->lstate(); };
   float chargeTransfer_a() { return ChargeTransfer_->a(); };
@@ -120,11 +120,11 @@ public:
   float ioc() { return ioc_; };          // Hysteresis output current, A
   virtual void pretty_print();
   void print_signal(const boolean print) { print_now_ = print; };
-  float tb_f() { return tb_f_; };            // Battery temp, C
+  double tb_f() { return tb_f_; };            // Battery temp, C
   float vb() { return vb_; };            // Battery terminal voltage, V
   float voc() { return voc_; };
   float voc_stat() { return voc_stat_; };
-  float voc_soc_tab(const float soc, const float tb_f);
+  float voc_soc_tab(const float soc, const double tb_f);
   float vsat() { return vsat_; };
 protected:
   boolean bms_charging_; // Indicator that battery is charging, T = charging, changing soc and voltage
@@ -140,7 +140,7 @@ protected:
   float ioc_;      // Hysteresis output current, A
   float nom_vsat_; // Nominal saturation threshold at 25C, V
   boolean print_now_; // Print command
-  float tb_f_;    // Battery temperature, deg C
+  double tb_f_;    // Battery temperature, deg C
   float vb_;       // Battery terminal voltage, V
   float voc_;      // Static model open circuit voltage, V
   float voc_stat_; // Static, table lookup value of voc before applying hysteresis, V
@@ -167,7 +167,7 @@ public:
   float amp_hrs_remaining_ekf() { return amp_hrs_remaining_ekf_; };
   float amp_hrs_remaining_soc() { return amp_hrs_remaining_soc_; };
   float calc_charge_time(const double q, const float q_capacity, const float charge_curr, const float soc);
-  virtual float calc_soc_voc(const float soc, const float tb_f, float *dv_dsoc);
+  virtual float calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc);
   float calculate(Sensors *Sen, const boolean reset);
   boolean converged_ekf() { return EKF_converged->state(); };
   double delta_q_ekf() { return delta_q_ekf_; };
@@ -178,7 +178,7 @@ public:
   boolean is_sat(const boolean reset);
   float K_ekf() { return K_; };
   void pretty_print(Sensors *Sen);
-  void regauge(const float tb_f);
+  void regauge(const double tb_f);
   float r_sd ();
   float r_ss ();
   float soc_ekf() { return soc_ekf_; };
@@ -227,7 +227,7 @@ public:
   // functions
   float calculate(Sensors *Sen, const boolean dc_dc_on, const boolean reset);
   float calc_inj(const unsigned long long now, const uint8_t type, const float amp, const double freq);
-  virtual float calc_soc_voc(const float soc, const float tb_f, float *dv_dsoc);
+  virtual float calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc);
   float count_coulombs(Sensors *Sen, const boolean reset, BatteryMonitor *Mon, const boolean initializing_all);
   boolean cutback() { return model_cutback_; };
   double delta_q() { return *sp_delta_q_; };

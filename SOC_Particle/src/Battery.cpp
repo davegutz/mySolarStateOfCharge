@@ -51,7 +51,7 @@ Battery::~Battery() {}
 // functions
 
 // Placeholder; not used
-float Battery::calculate(const float tb_f, const float soc_frac, float curr_in, const double dt, const boolean dc_dc_on)
+float Battery::calculate(const double tb_f, const float soc_frac, float curr_in, const double dt, const boolean dc_dc_on)
 {
     return 0.;
 }
@@ -64,7 +64,7 @@ float Battery::calculate(const float tb_f, const float soc_frac, float curr_in, 
         dv_dsoc     Derivative scaled, V/fraction
         voc         Static model open circuit voltage from table (reference), V
 */
-float Battery::calc_soc_voc(const float soc, const float tb_f, float *dv_dsoc)
+float Battery::calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc)
 {
     float voc;  // return value
     *dv_dsoc = calc_soc_voc_slope(soc, tb_f);
@@ -79,7 +79,7 @@ float Battery::calc_soc_voc(const float soc, const float tb_f, float *dv_dsoc)
     OUTPUTS:
         dv_dsoc     Derivative scaled, V/fraction
 */
-float Battery::calc_soc_voc_slope(const float soc, const float tb_f)
+float Battery::calc_soc_voc_slope(const float soc, const double tb_f)
 {
     float dv_dsoc;  // return value
     if ( soc > 0.5 )
@@ -135,7 +135,7 @@ void Battery::pretty_print(void)
 }
 
 // EKF model for update
-float Battery::voc_soc_tab(const float soc, const float tb_f)
+float Battery::voc_soc_tab(const float soc, const double tb_f)
 {
     float voc;     // return value
     float dv_dsoc;
@@ -386,7 +386,7 @@ float BatteryMonitor::calc_charge_time(const double q, const float q_capacity, c
         dv_dsoc     Derivative scaled, V/fraction
         voc         Static model open circuit voltage from table (reference), V
 */
-float BatteryMonitor::calc_soc_voc(const float soc, const float tb_f, float *dv_dsoc)
+float BatteryMonitor::calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc)
 {
     float voc;  // return value
     *dv_dsoc = calc_soc_voc_slope(soc, tb_f);
@@ -492,7 +492,7 @@ void BatteryMonitor::pretty_print(Sensors *Sen)
 }
 
 // Reset Coulomb Counter state to EKF under restricted conditions especially new boot no history of saturation
-void BatteryMonitor::regauge(const float tb_f)
+void BatteryMonitor::regauge(const double tb_f)
 {
     if ( converged_ekf() && abs(soc_ekf_-soc_)>DF2 )
     {
@@ -518,7 +518,7 @@ float BatteryMonitor::r_ss () { return chem_.r_ss * ap.slr_res; };
 boolean BatteryMonitor::solve_ekf(const boolean reset, const boolean reset_temp, Sensors *Sen)
 {
     // Average dynamic inputs through the initialization period before apply EKF
-    static float Tb_avg = Sen->Tb_f;
+    static double Tb_avg = Sen->Tb_f;
     static float Vb_avg = Sen->Vb;
     static float Ib_avg = Sen->Ib;
     static uint16_t n_avg = 0;
@@ -734,7 +734,7 @@ float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean 
         dv_dsoc     Derivative scaled, V/fraction
         voc         Static model open circuit voltage from table (reference), V
 */
-float BatterySim::calc_soc_voc(const float soc, const float tb_f, float *dv_dsoc)
+float BatterySim::calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc)
 {
     float voc;  // return value
     *dv_dsoc = calc_soc_voc_slope(soc, tb_f);  // Ds embedded in voc call
@@ -800,7 +800,6 @@ Inputs:
     model_saturated Indicator of maximal cutback, T = cutback saturated
     Sen->T          Integration step, s
     Sen->Tb_f       Battery bank temperature, deg C (filtered to reduce electrical noise effects)
-    Sen->Tb_rate    Battery bank temperature rate, deg C
     Sen->Ib         Selected battery bank current, A
     t_last          Past value of battery temperature used for rate limit memory, deg C
     coul_eff_       Coulombic efficiency - the fraction of charging input that gets turned into usable Coulombs

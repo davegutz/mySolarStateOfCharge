@@ -299,7 +299,7 @@ String Chemistry::decode(const uint8_t mod)
 }
 
 // lookup_voc
-float Chemistry::lookup_voc(const float soc, const float tb_f)
+float Chemistry::lookup_voc(const float soc, const double tb_f)
 {
     return voc_T_->interp(soc, tb_f) + dvoc;
 }

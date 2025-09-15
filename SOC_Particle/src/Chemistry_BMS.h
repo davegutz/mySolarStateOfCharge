@@ -82,7 +82,7 @@ public:
   void assign_soc_min(const int _n_n, float *x, float *t);  // Worker bee SOC_MIN
   void assign_voc_soc(const int _n_s, const int _m_t, float *x, float *y, float *t); // Worker bee VOC_SOC
   String decode(const uint8_t mod);
-  float lookup_voc(const float soc, const float tb_f);
+  float lookup_voc(const float soc, const double tb_f);
   void pretty_print();
   void put_dx_voc(const float dx_voc) { voc_T_->put_dx(dx_voc); }
   void put_dy_voc(const float dy_voc) { voc_T_->put_dy(dy_voc); }

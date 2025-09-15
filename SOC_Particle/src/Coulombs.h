@@ -48,11 +48,11 @@ public:
   void apply_cap_scale(const float scale);
   void apply_delta_q(const double delta_q);
   void apply_resetting(const boolean resetting){ resetting_ = resetting; };
-  void apply_soc(const float soc, const float tb_f);
+  void apply_soc(const float soc, const double tb_f);
   void apply_delta_q_t(const boolean reset);
-  void apply_delta_q_t(const double delta_q, const float tb_f);
+  void apply_delta_q_t(const double delta_q, const double tb_f);
   void assign_all_mod() { chem_.assign_all_chm(); };
-  double calculate_capacity(const float tb_f);
+  double calculate_capacity(const double tb_f);
   Chemistry *chem() { return &chem_; };
   void chem_pretty_print () { chem_.pretty_print(); };
   double coul_eff() { return ( coul_eff_ ); };
@@ -100,8 +100,8 @@ protected:
   float soc_inf_;     // Fraction of saturation charge (q_capacity_) available (-inf - inf)
   float soc_min_;     // As battery cools, the voltage drops and there appears a minimum soc it can deliver
   double *sp_delta_q_;// Charge since saturated, C
-  float tb_f_;        // Temperature, deg C
-  float tb_f_rate_;   // Tb rate, deg C / s
+  double tb_f_;        // Temperature, deg C
+  double tb_f_rate_;   // Tb rate, deg C / s
   double time_neg_;   // Time spent accumulating delta_q_neg_, s
   double time_pos_;   // Time spent accumulating delta_q_pos_, s
   Chemistry chem_;    // Chemistry

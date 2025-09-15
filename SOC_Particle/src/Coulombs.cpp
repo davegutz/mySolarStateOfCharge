@@ -121,7 +121,7 @@ void Coulombs::apply_delta_q_t(const boolean reset)
   soc_ = q_ / q_capacity_;
   resetting_ = true;
 }
-void Coulombs::apply_delta_q_t(const double delta_q, const float tb_f)
+void Coulombs::apply_delta_q_t(const double delta_q, const double tb_f)
 {
   *sp_delta_q_ = delta_q;
   apply_delta_q_t(true);
@@ -129,7 +129,7 @@ void Coulombs::apply_delta_q_t(const double delta_q, const float tb_f)
 
 
 // Memory set, adjust book-keeping as needed.  delta_q preserved
-void Coulombs::apply_soc(const float soc, const float tb_f)
+void Coulombs::apply_soc(const float soc, const double tb_f)
 {
   soc_ = soc;
   q_capacity_ = calculate_capacity(tb_f);
@@ -139,7 +139,7 @@ void Coulombs::apply_soc(const float soc, const float tb_f)
 }
 
 // Capacity
-double Coulombs::calculate_capacity(const float tb_f)
+double Coulombs::calculate_capacity(const double tb_f)
 {
   return( q_cap_rated_scaled_ * (1. + chem_.dqdt*(tb_f - chem_.rated_temp)) );
 }
@@ -149,7 +149,6 @@ Inputs:
   dt              Integration step, s
   reset_temp      Temperature frame reset flag, T=resetting
   tb_f            Battery temperature lagged and rate-limited, deg C
-  tb_rate         Battery temperature rate lagged and limited, deg C / s
   charge_curr     Charge, A
   sat             Indication that battery is saturated, T=saturated
   coul_eff        Coulombic efficiency - the fraction of charging input that gets turned into usable Coulombs

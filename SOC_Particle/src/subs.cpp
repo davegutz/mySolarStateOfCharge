@@ -36,7 +36,7 @@ extern PrinterPars pr;  // Print buffer
 extern PublishPars pp;  // For publishing
 
 // Harvest charge caused temperature change.   More charge becomes available as battery warms
-void harvest_temp_change(const float tb_f, BatteryMonitor *Mon, BatterySim *Sim, const float tb_rate, const float dt)
+void harvest_temp_change(const double tb_f, BatteryMonitor *Mon, BatterySim *Sim, const float tb_rate, const float dt)
 {
 #ifdef DEBUG_DETAIL
 if ( sp.debug()==-1 ) Serial.printf("entry harvest_temp_change:  Delta_q %10.1f tb_f %5.1f delta_q_model %10.1f tb_s %5.1f\n",
