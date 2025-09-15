@@ -407,7 +407,7 @@ void BatteryMonitor::ekf_predict(double *Fx_, double *Bu_)
 }
 
 // EKF model for update
-void BatteryMonitor::ekf_update(double *hx, double *H, float *x, float *tb)
+void BatteryMonitor::ekf_update(double *hx, double *H, double *x, double *tb)
 {
     // Measurement function hx(x), x=soc ideal capacitor
     float x_lim = max(min(x_, 1.0), 0.0);
