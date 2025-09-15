@@ -161,7 +161,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.calc1:"); debug_m1(Mon, Sen);}
   #endif
-  Mon->count_coulombs(0., true, Sen->Tb_f, 0., 0., Mon->is_sat(true), 0.);
+  Mon->count_coulombs(Sen, true, 0., Mon->is_sat(true), 0.);
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.c_c1:"); debug_m1(Mon, Sen);}
   #endif
@@ -169,7 +169,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.calc2:"); debug_m1(Mon, Sen);}
   #endif
-  Mon->count_coulombs(0., true, Sen->Tb_f, 0., 0., Mon->is_sat(true), 0.);
+  Mon->count_coulombs(Sen, true, 0., Mon->is_sat(true), 0.);
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.c_c2:"); debug_m1(Mon, Sen);}
   #endif
@@ -226,7 +226,7 @@ void  monitor(const boolean reset, const boolean reset_temp, const unsigned long
 
   // Memory store
   // Initialize to ekf when not saturated
-  Mon->count_coulombs(Sen->T, reset_temp, Sen->Tb_f, Sen->Tb_f_rate, Mon->ib_charge(), Sen->saturated, Mon->delta_q_ekf());
+  Mon->count_coulombs(Sen, reset_temp, Mon->ib_charge(), Sen->saturated, Mon->delta_q_ekf());
 
   // Charge charge time for display
   Mon->calc_charge_time(Mon->q(), Mon->q_capacity(), Sen->ib(), Mon->soc());

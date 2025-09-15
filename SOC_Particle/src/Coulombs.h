@@ -26,7 +26,8 @@
 
 #include "Battery.h"
 #include "Chemistry_BMS.h"
-// #include "constants.h"
+
+class Sensors;
 
 
 // Functions
@@ -56,8 +57,7 @@ public:
   void chem_pretty_print () { chem_.pretty_print(); };
   double coul_eff() { return ( coul_eff_ ); };
   void coul_eff(const double coul_eff) { coul_eff_ = coul_eff; };
-  virtual float count_coulombs(const double dt, const boolean reset_temp, const float tb_f, const float tb_rate,
-    const float charge_curr, const boolean sat, const double delta_q_ekf);
+  virtual float count_coulombs(Sensors *Sen, const boolean reset_temp, const float charge_curr, const boolean sat, const double delta_q_ekf);
   double delta_q() { return(*sp_delta_q_); };
   double delta_q_abs() { return nice_zero(delta_q_abs_, 1e-6); }
   double delta_q_inf() { return(delta_q_inf_); };

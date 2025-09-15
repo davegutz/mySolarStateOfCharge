@@ -163,7 +163,7 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
     return hdr
 
 def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, ST):
-    hdr = "  i  time  r  r_t i_t  calc   Tt      Tb_hdwe                    Tb                         Tb_                        Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap  "
+    hdr = "  i  time  r  r_t i_t  calc   Tt      Tb_hdwe                    Tb                         Tb_                        Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap              tb_f_for_hx"
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),
@@ -179,6 +179,7 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, ST):
           "{:14.7f}".format(mon_old.Tb_hdwe_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt_rate),
           "{:14.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate), "{:11.7f}".format(ST.Tb_f_rate),
           "{:14.7f}".format(mon_old.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
+          "{:14.7f}".format(mon_old.tb_f_for_hx[i_temp]), "{:10.7f}".format(mon.tb_f_for_hx),
           )
     return hdr
 

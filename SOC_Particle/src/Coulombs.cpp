@@ -161,13 +161,12 @@ Outputs:
   soc_min_        Estimated soc where battery BMS will shutoff current, fraction
   q_min_          Estimated charge at low voltage shutdown, C\
 */
-float Coulombs::count_coulombs(const double dt, const boolean reset_temp, const float tb_f, const float tb_rate, const float charge_curr,
-  const boolean sat, const double delta_q_ekf)
+float Coulombs::count_coulombs(Sensors *Sen, const boolean reset_temp, const float charge_curr, const boolean sat, const double delta_q_ekf)
 {
     // Inputs
-    dt_ = dt;
-    tb_f_ = tb_f;
-    tb_f_rate_ = tb_rate;
+    dt_ = Sen->T;
+    tb_f_ = Sen->Tb_f;
+    tb_f_rate_ = Sen->Tb_f_rate;
     d_delta_q_ = charge_curr * dt_;
 
     // State change
