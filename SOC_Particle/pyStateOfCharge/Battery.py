@@ -412,7 +412,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.reset = True
             self.sat = ref.sat[0]
             self.reset_ekf = True
-            self.init_soc_ekf(ref)
+            self.init_soc_ekf(ref, 0, 0)
             self.voc_ekf = ref.hx[0]
             self.voc_stat_f = ref.voc_stat[0]
             self.x = ref.x[0]
@@ -539,7 +539,7 @@ class BatteryMonitor(Battery, EKF1x1):
                                                         self.VOC_STAT_FILT)
             self.predict_ekf(u=ddq_dt, reset=self.reset_ekf)  # u = d(q)/dt
             self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1., reset=self.reset_ekf)  # z = voc, voc_filtered = hx
-            self.soc_ekf = self.x_ekf  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
+            self.soc_ekf = self.x  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
             self.q_ekf = self.soc_ekf * self.q_capacity
             self.y_filt = self.y_filt_lag.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.EKF_T_RESET),
                                                     reset=self.reset_ekf)
@@ -549,7 +549,7 @@ class BatteryMonitor(Battery, EKF1x1):
             conv = abs(self.y_filt) < Battery.EKF_CONV
             self.EKF_converged.calculate(conv, Battery.EKF_T_CONV, Battery.EKF_T_RESET,
                                          min(self.dt_eframe, Battery.EKF_T_RESET), self.reset_ekf)
-            # print(f"{reset_ekf=} {self.soc_ekf} {self.x_ekf=} {self.voc_stat_ekf=}")
+            # print(f"{reset_ekf=} {self.soc_ekf} {self.x=} {self.voc_stat_ekf=}")
         self.eframe += 1
         if self.reset_ekf or self.eframe >= self.eframe_mult:  # '>=' ensures reset with changes on the fly
             self.eframe = 0
@@ -612,14 +612,14 @@ class BatteryMonitor(Battery, EKF1x1):
 
     def ekf_update(self):
         # Measurement function hx(x), x = soc ideal capacitor
-        x_lim = max(min(self.x_ekf, 1.), 0.)
-        self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.Tb_f_rap)
-        self.tb_f_for_hx = self.Tb_f_rap
+        x_lim = max(min(self.x, 1.), 0.)
         self.x_for_hx = x_lim
-        print("update Battery:                                                                                                                                                                                                               Tb_f_rap   {:10.7f}".format(self.Tb_f_rap),
-              "    x_ekf  {:10.5f}".format(self.x_ekf),
-              "   hx      {:10.5f}  update Battery".format(self.hx),
-              )
+        self.tb_f_for_hx = self.Tb_f_rap
+        self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.Tb_f_rap)
+        # print("update Battery:                                                                                                                                                                                                               tb_f_for_hx{:10.7f}".format(self.tb_f_for_hx),
+        #       "  x_for_hx {:10.7f}".format(self.x_for_hx),
+        #       "   hx       {:10.5f}  update Battery".format(self.hx),
+        #       )
         # Jacobian of measurement function
         self.H = self.dv_dsoc
         return self.hx, self.H, self.tb_f_for_hx, self.x_for_hx
@@ -627,18 +627,30 @@ class BatteryMonitor(Battery, EKF1x1):
     def lag_ib(self, ib, reset):
         self.ib_lag = self.IbLag.calculate_tau(ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
-    def init_soc_ekf(self, mon_old):
-        self.soc_ekf = mon_old.soc_ekf[0]
-        self.y_ekf = mon_old.y_ekf[0]
-        self.init_ekf(mon_old.x[0], 0.0)
+    def init_soc_ekf(self, mon_old, i, i_ekf):
+        self.soc_ekf = mon_old.soc_ekf[i]
+        self.y_ekf = mon_old.y_ekf[i]
+        self.init_ekf(mon_old.x[i_ekf], 0.0)
         self.q_ekf = self.soc * self.q_capacity
-        self.P = mon_old.P[0]
-        self.hx = mon_old.hx[0]
-        self.dt_eframe = mon_old.dt_ekf[0]
-        self.x = mon_old.x[0]
-        self.x_prior = mon_old.x_prior[0]
-        self.tb_f_for_hx = mon_old.tb_f_for_hx[0]
-        self.x_for_hx = mon_old.x_for_hx[0]
+        self.P = mon_old.P[i_ekf]
+        self.P_post = mon_old.P_post[i_ekf]
+        self.P_prior = mon_old.P_prior[i_ekf]
+        self.H = mon_old.H[i_ekf]
+        self.S = mon_old.S[i_ekf]
+        self.K = mon_old.K[i_ekf]
+        self.hx = mon_old.hx[i_ekf]
+        self.dt_eframe = mon_old.dt_ekf[i_ekf]
+        self.x = mon_old.x[i_ekf]
+        self.x_prior = mon_old.x_prior[i_ekf]
+        self.x_post = mon_old.x_post[i_ekf]
+        self.tb_f_for_hx = mon_old.tb_f_for_hx[i_ekf]
+        self.x_for_hx = mon_old.x_for_hx[i_ekf]
+        # print("init_soc_ekf ekf:                                                                                                                                                                                                                  tb_f_for_hx   {:10.7f}".format(self.tb_f_for_hx),
+        #       "    x             {:10.7f}          update ekf".format(self.x),
+        #       "    x_for_hx  {:10.7f}                        ".format(self.x_for_hx),
+        #       "    hx  {:10.7f}                        ".format(self.hx),
+        #       )
+
 
     def regauge(self, tb_f):
         if self.converged_ekf() and abs(self.soc_ekf - self.soc) > Battery.DF2:
@@ -691,7 +703,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.K.append(self.K)
         self.saved.hx.append(self.hx)
         self.saved.u_ekf.append(self.u_ekf)
-        self.saved.x_ekf.append(self.x_ekf)
+        self.saved.x_ekf.append(self.x)
         self.saved.y_ekf.append(self.y_ekf)
         self.saved.y_filt.append(self.y_filt)
         self.saved.y_filt2.append(self.y_filt2)

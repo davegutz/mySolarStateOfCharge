@@ -72,7 +72,7 @@ def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf):
           "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:11.7f}".format(mon_old.x_prior[i_ekf]), "{:9.7f}".format(mon.x_prior), "{:2.0f}".format(mon_old.frz[i_ekf]),
           "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
-          "{:11.7f}".format(mon_old.x[i_ekf]), "{:9.7f}".format(mon.x_ekf),
+          "{:11.7f}".format(mon_old.x[i_ekf]), "{:9.7f}".format(mon.x),
           "{:14.7f}".format(mon_old.tb_f_for_hx[i_temp]), "{:10.7f}".format(mon.tb_f_for_hx),
           "{:11.7f}".format(mon_old.x_for_hx[i_ekf]), "{:9.7f}".format(mon.x_for_hx),
           "{:14.5f}".format(mon_old.hx[i_ekf]), "{:9.5f}".format(mon.hx),

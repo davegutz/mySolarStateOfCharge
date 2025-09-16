@@ -36,13 +36,13 @@ class EKF1x1:
         self.K = 0.  # Kalman gain
         self.hx = 0.  # Output of observation function h(x)
         self.u_ekf = 0.  # Control input
-        self.x_ekf = 0.  # Kalman state variable
+        self.x = 0.  # Kalman state variable
         self.y_ekf = 0.  # Residual z-hx
         self.y_ekf_f = 0.  # Residual filtered z-hx
         self.z_ekf = 0.  # Observation of state x
-        self.x_prior = self.x_ekf
+        self.x_prior = self.x
         self.P_prior = self.P
-        self.x_post = self.x_ekf
+        self.x_post = self.x
         self.P_post = self.P
         self.tb_f_for_hx = 25.
         self.x_for_hx = 1.
@@ -58,7 +58,7 @@ class EKF1x1:
         s += "  Q = {:10.6g}\n".format(self.Q)
         s += "  H = {:10.6g}\n".format(self.H)
         s += "  Outputs:\n"
-        s += "  x  = {:10.6g}\n".format(self.x_ekf)
+        s += "  x  = {:10.6g}\n".format(self.x)
         s += "  hx = {:10.6g}\n".format(self.hx)
         s += "  y  = {:10.6g}\n".format(self.y_ekf)
         s += "  P  = {:10.6g}\n".format(self.P)
@@ -74,7 +74,7 @@ class EKF1x1:
 
     def init_ekf(self, soc, p_init):
         """Initialize on demand"""
-        self.x_ekf = soc
+        self.x = soc
         self.P = p_init
 
     def predict_ekf(self, u, reset=False):
@@ -90,13 +90,10 @@ class EKF1x1:
         self.u_ekf = u
         self.Fx, self.Bu = self.ekf_predict()
         if not reset:
-            self.x_ekf = self.Fx*self.x_ekf + self.Bu*self.u_ekf
+            self.x = self.Fx*self.x + self.Bu*self.u_ekf
             self.P = self.Fx * self.P * self.Fx + self.Q
-            self.x_prior = self.x_ekf
+            self.x_prior = self.x
             self.P_prior = self.P
-        print("predict ekf:                                                                                                                                                                                                                  Tb_f_rap   {:10.7f}".format(self.Tb_f_rap),
-              "    x_ekf  {:10.5f}                        predict ekf".format(self.x_ekf),
-              )
 
     def update_ekf(self, z, x_min, x_max, reset=False):
         """ 1x1 Extended Kalman Filter update
@@ -114,24 +111,27 @@ class EKF1x1:
                 S   1x1 system uncertainty
                 SI  1x1 system uncertainty inverse
         """
-        self.hx, self.H, self.tb_f_for_hx, self.x_for_hx = self.ekf_update()
+        if not reset:
+            self.hx, self.H, self.tb_f_for_hx, self.x_for_hx = self.ekf_update()
+        # print("update ekf:                                                                                                                                                                                                                        tb_f_for_hx   {:10.7f}".format(self.tb_f_for_hx),
+        #       "    x             {:10.7f}          update ekf".format(self.x),
+        #       "    x_for_hx      {:10.7f}          update ekf".format(self.x_for_hx),
+        #       "    hx      {:10.7f}  ".format(self.hx),
+        #       )
         self.z_ekf = z
         pht = self.P*self.H
-        self.S = self.H*pht + self.R
-        if abs(self.S) > 1e-12:
-            self.K = pht/self.S  # using last-good-value if S=0
         if not reset:
+            self.S = self.H * pht + self.R
+            if abs(self.S) > 1e-12:
+                self.K = pht / self.S  # using last-good-value if S=0
             self.y_ekf = self.z_ekf - self.hx
-            self.x_ekf = max(min(self.x_ekf + self.K*self.y_ekf, x_max), x_min)
+            self.x = max(min(self.x + self.K*self.y_ekf, x_max), x_min)
             i_kh = 1 - self.K*self.H
             self.P = i_kh*self.P
-            self.x_post = self.x_ekf
+            self.x_post = self.x
             self.P_post = self.P
-        print("update ekf 2:                                                                                                                                                                                                                 Tb_f_rap   {:10.7f}".format(self.Tb_f_rap),
-              "    x_ekf  {:10.5f}                        update ekf 2".format(self.x_ekf),
-              )
 
-    def h_jacobian(self, x_ekf):
+    def h_jacobian(self, x):
         # implemented by child
         raise NotImplementedError
 

@@ -117,7 +117,7 @@ def off_on_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, 
         plq(plt, smv, 'time', smv, 'qcrs_s', color='cyan', linestyle=':', label='qcrs_s' + test_str)
         plq(plt, mo, 'time', mo, 'q_capacity', color='blue', linestyle='-', label='q_capacity' + ref_str)
         plq(plt, mv, 'time', mv, 'q_capacity', color='magenta', linestyle='--', label='q_capacity' + test_str)
-        plq(plt, sv, 'time', sv, 'q_capacity', color='green', linestyle=':', label='q_capacity_s' + test_str)
+        plq(plt, sv, 'time', sv, 'q_capacity', color='black', linestyle=':', label='q_capacity_s' + test_str)
         plt.xlabel('sec')
         plt.legend(loc=2)
         plt.subplot(322)

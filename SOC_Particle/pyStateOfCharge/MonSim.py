@@ -46,13 +46,15 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     5. *** Fig. 2 Dom 2: dv_hys plots not intelligible.  Not sure what these mean
     6. Fig. 1 1a: e_wrap filter initialization.   Need filt_rates from Noa and Amp filters.  LoopIbNoa and Amp e_wrap_rate()
     7. Fig. 9 EKF 2a: hx(soc) negative slope?
-    8. Fig. 10 EKF 3:  voc_ekv (hx) not equal at 0
+    8. *** Fig. 10 EKF 3:  voc_ekv (hx) not equal at 0.  Fixed by modifying reset_ekf logic
     9. Run CompareHistSim etc.
     10. dv_hys jitter around 0 in reference data  ***->0*dv_hys before return instead of in return
     11. voltage resolutions off/on mon 1
-    12. Can reorder execution so header printed before any relevant data?  Deleting first two rows of data before headers causes data mismatch in sim
+    12. *** Can reorder execution so header printed before any relevant data?  Deleting first two rows of data before headers causes data mismatch in sim.  No change.  Not problem
     13. *** Discarded sim data ('vv0') causes issue.  Don't record/save local entered data.  Fixed by 'skip' logic
-    14. Fig. 2a, 3 EKF: hx_ver not right at beginning
+    14. Fig. 6 Ult 1:  e_wrap_m_filt_ver off (  e_wrap_m_filt = 1.5 ?)
+    15. *** Fig. 7 EKF 1: S initialization.  Fixed by putting S calc inside reset
+    16. Fig 10  EKF 3:  z=voc_stat_f and ver not equal.
     """
     if sim_old is not None and len(sim_old.time) < len(mon_old.time):
         t = sim_old.time
@@ -294,8 +296,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             calc_ekf = False
         if i_ekf == 0:
             reset_ekf = True
-            if calc_ekf:
-                mon.init_soc_ekf(mon_old)  # when modeling (assumed in python) ekf wants to equal model
+
+        if reset_ekf and calc_ekf:
+            mon.init_soc_ekf(mon_old, i, i_ekf)  # when modeling (assumed in python) ekf wants to equal model
 
         # Monitor calculate
         if rp.modeling == 0:
