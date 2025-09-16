@@ -851,7 +851,7 @@ class SavedData:
             self.ib_dyn_rate = np.array(rap.ib_dyn_rate[:i_end])
             self.voc_stat = np.array(rap.voc_stat[:i_end])
             self.voc = self.vb - self.dv_dyn
-            self.dv_hys = self.voc - self.voc_stat
+            self.dv_hys = np.round(self.voc, 4) - np.round(self.voc_stat, 4)
             self.voc_ekf = np.array(rap.voc_ekf[:i_end])
             self.y_ekf = np.array(rap.y_ekf[:i_end])
             self.soc_s = np.array(rap.soc_s[:i_end])
@@ -1181,7 +1181,7 @@ class SavedDataSim:
             self.voc_stat_s = data.voc_stat_s[:i_end]
             self.dv_dyn_s = data.dv_dyn_s[:i_end]
             self.voc_s = self.vb_s - self.dv_dyn_s
-            self.dv_hys_s = self.voc_s - self.voc_stat_s
+            self.dv_hys_s = np.round(self.voc_s, 4) - np.round(self.voc_stat_s, 4)
             self.ib_s = data.ib_s[:i_end]
             self.ib_dyn_s = data.ib_dyn_s[:i_end]
             self.ib_dyn_rate_s = data.ib_dyn_rate_s[:i_end]

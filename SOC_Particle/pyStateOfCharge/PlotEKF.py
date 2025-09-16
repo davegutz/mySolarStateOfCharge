@@ -160,10 +160,10 @@ def ekf_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
             plt.plot(mv.time, mv.u_ekf, color='orange', linestyle=':', label='u' + test_str)
             plt.legend(loc=1)
             plt.subplot(222)
-            plt.plot(mo.time, mo.vb, color='red', linestyle='-', label='vb' + ref_str)
-            plt.plot(mv.time, mv.vb, color='black', linestyle='--', label='vb' + test_str)
-            plt.plot(mv.time, mv.voc_stat, color='cyan', linestyle='-.', label='z=voc_stat_f' + ref_str)
-            plt.plot(mv.time, mv.voc_stat_f, color='orange', linestyle=':', label='z=voc_stat_f' + test_str)
+            plq(plt, mo, 'time', mo, 'vb', color='red', linestyle='-', label='vb' + ref_str)
+            plq(plt, mv, 'time', mv, 'vb', color='black', linestyle='--', label='vb' + test_str)
+            plq(plt, mo, 'time_e', mo, 'z', color='cyan', linestyle='-.', label='z=voc_stat_f' + ref_str, stairs=True)
+            plq(plt, mv, 'time', mv, 'z_ekf', color='orange', linestyle='-.', label='z=voc_stat_f' + test_str)
             plt.legend(loc=1)
             plt.subplot(223)
             plt.plot(mo.time, mo.soc, color='red', linestyle='-', label='soc' + ref_str)
@@ -172,11 +172,11 @@ def ekf_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
             plt.plot(mv.time, mv.soc_ekf, color='orange', linestyle=':', label='x=soc_ekf' + test_str)
             plt.legend(loc=1)
             plt.subplot(224)
-            plt.plot(mo.time, mo.voc_stat, color='red', linestyle='-', label='z=voc_stat' + ref_str)
-            plt.plot(mv.time, mv.voc_stat_f, color='black', linestyle='--', label='z=voc_stat_f' + test_str)
-            plq(plt, mo, 'time', mo, 'voc_ekf', color='cyan', linestyle='-.', label='voc_ekf(soc) = hx' + ref_str,
+            plq(plt, mo, 'time', mo, 'voc_ekf', color='red', linestyle='-', label='voc_ekf(soc) = hx' + ref_str,
                 stairs=True)
-            plt.plot(mv.time, mv.voc_ekf, color='orange', linestyle=':', label='voc_ekf(soc) = hx' + test_str)
+            plq(plt, mv, 'time', mv, 'voc_ekf', color='black', linestyle='--', label='voc_ekf(soc) = hx' + test_str)
+            plq(plt, mo, 'time_e', mo, 'z', color='cyan', linestyle='-.', label='z=voc_stat_f' + ref_str, stairs=True)
+            plq(plt, mv, 'time', mv, 'z_ekf', color='orange', linestyle='-.', label='z=voc_stat_f' + test_str)
             plt.legend(loc=1)
 
     if mo.voc_soc is not None:
