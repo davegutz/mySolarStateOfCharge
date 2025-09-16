@@ -627,24 +627,24 @@ class BatteryMonitor(Battery, EKF1x1):
     def lag_ib(self, ib, reset):
         self.ib_lag = self.IbLag.calculate_tau(ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
-    def init_soc_ekf(self, mon_old, i, i_ekf):
-        self.soc_ekf = mon_old.soc_ekf[i]
-        self.y_ekf = mon_old.y_ekf[i]
-        self.init_ekf(mon_old.x[i_ekf], 0.0)
+    def init_soc_ekf(self, mo, i, i_ekf):
+        self.soc_ekf = mo.soc_ekf[i]
+        self.y_ekf = mo.y_ekf[i]
+        self.init_ekf(mo.x[i_ekf], 0.0)
         self.q_ekf = self.soc * self.q_capacity
-        self.P = mon_old.P[i_ekf]
-        self.P_post = mon_old.P_post[i_ekf]
-        self.P_prior = mon_old.P_prior[i_ekf]
-        self.H = mon_old.H[i_ekf]
-        self.S = mon_old.S[i_ekf]
-        self.K = mon_old.K[i_ekf]
-        self.hx = mon_old.hx[i_ekf]
-        self.dt_eframe = mon_old.dt_ekf[i_ekf]
-        self.x = mon_old.x[i_ekf]
-        self.x_prior = mon_old.x_prior[i_ekf]
-        self.x_post = mon_old.x_post[i_ekf]
-        self.tb_f_for_hx = mon_old.tb_f_for_hx[i_ekf]
-        self.x_for_hx = mon_old.x_for_hx[i_ekf]
+        self.P = mo.P[i_ekf]
+        self.P_post = mo.P_post[i_ekf]
+        self.P_prior = mo.P_prior[i_ekf]
+        self.H = mo.H[i_ekf]
+        self.S = mo.S[i_ekf]
+        self.K = mo.K[i_ekf]
+        self.hx = mo.hx[i_ekf]
+        self.dt_eframe = mo.dt_ekf[i_ekf]
+        self.x = mo.x[i_ekf]
+        self.x_prior = mo.x_prior[i_ekf]
+        self.x_post = mo.x_post[i_ekf]
+        self.tb_f_for_hx = mo.tb_f_for_hx[i_ekf]
+        self.x_for_hx = mo.x_for_hx[i_ekf]
         # print("init_soc_ekf ekf:                                                                                                                                                                                                                  tb_f_for_hx   {:10.7f}".format(self.tb_f_for_hx),
         #       "    x             {:10.7f}          update ekf".format(self.x),
         #       "    x_for_hx  {:10.7f}                        ".format(self.x_for_hx),
