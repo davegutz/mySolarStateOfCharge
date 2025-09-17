@@ -113,14 +113,9 @@ class EKF1x1:
         """
         if not reset:
             self.hx, self.H, self.tb_f_for_hx, self.x_for_hx = self.ekf_update()
-        # print("update ekf:                                                                                                                                                                                                                        tb_f_for_hx   {:10.7f}".format(self.tb_f_for_hx),
-        #       "    x             {:10.7f}          update ekf".format(self.x),
-        #       "    x_for_hx      {:10.7f}          update ekf".format(self.x_for_hx),
-        #       "    hx      {:10.7f}  ".format(self.hx),
-        #       )
         self.z_ekf = z
-        pht = self.P*self.H
         if not reset:
+            pht = self.P * self.H
             self.S = self.H * pht + self.R
             if abs(self.S) > 1e-12:
                 self.K = pht / self.S  # using last-good-value if S=0

@@ -616,10 +616,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.x_for_hx = x_lim
         self.tb_f_for_hx = self.Tb_f_rap
         self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.Tb_f_rap)
-        # print("update Battery:                                                                                                                                                                                                               tb_f_for_hx{:10.7f}".format(self.tb_f_for_hx),
-        #       "  x_for_hx {:10.7f}".format(self.x_for_hx),
-        #       "   hx       {:10.5f}  update Battery".format(self.hx),
-        #       )
         # Jacobian of measurement function
         self.H = self.dv_dsoc
         return self.hx, self.H, self.tb_f_for_hx, self.x_for_hx
