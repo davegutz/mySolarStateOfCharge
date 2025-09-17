@@ -139,7 +139,7 @@ void print_rapid_create_string(Publish *pubList, Sensors *Sen, BatteryMonitor *M
     CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(),
     pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
     Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate,
-    Mon->vb(), Mon->ib(), Mon->ib_dyn(), Mon->dv_dyn(), Mon->ib_dyn_rate(), Mon->ib_charge(), Mon->voc_soc(), 
+    Mon->vb(), Mon->ib(), Mon->ib_dyn(), Mon->dv_hys(), Mon->ib_dyn_rate(), Mon->ib_charge(), Mon->voc_soc(), 
     Mon->vsat(), Mon->dv_dyn(), Mon->voc_stat(), Mon->hx(),
     Mon->y_ekf(),
     Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc(), Mon->soc_min(), Mon->delta_q());
@@ -188,16 +188,16 @@ void print_ekf_header(void)
 void print_sim_header(void)
 {
   if ( sp.debug()==2  || sp.debug()==3 || sp.debug()==4 ) // print_sim_header
-    Serial.printf("unit_m,  c_time,      dt_s, chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, dv_dyn_s, vb_s, ib_s, ib_dyn_s, ib_dyn_rate_s, ib_in_s, ib_charge_s, ioc_s, sat_s, dq_s, q_cap_s, soc_s, reset_s,\n");
+    Serial.printf("unit_m,  c_time,      dt_s, chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, dv_dyn_s, vb_s, ib_s, ib_dyn_s, dv_hys_s, ib_dyn_rate_s, ib_in_s, ib_charge_s, ioc_s, sat_s, dq_s, q_cap_s, soc_s, reset_s,\n");
 }
 void print_sim_serial(const boolean initializing_all, const boolean reset_temp, Sensors *Sen, BatterySim *Sim)
 {
     if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)
     {
         double cTime = double(Sen->now)/1000.;
-        sprintf(pr.buff, "unit_sim, %13.3f, %7.3f, %d, %9.2f, %d, %11.8f, %7.5f,%7.5f,%7.5f,%8.5f, %7.5f,%7.5f,%7.5f,%7.5f,%7.5f,%7.5f,  %d,  %9.4f, %9.4f,  %10.7f, %d, %c",
+        sprintf(pr.buff, "unit_sim, %13.3f, %7.3f, %d, %9.2f, %d, %11.8f, %7.5f,%7.5f,%7.5f,%8.5f, %7.5f,%7.5f,%7.5f,%7.5f,%7.5f,%7.5f,%7.5f,  %d,  %9.4f, %9.4f,  %10.7f, %d, %c",
             cTime, Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->tb_f(), Sim->vsat(), Sim->voc_stat(),
-            Sim->dv_dyn(), Sim->vb(), Sim->ib(), Sim->ib_dyn(), Sim->ib_dyn_rate(), Sim->ib_in(), Sim->ib_charge(), Sim->ioc(),
+            Sim->dv_dyn(), Sim->vb(), Sim->ib(), Sim->ib_dyn(), Sim->dv_hys(), Sim->ib_dyn_rate(), Sim->ib_in(), Sim->ib_charge(), Sim->ioc(),
             Sim->saturated(),
             Sim->delta_q(), Sim->q_capacity(), Sim->soc(), reset_temp,'\0');
         Serial.printf("%s\n", pr.buff);
