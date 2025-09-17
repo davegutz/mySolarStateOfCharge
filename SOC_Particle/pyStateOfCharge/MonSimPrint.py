@@ -120,7 +120,7 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     return hdr
 
 def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
-    hdr = "  i  time   r r_t   sa       sa_s     dt              dt_s           ib_in_s              ib_s                ib_dyn_rate_s         ib_dyn_s             dv_hys_s             ib_charge_s          ioc_s                 soc                  soc_s                delq                     i * dt_s * coul_eff    d_delq_s             delq_s                 qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate              vb                   vb_s                 voc_stat             voc_stat_s           voc_s                 dv_dyn_s            vsat                 "
+    hdr = "  i  time   r r_t   sa       sa_s     dt              dt_s           ib_in_s              ib_s                ib_dyn_rate_s         ib_dyn_s             dv_hys_s             ib_charge_s          ioc_s                 soc                  soc_s              delq                       i * dt_s * coul_eff      d_delq_s           delq_s                     qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate              vb                   vb_s                 voc_stat             voc_stat_s           voc_s                 dv_dyn_s            vsat                 "
     if calc_temp:
         print(hdr)
     if i > 0:
