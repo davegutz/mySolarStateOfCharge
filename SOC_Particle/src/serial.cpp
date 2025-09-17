@@ -125,21 +125,21 @@ void print_rapid_header(void)
 {
   if ( ( sp.debug()==1 || sp.debug()==2 || sp.debug()==3 || sp.debug()==4 ) )
   {
-    Serial.printf ("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb_rap, Tb_f_rap, Tb_f_rate_rap, vb, ib, ib_dyn, ib_dyn_rate,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
+    Serial.printf ("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb_rap, Tb_f_rap, Tb_f_rate_rap, vb, ib, ib_dyn, dv_dyn, ib_dyn_rate,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
     #ifdef HDWE_ARGON
-      Serial1.printf("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb_rap, Tb_f_rap, Tb_f_rate_rap, vb, ib, ib_dyn, ib_dyn_rate,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
+      Serial1.printf("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb_rap, Tb_f_rap, Tb_f_rate_rap, vb, ib, ib_dyn, dv_dyn, ib_dyn_rate,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
     #endif
   }
 }
 void print_rapid_create_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
   double cTime = double(Sen->now)/1000;
-  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%9.2f,%9.2f,   %d, %d, %d, %d,   %11.8f,%11.8f,%11.8f,   %7.5f,%9.5f,%9.5f,%9.5f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %10.7f,%10.7f,%10.7f,%5.3f,%9.4f,", \
+  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%9.2f,%9.2f,   %d, %d, %d, %d,   %11.8f,%11.8f,%11.8f,   %7.5f,%9.5f,%9.5f,%9.5f,%9.5f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %10.7f,%10.7f,%10.7f,%5.3f,%9.4f,", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
     CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(),
     pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
     Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate,
-    Mon->vb(), Mon->ib(), Mon->ib_dyn(), Mon->ib_dyn_rate(), Mon->ib_charge(), Mon->voc_soc(), 
+    Mon->vb(), Mon->ib(), Mon->ib_dyn(), Mon->dv_dyn(), Mon->ib_dyn_rate(), Mon->ib_charge(), Mon->voc_soc(), 
     Mon->vsat(), Mon->dv_dyn(), Mon->voc_stat(), Mon->hx(),
     Mon->y_ekf(),
     Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc(), Mon->soc_min(), Mon->delta_q());
