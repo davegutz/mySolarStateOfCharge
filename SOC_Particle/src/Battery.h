@@ -113,6 +113,7 @@ public:
   float dt() { return dt_; };
   float dv_dsoc() { return dv_dsoc_; };
   float dv_dyn() { return dv_dyn_; };
+  float dv_hys() { return dv_hys_; };
   float ib() { return ib_; };            // Battery terminal current, A
   float ibs() { return ibs_; };          // Hysteresis input current, A
   float ib_dyn() { return ib_dyn_; };    // Battery terminal current lagged by charge transfer, A
