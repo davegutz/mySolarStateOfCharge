@@ -48,7 +48,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     7. Fig. 9 EKF 2a: hx(soc) negative slope?
     8. *** Fig. 10 EKF 3:  voc_ekv (hx) not equal at 0.  Fixed by modifying reset_ekf logic
     9. Run CompareHistSim etc.
-    10. Fig 18 dv_hys jitter around 0 in reference data  ***->0*dv_hys before return instead of in return
+    10. *** Fig 18 dv_hys jitter around 0 in reference data  ***->0*dv_hys before return instead of in return Fixed by sending dv_hys over data stream instead of calculating in load.
     11. voltage resolutions off/on mon 1
     12. *** Can reorder execution so header printed before any relevant data?  Deleting first two rows of data before headers causes data mismatch in sim.  No change.  Not problem
     13. *** Discarded sim data ('vv0') causes issue.  Don't record/save local entered data.  Fixed by 'skip' logic

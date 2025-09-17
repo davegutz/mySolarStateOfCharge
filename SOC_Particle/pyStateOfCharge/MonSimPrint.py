@@ -120,7 +120,7 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     return hdr
 
 def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
-    hdr = "  i  time   r r_t   sa       sa_s     dt              dt_s           ib_in_s              ib_s                ib_dyn_rate_s         ib_dyn_rstate_s      ib_dyn_lstate_s      ib_dyn_s             ib_charge_s          ioc_s                 soc                  soc_s                delq                     i * dt_s * coul_eff    d_delq_s             delq_s                 qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate              vb                   vb_s                 voc_stat             voc_stat_s           voc_s                 dv_dyn_s            vsat                 "
+    hdr = "  i  time   r r_t   sa       sa_s     dt              dt_s           ib_in_s              ib_s                ib_dyn_rate_s         ib_dyn_s             dv_hys_s             ib_charge_s          ioc_s                 soc                  soc_s                delq                     i * dt_s * coul_eff    d_delq_s             delq_s                 qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate              vb                   vb_s                 voc_stat             voc_stat_s           voc_s                 dv_dyn_s            vsat                 "
     if calc_temp:
         print(hdr)
     if i > 0:
@@ -142,9 +142,8 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
           "{:10.5f}".format(sim_old.ib_in_s[i]), "{:9.5f}".format(sim.ib_in),
           "{:10.5f}".format(sim_old.ib_s[i]), "{:9.5f}".format(sim.ib),
           "{:10.5f}".format(sim_old.ib_dyn_rate_s[i]), "{:9.5f}".format(sim.ib_dyn_rate),
-          "{:10.5f}".format(sim_old.ib_dyn_rstate_s[i]), "{:9.5f}".format(sim.ib_dyn_rstate),
-          "{:10.5f}".format(sim_old.ib_dyn_lstate_s[i]), "{:9.5f}".format(sim.ib_dyn_lstate),
           "{:10.5f}".format(sim_old.ib_dyn_s[i]), "{:9.5f}".format(sim.ib_dyn),
+          "{:10.5f}".format(sim_old.dv_hys_s[i]), "{:9.5f}".format(sim.dv_hys),
           "{:10.5f}".format(sim_old.ib_charge_s[i]), "{:9.5f}".format(sim.ib_charge),
           "{:10.5f}".format(sim_old.ioc_s[i]), "{:9.5f}".format(sim.ioc),
           "{:11.5f}".format(mon_old.soc[i]), "{:8.5f}".format(mon.soc),
@@ -192,7 +191,7 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, ST):
     return hdr
 
 def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp):
-    hdr = "  i  time   r r_t  i_e  r_e  sa      ib_charge            ib                   ib_dyn               ib_dyn_rate           dv_dyn                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               soc_ekf               y_ekf"
+    hdr = "  i  time   r r_t  i_e  r_e  sa      ib_charge            ib                   ib_dyn               ib_dyn_rate           dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               soc_ekf               y_ekf"
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
@@ -203,6 +202,7 @@ def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp):
           "{:10.5f}".format(mon_old.ib_dyn[i]), "{:9.5f}".format(mon.ib_dyn),
           "{:10.5f}".format(mon_old.ib_dyn_rate[i]), "{:9.5f}".format(mon.ib_dyn_rate),
           "{:13.7f}".format(mon_old.dv_dyn[i]), "{:10.7f}".format(mon.dv_dyn),
+          "{:13.7f}".format(mon_old.dv_hys[i]), "{:10.7f}".format(mon.dv_hys),
           "{:13.7f}".format(mon_old.soc[i]), "{:10.7f}".format(mon.soc),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
