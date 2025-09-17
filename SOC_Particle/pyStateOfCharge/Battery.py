@@ -645,12 +645,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.x_post = mo.x_post[i_ekf]
         self.tb_f_for_hx = mo.tb_f_for_hx[i_ekf]
         self.x_for_hx = mo.x_for_hx[i_ekf]
-        # print("init_soc_ekf ekf:                                                                                                                                                                                                                  tb_f_for_hx   {:10.7f}".format(self.tb_f_for_hx),
-        #       "    x             {:10.7f}          update ekf".format(self.x),
-        #       "    x_for_hx  {:10.7f}                        ".format(self.x_for_hx),
-        #       "    hx  {:10.7f}                        ".format(self.hx),
-        #       )
-
 
     def regauge(self, tb_f):
         if self.converged_ekf() and abs(self.soc_ekf - self.soc) > Battery.DF2:

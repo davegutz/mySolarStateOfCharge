@@ -56,7 +56,7 @@ def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, ca
     return hdr
 
 def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf):
-    hdr = "  i  time   r r_t  i_e  r_e  c_e   dt_ekf         sa      ib_charge             soc                    soc_ekf                 y_ekf                voc_ekf                Tb_f                    x_prior             fr     Tb_f_rap                x_ekf                   tb_f_for_hx             x_for_hx                  hx                    z         z_ekf"
+    hdr = "  i  time   r r_t  i_e  r_e  c_e   dt_ekf         sa      ib_charge             soc                    soc_ekf                 y_ekf                voc_ekf                Tb_f                    x_prior             fr     Tb_f_rap                x_ekf                   tb_f_for_hx             x_for_hx                  hx                    z         z_ekf     P                            P_post                       P_prior                      H                        R                    S                     K                          x_post"
     i_ekf = max(i_ekf, 0)
     if calc_ekf:
         print(hdr)
@@ -77,6 +77,14 @@ def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf):
           "{:11.7f}".format(mon_old.x_for_hx[i_ekf]), "{:9.7f}".format(mon.x_for_hx),
           "{:14.5f}".format(mon_old.hx[i_ekf]), "{:9.5f}".format(mon.hx),
           "{:11.5f}".format(mon_old.z[i_ekf]), "{:9.5f}".format(mon.z_ekf),
+          "{:14.11f}".format(mon_old.P[i_ekf]), "{:12.11f}".format(mon.P),
+          "{:14.11f}".format(mon_old.P_post[i_ekf]), "{:12.11f}".format(mon.P_post),
+          "{:14.11f}".format(mon_old.P_prior[i_ekf]), "{:12.11f}".format(mon.P_prior),
+          "{:11.7f}".format(mon_old.H[i_ekf]), "{:9.7f}".format(mon.H),
+          "{:11.6f}".format(mon_old.R[i_ekf]), "{:9.6f}".format(mon.R),
+          "{:11.6f}".format(mon_old.S[i_ekf]), "{:9.6f}".format(mon.S),
+          "{:13.9f}".format(mon_old.K[i_ekf]), "{:10.9f}".format(mon.K),
+          "{:12.7f}".format(mon_old.x_post[i_ekf]), "{:9.7f}".format(mon.x_post),
           )
     return hdr
 
