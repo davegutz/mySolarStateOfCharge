@@ -272,7 +272,8 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.subplot(325)
     plt.plot(mo.time, mo.dv_hys, color='green', linestyle='-', label='dv_hys'+ref_str)
     plt.plot(mv.time, mv.dv_hys, color='cyan', linestyle='--', label='dv_hys'+test_str)
-    plt.plot(smv.time, np.array(smv.dv_hys_s)+0.1, color='red', linestyle='-', label='dv_hys_s'+test_str+'+0.1')
+    # plt.plot(smv.time, np.array(smv.dv_hys_s)+0.1, color='red', linestyle='-', label='dv_hys_s'+test_str+'+0.1')
+    plq(plt, smv, 'time', smv, 'dv_hys_s', add=0.1, color='red', linestyle='-', label='dv_hys_s'+test_str+'+0.1')
     plt.plot(so.time, np.array(so.dv_hys_s)-0.1, color='magenta',  linestyle='-', label='dv_hys_s-0.1'+ref_str)
     plt.legend(loc=1)
     plt.subplot(326)
@@ -877,10 +878,13 @@ class SavedData:
             self.voc_soc_sel = None
             self.e_wrap = None
             self.e_wrap_filt = None
+            self.e_wrap_trim = None
             self.e_wrap_m = None
             self.e_wrap_m_filt = None
+            self.e_wrap_m_trim = None
             self.e_wrap_n = None
             self.e_wrap_n_filt = None
+            self.e_wrap_n_trim = None
             self.wh_flt = None
             self.wh_m_flt = None
             self.wh_n_flt = None
@@ -952,6 +956,7 @@ class SavedData:
             self.voc_soc_sel = np.array(sel.voc_soc[:i_end])
             self.e_wrap = np.array(sel.e_w[:i_end])
             self.e_wrap_filt = np.array(sel.e_w_f[:i_end])
+            # self.e_wrap_trim = np.array(sel.e_w_t[:i_end])
             if hasattr(sel, 'e_wm'):
                 self.e_wrap_m = np.array(sel.e_wm[:i_end])
             if hasattr(sel, 'e_wm_f'):
@@ -962,6 +967,8 @@ class SavedData:
                 self.e_wrap_n_filt = np.array(sel.e_wn_f[:i_end])
             if hasattr(sel, 'e_wm_t'):
                 self.e_wrap_m_trim = np.array(sel.e_wm_t[:i_end])
+            if hasattr(sel, 'e_wn_t'):
+                self.e_wrap_n_trim = np.array(sel.e_wn_t[:i_end])
             self.wh_flt = np.bool_(np.array(fltw) & 2**5)
             self.wl_flt = np.bool_(np.array(fltw) & 2**6)
             self.wh_m_flt = np.bool_(np.array(fltw) & 2**14)

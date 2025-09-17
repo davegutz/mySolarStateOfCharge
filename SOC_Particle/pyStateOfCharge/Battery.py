@@ -395,6 +395,13 @@ class BatteryMonitor(Battery, EKF1x1):
             self.Tb_hdwe_filt = ref.Tb_hdwe_filt[0]
             self.Tb_hdwe_filt_rate = ref.Tb_hdwe_filt_rate[0]
             self.e_wrap = ref.e_wrap[0]
+            self.e_wrap_filt = ref.e_wrap_filt[0]
+            self.e_wrap_m = ref.e_wrap_m[0]
+            self.e_wrap_m_filt = ref.e_wrap_m_filt[0]
+            self.e_wrap_m_trim = ref.e_wrap_m_trim[0]
+            self.e_wrap_n = ref.e_wrap_n[0]
+            self.e_wrap_n_filt = ref.e_wrap_n_filt[0]
+            # self.e_wrap_n_trim = ref.e_wrap_n_trim[0]
             self.voc_soc = ref.voc_soc[0]
             self.voc_stat = self.voc_soc - self.e_wrap
             self.Tb = ref.Tb[0]
@@ -727,15 +734,16 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.reset_ekf.append(self.reset_ekf)
         self.saved.e_wrap.append(self.e_wrap)
         self.saved.e_wrap_filt.append(self.e_wrap_filt)
-        self.saved.e_wrap_rate.append(self.e_wrap_rate)
-        self.saved.ib_amp.append(self.ib_amp)
+        # self.saved.e_wrap_trim.append(self.e_wrap_trim)
         self.saved.e_wrap_m.append(self.e_wrap_m)
         self.saved.e_wrap_m_filt.append(self.e_wrap_m_filt)
         self.saved.e_wrap_m_trim.append(self.e_wrap_m_trim)
-        self.saved.ib_noa.append(self.ib_noa)
         self.saved.e_wrap_n.append(self.e_wrap_n)
         self.saved.e_wrap_n_filt.append(self.e_wrap_n_filt)
         self.saved.e_wrap_n_trim.append(self.e_wrap_n_trim)
+        self.saved.e_wrap_rate.append(self.e_wrap_rate)
+        self.saved.ib_amp.append(self.ib_amp)
+        self.saved.ib_noa.append(self.ib_noa)
         self.saved.ib_lag.append(self.ib_lag)
         self.saved.voc_soc_new.append(self.voc_soc_new)
         self.saved.ewmhi_thr.append(self.ewmhi_thr)
@@ -1283,17 +1291,18 @@ class Saved:
         self.reset_ekf = []  # Reset flag used for initialization
         self.e_wrap = []  # Verification of wrap calculation, V
         self.e_wrap_filt = []  # Verification of filtered wrap calculation, V
+        # self.e_wrap_trim = []  # Verification of filtered wrap calculation, V
+        self.e_wrap_m = []  # Verification of wrap calculation, V
+        self.e_wrap_m_filt = []  # Verification of filtered wrap calculation, V
+        self.e_wrap_m_trim = []  # Verification of filtered wrap calculation, V
+        self.e_wrap_n = []  # Verification of wrap calculation, V
+        self.e_wrap_n_filt = []  # Verification of filtered wrap calculation, V
+        self.e_wrap_n_trim = []  # Verification of filtered wrap calculation, V
         self.e_wrap_rate = []  # Verification of filtered wrap rate calculation, V/s
         self.ib_lag = []  # Lagged ib, A
         self.voc_soc_new = []  # New schedule values
         self.ib_amp = []
         self.ib_noa = []
-        self.e_wrap_m = []
-        self.e_wrap_n = []
-        self.e_wrap_m_filt = []
-        self.e_wrap_n_filt = []
-        self.e_wrap_m_trim = []
-        self.e_wrap_n_trim = []
         self.ewmhi_thr = []
         self.ewmlo_thr = []
         self.ewnhi_thr = []
