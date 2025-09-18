@@ -295,11 +295,10 @@ void Looparound::calculate(const boolean reset, const float ib, Sensors *Sen)
   ib_ = ib;
 
   // Dynamic emf. vb_ is stale when running with model
-  float ib_dyn;
-  if (sp.mod_vb()) ib_dyn = ib_past_;
-  else ib_dyn = ib_;
-  float dv_dyn = ChargeTransfer_->calculate(ib_dyn, reset_, chem_->tau_ct, Sen_->T)*chem_->r_ct*ap.slr_res + ib_dyn*chem_->r_0*ap.slr_res;
-  voc_ = Mon_->vb() - dv_dyn;
+  if (sp.mod_vb()) ib_dyn_ = ib_past_;
+  else ib_dyn_ = ib_;
+  dv_dyn_ = ChargeTransfer_->calculate(ib_dyn_, reset_, chem_->tau_ct, Sen_->T)*chem_->r_ct*ap.slr_res + ib_dyn_*chem_->r_0*ap.slr_res;
+  voc_ = Mon_->vb() - dv_dyn_;
   e_wrap_ = Mon_->voc_soc() - voc_;
 
   // Trimmer using past values
@@ -307,7 +306,7 @@ void Looparound::calculate(const boolean reset, const float ib, Sensors *Sen)
   float trim_rate_lim = 0.;
   if ( wrap_trim_gain_ > 0. )
   {
-    trim_init = -(Mon_->vb() - Mon_->voc_soc() - dv_dyn);
+    trim_init = -(Mon_->vb() - Mon_->voc_soc() - dv_dyn_);
     trim_rate_lim = max(min(e_wrap_filt_*wrap_trim_gain_, MAX_TRIM_RATE), -MAX_TRIM_RATE);
     e_wrap_trim_ = -Trim_->calculate(trim_rate_lim, min(Sen_->T, F_MAX_T_WRAP), reset_, trim_init);
   }

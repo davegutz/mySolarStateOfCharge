@@ -184,6 +184,48 @@ void print_ekf_header(void)
     eTime, dt_ekf_, Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_, x_prior_, P_prior_, x_post_, P_post_, hx_, H_, freeze_, Tb_f_for_hx_, x_for_hx_);
  }
 
+// print_signal_select for data collection
+void print_signal_sel_header(void)
+{
+  if ( sp.debug()==2 || sp.debug()==4 ) // print_signal_sel_header
+    Serial.printf("unit_s,c_time,res,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,   ib_diff, ib_diff_f,");
+    Serial.printf("    voc_soc,e_w,e_w_f,ib_dm,dv_dm,e_wm,e_wm_f,ib_dn,dv_dn,e_wn,e_wn_f,e_wm_t,  ib_sel_stat,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_h,vb_s,mvb,vb,  mtb,Tb_fa, ");
+    Serial.printf("  fltw, falw, ib_rate, ib_quiet, tb_sel, ccd_thr, ewh_thr, ewl_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,\n");
+}
+void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
+{
+  if ( (sp.debug()==2 || sp.debug()==4 || sp.debug()==61 )  && cp.publishS )
+  {
+      double cTime = double(Sen->now)/1000.;
+
+      sprintf(pr.buff, "unit_sel,%13.3f, %d, %d,  %10.7f, %8.5f,%8.5f,%8.5f,%8.5f,%8.5f, %8.5f,%8.5f, ",
+          cTime, reset, sp.ib_force(),
+          Sen->Flt->cc_diff(),
+          Sen->ib_amp_hdwe(), Sen->ib_noa_hdwe(), Sen->ib_amp_model(), Sen->ib_noa_model(), Sen->ib_model(), 
+          Sen->Flt->ib_diff(), Sen->Flt->ib_diff_f());
+      Serial.printf("%s", pr.buff);
+
+      sprintf(pr.buff, "  %7.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,",
+          Mon->voc_soc(), Sen->Flt->e_wrap(), Sen->Flt->e_wrap_filt(), Sen->Flt->ib_dyn_m(), Sen->Flt->dv_dyn_m(), Sen->Flt->e_wrap_m(), Sen->Flt->e_wrap_m_filt(),
+          Sen->Flt->ib_dyn_n(), Sen->Flt->dv_dyn_n(), Sen->Flt->e_wrap_n(), Sen->Flt->e_wrap_n_filt(),
+          Sen->Flt->LoopIbAmp->e_wrap_trim());
+      Serial.printf("%s", pr.buff);
+
+        sprintf(pr.buff, "  %d,%8.5f,%8.5f,%8.5f, %d,%8.5f,  %d,%8.5f,%8.5f, %d,%8.5f,  %d, %d, ",
+            Sen->Flt->ib_sel_stat(), Sen->vc_hdwe(), Sen->ib_hdwe(), Sen->ib_hdwe_model(), sp.mod_ib(), Sen->ib(),
+            Sen->Flt->vb_sel_stat(), Sen->vb_hdwe(), Sen->vb_model(), sp.mod_vb(), Sen->vb(),
+            sp.mod_tb_f(), Sen->Flt->tb_fa());
+
+      Serial.printf("%s", pr.buff);
+
+      sprintf(pr.buff, "%ld, %ld, %7.3f, %7.3f, %d, %9.6f,%7.3f,%7.3f,%7.3f,%7.3f,%d,%d,%7.3f,%d,",
+          Sen->Flt->fltw(), Sen->Flt->falw(), Sen->Flt->ib_rate(), Sen->Flt->ib_quiet(), Sen->Flt->tb_sel_status(),
+          Sen->Flt->cc_diff_thr(), Sen->Flt->ewhi_thr(), Sen->Flt->ewlo_thr(), Sen->Flt->ib_diff_thr(), Sen->Flt->ib_quiet_thr(), Sen->Flt->preserving(), ap.fake_faults,
+          Mon->y_ekf_filt(), Sen->Flt->ib_decision());
+      Serial.printf("%s\n", pr.buff);
+  }
+}
+
 // print sim for data collection
 void print_sim_header(void)
 {
@@ -223,48 +265,6 @@ void print_temp_serial(const boolean reset, Sensors *Sen)
     Log.info("    print_temp_serial cTime,%9.3f,", cTime);
   }
 }
-
-// print_signal_select for data collection
-void print_signal_sel_header(void)
-{
-  if ( sp.debug()==2 || sp.debug()==4 ) // print_signal_sel_header
-    Serial.printf("unit_s,c_time,res,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,   ib_diff, ib_diff_f,");
-    Serial.printf("    voc_soc,e_w,e_w_f,e_wm,e_wm_f,e_wn,e_wn_f,e_wm_t,  ib_sel_stat,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_h,vb_s,mvb,vb,  mtb,Tb_fa, ");
-    Serial.printf("  fltw, falw, ib_rate, ib_quiet, tb_sel, ccd_thr, ewh_thr, ewl_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,\n");
-}
-void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
-{
-  if ( (sp.debug()==2 || sp.debug()==4 || sp.debug()==61 )  && cp.publishS )
-  {
-      double cTime = double(Sen->now)/1000.;
-
-      sprintf(pr.buff, "unit_sel,%13.3f, %d, %d,  %10.7f, %8.5f,%8.5f,%8.5f,%8.5f,%8.5f, %8.5f,%8.5f, ",
-          cTime, reset, sp.ib_force(),
-          Sen->Flt->cc_diff(),
-          Sen->ib_amp_hdwe(), Sen->ib_noa_hdwe(), Sen->ib_amp_model(), Sen->ib_noa_model(), Sen->ib_model(), 
-          Sen->Flt->ib_diff(), Sen->Flt->ib_diff_f());
-      Serial.printf("%s", pr.buff);
-
-      sprintf(pr.buff, "  %7.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,",
-          Mon->voc_soc(), Sen->Flt->e_wrap(), Sen->Flt->e_wrap_filt(), Sen->Flt->e_wrap_m(), Sen->Flt->e_wrap_m_filt(), Sen->Flt->e_wrap_n(), Sen->Flt->e_wrap_n_filt(),
-          Sen->Flt->LoopIbAmp->e_wrap_trim());
-      Serial.printf("%s", pr.buff);
-
-        sprintf(pr.buff, "  %d,%8.5f,%8.5f,%8.5f, %d,%8.5f,  %d,%8.5f,%8.5f, %d,%8.5f,  %d, %d, ",
-            Sen->Flt->ib_sel_stat(), Sen->vc_hdwe(), Sen->ib_hdwe(), Sen->ib_hdwe_model(), sp.mod_ib(), Sen->ib(),
-            Sen->Flt->vb_sel_stat(), Sen->vb_hdwe(), Sen->vb_model(), sp.mod_vb(), Sen->vb(),
-            sp.mod_tb_f(), Sen->Flt->tb_fa());
-
-      Serial.printf("%s", pr.buff);
-
-      sprintf(pr.buff, "%ld, %ld, %7.3f, %7.3f, %d, %9.6f,%7.3f,%7.3f,%7.3f,%7.3f,%d,%d,%7.3f,%d,",
-          Sen->Flt->fltw(), Sen->Flt->falw(), Sen->Flt->ib_rate(), Sen->Flt->ib_quiet(), Sen->Flt->tb_sel_status(),
-          Sen->Flt->cc_diff_thr(), Sen->Flt->ewhi_thr(), Sen->Flt->ewlo_thr(), Sen->Flt->ib_diff_thr(), Sen->Flt->ib_quiet_thr(), Sen->Flt->preserving(), ap.fake_faults,
-          Mon->y_ekf_filt(), Sen->Flt->ib_decision());
-      Serial.printf("%s\n", pr.buff);
-  }
-}
-
 
 // Inputs serial print
 void rapid_print(Sensors *Sen, BatteryMonitor *Mon)

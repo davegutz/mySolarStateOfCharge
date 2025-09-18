@@ -219,18 +219,21 @@ public:
     const float imax, const float imin, const float err_max);
   ~Looparound();
   void calculate(const boolean reset, const float ib, Sensors *Sen);
+  float dv_dyn() { return dv_dyn_; };
   float e_wrap() { return e_wrap_; };
   float e_wrap_filt() { return e_wrap_filt_; };
   float e_wrap_rate() { return e_wrap_rate_; };
   float e_wrap_trim() { return e_wrap_trim_; };
   uint8_t hi_fail() { return hi_fail_; };
   uint8_t hi_fault() { return hi_fault_; };
+  float ib_dyn() { return ib_dyn_; };
   uint8_t lo_fail() { return lo_fail_; };
   uint8_t lo_fault() { return lo_fault_; };
   void pretty_print();
 protected:
   Chemistry *chem_;         // Chemistry
   LagExp *ChargeTransfer_;  // ChargeTransfer model {ib, vb} --> {voc}, ioc=ib for Battery version
+  float dv_dyn_;            // Effective Randles voltage drop, V
   float e_wrap_;            // Wrap error, V
   float e_wrap_filt_;       // Wrap error, V
   float e_wrap_rate_;       // Wrap error rate, V/s
@@ -241,6 +244,7 @@ protected:
   uint8_t hi_fail_;         // Fail bit
   uint8_t hi_fault_;        // Fault bit
   float ib_;                // Sensed unit shunt current, A
+  float ib_dyn_;            // Effective Randles unit shunt current, A
   float ib_past_;           // Sensed unit shunt current past value, A
   float imax_;              // Current range max, A
   float imin_;              // Current range min, A
@@ -279,6 +283,8 @@ public:
   float ewhi_thr() { return ewhi_thr_; };
   float ewlo_thr_;      // Threshold e_wrap failed low, V
   float ewlo_thr() { return ewlo_thr_; };
+  float dv_dyn_m() { return LoopIbAmp->dv_dyn(); };
+  float dv_dyn_n() { return LoopIbNoa->dv_dyn(); };
   float e_wrap() { return e_wrap_; };
   float e_wrap_filt() { return e_wrap_filt_; };
   float e_wrap_m() { return LoopIbAmp->e_wrap(); };
@@ -313,6 +319,8 @@ public:
   float ib_diff_thr() { return ib_diff_thr_; };
   boolean ib_dscn_fa() { return failRead(IB_DSCN_FA); };
   boolean ib_dscn_flt() { return faultRead(IB_DSCN_FLT); };
+  float ib_dyn_m() { return LoopIbAmp->ib_dyn(); };
+  float ib_dyn_n() { return LoopIbNoa->ib_dyn(); };
   void ib_logic(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
   boolean ib_noa_bare() { return faultRead(IB_NOA_BARE); };
   boolean ib_noa_fa() { return failRead(IB_NOA_FA); };
