@@ -191,20 +191,26 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, ST):
     return hdr
 
 def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp):
-    hdr = "  i  time   r r_t  i_e  r_e  sa      ib_charge            ib                    e_wrap               e_wrap_filt          e_wrap_m             e_wrap_m_filt       e_wrap_m_trim         e_wrap_n             e_wrap_n_filt       ib_dyn               ib_dyn_rate           dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               soc_ekf               y_ekf"
+    hdr = "  i  time   r r_t  i_e   r_e  sa       ib_charge             ib                    e_wrap               e_wrap_filt          ib_hm                ib_dyn_m             dv_dyn_m             e_wrap_m             e_wrap_m_filt       e_wrap_m_trim         ib_hn                ib_dyn_n             dv_dyn_n             e_wrap_n             e_wrap_n_filt       ib_dyn               ib_dyn_rate           dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               soc_ekf               y_ekf"
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
           "{:3d}".format(i_ekf), "{:4d}".format(mon.reset_ekf),
           "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
-          "{:10.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
-          "{:10.5f}".format(mon_old.ib[i]), "{:9.5f}".format(mon.ib),
+          "{:11.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
+          "{:11.5f}".format(mon_old.ib[i]), "{:9.5f}".format(mon.ib),
           "{:11.5f}".format(mon_old.e_wrap[i]), "{:8.5f}".format(mon.e_wrap),
           "{:11.5f}".format(mon_old.e_wrap_filt[i]), "{:8.5f}".format(mon.e_wrap_filt),
           # "{:11.5f}".format(mon_old.e_wrap_trim[i]), "{:8.5f}".format(mon.e_wrap_trim),
+          "{:11.5f}".format(mon_old.ibmh[i]), "{:8.5f}".format(mon.LoopIbAmp.ib),
+          "{:11.5f}".format(mon_old.ib_dyn_m[i]), "{:8.5f}".format(mon.LoopIbAmp.ib_dyn),
+          "{:11.5f}".format(mon_old.dv_dyn_m[i]), "{:8.5f}".format(mon.LoopIbAmp.dv_dyn),
           "{:11.5f}".format(mon_old.e_wrap_m[i]), "{:8.5f}".format(mon.e_wrap_m),
           "{:11.5f}".format(mon_old.e_wrap_m_filt[i]), "{:8.5f}".format(mon.e_wrap_m_filt),
           "{:11.5f}".format(mon_old.e_wrap_m_trim[i]), "{:8.5f}".format(mon.e_wrap_m_trim),
+          "{:11.5f}".format(mon_old.ibnh[i]), "{:8.5f}".format(mon.LoopIbNoa.ib),
+          "{:11.5f}".format(mon_old.ib_dyn_n[i]), "{:8.5f}".format(mon.LoopIbNoa.ib_dyn),
+          "{:11.5f}".format(mon_old.dv_dyn_n[i]), "{:8.5f}".format(mon.LoopIbNoa.dv_dyn),
           "{:11.5f}".format(mon_old.e_wrap_n[i]), "{:8.5f}".format(mon.e_wrap_n),
           "{:11.5f}".format(mon_old.e_wrap_n_filt[i]), "{:8.5f}".format(mon.e_wrap_n_filt),
           # "{:11.5f}".format(mon_old.e_wrap_m_trim[i]), "{:8.5f}".format(mon.e_wrap_m_trim),

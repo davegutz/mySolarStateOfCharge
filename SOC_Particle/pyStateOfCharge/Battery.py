@@ -361,7 +361,9 @@ class BatteryMonitor(Battery, EKF1x1):
         self.reset_past = True
         self.ib_past = 0.
         self.ib_amp = None
+        self.ib_amp_fut = 0.
         self.ib_noa = None
+        self.ib_noa_fut = 0.
         self.e_wrap_m = None
         self.e_wrap_m_filt = None
         self.e_wrap_m_trim = None
@@ -457,8 +459,10 @@ class BatteryMonitor(Battery, EKF1x1):
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_0=None,
                   e_w_amp_filt_0=None, e_w_noa_0=None, e_w_noa_filt_0=None, soc=None, sat_init=None,
                   reset_ekf=None, ib_dyn_init=None, ib_dyn_rate_init=None):
-        self.ib_amp = ib_amp
-        self.ib_noa = ib_noa
+        self.ib_amp = self.ib_amp_fut
+        self.ib_amp_fut = ib_amp
+        self.ib_noa = self.ib_noa_fut
+        self.ib_noa_fut = ib_noa
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
@@ -473,7 +477,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        self.wrap(reset=reset, ib_amp=ib_amp, ib_noa=ib_noa)
+        self.wrap(reset=reset, ib_amp=self.ib_amp, ib_noa=ib_noa)
 
         # Reversionary model
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
@@ -679,9 +683,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.ib_dyn_rate.append(self.ib_dyn_rate)
         self.saved.ib_dyn_rstate.append(self.ib_dyn_rstate)
         self.saved.ib_dyn_lstate.append(self.ib_dyn_lstate)
-        self.saved.ib_dyn_a.append(self.ib_dyn_a)
-        self.saved.ib_dyn_b.append(self.ib_dyn_b)
-        self.saved.ib_dyn_c.append(self.ib_dyn_c)
         self.saved.voc.append(self.voc)
         self.saved.voc_soc.append(self.voc_soc)
         self.saved.voc_stat.append(self.voc_stat)
@@ -735,9 +736,13 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.e_wrap.append(self.e_wrap)
         self.saved.e_wrap_filt.append(self.e_wrap_filt)
         # self.saved.e_wrap_trim.append(self.e_wrap_trim)
+        self.saved.ib_dyn_m.append(self.LoopIbAmp.ib_dyn)
+        self.saved.dv_dyn_m.append(self.LoopIbAmp.dv_dyn)
         self.saved.e_wrap_m.append(self.e_wrap_m)
         self.saved.e_wrap_m_filt.append(self.e_wrap_m_filt)
         self.saved.e_wrap_m_trim.append(self.e_wrap_m_trim)
+        self.saved.ib_dyn_n.append(self.LoopIbNoa.ib_dyn)
+        self.saved.dv_dyn_n.append(self.LoopIbNoa.dv_dyn)
         self.saved.e_wrap_n.append(self.e_wrap_n)
         self.saved.e_wrap_n_filt.append(self.e_wrap_n_filt)
         self.saved.e_wrap_n_trim.append(self.e_wrap_n_trim)
@@ -1080,9 +1085,6 @@ class BatterySim(Battery):
         self.saved_s.ib_dyn_rate_s.append(self.ib_dyn_rate)
         self.saved_s.ib_dyn_rstate_s.append(self.ib_dyn_rstate)
         self.saved_s.ib_dyn_lstate_s.append(self.ib_dyn_lstate)
-        self.saved_s.ib_dyn_a_s.append(self.ib_dyn_a)
-        self.saved_s.ib_dyn_b_s.append(self.ib_dyn_b)
-        self.saved_s.ib_dyn_c_s.append(self.ib_dyn_c)
         self.saved_s.dv_hys_s.append(self.dv_hys)
         self.saved_s.tau_hys_s.append(self.tau_hys)
         self.saved_s.vb_s.append(self.vb)
@@ -1124,9 +1126,11 @@ class Looparound:
         self.reset = True
         self.zero = False
         self.dt = 0.
+        self.dv_dyn = 0.
         self.e_wrap = 0.
         self.e_wrap_filt = 0.
         self.e_wrap_rate = 0.
+        self.ib_dyn = 0.
         self.wrap_hi_amp = wrap_hi_amp
         self.wrap_lo_amp = wrap_lo_amp
         self.e_wrap_trim = 0.
@@ -1154,16 +1158,18 @@ class Looparound:
     # Update the loop
     def calculate(self, reset=True, ib=0., loop_gain=0., dt=None, ewsat_slr=1., ewmin_slr=1.):
         self.ib = ib
+        self.ib_dyn = self.ib
         self.reset = reset
         self.dt = dt
-        dv_dyn_ = self.ChargeTransfer.calculate(self.ib, self.reset, self.dt) * self.chem.r_ct + self.ib * self.chem.r_0
-        self.voc = self.Mon.vb - dv_dyn_
+        self.dv_dyn = (self.ChargeTransfer.calculate(self.ib_dyn, self.reset, self.dt) * self.chem.r_ct +
+                       self.ib_dyn * self.chem.r_0)
+        self.voc = self.Mon.vb - self.dv_dyn
         self.e_wrap = self.Mon.voc_soc - self.voc
 
         # Trimmer using past values
         trim_init = 0.
         if loop_gain > 0.:
-            trim_init = -(self.Mon.vb - self.Mon.voc_soc - dv_dyn_)
+            trim_init = -(self.Mon.vb - self.Mon.voc_soc - self.dv_dyn)
         self.e_wrap_trim = -self.Trim.calculate(in_=self.e_wrap_filt * loop_gain, dt=self.dt,
                                                 reset=self.reset, init_value=trim_init)
         self.e_wrap_trimmed = self.e_wrap + self.e_wrap_trim
@@ -1220,9 +1226,6 @@ class Saved:
         self.ib_dyn_rate = []
         self.ib_dyn_rstate = []
         self.ib_dyn_lstate = []
-        self.ib_dyn_a = []
-        self.ib_dyn_b = []
-        self.ib_dyn_c = []
         self.soc = []
         self.soc_ekf = []
         self.voc = []
@@ -1268,9 +1271,6 @@ class Saved:
         self.ib_dyn_rate = []  # Monitor Bank current induced back emf rate before resistance multiply, A
         self.ib_dyn_rstate = []  # Monitor Bank current, A
         self.ib_dyn_lstate = []  # Monitor Bank current, A
-        self.ib_dyn_a = []  # Monitor Bank current, A
-        self.ib_dyn_b = []  # Monitor Bank current, A
-        self.ib_dyn_c = []  # Monitor Bank current, A
         self.voc_stat = []  # Monitor Static bank open circuit voltage, V
         self.voc = []  # Monitor Static bank open circuit voltage, V
         self.voc_ekf = []  # Monitor bank solved static open circuit voltage, V
@@ -1292,9 +1292,13 @@ class Saved:
         self.e_wrap = []  # Verification of wrap calculation, V
         self.e_wrap_filt = []  # Verification of filtered wrap calculation, V
         # self.e_wrap_trim = []  # Verification of filtered wrap calculation, V
+        self.ib_dyn_m = []  # Verification of wrap calculation, A
+        self.dv_dyn_m = []  # Verification of wrap calculation, V
         self.e_wrap_m = []  # Verification of wrap calculation, V
         self.e_wrap_m_filt = []  # Verification of filtered wrap calculation, V
         self.e_wrap_m_trim = []  # Verification of filtered wrap calculation, V
+        self.ib_dyn_n = []  # Verification of wrap calculation, A
+        self.dv_dyn_n = []  # Verification of wrap calculation, V
         self.e_wrap_n = []  # Verification of wrap calculation, V
         self.e_wrap_n_filt = []  # Verification of filtered wrap calculation, V
         self.e_wrap_n_trim = []  # Verification of filtered wrap calculation, V
@@ -1693,9 +1697,6 @@ class SavedS:
         self.ib_dyn_rate_s = []
         self.ib_dyn_rstate_s = []
         self.ib_dyn_lstate_s = []
-        self.ib_dyn_a_s = []
-        self.ib_dyn_b_s = []
-        self.ib_dyn_c_s = []
         self.ib_in_s = []
         self.ib_charge_s = []
         self.ib_fut_s = []

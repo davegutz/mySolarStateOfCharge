@@ -879,6 +879,10 @@ class SavedData:
             self.e_wrap = None
             self.e_wrap_filt = None
             self.e_wrap_trim = None
+            self.ib_dyn_m = None
+            self.dv_dyn_m = None
+            self.ib_dyn_n = None
+            self.dv_dyn_n = None
             self.e_wrap_m = None
             self.e_wrap_m_filt = None
             self.e_wrap_m_trim = None
@@ -956,6 +960,10 @@ class SavedData:
             self.voc_soc_sel = np.array(sel.voc_soc[:i_end])
             self.e_wrap = np.array(sel.e_w[:i_end])
             self.e_wrap_filt = np.array(sel.e_w_f[:i_end])
+            self.ib_dyn_m = np.array(sel.ib_dm[:i_end])
+            self.dv_dyn_m = np.array(sel.dv_dm[:i_end])
+            self.ib_dyn_n = np.array(sel.ib_dn[:i_end])
+            self.dv_dyn_n = np.array(sel.dv_dn[:i_end])
             # self.e_wrap_trim = np.array(sel.e_w_t[:i_end])
             if hasattr(sel, 'e_wm'):
                 self.e_wrap_m = np.array(sel.e_wm[:i_end])

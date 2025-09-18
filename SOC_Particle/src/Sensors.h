@@ -523,7 +523,7 @@ public:
   void select_temp(BatteryMonitor *Mon);  // Make final signal selection
   void select_volt_and_current(BatteryMonitor *Mon);  // Make final signal selection
   float ib() { return Ib / sp.nP(); };                            // Battery unit current, A
-  float ib_amp() { return Ib_amp / sp.nP(); };          // Battery amp unit current, A
+  float ib_amp() { return Ib_amp / sp.nP(); };                    // Battery amp unit current, A
   float ib_amp_hdwe() { return Ib_amp_hdwe / sp.nP(); };          // Battery amp unit current, A
   float ib_amp_model() { return Ib_amp_model / sp.nP(); };        // Battery amp model unit current, A
   float ib_hdwe() { return Ib_hdwe / sp.nP(); };                  // Battery select hardware unit current, A
