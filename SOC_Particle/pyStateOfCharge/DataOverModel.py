@@ -812,7 +812,7 @@ class SavedData:
                 if sel is not None:
                     self.c_time_s = np.array(sel.c_time) - self.time_ref
                     i_end_sel = np.where(self.c_time_s <= time_end)[0][-1] + 1
-                    i_end = min(min(i_end), min(i_end_sel))
+                    i_end = np.minimum(i_end, i_end_sel)
                     self.zero_end = min(self.zero_end, i_end-1)
                 if ekf is not None:
                     self.time_e = np.array(ekf.c_time) - self.time_ref
