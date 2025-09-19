@@ -115,10 +115,10 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     # need Tb input.   perhaps need higher order to enforce basic type 1 response
     Is_sat_delay = TFDelay(in_=mon_old.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
     bms_off_init = mon_old.bms_off[0]
-    e_w_amp_0 = None
-    e_w_amp_filt_0 = None
-    e_w_noa_0 = None
-    e_w_noa_filt_0 = None
+    e_w_amp_r = None
+    e_w_noa_r = None
+    e_w_amp_filt_r = None
+    e_w_noa_filt_r = None
 
     # time loop initialization
     now = t[0]
@@ -244,14 +244,17 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.apply_delta_q_t(mon_old.delta_q[i], mon_old.Tb_f_rap[i])
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
-            if hasattr(mon_old, 'e_wrap_m'):
-                e_w_amp_0 = mon_old.e_wrap_m[0]
-            if hasattr(mon_old, 'e_wrap_m_filt'):
-                e_w_amp_filt_0 = mon_old.e_wrap_m_filt[0]
-            if hasattr(mon_old, 'e_wrap_n'):
-                e_w_noa_0 = mon_old.e_wrap_n[0]
-            if hasattr(mon_old, 'e_wrap_n_filt'):
-                e_w_noa_filt_0 = mon_old.e_wrap_n_filt[0]
+
+        # Wrap
+        if hasattr(mon_old, 'e_wrap_m'):
+            e_w_amp_r = mon_old.e_wrap_m[i]
+        if hasattr(mon_old, 'e_wrap_m_filt'):
+            e_w_amp_filt_r = mon_old.e_wrap_m_filt[i]
+        if hasattr(mon_old, 'e_wrap_n'):
+            e_w_noa_r = mon_old.e_wrap_n[i]
+        if hasattr(mon_old, 'e_wrap_n_filt'):
+            e_w_noa_filt_r = mon_old.e_wrap_n_filt[i]
+
         prn_soc_debug(time=now, leader="after mon_soc_apply  ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
         # Monitor calculations including ekf
@@ -311,15 +314,17 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             if reset:
                 ib_dyn_init = mon_old.ib_dyn[i]
                 ib_dyn_rate_init = mon_old.ib_dyn_rate[i]
+            e_wrap_filt_init = mon_old.e_wrap_filt[i]
             mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, ST.Tb_f_rate_past,
-                          rp=rp, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh, e_w_amp_0=e_w_amp_0,
-                          e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
+                          rp=rp, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh,
+                          e_w_amp_r=e_w_amp_r, e_w_amp_filt_r=e_w_amp_filt_r,
+                          e_w_noa_r=e_w_noa_r, e_w_noa_filt_r=e_w_noa_filt_r,
                           reset_ekf=reset_ekf, ib_dyn_init=ib_dyn_init, ib_dyn_rate_init=ib_dyn_rate_init)
         else:
             mon.calculate(_chm_m, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
                           reset, calc_ekf, T_ekf, mon_old.z[0], ST.Tb_f_rate_past,
-                          rp=rp, bms_off_init=bms_off_init, ib_amp=ibmm, ib_noa=ibnm, e_w_amp_0=e_w_amp_0,
-                          e_w_amp_filt_0=e_w_amp_filt_0, e_w_noa_0=e_w_noa_0, e_w_noa_filt_0=e_w_noa_filt_0,
+                          rp=rp, bms_off_init=bms_off_init, ib_amp=ibmm, ib_noa=ibnm, e_w_amp_r=e_w_amp_r,
+                          e_w_amp_filt_r=e_w_amp_filt_r, e_w_noa_r=e_w_noa_r, e_w_noa_filt_r=e_w_noa_filt_r,
                           reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge
         sat = is_sat(ST.Tb_f_past, mon.chemistry.rated_temp, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat,

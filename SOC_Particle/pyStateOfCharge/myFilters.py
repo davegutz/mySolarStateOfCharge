@@ -536,6 +536,7 @@ class LagTustin(DiscreteFilter):
         self.saved = Saved1()
         self.in_ = 0.
         self.out_ = 0.
+        self.reset = None
 
     def __str__(self, prefix=''):
         s = prefix + "LagTustin:"
@@ -545,6 +546,8 @@ class LagTustin(DiscreteFilter):
         s += "  b        =    {:7.3f}  // Discrete coefficient\n".format(self.b)
         s += "  in_      =    {:7.3f}  // Input\n".format(self.in_)
         s += "  out_     =    {:7.3f}  // Output\n".format(self.out_)
+        s += "  state    =    {:7.3f}  // State\n".format(self.state)
+        s += "  rate     =    {:7.3f}  // Rate\n".format(self.rate)
         return s
 
     def assign_coeff(self, tau):
@@ -553,8 +556,9 @@ class LagTustin(DiscreteFilter):
         self.b = (2.0 * self.tau - self.dt) / (2.0 * self.tau + self.dt)
 
     def calc_states(self, in_):
-        self.rate = max(min(self.a * (in_ - self.state), self.max), self.min)
-        self.state = max(min(in_ * (1.0 - self.b) + self.state * self.b, self.max), self.min)
+        self.rate = self.a * (in_ - self.state)
+        if not self.reset:
+            self.state = max(min(in_ * (1.0 - self.b) + self.state * self.b, self.max), self.min)
 
     def calc_all(self, in_, dt):
         self.dt = dt
@@ -563,10 +567,24 @@ class LagTustin(DiscreteFilter):
 
     def calculate(self, in_, reset, dt):
         self.in_ = in_
-        if reset:
+        self.reset = reset
+        if self.reset:
             self.state = self.in_
         self.calc_all(self.in_, dt)
         self.out_ = self.state
+        return self.out_
+
+    def calculate_seeded(self, in_, _out_reset, reset, dt, text=''):
+        self.in_ = in_
+        self.reset = reset
+        if self.reset:
+            self.state = _out_reset
+        self.calc_all(self.in_, dt)
+        self.out_ = self.state
+        if self.reset:
+            print(text, " t seed    r{:3d}".format(self.reset), " in       {:7.5f}".format(in_),
+                  "   out    {:7.5f}".format(self.out_), "   rate    {:7.5f}".format(self.rate),
+                  "       in_reset {:7.5f}".format(in_), "    out_reset {:7.5f}".format(_out_reset), "dt {:5.3f}".format(dt))
         return self.out_
 
     def save(self, time):
@@ -582,7 +600,7 @@ class Saved1:
     # A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
     def __init__(self):
         self.time = []
-        self.rstate = []
+        # self.rstate = []
         self.state = []
         self.rate = []
         self.in_ = []
