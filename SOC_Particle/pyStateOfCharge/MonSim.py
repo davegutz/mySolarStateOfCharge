@@ -315,14 +315,14 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                 ib_dyn_init = mon_old.ib_dyn[i]
                 ib_dyn_rate_init = mon_old.ib_dyn_rate[i]
             e_wrap_filt_init = mon_old.e_wrap_filt[i]
-            dv_dyn_amp_init = mon_old.dv_dyn_m[i]
-            dv_dyn_noa_init = mon_old.dv_dyn_n[i]
+            ib_dyn_amp_init = mon_old.ib_dyn_m[i]
+            ib_dyn_noa_init = mon_old.ib_dyn_n[i]
             mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, ST.Tb_f_rate_past,
                           rp=rp, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh,
                           e_w_amp_r=e_w_amp_r, e_w_amp_filt_r=e_w_amp_filt_r,
                           e_w_noa_r=e_w_noa_r, e_w_noa_filt_r=e_w_noa_filt_r,
                           reset_ekf=reset_ekf, ib_dyn_init=ib_dyn_init, ib_dyn_rate_init=ib_dyn_rate_init,
-                          dv_dyn_amp_init=dv_dyn_amp_init, dv_dyn_noa_init=dv_dyn_noa_init)
+                          ib_dyn_amp_init=ib_dyn_amp_init, ib_dyn_noa_init=ib_dyn_noa_init)
         else:
             mon.calculate(_chm_m, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
                           reset, calc_ekf, T_ekf, mon_old.z[0], ST.Tb_f_rate_past,
