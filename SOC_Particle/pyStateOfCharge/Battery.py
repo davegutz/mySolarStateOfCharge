@@ -1166,7 +1166,7 @@ class Looparound:
                   e_wrap_filt_reset=None):
         self.ib = ib
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_reset, self.reset, self.dt,
-                                                                self.chem.tau_ct)
+                                                                self.chem.tau_ct, text=self.name)
         self.reset = reset
         self.dt = dt
         self.dv_dyn = (self.ib_dyn* self.chem.r_ct + self.ib * self.chem.r_0)

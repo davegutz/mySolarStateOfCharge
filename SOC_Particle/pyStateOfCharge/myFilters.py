@@ -412,7 +412,7 @@ class LagExp(DiscreteFilter):
         self.out_ = self.state
         return self.out_
 
-    def calculate_tau_seeded(self, in_, _out_reset, reset, dt, tau_, rmax=None, rmin=None):
+    def calculate_tau_seeded(self, in_, _out_reset, reset, dt, tau_, rmax=None, rmin=None, text=''):
         self.in_ = in_
         self.reset = reset
         self.tau = tau_
@@ -421,10 +421,10 @@ class LagExp(DiscreteFilter):
             self.rstate = self.in_
         self.calc_all(self.in_, dt, rmax, rmin)
         self.out_ = self.state
-        # if self.reset and in_ < 5 and dt < 1.:
-        #     print("seed    r{:3d}".format(self.reset), "                                             ib       {:7.5f}".format(in_),
-        #           "   ib_dyn    {:7.5f}".format(self.out_), "   ib_dr    {:7.5f}".format(self.rate),
-        #           "       ib_reset {:7.5f}".format(in_), "    ib_dyn_reset {:7.5f}".format(_out_reset), "   rate_reset {:7.5f}".format(_rate_reset), "dt {:5.3f}".format(dt))
+        if self.reset and in_ < 5 and dt < 1. and text == 'Amp':
+            print(text + " seed    r{:3d}".format(self.reset), "                                             ib       {:7.5f}".format(in_),
+                  "   ib_dyn    {:7.5f}".format(self.out_),
+                  "       ib_reset {:7.5f}".format(in_), "    ib_dyn_reset {:7.5f}".format(_out_reset), "dt {:5.3f}".format(dt))
         return self.out_
 
     def save(self, time):
