@@ -295,9 +295,10 @@ void Looparound::calculate(const boolean reset, const float ib, Sensors *Sen)
   ib_ = ib;
 
   // Dynamic emf. vb_ is stale when running with model
-  if (sp.mod_vb()) ib_dyn_ = ib_past_;
-  else ib_dyn_ = ib_;
-  dv_dyn_ = ChargeTransfer_->calculate(ib_dyn_, reset_, chem_->tau_ct, Sen_->T)*chem_->r_ct*ap.slr_res + ib_dyn_*chem_->r_0*ap.slr_res;
+  float ib_into_ct = ib_;
+  if (sp.mod_vb()) ib_into_ct = ib_past_;
+  ib_dyn_ = ChargeTransfer_->calculate(ib_into_ct, reset_, chem_->tau_ct, Sen_->T);
+  dv_dyn_ = ib_dyn_*chem_->r_ct*ap.slr_res + ib_dyn_*chem_->r_0*ap.slr_res;
   voc_ = Mon_->vb() - dv_dyn_;
   e_wrap_ = Mon_->voc_soc() - voc_;
 
@@ -344,6 +345,8 @@ void Looparound::pretty_print()
 {
   Serial.printf(" reset %d\n", reset_);
   Serial.printf(" ib%7.3f A\n", ib_);
+  Serial.printf(" ib_dyn%7.3f A\n", ib_dyn_);
+  Serial.printf(" dv_dyn%7.3f V\n", dv_dyn_);
   Serial.printf(" voc%7.3f V\n", voc_);
   Serial.printf(" e_wrap%7.3f V\n", e_wrap_);
   Serial.printf(" e_wrap_f%7.3f V\n", e_wrap_filt_);
