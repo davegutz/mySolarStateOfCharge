@@ -975,8 +975,8 @@ class SavedData:
                 self.e_wrap_n_filt = np.array(sel.e_wn_f[:i_end])
             if hasattr(sel, 'e_wm_t'):
                 self.e_wrap_m_trim = np.array(sel.e_wm_t[:i_end])
-            if hasattr(sel, 'e_wn_t'):
-                self.e_wrap_n_trim = np.array(sel.e_wn_t[:i_end])
+            # if hasattr(sel, 'e_wn_t'):   # trim gain is 0 for NOA
+            #     self.e_wrap_n_trim = np.array(sel.e_wn_t[:i_end])
             self.wh_flt = np.bool_(np.array(fltw) & 2**5)
             self.wl_flt = np.bool_(np.array(fltw) & 2**6)
             self.wh_m_flt = np.bool_(np.array(fltw) & 2**14)

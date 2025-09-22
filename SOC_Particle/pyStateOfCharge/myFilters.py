@@ -581,10 +581,10 @@ class LagTustin(DiscreteFilter):
             self.state = _out_reset
         self.calc_all(self.in_, dt)
         self.out_ = self.state
-        if self.reset:
-            print(text, " t seed    r{:3d}".format(self.reset), " in       {:7.5f}".format(in_),
-                  "   out    {:7.5f}".format(self.out_), "   rate    {:7.5f}".format(self.rate),
-                  "       in_reset {:7.5f}".format(in_), "    out_reset {:7.5f}".format(_out_reset), "dt {:5.3f}".format(dt))
+        # if self.reset:
+        #     print(text, " t seed    r{:3d}".format(self.reset), " in       {:7.5f}".format(in_),
+        #           "   out    {:7.5f}".format(self.out_), "   rate    {:7.5f}".format(self.rate),
+        #           "       in_reset {:7.5f}".format(in_), "    out_reset {:7.5f}".format(_out_reset), "dt {:5.3f}".format(dt))
         return self.out_
 
     def save(self, time):

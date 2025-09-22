@@ -459,11 +459,10 @@ class BatteryMonitor(Battery, EKF1x1):
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_r=None,
                   e_w_amp_filt_r=None, e_w_noa_r=None, e_w_noa_filt_r=None, soc=None, sat_init=None,
-                  reset_ekf=None, ib_dyn_init=None, ib_dyn_rate_init=None, e_wrap_filt_init=None):
-        self.ib_amp = self.ib_amp_fut
-        self.ib_amp_fut = ib_amp
-        self.ib_noa = self.ib_noa_fut
-        self.ib_noa_fut = ib_noa
+                  reset_ekf=None, ib_dyn_init=None, ib_dyn_rate_init=None, e_wrap_filt_init=None,
+                  dv_dyn_amp_init=None, dv_dyn_noa_init=None):
+        self.ib_amp = ib_amp
+        self.ib_noa = ib_noa
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
@@ -478,7 +477,9 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        self.wrap(reset=reset, e_wrap_amp_filt_reset=e_w_amp_filt_r, e_wrap_noa_filt_reset=e_w_noa_filt_r)
+        self.wrap(reset=reset, ib_amp=self.ib_amp, ib_noa=self.ib_noa, e_wrap_amp_filt_reset=e_w_amp_filt_r,
+                  e_wrap_noa_filt_reset=e_w_noa_filt_r,
+                  dv_dyn_amp_reset=dv_dyn_amp_init, dv_dyn_noa_reset=dv_dyn_noa_init)
 
         # Reversionary model
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
@@ -764,7 +765,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
 
-    def wrap(self, reset=True, ib_noa=0., ib_amp=0., e_wrap_amp_filt_reset=None, e_wrap_noa_filt_reset=None):
+    def wrap(self, reset=True, ib_noa=0., ib_amp=0., e_wrap_amp_filt_reset=None, e_wrap_noa_filt_reset=None,
+             dv_dyn_amp_reset=None, dv_dyn_noa_reset=None):
         """Wrap logic"""
         self.e_wrap = self.voc_soc - self.voc_stat
         # TODO:  following should be scale select
@@ -792,7 +794,8 @@ class BatteryMonitor(Battery, EKF1x1):
         if self.ib_noa is not None:
             self.LoopIbNoa.calculate(reset=reset, ib=ib_noa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr,
-                                     ewsat_slr=ewsat_slr, e_wrap_filt_reset=e_wrap_noa_filt_reset)
+                                     ewsat_slr=ewsat_slr, e_wrap_filt_reset=e_wrap_noa_filt_reset,
+                                     dv_dyn_reset=dv_dyn_noa_reset)
             self.e_wrap_n = self.LoopIbNoa.e_wrap
             self.e_wrap_n_filt = self.LoopIbNoa.e_wrap_filt
             self.e_wrap_n_rate = self.LoopIbNoa.e_wrap_rate
@@ -810,7 +813,8 @@ class BatteryMonitor(Battery, EKF1x1):
             # print(f"{ib_amp=} {ib_amp_reset=} {self.ib_noa_rate=} {ib_amp_hi=} {ib_amp_lo=} {ib_noa_hi=} {ib_noa_lo=}")
             self.LoopIbAmp.calculate(reset=(ib_amp_reset or abs(self.ib_noa_rate) > Battery.MAX_NOA_RATE), ib=ib_amp,
                                      loop_gain=Battery.AMP_WRAP_TRIM_GAIN, dt=min(self.dt, Battery.F_MAX_T_WRAP),
-                                     ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr, e_wrap_filt_reset=e_wrap_amp_filt_reset)
+                                     ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr, e_wrap_filt_reset=e_wrap_amp_filt_reset,
+                                     dv_dyn_reset=dv_dyn_amp_reset)
             self.ewmhi_thr = self.LoopIbAmp.ewhi_thr
             self.ewmlo_thr = self.LoopIbAmp.ewlo_thr
             self.e_wrap_m = self.LoopIbAmp.e_wrap
@@ -1159,12 +1163,15 @@ class Looparound:
         self.ChargeTransfer.absorb(other.ChargeTransfer)
 
     # Update the loop
-    def calculate(self, reset=True, ib=0., loop_gain=0., dt=None, ewsat_slr=1., ewmin_slr=1., e_wrap_filt_reset=None):
+    def calculate(self, reset=True, ib=0., loop_gain=0., dt=None, ewsat_slr=1., ewmin_slr=1., dv_dyn_reset=None,
+                  e_wrap_filt_reset=None):
         self.ib = ib
         self.ib_dyn = self.ib
         self.reset = reset
         self.dt = dt
-        self.dv_dyn = (self.ChargeTransfer.calculate(self.ib_dyn, self.reset, self.dt) * self.chem.r_ct +
+        ib_dyn_out_reset = (dv_dyn_reset - self.ib * self.chem.r_0) / self.chem.r_ct
+        self.dv_dyn = (self.ChargeTransfer.calculate_tau_seeded(self.ib_dyn, ib_dyn_out_reset, self.reset, self.dt,
+                                                                self.chem.tau_ct) * self.chem.r_ct +
                        self.ib_dyn * self.chem.r_0)
         self.voc = self.Mon.vb - self.dv_dyn
         self.e_wrap = self.Mon.voc_soc - self.voc
