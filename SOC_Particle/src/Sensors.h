@@ -230,6 +230,11 @@ public:
   float ib_dyn_a() { return ChargeTransfer_->a(); };
   float ib_dyn_b() { return ChargeTransfer_->b(); };
   float ib_dyn_c() { return ChargeTransfer_->c(); };
+  float ib_dyn_lstate() { return ChargeTransfer_->lstate(); };
+  float ib_dyn_rate() { return ChargeTransfer_->rate(); };
+  float ib_dyn_rstate() { return ChargeTransfer_->rstate(); };
+  float ib_dyn_T() { return ChargeTransfer_->T(); };
+  float ib_dyn_tau() { return ChargeTransfer_->tau(); };
   uint8_t lo_fail() { return lo_fail_; };
   uint8_t lo_fault() { return lo_fault_; };
   void pretty_print();

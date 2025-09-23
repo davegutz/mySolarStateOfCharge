@@ -939,6 +939,9 @@ class SavedData:
             self.preserving = None
             self.y_ekf_f = None
             self.ib_dec = None
+            self.ib_dyn_a_m = None
+            self.ib_dyn_b_m = None
+            self.ib_dyn_b_m = None
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
@@ -1024,6 +1027,9 @@ class SavedData:
                 self.y_ekf_f = np.array(sel.y_ekf_f[:i_end])
             if hasattr(sel, 'ib_dec'):
                 self.ib_dec = np.array(sel.ib_dec[:i_end])
+            self.ib_dyn_a_m = np.array(sel.ib_dyn_a_m[:i_end])
+            self.ib_dyn_b_m = np.array(sel.ib_dyn_b_m[:i_end])
+            self.ib_dyn_c_m = np.array(sel.ib_dyn_c_m[:i_end])
         if ekf is None:
             self.skip_e = None
             self.time_e = None

@@ -191,7 +191,7 @@ void print_signal_sel_header(void)
     Serial.printf("unit_s,c_time,res,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,   ib_diff, ib_diff_f,");
     Serial.printf("    voc_soc,e_w,e_w_f,ib_dm,dv_dm,e_wm,e_wm_f,ib_dn,dv_dn,e_wn,e_wn_f,e_wm_t,  ib_sel_stat,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_h,vb_s,mvb,vb,  mtb,Tb_fa, ");
     Serial.printf("  fltw, falw, ib_rate, ib_quiet, tb_sel, ccd_thr, ewh_thr, ewl_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,");
-    Serial.printf("  ib_dyn_a_m, ib_dyn_b_m, ib_dyn_c_m,");
+    Serial.printf("  ib_dyn_a_m, ib_dyn_b_m, ib_dyn_c_m, ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rate_m,ib_dyn_rstate_m,ib_dyn_lstate_m,");
     Serial.printf("\n");
 }
 void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
@@ -225,8 +225,10 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
           Mon->y_ekf_filt(), Sen->Flt->ib_decision());
       Serial.printf("%s", pr.buff);
 
-      sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,",
-          Sen->Flt->LoopIbAmp->ib_dyn_a(), Sen->Flt->LoopIbAmp->ib_dyn_b(), Sen->Flt->LoopIbAmp->ib_dyn_c());
+      sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,",
+          Sen->Flt->LoopIbAmp->ib_dyn_a(), Sen->Flt->LoopIbAmp->ib_dyn_b(), Sen->Flt->LoopIbAmp->ib_dyn_c(),
+          Sen->Flt->LoopIbAmp->ib_dyn_T(), Sen->Flt->LoopIbAmp->ib_dyn_tau(), Sen->Flt->LoopIbAmp->ib_dyn_rate(),
+          Sen->Flt->LoopIbAmp->ib_dyn_rstate(), Sen->Flt->LoopIbAmp->ib_dyn_lstate());
       Serial.printf("%s", pr.buff);
 
       Serial.printf("\n");

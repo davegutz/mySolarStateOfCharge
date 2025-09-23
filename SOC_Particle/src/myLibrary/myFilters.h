@@ -180,6 +180,9 @@ public:
   virtual double rateStateCalc(double in, const double max_rate, const double min_rate);
   virtual double rateStateCalc(double in);
   virtual double state(void);
+  double T() { return T_; };
+  double tau() { return tau_; };
+  double rate() { return rate_; };
 protected:
   double max_;
   double min_;
