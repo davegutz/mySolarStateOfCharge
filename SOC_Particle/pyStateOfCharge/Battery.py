@@ -790,8 +790,9 @@ class BatteryMonitor(Battery, EKF1x1):
             ewsat_slr = 1.
             ewmin_slr = 1.
         # Individual wrap logic
-        if self.ib_noa is not None:
-            self.LoopIbNoa.calculate(reset=reset, ib=ib_noa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
+        if ib_noa is not None:
+            self.ib_noa = ib_noa
+            self.LoopIbNoa.calculate(reset=reset, ib=self.ib_noa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr,
                                      ewsat_slr=ewsat_slr, e_wrap_filt_reset=e_wrap_noa_filt_reset,
                                      ib_dyn_reset=ib_dyn_noa_reset)
@@ -801,7 +802,8 @@ class BatteryMonitor(Battery, EKF1x1):
             self.e_wrap_n_trim = self.LoopIbNoa.e_wrap_trim
             self.ewnhi_thr = self.LoopIbNoa.ewhi_thr
             self.ewnlo_thr = self.LoopIbNoa.ewlo_thr
-        if self.ib_amp is not None:
+        if ib_amp is not None:
+            self.ib_amp = ib_amp
             ib_amp_hi = ib_amp >= Battery.HDWE_IB_HI_LO_AMP_HI
             ib_amp_lo = ib_amp <= Battery.HDWE_IB_HI_LO_AMP_LO
             ib_noa_hi = ib_noa >= Battery.HDWE_IB_HI_LO_NOA_HI
@@ -810,7 +812,7 @@ class BatteryMonitor(Battery, EKF1x1):
             ib_amp_reset = reset or self.disable_amp_fault
             self.ib_noa_rate = self.IbAmpRate.calculate(in_=ib_noa, reset=reset, dt=min(self.dt, Battery.F_MAX_T_WRAP))
             # print(f"{ib_amp=} {ib_amp_reset=} {self.ib_noa_rate=} {ib_amp_hi=} {ib_amp_lo=} {ib_noa_hi=} {ib_noa_lo=}")
-            self.LoopIbAmp.calculate(reset=ib_amp_reset, ib=ib_amp,
+            self.LoopIbAmp.calculate(reset=ib_amp_reset, ib=self.ib_amp,
                                      loop_gain=Battery.AMP_WRAP_TRIM_GAIN, dt=min(self.dt, Battery.F_MAX_T_WRAP),
                                      ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr, e_wrap_filt_reset=e_wrap_amp_filt_reset,
                                      ib_dyn_reset=ib_dyn_amp_reset)

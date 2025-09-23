@@ -227,6 +227,9 @@ public:
   uint8_t hi_fail() { return hi_fail_; };
   uint8_t hi_fault() { return hi_fault_; };
   float ib_dyn() { return ib_dyn_; };
+  float ib_dyn_a() { return ChargeTransfer_->a(); };
+  float ib_dyn_b() { return ChargeTransfer_->b(); };
+  float ib_dyn_c() { return ChargeTransfer_->c(); };
   uint8_t lo_fail() { return lo_fail_; };
   uint8_t lo_fault() { return lo_fault_; };
   void pretty_print();
