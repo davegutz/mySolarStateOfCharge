@@ -1494,6 +1494,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
     sample_time_ib_ = sample_time_ib_hdwe_;
     dt_ib_ = dt_ib_hdwe_;
   }
+  T =  double(dt_ib_)/1000.;
   now = sample_time_ib_ - inst_millis_ + inst_time_*1000;
   Log.info("    select_volt_and_current now:  now,%lld, cTime,%7.3f,", now, double(now)/1000.);
 

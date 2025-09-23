@@ -441,7 +441,6 @@ void loop()
     // Outputs: Sen->Ib, Sen->Vb, sp.inj_bias
     Log.info("ino:  sense_synth_select");
     sense_synth_select(reset, reset_temp, ReadSensors->now(), elapsed, myPins, Mon, Sen);
-    Sen->T =  double(Sen->dt_ib())/1000.;
 
     // Calculate Ah remaining`
     // Inputs:  sp.mon_chm, Sen->Ib, Sen->Vb, Sen->Tb_f

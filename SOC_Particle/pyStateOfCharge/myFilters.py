@@ -421,7 +421,7 @@ class LagExp(DiscreteFilter):
             self.rstate = self.in_
         self.calc_all(self.in_, dt, rmax, rmin)
         self.out_ = self.state
-        if self.reset and in_ < 5 and dt < 1. and text == 'Amp':
+        if False and self.reset and text == 'Amp':
             print(text + " seed    r{:3d}".format(self.reset), "                                             ib       {:7.5f}".format(in_),
                   "   ib_dyn    {:7.5f}".format(self.out_),
                   "       ib_reset {:7.5f}".format(in_), "    ib_dyn_reset {:7.5f}".format(_out_reset), "dt {:5.3f}".format(dt))

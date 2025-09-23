@@ -810,7 +810,7 @@ class BatteryMonitor(Battery, EKF1x1):
             ib_amp_reset = reset or self.disable_amp_fault
             self.ib_noa_rate = self.IbAmpRate.calculate(in_=ib_noa, reset=reset, dt=min(self.dt, Battery.F_MAX_T_WRAP))
             # print(f"{ib_amp=} {ib_amp_reset=} {self.ib_noa_rate=} {ib_amp_hi=} {ib_amp_lo=} {ib_noa_hi=} {ib_noa_lo=}")
-            self.LoopIbAmp.calculate(reset=(ib_amp_reset or abs(self.ib_noa_rate) > Battery.MAX_NOA_RATE), ib=ib_amp,
+            self.LoopIbAmp.calculate(reset=ib_amp_reset, ib=ib_amp,
                                      loop_gain=Battery.AMP_WRAP_TRIM_GAIN, dt=min(self.dt, Battery.F_MAX_T_WRAP),
                                      ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr, e_wrap_filt_reset=e_wrap_amp_filt_reset,
                                      ib_dyn_reset=ib_dyn_amp_reset)
@@ -953,8 +953,7 @@ class BatterySim(Battery):
         self.ib_lag = self.IbLag.calculate_tau(self.ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
         # Charge transfer dynamics
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_init, reset, dt,
-                                                     self.chemistry.tau_ct)
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_init, reset, dt, self.chemistry.tau_ct)
         self.ib_dyn_rate = self.ChargeTransfer.rate
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
@@ -1165,9 +1164,9 @@ class Looparound:
     def calculate(self, reset=True, ib=0., loop_gain=0., dt=None, ewsat_slr=1., ewmin_slr=1., ib_dyn_reset=None,
                   e_wrap_filt_reset=None):
         self.ib = ib
+        self.reset = reset
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_reset, self.reset, self.dt,
                                                                 self.chem.tau_ct, text=self.name)
-        self.reset = reset
         self.dt = dt
         self.dv_dyn = (self.ib_dyn* self.chem.r_ct + self.ib * self.chem.r_0)
         self.voc = self.Mon.vb - self.dv_dyn
