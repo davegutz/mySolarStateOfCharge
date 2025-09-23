@@ -191,7 +191,7 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, ST):
     return hdr
 
 def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp):
-    hdr = "  i  time   r r_t  i_e  r_e  sa       ib_charge             ib                    ib_hm                ib_dyn_m             ib_dyn_a_m           ib_dyn_b_m           ib_dyn_c_m           dv_dyn_m             e_wrap_m             e_wrap_m_filt       e_wrap_m_trim         ib_hn                ib_dyn_n             ib_dyn               dv_dyn_n             e_wrap_n             e_wrap_n_filt       e_wrap               e_wrap_filt          ib_dyn               ib_dyn_rate           dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               voc_stat_f             soc_ekf               y_ekf"
+    hdr = "  i  time   r r_t  i_e  r_e  sa       ib_charge             ib                    ib_hm               ib_dyn_m               ib_dyn_a_m            ib_dyn_b_m            ib_dyn_c_m            ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rate_m         ib_dyn_rstate_m       ib_dyn_lstate_m          dv_dyn_m             e_wrap_m             e_wrap_m_filt       e_wrap_m_trim         ib_hn                ib_dyn_n             ib_dyn               dv_dyn_n             e_wrap_n             e_wrap_n_filt       e_wrap               e_wrap_filt          ib_dyn               ib_dyn_rate           dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               voc_stat_f             soc_ekf               y_ekf"
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
@@ -201,9 +201,14 @@ def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp):
           "{:11.5f}".format(mon_old.ib[i]), "{:9.5f}".format(mon.ib),
           "{:11.5f}".format(mon_old.ibmh[i]), "{:8.5f}".format(mon.LoopIbAmp.ib),
           "{:11.5f}".format(mon_old.ib_dyn_m[i]), "{:8.5f}".format(mon.LoopIbAmp.ib_dyn),
-          "{:11.7f}".format(mon_old.ib_dyn_a_m[i]), "{:8.7f}".format(mon.LoopIbAmp.ChargeTransfer.a),
-          "{:11.7f}".format(mon_old.ib_dyn_b_m[i]), "{:8.7f}".format(mon.LoopIbAmp.ChargeTransfer.b),
-          "{:11.7f}".format(mon_old.ib_dyn_c_m[i]), "{:8.7f}".format(mon.LoopIbAmp.ChargeTransfer.c),
+          "{:12.6f}".format(mon_old.ib_dyn_a_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.a),
+          "{:12.6f}".format(mon_old.ib_dyn_b_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.b),
+          "{:12.6f}".format(mon_old.ib_dyn_c_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.c),
+          "{:9.3f}".format(mon_old.ib_dyn_T_m[i]), "{:5.3f}".format(mon.LoopIbAmp.ChargeTransfer.dt),
+          "{:12.6f}".format(mon_old.ib_dyn_tau_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.tau),
+          "{:12.6f}".format(mon_old.ib_dyn_rate_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.rate),
+          "{:12.6f}".format(mon_old.ib_dyn_rstate_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.rstate),
+          "{:12.6f}".format(mon_old.ib_dyn_lstate_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.state),
           "{:11.5f}".format(mon_old.dv_dyn_m[i]), "{:8.5f}".format(mon.LoopIbAmp.dv_dyn),
           "{:11.5f}".format(mon_old.e_wrap_m[i]), "{:8.5f}".format(mon.e_wrap_m),
           "{:11.5f}".format(mon_old.e_wrap_m_filt[i]), "{:8.5f}".format(mon.e_wrap_m_filt),

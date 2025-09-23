@@ -907,7 +907,7 @@ class BatterySim(Battery):
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_r=None,
                   e_w_amp_filt_r=None, e_w_noa_r=None, e_w_noa_filt_r=None, reset_ekf=None, soc=None, sat_init=None,
-                  dv_dyn_past = None, dv_dyn_0=None, ib_dyn_init=None, ib_dyn_rate_init=0.):
+                  dv_dyn_0=None, ib_dyn_init=None, ib_dyn_rate_init=0.):
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)
             self.chm = chem

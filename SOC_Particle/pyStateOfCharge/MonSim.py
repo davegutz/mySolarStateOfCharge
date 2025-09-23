@@ -231,7 +231,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         sim.calculate(_chm_s, None, ib_in_s, sim_old.dt_s[i], reset, None, None,
                       ib_dyn_init=ib_dyn_init, ib_dyn_rate_init=ib_dyn_rate_init,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
-                      bms_off_init=bms_off_init, dv_dyn_past=dv_dyn_past, dv_dyn_0=sim_old.dv_dyn_s[i])
+                      bms_off_init=bms_off_init, dv_dyn_0=sim_old.dv_dyn_s[i])
         prn_soc_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
         sim.count_coulombs(chem=_chm_s, dt=sim_old.dt_s[i], reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=ST.Tb_f_rate_past,
                            charge_curr=sim.ib_charge, sat=False, soc_s_init=sim_old.soc_s[i], mon_sat=mon.sat,
@@ -314,9 +314,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             if reset:
                 ib_dyn_init = mon_old.ib_dyn[i]
                 ib_dyn_rate_init = mon_old.ib_dyn_rate[i]
-            e_wrap_filt_init = mon_old.e_wrap_filt[i]
-            ib_dyn_amp_init = mon_old.ib_dyn_m[i]
-            ib_dyn_noa_init = mon_old.ib_dyn_n[i]
+                ib_dyn_amp_init = mon_old.ib_dyn_m[i]
+                ib_dyn_noa_init = mon_old.ib_dyn_n[i]
             mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, ST.Tb_f_rate_past,
                           rp=rp, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh,
                           e_w_amp_r=e_w_amp_r, e_w_amp_filt_r=e_w_amp_filt_r,

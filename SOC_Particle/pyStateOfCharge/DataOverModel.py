@@ -942,6 +942,11 @@ class SavedData:
             self.ib_dyn_a_m = None
             self.ib_dyn_b_m = None
             self.ib_dyn_b_m = None
+            self.ib_dyn_T_m = None
+            self.ib_dyn_tau_m = None
+            self.ib_dyn_rate_m = None
+            self.ib_dyn_rstate_m = None
+            self.ib_dyn_lstate_m = None
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
@@ -1030,6 +1035,11 @@ class SavedData:
             self.ib_dyn_a_m = np.array(sel.ib_dyn_a_m[:i_end])
             self.ib_dyn_b_m = np.array(sel.ib_dyn_b_m[:i_end])
             self.ib_dyn_c_m = np.array(sel.ib_dyn_c_m[:i_end])
+            self.ib_dyn_T_m = np.array(sel.ib_dyn_T_m[:i_end])
+            self.ib_dyn_rstate_m = np.array(sel.ib_dyn_rstate_m[:i_end])
+            self.ib_dyn_lstate_m = np.array(sel.ib_dyn_lstate_m[:i_end])
+            self.ib_dyn_rate_m = np.array(sel.ib_dyn_rate_m[:i_end])
+            self.ib_dyn_tau_m = np.array(sel.ib_dyn_tau_m[:i_end])
         if ekf is None:
             self.skip_e = None
             self.time_e = None
