@@ -412,19 +412,19 @@ class LagExp(DiscreteFilter):
         self.out_ = self.state
         return self.out_
 
-    def calculate_tau_seeded(self, in_, _out_reset, reset, dt, tau_, rmax=None, rmin=None, text=''):
+    def calculate_tau_seeded(self, in_, _out_init, reset, dt, tau_, rmax=None, rmin=None, text=''):
         self.in_ = in_
         self.reset = reset
         self.tau = tau_
         if self.reset:
-            self.state = _out_reset
+            self.state = _out_init
             self.rstate = self.in_
         self.calc_all(self.in_, dt, rmax, rmin)
         self.out_ = self.state
         if False and self.reset and text == 'Amp':
             print(text + " seed    r{:3d}".format(self.reset), "                                             ib       {:7.5f}".format(in_),
                   "   ib_dyn    {:7.5f}".format(self.out_),
-                  "       ib_reset {:7.5f}".format(in_), "    ib_dyn_reset {:7.5f}".format(_out_reset), "dt {:5.3f}".format(dt))
+                  "       ib_init {:7.5f}".format(in_), "    ib_dyn_init {:7.5f}".format(_out_init), "dt {:5.3f}".format(dt))
         return self.out_
 
     def save(self, time):
@@ -574,17 +574,17 @@ class LagTustin(DiscreteFilter):
         self.out_ = self.state
         return self.out_
 
-    def calculate_seeded(self, in_, _out_reset, reset, dt, text=''):
+    def calculate_seeded(self, in_, _out_init, reset, dt, text=''):
         self.in_ = in_
         self.reset = reset
         if self.reset:
-            self.state = _out_reset
+            self.state = _out_init
         self.calc_all(self.in_, dt)
         self.out_ = self.state
         # if self.reset:
         #     print(text, " t seed    r{:3d}".format(self.reset), " in       {:7.5f}".format(in_),
         #           "   out    {:7.5f}".format(self.out_), "   rate    {:7.5f}".format(self.rate),
-        #           "       in_reset {:7.5f}".format(in_), "    out_reset {:7.5f}".format(_out_reset), "dt {:5.3f}".format(dt))
+        #           "       in_init {:7.5f}".format(in_), "    out_init {:7.5f}".format(_out_init), "dt {:5.3f}".format(dt))
         return self.out_
 
     def save(self, time):
