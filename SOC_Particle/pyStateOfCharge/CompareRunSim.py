@@ -157,8 +157,8 @@ def main():
     time_end_in = None
     # time_end_in = 5.
 
-    plots = False
-    # plots = True
+    # plots = False
+    plots = True
 
     # s_hys_sim_in = 1.
     s_hys_sim_in = 0.
