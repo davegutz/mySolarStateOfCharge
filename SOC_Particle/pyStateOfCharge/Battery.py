@@ -76,8 +76,8 @@ class Battery(Coulombs):
     HDB_VBATT = 0.05  # Half deadband to filter vb, V (0.05)
     WRAP_ERR_FILT = 4.  # Wrap error filter time constant, s (4)
     MAX_WRAP_ERR_FILT = 10.  # Anti-windup wrap error filter, V (10)
-    IB_ABS_MAX_AMP = 12.  # Limit of Ib amp, A (12)
-    IB_ABS_MAX_NOA = 78.5  # Limit of Ib noa, A (78.5)
+    IB_ABS_MAX_AMP = 12.  # Hard range limit of bank sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_AMP_R1 / SHUNT_AMP_R2 *1.05) but saw -11.48 A (12)
+    IB_ABS_MAX_NOA = 78.5  # Hard range limit of sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_NOA_R1 / SHUNT_NOA_R2 *1.05) A (78.5)
     MAX_TRIM_RATE = 0.005  # Max allowable amp e_wraptrim rate, V/s (0.005)
     F_MAX_T_WRAP = 2.8  # Maximum update time of Wrap filter for stability at WRAP_ERR_FILT, s (2.8)
     D_SOC_S = 0.  # Bias on soc to voc-soc lookup to simulate error in estimation, esp cold battery near 0 C

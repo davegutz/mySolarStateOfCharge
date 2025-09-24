@@ -31,10 +31,10 @@
 #define SHUNT_GAIN            1333. // Shunt V2A gain (scale with * 'SA' and 'SB'), A/V (1333 is 100A/0.075V)
 #define SHUNT_AMP_R1          5100. // Internal amp resistance 196x, ohms (5100)
 #define SHUNT_AMP_R2       1000000. // Internal amp resistance 196x, ohms (1000000)
-#define IB_ABS_MAX_AMP        12.0  // Hard range limit of sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_AMP_R1 / SHUNT_AMP_R2 *1.05) but saw -11.48 A
+#define IB_ABS_MAX_AMP        12.0  // Hard range limit of sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_AMP_R1 / SHUNT_AMP_R2 *1.05) but saw -11.48 A (12)
 #define SHUNT_NOA_R1          5100. // Internal amp resistance 29.4x, ohms (5100)
 #define SHUNT_NOA_R2        150000. // Internal amp resistance 29.4x, ohms (150000)
-#define IB_ABS_MAX_NOA        78.5  // Hard range limit of sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_NOA_R1 / SHUNT_NOA_R2 *1.05)
+#define IB_ABS_MAX_NOA        78.5  // Hard range limit of sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_NOA_R1 / SHUNT_NOA_R2 *1.05) A (78.5)
 #define HDWE_IB_HI_LO_NOA_LO   -11. // Fully NOA bank discharge transition, A (-11)
 #define HDWE_IB_HI_LO_AMP_LO   -10. // Fully AMP bank discharge transition, A (-10)  
 #define HDWE_IB_HI_LO_AMP_HI    10. // Fully AMP bank charge transition, A (10)
