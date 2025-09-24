@@ -314,18 +314,20 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             if reset:
                 ib_dyn_init = mon_old.ib_dyn[i]
                 ib_dyn_rate_init = mon_old.ib_dyn_rate[i]
-                ib_dyn_amp_init = mon_old.ib_dyn_m[i]
                 ib_amp_init = mon_old.ibmh[max(i-1, 0)]
                 ib_dyn_amp_init = mon_old.ib_dyn_m[i]
                 ib_noa_init = mon_old.ibnh[max(i-1, 0)]
                 ib_dyn_noa_init = mon_old.ib_dyn_n[i]
+                e_wrap_trim_amp_init = mon_old.e_wrap_m_trim[i]
+                e_wrap_trim_noa_init = 0.
             mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, ST.Tb_f_rate_past,
                           rp=rp, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh,
                           e_w_amp_r=e_w_amp_r, e_w_amp_filt_r=e_w_amp_filt_r,
                           e_w_noa_r=e_w_noa_r, e_w_noa_filt_r=e_w_noa_filt_r,
                           reset_ekf=reset_ekf, ib_dyn_init=ib_dyn_init, ib_dyn_rate_init=ib_dyn_rate_init,
                           ib_amp_init=ib_amp_init, ib_dyn_amp_init=ib_dyn_amp_init,
-                          ib_noa_init=ib_noa_init, ib_dyn_noa_init=ib_dyn_noa_init)
+                          ib_noa_init=ib_noa_init, ib_dyn_noa_init=ib_dyn_noa_init,
+                          e_wrap_trim_amp_init=e_wrap_trim_amp_init, e_wrap_trim_noa_init=e_wrap_trim_noa_init)
         else:
             mon.calculate(_chm_m, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
                           reset, calc_ekf, T_ekf, mon_old.z[0], ST.Tb_f_rate_past,
