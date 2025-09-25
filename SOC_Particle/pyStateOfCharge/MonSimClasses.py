@@ -19,10 +19,8 @@ the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 
 import numpy as np
-from numpy.random import randn
 import Battery
 from Battery import Battery
-from datetime import datetime, timedelta
 from myFilters import LagExp
 from pyDAGx import myTables
 

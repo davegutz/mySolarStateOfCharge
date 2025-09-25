@@ -480,11 +480,11 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        self.wrap(reset=reset, ib_amp=self.ib_amp, ib_noa=self.ib_noa, e_wrap_amp_filt_init=e_w_amp_filt_r,
-                  e_wrap_noa_filt_init=e_w_noa_filt_r,
-                  ib_amp_init=ib_amp_init, ib_dyn_amp_init=ib_dyn_amp_init,
-                  ib_noa_init=ib_noa_init, ib_dyn_noa_init=ib_dyn_noa_init,
-                  e_wrap_trim_amp_init=e_wrap_trim_amp_init, e_wrap_trim_noa_init=e_wrap_trim_noa_init)
+        self.wrap(reset=reset,
+                  ib_amp=self.ib_amp, ib_amp_init=ib_amp_init, ib_dyn_amp_init=ib_dyn_amp_init,
+                  e_wrap_trim_amp_init=e_wrap_trim_amp_init, e_wrap_amp_filt_init=e_w_amp_filt_r,
+                  ib_noa=self.ib_noa, ib_noa_init=ib_noa_init, ib_dyn_noa_init=ib_dyn_noa_init,
+                  e_wrap_trim_noa_init=e_wrap_trim_noa_init, e_wrap_noa_filt_init=e_w_noa_filt_r)
 
         # Reversionary model
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
@@ -770,9 +770,10 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
 
-    def wrap(self, reset=True, ib_noa=0., ib_amp=0., e_wrap_amp_filt_init=None, e_wrap_noa_filt_init=None,
-             ib_amp_init=None, ib_dyn_amp_init=None, ib_noa_init=None, ib_dyn_noa_init=None, e_wrap_trim_amp_init=None,
-             e_wrap_trim_noa_init=None):
+    def wrap(self, reset=True,
+             ib_amp=0., ib_amp_init=None, ib_dyn_amp_init=None, e_wrap_amp_filt_init=None, e_wrap_trim_amp_init=None,
+             ib_noa=0., ib_noa_init=None, ib_dyn_noa_init=None, e_wrap_trim_noa_init=None, e_wrap_noa_filt_init=None):
+
         """Wrap logic"""
         self.e_wrap = self.voc_soc - self.voc_stat
         # TODO:  following should be scale select
@@ -820,9 +821,9 @@ class BatteryMonitor(Battery, EKF1x1):
             ib_amp_reset = reset or self.disable_amp_fault
             self.ib_noa_rate = self.IbAmpRate.calculate(in_=ib_noa, reset=reset, dt=min(self.dt, Battery.F_MAX_T_WRAP))
             # print(f"{ib_amp=} {ib_amp_init=} {self.ib_noa_rate=} {ib_amp_hi=} {ib_amp_lo=} {ib_noa_hi=} {ib_noa_lo=}")
-            self.LoopIbAmp.calculate(reset=ib_amp_reset, ib=self.ib_amp,
-                                     loop_gain=Battery.AMP_WRAP_TRIM_GAIN, dt=min(self.dt, Battery.F_MAX_T_WRAP),
-                                     ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr, e_wrap_filt_init=e_wrap_amp_filt_init,
+            self.LoopIbAmp.calculate(reset=ib_amp_reset, ib=self.ib_amp, loop_gain=Battery.AMP_WRAP_TRIM_GAIN,
+                                     dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr,
+                                     ewsat_slr=ewsat_slr, e_wrap_filt_init=e_wrap_amp_filt_init,
                                      ib_init=ib_amp_init, ib_dyn_init=ib_dyn_amp_init,
                                      e_wrap_trim_init=e_wrap_trim_amp_init)
             self.ewmhi_thr = self.LoopIbAmp.ewhi_thr

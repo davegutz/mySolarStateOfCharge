@@ -51,7 +51,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
 
     # Transient  inputs
     zero_zero_in = False
-    init_time_in = None
+    # init_time_in = None
     use_vb_sim_in = False
     use_ib_mon_in = False
     tune_in = False
@@ -99,7 +99,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
 
     # Plots
-    if data_only is False:
+    if not data_only:
         fig_list = []
         fig_files = []
         dir_root_test, data_root_test = os.path.split(data_file_clean)
@@ -154,11 +154,11 @@ def main():
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # The following are not implemented in GUI
 
-    time_end_in = None
-    # time_end_in = 5.
+    # time_end_in = None
+    time_end_in = 15.
 
-    # plots = False
-    plots = True
+    plots = False
+    # plots = True
 
     # s_hys_sim_in = 1.
     s_hys_sim_in = 0.
@@ -167,7 +167,7 @@ def main():
     mon_soc_in = False
     verbose_in = False
     scale_in = 1.0
-    request_hist_in = 5  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
+    request_hist_in = 4  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=mon_soc_in, verbose=verbose_in, scale_in=scale_in, s_hys_sim=s_hys_sim_in,

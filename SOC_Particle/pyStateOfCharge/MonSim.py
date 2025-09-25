@@ -130,6 +130,12 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     T = mon_old.dt[0]
     hdr = None
     sat_s_init = None
+    ib_amp_init = None
+    ib_dyn_amp_init = None
+    e_wrap_trim_amp_init = None
+    ib_noa_init = None
+    ib_dyn_noa_init = None
+    e_wrap_trim_noa_init = None
 
     # Print debug information
     if request_history is not None and request_history > 0:
@@ -163,9 +169,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                 ST.update()
             mon.Tb_f_rap = ST.Tb_f_past
             mon.Tb_f_rate_rap = ST.Tb_f_rate_past
+            sim.Tb_f = mon_old.Tb_mod[i_temp]
 
         # Input
-        sim.Tb_f = mon_old.Tb_mod[i_temp]
         dc_dc_on = False
         rp.modeling = modeling[i]
 
@@ -222,10 +228,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             _chm_s = chm_s[i]
         else:
             _chm_s = Bsim
-        if i == 0:
-            dv_dyn_past = sim_old.dv_dyn_s[0]
-        else:
-            dv_dyn_past = sim_old.dv_dyn_s[i-1]
         prn_soc_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
         ib_dyn_init = sim_old.ib_dyn_s[i]
         ib_dyn_rate_init = sim_old.ib_dyn_rate_s[i]
