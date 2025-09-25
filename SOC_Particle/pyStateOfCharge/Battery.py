@@ -288,7 +288,7 @@ class BatteryMonitor(Battery, EKF1x1):
 
     def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1.,
                  tb_f=25., tweak_test=False, sres0=1., sresct=1., stauct=1.,
-                 scaler_q=None, scaler_r=None, scale_r_ss=1., s_hys=1., dvoc=0., eframe_mult=Battery.cp_eframe_mult,
+                 scale_r_ss=1., s_hys=1., dvoc=0., eframe_mult=Battery.cp_eframe_mult,
                  mod_code=0, s_coul_eff=1., unit=None, ref=None, dTb=None):
         q_cap_rated_scaled = q_cap_rated * scale
         Battery.__init__(self, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
@@ -311,16 +311,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.amp_hrs_remaining_wt = 0  # Discharge amp*time left if drain soc_wt_ to 0, A-h
         self.e_soc_ekf = 0.  # analysis parameter
         self.e_voc_ekf = 0.  # analysis parameter
-        # self.Q = 0.001*0.001  # EKF process uncertainty
-        # self.R = 0.1*0.1  # EKF state uncertainty
-        if scaler_q is None:
-            self.scaler_q = Scale(1, 4, Battery.EKF_Q_SD_NORM, Battery.EKF_Q_SD_NORM)
-        else:
-            self.scaler_q = scaler_q
-        if scaler_r is None:
-            self.scaler_r = Scale(1, 4, Battery.EKF_R_SD_NORM, Battery.EKF_R_SD_NORM)
-        else:
-            self.scaler_r = scaler_r
         self.Q = Battery.EKF_Q_SD_NORM * Battery.EKF_Q_SD_NORM  # EKF process uncertainty
         self.R = Battery.EKF_R_SD_NORM * Battery.EKF_R_SD_NORM  # EKF state uncertainty
         self.soc_s = 0.  # Model information
@@ -548,8 +538,6 @@ class BatteryMonitor(Battery, EKF1x1):
             if ddq_dt > 0. and not self.tweak_test:
                 ddq_dt *= self.chemistry.coul_eff
             # ddq_dt -= self.chemistry.dqdt*self.q_capacity*temp_rate  7/29/2025 to agree with c++ (noisy)
-            # self.Q = self.scaler_q.calculate(ddq_dt)
-            # self.R = self.scaler_r.calculate(ddq_dt)
             self.Q = Battery.EKF_Q_SD_NORM**2  # override
             self.R = Battery.EKF_R_SD_NORM**2  # override
             self.voc_stat_f =\

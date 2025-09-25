@@ -135,7 +135,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                      cutback_gain_sclr=cutback_gain_sclr, ds_voc_soc=ds_voc_soc, unit=unit, mon_ref=mon_old,
                      sim_ref=sim_old)
     mon = BatteryMonitor(mod_code=chm_m[0], tb_f=ST.Tb0, scale=scale_mon, tweak_test=tweak_test,
-                         sres0=sres0, sresct=sresct, stauct=stauct_mon, scaler_q=s_q, scaler_r=s_r,
+                         sres0=sres0, sresct=sresct, stauct=stauct_mon,
                          scale_r_ss=scale_r_ss, s_hys=s_hys_mon, dvoc=dvoc_mon, eframe_mult=eframe_mult,
                          s_coul_eff=s_coul_eff, unit=unit, ref=mon_old, dTb=ST.dTb)
     mon.saved.time_ref = mon_old.time_ref
