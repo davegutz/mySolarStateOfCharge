@@ -232,20 +232,16 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             prn_soc_debug(time=now, leader="a temp filtr:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
         # Models
-        if i == 0:
-            if sim_old is not None and not use_ib_mon:
-                ib_in_s = sim_old.ib_in_s[1]
-            else:
-                ib_in_s = mon_old.ib[1]
+        if sim_old is not None and not use_ib_mon:
+            ib_in_s = sim_old.ib_in_s[max(i, 1)]
         else:
-            if sim_old is not None and not use_ib_mon:
-                ib_in_s = sim_old.ib_in_s[i]
-            else:
-                ib_in_s = mon_old.ib[i]
+            ib_in_s = mon_old.ib[max(i, 1)]
+
         if Bsim is None:
             _chm_s = chm_s[i]
         else:
             _chm_s = Bsim
+
         prn_soc_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
         ib_dyn_rate_init = sim_old.ib_dyn_rate_s[i]
         sim.calculate(_chm_s, None, ib_in_s, sim_old.dt_s[i], reset, None, None,
