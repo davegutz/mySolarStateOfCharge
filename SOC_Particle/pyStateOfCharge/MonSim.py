@@ -26,6 +26,40 @@ from Scale import Scale
 from MonSimPrint import *
 from MonSimClasses import *
 
+def chm_from_mon_or_sim(mo, so):
+    chem_m = mo.chm
+    if so is not None:
+        chem_s = so.chm_s
+    else:
+        chem_s = chm_m
+    return chem_m, chem_s
+
+def get_modeling(mo):
+    if hasattr(mo, 'mod_data'):
+        modeling_ = mo.mod_data
+    else:
+        modeling_ = 255 * np.ones(len(mo.time))
+        print(f"what do we do now?  {rp.modeling=}")
+        # exit(1)
+    return modeling_
+
+def sync_to_mon_or_sim(mo, so, t_mx=None):
+    if so is not None and len(so.time) < len(mo.time):
+        time = so.time
+    else:
+        time = mo.time
+    if t_mx is not None:
+        t_delt = time - time[0]
+        time = time[np.where(t_delt <= t_mx)]
+    return time
+
+def vb_from_raw_or_selected(use_raw, mo):
+    if use_raw:
+        vb_ = mo.vb_h
+    else:
+        vb_ = mo.vb
+    return vb_
+
 #  Replicate the application in its entirety here.
 #  There are no 'bank' parameters anywhere in this model.   It is assumed that all inputs from the application have
 #  been converted to the single battery unit 12v form, S1P1, lower-case nomenclature.
@@ -59,33 +93,25 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     18. *** Fig 13 sim_s 1:  ib_in_ver  Not fixed: OK because have manually over-ridden ib selection to force ib_noa use in logic but not selection
     19. Fig 15 sim_s 2a:  vb?
     """
-    if sim_old is not None and len(sim_old.time) < len(mon_old.time):
-        t = sim_old.time
-    else:
-        t = mon_old.time
-    if t_max is not None:
-        t_delt = t - t[0]
-        t = t[np.where(t_delt <= t_max)]
-    reset_sel = mon_old.res
-    if use_vb_raw:
-        vb = mon_old.vb_h
-    else:
-        vb = mon_old.vb
-    chm_m = mon_old.chm
-    if sim_old is not None:
-        chm_s = sim_old.chm_s
-    else:
-        chm_s = chm_m
+
+    # time
+    t = sync_to_mon_or_sim(mon_old, sim_old, t_mx=t_max)
+
+    # vb
+    vb = vb_from_raw_or_selected(use_vb_raw, mon_old)
+
+    # chem
+    chm_m, chm_s = chm_from_mon_or_sim(mon_old, sim_old)
+
     t_len = len(t)
     rp = Retained()
-    if hasattr(mon_old, 'mod_data'):
-        modeling = mon_old.mod_data
-    else:
-        modeling = 255 * np.ones(len(mon_old.time))
-        print(f"what do we do now?  {rp.modeling=}")
-        # exit(1)
-    print("use_mon_soc is", use_mon_soc, "use_ib_mon is", use_ib_mon)
+
+    # modeling
+    modeling = get_modeling(mon_old)
+
+    # tweaking
     tweak_test = rp.tweak_test()
+
     ST = TbSense(mon_ref=mon_old, dTb_in=dTb_in)
     if hasattr(mon_old, 'qcrs'):
         scale_mon = mon_old.qcrs[0] / (Battery.UNIT_CAP_RATED*3600)
@@ -99,6 +125,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         scale_sim = unit_cap_rated / Battery.UNIT_CAP_RATED
         if scale_in:
             scale_sim *= scale_in
+
     s_q = Scale(1., 3., 0.000005, 0.00005)
     s_r = Scale(1., 3., 0.001, 1.)   # t_ib_fail = 1000
     sim = BatterySim(mod_code=chm_s[0], tb_f=ST.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
@@ -179,8 +206,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         # Tried hard not to re-implement solvers in the Python verification  tool
         # Also, BTW, did not implement signal selection or tweak logic
         reset = bool((t[i] <= init_time) or (t[i] < 0. and t[0] > init_time))
-        if reset_sel is not None:
-            reset = reset or bool(reset_sel[i] > 0.)
+        if mon_old.res is not None:
+            reset = reset or bool(mon_old.res[i] > 0.)
         prn_soc_debug(time=now, leader="before sim init:     ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
         if reset:
