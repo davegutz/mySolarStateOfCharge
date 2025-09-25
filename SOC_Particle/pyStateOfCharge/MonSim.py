@@ -26,6 +26,22 @@ from Scale import Scale
 from MonSimPrint import *
 from MonSimClasses import *
 
+def battery_size(mo, so, scale_in_, unit_cap_rated_):
+    if hasattr(mo, 'qcrs'):
+        scale_mon_ = mo.qcrs[0] / (Battery.UNIT_CAP_RATED*3600)
+    else:
+        scale_mon_ = unit_cap_rated / Battery.UNIT_CAP_RATED
+        if scale_in_:
+            scale_mon_ *= scale_in
+    if so is not None and hasattr(so, 'qcrs_s'):
+        scale_sim_ = so.qcrs_s[0] / (Battery.UNIT_CAP_RATED*3600)
+    else:
+        scale_sim_ = unit_cap_rated / Battery.UNIT_CAP_RATED
+        if scale_in_:
+            scale_sim_ *= scale_in_
+    return scale_mon_, scale_sim_
+
+
 def chm_from_mon_or_sim(mo, so):
     chem_m = mo.chm
     if so is not None:
@@ -113,21 +129,11 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     tweak_test = rp.tweak_test()
 
     ST = TbSense(mon_ref=mon_old, dTb_in=dTb_in)
-    if hasattr(mon_old, 'qcrs'):
-        scale_mon = mon_old.qcrs[0] / (Battery.UNIT_CAP_RATED*3600)
-    else:
-        scale_mon = unit_cap_rated / Battery.UNIT_CAP_RATED
-        if scale_in:
-            scale_mon *= scale_in
-    if sim_old is not None and hasattr(sim_old, 'qcrs_s'):
-        scale_sim = sim_old.qcrs_s[0] / (Battery.UNIT_CAP_RATED*3600)
-    else:
-        scale_sim = unit_cap_rated / Battery.UNIT_CAP_RATED
-        if scale_in:
-            scale_sim *= scale_in
 
-    s_q = Scale(1., 3., 0.000005, 0.00005)
-    s_r = Scale(1., 3., 0.001, 1.)   # t_ib_fail = 1000
+    # Battery sizing
+    scale_mon, scale_sim = battery_size(mon_old, sim_old, scale_in, unit_cap_rated)
+
+    # Make batteries
     sim = BatterySim(mod_code=chm_s[0], tb_f=ST.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
                      dv_hys=mon_old.dv_hys[0], sres0=sres0, sresct=sresct, stauct=stauct_sim, scale_r_ss=scale_r_ss,
                      s_hys=s_hys_sim, dvoc=dvoc_sim, scale_hys_cap=scale_hys_cap_sim, s_coul_eff=s_coul_eff,
@@ -138,23 +144,19 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                          sres0=sres0, sresct=sresct, stauct=stauct_mon,
                          scale_r_ss=scale_r_ss, s_hys=s_hys_mon, dvoc=dvoc_mon, eframe_mult=eframe_mult,
                          s_coul_eff=s_coul_eff, unit=unit, ref=mon_old, dTb=ST.dTb)
+    Is_sat_delay = TFDelay(in_=mon_old.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
+
+    # Time sync
     mon.saved.time_ref = mon_old.time_ref
     sim.saved_s.time_ref = mon_old.time_ref
-    # need Tb input.   perhaps need higher order to enforce basic type 1 response
-    Is_sat_delay = TFDelay(in_=mon_old.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
-    bms_off_init = mon_old.bms_off[0]
-    e_w_amp_r = None
-    e_w_noa_r = None
-    e_w_amp_filt_r = None
-    e_w_noa_filt_r = None
 
     # time loop initialization
     now = t[0]
-    i = None
     reset_ekf = True
     i_ekf = -1
     i_temp = -1
     T = mon_old.dt[0]
+    i = None
     hdr = None
     sat_s_init = None
     ib_amp_init = None
@@ -172,7 +174,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     # Top of time loop
     for i in range(t_len):
         if i >= 206:
-            pass
+            pass  # used for debug breakpoint at i >= <val>
         now = t[i]
         mon_old.i = i
         T_ekf = None
@@ -224,19 +226,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
         if calc_temp:
             prn_soc_debug(time=now, leader="b temp filtr:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
-            mon.Tb_hdwe_filt = \
-                ST.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_old.Tb_hdwe_filt[i_temp],
-                                                 mon.reset_temp,
-                                                 mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
-                                                 rmin=-Battery.T_RLIM)
-            mon.Tb_hdwe_filt_rate = ST.TbSenseFilt.rate
-            mon.Tb_f_rate = mon.Tb_hdwe_filt_rate
-            mon.Tb_rap = ST.Tb_past
-            mon.Tb_f = mon.Tb_hdwe_filt
-            ST.Tb_f = mon.Tb_hdwe_filt
-            ST.assign(mon.Tb, mon.Tb_f, mon.Tb_f_rate)
-            mon.Tb_rstate = ST.TbSenseFilt.rstate
-            mon.Tb_state = ST.TbSenseFilt.state
+
+            mon = ST.temp_calc(mon_old, mon, Battery, i_temp)
 
             prn_soc_debug(time=now, leader="a temp filtr:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
@@ -256,12 +247,11 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         else:
             _chm_s = Bsim
         prn_soc_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
-        ib_dyn_init = sim_old.ib_dyn_s[i]
         ib_dyn_rate_init = sim_old.ib_dyn_rate_s[i]
         sim.calculate(_chm_s, None, ib_in_s, sim_old.dt_s[i], reset, None, None,
-                      ib_dyn_init=ib_dyn_init, ib_dyn_rate_init=ib_dyn_rate_init,
+                      ib_dyn_init=sim_old.ib_dyn_s[i], ib_dyn_rate_init=ib_dyn_rate_init,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
-                      bms_off_init=bms_off_init, dv_dyn_0=sim_old.dv_dyn_s[i])
+                      bms_off_init=mon_old.bms_off[0], dv_dyn_0=sim_old.dv_dyn_s[i])
         prn_soc_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
         sim.count_coulombs(chem=_chm_s, dt=sim_old.dt_s[i], reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=ST.Tb_f_rate_past,
                            charge_curr=sim.ib_charge, sat=False, soc_s_init=sim_old.soc_s[i], mon_sat=mon.sat,
@@ -275,23 +265,14 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
 
-        # Wrap
-        if hasattr(mon_old, 'e_wrap_m'):
-            e_w_amp_r = mon_old.e_wrap_m[i]
-        if hasattr(mon_old, 'e_wrap_m_filt'):
-            e_w_amp_filt_r = mon_old.e_wrap_m_filt[i]
-        if hasattr(mon_old, 'e_wrap_n'):
-            e_w_noa_r = mon_old.e_wrap_n[i]
-        if hasattr(mon_old, 'e_wrap_n_filt'):
-            e_w_noa_filt_r = mon_old.e_wrap_n_filt[i]
-
         prn_soc_debug(time=now, leader="after mon_soc_apply  ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
-        # Monitor calculations including ekf
+        # Chemistry
         if Bmon is None:
             _chm_m = chm_m[i]
         else:
             _chm_m = Bmon
+
         if t_ib_fail and t[i] > t_ib_fail:
             ib_ = ib_fail
         else:
@@ -299,19 +280,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                 ib_ = mon_old.ib_sel[i]
             else:
                 ib_ = mon_old.ib[i]
-        # Raw current handling
-        ibmm = None
-        ibnm = None
-        ibmh = None
-        ibnh = None
-        if hasattr(mon_old, 'ibmm'):
-            ibmm = mon_old.ibmm[i]
-        if hasattr(mon_old, 'ibnm'):
-            ibnm = mon_old.ibnm[i]
-        if hasattr(mon_old, 'ibmh'):
-            ibmh = mon_old.ibmh[i]
-        if hasattr(mon_old, 'ibnm'):
-            ibnh = mon_old.ibnh[i]
+
         if use_vb_sim:
             vb_ = sim.vb
         elif t_vb_fail and t[i] >= t_vb_fail:
@@ -342,7 +311,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
             # print(f"{i=}   {i_ekf=}   t {mon_old.time[i]}   te {mon_old.time_e[i_ekf]}    dt {mon_old.dt_ekf[i_ekf]}     calc {calc_ekf}      res_ekf {reset_ekf}      z_init {z_init}")
             if reset:
-                ib_dyn_init = mon_old.ib_dyn[i]
                 ib_dyn_rate_init = mon_old.ib_dyn_rate[i]
                 ib_amp_init = mon_old.ibmh[max(i-1, 0)]
                 ib_dyn_amp_init = mon_old.ib_dyn_m[i]
@@ -351,25 +319,27 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                 e_wrap_trim_amp_init = mon_old.e_wrap_m_trim[i]
                 e_wrap_trim_noa_init = 0.
             mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, ST.Tb_f_rate_past,
-                          rp=rp, bms_off_init=bms_off_init, ib_amp=ibmh, ib_noa=ibnh,
-                          e_w_amp_r=e_w_amp_r, e_w_amp_filt_r=e_w_amp_filt_r,
-                          e_w_noa_r=e_w_noa_r, e_w_noa_filt_r=e_w_noa_filt_r,
-                          reset_ekf=reset_ekf, ib_dyn_init=ib_dyn_init, ib_dyn_rate_init=ib_dyn_rate_init,
+                          rp=rp, bms_off_init=mon_old.bms_off[0], ib_amp=mon_old.ibmh[i], ib_noa=mon_old.ibnh[i],
+                          e_w_amp_r=mon_old.e_wrap_m[i], e_w_amp_filt_r=mon_old.e_wrap_m_filt[i],
+                          e_w_noa_r=mon_old.e_wrap_n[i], e_w_noa_filt_r=mon_old.e_wrap_n_filt[i],
+                          reset_ekf=reset_ekf, ib_dyn_init=mon_old.ib_dyn[i], ib_dyn_rate_init=ib_dyn_rate_init,
                           ib_amp_init=ib_amp_init, ib_dyn_amp_init=ib_dyn_amp_init,
                           ib_noa_init=ib_noa_init, ib_dyn_noa_init=ib_dyn_noa_init,
                           e_wrap_trim_amp_init=e_wrap_trim_amp_init, e_wrap_trim_noa_init=e_wrap_trim_noa_init)
         else:
             mon.calculate(_chm_m, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
                           reset, calc_ekf, T_ekf, mon_old.z[0], ST.Tb_f_rate_past,
-                          rp=rp, bms_off_init=bms_off_init, ib_amp=ibmm, ib_noa=ibnm, e_w_amp_r=e_w_amp_r,
-                          e_w_amp_filt_r=e_w_amp_filt_r, e_w_noa_r=e_w_noa_r, e_w_noa_filt_r=e_w_noa_filt_r,
+                          rp=rp, bms_off_init=mon_old.bms_off[0], ib_amp=mon_old.ibmm[i], ib_noa=mon_old.ibnm[i],
+                          e_w_amp_r=mon_old.e_wrap_m[i],
+                          e_w_amp_filt_r=mon_old.e_wrap_m_filt[i], e_w_noa_r=mon_old.e_wrap_n[i],
+                          e_w_noa_filt_r=mon_old.e_wrap_n_filt[i],
                           reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge
         sat = is_sat(ST.Tb_f_past, mon.chemistry.rated_temp, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat,
                      mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
 
-        # Monitor count
+        # Monitor count Coulumbs
         if rp.modeling == 0:
             mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=ST.Tb_f_past, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
@@ -404,9 +374,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
         # pick a pass to run debugger to a time
         if i >= 206:
-            pass
-        if now>2:
-            pass
+            pass  # used for debug breakpoint at i >= <val>
+        if now > 2:
+            pass  # used for debug breakpoint at now > <val>
         else:
             pass
 
@@ -466,35 +436,7 @@ if __name__ == '__main__':
         skip = 1
         zero_zero_in = False
         zero_thr_in = 0.02
-        # Save these
-        # data_file_old_txt = '../dataReduction/real world Xp20 20220902.txt'; unit_key = 'soc0_2022'; use_ib_mon_in=True; scale_in=1.12
-
-        # Regression suite
-        # data_file_old_txt = 'ampHiFail20220914.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'ampLoFail20220914.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'ampHiFailNoise20220914.txt'; unit_key = 'pro_2022';
-        # data_file_old_txt = 'rapidTweakRegression20220914.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'rapidTweakRegression40C_20220914.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'slowTweakRegression20220914.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'triTweakDisch20220914.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'satSit20220914.txt'; unit_key = 'pro_2022';
-        # data_file_old_txt = 'ampHiFailSlow20220914.txt'; unit_key = 'pro_2022';
-        # data_file_old_txt = 'vHiFail20220914.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'pulse20220914.txt'; unit_key = 'pro_2022'; init_time_in=-0.001;
-        # data_file_old_txt = 'tbFailMod20220914.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'tbFailHdwe20220914.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'real world Xp20 30C 20220914.txt'; unit_key = 'soc0_2022'; scale_in = 1.084; use_vb_raw = False; scale_r_ss_in = 1.; scale_hys_mon_in = 3.33; scale_hys_sim_in = 3.33; dvoc_mon_in = -0.05; dvoc_sim_in = -0.05
-        # data_file_old_txt = 'real world Xp20 30C 20220914a+b.txt'; unit_key = 'soc0_2022'; scale_in = 1.084; use_vb_raw = False; scale_r_ss_in = 1.; scale_hys_mon_in = 3.33; scale_hys_sim_in = 3.33; dvoc_mon_in = -0.05; dvoc_sim_in = -0.05
-        # data_file_old_txt = 'real world Xp20 30C 20220917.txt'; unit_key = 'soc0_2022'; scale_in = 1.084; init_time_in = -11110
-        # data_file_old_txt = 'EKF_Track 20200917.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'EKF_Track Dr100 v20220917.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'EKF_Track Dr200 v20220917.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'EKF_Track Dr400 v20220917.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'EKF_Track Dr800 v20220917.txt'; unit_key = 'pro_2022'
         data_file_old_txt = 'EKF_Track Dr2000 v20220917.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'EKF_Track Dr200 Xf0p04 v20220917.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'EKF_Track Dr400 Xf0p04 v20220917.txt'; unit_key = 'pro_2022'
-        # data_file_old_txt = 'EKF_Track Dr800 Xf0p04 v20220917.txt'; unit_key = 'pro_2022'
         hdr_key = "unit,"  # Find one instance of title
         hdr_key_sel = "unit_s,"  # Find one instance of title
         unit_key_sel = "unit_sel"

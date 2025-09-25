@@ -52,6 +52,23 @@ class TbSense:
             dTb = self.dTb
         return dTb
 
+    def temp_calc(self, mon_old, mon, Battery, i_temp):
+        mon.Tb_hdwe_filt = \
+            self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_old.Tb_hdwe_filt[i_temp],
+                                                mon.reset_temp,
+                                                mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
+                                                rmin=-Battery.T_RLIM)
+
+        mon.Tb_hdwe_filt_rate = self.TbSenseFilt.rate
+        mon.Tb_f_rate = mon.Tb_hdwe_filt_rate
+        mon.Tb_rap = self.Tb_past
+        mon.Tb_f = mon.Tb_hdwe_filt
+        self.Tb_f = mon.Tb_hdwe_filt
+        self.assign(mon.Tb, mon.Tb_f, mon.Tb_f_rate)
+        mon.Tb_rstate = self.TbSenseFilt.rstate
+        mon.Tb_state = self.TbSenseFilt.state
+        return mon
+
     def update(self):
         self.Tb_past = self.Tb
         self.Tb_f_past = self.Tb_f
