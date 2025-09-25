@@ -44,7 +44,7 @@ def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, ca
         case 0:
             hdr = ''
         case 1:
-            hdr = print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf)
+            hdr = print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf, calc_temp)
         case 2:
             hdr = print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp)
         case 3:
@@ -52,13 +52,13 @@ def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, ca
         case 4:
             hdr = print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb, Tb_past, ST, i_ekf, calc_ekf)
         case 5:
-            hdr = print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp)
+            hdr = print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf)
     return hdr
 
-def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf):
-    hdr = "  i  time   r r_t  i_e  r_e  c_e   dt_ekf         sa      ib_charge             soc                    soc_ekf                 y_ekf                voc_ekf                Tb_f                    x_prior             fr     Tb_f_rap                x                       tb_f_for_hx             x_for_hx                  hx                    z         z_ekf     P                            P_post                       P_prior                       H                      R                     S                    K                          x_post"
+def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf, calc_temp):
+    hdr = "  i  time   r r_t  i_e  r_e  c_e   dt_ekf        sa      ib_charge             soc                    soc_ekf                 y_ekf                voc_ekf                Tb_f                    x_prior             fr     Tb_f_rap                x                       tb_f_for_hx             x_for_hx                  hx                    z         z_ekf     P                            P_post                       P_prior                       H                      R                     S                    K                          x_post"
     i_ekf = max(i_ekf, 0)
-    if calc_ekf:
+    if calc_temp or calc_ekf:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
           "{:3d}".format(i_ekf), "{:4d}".format(mon.reset_ekf), "{:4d}".format(calc_ekf),
@@ -191,12 +191,13 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, ST, i_
           )
     return hdr
 
-def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp):
-    hdr = "  i  time   r r_t  i_e  r_e  sa       ib_charge             ib                    ib_hm               ib_dyn_m               ib_dyn_a_m            ib_dyn_b_m            ib_dyn_c_m            ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rate_m         ib_dyn_rstate_m       ib_dyn_lstate_m          dv_dyn_m             e_wrap_m             e_wrap_m_filt       e_wrap_m_trim         ib_hn                ib_dyn_n             ib_dyn               dv_dyn_n             e_wrap_n             e_wrap_n_filt       e_wrap               e_wrap_filt          ib_dyn               ib_dyn_rate           dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               voc_stat_f             soc_ekf               y_ekf"
-    if calc_temp:
+def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf):
+    hdr = "  i  time   r       rt   it   ct      re   ie  ce     sa       ib_charge             ib                    ib_hm               ib_dyn_m               ib_dyn_a_m            ib_dyn_b_m            ib_dyn_c_m            ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rate_m         ib_dyn_rstate_m       ib_dyn_lstate_m          dv_dyn_m             e_wrap_m             e_wrap_m_filt       e_wrap_m_trim         ib_hn                ib_dyn_n             ib_dyn               dv_dyn_n             e_wrap_n             e_wrap_n_filt       e_wrap               e_wrap_filt          ib_dyn               ib_dyn_rate           dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               voc_stat_f             soc_ekf               y_ekf"
+    if calc_temp or calc_ekf:
         print(hdr)
-    print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
-          "{:3d}".format(i_ekf), "{:4d}".format(mon.reset_ekf),
+    print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),
+          "{:7d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
+          "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
           "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
           "{:11.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
           "{:11.5f}".format(mon_old.ib[i]), "{:9.5f}".format(mon.ib),
