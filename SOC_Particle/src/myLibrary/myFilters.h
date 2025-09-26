@@ -314,7 +314,6 @@ public:
   virtual void state(const double in) { state_ = in; }  // For severity testing - sudden offset
   double a() { return (a_); };
   double b() { return (b_); };
-  double rate() { return (rate_); };
 protected:
   double a_;
   double b_;

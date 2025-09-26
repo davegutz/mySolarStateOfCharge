@@ -234,6 +234,12 @@ public:
   float ib_dyn_rstate() { return ChargeTransfer_->rstate(); };
   float ib_dyn_T() { return ChargeTransfer_->T(); };
   float ib_dyn_tau() { return ChargeTransfer_->tau(); };
+  float ib_wrp_a() { return WrapErrFilt_->a(); };
+  float ib_wrp_b() { return WrapErrFilt_->b(); };
+  float ib_wrp_state() { return WrapErrFilt_->state(); };
+  float ib_wrp_rate() { return WrapErrFilt_->rate(); };
+  float ib_wrp_T() { return WrapErrFilt_->T(); };
+  float ib_wrp_tau() { return WrapErrFilt_->tau(); };
   uint8_t lo_fail() { return lo_fail_; };
   uint8_t lo_fault() { return lo_fault_; };
   void pretty_print();
