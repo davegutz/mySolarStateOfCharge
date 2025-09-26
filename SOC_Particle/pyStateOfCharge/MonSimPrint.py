@@ -191,7 +191,7 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, ST, i_
     return hdr
 
 def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf):
-    hdr = "  i  time   r       rt   it   ct      re   ie  ce     sa       ib_charge             ib                    ib_hm               ib_dyn_m               ib_dyn_a_m            ib_dyn_b_m            ib_dyn_c_m            ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rstate_m       ib_dyn_lstate_m          dv_dyn_m             e_wrap_m             e_wrap_m_filt       e_wrap_m_trim         ib_hn                ib_dyn_n             ib_dyn               dv_dyn_n             e_wrap_n             e_wrap_n_filt       e_wrap               e_wrap_filt          ib_dyn               dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               voc_stat_f             soc_ekf               y_ekf"
+    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa       ib_charge             ib                    ib_hm               ib_dyn_m               ib_dyn_a_m            ib_dyn_b_m            ib_dyn_c_m            ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rstate_m       ib_dyn_lstate_m          dv_dyn_m             e_wrap_m             e_wrap_m_filt       e_wrap_m_trim         ib_hn                ib_dyn_n             ib_dyn               ib_dyn_a_n            ib_dyn_b_n            ib_dyn_c_n            ib_dyn_T_n     ib_dyn_tau_n            ib_dyn_rstate_n       ib_dyn_lstate_n         dv_dyn_n             e_wrap_n_a             e_wrap_n_b             e_wrap_n_T             e_wrap_n_tau           e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt        e_wrap               e_wrap_filt         ib_dyn                dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_f             soc_ekf               y_ekf"
     if calc_temp or calc_ekf:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),
@@ -216,7 +216,22 @@ def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf):
           "{:11.5f}".format(mon_old.ibnh[i]), "{:8.5f}".format(mon.LoopIbNoa.ib),
           "{:11.5f}".format(mon_old.ib_dyn_n[i]), "{:8.5f}".format(mon.LoopIbNoa.ib_dyn),
           "{:10.5f}".format(mon_old.ib_dyn[i]), "{:9.5f}".format(mon.ib_dyn),
+          "{:12.6f}".format(mon_old.ib_dyn_a_n[i]), "{:8.6f}".format(mon.LoopIbNoa.ChargeTransfer.a),
+          "{:12.6f}".format(mon_old.ib_dyn_b_n[i]), "{:8.6f}".format(mon.LoopIbNoa.ChargeTransfer.b),
+          "{:12.6f}".format(mon_old.ib_dyn_c_n[i]), "{:8.6f}".format(mon.LoopIbNoa.ChargeTransfer.c),
+          "{:9.3f}".format(mon_old.ib_dyn_T_n[i]), "{:5.3f}".format(mon.LoopIbNoa.ChargeTransfer.dt),
+          "{:12.6f}".format(mon_old.ib_dyn_tau_n[i]), "{:8.6f}".format(mon.LoopIbNoa.ChargeTransfer.tau),
+          "{:12.6f}".format(mon_old.ib_dyn_rstate_n[i]), "{:9.6f}".format(mon.LoopIbNoa.ChargeTransfer.rstate),
+          "{:12.6f}".format(mon_old.ib_dyn_lstate_n[i]), "{:9.6f}".format(mon.LoopIbNoa.ChargeTransfer.state),
           "{:11.5f}".format(mon_old.dv_dyn_n[i]), "{:8.5f}".format(mon.LoopIbNoa.dv_dyn),
+
+          "{:12.6f}".format(mon_old.ib_wrp_a_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.a),
+          "{:12.6f}".format(mon_old.ib_wrp_b_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.b),
+          "{:12.6f}".format(mon_old.ib_wrp_T_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.dt),
+          "{:12.6f}".format(mon_old.ib_wrp_tau_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.tau),
+          "{:12.6f}".format(mon_old.ib_wrp_rate_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.rate),
+          "{:12.6f}".format(mon_old.ib_wrp_state_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.state),
+
           "{:11.5f}".format(mon_old.e_wrap_n[i]), "{:8.5f}".format(mon.e_wrap_n),
           "{:11.5f}".format(mon_old.e_wrap_n_filt[i]), "{:8.5f}".format(mon.e_wrap_n_filt),
           "{:11.5f}".format(mon_old.e_wrap[i]), "{:8.5f}".format(mon.e_wrap),

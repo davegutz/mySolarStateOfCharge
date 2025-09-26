@@ -945,6 +945,22 @@ class SavedData:
             self.ib_dyn_tau_m = None
             self.ib_dyn_rstate_m = None
             self.ib_dyn_lstate_m = None
+            self.ib_dyn_a_n = None
+            self.ib_dyn_b_n = None
+            self.ib_dyn_b_n = None
+            self.ib_dyn_T_n = None
+            self.ib_dyn_tau_n = None
+            self.ib_dyn_rstate_n = None
+            self.ib_dyn_lstate_n = None
+
+            self.ib_wrp_a_n = None
+            self.ib_wrp_b_n = None
+            self.ib_wrp_T_n = None
+            self.ib_wrp_tau_n = None
+            self.ib_wrp_rstate_n = None
+            self.ib_wrp_lstate_n = None
+
+
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
@@ -1037,6 +1053,21 @@ class SavedData:
             self.ib_dyn_rstate_m = np.array(sel.ib_dyn_rstate_m[:i_end])
             self.ib_dyn_lstate_m = np.array(sel.ib_dyn_lstate_m[:i_end])
             self.ib_dyn_tau_m = np.array(sel.ib_dyn_tau_m[:i_end])
+            self.ib_dyn_a_n = np.array(sel.ib_dyn_a_n[:i_end])
+            self.ib_dyn_b_n = np.array(sel.ib_dyn_b_n[:i_end])
+            self.ib_dyn_c_n = np.array(sel.ib_dyn_c_n[:i_end])
+            self.ib_dyn_T_n = np.array(sel.ib_dyn_T_n[:i_end])
+            self.ib_dyn_rstate_n = np.array(sel.ib_dyn_rstate_n[:i_end])
+            self.ib_dyn_lstate_n = np.array(sel.ib_dyn_lstate_n[:i_end])
+            self.ib_dyn_tau_n = np.array(sel.ib_dyn_tau_n[:i_end])
+
+            self.ib_wrp_a_n = np.array(sel.ib_wrp_a_n[:i_end])
+            self.ib_wrp_b_n = np.array(sel.ib_wrp_b_n[:i_end])
+            self.ib_wrp_T_n = np.array(sel.ib_wrp_T_n[:i_end])
+            self.ib_wrp_rate_n = np.array(sel.ib_wrp_rate_n[:i_end])
+            self.ib_wrp_state_n = np.array(sel.ib_wrp_state_n[:i_end])
+            self.ib_wrp_tau_n = np.array(sel.ib_wrp_tau_n[:i_end])
+
         if ekf is None:
             self.skip_e = None
             self.time_e = None
