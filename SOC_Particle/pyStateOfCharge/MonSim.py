@@ -173,10 +173,12 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
     # Top of time loop
     for i in range(t_len):
+
         if i >= 206:
             pass  # used for debug breakpoint at i >= <val>
+
+        # Time
         now = t[i]
-        mon_old.i = i
         T_ekf = None
         if i != 0:
             candidate_dt = t[i] - t[i-1]  # update
@@ -243,9 +245,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             _chm_s = Bsim
 
         prn_soc_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
-        ib_dyn_rate_init = sim_old.ib_dyn_rate_s[i]
         sim.calculate(_chm_s, None, ib_in_s, sim_old.dt_s[i], reset, None, None,
-                      ib_dyn_init=sim_old.ib_dyn_s[i], ib_dyn_rate_init=ib_dyn_rate_init,
+                      ib_dyn_init=sim_old.ib_dyn_s[i],
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=mon_old.bms_off[0], dv_dyn_0=sim_old.dv_dyn_s[i])
         prn_soc_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
@@ -307,18 +308,17 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
             # print(f"{i=}   {i_ekf=}   t {mon_old.time[i]}   te {mon_old.time_e[i_ekf]}    dt {mon_old.dt_ekf[i_ekf]}     calc {calc_ekf}      res_ekf {reset_ekf}      z_init {z_init}")
             if reset:
-                ib_dyn_rate_init = mon_old.ib_dyn_rate[i]
                 ib_amp_init = mon_old.ibmh[max(i-1, 0)]
                 ib_dyn_amp_init = mon_old.ib_dyn_m[i]
+                e_wrap_trim_amp_init = mon_old.e_wrap_m_trim[i]
                 ib_noa_init = mon_old.ibnh[max(i-1, 0)]
                 ib_dyn_noa_init = mon_old.ib_dyn_n[i]
-                e_wrap_trim_amp_init = mon_old.e_wrap_m_trim[i]
                 e_wrap_trim_noa_init = 0.
             mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, ST.Tb_f_rate_past,
                           rp=rp, bms_off_init=mon_old.bms_off[0], ib_amp=mon_old.ibmh[i], ib_noa=mon_old.ibnh[i],
                           e_w_amp_r=mon_old.e_wrap_m[i], e_w_amp_filt_r=mon_old.e_wrap_m_filt[i],
                           e_w_noa_r=mon_old.e_wrap_n[i], e_w_noa_filt_r=mon_old.e_wrap_n_filt[i],
-                          reset_ekf=reset_ekf, ib_dyn_init=mon_old.ib_dyn[i], ib_dyn_rate_init=ib_dyn_rate_init,
+                          reset_ekf=reset_ekf, ib_dyn_init=mon_old.ib_dyn[i],
                           ib_amp_init=ib_amp_init, ib_dyn_amp_init=ib_dyn_amp_init,
                           ib_noa_init=ib_noa_init, ib_dyn_noa_init=ib_dyn_noa_init,
                           e_wrap_trim_amp_init=e_wrap_trim_amp_init, e_wrap_trim_noa_init=e_wrap_trim_noa_init)

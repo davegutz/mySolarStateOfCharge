@@ -254,7 +254,6 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     if (sp.mod_vb()) ib_dyn_in = ib_past_;
     else ib_dyn_in = ib_;
     ib_dyn_ = ChargeTransfer_->calculate(ib_dyn_in, reset_temp, chem_.tau_ct, dt_);
-    ib_dyn_rate_ = ChargeTransfer_->rate();
     float dvdyn = (ib_dyn_*chem_.r_ct*ap.slr_res + ib_dyn_in*chem_.r_0*ap.slr_res);
     voc_ = vb_ - dvdyn;
     if ( !ap.fake_faults )
@@ -678,7 +677,6 @@ float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean 
 
     // ChargeTransfer dynamic model for model, reverse version to generate sensor inputs
     ib_dyn_ = ChargeTransfer_->calculate(ib_, reset, chem_.tau_ct, dt_);
-    ib_dyn_rate_ = ChargeTransfer_->rate();
     float dvdyn = (ib_dyn_*chem_.r_ct*ap.slr_res + ib_*chem_.r_0*ap.slr_res);
 
     vb_ = voc_ + dvdyn;

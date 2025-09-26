@@ -120,7 +120,7 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     return hdr
 
 def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
-    hdr = "  i  time   r r_t   sa       sa_s     dt              dt_s           ib_in_s              ib_s                ib_dyn_rate_s         ib_dyn_s             dv_hys_s             ib_charge_s          ioc_s                 soc                  soc_s              delq                       i * dt_s * coul_eff      d_delq_s           delq_s                     qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate              vb                   vb_s                 voc_stat             voc_stat_s           voc_s                 dv_dyn_s            vsat                 "
+    hdr = "  i  time   r r_t   sa       sa_s     dt              dt_s           ib_in_s              ib_s                ib_dyn_s             dv_hys_s             ib_charge_s          ioc_s                 soc                  soc_s              delq                       i * dt_s * coul_eff      d_delq_s           delq_s                     qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate              vb                   vb_s                 voc_stat             voc_stat_s           voc_s                 dv_dyn_s            vsat                 "
     if calc_temp:
         print(hdr)
     if i > 0:
@@ -141,7 +141,6 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
           "{:9.3f}".format(sim_old.dt_s[i]), "{:5.3f}".format(sim.dt),
           "{:10.5f}".format(sim_old.ib_in_s[i]), "{:9.5f}".format(sim.ib_in),
           "{:10.5f}".format(sim_old.ib_s[i]), "{:9.5f}".format(sim.ib),
-          "{:10.5f}".format(sim_old.ib_dyn_rate_s[i]), "{:9.5f}".format(sim.ib_dyn_rate),
           "{:10.5f}".format(sim_old.ib_dyn_s[i]), "{:9.5f}".format(sim.ib_dyn),
           "{:10.5f}".format(sim_old.dv_hys_s[i]), "{:9.5f}".format(sim.dv_hys),
           "{:10.5f}".format(sim_old.ib_charge_s[i]), "{:9.5f}".format(sim.ib_charge),
@@ -192,7 +191,7 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, ST, i_
     return hdr
 
 def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf):
-    hdr = "  i  time   r       rt   it   ct      re   ie  ce     sa       ib_charge             ib                    ib_hm               ib_dyn_m               ib_dyn_a_m            ib_dyn_b_m            ib_dyn_c_m            ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rate_m         ib_dyn_rstate_m       ib_dyn_lstate_m          dv_dyn_m             e_wrap_m             e_wrap_m_filt       e_wrap_m_trim         ib_hn                ib_dyn_n             ib_dyn               dv_dyn_n             e_wrap_n             e_wrap_n_filt       e_wrap               e_wrap_filt          ib_dyn               ib_dyn_rate           dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               voc_stat_f             soc_ekf               y_ekf"
+    hdr = "  i  time   r       rt   it   ct      re   ie  ce     sa       ib_charge             ib                    ib_hm               ib_dyn_m               ib_dyn_a_m            ib_dyn_b_m            ib_dyn_c_m            ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rstate_m       ib_dyn_lstate_m          dv_dyn_m             e_wrap_m             e_wrap_m_filt       e_wrap_m_trim         ib_hn                ib_dyn_n             ib_dyn               dv_dyn_n             e_wrap_n             e_wrap_n_filt       e_wrap               e_wrap_filt          ib_dyn               dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat               voc_stat_f             soc_ekf               y_ekf"
     if calc_temp or calc_ekf:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),
@@ -208,7 +207,6 @@ def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf):
           "{:12.6f}".format(mon_old.ib_dyn_c_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.c),
           "{:9.3f}".format(mon_old.ib_dyn_T_m[i]), "{:5.3f}".format(mon.LoopIbAmp.ChargeTransfer.dt),
           "{:12.6f}".format(mon_old.ib_dyn_tau_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.tau),
-          "{:12.6f}".format(mon_old.ib_dyn_rate_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.rate),
           "{:12.6f}".format(mon_old.ib_dyn_rstate_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.rstate),
           "{:12.6f}".format(mon_old.ib_dyn_lstate_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.state),
           "{:11.5f}".format(mon_old.dv_dyn_m[i]), "{:8.5f}".format(mon.LoopIbAmp.dv_dyn),
@@ -224,7 +222,6 @@ def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf):
           "{:11.5f}".format(mon_old.e_wrap[i]), "{:8.5f}".format(mon.e_wrap),
           "{:11.5f}".format(mon_old.e_wrap_filt[i]), "{:8.5f}".format(mon.e_wrap_filt),
           "{:10.5f}".format(mon_old.ib_dyn[i]), "{:9.5f}".format(mon.ib_dyn),
-          "{:10.5f}".format(mon_old.ib_dyn_rate[i]), "{:9.5f}".format(mon.ib_dyn_rate),
           "{:13.7f}".format(mon_old.dv_dyn[i]), "{:10.7f}".format(mon.dv_dyn),
           "{:13.7f}".format(mon_old.dv_hys[i]), "{:10.7f}".format(mon.dv_hys),
           "{:13.7f}".format(mon_old.soc[i]), "{:10.7f}".format(mon.soc),
@@ -242,7 +239,7 @@ def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf):
 
 def save_clean_file(mon_ver, csv_file, unit_key):
     default_header_str = "unit,               hm,                  cTime,        dt,       sat,sel,mod,\
-      Tb,Tb_rap,Tb_f,Tb_f_rap,Tb_f_rate,Tb_f_rate_rap, vb,  ib,  ib_dyn, ib_dyn_rate, ioc,  voc_soc,    vsat,dv_dyn,voc_stat,voc_stat_f,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,ib_lag,voc_soc_new,"
+      Tb,Tb_rap,Tb_f,Tb_f_rap,Tb_f_rate,Tb_f_rate_rap, vb,  ib,  ib_dyn, ioc,  voc_soc,    vsat,dv_dyn,voc_stat,voc_stat_f,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,ib_lag,voc_soc_new,"
     n = len(mon_ver.time)
     date_time_start = datetime.now()
     with open(csv_file, "w") as output:
@@ -266,7 +263,6 @@ def save_clean_file(mon_ver, csv_file, unit_key):
             s += "{:7.3f},".format(mon_ver.vb[i])
             s += "{:7.3f},".format(mon_ver.ib[i])
             s += "{:7.3f},".format(mon_ver.ib_dyn[i])
-            s += "{:7.3f},".format(mon_ver.ib_dyn_rate[i])
             s += "{:7.3f},".format(mon_ver.ioc[i])
             s += "{:7.3f},".format(mon_ver.voc_soc[i])
             s += "{:7.3f},".format(mon_ver.vsat[i])
