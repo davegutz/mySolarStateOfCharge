@@ -48,7 +48,7 @@ def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, ca
         case 2:
             hdr = print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp)
         case 3:
-            hdr = print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim)
+            hdr = print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf, calc_ekf)
         case 4:
             hdr = print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb, Tb_past, ST, i_ekf, calc_ekf)
         case 5:
@@ -119,8 +119,8 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
          )
     return hdr
 
-def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
-    hdr = "  i  time   r r_t   sa       sa_s     dt              dt_s           ib_in_s              ib_s                ib_dyn_s             dv_hys_s             ib_charge_s          ioc_s                 soc                  soc_s              delq                       i * dt_s * coul_eff      d_delq_s           delq_s                     qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate              vb                   vb_s                 voc_stat             voc_stat_s           voc_s                 dv_dyn_s            vsat                 "
+def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf, calc_ekf):
+    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s             ib_in_s                ib_s              ib_fut         ib_dyn_s               dv_hys_s               ib_charge_s            ioc_s                 soc                  soc_s               delq                           i * dt_s * coul_eff      d_delq_s            delq_s                      qcrs                    q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                     vb_s                 voc_stat               voc_stat_s            voc_s                 dv_dyn_s             vsat                 "
     if calc_temp:
         print(hdr)
     if i > 0:
@@ -133,24 +133,25 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
     if sim.ib_charge > 0:
         i_dt_old *= coul_eff
         i_dt_new *= coul_eff
-    print("{:3d}".format(i), "{:6.3f}".format(t[i]),
-          "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
+    print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),
+          "{:7d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
+          "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
           "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
           "{:5.0f}".format(sim_old.sat_s[i]), "{:2.0f}".format(sim.sat),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:9.3f}".format(sim_old.dt_s[i]), "{:5.3f}".format(sim.dt),
-          "{:10.5f}".format(sim_old.ib_in_s[i]), "{:9.5f}".format(sim.ib_in),
-          "{:10.5f}".format(sim_old.ib_s[i]), "{:9.5f}".format(sim.ib),
-          "{:10.5f}".format(sim_old.ib_dyn_s[i]), "{:9.5f}".format(sim.ib_dyn),
-          "{:10.5f}".format(sim_old.dv_hys_s[i]), "{:9.5f}".format(sim.dv_hys),
-          "{:10.5f}".format(sim_old.ib_charge_s[i]), "{:9.5f}".format(sim.ib_charge),
-          "{:10.5f}".format(sim_old.ioc_s[i]), "{:9.5f}".format(sim.ioc),
+          "{:12.5f}".format(sim_old.ib_in_s[i]), "{:9.5f}".format(sim.ib_in),
+          "{:12.5f}".format(sim_old.ib_s[i]), "{:9.5f}".format(sim.ib), "{:9.5f}".format(sim.ib_fut),
+          "{:12.5f}".format(sim_old.ib_dyn_s[i]), "{:9.5f}".format(sim.ib_dyn),
+          "{:12.5f}".format(sim_old.dv_hys_s[i]), "{:9.5f}".format(sim.dv_hys),
+          "{:12.5f}".format(sim_old.ib_charge_s[i]), "{:9.5f}".format(sim.ib_charge),
+          "{:12.5f}".format(sim_old.ioc_s[i]), "{:9.5f}".format(sim.ioc),
           "{:11.5f}".format(mon_old.soc[i]), "{:8.5f}".format(mon.soc),
           "{:11.5f}".format(mon_old.soc_s[i]), "{:8.5f}".format(sim.soc),
-          "{:12.4f}".format(mon_old.delta_q[i]), "{:9.4f}".format(mon.delta_q),
+          "{:14.4f}".format(mon_old.delta_q[i]), "{:9.4f}".format(mon.delta_q),
           "{:12.4f}".format(i_dt_old), "{:9.4f}".format(i_dt_new),
-          "{:12.4f}".format(d_dq_s), "{:9.4f}".format(sim.d_delta_q),
-          "{:12.4f}".format(sim_old.dq_s[i]), "{:9.4f}".format(sim.delta_q),
+          "{:14.4f}".format(d_dq_s), "{:9.4f}".format(sim.d_delta_q),
+          "{:14.4f}".format(sim_old.dq_s[i]), "{:9.4f}".format(sim.delta_q),
           "{:12.1f}".format(mon_old.qcrs[i]), "{:9.1f}".format(mon.q_cap_rated_scaled),
           "{:12.1f}".format(mon_old.q_capacity[i]), "{:9.1f}".format(mon.q_capacity),
           "{:12.1f}".format(sim_old.qcap_s[i]), "{:9.1f}".format(sim.q_capacity),
@@ -158,13 +159,13 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim):
           "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
           "{:12.7f}".format(mon_old.Tb_f_rate[i_temp]), "{:10.7f}".format(mon.Tb_f_rate),
-          "{:10.5f}".format(mon_old.vb[i]), "{:9.5f}".format(mon.vb),
-          "{:10.5f}".format(sim_old.vb_s[i]), "{:9.5f}".format(sim.vb),
-          "{:10.5f}".format(mon_old.voc_stat[i]), "{:9.5f}".format(mon.voc_stat),
-          "{:10.5f}".format(sim_old.voc_stat_s[i]), "{:9.5f}".format(sim.voc_stat),
-          "{:10.5f}".format(sim_old.voc_s[i]), "{:9.5f}".format(sim.voc),
-          "{:10.5f}".format(sim_old.dv_dyn_s[i]), "{:9.5f}".format(sim.dv_dyn),
-          "{:10.5f}".format(mon_old.vsat[i]), "{:9.5f}".format(mon.vsat),
+          "{:11.5f}".format(mon_old.vb[i]), "{:9.5f}".format(mon.vb),
+          "{:11.5f}".format(sim_old.vb_s[i]), "{:9.5f}".format(sim.vb),
+          "{:11.5f}".format(mon_old.voc_stat[i]), "{:9.5f}".format(mon.voc_stat),
+          "{:11.5f}".format(sim_old.voc_stat_s[i]), "{:9.5f}".format(sim.voc_stat),
+          "{:11.5f}".format(sim_old.voc_s[i]), "{:9.5f}".format(sim.voc),
+          "{:11.5f}".format(sim_old.dv_dyn_s[i]), "{:9.5f}".format(sim.dv_dyn),
+          "{:11.5f}".format(mon_old.vsat[i]), "{:9.5f}".format(mon.vsat),
           )
     return hdr
 

@@ -901,6 +901,8 @@ class BatterySim(Battery):
         self.ib_in = ib
         if reset:
             self.ib_fut = self.ib_in
+            if bms_off_init:
+                self.ib_fut = 0.
         self.ib = max(min(self.ib_fut, Battery.IMAX_NUM), -Battery.IMAX_NUM)
         self.mod = rp.modeling
         soc_lim = max(min(soc, 1.), -0.2)  # dag 9/3/2022
@@ -928,12 +930,9 @@ class BatterySim(Battery):
         else:
             voltage_low = self.voc_stat < self.chemistry.vb_rising_sim
         bms_charging = self.ib_in > Battery.IB_MIN_UP
-        if reset and bms_off_init is not None:
-            self.bms_off = bms_off_init
-        else:
-            self.bms_off = (self.Tb_f < self.chemistry.low_t) or (voltage_low and not rp.tweak_test())
+        self.bms_off = (self.Tb_f < self.chemistry.low_t) or (voltage_low and not rp.tweak_test())
         ib_charge_fut = self.ib_in
-        if self.bms_off and not bms_charging:
+        if self.bms_off and self.mod and not bms_charging:
             ib_charge_fut = 0.
         if self.bms_off and voltage_low:
             self.ib = 0.
