@@ -22,8 +22,7 @@ from Hysteresis import Hysteresis
 import matplotlib.pyplot as plt
 from TFDelay import TFDelay
 from myFilters import LagTustin, LagExp, General2Pole, RateLimit, SlidingDeadband, TustinIntegrator, RateLagExp
-from Scale import Scale
-
+from Scale import ScaleSelector
 import sys
 if sys.platform == 'darwin':
     import matplotlib
@@ -93,14 +92,10 @@ class Battery(Coulombs):
     WRAP_LO_AMP = -4.  # Wrap high voltage threshold amplified, A (-4)
     WRAP_HI_NOA = 32  # Wrap high voltage threshold non-amplified, A(32)
     WRAP_LO_NOA = -40.  # Wrap high voltage threshold non-amplified, A (-40)
-    # HDWE_IB_HI_LO_AMP_HI = 19./2.  # Fully NOA unit charge transition, A (19, soc2p2)
-    # HDWE_IB_HI_LO_AMP_LO = -19./2. # Fully NOA unit discharge transition, A (-19, soc2p2)
-    # HDWE_IB_HI_LO_NOA_HI = 20./2.  # Fully NOA unit charge transition, A (20, soc2p2)
-    # HDWE_IB_HI_LO_NOA_LO = -20./2. # Fully NOA unit discharge transition, A (-20, soc2p2)
-    HDWE_IB_HI_LO_AMP_HI = 10./2.  # Fully NOA unit charge transition, A (19, pro3p2)
-    HDWE_IB_HI_LO_AMP_LO = -10./2. # Fully NOA unit discharge transition, A (-19, pro3p2)
-    HDWE_IB_HI_LO_NOA_HI = 11./2.  # Fully NOA unit charge transition, A (20, pro3p2)
-    HDWE_IB_HI_LO_NOA_LO = -11./2. # Fully NOA unit discharge transition, A (-20, pro3p2)
+    HDWE_IB_HI_LO_NOA_LO = -11. # Fully NOA unit discharge transition, A (-11, soc4p2)
+    HDWE_IB_HI_LO_AMP_LO = -10. # Fully NOA unit discharge transition, A (-10, soc4p2)
+    HDWE_IB_HI_LO_AMP_HI = 10.  # Fully NOA unit charge transition, A (10, soc4p2)
+    HDWE_IB_HI_LO_NOA_HI = 11.  # Fully NOA unit charge transition, A (11, soc4p2)
     MAX_NOA_RATE =  1.  # Max reasonable amp rate used to disable e_wrap and ib_diff fault logic, A/s (1.0)
     WRAP_SOC_HI_OFF = 0.97  # Disable e_wrap_hi when saturated (0.97)
     WRAP_SOC_LO_OFF_REL = 0.2  # Disable e_wrap when near empty (soc lo for high Tb where soc_min=.2, voltage cutback, 0.2)
@@ -381,6 +376,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.Tb_f_rap = None
         self.Tb_f_rate_rap = None
         self.dt_temp = 0.
+        self.sel_brk_hdwe = ScaleSelector(Battery.HDWE_IB_HI_LO_NOA_LO, Battery.HDWE_IB_HI_LO_AMP_LO,
+                                          Battery.HDWE_IB_HI_LO_AMP_HI, Battery.HDWE_IB_HI_LO_NOA_HI)
         if ref is not None:
             self.Tb_hdwe = ref.Tb_hdwe[0]
             self.Tb_hdwe_filt = ref.Tb_hdwe_filt[0]
@@ -465,7 +462,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        self.wrap(reset=reset,
+        self.wrap(reset=reset, ib_sel=self.ib,
                   ib_amp=self.ib_amp, ib_amp_init=ib_amp_init, ib_dyn_amp_init=ib_dyn_amp_init,
                   e_wrap_trim_amp_init=e_wrap_trim_amp_init, e_wrap_amp_filt_init=e_w_amp_filt_r,
                   ib_noa=self.ib_noa, ib_noa_init=ib_noa_init, ib_dyn_noa_init=ib_dyn_noa_init,
@@ -723,7 +720,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.reset_ekf.append(self.reset_ekf)
         self.saved.e_wrap.append(self.e_wrap)
         self.saved.e_wrap_filt.append(self.e_wrap_filt)
-        # self.saved.e_wrap_trim.append(self.e_wrap_trim)
         self.saved.ib_dyn_m.append(self.LoopIbAmp.ib_dyn)
         self.saved.dv_dyn_m.append(self.LoopIbAmp.dv_dyn)
         self.saved.e_wrap_m.append(self.e_wrap_m)
@@ -751,16 +747,10 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
 
-    def wrap(self, reset=True,
+    def wrap(self, reset=True, ib_sel=0.,
              ib_amp=0., ib_amp_init=None, ib_dyn_amp_init=None, e_wrap_amp_filt_init=None, e_wrap_trim_amp_init=None,
              ib_noa=0., ib_noa_init=None, ib_dyn_noa_init=None, e_wrap_noa_filt_init=None, e_wrap_trim_noa_init=None):
-
         """Wrap logic"""
-        self.e_wrap = self.voc_soc - self.voc_stat
-        # TODO:  following should be scale select
-        self.e_wrap_filt = self.WrapErrFilt.calculate(in_=self.e_wrap,  dt=min(self.dt, Battery.F_MAX_T_WRAP),
-                                                      reset=reset)
-        self.e_wrap_rate = self.WrapErrFilt.rate
 
         # e_wrap scalars normally calculated in Sensors
         if self.soc >= Battery.WRAP_SOC_HI_OFF:
@@ -813,6 +803,11 @@ class BatteryMonitor(Battery, EKF1x1):
             self.e_wrap_m_filt = self.LoopIbAmp.e_wrap_filt
             self.e_wrap_m_rate = self.LoopIbAmp.e_wrap_rate
             self.e_wrap_m_trim = self.LoopIbAmp.e_wrap_trim
+
+        # Scale for final selection
+        self.e_wrap = self.sel_brk_hdwe.calculate(ib_sel, self.e_wrap_n, self.e_wrap_m)
+        self.e_wrap_filt = self.sel_brk_hdwe.calculate(ib_sel, self.e_wrap_n_filt, self.e_wrap_m_filt)
+        self.e_wrap_rate = self.sel_brk_hdwe.calculate(ib_sel, self.e_wrap_n_rate, self.e_wrap_m_rate)
 
 
 class BatterySim(Battery):

@@ -1710,25 +1710,21 @@ float scale_select(const float in, const ScaleBrk *brk, const float lo, const fl
   
   if ( brk->n_hi <= in && in <= brk->p_lo )
   {
-    // if ( sp.debug()==99 ) Serial.printf("scale_select lo: in=%7.3f, brk->n_hi=%7.3f, brk->p_lo=%7.3f, lo=%7.3f, hi=%7.3f, sel=%7.3f\n", in, brk->n_hi, brk->p_lo, lo, hi, lo);
     return ( lo );
   }
 
   else if ( in <= brk->n_lo || in >= brk->p_hi )
   {
-    // if ( sp.debug()==99 ) Serial.printf("scale_select hi: in=%7.3f, brk->n_lo=%7.3f, brk->p_hi=%7.3f, lo=%7.3f, hi=%7.3f, sel=%7.3f\n", in, brk->n_lo, brk->p_hi, lo, hi, hi);
     return ( hi );
   }
 
   else if ( in < brk->n_hi )
   {
-    // if ( sp.debug()==99 ) Serial.printf("scale_select n t: in=%7.3f, brk->n_hi=%7.3f, brk->p_lo=%7.3f, lo=%7.3f, hi=%7.3f\n", in, brk->n_hi, brk->p_lo, lo, hi);
     return ( (in - brk->n_lo) / brk->n_d * (hi - lo) + hi );
   }
 
   else
   {
-    // if ( sp.debug()==99 ) Serial.printf("scale_select p t: in=%7.3f, brk->n_hi=%7.3f, brk->p_lo=%7.3f, lo=%7.3f, hi=%7.3f\n", in, brk->n_hi, brk->p_lo, lo, hi);
     return ( (in - brk->p_lo) / brk->p_d * (hi - lo) + hi );
   }
 
@@ -1739,28 +1735,24 @@ float scale_select(const float in, const ScaleBrk *brk, const float lo, const fl
   if ( brk->n_hi <= in && in <= brk->p_lo )
   {
     *sel_stat = 1;
-    // if ( sp.debug()==99 ) Serial.printf("scale_select lo: in=%7.3f, brk->n_hi=%7.3f, brk->p_lo=%7.3f, lo=%7.3f, hi=%7.3f, sel=%7.3f\n", in, brk->n_hi, brk->p_lo, lo, hi, lo);
     return ( lo );
   }
 
   else if ( in <= brk->n_lo || in >= brk->p_hi )
   {
     *sel_stat = -1;
-    // if ( sp.debug()==99 ) Serial.printf("scale_select hi: in=%7.3f, brk->n_lo=%7.3f, brk->p_hi=%7.3f, lo=%7.3f, hi=%7.3f, sel=%7.3f\n", in, brk->n_lo, brk->p_hi, lo, hi, hi);
     return ( hi );
   }
 
   else if ( in < brk->n_hi )
   {
     *sel_stat = 0;
-    // if ( sp.debug()==99 ) Serial.printf("scale_select n t: in=%7.3f, brk->n_hi=%7.3f, brk->p_lo=%7.3f, lo=%7.3f, hi=%7.3f\n", in, brk->n_hi, brk->p_lo, lo, hi);
     return ( (in - brk->n_lo) / brk->n_d * (hi - lo) + hi );
   }
 
   else
   {
     *sel_stat = 0;
-    // if ( sp.debug()==99 ) Serial.printf("scale_select p t: in=%7.3f, brk->n_hi=%7.3f, brk->p_lo=%7.3f, lo=%7.3f, hi=%7.3f\n", in, brk->n_hi, brk->p_lo, lo, hi);
     return ( (in - brk->p_lo) / brk->p_d * (hi - lo) + hi );
   }
 

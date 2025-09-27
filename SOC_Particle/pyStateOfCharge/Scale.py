@@ -1,5 +1,5 @@
 # Scale class transition
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2025 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,7 +15,7 @@
 
 __author__ = 'Dave Gutz <davegutz@alum.mit.edu>'
 __version__ = '$Revision: 1.1 $'
-__date__ = '$Date: 2022/07/21 13:15:02 $'
+__date__ = '$Date: 2025/09/27 13:15:02 $'
 
 
 class Scale:
@@ -48,4 +48,38 @@ class Scale:
         s += "  o_x = {:7.3f}    // Maximum output break\n".format(self.o_x)
         s += "  di =  {:7.3f}    // Delta input breaks\n".format(self.di)
         s += "  do =  {:7.3f}    // Delta output breaks\n".format(self.do)
+        return s
+
+
+class ScaleSelector:
+    """ Scale select between a high and low set of inputs.  Low might be a precise, amplified sensor and high might be the high range equivalent
+    """
+
+    def __init__(self, i_big_neg, i_small_neg, i_small_pos, i_big_pos):
+        # Defaults
+        self.i_big_neg = i_big_neg
+        self.i_small_neg = i_small_neg
+        self.i_small_pos = i_small_pos
+        self.i_big_pos = i_big_pos
+        self.del_neg = i_big_neg - i_small_neg
+        self.del_pos = i_big_pos - i_small_pos
+
+    def calculate(self, inp, big, small):
+        if self.i_small_neg <= inp <= self.i_small_pos:
+            return small
+        elif inp <= self.i_big_neg or inp >= self.i_big_pos:
+            return big
+        elif inp < self.i_small_neg:
+            return (inp - self.i_big_neg) / self.del_neg * ( big - small ) + big
+        else:
+            return (inp - self.i_big_pos) / self.del_pos * ( big - small ) + big
+
+    def __str__(self, prefix=''):
+        """Returns representation of the object"""
+        s = prefix + "Scale:\n"
+        s += "  i_big_neg = {:7.3f}    // Negative big break\n".format(self.i_big_neg)
+        s += "  i_small_neg = {:7.3f} // Negative small break\n".format(self.i_small_neg)
+        s += "  i_small_pos = {:7.3f} // Positive big break\n".format(self.i_small_pos)
+        s += "  del_neg = {:7.3f}     // Negative break span, signed\n".format(self.del_neg)
+        s += "  del_pos = {:7.3f}     // Positive break span, signed\n".format(self.del_pos)
         return s
