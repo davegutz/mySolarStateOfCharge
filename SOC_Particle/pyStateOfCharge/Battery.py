@@ -792,7 +792,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.LoopIbAmp.calculate(reset=ib_amp_reset, ib=self.ib_amp, SN=SN.LoopAmp,
                                      loop_gain=Battery.AMP_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr,
-                                     ewsat_slr=ewsat_slr, e_wrap_filt_init=e_wrap_amp_filt_init,
+                                     ewsat_slr=ewsat_slr, e_wrap_filt_init=SN.LoopAmp.e_wrap_filt_init,
                                      ib_init=SN.ib_amp_init, ib_dyn_init=SN.LoopAmp.ib_dyn_init,
                                      e_wrap_trim_init=SN.LoopAmp.e_wrap_trim_init)
             self.ewmhi_thr = self.LoopIbAmp.ewhi_thr
