@@ -31,7 +31,7 @@ class SensorLooparound:
         self.ib_dyn = ib_dyn
         self.ib_dyn_init = self.ib_dyn[0]
 
-    def assign(self, i):
+    def update(self, i):
         self.ib_dyn_init = self.ib_dyn[i]
 
 
@@ -61,6 +61,10 @@ class Sensors:
         self.ib_noa = mon_ref.ibnh
         self.ib_amp_init = self.ib_amp[0]
         self.ib_noa_init = self.ib_noa[0]
+        self.e_wrap_m = mon_ref.e_wrap_m  # TODO:  delete?
+        self.e_wrap_m_init = mon_ref.e_wrap_m[0]  # TODO:  delete?
+        self.e_wrap_n = mon_ref.e_wrap_n  # TODO:  delete?
+        self.e_wrap_n_init = mon_ref.e_wrap_n[0]  # TODO:  delete?
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -98,10 +102,12 @@ class Sensors:
         return mon
 
     def update_ib_vb(self, i):
-        self.LoopAmp.assign(i)
-        self.LoopNoa.assign(i)
+        self.LoopAmp.update(i)
+        self.LoopNoa.update(i)
         self.ib_amp_init = self.ib_amp[max(i - 1, 0)]
         self.ib_noa_init = self.ib_noa[max(i - 1, 0)]
+        self.e_wrap_m_init = self.e_wrap_m[i]  # TODO:  delete?
+        self.e_wrap_n_init = self.e_wrap_n[i]  # TODO:  delete?
 
     def update_tb(self):
         self.Tb_past = self.Tb
