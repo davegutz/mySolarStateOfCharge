@@ -389,7 +389,6 @@ class BatteryMonitor(Battery, EKF1x1):
             self.e_wrap_m_trim = ref.e_wrap_m_trim[0]
             self.e_wrap_n = ref.e_wrap_n[0]
             self.e_wrap_n_filt = ref.e_wrap_n_filt[0]
-            # self.e_wrap_n_trim = ref.e_wrap_n_trim[0]
             self.voc_soc = ref.voc_soc[0]
             self.voc_stat = self.voc_soc - self.e_wrap
             self.Tb = ref.Tb[0]
@@ -794,7 +793,7 @@ class BatteryMonitor(Battery, EKF1x1):
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr,
                                      ewsat_slr=ewsat_slr, e_wrap_filt_init=e_wrap_amp_filt_init,
                                      ib_init=SN.ib_amp_init, ib_dyn_init=SN.LoopAmp.ib_dyn_init,
-                                     e_wrap_trim_init=e_wrap_trim_amp_init)
+                                     e_wrap_trim_init=SN.e_wrap_m_trim_init)
             self.ewmhi_thr = self.LoopIbAmp.ewhi_thr
             self.ewmlo_thr = self.LoopIbAmp.ewlo_thr
             self.e_wrap_m = self.LoopIbAmp.e_wrap

@@ -65,6 +65,9 @@ class Sensors:
         self.e_wrap_m_init = mon_ref.e_wrap_m[0]  # TODO:  delete?
         self.e_wrap_n = mon_ref.e_wrap_n  # TODO:  delete?
         self.e_wrap_n_init = mon_ref.e_wrap_n[0]  # TODO:  delete?
+        self.e_wrap_m_trim = mon_ref.e_wrap_m_trim
+        self.e_wrap_m_trim_init = self.e_wrap_m_trim[0]
+
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -108,6 +111,7 @@ class Sensors:
         self.ib_noa_init = self.ib_noa[max(i - 1, 0)]
         self.e_wrap_m_init = self.e_wrap_m[i]  # TODO:  delete?
         self.e_wrap_n_init = self.e_wrap_n[i]  # TODO:  delete?
+        self.e_wrap_m_trim_init = self.e_wrap_m_trim[i]
 
     def update_tb(self):
         self.Tb_past = self.Tb
