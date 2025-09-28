@@ -27,7 +27,9 @@ from pyDAGx import myTables
 class SensorLooparound:
     """Collect Looparound sense parameters to create proper delays in data feed and connections to model"""
 
-    def __init__(self, ib_dyn, e_wrap_trim, e_wrap_filt):
+    def __init__(self, ib, ib_dyn, e_wrap_trim, e_wrap_filt):
+        self.ib = ib
+        self.ib_init = self.ib[0]
         self.ib_dyn = ib_dyn
         self.ib_dyn_init = self.ib_dyn[0]
         self.e_wrap_trim = e_wrap_trim
@@ -36,6 +38,7 @@ class SensorLooparound:
         self.e_wrap_filt_init = self.e_wrap_filt[0]
 
     def update(self, i):
+        self.ib_init = self.ib[max(i - 1, 0)]
         self.ib_dyn_init = self.ib_dyn[i]
         self.e_wrap_trim_init = self.e_wrap_trim[i]
         self.e_wrap_filt_init = self.e_wrap_filt[i]
@@ -61,12 +64,10 @@ class Sensors:
         self.Tb_f_past = mon_ref.Tb_f_rap[0] + self.dTb
         self.Tb_f_rate_past = mon_ref.Tb_f_rate_rap[0]
         self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
-        self.LoopAmp = SensorLooparound(mon_ref.ib_dyn_m, mon_ref.e_wrap_m_trim, mon_ref.e_wrap_m_filt)
-        self.LoopNoa = SensorLooparound(mon_ref.ib_dyn_n, mon_ref.e_wrap_m_trim*0., mon_ref.e_wrap_n_filt)
+        self.LoopAmp = SensorLooparound(mon_ref.ibmh, mon_ref.ib_dyn_m, mon_ref.e_wrap_m_trim, mon_ref.e_wrap_m_filt)
+        self.LoopNoa = SensorLooparound(mon_ref.ibnh, mon_ref.ib_dyn_n, mon_ref.e_wrap_m_trim*0., mon_ref.e_wrap_n_filt)
         self.ib_amp = mon_ref.ibmh
         self.ib_noa = mon_ref.ibnh
-        self.ib_amp_init = self.ib_amp[0]
-        self.ib_noa_init = self.ib_noa[0]
         self.e_wrap_m = mon_ref.e_wrap_m  # TODO:  delete?
         self.e_wrap_m_init = mon_ref.e_wrap_m[0]  # TODO:  delete?
         self.e_wrap_n = mon_ref.e_wrap_n  # TODO:  delete?
