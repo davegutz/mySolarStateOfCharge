@@ -66,6 +66,7 @@ class Sensors:
 
     def assign_ib_vb(self, i):
         self.LoopAmp.assign(i)
+        self.LoopNoa.assign(i)
 
     def calc_dTb(self, i):
         if self.dTb is not 0.:
