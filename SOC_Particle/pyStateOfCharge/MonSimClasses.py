@@ -68,12 +68,8 @@ class Sensors:
         self.LoopNoa = SensorLooparound(mon_ref.ibnh, mon_ref.ib_dyn_n, mon_ref.e_wrap_m_trim*0., mon_ref.e_wrap_n_filt)
         self.ib_amp = mon_ref.ibmh
         self.ib_noa = mon_ref.ibnh
-        self.e_wrap_m = mon_ref.e_wrap_m  # TODO:  delete?
-        self.e_wrap_m_init = mon_ref.e_wrap_m[0]  # TODO:  delete?
-        self.e_wrap_n = mon_ref.e_wrap_n  # TODO:  delete?
-        self.e_wrap_n_init = mon_ref.e_wrap_n[0]  # TODO:  delete?
-        # self.e_wrap_m_trim = mon_ref.e_wrap_m_trim
-        # self.e_wrap_m_trim_init = self.e_wrap_m_trim[0]
+        self.ib_dyn = mon_ref.ib_dyn
+        self.ib_dyn_init = mon_ref.ib_dyn[0]
 
 
     def __str__(self, prefix=''):
@@ -114,11 +110,7 @@ class Sensors:
     def update_ib_vb(self, i):
         self.LoopAmp.update(i)
         self.LoopNoa.update(i)
-        self.ib_amp_init = self.ib_amp[max(i - 1, 0)]
-        self.ib_noa_init = self.ib_noa[max(i - 1, 0)]
-        self.e_wrap_m_init = self.e_wrap_m[i]  # TODO:  delete?
-        self.e_wrap_n_init = self.e_wrap_n[i]  # TODO:  delete?
-        # self.e_wrap_m_trim_init = self.e_wrap_m_trim[i]
+        self.ib_dyn_init = self.ib_dyn[i]
 
     def update_tb(self):
         self.Tb_past = self.Tb

@@ -301,22 +301,15 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if rp.modeling == 0:
             if reset_ekf:
                 z_init = mon_old.z[i_ekf]
-
-            # print(f"{i=}   {i_ekf=}   t {mon_old.time[i]}   te {mon_old.time_e[i_ekf]}    dt {mon_old.dt_ekf[i_ekf]}     calc {calc_ekf}      res_ekf {reset_ekf}      z_init {z_init}")
             if reset:
                 SN.update_ib_vb(i)
-                e_wrap_trim_noa_init = 0.
             mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, SN, SN.Tb_f_rate_past,
                           rp=rp, bms_off_init=mon_old.bms_off[0], ib_amp=mon_old.ibmh[i], ib_noa=mon_old.ibnh[i],
-                          e_w_amp_filt_r=mon_old.e_wrap_m_filt[i],
-                          e_w_noa_filt_r=mon_old.e_wrap_n_filt[i],
-                          reset_ekf=reset_ekf, ib_dyn_init=mon_old.ib_dyn[i])
+                          reset_ekf=reset_ekf)
         else:
             mon.calculate(_chm_m, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
                           reset, calc_ekf, T_ekf, mon_old.z[0], SN, SN.Tb_f_rate_past,
                           rp=rp, bms_off_init=mon_old.bms_off[0], ib_amp=mon_old.ibmm[i], ib_noa=mon_old.ibnm[i],
-                          e_w_amp_filt_r=mon_old.e_wrap_m_filt[i],
-                          e_w_noa_filt_r=mon_old.e_wrap_n_filt[i],
                           reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge
         sat = is_sat(SN.Tb_f_past, mon.chemistry.rated_temp, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat,

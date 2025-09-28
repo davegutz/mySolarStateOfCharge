@@ -461,7 +461,6 @@ class BatteryMonitor(Battery, EKF1x1):
         # Wrap logic
         self.wrap(reset=reset, ib_sel=self.ib, SN=SN,
                   ib_amp=self.ib_amp,
-                  e_wrap_amp_filt_init=e_w_amp_filt_r,
                   ib_noa=self.ib_noa,
                   e_wrap_noa_filt_init=e_w_noa_filt_r)
 
@@ -496,7 +495,7 @@ class BatteryMonitor(Battery, EKF1x1):
         else:
             ib_dc = self.ib
         self.vb = vb
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, ib_dyn_init, reset, dt,
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_init, reset, dt,
                                                      self.chemistry.tau_ct)
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
