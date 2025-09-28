@@ -160,7 +160,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     hdr = None
     sat_s_init = None
     ib_amp_init = None
-    ib_dyn_amp_init = None
     e_wrap_trim_amp_init = None
     ib_noa_init = None
     ib_dyn_noa_init = None
@@ -310,8 +309,6 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             if reset:
                 ib_amp_init = mon_old.ibmh[max(i-1, 0)]
                 SN.assign_ib_vb(i)
-                ib_dyn_amp_init = mon_old.ib_dyn_m[i]
-                print(f"ib_dyn_amp_init = {mon_old.ib_dyn_m[i]}, SN.LoopAmp.ib_dyn_init = {SN.LoopAmp.ib_dyn[i]}")
                 e_wrap_trim_amp_init = mon_old.e_wrap_m_trim[i]
                 ib_noa_init = mon_old.ibnh[max(i-1, 0)]
                 ib_dyn_noa_init = mon_old.ib_dyn_n[i]
@@ -321,7 +318,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                           e_w_amp_r=mon_old.e_wrap_m[i], e_w_amp_filt_r=mon_old.e_wrap_m_filt[i],
                           e_w_noa_r=mon_old.e_wrap_n[i], e_w_noa_filt_r=mon_old.e_wrap_n_filt[i],
                           reset_ekf=reset_ekf, ib_dyn_init=mon_old.ib_dyn[i],
-                          ib_amp_init=ib_amp_init, ib_dyn_amp_init=ib_dyn_amp_init,
+                          ib_amp_init=ib_amp_init,
                           ib_noa_init=ib_noa_init, ib_dyn_noa_init=ib_dyn_noa_init,
                           e_wrap_trim_amp_init=e_wrap_trim_amp_init, e_wrap_trim_noa_init=e_wrap_trim_noa_init)
         else:

@@ -57,8 +57,6 @@ class Sensors:
         self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
         self.LoopAmp = SensorLooparound(mon_ref.ib_dyn_m)
         self.LoopNoa = SensorLooparound(mon_ref.ib_dyn_n)
-        self.ib_dyn_amp_init = mon_ref.ib_dyn_m[0]
-        print(f"ib_dyn_amp_init = {mon_ref.ib_dyn_m[0]}, SN.LoopAmp.ib_dyn_init = {self.LoopAmp.ib_dyn_init}")
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
