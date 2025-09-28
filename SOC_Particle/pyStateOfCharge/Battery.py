@@ -462,7 +462,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        self.wrap(reset=reset, ib_sel=self.ib,
+        self.wrap(reset=reset, ib_sel=self.ib, SN=SN,
                   ib_amp=self.ib_amp, ib_amp_init=ib_amp_init, ib_dyn_amp_init=ib_dyn_amp_init,
                   e_wrap_trim_amp_init=e_wrap_trim_amp_init, e_wrap_amp_filt_init=e_w_amp_filt_r,
                   ib_noa=self.ib_noa, ib_noa_init=ib_noa_init, ib_dyn_noa_init=ib_dyn_noa_init,
@@ -747,7 +747,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
 
-    def wrap(self, reset=True, ib_sel=0.,
+    def wrap(self, reset=True, ib_sel=0., SN=None,
              ib_amp=0., ib_amp_init=None, ib_dyn_amp_init=None, e_wrap_amp_filt_init=None, e_wrap_trim_amp_init=None,
              ib_noa=0., ib_noa_init=None, ib_dyn_noa_init=None, e_wrap_noa_filt_init=None, e_wrap_trim_noa_init=None):
         """Wrap logic"""
@@ -791,7 +791,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.disable_amp_fault = (ib_amp_hi and ib_noa_hi) or (ib_amp_lo and ib_noa_lo)
             ib_amp_reset = reset or self.disable_amp_fault
             self.ib_noa_rate = self.IbAmpRate.calculate(in_=ib_noa, reset=reset, dt=min(self.dt, Battery.F_MAX_T_WRAP))
-            # print(f"{ib_amp=} {ib_amp_init=} {self.ib_noa_rate=} {ib_amp_hi=} {ib_amp_lo=} {ib_noa_hi=} {ib_noa_lo=}")
+            print(f"wrap:  ib_dyn_amp_init = {ib_dyn_amp_init}, SN.LoopAmp.ib_dyn_init = {SN.LoopAmp.ib_dyn_init}")
             self.LoopIbAmp.calculate(reset=ib_amp_reset, ib=self.ib_amp, loop_gain=Battery.AMP_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr,
                                      ewsat_slr=ewsat_slr, e_wrap_filt_init=e_wrap_amp_filt_init,

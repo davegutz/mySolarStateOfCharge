@@ -31,6 +31,9 @@ class SensorLooparound:
         self.ib_dyn = ib_dyn
         self.ib_dyn_init = self.ib_dyn[0]
 
+    def assign(self, i):
+        self.ib_dyn_init = self.ib_dyn[i]
+
 
 class Sensors:
     """Collect various sense parameters to create proper delays in data feed and connections to model"""
@@ -52,8 +55,10 @@ class Sensors:
         self.Tb_f_past = mon_ref.Tb_f_rap[0] + self.dTb
         self.Tb_f_rate_past = mon_ref.Tb_f_rate_rap[0]
         self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
-        self.ib_dyn_amp_init = mon_ref.ib_dyn_m[0]
         self.LoopAmp = SensorLooparound(mon_ref.ib_dyn_m)
+        self.LoopNoa = SensorLooparound(mon_ref.ib_dyn_n)
+        self.ib_dyn_amp_init = mon_ref.ib_dyn_m[0]
+        print(f"ib_dyn_amp_init = {mon_ref.ib_dyn_m[0]}, SN.LoopAmp.ib_dyn_init = {self.LoopAmp.ib_dyn_init}")
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -61,8 +66,8 @@ class Sensors:
         s += "  Tb0_s =  {:9.7f}  // deg C\n".format(self.Tb0_s)
         return s
 
-    def assign_ib_vb(self, mon_ref, i):
-        self.ib_dyn_amp_init = mon_ref.ib_dyn_m[i]
+    def assign_ib_vb(self, i):
+        self.LoopAmp.assign(i)
 
     def calc_dTb(self, i):
         if self.dTb is not 0.:

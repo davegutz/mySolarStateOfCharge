@@ -309,8 +309,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             # print(f"{i=}   {i_ekf=}   t {mon_old.time[i]}   te {mon_old.time_e[i_ekf]}    dt {mon_old.dt_ekf[i_ekf]}     calc {calc_ekf}      res_ekf {reset_ekf}      z_init {z_init}")
             if reset:
                 ib_amp_init = mon_old.ibmh[max(i-1, 0)]
-                SN.assign_ib_vb(mon_old, i)
+                SN.assign_ib_vb(i)
                 ib_dyn_amp_init = mon_old.ib_dyn_m[i]
+                print(f"ib_dyn_amp_init = {mon_old.ib_dyn_m[i]}, SN.LoopAmp.ib_dyn_init = {SN.LoopAmp.ib_dyn[i]}")
                 e_wrap_trim_amp_init = mon_old.e_wrap_m_trim[i]
                 ib_noa_init = mon_old.ibnh[max(i-1, 0)]
                 ib_dyn_noa_init = mon_old.ib_dyn_n[i]
