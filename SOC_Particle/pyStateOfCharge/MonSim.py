@@ -94,20 +94,20 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     3. *** Fig. 5 Dom 4a:  TB ver needs past value. *** Plotted wrong thing.  Tb-->Tb_rap and Tb_rap_ver
     4. *** Fig. 7 EKF 1:  Bu_ver at 0.  Fixed by dt_eframe fix
     5. *** Fig. 2 Dom 2: dv_hys plots not intelligible.  Not sure what these mean
-    6. Fig. 1 1a: e_wrap filter initialization.   Need filt_rates from Noa and Amp filters.  LoopIbNoa and Amp e_wrap_rate()
-    7. Fig. 9 EKF 2a: hx(soc) negative slope?
+    6. *** Fig. 1 1a: e_wrap filter initialization.   Need filt_rates from Noa and Amp filters.  LoopIbNoa and Amp e_wrap_rate().  Fixed by incorporating the scale logic from app
+    7. Fig. 9 EKF 2a: hx(soc) negative slope?  This needs to be run just below saturation
     8. *** Fig. 10 EKF 3:  voc_ekv (hx) not equal at 0.  Fixed by modifying reset_ekf logic
     9. Run CompareHistSim etc.
     10. *** Fig 18 dv_hys jitter around 0 in reference data  ***->0*dv_hys before return instead of in return Fixed by sending dv_hys over data stream instead of calculating in load.
-    11. voltage resolutions off/on mon 1
+    11. *** Fig. 23 voltage resolutions off/on mon 1.  Resolutions of data corrected.
     12. *** Can reorder execution so header printed before any relevant data?  Deleting first two rows of data before headers causes data mismatch in sim.  No change.  Not problem
     13. *** Discarded sim data ('vv0') causes issue.  Don't record/save local entered data.  Fixed by 'skip' logic
-    14. Fig. 6 Ult 1:  e_wrap_m_filt_ver off (  e_wrap_m_filt = 1.5 ?)
+    14. *** Fig. 6 Ult 1:  e_wrap_m_filt_ver off (  e_wrap_m_filt = 1.5 ?).  Fixed by multitude of other fixes.
     15. *** Fig. 7 EKF 1: S initialization.  Fixed by putting S calc inside reset
     16. *** Fig 10  EKF 3:  z=voc_stat_f and ver not equal.  Fixed by updating variable names
-    17. Fig 12 Hyst 1: e_wrap_ver not equal.
+    17. *** Fig 12 Hyst 1: e_wrap_ver not equal.  Fixed by adding scale logic from app
     18. *** Fig 13 sim_s 1:  ib_in_ver  Not fixed: OK because have manually over-ridden ib selection to force ib_noa use in logic but not selection
-    19. Fig 15 sim_s 2a:  vb?
+    19. Fig 15 sim_s 2a:  vb?   Keep looking for this when run at other op conditions
     """
 
     # time
@@ -128,22 +128,22 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     # tweaking
     tweak_test = rp.tweak_test()
 
-    ST = TbSense(mon_ref=mon_old, dTb_in=dTb_in)
+    SN = Sensors(mon_ref=mon_old, dTb_in=dTb_in)
 
     # Battery sizing
     scale_mon, scale_sim = battery_size(mon_old, sim_old, scale_in, unit_cap_rated)
 
     # Make batteries
-    sim = BatterySim(mod_code=chm_s[0], tb_f=ST.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
+    sim = BatterySim(mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
                      dv_hys=mon_old.dv_hys[0], sres0=sres0, sresct=sresct, stauct=stauct_sim, scale_r_ss=scale_r_ss,
                      s_hys=s_hys_sim, dvoc=dvoc_sim, scale_hys_cap=scale_hys_cap_sim, s_coul_eff=s_coul_eff,
                      s_cap_chg=s_cap_chg, s_cap_dis=s_cap_dis, s_hys_chg=s_hys_chg, s_hys_dis=s_hys_dis,
                      cutback_gain_sclr=cutback_gain_sclr, ds_voc_soc=ds_voc_soc, unit=unit, mon_ref=mon_old,
                      sim_ref=sim_old)
-    mon = BatteryMonitor(mod_code=chm_m[0], tb_f=ST.Tb0, scale=scale_mon, tweak_test=tweak_test,
+    mon = BatteryMonitor(mod_code=chm_m[0], tb_f=SN.Tb0, scale=scale_mon, tweak_test=tweak_test,
                          sres0=sres0, sresct=sresct, stauct=stauct_mon,
                          scale_r_ss=scale_r_ss, s_hys=s_hys_mon, dvoc=dvoc_mon, eframe_mult=eframe_mult,
-                         s_coul_eff=s_coul_eff, unit=unit, ref=mon_old, dTb=ST.dTb)
+                         s_coul_eff=s_coul_eff, unit=unit, ref=mon_old, dTb=SN.dTb)
     Is_sat_delay = TFDelay(in_=mon_old.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
     # Time sync
@@ -169,7 +169,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     # Print debug information
     if request_history is not None and request_history > 0:
         hdr = print_hist(request_history, 0, i_temp, i_ekf, t, mon_old, mon, True, True,
-                         ST.Tb, ST.Tb_past, sim_old, sim, ST)
+                         SN.Tb, SN.Tb_past, sim_old, sim, SN)
 
     # Top of time loop
     for i in range(t_len):
@@ -197,9 +197,9 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             mon.Tb = mon_old.Tb[i_temp]
             mon.Tb_s = mon_old.Tb[i_temp]
             if i_temp > 0:
-                ST.update()
-            mon.Tb_f_rap = ST.Tb_f_past
-            mon.Tb_f_rate_rap = ST.Tb_f_rate_past
+                SN.update_tb()
+            mon.Tb_f_rap = SN.Tb_f_past
+            mon.Tb_f_rate_rap = SN.Tb_f_rate_past
             sim.Tb_f = mon_old.Tb_mod[i_temp]
 
         # Input
@@ -215,11 +215,11 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         prn_soc_debug(time=now, leader="before sim init:     ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
         if reset:
-            sim.apply_soc(mon_old.soc_s[i], ST.Tb_f_past)  # calculates delta_q
+            sim.apply_soc(mon_old.soc_s[i], SN.Tb_f_past)  # calculates delta_q
             sim.load(sim.delta_q)
             sim.assign_tb(sim.Tb)
             sim.assign_tb_f(sim.Tb_f)
-            sim.apply_delta_q_t(sim.delta_q, ST.Tb_f_past)
+            sim.apply_delta_q_t(sim.delta_q, SN.Tb_f_past)
             sat_s_init = mon_old.voc_stat[0] > mon_old.vsat[0]
             if sim_old is not None:
                 sat_s_init = sim_old.sat_s[0]
@@ -229,7 +229,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         if calc_temp:
             prn_soc_debug(time=now, leader="b temp filtr:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
-            mon = ST.temp_calc(mon_old, mon, Battery, i_temp)
+            mon = SN.temp_calc(mon_old, mon, Battery, i_temp)
 
             prn_soc_debug(time=now, leader="a temp filtr:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 
@@ -245,12 +245,12 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             _chm_s = Bsim
 
         prn_soc_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
-        sim.calculate(_chm_s, None, ib_in_s, sim_old.dt_s[i], reset, None, None,
+        sim.calculate(_chm_s, None, ib_in_s, sim_old.dt_s[i], reset, None, None, SN,
                       ib_dyn_init=sim_old.ib_dyn_s[i],
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=sim_old.bms_off_s[0], dv_dyn_0=sim_old.dv_dyn_s[i])
         prn_soc_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
-        sim.count_coulombs(chem=_chm_s, dt=sim_old.dt_s[i], reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=ST.Tb_f_rate_past,
+        sim.count_coulombs(chem=_chm_s, dt=sim_old.dt_s[i], reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=SN.Tb_f_rate_past,
                            charge_curr=sim.ib_charge, sat=False, soc_s_init=sim_old.soc_s[i], mon_sat=mon.sat,
                            sim_delta_q=sim_old.dq_s[i], use_soc_in=use_mon_soc, soc_in=sim_old.soc_s[i])
         prn_soc_debug(time=now, leader="after sim.count_cou:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
@@ -309,12 +309,13 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
             # print(f"{i=}   {i_ekf=}   t {mon_old.time[i]}   te {mon_old.time_e[i_ekf]}    dt {mon_old.dt_ekf[i_ekf]}     calc {calc_ekf}      res_ekf {reset_ekf}      z_init {z_init}")
             if reset:
                 ib_amp_init = mon_old.ibmh[max(i-1, 0)]
+                SN.assign_ib_vb(mon_old, i)
                 ib_dyn_amp_init = mon_old.ib_dyn_m[i]
                 e_wrap_trim_amp_init = mon_old.e_wrap_m_trim[i]
                 ib_noa_init = mon_old.ibnh[max(i-1, 0)]
                 ib_dyn_noa_init = mon_old.ib_dyn_n[i]
                 e_wrap_trim_noa_init = 0.
-            mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, ST.Tb_f_rate_past,
+            mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, SN, SN.Tb_f_rate_past,
                           rp=rp, bms_off_init=mon_old.bms_off[0], ib_amp=mon_old.ibmh[i], ib_noa=mon_old.ibnh[i],
                           e_w_amp_r=mon_old.e_wrap_m[i], e_w_amp_filt_r=mon_old.e_wrap_m_filt[i],
                           e_w_noa_r=mon_old.e_wrap_n[i], e_w_noa_filt_r=mon_old.e_wrap_n_filt[i],
@@ -324,23 +325,23 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                           e_wrap_trim_amp_init=e_wrap_trim_amp_init, e_wrap_trim_noa_init=e_wrap_trim_noa_init)
         else:
             mon.calculate(_chm_m, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
-                          reset, calc_ekf, T_ekf, mon_old.z[0], ST.Tb_f_rate_past,
+                          reset, calc_ekf, T_ekf, mon_old.z[0], SN, SN.Tb_f_rate_past,
                           rp=rp, bms_off_init=mon_old.bms_off[0], ib_amp=mon_old.ibmm[i], ib_noa=mon_old.ibnm[i],
                           e_w_amp_r=mon_old.e_wrap_m[i],
                           e_w_amp_filt_r=mon_old.e_wrap_m_filt[i], e_w_noa_r=mon_old.e_wrap_n[i],
                           e_w_noa_filt_r=mon_old.e_wrap_n_filt[i],
                           reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge
-        sat = is_sat(ST.Tb_f_past, mon.chemistry.rated_temp, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat,
+        sat = is_sat(SN.Tb_f_past, mon.chemistry.rated_temp, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat,
                      mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
 
         # Monitor count Coulumbs
         if rp.modeling == 0:
-            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=ST.Tb_f_past, charge_curr=ib_charge,
+            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=SN.Tb_f_past, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
         else:
-            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=ST.Tb_f_past, charge_curr=ib_charge,
+            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=SN.Tb_f_past, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=use_mon_soc, soc_in=mon_old.soc[i])
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
         mon.assign_soc_s(sim.soc)
@@ -364,7 +365,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         # History print
         if request_history is not None and request_history > 0:
             hdr = print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf,
-                             ST.Tb, ST.Tb_past, sim_old, sim, ST)
+                             SN.Tb, SN.Tb_past, sim_old, sim, SN)
 
         prn_soc_debug(time=now, leader="end loop:", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
 

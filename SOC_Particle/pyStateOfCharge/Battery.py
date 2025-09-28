@@ -265,7 +265,7 @@ class Battery(Coulombs):
         # print("soc=", soc, "tb_f=", tb_f, "dvoc=", self.dvoc, "voc=", voc)
         return voc, dv_dsoc
 
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init, SN,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_r=None,
                   e_w_amp_filt_r=None, e_w_noa_r=None, e_w_noa_filt_r=None, reset_ekf=None, soc=None, sat_init=None):
         # Battery
@@ -440,7 +440,7 @@ class BatteryMonitor(Battery, EKF1x1):
     # BatteryMonitor::calculate()
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init,
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init, SN,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_r=None,
                   e_w_amp_filt_r=None, e_w_noa_r=None, e_w_noa_filt_r=None, soc=None, sat_init=None,
                   reset_ekf=None, ib_dyn_init=None, e_wrap_filt_init=None,
@@ -889,7 +889,7 @@ class BatterySim(Battery):
         return s
 
     # BatterySim::calculate()
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf,
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_r=None,
                   e_w_amp_filt_r=None, e_w_noa_r=None, e_w_noa_filt_r=None, reset_ekf=None, soc=None, sat_init=None,
                   dv_dyn_0=None, ib_dyn_init=None):

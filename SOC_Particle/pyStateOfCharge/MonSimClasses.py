@@ -24,8 +24,16 @@ from Battery import Battery
 from myFilters import LagExp
 from pyDAGx import myTables
 
-class TbSense:
-    """Collect various sense parameters to create update delay in data feed"""
+class SensorLooparound:
+    """Collect Looparound sense parameters to create proper delays in data feed and connections to model"""
+
+    def __init__(self, ib_dyn):
+        self.ib_dyn = ib_dyn
+        self.ib_dyn_init = self.ib_dyn[0]
+
+
+class Sensors:
+    """Collect various sense parameters to create proper delays in data feed and connections to model"""
 
     def __init__(self, mon_ref=None, dTb_in=None):
         self.Tb0 = mon_ref.Tb_f[0]
@@ -44,10 +52,21 @@ class TbSense:
         self.Tb_f_past = mon_ref.Tb_f_rap[0] + self.dTb
         self.Tb_f_rate_past = mon_ref.Tb_f_rate_rap[0]
         self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
+        self.ib_dyn_amp_init = mon_ref.ib_dyn_m[0]
+        self.LoopAmp = SensorLooparound(mon_ref.ib_dyn_m)
+
+    def __str__(self, prefix=''):
+        s = prefix + "TFDelay:\n"
+        s += "  Tb0 =  {:9.7f}  // deg C\n".format(self.Tb0)
+        s += "  Tb0_s =  {:9.7f}  // deg C\n".format(self.Tb0_s)
+        return s
+
+    def assign_ib_vb(self, mon_ref, i):
+        self.ib_dyn_amp_init = mon_ref.ib_dyn_m[i]
 
     def calc_dTb(self, i):
         if self.dTb is not 0.:
-            dTb = ST.lut_dTb.interp(t[i])
+            dTb = SN.lut_dTb.interp(t[i])
         else:
             dTb = self.dTb
         return dTb
@@ -64,17 +83,17 @@ class TbSense:
         mon.Tb_rap = self.Tb_past
         mon.Tb_f = mon.Tb_hdwe_filt
         self.Tb_f = mon.Tb_hdwe_filt
-        self.assign(mon.Tb, mon.Tb_f, mon.Tb_f_rate)
+        self.assign_tb(mon.Tb, mon.Tb_f, mon.Tb_f_rate)
         mon.Tb_rstate = self.TbSenseFilt.rstate
         mon.Tb_state = self.TbSenseFilt.state
         return mon
 
-    def update(self):
+    def update_tb(self):
         self.Tb_past = self.Tb
         self.Tb_f_past = self.Tb_f
         self.Tb_f_rate_past = self.Tb_f_rate
 
-    def assign(self, mon_Tb, mon_Tb_f, mon_Tb_f_rate):
+    def assign_tb(self, mon_Tb, mon_Tb_f, mon_Tb_f_rate):
         self.Tb = mon_Tb + self.dTb
         self.Tb_f = mon_Tb_f + self.dTb
         self.Tb_f_rate = mon_Tb_f_rate
