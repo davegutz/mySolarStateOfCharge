@@ -170,7 +170,7 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf,
     return hdr
 
 def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, SN, i_ekf, calc_ekf):
-    hdr = "  i  time   r       rt   it   ct      re   ie  ce     Tt      Tb_hdwe                    Tb                         Tb_                        Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap              tb_f_for_hx"
+    hdr = "  i  time   r       rt   it   ct      re   ie  ce     Tt       Tb_hdwe                    Tb                         Tb_                        Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap              tb_f_for_hx"
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),

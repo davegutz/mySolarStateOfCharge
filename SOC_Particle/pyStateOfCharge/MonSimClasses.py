@@ -70,7 +70,8 @@ class Sensors:
         self.ib_noa = mon_ref.ibnh
         self.ib_dyn = mon_ref.ib_dyn
         self.ib_dyn_init = mon_ref.ib_dyn[0]
-
+        self.z = mon_ref.z
+        self.z_init = self.z[0]
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -106,6 +107,9 @@ class Sensors:
         mon.Tb_rstate = self.TbSenseFilt.rstate
         mon.Tb_state = self.TbSenseFilt.state
         return mon
+
+    def update_ekf(self, i_ekf):
+        self.z_init = self.z[i_ekf]
 
     def update_ib_vb(self, i):
         self.LoopAmp.update(i)

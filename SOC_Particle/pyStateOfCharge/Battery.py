@@ -439,7 +439,7 @@ class BatteryMonitor(Battery, EKF1x1):
     # BatteryMonitor::calculate()
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, z_init, SN,
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None,
                   e_w_amp_filt_r=None, e_w_noa_filt_r=None, soc=None, sat_init=None,
                   reset_ekf=None, ib_dyn_init=None, e_wrap_filt_init=None):
@@ -528,7 +528,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.Q = Battery.EKF_Q_SD_NORM**2  # override
             self.R = Battery.EKF_R_SD_NORM**2  # override
             self.voc_stat_f =\
-                self.voc_stat_filt.calculate_tau_seeded(self.voc_stat_ekf, z_init, self.reset_ekf, self.dt_eframe,
+                self.voc_stat_filt.calculate_tau_seeded(self.voc_stat_ekf, SN.z_init, self.reset_ekf, self.dt_eframe,
                                                         self.VOC_STAT_FILT)
             self.predict_ekf(u=ddq_dt, reset=self.reset_ekf)  # u = d(q)/dt
             self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1., reset=self.reset_ekf)  # z = voc, voc_filtered = hx
