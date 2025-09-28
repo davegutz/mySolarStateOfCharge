@@ -444,7 +444,6 @@ class BatteryMonitor(Battery, EKF1x1):
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, e_w_amp_r=None,
                   e_w_amp_filt_r=None, e_w_noa_r=None, e_w_noa_filt_r=None, soc=None, sat_init=None,
                   reset_ekf=None, ib_dyn_init=None, e_wrap_filt_init=None,
-                  ib_amp_init=None, ib_noa_init=None,
                   e_wrap_trim_amp_init=None, e_wrap_trim_noa_init=None):
         self.ib_amp = ib_amp
         self.ib_noa = ib_noa
@@ -463,9 +462,9 @@ class BatteryMonitor(Battery, EKF1x1):
 
         # Wrap logic
         self.wrap(reset=reset, ib_sel=self.ib, SN=SN,
-                  ib_amp=self.ib_amp, ib_amp_init=ib_amp_init,
+                  ib_amp=self.ib_amp,
                   e_wrap_trim_amp_init=e_wrap_trim_amp_init, e_wrap_amp_filt_init=e_w_amp_filt_r,
-                  ib_noa=self.ib_noa, ib_noa_init=ib_noa_init,
+                  ib_noa=self.ib_noa,
                   e_wrap_trim_noa_init=e_wrap_trim_noa_init, e_wrap_noa_filt_init=e_w_noa_filt_r)
 
         # Reversionary model
@@ -748,8 +747,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
 
     def wrap(self, reset=True, ib_sel=0., SN=None,
-             ib_amp=0., ib_amp_init=None, e_wrap_amp_filt_init=None, e_wrap_trim_amp_init=None,
-             ib_noa=0., ib_noa_init=None, e_wrap_noa_filt_init=None, e_wrap_trim_noa_init=None):
+             ib_amp=0., e_wrap_amp_filt_init=None, e_wrap_trim_amp_init=None,
+             ib_noa=0., e_wrap_noa_filt_init=None, e_wrap_trim_noa_init=None):
         """Wrap logic"""
 
         # e_wrap scalars normally calculated in Sensors
@@ -774,7 +773,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.LoopIbNoa.calculate(reset=reset, ib=self.ib_noa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr,
                                      ewsat_slr=ewsat_slr, e_wrap_filt_init=e_wrap_noa_filt_init,
-                                     ib_init=ib_noa_init, ib_dyn_init=SN.LoopNoa.ib_dyn_init,
+                                     ib_init=SN.ib_noa_init, ib_dyn_init=SN.LoopNoa.ib_dyn_init,
                                      e_wrap_trim_init=e_wrap_trim_noa_init)
             self.e_wrap_n = self.LoopIbNoa.e_wrap
             self.e_wrap_n_filt = self.LoopIbNoa.e_wrap_filt
@@ -794,7 +793,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.LoopIbAmp.calculate(reset=ib_amp_reset, ib=self.ib_amp, loop_gain=Battery.AMP_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr,
                                      ewsat_slr=ewsat_slr, e_wrap_filt_init=e_wrap_amp_filt_init,
-                                     ib_init=ib_amp_init, ib_dyn_init=SN.LoopAmp.ib_dyn_init,
+                                     ib_init=SN.ib_amp_init, ib_dyn_init=SN.LoopAmp.ib_dyn_init,
                                      e_wrap_trim_init=e_wrap_trim_amp_init)
             self.ewmhi_thr = self.LoopIbAmp.ewhi_thr
             self.ewmlo_thr = self.LoopIbAmp.ewlo_thr

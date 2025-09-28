@@ -57,6 +57,10 @@ class Sensors:
         self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
         self.LoopAmp = SensorLooparound(mon_ref.ib_dyn_m)
         self.LoopNoa = SensorLooparound(mon_ref.ib_dyn_n)
+        self.ib_amp = mon_ref.ibmh
+        self.ib_noa = mon_ref.ibnh
+        self.ib_amp_init = self.ib_amp[0]
+        self.ib_noa_init = self.ib_noa[0]
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -64,9 +68,10 @@ class Sensors:
         s += "  Tb0_s =  {:9.7f}  // deg C\n".format(self.Tb0_s)
         return s
 
-    def assign_ib_vb(self, i):
-        self.LoopAmp.assign(i)
-        self.LoopNoa.assign(i)
+    def assign_tb(self, mon_Tb, mon_Tb_f, mon_Tb_f_rate):
+        self.Tb = mon_Tb + self.dTb
+        self.Tb_f = mon_Tb_f + self.dTb
+        self.Tb_f_rate = mon_Tb_f_rate
 
     def calc_dTb(self, i):
         if self.dTb is not 0.:
@@ -92,12 +97,14 @@ class Sensors:
         mon.Tb_state = self.TbSenseFilt.state
         return mon
 
+    def update_ib_vb(self, i):
+        self.LoopAmp.assign(i)
+        self.LoopNoa.assign(i)
+        self.ib_amp_init = self.ib_amp[max(i - 1, 0)]
+        self.ib_noa_init = self.ib_noa[max(i - 1, 0)]
+
     def update_tb(self):
         self.Tb_past = self.Tb
         self.Tb_f_past = self.Tb_f
         self.Tb_f_rate_past = self.Tb_f_rate
 
-    def assign_tb(self, mon_Tb, mon_Tb_f, mon_Tb_f_rate):
-        self.Tb = mon_Tb + self.dTb
-        self.Tb_f = mon_Tb_f + self.dTb
-        self.Tb_f_rate = mon_Tb_f_rate

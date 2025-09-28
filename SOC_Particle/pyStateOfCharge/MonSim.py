@@ -159,9 +159,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     i = None
     hdr = None
     sat_s_init = None
-    ib_amp_init = None
     e_wrap_trim_amp_init = None
-    ib_noa_init = None
     e_wrap_trim_noa_init = None
 
     # Print debug information
@@ -306,18 +304,14 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
             # print(f"{i=}   {i_ekf=}   t {mon_old.time[i]}   te {mon_old.time_e[i_ekf]}    dt {mon_old.dt_ekf[i_ekf]}     calc {calc_ekf}      res_ekf {reset_ekf}      z_init {z_init}")
             if reset:
-                ib_amp_init = mon_old.ibmh[max(i-1, 0)]
-                SN.assign_ib_vb(i)
+                SN.update_ib_vb(i)
                 e_wrap_trim_amp_init = mon_old.e_wrap_m_trim[i]
-                ib_noa_init = mon_old.ibnh[max(i-1, 0)]
                 e_wrap_trim_noa_init = 0.
             mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, z_init, SN, SN.Tb_f_rate_past,
                           rp=rp, bms_off_init=mon_old.bms_off[0], ib_amp=mon_old.ibmh[i], ib_noa=mon_old.ibnh[i],
                           e_w_amp_r=mon_old.e_wrap_m[i], e_w_amp_filt_r=mon_old.e_wrap_m_filt[i],
                           e_w_noa_r=mon_old.e_wrap_n[i], e_w_noa_filt_r=mon_old.e_wrap_n_filt[i],
                           reset_ekf=reset_ekf, ib_dyn_init=mon_old.ib_dyn[i],
-                          ib_amp_init=ib_amp_init,
-                          ib_noa_init=ib_noa_init,
                           e_wrap_trim_amp_init=e_wrap_trim_amp_init, e_wrap_trim_noa_init=e_wrap_trim_noa_init)
         else:
             mon.calculate(_chm_m, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
