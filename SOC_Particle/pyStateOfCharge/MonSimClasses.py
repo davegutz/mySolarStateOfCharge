@@ -27,12 +27,15 @@ from pyDAGx import myTables
 class SensorLooparound:
     """Collect Looparound sense parameters to create proper delays in data feed and connections to model"""
 
-    def __init__(self, ib_dyn):
+    def __init__(self, ib_dyn, e_wrap_trim):
         self.ib_dyn = ib_dyn
         self.ib_dyn_init = self.ib_dyn[0]
+        self.e_wrap_trim = e_wrap_trim
+        self.e_wrap_trim_init = e_wrap_trim[0]
 
     def update(self, i):
         self.ib_dyn_init = self.ib_dyn[i]
+        self.e_wrap_trim_init = self.e_wrap_trim[i]
 
 
 class Sensors:
@@ -55,8 +58,8 @@ class Sensors:
         self.Tb_f_past = mon_ref.Tb_f_rap[0] + self.dTb
         self.Tb_f_rate_past = mon_ref.Tb_f_rate_rap[0]
         self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
-        self.LoopAmp = SensorLooparound(mon_ref.ib_dyn_m)
-        self.LoopNoa = SensorLooparound(mon_ref.ib_dyn_n)
+        self.LoopAmp = SensorLooparound(mon_ref.ib_dyn_m, mon_ref.e_wrap_m_trim)
+        self.LoopNoa = SensorLooparound(mon_ref.ib_dyn_n, mon_ref.e_wrap_m_trim*0.)
         self.ib_amp = mon_ref.ibmh
         self.ib_noa = mon_ref.ibnh
         self.ib_amp_init = self.ib_amp[0]
@@ -65,8 +68,8 @@ class Sensors:
         self.e_wrap_m_init = mon_ref.e_wrap_m[0]  # TODO:  delete?
         self.e_wrap_n = mon_ref.e_wrap_n  # TODO:  delete?
         self.e_wrap_n_init = mon_ref.e_wrap_n[0]  # TODO:  delete?
-        self.e_wrap_m_trim = mon_ref.e_wrap_m_trim
-        self.e_wrap_m_trim_init = self.e_wrap_m_trim[0]
+        # self.e_wrap_m_trim = mon_ref.e_wrap_m_trim
+        # self.e_wrap_m_trim_init = self.e_wrap_m_trim[0]
 
 
     def __str__(self, prefix=''):
@@ -111,7 +114,7 @@ class Sensors:
         self.ib_noa_init = self.ib_noa[max(i - 1, 0)]
         self.e_wrap_m_init = self.e_wrap_m[i]  # TODO:  delete?
         self.e_wrap_n_init = self.e_wrap_n[i]  # TODO:  delete?
-        self.e_wrap_m_trim_init = self.e_wrap_m_trim[i]
+        # self.e_wrap_m_trim_init = self.e_wrap_m_trim[i]
 
     def update_tb(self):
         self.Tb_past = self.Tb

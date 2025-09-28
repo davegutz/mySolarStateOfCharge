@@ -310,8 +310,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
                           rp=rp, bms_off_init=mon_old.bms_off[0], ib_amp=mon_old.ibmh[i], ib_noa=mon_old.ibnh[i],
                           e_w_amp_filt_r=mon_old.e_wrap_m_filt[i],
                           e_w_noa_filt_r=mon_old.e_wrap_n_filt[i],
-                          reset_ekf=reset_ekf, ib_dyn_init=mon_old.ib_dyn[i],
-                          e_wrap_trim_noa_init=e_wrap_trim_noa_init)
+                          reset_ekf=reset_ekf, ib_dyn_init=mon_old.ib_dyn[i])
         else:
             mon.calculate(_chm_m, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
                           reset, calc_ekf, T_ekf, mon_old.z[0], SN, SN.Tb_f_rate_past,
