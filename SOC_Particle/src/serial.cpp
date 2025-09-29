@@ -270,7 +270,7 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
             Sim->delta_q(), Sim->q_capacity(), Sim->soc(), reset_temp);
         Serial.printf("%s", pr.buff);
 
-        sprintf(pr.buff, "%7.5f,", Sim->d_delta_q());
+        sprintf(pr.buff, "%7.5f,", Sim->d_delta_q_s());
         Serial.printf("%s", pr.buff);
 
         Serial.printf("\n");
