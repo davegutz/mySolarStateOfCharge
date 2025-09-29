@@ -1209,6 +1209,7 @@ class SavedDataSim:
             self.dq_s = None
             self.soc_s = None
             self.reset_s = None
+            self.d_delta_q_s = None
         else:
             self.i = 0
             self.cTime = np.array(data.c_time)
@@ -1250,6 +1251,7 @@ class SavedDataSim:
             self.qcap_s = data.q_cap_s[:i_end]
             self.soc_s = data.soc_s[:i_end]
             self.reset_s = data.reset_s[:i_end]
+            self.d_delta_q_s = data.ddq_s[:i_end]
 
     def __str__(self):
         s = "{},".format(self.unit[self.i])

@@ -841,6 +841,7 @@ class BatterySim(Battery):
             self.Tb = mon_ref.Tb[0]
             self.dv_dyn = sim_ref.dv_dyn_s[0]
             self.ib_in = sim_ref.ib_in_s[0]
+            self.d_delta_q = sim_ref.d_delta_q_s[0]
             self.ib = sim_ref.ib_s[0]
             self.ib_charge = sim_ref.ib_charge_s[0]
             self.ioc = sim_ref.ioc_s[0]
@@ -927,7 +928,8 @@ class BatterySim(Battery):
         self.ib_lag = self.IbLag.calculate_tau(self.ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
         # Charge transfer dynamics
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_init, reset, dt, self.chemistry.tau_ct)
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, reset, dt,
+                                                               self.chemistry.tau_ct)
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
         self.ib_dyn_a = self.ChargeTransfer.a
@@ -1065,6 +1067,7 @@ class BatterySim(Battery):
         self.saved_s.vb_s.append(self.vb)
         self.saved_s.ib_s.append(self.ib)
         self.saved_s.ib_in_s.append(self.ib_in)
+        self.saved_s.d_delta_q_s.append(self.d_delta_q)
         self.saved_s.ib_charge_s.append(self.ib_charge)
         self.saved_s.ib_fut_s.append(self.ib_fut)
         self.saved_s.sat_s.append(int(self.sat))
@@ -1681,6 +1684,7 @@ class SavedS:
         self.ib_dyn_rstate_s = []
         self.ib_dyn_lstate_s = []
         self.ib_in_s = []
+        self.d_delta_q_s = []
         self.ib_charge_s = []
         self.ib_fut_s = []
         self.sat_s = []

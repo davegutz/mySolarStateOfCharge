@@ -105,7 +105,7 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
           "{:2.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
           "{:10.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
-          "{:11.5f}".format(mon_old.soc[i]), "{:8.5f}".format(mon.soc),
+          "{:11.7f}".format(mon_old.soc[i]), "{:8.7f}".format(mon.soc),
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:12.4f}".format(i_dt_old), "{:9.4f}".format(i_dt_new),
           "{:14.7f}".format(mon_old.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
@@ -120,13 +120,13 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     return hdr
 
 def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf, calc_ekf):
-    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s             ib_in_s                ib_s              ib_fut         ib_dyn_s               dv_hys_s               ib_charge_s            ioc_s                 soc                  soc_s               delq                           i * dt_s * coul_eff      d_delq_s            delq_s                      qcrs                    q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                     vb_s                 voc_stat               voc_stat_s            voc_s                 dv_dyn_s             vsat                 "
+    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s             ib_in_s                ib_s              ib_fut         ib_dyn_s               dv_hys_s               ib_charge_s            ioc_s               soc                   soc_s                     delq                     i * dt_s * coul_eff      d_delq_s               delq_s                 qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                     vb_s                 voc_stat               voc_stat_s            voc_s                 dv_dyn_s             vsat                 "
     if calc_temp:
         print(hdr)
-    if i > 0:
-        d_dq_s = sim_old.dq_s[i]-sim_old.dq_s[i-1]
-    else:
-        d_dq_s = sim_old.dq_s[i+1]-sim_old.dq_s[i]
+    # if i > 0:
+    #     d_dq_s = sim_old.dq_s[i]-sim_old.dq_s[i-1]
+    # else:
+    #     d_dq_s = sim_old.dq_s[i+1]-sim_old.dq_s[i]
     i_dt_old = sim_old.dt_s[i] * sim_old.ib_charge_s[i]
     i_dt_new = sim.dt * sim.ib_charge
     coul_eff = 0.9985
@@ -146,11 +146,11 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf,
           "{:12.5f}".format(sim_old.dv_hys_s[i]), "{:9.5f}".format(sim.dv_hys),
           "{:12.5f}".format(sim_old.ib_charge_s[i]), "{:9.5f}".format(sim.ib_charge),
           "{:12.5f}".format(sim_old.ioc_s[i]), "{:9.5f}".format(sim.ioc),
-          "{:11.5f}".format(mon_old.soc[i]), "{:8.5f}".format(mon.soc),
-          "{:11.5f}".format(mon_old.soc_s[i]), "{:8.5f}".format(sim.soc),
+          "{:11.7f}".format(mon_old.soc[i]), "{:8.7f}".format(mon.soc),
+          "{:11.7f}".format(mon_old.soc_s[i]), "{:8.7f}".format(sim.soc),
           "{:14.4f}".format(mon_old.delta_q[i]), "{:9.4f}".format(mon.delta_q),
           "{:12.4f}".format(i_dt_old), "{:9.4f}".format(i_dt_new),
-          "{:14.4f}".format(d_dq_s), "{:9.4f}".format(sim.d_delta_q),
+          "{:14.4f}".format(sim_old.d_delta_q_s[i]), "{:9.4f}".format(sim.d_delta_q),
           "{:14.4f}".format(sim_old.dq_s[i]), "{:9.4f}".format(sim.delta_q),
           "{:12.1f}".format(mon_old.qcrs[i]), "{:9.1f}".format(mon.q_cap_rated_scaled),
           "{:12.1f}".format(mon_old.q_capacity[i]), "{:9.1f}".format(mon.q_capacity),
