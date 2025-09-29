@@ -253,18 +253,26 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
 void print_sim_header(void)
 {
   if ( sp.debug()==2  || sp.debug()==3 || sp.debug()==4 ) // print_sim_header
-    Serial.printf("unit_m,  c_time,      dt_s, chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, dv_dyn_s, vb_s, ib_s, ib_dyn_s, dv_hys_s, ib_in_s, ib_charge_s, ioc_s, sat_s, dq_s, q_cap_s, soc_s, reset_s,\n");
+    Serial.printf("unit_m,  c_time,      dt_s, chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, dv_dyn_s, vb_s, ib_s, ib_dyn_s, dv_hys_s, ib_in_s, ib_charge_s, ioc_s, sat_s, dq_s, q_cap_s, soc_s, reset_s,");
+    Serial.printf("ddq_s,");
+    Serial.printf("\n");
 }
 void print_sim_serial(const boolean initializing_all, const boolean reset_temp, Sensors *Sen, BatterySim *Sim)
 {
     if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)
     {
         double cTime = double(Sen->now)/1000.;
-        sprintf(pr.buff, "unit_sim, %13.3f, %7.3f, %d, %9.2f, %d, %11.8f, %7.5f,%7.5f,%7.5f,%8.5f, %7.5f,%7.5f,%7.5f,%7.5f,%7.5f,%7.5f,  %d,  %9.4f, %9.4f,  %10.7f, %d, %c",
+
+        sprintf(pr.buff, "unit_sim, %13.3f, %7.3f, %d, %9.2f, %d, %11.8f, %7.5f,%7.5f,%7.5f,%8.5f, %7.5f,%7.5f,%7.5f,%7.5f,%7.5f,%7.5f,  %d,  %9.4f, %9.4f,  %10.7f, %d,",
             cTime, Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->tb_f(), Sim->vsat(), Sim->voc_stat(),
             Sim->dv_dyn(), Sim->vb(), Sim->ib(), Sim->ib_dyn(), Sim->dv_hys(), Sim->ib_in(), Sim->ib_charge(), Sim->ioc(),
             Sim->saturated(),
-            Sim->delta_q(), Sim->q_capacity(), Sim->soc(), reset_temp,'\0');
+            Sim->delta_q(), Sim->q_capacity(), Sim->soc(), reset_temp);
+        Serial.printf("%s", pr.buff);
+
+        sprintf(pr.buff, "%7.5f", Sim->d_delta_q());
+        Serial.printf("%s", pr.buff);
+
         Serial.printf("%s\n", pr.buff);
     }
   }

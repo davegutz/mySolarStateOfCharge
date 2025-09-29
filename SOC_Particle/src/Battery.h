@@ -128,7 +128,7 @@ public:
   float vsat() { return vsat_; };
 protected:
   boolean bms_charging_; // Indicator that battery is charging, T = charging, changing soc and voltage
-  boolean bms_off_; // Indicator that battery management system is off, T = off preventing current flow
+  boolean bms_off_;// Indicator that battery management system is off, T = off preventing current flow
   float dt_;       // Update time, s
   float dv_dsoc_;  // Derivative scaled, V/fraction
   float dv_dyn_;   // ib-induced back emf, V
@@ -230,6 +230,7 @@ public:
   float count_coulombs(Sensors *Sen, const boolean reset, BatteryMonitor *Mon, const boolean initializing_all);
   boolean cutback() { return model_cutback_; };
   double delta_q() { return *sp_delta_q_; };
+  float d_delta_q() { return d_delta_q_; };
   unsigned long int dt_long(void) { return sample_time_ - sample_time_z_; };
   void hys_pretty_print () { hys_->pretty_print(0., 0., 0.); };
   float hys_state() { return hys_->dv_hys(); };
@@ -250,6 +251,7 @@ protected:
   TriInj *Tri_inj_;         // Class to create triangle waves
   CosInj *Cos_inj_;         // Class to create cosine waves
   uint32_t duty_;           // Used in Test Mode to inject Fake shunt current (0 - uint32_t(255))
+  float d_delta_q_;         // Charge rate, C/s
   float ib_charge_;         // Current input avaiable for charging, A
   float ib_fut_;            // Future value of limited current, A
   float ib_in_;             // Saved value of current input, A
