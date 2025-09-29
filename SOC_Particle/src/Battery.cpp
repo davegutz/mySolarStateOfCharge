@@ -811,9 +811,8 @@ Outputs:
 */
 float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, BatteryMonitor *Mon, const boolean initializing_all) 
 {
-    float charge_curr = ib_charge_;
-    d_delta_q_s_ = charge_curr * Sen->T;
-    if ( charge_curr>0. ) d_delta_q_s_ *= coul_eff_;
+    d_delta_q_s_ = ib_charge_ * dt_;
+    if ( ib_charge_>0. ) d_delta_q_s_ *= coul_eff_;
 
     // Rate limit temperature.  When modeling, initialize to no change
     tb_f_ = Sen->Tb_f;
@@ -856,9 +855,9 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
     if ( sp.debug()==36 )
     {
         Serial.printf("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
-            charge_curr, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_s_, *sp_delta_q_, q_);
+            ib_charge_, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_s_, *sp_delta_q_, q_);
         Serial1.printf("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
-            charge_curr, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_s_, *sp_delta_q_, q_);
+            ib_charge_, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_s_, *sp_delta_q_, q_);
     }
 
     // print_sim_serial
