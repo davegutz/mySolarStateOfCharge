@@ -47,7 +47,7 @@ class SensorLooparound:
 class Sensors:
     """Collect various sense parameters to create proper delays in data feed and connections to model"""
 
-    def __init__(self, mon_ref=None, dTb_in=None):
+    def __init__(self, mon_ref=None, sim_ref=None, dTb_in=None):
         self.Tb0 = mon_ref.Tb_f[0]
         self.Tb0_s = mon_ref.Tb_mod[0]
         self.lut_dTb = None
@@ -72,6 +72,10 @@ class Sensors:
         self.ib_dyn_init = mon_ref.ib_dyn[0]
         self.z = mon_ref.z
         self.z_init = self.z[0]
+        self.ib_dyn_s = sim_ref.ib_dyn_s
+        self.ib_dyn_s_init = self.ib_dyn_s[0]
+        self.dv_dyn_s = sim_ref.dv_dyn_s
+        self.dv_dyn_s_init = self.dv_dyn_s[0]
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -115,6 +119,8 @@ class Sensors:
         self.LoopAmp.update(i)
         self.LoopNoa.update(i)
         self.ib_dyn_init = self.ib_dyn[i]
+        self.ib_dyn_s_init = self.ib_dyn_s[i]
+        self.dv_dyn_s_init = self.dv_dyn_s[i]
 
     def update_tb(self):
         self.Tb_past = self.Tb

@@ -128,7 +128,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     # tweaking
     tweak_test = rp.tweak_test()
 
-    SN = Sensors(mon_ref=mon_old, dTb_in=dTb_in)
+    SN = Sensors(mon_ref=mon_old, sim_ref=sim_old, dTb_in=dTb_in)
 
     # Battery sizing
     scale_mon, scale_sim = battery_size(mon_old, sim_old, scale_in, unit_cap_rated)
@@ -242,9 +242,8 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
         prn_soc_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
         sim.calculate(_chm_s, None, ib_in_s, sim_old.dt_s[i], reset, None, None, SN,
-                      ib_dyn_init=sim_old.ib_dyn_s[i],
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
-                      bms_off_init=sim_old.bms_off_s[0], dv_dyn_0=sim_old.dv_dyn_s[i])
+                      bms_off_init=sim_old.bms_off_s[0])
         prn_soc_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_old=mon_old, mon=mon)
         sim.count_coulombs(chem=_chm_s, dt=sim_old.dt_s[i], reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=SN.Tb_f_rate_past,
                            charge_curr=sim.ib_charge, sat=False, soc_s_init=sim_old.soc_s[i], mon_sat=mon.sat,
