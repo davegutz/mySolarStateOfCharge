@@ -86,15 +86,16 @@ class UserOptions:
     Bsim: Optional[int] = None  # sim model code BB=0 (Battleborn), CH=1 (Chins), CHG=2 (Chins in Garage)
     Bmon: Optional[int] = None  # mon model code BB=0 (Battleborn), CH=1 (Chins), CHG=2 (Chins in Garage)
     init_time: Optional[int] = -4.  # The process tries to determine mon_ref.init_time when data is loaded by finding
-    max_time: Optional[float] = None  # Limit the simultation run, s
     # when Ib changes. This input helps out to over-ride those results when they don't work as desired. It shouldn't
     # be needed often.
+    max_time: Optional[float] = None  # Limit the simultation run, s
 
     # Model scalar / adders
     scale_in: Optional[float] = None  # Battery size scalar applied to the nominal battery unit of 100 A-h
-    slr_cap_chg: Optional[float] = 1.
-    slr_cap_dis: Optional[float] = 1.
-    slr_coul_eff: Optional[float] = 1.
+    slr_cap_chg: Optional[float] = 1.  # Scalar on ideal capacitor model for hysteresis charging model only
+    slr_cap_dis: Optional[float] = 1.  # Scalar on ideal capacitor model for hysteresis discharging model only
+    slr_coul_eff: Optional[float] = 1.  # Scalar on Coulombic Efficiency of battery model, both for the BatterySim model
+    # and the BatteryMonitor Coulomb counter
     slr_cutback_gain: Optional[float] = 1.  # Scalar on the automatic BatterySim model of saturation effects
     slr_hys_cap_sim: Optional[float] = 1.
     slr_hys_chg: Optional[float] = 1.
@@ -103,11 +104,13 @@ class UserOptions:
     slr_hys_sim: Optional[float] = 1.
     slr_res_0: Optional[float] = 1.  # Scalar on Randles static resistance model
     slr_res_ct: Optional[float] = 1.  # Scalar on Randles charge transfer function resistance
-    slr_r_ss: Optional[float] = 1.
+    slr_r_ss: Optional[float] = 1.  # Scalar on equivalent battery resistance state-space charge transfer
+    # TODO: when is ss used versus ct
     slr_tauct_sim: Optional[float] = 1.  # Scalar on Randles charge transfer function time constant in ModelSim
     add_s_voc_soc: Optional[float] = 0.  # Adder to SOC input of voc_soc table lookup of voc from soc
-    add_voc_sim: Optional[float] = 0.
-    add_voc_mon: Optional[float] = 0.
+    add_voc_sim: Optional[float] = 0.  # Adder to BatterySim voc table outputs (should match dvoc of Chemistry_BMS.cpp)
+    add_voc_mon: Optional[float] = 0.  # Adder to BatteryMonitor voc table outputs (should match dvoc of
+    # Chemistry_BMS.cpp)
     add_Tb_in: Optional[float] = None
 
     # Failure injection
