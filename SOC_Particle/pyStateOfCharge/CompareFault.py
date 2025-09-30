@@ -1001,10 +1001,10 @@ if __name__ == '__main__':
         # chm_in = 0
         s_hys_in = 1.
         s_hys_cap_in = 1.
-        s_cap_chg_in = 1.
-        s_cap_dis_in = 1.
-        s_hys_chg_in = 1.
-        s_hys_dis_in = 1.
+        slr_cap_chg_in = 1.
+        slr_cap_dis_in = 1.
+        slr_hys_chg_in = 1.
+        slr_hys_dis_in = 1.
         scale_in = 1
         cc_dif_tol_in = 0.2
         use_mon_soc_in = True  # Reconstruction of soc using sub-sampled data is poor.
@@ -1021,8 +1021,8 @@ if __name__ == '__main__':
         input_files = ['CH 20230128.txt']; chm_in = 1
         
         input_files = ['hist v20230205 20230206.txt']; chm_in = 1; rated_batt_cap_in = 100.; scale_in = 1.127;
-        sres0_in = 3.; sresct_in = 0.76; stauct_in = 0.8; s_hys_chg_in = 1; s_hys_dis_in = 1; s_cap_chg_in = 1.;
-        s_cap_dis_in = 1.; myCH_Tuner_in = 4  # 0.9 - 1.0 Tune 3
+        sres0_in = 3.; sresct_in = 0.76; stauct_in = 0.8; slr_hys_chg_in = 1; slr_hys_dis_in = 1; slr_cap_chg_in = 1.;
+        slr_cap_dis_in = 1.; myCH_Tuner_in = 4  # 0.9 - 1.0 Tune 3
         
         input_files = ['g20230530/Hd_20230714_soc1a_bb.csv']; chm_in = 0; rated_batt_cap_in = 108.4;
         input_files = ['g20230530/hist_Dc06_20230715_soc1a_bb.csv']; chm_in = 0; rated_batt_cap_in = 108.4;
@@ -1113,12 +1113,12 @@ if __name__ == '__main__':
                 h_20C_resamp_100.dt[i] = h_20C_resamp_100.time_ux[i] - h_20C_resamp_100.time_ux[i-1]
         mon_old_100, sim_old_100 = bandaid(h_20C_resamp_100, chm_in=chm_in)
         mon_ver_100, sim_ver_100, sim_s_ver_100, mon_r, sim_r =\
-            replicate(mon_old_100, sim_old=sim_old_100, init_time=1., verbose=False, t_max=t_max_in, sres0=sres0_in,
-                      sresct=sresct_in, stauct_mon=stauct_in, stauct_sim=stauct_in, use_vb_sim=False,
-                      s_hys_sim=s_hys_in, s_hys_mon=s_hys_in,
-                      scale_hys_cap_sim=s_hys_cap_in, s_cap_chg=s_cap_chg_in, s_cap_dis=s_cap_dis_in,
-                      s_hys_chg=s_hys_chg_in, s_hys_dis=s_hys_dis_in, scale_in=scale_in, use_mon_soc=use_mon_soc_in,
-                      dvoc_mon=dvoc_mon_in, dvoc_sim=dvoc_sim_in)
+            replicate(mon_old_100, sim_old=sim_old_100, init_time=1., verbose=False, max_time=t_max_in, slr_res_0=sres0_in,
+                      slr_res_ct=sresct_in, stauct_mon=stauct_in, slr_tauct_sim=stauct_in, use_vb_sim=False,
+                      slr_hys_sim=s_hys_in, slr_hys_mon=s_hys_in,
+                      slr_hys_cap_sim=s_hys_cap_in, slr_cap_chg=s_cap_chg_in, slr_cap_dis=s_cap_dis_in,
+                      slr_hys_chg=s_hys_chg_in, slr_hys_dis=slr_hys_dis_in, scale_in=scale_in, use_mon_soc=use_mon_soc_in,
+                      add_voc_mon=dvoc_mon_in, add_voc_sim=dvoc_sim_in)
 
         # Plots
         fig_list = []

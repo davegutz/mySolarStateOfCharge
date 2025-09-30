@@ -125,7 +125,7 @@ class Battery(Coulombs):
                             or 20 - 40 A for a 100 Ah battery"""
 
     def __init__(self, q_cap_rated=UNIT_CAP_RATED*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
-                 sres0=1., sresct=1., stauct=1., scale_r_ss=1., s_hys=1., dvoc=0., mod_code=0, s_coul_eff=1.,
+                 slr_res_0=1., slr_res_ct=1., stauct=1., slr_r_ss=1., s_hys=1., dvoc=0., mod_code=0, slr_coul_eff=1.,
                  scale_cap=1., unit=None):
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
@@ -162,11 +162,11 @@ class Battery(Coulombs):
         self.vsat = self.chemistry.nom_vsat
         # range 0 - 50 C, V/deg C
         self.dt = 0  # Update time, s
-        self.chemistry.r_0 *= sres0
+        self.chemistry.r_0 *= slr_res_0
         self.chemistry.tau_ct *= stauct
-        self.chemistry.r_ct *= sresct
-        self.chemistry.r_ss *= scale_r_ss
-        self.chemistry.coul_eff *= s_coul_eff
+        self.chemistry.r_ct *= slr_res_ct
+        self.chemistry.r_ss *= slr_r_ss
+        self.chemistry.coul_eff *= slr_coul_eff
         self.Tb = tb_f
         self.Tb_f = tb_f
         self.Tb_f_rate = None
@@ -279,13 +279,13 @@ class BatteryMonitor(Battery, EKF1x1):
     """Extend Battery class to make a monitor"""
 
     def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1.,
-                 tb_f=25., tweak_test=False, sres0=1., sresct=1., stauct=1.,
-                 scale_r_ss=1., s_hys=1., dvoc=0., eframe_mult=Battery.cp_eframe_mult,
-                 mod_code=0, s_coul_eff=1., unit=None, ref=None, dTb=None):
+                 tb_f=25., tweak_test=False, slr_res_0=1., slr_res_ct=1., stauct=1.,
+                 slr_r_ss=1., s_hys=1., dvoc=0., eframe_mult=Battery.cp_eframe_mult,
+                 mod_code=0, slr_coul_eff=1., unit=None, ref=None, dTb=None):
         q_cap_rated_scaled = q_cap_rated * scale
         Battery.__init__(self, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
-                         tweak_test=tweak_test, sres0=sres0, sresct=sresct, stauct=stauct, scale_r_ss=scale_r_ss,
-                         s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, s_coul_eff=s_coul_eff, scale_cap=scale, unit=unit)
+                         tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct, slr_r_ss=slr_r_ss,
+                         s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, slr_coul_eff=slr_coul_eff, scale_cap=scale, unit=unit)
 
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
@@ -803,21 +803,21 @@ class BatterySim(Battery):
     """Extend Battery class to make a model"""
 
     def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1., stauct=1.,
-                 tb_f=25., tweak_test=False, dv_hys=0., sres0=1., sresct=1., scale_r_ss=1.,
-                 s_hys=1., dvoc=0., scale_hys_cap=1., mod_code=0, s_cap_chg=1., s_cap_dis=1., s_hys_chg=1.,
-                 s_hys_dis=1., s_coul_eff=1., cutback_gain_sclr=1., ds_voc_soc=0., unit=None,
+                 tb_f=25., tweak_test=False, dv_hys=0., slr_res_0=1., slr_res_ct=1., slr_r_ss=1.,
+                 s_hys=1., dvoc=0., scale_hys_cap=1., mod_code=0, slr_cap_chg=1., slr_cap_dis=1., slr_hys_chg=1.,
+                 slr_hys_dis=1., slr_coul_eff=1., slr_cutback_gain=1., add_s_voc_soc=0., unit=None,
                  mon_ref=None, sim_ref=None):
         Battery.__init__(self, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
-                         tweak_test=tweak_test, sres0=sres0, sresct=sresct, stauct=stauct, scale_r_ss=scale_r_ss,
-                         s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, s_coul_eff=s_coul_eff, scale_cap=scale,
-                         unit=unit)
+                         tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct,
+                         slr_r_ss=slr_r_ss, s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, slr_coul_eff=slr_coul_eff,
+                         scale_cap=scale, unit=unit)
         self.lut_voc = None
         self.sat_ib_max = 0.  # Current cutback to be applied to modeled ib output, A
         # self.sat_ib_null = 0.1*Battery.UNIT_CAP_RATED  # Current cutback value for voc=vsat, A
         self.sat_ib_null = 0.  # Current cutback value for soc=1, A
         # self.sat_cutback_gain = 4.8  # Gain to retard ib when voc exceeds vsat, dimensionless
-        self.sat_cutback_gain = 1000.*cutback_gain_sclr  # Gain to retard ib when soc approaches 1, dimensionless
-        self.ds_voc_soc = ds_voc_soc
+        self.sat_cutback_gain = 1000.*slr_cutback_gain  # Gain to retard ib when soc approaches 1, dimensionless
+        self.add_s_voc_soc = add_s_voc_soc
         self.model_cutback = False  # Indicate current being limited on saturation cutback, T = cutback limited
         self.model_saturated = False  # Indicator of maximal cutback, T = cutback saturated
         self.ib_sat = 0.5  # Threshold to declare saturation.  This regeneratively slows down charging so if too
@@ -825,8 +825,8 @@ class BatterySim(Battery):
         self.s_cap = scale  # Rated capacity scalar
         if scale is not None:
             self.apply_cap_scale(scale)
-        self.hys = Hysteresis(scale=s_hys, dv_hys=dv_hys, scale_cap=scale_hys_cap, s_cap_chg=s_cap_chg,
-                              s_cap_dis=s_cap_dis, s_hys_chg=s_hys_chg, s_hys_dis=s_hys_dis, chem=self.chem,
+        self.hys = Hysteresis(scale=s_hys, dv_hys=dv_hys, scale_cap=scale_hys_cap, slr_cap_chg=slr_cap_chg,
+                              slr_cap_dis=slr_cap_dis, slr_hys_chg=slr_hys_chg, slr_hys_dis=slr_hys_dis, chem=self.chem,
                               chemistry=self.chemistry)  # Battery hysteresis model - drift of voc
         self.tweak_test = tweak_test
         self.voc = 0.  # Charging voltage, V
@@ -944,7 +944,7 @@ class BatterySim(Battery):
 
         # Saturation logic, both full and empty
         self.vsat = sat_voc(self.Tb_f, self.chemistry.rated_temp, self.chemistry.nom_vsat, self.chemistry.dvoc_dt)
-        self.sat_ib_max = (self.sat_ib_null + (1 - self.soc - self.ds_voc_soc) * self.sat_cutback_gain *
+        self.sat_ib_max = (self.sat_ib_null + (1 - self.soc - self.add_s_voc_soc) * self.sat_cutback_gain *
                            rp.cutback_gain_scalar)
         if rp.tweak_test() or (not rp.modeling):
             self.sat_ib_max = ib_charge_fut

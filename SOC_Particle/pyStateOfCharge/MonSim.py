@@ -25,6 +25,8 @@ from MonSimNomConfig import *  # Global config parameters.   Overwrite in your o
 from Scale import Scale
 from MonSimPrint import *
 from MonSimClasses import *
+from dataclasses import dataclass
+from typing import Optional
 
 def battery_size(mo, so, scale_in_, unit_cap_rated_):
     if hasattr(mo, 'qcrs'):
@@ -76,19 +78,69 @@ def vb_from_raw_or_selected(use_raw, mo):
         vb_ = mo.vb
     return vb_
 
+@dataclass
+class UserOptions:
+    mon_ref: 'DataOverModel.SavedData'  # Mandatory reference data to be replicated
+    sim_ref: Optional['DataOverModel.SavedDataSim'] = None  # Embedded model data
+    unit: Optional[str] = None  # Name of the battery instance derived from 'HDWE_UNIT' of configuration include .h file
+    Bsim: Optional[int] = None  # sim model code BB=0 (Battleborn), CH=1 (Chins), CHG=2 (Chins in Garage)
+    Bmon: Optional[int] = None  # mon model code BB=0 (Battleborn), CH=1 (Chins), CHG=2 (Chins in Garage)
+    init_time: Optional[int] = -4.  # The process tries to determine mon_ref.init_time when data is loaded by finding
+    max_time: Optional[float] = None  # Limit the simultation run, s
+    # when Ib changes. This input helps out to over-ride those results when they don't work as desired. It shouldn't
+    # be needed often.
+
+    # Model scalar / adders
+    scale_in: Optional[float] = None  # Battery size scalar applied to the nominal battery unit of 100 A-h
+    slr_cap_chg: Optional[float] = 1.
+    slr_cap_dis: Optional[float] = 1.
+    slr_coul_eff: Optional[float] = 1.
+    slr_cutback_gain: Optional[float] = 1.  # Scalar on the automatic BatterySim model of saturation effects
+    slr_hys_cap_sim: Optional[float] = 1.
+    slr_hys_chg: Optional[float] = 1.
+    slr_hys_dis: Optional[float] = 1.
+    slr_hys_mon: Optional[float] = 1.
+    slr_hys_sim: Optional[float] = 1.
+    slr_res_0: Optional[float] = 1.  # Scalar on Randles static resistance model
+    slr_res_ct: Optional[float] = 1.  # Scalar on Randles charge transfer function resistance
+    slr_r_ss: Optional[float] = 1.
+    slr_tauct_sim: Optional[float] = 1.  # Scalar on Randles charge transfer function time constant in ModelSim
+    add_s_voc_soc: Optional[float] = 0.  # Adder to SOC input of voc_soc table lookup of voc from soc
+    add_voc_sim: Optional[float] = 0.
+    add_voc_mon: Optional[float] = 0.
+    add_Tb_in: Optional[float] = None
+
+    # Failure injection
+    ib_fail_t: Optional[float] = None  # Time to inject a failure into the Ib input signal
+    ib_fail: Optional[float] = 0.  # The fixed Ib value to fail to, A
+    vb_fail_t: Optional[float] = None  # Time to inject a failure into the Vb input signal
+    vb_fail: Optional[float] = 13.2  # The fixed Vb value to fail to, V
+
+    # Configuration changes
+    eframe_mult: Optional[int] = Battery.cp_eframe_mult
+
+    stauct_mon: Optional[float] = 1.
+    use_vb_sim: Optional[bool] = False
+    request_history: Optional[int] = None  # Print simulation history (0 - 5) to check overplot using data in addition
+    use_ib_mon: Optional[bool] = False  # Drive BatterySim directly with the BatteryMonitor input, useful when raw sim data not available
+    use_mon_soc = False  # Drive SOC of the model directly with data to focus on modeling that is downstream of SOC
+    use_vb_raw: Optional[bool] = False  # Force usage of raw Vb bypassing the signal selection logic
+    verbose: Optional[bool] = True  # Lots of 'helpful' information used to provide some quick clues about whatever
+    # to or instead of plots
+
 #  Replicate the application in its entirety here.
 #  There are no 'bank' parameters anywhere in this model.   It is assumed that all inputs from the application have
 #  been converted to the single battery unit 12v form, S1P1, lower-case nomenclature.
-def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2,
-              t_ib_fail=None, ib_fail=0., use_ib_mon=False, scale_in=None, Bsim=None, Bmon=None, use_vb_raw=False,
-              scale_r_ss=1., s_hys_sim=1., s_hys_mon=1., dvoc_sim=0., dvoc_mon=0., dTb_in=None,
-              verbose=True, t_max=None, eframe_mult=Battery.cp_eframe_mult, sres0=1., sresct=1., stauct_sim=1.,
-              stauct_mon=1, use_vb_sim=False, scale_hys_cap_sim=1., s_cap_chg=1., s_cap_dis=1.,
-              s_hys_chg=1., s_hys_dis=1., s_coul_eff=1., use_mon_soc=False, cutback_gain_sclr=1., ds_voc_soc=0.,
+def replicate(mon_old, sim_old=None, init_time=-4., vb_fail_t=None, vb_fail=13.2,
+              ib_fail_t=None, ib_fail=0., use_ib_mon=False, scale_in=None, Bsim=None, Bmon=None, use_vb_raw=False,
+              slr_r_ss=1., slr_hys_sim=1., slr_hys_mon=1., add_voc_sim=0., add_voc_mon=0., add_Tb_in=None,
+              verbose=True, max_time=None, eframe_mult=Battery.cp_eframe_mult, slr_res_0=1., slr_res_ct=1., slr_tauct_sim=1.,
+              stauct_mon=1, use_vb_sim=False, slr_hys_cap_sim=1., slr_cap_chg=1., slr_cap_dis=1.,
+              slr_hys_chg=1., slr_hys_dis=1., slr_coul_eff=1., use_mon_soc=False, slr_cutback_gain=1., add_s_voc_soc=0.,
               unit=None, request_history=None):
 
     """TODO:
-    1. Current sense class
+    1. *** Current sense class. Done
     2. *** Fig. 9 EKF 2a:  dt_eframe at 0 ****->i_ekf = -1 --> i_ekf=max(i_ekf, 0) in MonSimPrint.py
     2. *** Fig. 9 EKF 2a:  dt_eframe at i_ekf=0 is = 4.882 while ref is 5.255. *** dt_eframe[0] = dt_ekf[0]
     3. *** Fig. 5 Dom 4a:  TB ver needs past value. *** Plotted wrong thing.  Tb-->Tb_rap and Tb_rap_ver
@@ -112,7 +164,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     """
 
     # time
-    t = sync_to_mon_or_sim(mon_old, sim_old, t_mx=t_max)
+    t = sync_to_mon_or_sim(mon_old, sim_old, t_mx=max_time)
 
     # vb
     vb = vb_from_raw_or_selected(use_vb_raw, mon_old)
@@ -129,22 +181,22 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
     # tweaking
     tweak_test = rp.tweak_test()
 
-    SN = Sensors(mon_ref=mon_old, sim_ref=sim_old, dTb_in=dTb_in)
+    SN = Sensors(mon_ref=mon_old, sim_ref=sim_old, add_Tb_in=add_Tb_in)
 
     # Battery sizing
     scale_mon, scale_sim = battery_size(mon_old, sim_old, scale_in, unit_cap_rated)
 
     # Make batteries
     sim = BatterySim(mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
-                     dv_hys=mon_old.dv_hys[0], sres0=sres0, sresct=sresct, stauct=stauct_sim, scale_r_ss=scale_r_ss,
-                     s_hys=s_hys_sim, dvoc=dvoc_sim, scale_hys_cap=scale_hys_cap_sim, s_coul_eff=s_coul_eff,
-                     s_cap_chg=s_cap_chg, s_cap_dis=s_cap_dis, s_hys_chg=s_hys_chg, s_hys_dis=s_hys_dis,
-                     cutback_gain_sclr=cutback_gain_sclr, ds_voc_soc=ds_voc_soc, unit=unit, mon_ref=mon_old,
+                     dv_hys=mon_old.dv_hys[0], slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=slr_tauct_sim, slr_r_ss=slr_r_ss,
+                     s_hys=slr_hys_sim, dvoc=add_voc_sim, scale_hys_cap=slr_hys_cap_sim, slr_coul_eff=slr_coul_eff,
+                     slr_cap_chg=slr_cap_chg, slr_cap_dis=slr_cap_dis, slr_hys_chg=slr_hys_chg, slr_hys_dis=slr_hys_dis,
+                     slr_cutback_gain=slr_cutback_gain, add_s_voc_soc=add_s_voc_soc, unit=unit, mon_ref=mon_old,
                      sim_ref=sim_old)
     mon = BatteryMonitor(mod_code=chm_m[0], tb_f=SN.Tb0, scale=scale_mon, tweak_test=tweak_test,
-                         sres0=sres0, sresct=sresct, stauct=stauct_mon,
-                         scale_r_ss=scale_r_ss, s_hys=s_hys_mon, dvoc=dvoc_mon, eframe_mult=eframe_mult,
-                         s_coul_eff=s_coul_eff, unit=unit, ref=mon_old, dTb=SN.dTb)
+                         slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct_mon,
+                         slr_r_ss=slr_r_ss, s_hys=slr_hys_mon, dvoc=add_voc_mon, eframe_mult=eframe_mult,
+                         slr_coul_eff=slr_coul_eff, unit=unit, ref=mon_old, dTb=SN.dTb)
     Is_sat_delay = TFDelay(in_=mon_old.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
     # Time sync
@@ -265,7 +317,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
         else:
             _chm_m = Bmon
 
-        if t_ib_fail and t[i] > t_ib_fail:
+        if ib_fail_t and t[i] > ib_fail_t:
             ib_ = ib_fail
         else:
             if mon_old.ib_sel is not None:
@@ -275,7 +327,7 @@ def replicate(mon_old, sim_old=None, init_time=-4., t_vb_fail=None, vb_fail=13.2
 
         if use_vb_sim:
             vb_ = sim.vb
-        elif t_vb_fail and t[i] >= t_vb_fail:
+        elif vb_fail_t and t[i] >= vb_fail_t:
             vb_ = vb_fail
         else:
             vb_ = vb[i]
@@ -396,7 +448,7 @@ if __name__ == '__main__':
         # Transient  inputs
         time_end = None
         # time_end = 35200
-        t_ib_fail = None
+        ib_fail_t = None
         init_time_in = None
         use_ib_mon_in = False
         scale_in = None
@@ -452,9 +504,9 @@ if __name__ == '__main__':
         # New run
         mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
         mon_ver, sim_ver, sim_s_ver, _mon, _sim =\
-            replicate(mon_old, sim_old=sim_old, init_time=init_time, sres0=1.0, sresct=1.0, t_ib_fail=t_ib_fail,
-                      use_ib_mon=use_ib_mon_in, scale_in=scale_in, use_vb_raw=use_vb_raw, scale_r_ss=scale_r_ss_in,
-                      s_hys_sim=scale_hys_sim_in, dvoc_sim=dvoc_sim_in, dvoc_mon=dvoc_mon_in,
+            replicate(mon_old, sim_old=sim_old, init_time=init_time, slr_res_0=1.0, slr_res_ct=1.0, ib_fail_t=ib_fail_t,
+                      use_ib_mon=use_ib_mon_in, scale_in=scale_in, use_vb_raw=use_vb_raw, slr_r_ss=scale_r_ss_in,
+                      slr_hys_sim=scale_hys_sim_in, add_voc_sim=dvoc_sim_in, add_voc_mon=dvoc_mon_in,
                       Bmon=Bmon_in, Bsim=Bsim_in)
         save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
 

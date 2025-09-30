@@ -47,15 +47,15 @@ class SensorLooparound:
 class Sensors:
     """Collect various sense parameters to create proper delays in data feed and connections to model"""
 
-    def __init__(self, mon_ref=None, sim_ref=None, dTb_in=None):
+    def __init__(self, mon_ref=None, sim_ref=None, add_Tb_in=None):
         self.Tb0 = mon_ref.Tb_f[0]
         self.Tb0_s = mon_ref.Tb_mod[0]
         self.lut_dTb = None
         self.dTb = 0.
-        if dTb_in is not None:
-            self.dTb_in = np.array(dTb_in)
-            self.Tb0 += dTb_in[1, 0]
-            self.lut_dTb = myTables.TableInterp1D(np.array(dTb_in[0, :]), np.array(dTb_in[1, :]))
+        if add_Tb_in is not None:
+            self.add_Tb_in = np.array(add_Tb_in)
+            self.Tb0 += add_Tb_in[1, 0]
+            self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
             self.dTb = lut_dTb.interp(t[0])
         self.Tb = mon_ref.Tb[0]
         self.Tb_f = mon_ref.Tb_f[0]

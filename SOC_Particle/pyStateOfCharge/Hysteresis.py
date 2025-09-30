@@ -25,15 +25,15 @@ import os
 class Hysteresis:
     # Use variable resistor to create hysteresis from an RC circuit
 
-    def __init__(self, scale=1., dv_hys=0.0, chem=0, scale_cap=1., s_cap_chg=1., s_cap_dis=1., s_hys_chg=1., s_hys_dis=1.,
+    def __init__(self, scale=1., dv_hys=0.0, chem=0, scale_cap=1., slr_cap_chg=1., slr_cap_dis=1., slr_hys_chg=1., slr_hys_dis=1.,
                  chemistry=None):
         # Defaults
         self.chm = chem
         self.scale_cap = scale_cap
-        self.s_cap_chg = s_cap_chg
-        self.s_cap_dis = s_cap_dis
-        self.s_hys_chg = s_hys_chg
-        self.s_hys_dis = s_hys_dis
+        self.slr_cap_chg = slr_cap_chg
+        self.slr_cap_dis = slr_cap_dis
+        self.slr_hys_chg = slr_hys_chg
+        self.slr_hys_dis = slr_hys_dis
         self.cap = chemistry.cap
         self.lut = chemistry.lut_r_hys
         self.luts = chemistry.lut_s_hys
@@ -90,9 +90,9 @@ class Hysteresis:
             self.dv_dot = (self.ibs - self.ioc) / (self.cap*self.scale_cap)
             self.tau = self.res * self.cap * self.scale_cap
             if self.dv_hys >= 0.:
-                self.dv_dot /= self.s_cap_chg
+                self.dv_dot /= self.slr_cap_chg
             else:
-                self.dv_dot /= self.s_cap_dis
+                self.dv_dot /= self.slr_cap_dis
 
         return self.dv_dot
 
@@ -152,9 +152,9 @@ class Hysteresis:
         self.dv_hys += self.dv_dot * dt
         self.dv_hys = max(min(self.dv_hys, dv_max), dv_min)
         if self.dv_hys >= 0.:
-            return max(min(self.dv_hys*self.scale*self.s_hys_chg, dv_max), dv_min), self.tau
+            return max(min(self.dv_hys*self.scale*self.slr_hys_chg, dv_max), dv_min), self.tau
         else:
-            return max(min(self.dv_hys*self.scale*self.s_hys_dis, dv_max), dv_min), self.tau
+            return max(min(self.dv_hys*self.scale*self.slr_hys_dis, dv_max), dv_min), self.tau
 
 
 class Saved:

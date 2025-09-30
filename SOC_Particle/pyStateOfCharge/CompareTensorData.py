@@ -86,8 +86,8 @@ def adjust_soc(data, dDA_in, scap_in=None):
 
 
 # Scale soc and adjust ib for observed calibration error
-def scale_sres0(data, sres0):
-    data.dv_dyn *= sres0
+def scale_sres0(data, slr_res_0):
+    data.dv_dyn *= slr_res_0
     return data
 
 
@@ -178,7 +178,7 @@ def seek_tensor(save_pdf_path='./figures', path_to_temp='./temp'):
     mon_ver, sim_ver, sim_s_ver, mon, sim = \
         replicate(mon_old, sim_old=sim_old, init_time=init_time, use_ib_mon=use_ib_mon_in, verbose=verbose_in,
                   use_vb_sim=use_vb_sim_in, use_mon_soc=use_mon_soc_in,
-                  sres0=sres0_in, stauct_mon=stauct_mon_in, sresct=sresct_in)
+                  slr_res_0=sres0_in, stauct_mon=stauct_mon_in, slr_res_ct=sresct_in)
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
 
     # Plots
