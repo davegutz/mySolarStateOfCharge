@@ -148,7 +148,7 @@ def main():
     else:
         gdrive = 'G:/My Drive/'
 
-    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20250929am_soc4p2_hi_lo_bb.csv'
+    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20251001am_soc4p2_hi_lo_bb.csv'
     # gdrive = '/home/daveg/Documents/'
     # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
 

@@ -120,7 +120,7 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
     return hdr
 
 def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf, calc_ekf):
-    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s             ib_in_s                ib_s              ib_fut         ib_dyn_s               dv_hys_s               ib_charge_s            ioc_s               soc                   soc_s                     delq                     i * dt_s * coul_eff      d_delq_s               delq_s                 qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                     vb_s                 voc_stat               voc_stat_s            voc_s                 dv_dyn_s             vsat                 "
+    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s             ib_in_s               ib_dyn_s_a            ib_dyn_s_b            ib_dyn_s_c            ib_dyn_s_dt    ib_dyn_s_tau            ib_dyn_rstate          ib_dyn_lstate          ib_s                ib_fut       ib_dyn_s                dv_hys_s               ib_charge_s            ioc_s               soc                   soc_s                     delq                     i * dt_s * coul_eff      d_delq_s               delq_s                 qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                     vb_s                 voc_stat               voc_stat_s            voc_s                 dv_dyn_s             vsat                 "
     if calc_temp:
         print(hdr)
     # if i > 0:
@@ -141,8 +141,15 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf,
           "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
           "{:9.3f}".format(sim_old.dt_s[i]), "{:5.3f}".format(sim.dt),
           "{:12.5f}".format(sim_old.ib_in_s[i]), "{:9.5f}".format(sim.ib_in),
-          "{:12.5f}".format(sim_old.ib_s[i]), "{:9.5f}".format(sim.ib), "{:9.5f}".format(sim.ib_fut),
-          "{:12.5f}".format(sim_old.ib_dyn_s[i]), "{:9.5f}".format(sim.ib_dyn),
+          "{:12.6f}".format(sim_old.ib_dyn_s_a[i]), "{:8.6f}".format(sim.ChargeTransfer.a),
+          "{:12.6f}".format(sim_old.ib_dyn_s_b[i]), "{:8.6f}".format(sim.ChargeTransfer.b),
+          "{:12.6f}".format(sim_old.ib_dyn_s_c[i]), "{:8.6f}".format(sim.ChargeTransfer.c),
+          "{:9.3f}".format(sim_old.ib_dyn_s_T[i]), "{:5.3f}".format(sim.ChargeTransfer.dt),
+          "{:12.6f}".format(sim_old.ib_dyn_s_tau[i]), "{:8.6f}".format(sim.ChargeTransfer.tau),
+          "{:12.6f}".format(sim_old.ib_dyn_s_rstate[i]), "{:9.6f}".format(sim.ChargeTransfer.rstate),
+          "{:12.6f}".format(sim_old.ib_dyn_s_lstate[i]), "{:9.6f}".format(sim.ChargeTransfer.state),
+          "{:12.6f}".format(sim_old.ib_s[i]), "{:9.6f}".format(sim.ib), "{:9.6f}".format(sim.ib_fut),
+          "{:12.6f}".format(sim_old.ib_dyn_s[i]), "{:9.6f}".format(sim.ib_dyn),
           "{:12.5f}".format(sim_old.dv_hys_s[i]), "{:9.5f}".format(sim.dv_hys),
           "{:12.5f}".format(sim_old.ib_charge_s[i]), "{:9.5f}".format(sim.ib_charge),
           "{:12.5f}".format(sim_old.ioc_s[i]), "{:9.5f}".format(sim.ioc),

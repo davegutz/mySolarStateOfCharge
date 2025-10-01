@@ -1210,6 +1210,13 @@ class SavedDataSim:
             self.soc_s = None
             self.reset_s = None
             self.d_delta_q_s = None
+            self.ib_dyn_s_a = None
+            self.ib_dyn_s_b = None
+            self.ib_dyn_s_c = None
+            self.ib_dyn_s_T = None
+            self.ib_dyn_s_tau = None
+            self.ib_dyn_s_rstate = None
+            self.ib_dyn_s_lstate = None
         else:
             self.i = 0
             self.cTime = np.array(data.c_time)
@@ -1252,6 +1259,13 @@ class SavedDataSim:
             self.soc_s = data.soc_s[:i_end]
             self.reset_s = data.reset_s[:i_end]
             self.d_delta_q_s = data.ddq_s[:i_end]
+            self.ib_dyn_s_a = data.ib_dyn_s_a[:i_end]
+            self.ib_dyn_s_b = data.ib_dyn_s_b[:i_end]
+            self.ib_dyn_s_c = data.ib_dyn_s_c[:i_end]
+            self.ib_dyn_s_T = data.ib_dyn_s_T[:i_end]
+            self.ib_dyn_s_tau = data.ib_dyn_s_tau[:i_end]
+            self.ib_dyn_s_rstate = data.ib_dyn_s_rstate[:i_end]
+            self.ib_dyn_s_lstate = data.ib_dyn_s_lstate[:i_end]
 
     def __str__(self):
         s = "{},".format(self.unit[self.i])
