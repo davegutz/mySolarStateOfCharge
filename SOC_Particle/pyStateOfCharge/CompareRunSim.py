@@ -19,7 +19,7 @@ the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 import sys
 
-from MonSim import replicate, save_clean_file
+from MonSim import replicate, save_clean_file, UserOptions
 from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files, precleanup_fig_files
 from CompareFault import over_fault
 import matplotlib.pyplot as plt
@@ -90,11 +90,12 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
 
     # New run
     mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
-    mon_ver, sim_ver, sim_s_ver, mon, sim = \
-        replicate(mon_old, sim_old=sim_old, init_time=mon_old.init_time, use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in,
-                  use_vb_raw=use_vb_raw, add_voc_sim=dvoc_sim_in, add_voc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
-                  add_s_voc_soc=add_s_voc_soc_in, verbose=verbose, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
-                  request_history=request_history)
+    replicateOptions = UserOptions(mon_ref=mon_old, sim_ref=sim_old, init_time=mon_old.init_time,
+                                   use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in, use_vb_raw=use_vb_raw,
+                                   add_voc_sim=dvoc_sim_in, add_voc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
+                                   add_s_voc_soc=add_s_voc_soc_in, verbose=verbose, scale_in=scale_in,
+                                   slr_hys_sim=s_hys_sim_in, request_history=request_history)
+    mon_ver, sim_ver, sim_s_ver, mon, sim = replicate(replicateOptions)
     pass
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
 
