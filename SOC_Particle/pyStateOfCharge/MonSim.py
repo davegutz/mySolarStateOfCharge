@@ -158,6 +158,7 @@ def replicate(OPT: UserOptions):
     18. *** Fig 13 sim_s 1:  ib_in_ver  Not fixed: OK because have manually over-ridden ib selection to force ib_noa use in logic but not selection
     19. Fig 15 sim_s 2a:  vb?   Keep looking for this when run at other op conditions.  Shutdown problem.
     20. **** Fig. many:  delta_q_s_ver != delta_q_s   Fixed by changing Sen->T to t_ in Sim::count_coulombs
+    21. _s values in print are off.  Where those there 9/29?  Yes.  Continue to debug
     """
 
     # time
