@@ -107,6 +107,8 @@ public:
   float chargeTransfer_a() { return ChargeTransfer_->a(); };
   float chargeTransfer_b() { return ChargeTransfer_->b(); };
   float chargeTransfer_c() { return ChargeTransfer_->c(); };
+  float chargeTransfer_T() { return ChargeTransfer_->T(); };
+  float chargeTransfer_tau() { return ChargeTransfer_->tau(); };
   float C_rate() { return ib_ / NOM_UNIT_CAP; }
   String decode(const uint8_t mod);
   float dqdt() { return chem_.dqdt; };
