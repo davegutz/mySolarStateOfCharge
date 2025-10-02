@@ -134,7 +134,7 @@ void print_rapid_header(void)
 void print_rapid_create_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
   double cTime = double(Sen->now)/1000;
-  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%9.2f,%9.2f,   %d, %d, %d, %d,   %11.8f,%11.8f,%11.8f,   %7.5f,%9.5f,%9.5f,%9.5f,%8.5f,  %7.5f,%8.5f,%8.5f,%8.5f,%8.5f,  %9.6f,  %10.7f,%10.7f,%10.7f,%5.3f,%9.4f,", \
+  sprintf(pr.buff, "%s, %s,%13.3f,%9.6f, %d,%9.2f,%9.2f,   %d, %d, %d, %d,   %11.8f,%11.8f,%11.8f,   %7.6f,%9.5f,%9.5f,%9.5f,%8.6f,  %7.6f,%8.6f,%8.6f,%8.6f,%8.6f,  %9.6f,  %10.7f,%10.7f,%10.7f,%5.3f,%9.4f,", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
     CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(),
     pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
@@ -202,20 +202,20 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
   {
       double cTime = double(Sen->now)/1000.;
 
-      sprintf(pr.buff, "unit_sel,%13.3f, %d, %d,  %10.7f, %8.5f,%8.5f,%8.5f,%8.5f,%8.5f, %8.5f,%8.5f, ",
+      sprintf(pr.buff, "unit_sel,%13.3f, %d, %d,  %10.7f, %8.6f,%8.6f,%8.6f,%8.6f,%8.6f, %8.6f,%8.6f, ",
           cTime, reset, sp.ib_force(),
           Sen->Flt->cc_diff(),
           Sen->ib_amp_hdwe(), Sen->ib_noa_hdwe(), Sen->ib_amp_model(), Sen->ib_noa_model(), Sen->ib_model(), 
           Sen->Flt->ib_diff(), Sen->Flt->ib_diff_f());
       Serial.printf("%s", pr.buff);
 
-      sprintf(pr.buff, "  %7.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,%8.5f,",
+      sprintf(pr.buff, "  %7.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,",
           Mon->voc_soc(), Sen->Flt->e_wrap(), Sen->Flt->e_wrap_filt(), Sen->Flt->ib_dyn_m(), Sen->Flt->dv_dyn_m(), Sen->Flt->e_wrap_m(), Sen->Flt->e_wrap_m_filt(),
           Sen->Flt->ib_dyn_n(), Sen->Flt->dv_dyn_n(), Sen->Flt->e_wrap_n(), Sen->Flt->e_wrap_n_filt(),
           Sen->Flt->LoopIbAmp->e_wrap_trim());
       Serial.printf("%s", pr.buff);
 
-        sprintf(pr.buff, "  %d,%8.5f,%8.5f,%8.5f, %d,%8.5f,  %d,%8.5f,%8.5f, %d,%8.5f,  %d, %d, ",
+        sprintf(pr.buff, "  %d,%8.6f,%8.6f,%8.6f, %d,%8.6f,  %d,%8.6f,%8.6f, %d,%8.6f,  %d, %d, ",
             Sen->Flt->ib_sel_stat(), Sen->vc_hdwe(), Sen->ib_hdwe(), Sen->ib_hdwe_model(), sp.mod_ib(), Sen->ib(),
             Sen->Flt->vb_sel_stat(), Sen->vb_hdwe(), Sen->vb_model(), sp.mod_vb(), Sen->vb(),
             sp.mod_tb_f(), Sen->Flt->tb_fa());
@@ -253,9 +253,10 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
 void print_sim_header(void)
 {
   if ( sp.debug()==2  || sp.debug()==3 || sp.debug()==4 ) // print_sim_header
-    Serial.printf("unit_m,  c_time,      dt_s, chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, dv_dyn_s, vb_s, ib_s, ib_dyn_s, dv_hys_s, ib_in_s, ib_charge_s, ioc_s, sat_s, dq_s, q_cap_s, soc_s, reset_s,");
-    Serial.printf("ddq_s,");
-        Serial.printf("  ib_dyn_s_a, ib_dyn_s_b, ib_dyn_s_c, ib_dyn_s_T, ib_dyn_s_tau, ib_dyn_s_rstate, ib_dyn_s_lstate,");
+    Serial.printf("unit_m,  c_time,      dt_s, chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, ");
+    Serial.printf("dv_dyn_s, vb_s, ib_s, ib_dyn_s, dv_hys_s, ib_in_s, ib_charge_s, ioc_s, ");
+    Serial.printf("sat_s, dq_s, q_cap_s, soc_s, reset_s, ddq_s, ");
+    Serial.printf("ib_dyn_s_a, ib_dyn_s_b, ib_dyn_s_c, ib_dyn_s_T, ib_dyn_s_tau, ib_dyn_s_rstate, ib_dyn_s_lstate, ");
     Serial.printf("\n");
 }
 void print_sim_serial(const boolean initializing_all, const boolean reset_temp, Sensors *Sen, BatterySim *Sim)
@@ -264,14 +265,16 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
     {
         double cTime = double(Sen->now)/1000.;
 
-        sprintf(pr.buff, "unit_sim, %13.3f, %7.3f, %d, %9.2f, %d, %11.8f, %7.5f,%7.5f,%7.5f,%8.5f, %7.5f,%7.5f,%7.5f,%7.5f,%7.5f,%7.5f,  %d,  %9.4f, %9.4f,  %10.7f, %d,",
-            cTime, Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->tb_f(), Sim->vsat(), Sim->voc_stat(),
-            Sim->dv_dyn(), Sim->vb(), Sim->ib(), Sim->ib_dyn(), Sim->dv_hys(), Sim->ib_in(), Sim->ib_charge(), Sim->ioc(),
-            Sim->saturated(),
-            Sim->delta_q(), Sim->q_capacity(), Sim->soc(), reset_temp);
+        sprintf(pr.buff, "unit_sim, %13.3f, %7.3f, %d, %9.2f, %d, %11.8f, %7.6f,%7.6f, ",
+            cTime, Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->tb_f(), Sim->vsat(), Sim->voc_stat());
         Serial.printf("%s", pr.buff);
 
-        sprintf(pr.buff, "%7.5f,", Sim->d_delta_q_s());
+        sprintf(pr.buff, "%7.6f,%8.6f, %7.6f,%7.6f,%7.6f,%7.6f,%7.6f,%7.6f, ",
+            Sim->dv_dyn(), Sim->vb(), Sim->ib(), Sim->ib_dyn(), Sim->dv_hys(), Sim->ib_in(), Sim->ib_charge(), Sim->ioc());
+        Serial.printf("%s", pr.buff);
+
+        sprintf(pr.buff, " %d,  %9.4f, %9.4f,  %10.7f, %d, %7.6f,",
+            Sim->saturated(), Sim->delta_q(), Sim->q_capacity(), Sim->soc(), reset_temp, Sim->d_delta_q_s());
         Serial.printf("%s", pr.buff);
 
         sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,",
