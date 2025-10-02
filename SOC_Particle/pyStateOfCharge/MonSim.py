@@ -158,7 +158,7 @@ def replicate(OPT: UserOptions):
     18. *** Fig 13 sim_s 1:  ib_in_ver  Not fixed: OK because have manually over-ridden ib selection to force ib_noa use in logic but not selection
     19. Fig 15 sim_s 2a:  vb?   Keep looking for this when run at other op conditions.  Shutdown problem.
     20. **** Fig. many:  delta_q_s_ver != delta_q_s   Fixed by changing Sen->T to t_ in Sim::count_coulombs
-    21. _s values in print are off.  Where those there 9/29?  Yes.  Continue to debug
+    21. **** _s values in print are off.  Where those there 9/29?  Yes.  Continue to debug...delays in ib_s model BatterySim
     """
 
     # time
@@ -281,10 +281,16 @@ def replicate(OPT: UserOptions):
             prn_soc_debug(time=now, leader="a temp filtr:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
 
         # Models
+        if rp.modeling == 0:
+            if reset_ekf:
+                SN.update_ekf(i_ekf)
+            if reset:
+                SN.update_ib_vb(i)
+
         if OPT.sim_ref is not None and not OPT.use_ib_mon:
-            ib_in_s = OPT.sim_ref.ib_in_s[max(i, 1)]
+            ib_in_s = OPT.sim_ref.ib_in_s[i]
         else:
-            ib_in_s = OPT.mon_ref.ib[max(i, 1)]
+            ib_in_s = OPT.mon_ref.ib[i]
 
         if OPT.Bsim is None:
             _chm_s = chm_s[i]
@@ -348,10 +354,6 @@ def replicate(OPT: UserOptions):
 
         # Monitor calculate
         if rp.modeling == 0:
-            if reset_ekf:
-                SN.update_ekf(i_ekf)
-            if reset:
-                SN.update_ib_vb(i)
             mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN,
                           rp=rp, bms_off_init=OPT.mon_ref.bms_off[0], ib_amp=OPT.mon_ref.ibmh[i], ib_noa=OPT.mon_ref.ibnh[i],
                           reset_ekf=reset_ekf)

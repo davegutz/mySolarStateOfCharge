@@ -72,6 +72,8 @@ class Sensors:
         self.ib_dyn_init = mon_ref.ib_dyn[0]
         self.z = mon_ref.z
         self.z_init = self.z[0]
+        self.ib_in_s = sim_ref.ib_in_s
+        self.ib_in_s_init = self.ib_in_s[0]
         self.ib_dyn_s = sim_ref.ib_dyn_s
         self.ib_dyn_s_init = self.ib_dyn_s[0]
         self.dv_dyn_s = sim_ref.dv_dyn_s
@@ -119,6 +121,7 @@ class Sensors:
         self.LoopAmp.update(i)
         self.LoopNoa.update(i)
         self.ib_dyn_init = self.ib_dyn[i]
+        self.ib_in_s_init = self.ib_in_s[i]
         self.ib_dyn_s_init = self.ib_dyn_s[i]
         self.dv_dyn_s_init = self.dv_dyn_s[i]
 

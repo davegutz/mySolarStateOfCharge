@@ -843,6 +843,7 @@ class BatterySim(Battery):
             self.ib_in = sim_ref.ib_in_s[0]
             self.d_delta_q = sim_ref.d_delta_q_s[0]
             self.ib = sim_ref.ib_s[0]
+            self.ib_fut = sim_ref.ib_s[1]
             self.ib_charge = sim_ref.ib_charge_s[0]
             self.ioc = sim_ref.ioc_s[0]
             self.vb = sim_ref.vb_s[0]
@@ -888,10 +889,8 @@ class BatterySim(Battery):
 
         self.dt = dt
         self.ib_in = ib
-        if reset:
-            self.ib_fut = self.ib_in
-            if bms_off_init:
-                self.ib_fut = 0.
+        if reset and bms_off_init:
+            self.ib_fut = 0.
         self.ib = max(min(self.ib_fut, Battery.IMAX_NUM), -Battery.IMAX_NUM)
         self.mod = rp.modeling
         soc_lim = max(min(soc, 1.), -0.2)  # dag 9/3/2022
@@ -930,6 +929,10 @@ class BatterySim(Battery):
         # Charge transfer dynamics
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, reset, dt,
                                                                self.chemistry.tau_ct)
+        if reset:
+            pass
+        # if reset:
+        #     print(f"{self.ib=} {SN.ib_dyn_s_init=} {self.ib_dyn=}")
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
         self.ib_dyn_a = self.ChargeTransfer.a
