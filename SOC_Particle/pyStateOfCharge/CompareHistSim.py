@@ -779,8 +779,8 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=100.):
     sat_ = np.copy(h.Tb)
     bms_off_ = np.copy(h.Tb)
     for i in range(len(h.Tb)):
-        sat_[i] = is_sat(h.Tb[i], h.voc[i], h.soc[i], mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt,
-                         mon.chemistry.low_t)
+        sat_[i] = is_sat(h.Tb[i], mon.chemistry.rated_temp, h.voc[i], h.soc[i], mon.chemistry.nom_vsat,
+                         mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         # h.bms_off[i] = (h.Tb[i] < low_t) or ((h.voc[i] < low_voc) and (h.ib[i] < IB_MIN_UP))
         bms_off_[i] = (h.Tb[i] < mon.chemistry.low_t) or ((h.voc_stat[i] < 10.5) and (h.ib[i] < Battery.IB_MIN_UP))
 
@@ -817,6 +817,7 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=100.):
         dt_hys_min = 1.
         dt_hys_sec = dt_hys_min * 60.
         hys_time_min = np.arange(t_s_min, t_e_min, dt_hys_min, dtype=float)
+        print(f" {t_s_min=} {t_e_min=} {dt_hys_min=}  days of data = {(t_e_min-t_s_min)/(24.*60)}", end='')
         # Note:  Hysteresis_20220917d instantiates hysteresis state to 0. unless told otherwise
         dv_hys_remodel = []
         for i in range(len(hys_time_min)):
@@ -1115,16 +1116,21 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
         hist = add_chm(hist, mon_t, mon, chm)
         hist = add_qcrs(hist, mon_t_=mon_t, mon=mon, qcrs=qcrs)
         print("\nhist after adding stuff:\n", hist.dtype.names, "\n", hist, "\n", hist.dtype.names, "\n :hist after adding stuff\n")
+        print("\nhist convert to 20C...:", end='')
 
         # Convert all the long time readings (history) to same arbitrary (20 deg C) temperature
         hist_20C = filter_Tb(hist, 20., batt, tb_band=TB_BAND, rated_batt_cap=rated_batt_cap_in)
+        print("done")
 
         # Shift time by detecting when ib changes
         if sync_time is None:
+            print("\nShifting time by detecting when ib changes...", end='')
             hist_20C = shift_time(hist_20C)
+            print("done.\nShifting time by detecting when ib changes...", end='"')
 
         # Covert to fast update rate
-        h_20C_resamp = resample(data=hist_20C, dt_resamp=dt_resample, time_var='time',
+            print("\nresampling ...", end='')
+            h_20C_resamp = resample(data=hist_20C, dt_resamp=dt_resample, time_var='time',
                                 specials=[
                                     ('falw', 0), ('dscn_fa', 0), ('ib_diff_fa', 0), ('wv_fa', 0), ('wl_fa', 0),
                                     ('wh_fa', 0), ('ccd_fa', 0), ('ib_noa_fa', 0), ('ib_amp_fa', 0), ('vb_fa', 0),
@@ -1221,8 +1227,14 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
 
 def main():
 
+    import sys
+    if sys.platform == 'linux':
+        gdrive = '/home/daveg/gdrive/'
+    else:
+        gdrive = 'G:/My Drive/'
+
     # User inputs (multiple input_files allowed
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/disch 20250805am_soc4p2_hi_lo_bb.csv'
+    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/Hd 20251003am_soc4p2_hi_lo_bb.csv'
     data_only = False
     mon_t = False
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
