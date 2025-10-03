@@ -159,6 +159,7 @@ def replicate(OPT: UserOptions):
     19. Fig 15 sim_s 2a:  vb?   Keep looking for this when run at other op conditions.  Shutdown problem.
     20. **** Fig. many:  delta_q_s_ver != delta_q_s   Fixed by changing Sen->T to t_ in Sim::count_coulombs
     21. **** _s values in print are off.  Where those there 9/29?  Yes.  Continue to debug...delays in ib_s model BatterySim
+    22. **** Fig. 21 GP 3 Tune (3,3,6):  vb?  OK.  The battery is near saturation and the voc(soc) curve is slightly innacurate
     """
 
     # time
