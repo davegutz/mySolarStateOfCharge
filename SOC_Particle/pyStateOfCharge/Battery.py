@@ -281,7 +281,7 @@ class BatteryMonitor(Battery, EKF1x1):
     def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1.,
                  tb_f=25., tweak_test=False, slr_res_0=1., slr_res_ct=1., stauct=1.,
                  slr_r_ss=1., s_hys=1., dvoc=0., eframe_mult=Battery.cp_eframe_mult,
-                 mod_code=0, slr_coul_eff=1., unit=None, ref=None, dTb=None):
+                 mod_code=0, slr_coul_eff=1., unit=None, dTb=None, ref=None, SN=None):
         q_cap_rated_scaled = q_cap_rated * scale
         Battery.__init__(self, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct, slr_r_ss=slr_r_ss,
@@ -378,27 +378,30 @@ class BatteryMonitor(Battery, EKF1x1):
         self.dt_temp = 0.
         self.sel_brk_hdwe = ScaleSelector(Battery.HDWE_IB_HI_LO_NOA_LO, Battery.HDWE_IB_HI_LO_AMP_LO,
                                           Battery.HDWE_IB_HI_LO_AMP_HI, Battery.HDWE_IB_HI_LO_NOA_HI)
-        if ref is not None:
-            self.Tb_hdwe = ref.Tb_hdwe[0]
-            self.Tb_hdwe_filt = ref.Tb_hdwe_filt[0]
-            self.Tb_hdwe_filt_rate = ref.Tb_hdwe_filt_rate[0]
-            self.e_wrap = ref.e_wrap[0]
-            self.e_wrap_filt = ref.e_wrap_filt[0]
-            self.e_wrap_m = ref.e_wrap_m[0]
-            self.e_wrap_m_filt = ref.e_wrap_m_filt[0]
-            self.e_wrap_m_trim = ref.e_wrap_m_trim[0]
-            self.e_wrap_n = ref.e_wrap_n[0]
-            self.e_wrap_n_filt = ref.e_wrap_n_filt[0]
-            self.voc_soc = ref.voc_soc[0]
+        if SN is not None:
+            self.Tb_hdwe = SN.Tb_hdwe_init
+            self.Tb_hdwe_filt =SN.Tb_hdwe_filt_init
+            self.Tb_hdwe_filt_rate = SN.Tb_hdwe_filt_rate_init
+            self.Tb_hdwe_filt_rate = SN.Tb_hdwe_filt_rate_init
+            self.e_wrap = SN.e_wrap_init
+            self.e_wrap_filt = SN.e_wrap_filt_init
+            self.e_wrap_m = SN.e_wrap_m_init
+            self.e_wrap_m_filt = SN.e_wrap_m_filt_init
+            self.e_wrap_m_trim = SN.e_wrap_m_trim_init
+            self.e_wrap_n = SN.e_wrap_n_init
+            self.e_wrap_n_filt = SN.e_wrap_n_filt_init
+            self.e_wrap_n_trim = SN.e_wrap_n_trim_init
+            self.voc_soc = SN.voc_soc_init
             self.voc_stat = self.voc_soc - self.e_wrap
-            self.Tb = ref.Tb[0]
-            self.Tb_f = ref.Tb_f[0]
-            self.Tb_f_rate = ref.Tb_f_rate[0]
-            self.Tb_rap = ref.Tb_rap[0] + dTb
-            self.Tb_f_rap = ref.Tb_f_rap[0] + dTb
-            self.Tb_f_rate_rap = ref.Tb_f_rate_rap[0]
+            self.Tb = SN.Tb0
+            self.Tb_f = SN.Tb_f_init
+            self.Tb_f_rate = SN.Tb_f_rate_init
+            self.Tb_rap = SN.Tb_rap_init
+            self.Tb_f_rap = SN.Tb_f_rap_init
+            print(f"Tb_f_rap = {self.Tb_f_rap}")
+            self.Tb_f_rate_rap = SN.Tb_f_rate_rap_init
             self.ib = ref.ib[0]
-            self.ib_dyn = ref.ib_dyn[0]
+            self.ib_dyn = SN.ib_dyn_init
             self.ib_charge = ref.ib_charge[0]
             self.vb = ref.vb[0]
             self.soc = ref.soc[0]
@@ -406,13 +409,12 @@ class BatteryMonitor(Battery, EKF1x1):
             self.sat = ref.sat[0]
             self.reset_ekf = True
             self.init_soc_ekf(ref, 0, 0)
-            self.voc_ekf = ref.hx[0]
-            self.voc_stat_f = ref.voc_stat[0]
-            self.x = ref.x[0]
-            self.x_prior = ref.x_prior[0]
-            self.soc_ekf = ref.soc_ekf[0]
-            self.z_ekf = ref.z[0]
-            self.z = ref.z[0]
+            self.voc_ekf = SN.hx_init
+            self.x = SN.x_init
+            self.x_prior = SN.x_prior_init
+            self.soc_ekf = SN.soc_ekf_init
+            self.z_ekf = SN.z_ekf_init
+            self.z = SN.z_init
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -618,21 +620,74 @@ class BatteryMonitor(Battery, EKF1x1):
     def init_soc_ekf(self, mo, i, i_ekf):
         self.soc_ekf = mo.soc_ekf[i]
         self.y_ekf = mo.y_ekf[i]
-        self.init_ekf(mo.x[i_ekf], 0.0)
+
+        if hasattr(mo, 'x'):
+            self.init_ekf(mo.x[i_ekf], 0.0)
+        else:
+            self.init_ekf(mo.soc_ekf[i_ekf], 0.0)
+
         self.q_ekf = self.soc * self.q_capacity
         self.P = mo.P[i_ekf]
-        self.P_post = mo.P_post[i_ekf]
-        self.P_prior = mo.P_prior[i_ekf]
-        self.H = mo.H[i_ekf]
-        self.S = mo.S[i_ekf]
-        self.K = mo.K[i_ekf]
-        self.hx = mo.hx[i_ekf]
-        self.dt_eframe = mo.dt_ekf[i_ekf]
-        self.x = mo.x[i_ekf]
-        self.x_prior = mo.x_prior[i_ekf]
-        self.x_post = mo.x_post[i_ekf]
-        self.tb_f_for_hx = mo.tb_f_for_hx[i_ekf]
-        self.x_for_hx = mo.x_for_hx[i_ekf]
+
+        if hasattr(mo, 'P_post'):
+            self.P_post = mo.P_post[i_ekf]
+        else:
+            self.P_post = self.P
+
+        if hasattr(mo, 'P_prior'):
+            self.P_prior = mo.P_prior[i_ekf]
+        else:
+            self.P_prior = self.P
+
+        if hasattr(mo, 'H'):
+            self.H = mo.H[i_ekf]
+        else:
+            self.H = mo.z[i_ekf]
+
+        if hasattr(mo, 'S'):
+            self.S = mo.S[i_ekf]
+        else:
+            self.S = 0.
+
+        if hasattr(mo, 'K'):
+            self.K = mo.K[i_ekf]
+        else:
+            self.K = 0.
+
+        if hasattr(mo, 'hx'):
+            self.hx = mo.hx[i_ekf]
+        else:
+            self.hx = mo.voc[i]
+
+        if hasattr(mo, 'dt_ekf'):
+            self.dt_eframe = mo.dt_ekf[i_ekf]
+        else:
+            self.dt_eframe = mo.dt[i] * Battery.EKF_EFRAME_MULT
+
+        if hasattr(mo, 'x'):
+            self.x = mo.x[i_ekf]
+        else:
+            self.x = mo.soc_ekf[i_ekf]
+
+        if hasattr(mo, 'x_prior'):
+            self.x_prior = mo.x_prior[i_ekf]
+        else:
+            self.x_prior = self.x
+
+        if hasattr(mo, 'x_post'):
+            self.x_post = mo.x_post[i_ekf]
+        else:
+            self.x_post = self.x
+
+        if hasattr(mo, 'tb_f_for_hx'):
+            self.tb_f_for_hx = mo.tb_f_for_hx[i_ekf]
+        else:
+            self.tb_f_for_hx = self.Tb_f
+
+        if hasattr(mo, 'x_for_hx'):
+            self.x_for_hx = mo.x_for_hx[i_ekf]
+        else:
+            self.x_for_hx = self.x
 
     def regauge(self, tb_f):
         if self.converged_ekf() and abs(self.soc_ekf - self.soc) > Battery.DF2:
@@ -806,7 +861,7 @@ class BatterySim(Battery):
                  tb_f=25., tweak_test=False, dv_hys=0., slr_res_0=1., slr_res_ct=1., slr_r_ss=1.,
                  s_hys=1., dvoc=0., scale_hys_cap=1., mod_code=0, slr_cap_chg=1., slr_cap_dis=1., slr_hys_chg=1.,
                  slr_hys_dis=1., slr_coul_eff=1., slr_cutback_gain=1., add_s_voc_soc=0., unit=None,
-                 mon_ref=None, sim_ref=None):
+                 mon_ref=None, sim_ref=None, SN=None):
         Battery.__init__(self, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct,
                          slr_r_ss=slr_r_ss, s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, slr_coul_eff=slr_coul_eff,
@@ -837,19 +892,19 @@ class BatterySim(Battery):
         self.saved_s = SavedS()  # for plots and prints
         self.ib_fut = 0.  # Future value of limited current, A
         self.reset_temp_past = True
-        if sim_ref is not None:
-            self.Tb = mon_ref.Tb[0]
-            self.dv_dyn = sim_ref.dv_dyn_s[0]
-            self.ib_in = sim_ref.ib_in_s[0]
-            self.d_delta_q = sim_ref.d_delta_q_s[0]
-            self.ib = sim_ref.ib_s[0]
-            self.ib_fut = sim_ref.ib_s[1]
-            self.ib_charge = sim_ref.ib_charge_s[0]
-            self.ioc = sim_ref.ioc_s[0]
-            self.vb = sim_ref.vb_s[0]
-            self.voc = sim_ref.voc_s[0]
-            self.ib_dyn = sim_ref.ib_dyn_s[0]
-            self.soc = sim_ref.soc_s[0]
+        if SN is not None:
+            self.Tb = SN.Tb0
+            self.dv_dyn = SN.dv_dyn_s_init
+            self.ib_in = SN.ib_in_s_init
+            self.d_delta_q = SN.d_delta_q_s_init
+            self.ib = SN.ib_s_init
+            self.ib_fut = SN.ib_fut_s_init
+            self.ib_charge = SN.ib_charge_s_init
+            self.ioc = SN.ioc_s_init
+            self.vb = SN.vb_s_init
+            self.voc = SN.voc_s_init
+            self.ib_dyn = SN.ib_dyn_s_init
+            self.soc = SN.soc_s_init
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""

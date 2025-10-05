@@ -57,8 +57,6 @@ def get_modeling(mo):
         modeling_ = mo.mod_data
     else:
         modeling_ = 255 * np.ones(len(mo.time))
-        print(f"what do we do now?  {rp.modeling=}")
-        # exit(1)
     return modeling_
 
 def sync_to_mon_or_sim(mo, so, t_mx=None):
@@ -186,21 +184,25 @@ def replicate(OPT: UserOptions):
     scale_mon, scale_sim = battery_size(OPT.mon_ref, OPT.sim_ref, OPT.scale_in, unit_cap_rated)
 
     # Make batteries
-    sim = BatterySim(mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
+    sim = BatterySim(SN=SN, mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
                      dv_hys=OPT.mon_ref.dv_hys[0], slr_res_0=OPT.slr_res_0, slr_res_ct=OPT.slr_res_ct, stauct=OPT.slr_tauct_sim, slr_r_ss=OPT.slr_r_ss,
                      s_hys=OPT.slr_hys_sim, dvoc=OPT.add_voc_sim, scale_hys_cap=OPT.slr_hys_cap_sim, slr_coul_eff=OPT.slr_coul_eff,
                      slr_cap_chg=OPT.slr_cap_chg, slr_cap_dis=OPT.slr_cap_dis, slr_hys_chg=OPT.slr_hys_chg, slr_hys_dis=OPT.slr_hys_dis,
                      slr_cutback_gain=OPT.slr_cutback_gain, add_s_voc_soc=OPT.add_s_voc_soc, unit=OPT.unit, mon_ref=OPT.mon_ref,
                      sim_ref=OPT.sim_ref)
-    mon = BatteryMonitor(mod_code=chm_m[0], tb_f=SN.Tb0, scale=scale_mon, tweak_test=tweak_test,
+    mon = BatteryMonitor(SN=SN, mod_code=chm_m[0], tb_f=SN.Tb0, scale=scale_mon, tweak_test=tweak_test,
                          slr_res_0=OPT.slr_res_0, slr_res_ct=OPT.slr_res_ct, stauct=OPT.stauct_mon,
                          slr_r_ss=OPT.slr_r_ss, s_hys=OPT.slr_hys_mon, dvoc=OPT.add_voc_mon, eframe_mult=OPT.eframe_mult,
                          slr_coul_eff=OPT.slr_coul_eff, unit=OPT.unit, ref=OPT.mon_ref, dTb=SN.dTb)
     Is_sat_delay = TFDelay(in_=OPT.mon_ref.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
     # Time sync
-    mon.saved.time_ref = OPT.mon_ref.time_ref
-    sim.saved_s.time_ref = OPT.mon_ref.time_ref
+    if hasattr(OPT.mon_ref, 'time_ref'):
+        mon.saved.time_ref = OPT.mon_ref.time_ref
+        sim.saved_s.time_ref = OPT.mon_ref.time_ref
+    else:
+        mon.saved.time_ref = 0.
+        sim.saved_s.time_ref = 0.
 
     # time loop initialization
     now = t[0]
@@ -234,21 +236,33 @@ def replicate(OPT: UserOptions):
                 T = candidate_dt
 
         # Get temperature data
-        calc_temp = (i_temp+1 < len(OPT.mon_ref.time_t)) and (OPT.mon_ref.time_t[i_temp+1] <= OPT.mon_ref.time[i])
+        if hasattr(OPT.mon_ref, 'time_t'):
+            calc_temp = (i_temp+1 < len(OPT.mon_ref.time_t)) and (OPT.mon_ref.time_t[i_temp+1] <= OPT.mon_ref.time[i])
+        else:
+            calc_temp = True
         if calc_temp:
             i_temp += 1
             mon.Tb = mon.Tb_hdwe  # past value
             mon.reset_temp = (i_temp < 2)  # make sure temp init is longer than reset
-            mon.dt_temp = OPT.mon_ref.Tt[i_temp]
-            mon.Tb_hdwe = OPT.mon_ref.Tb_hdwe[i_temp]
+            if hasattr(OPT.mon_ref, 'Tt'):
+                mon.dt_temp = OPT.mon_ref.Tt[i_temp]
+            else:
+                mon.dt_temp = mon.dt
+            if hasattr(OPT.mon_ref, 'Tb_hdwe'):
+                mon.Tb_hdwe = OPT.mon_ref.Tb_hdwe[i_temp]
+            else:
+                mon.Tb_hdwe = OPT.mon_ref.Tb
             sim.Tb = OPT.mon_ref.Tb[i_temp]
             mon.Tb = OPT.mon_ref.Tb[i_temp]
             mon.Tb_s = OPT.mon_ref.Tb[i_temp]
             if i_temp > 0:
                 SN.update_tb()
-            mon.Tb_f_rap = SN.Tb_f_past
-            mon.Tb_f_rate_rap = SN.Tb_f_rate_past
-            sim.Tb_f = OPT.mon_ref.Tb_mod[i_temp]
+                mon.Tb_f_rap = SN.Tb_f_past
+                mon.Tb_f_rate_rap = SN.Tb_f_rate_past
+            if hasattr(OPT.mon_ref, 'Tb_mod'):
+                sim.Tb_f = OPT.mon_ref.Tb_mod[i_temp]
+            else:
+                sim.Tb_f = sim.Tb
 
         # Input
         dc_dc_on = False

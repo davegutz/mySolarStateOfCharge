@@ -21,8 +21,7 @@ import matplotlib.pyplot as plt
 from Hysteresis_20220917d import Hysteresis_20220917d
 from Hysteresis_20220926 import Hysteresis_20220926
 from Battery import Battery, BatteryMonitor, is_sat, Retained
-from MonSim import replicate, save_clean_file
-# from Util import cat
+from MonSim import replicate, save_clean_file, UserOptions
 from resample import resample
 from PlotKiller import show_killer
 from DataOverModel import dom_plot
@@ -1182,10 +1181,11 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
         # Replicate
         data_file_clean = path_to_temp + '/' + data_file_txt.replace('.csv', '_hist' + '.csv', 1)
         mon_file_save = data_file_clean.replace(".csv", "_rep_hist.csv")
-        mon_ver, sim_ver, sim_s_ver, mon_r, sim_r =\
-            replicate(mon_old, sim_old=sim_old, init_time=1., verbose=False, max_time=time_end_in, use_vb_sim=False,
-                      scale_in=scale_in, use_mon_soc=use_mon_soc_in, add_voc_mon=dvoc_mon_in, add_voc_sim=dvoc_sim_in,
-                      unit=unit)
+        replicateOptions = UserOptions(mon_ref=mon_old, sim_ref=sim_old, init_time=1., verbose=False,
+                                       max_time=time_end_in, use_vb_sim=False, scale_in=scale_in,
+                                       use_mon_soc=use_mon_soc_in, add_voc_mon=dvoc_mon_in, add_voc_sim=dvoc_sim_in,
+                                       unit=unit)
+        mon_ver, sim_ver, sim_s_ver, mon_r, sim_r = replicate(replicateOptions)
         save_clean_file(mon_ver, mon_file_save, 'mon_rep_hist' + date_)
 
     # Plots
