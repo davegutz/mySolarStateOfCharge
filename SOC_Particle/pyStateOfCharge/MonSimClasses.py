@@ -147,40 +147,54 @@ class Sensors:
             self.Tb_f_rate_rap_init = 0.
 
         self.Tb = mon_ref.Tb[0]
+
         if hasattr(mon_ref, 'Tb_f'):
             self.Tb_f = mon_ref.Tb_f
         else:
             self.Tb_f = np.copy(mon_ref.Tb)
+
         if hasattr(mon_ref, 'Tb_f_rate'):
-            self.Tb_f_rate = mon_ref.Tb_f_rate
+            self.Tb_f_rate = mon_ref.Tb_f_rate[0]
         else:
             self.Tb_f_rate = np.copy(self.Tb) * 0.
+
         if hasattr(mon_ref, 'Tb_past'):
             self.Tb_past = mon_ref.Tb_past + self.dTb
         else:
             self.Tb_past = np.copy(self.Tb) + self.dTb
-        if hasattr(mon_ref, 'Tb_f_past'):
-            self.Tb_f_past = mon_ref.Tb_f_past + self.dTb
+
+        if hasattr(mon_ref, 'Tb_f_rap'):
+            self.Tb_f_past = mon_ref.Tb_f_rap[0] + self.dTb
         else:
             self.Tb_f_past = np.copy(self.Tb_past) + self.dTb
-        if hasattr(mon_ref, 'Tb_f_past'):
-            self.Tb_f_rate_past = mon_ref.Tb_f_rate_rap
+
+        if hasattr(mon_ref, 'Tb_f_rate_past'):
+            self.Tb_f_rate_past = mon_ref.Tb_f_rate_past
         else:
             self.Tb_f_rate_past = np.copy(self.Tb) * 0.
+
         self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
+
         if not hasattr(mon_ref, 'ib_dyn_m'):
             mon_ref.ib_dyn_m = np.copy(mon_ref.ib)
+
         if not hasattr(mon_ref, 'e_wrap_m_trim'):
             mon_ref.e_wrap_m_trim = np.copy(mon_ref.ib) * 0.
+
         if not hasattr(mon_ref, 'e_wrap_m_filt'):
             mon_ref.e_wrap_m_filt = np.copy(mon_ref.e_wrap)
+
         self.LoopAmp = SensorLooparound(mon_ref.ibmh, mon_ref.ib_dyn_m, mon_ref.e_wrap_m_trim, mon_ref.e_wrap_m_filt)
+
         if not hasattr(mon_ref, 'ib_dyn_n'):
             mon_ref.ib_dyn_n = np.copy(mon_ref.ib)
+
         if not hasattr(mon_ref, 'e_wrap_n_trim'):
             mon_ref.e_wrap_n_trim = np.copy(mon_ref.ib) * 0.
+
         if not hasattr(mon_ref, 'e_wrap_n_filt'):
             mon_ref.e_wrap_n_filt = np.copy(mon_ref.e_wrap)
+
         self.LoopNoa = SensorLooparound(mon_ref.ibnh, mon_ref.ib_dyn_n, mon_ref.e_wrap_m_trim*0., mon_ref.e_wrap_n_filt)
         self.ib_amp = mon_ref.ibmh
         self.ib_noa = mon_ref.ibnh
@@ -302,19 +316,20 @@ class Sensors:
         if hasattr(mon_ref, 'Tb_hdwe_filt'):
             mon.Tb_hdwe_filt = \
                 self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_ref.Tb_hdwe_filt[i_temp],
-                                                    mon.reset_temp,
-                                                    mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
-                                                    rmin=-Battery.T_RLIM)
+                                                      mon.reset_temp,
+                                                      mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
+                                                      rmin=-Battery.T_RLIM)
         else:
             mon.Tb_hdwe_filt = \
                 self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon.Tb_hdwe,
-                                                    mon.reset_temp,
-                                                    mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
-                                                    rmin=-Battery.T_RLIM)
+                                                      mon.reset_temp,
+                                                      mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
+                                                      rmin=-Battery.T_RLIM)
 
         mon.Tb_hdwe_filt_rate = self.TbSenseFilt.rate
         mon.Tb_f_rate = mon.Tb_hdwe_filt_rate
-        mon.Tb_rap = self.Tb_past
+        if not mon.reset_temp:
+            mon.Tb_rap = self.Tb_past
         mon.Tb_f = mon.Tb_hdwe_filt
         self.Tb_f = mon.Tb_hdwe_filt
         self.assign_tb(mon.Tb, mon.Tb_f, mon.Tb_f_rate)
