@@ -50,248 +50,171 @@ class Sensors:
     def __init__(self, mon_ref=None, sim_ref=None, add_Tb_in=None):
 
         if hasattr(mon_ref, 'Tb_hdwe'):
-            self.Tb_hdwe_init = mon_ref.Tb_hdwe[0]
-        else:
-            self.Tb_hdwe_init = mon_ref.Tb_h[0]
-
-        if hasattr(mon_ref, 'Tb_hdwe_filt'):
-            self.Tb_hdwe_filt_init = mon_ref.Tb_hdwe_filt[0]
-        else:
-            self.Tb_hdwe_filt_init = mon_ref.Tb_h[0]
-
-        if hasattr(mon_ref, 'Tb_hdwe_filt_rate'):
-            self.Tb_hdwe_filt_rate_init = mon_ref.Tb_hdwe_filt_rate[0]
-        else:
-            self.Tb_hdwe_filt_rate_init = 0.
-
-        self.e_wrap_init = mon_ref.e_wrap[0]
-
-        if hasattr(mon_ref, 'e_wrap_filt'):
-            self.e_wrap_filt_init = mon_ref.e_wrap_filt[0]
-        else:
-            self.e_wrap_filt_init = mon_ref.e_wrap[0]
-
-        if hasattr(mon_ref, 'e_wrap_m'):
-            self.e_wrap_m_init = mon_ref.e_wrap_m[0]
-        else:
-            self.e_wrap_m_init = mon_ref.e_wrap[0]
-
-        if hasattr(mon_ref, 'e_wrap_m_filt'):
-            self.e_wrap_m_filt_init = mon_ref.e_wrap_m_filt[0]
-        else:
-            self.e_wrap_m_filt_init = mon_ref.e_wrap[0]
-
-        if hasattr(mon_ref, 'e_wrap_m_trim'):
-            self.e_wrap_m_trim_init = mon_ref.e_wrap_m_trim[0]
-        else:
-            self.e_wrap_m_trim_init = 0.
-
-        if hasattr(mon_ref, 'e_wrap_n'):
-            self.e_wrap_n_init = mon_ref.e_wrap_n[0]
-        else:
-            self.e_wrap_n_init = mon_ref.e_wrap[0]
-
-        if hasattr(mon_ref, 'e_wrap_n_filt'):
-            self.e_wrap_n_filt_init = mon_ref.e_wrap_n_filt[0]
-        else:
-            self.e_wrap_n_filt_init = mon_ref.e_wrap[0]
-
-        if hasattr(mon_ref, 'e_wrap_n_trim'):
-            self.e_wrap_n_trim_init = mon_ref.e_wrap_n_trim[0]
-        else:
-            self.e_wrap_n_trim_init = 0.
-
-        self.voc_soc_init = mon_ref.voc_soc[0]
-
-        if hasattr(mon_ref, 'Tb_f'):
-            self.Tb0 = mon_ref.Tb_f[0]  # filter when possible
-        else:
-            self.Tb0 = mon_ref.Tb[0]
-
-        if hasattr(mon_ref, 'Tb_f'):
-            self.Tb_f_init = mon_ref.Tb_f[0]
-        else:
-            self.Tb_f_init = mon_ref.Tb[0]
-
-        if hasattr(mon_ref, 'Tb_mod'):
+            self.Tb0 = mon_ref.Tb_f[0]
             self.Tb0_s = mon_ref.Tb_mod[0]
-        else:
-            self.Tb0_s = mon_ref.Tb[0]
-
-        if hasattr(mon_ref, 'Tb_f_rate'):
-            self.Tb_f_rate_init = mon_ref.Tb_f_rate[0]
-        else:
-            self.Tb_f_rate_init = 0.
-
-        self.lut_dTb = None
-        self.dTb = 0.
-        if add_Tb_in is not None:
-            self.add_Tb_in = np.array(add_Tb_in)
-            self.Tb0 += add_Tb_in[1, 0]
-            self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
-            self.dTb = lut_dTb.interp(t[0])
-
-        if hasattr(mon_ref, 'Tb_rap'):
-            self.Tb_rap_init = mon_ref.Tb_rap[0] + self.dTb
-        else:
-            self.Tb_rap_init = mon_ref.Tb[0] + self.dTb
-
-        if hasattr(mon_ref, 'Tb_f_rap'):
-            self.Tb_f_rap_init = mon_ref.Tb_f_rap[0] + self.dTb
-        else:
-            self.Tb_f_rap_init = mon_ref.Tb[0] + self.dTb
-
-        if hasattr(mon_ref, 'Tb_f_rate_rap'):
-            self.Tb_f_rate_rap_init = mon_ref.Tb_f_rate_rap[0]
-        else:
-            self.Tb_f_rate_rap_init = 0.
-
-        self.Tb = mon_ref.Tb[0]
-
-        if hasattr(mon_ref, 'Tb_f'):
-            self.Tb_f = mon_ref.Tb_f
-        else:
-            self.Tb_f = np.copy(mon_ref.Tb)
-
-        if hasattr(mon_ref, 'Tb_f_rate'):
+            self.lut_dTb = None
+            self.dTb = 0.
+            if add_Tb_in is not None:
+                self.add_Tb_in = np.array(add_Tb_in)
+                self.Tb0 += add_Tb_in[1, 0]
+                self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
+                self.dTb = lut_dTb.interp(t[0])
+            self.Tb = mon_ref.Tb[0]
+            self.Tb_f = mon_ref.Tb_f[0]
             self.Tb_f_rate = mon_ref.Tb_f_rate[0]
-        else:
-            self.Tb_f_rate = np.copy(self.Tb) * 0.
-
-        if hasattr(mon_ref, 'Tb_past'):
-            self.Tb_past = mon_ref.Tb_past + self.dTb
-        else:
-            self.Tb_past = np.copy(self.Tb) + self.dTb
-
-        if hasattr(mon_ref, 'Tb_f_rap'):
+            self.Tb_past = mon_ref.Tb_rap[0] + self.dTb
             self.Tb_f_past = mon_ref.Tb_f_rap[0] + self.dTb
-        else:
-            self.Tb_f_past = np.copy(self.Tb_past) + self.dTb
-
-        if hasattr(mon_ref, 'Tb_f_rate_past'):
-            self.Tb_f_rate_past = mon_ref.Tb_f_rate_past
-        else:
-            self.Tb_f_rate_past = np.copy(self.Tb) * 0.
-
-        self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
-
-        if not hasattr(mon_ref, 'ib_dyn_m'):
-            mon_ref.ib_dyn_m = np.copy(mon_ref.ib)
-
-        if not hasattr(mon_ref, 'e_wrap_m_trim'):
-            mon_ref.e_wrap_m_trim = np.copy(mon_ref.ib) * 0.
-
-        if not hasattr(mon_ref, 'e_wrap_m_filt'):
-            mon_ref.e_wrap_m_filt = np.copy(mon_ref.e_wrap)
-
-        self.LoopAmp = SensorLooparound(mon_ref.ibmh, mon_ref.ib_dyn_m, mon_ref.e_wrap_m_trim, mon_ref.e_wrap_m_filt)
-
-        if not hasattr(mon_ref, 'ib_dyn_n'):
-            mon_ref.ib_dyn_n = np.copy(mon_ref.ib)
-
-        if not hasattr(mon_ref, 'e_wrap_n_trim'):
-            mon_ref.e_wrap_n_trim = np.copy(mon_ref.ib) * 0.
-
-        if not hasattr(mon_ref, 'e_wrap_n_filt'):
-            mon_ref.e_wrap_n_filt = np.copy(mon_ref.e_wrap)
-
-        self.LoopNoa = SensorLooparound(mon_ref.ibnh, mon_ref.ib_dyn_n, mon_ref.e_wrap_m_trim*0., mon_ref.e_wrap_n_filt)
-        self.ib_amp = mon_ref.ibmh
-        self.ib_noa = mon_ref.ibnh
-        if hasattr(mon_ref, 'ib_dyn'):
+            self.Tb_f_rate_past = mon_ref.Tb_f_rate_rap[0]
+            self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
+            self.LoopAmp = SensorLooparound(mon_ref.ibmh, mon_ref.ib_dyn_m, mon_ref.e_wrap_m_trim,
+                                            mon_ref.e_wrap_m_filt)
+            self.LoopNoa = SensorLooparound(mon_ref.ibnh, mon_ref.ib_dyn_n, mon_ref.e_wrap_m_trim * 0.,
+                                            mon_ref.e_wrap_n_filt)
+            self.ib_amp = mon_ref.ibmh
+            self.ib_noa = mon_ref.ibnh
             self.ib_dyn = mon_ref.ib_dyn
-        else:
-            self.ib_dyn = np.copy(mon_ref.ib)
-        if hasattr(mon_ref, 'ib_dyn'):
             self.ib_dyn_init = mon_ref.ib_dyn[0]
-        else:
-            self.ib_dyn_init = mon_ref.ib[0]
-        self.z = mon_ref.z
-        self.z_init = self.z[0]
-        self.ib_in_s = sim_ref.ib_in_s
-        self.ib_in_s_init = self.ib_in_s[0]
-        if hasattr(mon_ref, 'ib_dyn_s'):
-            self.ib_dyn_s = mon_ref.ib_dyn_s
-        else:
-            self.ib_dyn_s = np.copy(self.ib_in_s)
-        self.ib_dyn_s_init = self.ib_dyn_s[0]
-        self.dv_dyn_s = sim_ref.dv_dyn_s
-        self.dv_dyn_s_init = self.dv_dyn_s[0]
-        if hasattr(sim_ref, 'd_delta_q'):
-            self.d_delta_q_s_init = sim_ref.d_delta_q_s[0]
-        else:
-            self.d_delta_q_s_init = 0.
-
-        if hasattr(sim_ref, 'ib_s'):
-            self.ib_s_init = sim_ref.ib_s[0]
-        else:
-            self.ib_s_init = self.ib_in_s_init
-
-        if hasattr(sim_ref, 'ib_s'):
-            self.ib_fut_s_init = sim_ref.ib_s[1]
-        else:
-            self.ib_fut_s_init = self.ib_in_s_init
-
-        if hasattr(sim_ref, 'ib_charge_s'):
-            self.ib_charge_s_init = sim_ref.ib_charge_s[0]
-        else:
-            self.ib_charge_s_init = self.ib_in_s_init
-
-        if hasattr(sim_ref, 'ioc_s'):
-            self.ioc_s_init = sim_ref.ioc_s[0]
-        else:
-            self.ioc_s_init = self.ib_in_s_init
-
-        if hasattr(sim_ref, 'vb_s'):
-            self.vb_s_init = sim_ref.vb_s[0]
-        else:
-            self.vb_s_init = mon_ref.vb[0]
-
-        if hasattr(sim_ref, 'voc_s'):
-            self.voc_s_init = sim_ref.voc_s[0]
-        else:
-            self.voc_s_init = sim_ref.voc_stat_s[0]  # is this right?
-
-        if hasattr(sim_ref, 'ib_dyn_s'):
-            self.ib_dyn_s_init = sim_ref.ib_dyn_s[0]
-        else:
-            self.ib_dyn_s_init = self.ib_in_s_init
-
-        if hasattr(sim_ref, 'soc_s'):
-            self.soc_s_init = sim_ref.soc_s[0]
-        else:
+            self.z = mon_ref.z
+            self.z_init = self.z[0]
+            self.ib_in_s = sim_ref.ib_in_s
+            self.ib_in_s_init = self.ib_in_s[0]
+            self.ib_dyn_s = sim_ref.ib_dyn_s
             self.soc_s_init = mon_ref.soc_s[0]
-
-        if hasattr(mon_ref, 'hx'):
-            self.hx_init = mon_ref.hx[0]
-        else:
-            self.hx_init = self.voc_soc_init
-
-        self.soc_init = mon_ref.soc[0]
-
-        if hasattr(mon_ref, 'x'):
+            self.ib_dyn_s_init = self.ib_dyn_s[0]
+            self.dv_dyn_s = sim_ref.dv_dyn_s
+            self.dv_dyn_s_init = self.dv_dyn_s[0]
+            self.d_delta_q_s_init = 0.
+            self.ib_s_init = self.ib_in_s_init
+            self.ib_fut_s_init = self.ib_in_s_init
+            self.ib_charge_s_init = self.ib_in_s_init
+            self.ioc_s_init = self.ib_in_s_init
+            self.vb_s_init = mon_ref.vb[0]
+            self.voc_s_init = sim_ref.voc_stat_s[0]  # is this right?
+            self.Tb_hdwe_init = mon_ref.Tb_hdwe[0]
+            self.Tb_hdwe_filt_init = mon_ref.Tb_hdwe_filt[0]
+            self.Tb_hdwe_filt_rate_init = mon_ref.Tb_hdwe_filt_rate[0]
+            self.e_wrap_init = mon_ref.e_wrap[0]
+            self.e_wrap_filt_init = mon_ref.e_wrap_filt[0]
+            self.e_wrap_m_init = mon_ref.e_wrap_m[0]
+            self.e_wrap_m_filt_init = mon_ref.e_wrap_m_filt[0]
+            self.e_wrap_m_trim_init = mon_ref.e_wrap_m_trim[0]
+            self.e_wrap_n_init = mon_ref.e_wrap_n[0]
+            self.e_wrap_n_filt_init = mon_ref.e_wrap_n_filt[0]
+            self.e_wrap_n_trim_init = 0.
+            self.voc_soc_init = mon_ref.voc_soc[0]
+            self.Tb_init = mon_ref.Tb[0]
+            self.Tb_f_init = mon_ref.Tb_f[0]
+            self.Tb_f_rate_init = mon_ref.Tb_f_rate[0]
+            self.lut_dTb = None
+            self.dTb = 0.
+            if add_Tb_in is not None:
+                self.add_Tb_in = np.array(add_Tb_in)
+                self.Tb0 += add_Tb_in[1, 0]
+                self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
+                self.dTb = lut_dTb.interp(t[0])
+            self.Tb_rap_init = mon_ref.Tb_rap[0] + self.dTb
+            self.Tb_f_rap_init = mon_ref.Tb_f_rap[0] + self.dTb
+            self.Tb_f_rate_rap_init = mon_ref.Tb_f_rate_rap[0]
+            self.ib_init = mon_ref.ib[0]
+            self.ib_dyn_init = mon_ref.ib_dyn[0]
+            self.ib_charge_init = mon_ref.ib_charge[0]
+            self.vb_init = mon_ref.vb[0]
+            self.soc_init = mon_ref.soc[0]
+            self.reset_init = True
+            self.sat_init = mon_ref.sat[0]
+            self.reset_ekf_init = True
+            self.voc_ekf_init = mon_ref.hx[0]
+            self.voc_stat_f_init = mon_ref.voc_stat[0]
             self.x_init = mon_ref.x[0]
-        else:
-            self.x_init = self.soc_init
-
-        if hasattr(mon_ref, 'x_prior'):
             self.x_prior_init = mon_ref.x_prior[0]
-        else:
-            self.x_prior_init = self.x_init
-
-        if hasattr(mon_ref, 'soc_ekf'):
+            self.hx_init = mon_ref.hx[0]
             self.soc_ekf_init = mon_ref.soc_ekf[0]
-        else:
-            self.soc_ekf_init = self.soc_init
-
-        if hasattr(mon_ref, 'z_ekf'):
-            self.z_ekf_init = mon_ref.z_ekf[0]
-        else:
-            self.z_ekf_init = self.hx_init
-
-        if hasattr(mon_ref, 'z'):
+            self.z_ekf_init = mon_ref.z[0]
             self.z_init = mon_ref.z[0]
         else:
+            self.Tb_hdwe_init = mon_ref.Tb_h[0]
+            self.Tb_hdwe_filt_init = mon_ref.Tb_h[0]
+            self.Tb_hdwe_filt_rate_init = 0.
+            self.e_wrap_init = mon_ref.e_wrap[0]
+            self.e_wrap_filt_init = mon_ref.e_wrap[0]
+            self.e_wrap_m_init = mon_ref.e_wrap[0]
+            self.e_wrap_m_filt_init = mon_ref.e_wrap[0]
+            self.e_wrap_m_trim_init = 0.
+            self.e_wrap_n_init = mon_ref.e_wrap[0]
+            self.e_wrap_n_filt_init = mon_ref.e_wrap[0]
+            self.e_wrap_n_trim_init = 0.
+            self.voc_soc_init = mon_ref.voc_soc[0]
+            self.Tb0 = mon_ref.Tb[0]
+            self.Tb_f_init = mon_ref.Tb[0]
+            self.Tb0_s = mon_ref.Tb[0]
+            self.Tb_f_rate_init = 0.
+            self.lut_dTb = None
+            self.dTb = 0.
+            if add_Tb_in is not None:
+                self.add_Tb_in = np.array(add_Tb_in)
+                self.Tb0 += add_Tb_in[1, 0]
+                self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
+                self.dTb = lut_dTb.interp(t[0])
+            self.Tb_rap_init = mon_ref.Tb[0] + self.dTb
+            self.Tb_f_rap_init = mon_ref.Tb[0] + self.dTb
+            self.Tb_f_rate_rap_init = 0.
+            self.Tb = mon_ref.Tb[0]
+            self.Tb_f = np.copy(mon_ref.Tb)
+            self.Tb_f_rate = np.copy(self.Tb) * 0.
+            self.Tb_past = np.copy(self.Tb) + self.dTb
+            self.Tb_f_past = np.copy(self.Tb_past) + self.dTb
+            self.Tb_f_rate_past = np.copy(self.Tb) * 0.
+            self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
+
+            if not hasattr(mon_ref, 'ib_dyn_m'):
+                mon_ref.ib_dyn_m = np.copy(mon_ref.ib)
+
+            if not hasattr(mon_ref, 'e_wrap_m_trim'):
+                mon_ref.e_wrap_m_trim = np.copy(mon_ref.ib) * 0.
+
+            if not hasattr(mon_ref, 'e_wrap_m_filt'):
+                mon_ref.e_wrap_m_filt = np.copy(mon_ref.e_wrap)
+
+            self.LoopAmp = SensorLooparound(mon_ref.ibmh, mon_ref.ib_dyn_m, mon_ref.e_wrap_m_trim, mon_ref.e_wrap_m_filt)
+
+            if not hasattr(mon_ref, 'ib_dyn_n'):
+                mon_ref.ib_dyn_n = np.copy(mon_ref.ib)
+
+            if not hasattr(mon_ref, 'e_wrap_n_trim'):
+                mon_ref.e_wrap_n_trim = np.copy(mon_ref.ib) * 0.
+
+            if not hasattr(mon_ref, 'e_wrap_n_filt'):
+                mon_ref.e_wrap_n_filt = np.copy(mon_ref.e_wrap)
+
+            self.LoopNoa = SensorLooparound(mon_ref.ibnh, mon_ref.ib_dyn_n, mon_ref.e_wrap_m_trim * 0.,
+                                            mon_ref.e_wrap_n_filt)
+            self.ib_amp = mon_ref.ibmh
+            self.ib_noa = mon_ref.ibnh
+            self.ib_dyn = np.copy(mon_ref.ib)
+            self.ib_dyn_init = mon_ref.ib[0]
+            self.z = mon_ref.z
+            self.z_init = self.z[0]
+            self.ib_in_s = sim_ref.ib_in_s
+            self.ib_in_s_init = self.ib_in_s[0]
+            self.ib_dyn_s = np.copy(self.ib_in_s)
+            self.ib_dyn_s_init = self.ib_dyn_s[0]
+            self.dv_dyn_s = sim_ref.dv_dyn_s
+            self.dv_dyn_s_init = self.dv_dyn_s[0]
+            self.d_delta_q_s_init = 0.
+            self.ib_s_init = self.ib_in_s_init
+            self.ib_fut_s_init = self.ib_in_s_init
+            self.ib_charge_s_init = self.ib_in_s_init
+            self.ioc_s_init = self.ib_in_s_init
+            self.vb_s_init = mon_ref.vb[0]
+            self.voc_s_init = sim_ref.voc_stat_s[0]  # is this right?
+            self.ib_dyn_s_init = self.ib_in_s_init
+            self.soc_s_init = mon_ref.soc_s[0]
+            self.hx_init = self.voc_soc_init
+            self.soc_init = mon_ref.soc[0]
+            self.x_init = self.soc_init
+            self.x_prior_init = self.x_init
+            self.soc_ekf_init = self.soc_init
+            self.z_ekf_init = self.hx_init
             self.z_init = self.hx_init
 
     def __str__(self, prefix=''):

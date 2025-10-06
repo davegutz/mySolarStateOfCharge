@@ -398,22 +398,21 @@ class BatteryMonitor(Battery, EKF1x1):
             self.Tb_f_rate = SN.Tb_f_rate_init
             self.Tb_rap = SN.Tb_rap_init
             self.Tb_f_rap = SN.Tb_f_rap_init
-            print(f"Tb_f_rap = {self.Tb_f_rap}")
             self.Tb_f_rate_rap = SN.Tb_f_rate_rap_init
-            self.ib = ref.ib[0]
+            self.ib = SN.ib_init
             self.ib_dyn = SN.ib_dyn_init
-            self.ib_charge = ref.ib_charge[0]
-            self.vb = ref.vb[0]
-            self.soc = ref.soc[0]
+            self.ib_charge = SN.ib_charge_init
+            self.vb = SN.vb_init
+            self.soc = SN.soc_init
             self.reset = True
-            self.sat = ref.sat[0]
+            self.sat = SN.sat_init
             self.reset_ekf = True
             self.init_soc_ekf(ref, 0, 0)
             self.voc_ekf = SN.hx_init
             self.x = SN.x_init
             self.x_prior = SN.x_prior_init
             self.soc_ekf = SN.soc_ekf_init
-            self.z_ekf = SN.z_ekf_init
+            self.z_ekf = SN.z_init
             self.z = SN.z_init
 
     def __str__(self, prefix=''):
