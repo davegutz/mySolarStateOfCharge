@@ -12,3 +12,4 @@ SOC_Particle/pyStateOfCharge/build/*
 *.json
 SOC_Particle/nul
 /SOC_Particle/pyStateOfChargeOld
+/SOC_Particle/pyStateOfChargeNew
