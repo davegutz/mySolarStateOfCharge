@@ -25,6 +25,8 @@
 #ifndef EKF_1X1_H_
 #define EKF_1X1_H_
 
+class BatteryMonitor;
+
 // Lightweight general purpose state space for embedded application
 class EKF_1x1
 {
@@ -35,7 +37,7 @@ public:
   // functions
   void predict_ekf(const double u, const boolean freeze);
   virtual void pretty_print(void);
-  void print_ekf_serial();
+  void print_ekf_serial(BatteryMonitor *Mon);
   double Tb_f_for_hx() { return ( Tb_f_for_hx_); };
   void update_ekf(const double z, double x_min, double x_max);
   double x_ekf() { return ( x_ ); };

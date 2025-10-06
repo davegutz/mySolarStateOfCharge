@@ -193,6 +193,13 @@ public:
   double y_ekf() { return y_; };
   double y_ekf_filt() { return y_filt_; };
   double delta_q_ekf_;         // Charge deficit represented by charge calculated by ekf, C
+  float vocStatFilt_rstate() { return VocStatFilt->rstate(); };
+  float vocStatFilt_lstate() { return VocStatFilt->lstate(); };
+  float vocStatFilt_a() { return VocStatFilt->a(); };
+  float vocStatFilt_b() { return VocStatFilt->b(); };
+  float vocStatFilt_c() { return VocStatFilt->c(); };
+  float vocStatFilt_T() { return VocStatFilt->T(); };
+  float vocStatFilt_tau() { return VocStatFilt->tau(); };
 protected:
   LagTustin *y_filt = new LagTustin(2., WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
   SlidingDeadband *SdVb_;  // Sliding deadband filter for Vb

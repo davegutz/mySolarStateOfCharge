@@ -174,15 +174,28 @@ void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, co
 void print_ekf_header(void)
 {
   if ( sp.debug()==3 || sp.debug()==4 ) // print_ekf_header
-    Serial.printf("unit_e,c_time,dt,Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_, x_prior_, P_prior_, x_post_, P_post_, hx_, H_, frz_, tb_f_hx_, x_for_hx_,\n");
+    Serial.printf("unit_e,c_time,dt,Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_,");
+    Serial.printf("x_prior_, P_prior_, x_post_, P_post_, hx_, H_, frz_, tb_f_hx_, x_for_hx_,");
+    Serial.printf("  voc_stat_a, voc_stat_b, voc_stat_c, voc_stat_T, voc_stat_tau, voc_stat_rstate, voc_stat_lstate,");
+    Serial.printf("\n");
 }
- void EKF_1x1::print_ekf_serial()
+ void EKF_1x1::print_ekf_serial(BatteryMonitor *Mon)
  {
   double eTime = double(now_ekf_)/1000.;
 
-  Serial.printf("unit_ekf,%13.3f,%7.3f,%13.10f,%13.10f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%d,%11.8f,%10.7f,\n",
-    eTime, dt_ekf_, Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_, x_prior_, P_prior_, x_post_, P_post_, hx_, H_, freeze_, Tb_f_for_hx_, x_for_hx_);
- }
+  Serial.printf("unit_ekf,%13.3f,%7.3f,%13.10f,%13.10f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,",
+    eTime, dt_ekf_, Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_);
+
+  Serial.printf("%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%d,%11.8f,%10.7f,",
+    x_prior_, P_prior_, x_post_, P_post_, hx_, H_, freeze_, Tb_f_for_hx_, x_for_hx_);
+
+  Serial.printf("%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,",
+    Mon->vocStatFilt_a(), Mon->vocStatFilt_b(), Mon->vocStatFilt_c(),
+    Mon->vocStatFilt_T(), Mon->vocStatFilt_tau(), 
+    Mon->vocStatFilt_rstate(), Mon->vocStatFilt_lstate());
+
+  Serial.printf("\n");
+}
 
 // print_signal_select for data collection
 void print_signal_sel_header(void)
