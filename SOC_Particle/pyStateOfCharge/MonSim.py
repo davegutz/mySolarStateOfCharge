@@ -257,6 +257,7 @@ def replicate(OPT: UserOptions):
             mon.Tb_s = OPT.mon_ref.Tb[i_temp]
             if i_temp > 0:
                 SN.update_tb()
+                mon.Tb_rap = SN.Tb_past
                 mon.Tb_f_rap = SN.Tb_f_past
                 mon.Tb_f_rate_rap = SN.Tb_f_rate_past
             if hasattr(OPT.mon_ref, 'Tb_mod'):
