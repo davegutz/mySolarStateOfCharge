@@ -537,13 +537,13 @@ class BatteryMonitor(Battery, EKF1x1):
             self.voc_stat_f =\
                 self.voc_stat_filt.calculate_tau_seeded(self.voc_stat_ekf, SN.z_init, self.reset_ekf, self.dt_eframe,
                                                         self.VOC_STAT_FILT)
-            self.voc_stat_f_rstate = self.ChargeTransfer.rstate
-            self.voc_stat_f_lstate = self.ChargeTransfer.state
-            self.voc_stat_f_a = self.ChargeTransfer.a
-            self.voc_stat_f_b = self.ChargeTransfer.b
-            self.voc_stat_f_c = self.ChargeTransfer.c
-            self.voc_stat_f_tau = self.ChargeTransfer.tau
-            self.voc_stat_f_T = self.ChargeTransfer.dt
+            self.voc_stat_f_rstate = self.voc_stat_filt.rstate
+            self.voc_stat_f_lstate = self.voc_stat_filt.state
+            self.voc_stat_f_a = self.voc_stat_filt.a
+            self.voc_stat_f_b = self.voc_stat_filt.b
+            self.voc_stat_f_c = self.voc_stat_filt.c
+            self.voc_stat_f_tau = self.voc_stat_filt.tau
+            self.voc_stat_f_T = self.voc_stat_filt.dt
             self.predict_ekf(u=ddq_dt, reset=self.reset_ekf)  # u = d(q)/dt
             self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1., reset=self.reset_ekf)  # z = voc, voc_filtered = hx
             self.soc_ekf = self.x  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
