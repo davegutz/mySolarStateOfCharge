@@ -952,15 +952,12 @@ class SavedData:
             self.ib_dyn_tau_n = None
             self.ib_dyn_rstate_n = None
             self.ib_dyn_lstate_n = None
-
             self.ib_wrp_a_n = None
             self.ib_wrp_b_n = None
             self.ib_wrp_T_n = None
             self.ib_wrp_tau_n = None
             self.ib_wrp_rstate_n = None
             self.ib_wrp_lstate_n = None
-
-
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
@@ -1092,6 +1089,13 @@ class SavedData:
             self.H = None
             self.tb_f_for_hx = None
             self.x_for_hx = None
+            self.voc_stat_f_a = None
+            self.voc_stat_f_b = None
+            self.voc_stat_f_b = None
+            self.voc_stat_f_T = None
+            self.voc_stat_f_tau = None
+            self.voc_stat_f_rstate = None
+            self.voc_stat_f_lstate = None
         else:
             self.skip_e = np.array(np.bool(ekf.skip[:i_end]))
             self.time_e = np.array(ekf.c_time[:i_end]) - self.time_ref
@@ -1116,6 +1120,13 @@ class SavedData:
             self.H = np.array(ekf.H_[:i_end])
             self.tb_f_for_hx = np.array(ekf.tb_f_hx_[:i_end])
             self.x_for_hx = np.array(ekf.x_for_hx_[:i_end])
+            self.voc_stat_f_a = np.array(ekf.voc_stat_a[:i_end])
+            self.voc_stat_f_b = np.array(ekf.voc_stat_b[:i_end])
+            self.voc_stat_f_c = np.array(ekf.voc_stat_c[:i_end])
+            self.voc_stat_f_rstate = np.array(ekf.voc_stat_rstate[:i_end])
+            self.voc_stat_f_lstate = np.array(ekf.voc_stat_lstate[:i_end])
+            self.voc_stat_f_T = np.array(ekf.voc_stat_T[:i_end])
+            self.voc_stat_f_tau = np.array(ekf.voc_stat_tau[:i_end])
         if temp is None:
             self.skip_t = None
             self.time_t = None

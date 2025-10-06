@@ -148,7 +148,7 @@ def main():
     else:
         gdrive = 'G:/My Drive/'
 
-    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20251002am_soc4p2_hi_lo_bb.csv'
+    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20251006am_soc4p2_hi_lo_bb.csv'
     # gdrive = '/home/daveg/Documents/'
     # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
 
@@ -158,8 +158,8 @@ def main():
     time_end_in = None
     # time_end_in = 20.
 
-    # plots = False
-    plots = True
+    plots = False
+    # plots = True
 
     # s_hys_sim_in = 1.
     s_hys_sim_in = 0.
@@ -168,7 +168,7 @@ def main():
     mon_soc_in = False
     verbose_in = False
     scale_in = 1.0
-    request_hist_in = 4  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
+    request_hist_in = 1  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=mon_soc_in, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,

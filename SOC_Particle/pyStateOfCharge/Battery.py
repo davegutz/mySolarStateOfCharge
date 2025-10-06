@@ -332,6 +332,13 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_dyn_a = 0.
         self.ib_dyn_b = 0.
         self.ib_dyn_c = 0.
+        self.voc_stat_f_rstate = 0.
+        self.voc_stat_f_lstate = 0.
+        self.voc_stat_f_a = 0.
+        self.voc_stat_f_b = 0.
+        self.voc_stat_f_c = 0.
+        self.voc_stat_f_tau = 0.
+        self.voc_stat_f_T = 0.
         self.voc_ekf = 0.
         self.Temp_Rlim = RateLimit()
         self.eframe = 0
@@ -530,6 +537,13 @@ class BatteryMonitor(Battery, EKF1x1):
             self.voc_stat_f =\
                 self.voc_stat_filt.calculate_tau_seeded(self.voc_stat_ekf, SN.z_init, self.reset_ekf, self.dt_eframe,
                                                         self.VOC_STAT_FILT)
+            self.voc_stat_f_rstate = self.ChargeTransfer.rstate
+            self.voc_stat_f_lstate = self.ChargeTransfer.state
+            self.voc_stat_f_a = self.ChargeTransfer.a
+            self.voc_stat_f_b = self.ChargeTransfer.b
+            self.voc_stat_f_c = self.ChargeTransfer.c
+            self.voc_stat_f_tau = self.ChargeTransfer.tau
+            self.voc_stat_f_T = self.ChargeTransfer.dt
             self.predict_ekf(u=ddq_dt, reset=self.reset_ekf)  # u = d(q)/dt
             self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1., reset=self.reset_ekf)  # z = voc, voc_filtered = hx
             self.soc_ekf = self.x  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
@@ -717,6 +731,13 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.ib_dyn.append(self.ib_dyn)
         self.saved.ib_dyn_rstate.append(self.ib_dyn_rstate)
         self.saved.ib_dyn_lstate.append(self.ib_dyn_lstate)
+        self.saved.voc_stat_f_rstate.append(self.voc_stat_f_rstate)
+        self.saved.voc_stat_f_lstate.append(self.voc_stat_f_lstate)
+        self.saved.voc_stat_f_a.append(self.voc_stat_f_a)
+        self.saved.voc_stat_f_b.append(self.voc_stat_f_b)
+        self.saved.voc_stat_f_c.append(self.voc_stat_f_c)
+        self.saved.voc_stat_f_tau.append(self.voc_stat_f_tau)
+        self.saved.voc_stat_f_T.append(self.voc_stat_f_T)
         self.saved.voc.append(self.voc)
         self.saved.voc_soc.append(self.voc_soc)
         self.saved.voc_stat.append(self.voc_stat)
@@ -1271,6 +1292,13 @@ class Saved:
         self.ib_dyn = []
         self.ib_dyn_rstate = []
         self.ib_dyn_lstate = []
+        self.voc_stat_f_rstate = []
+        self.voc_stat_f_lstate = []
+        self.voc_stat_f_a = []
+        self.voc_stat_f_b = []
+        self.voc_stat_f_c = []
+        self.voc_stat_f_tau = []
+        self.voc_stat_f_T = []
         self.soc = []
         self.soc_ekf = []
         self.voc = []
