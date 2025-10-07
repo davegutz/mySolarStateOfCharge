@@ -298,8 +298,6 @@ def replicate(OPT: UserOptions):
 
         # Models
         if rp.modeling == 0:
-            if reset_ekf:
-                SN.update_ekf(i_ekf)
             if reset:
                 SN.update_ib_vb(i)
 
@@ -355,6 +353,7 @@ def replicate(OPT: UserOptions):
         # Monitor EKF sequencing logic
         if (i_ekf+1 < len(OPT.mon_ref.time_e)) and (OPT.mon_ref.time_e[i_ekf+1] <= OPT.mon_ref.time[i]):
             i_ekf += 1
+            reset_ekf = i_ekf == 0
             if i_ekf < 1:
                 T_ekf = OPT.mon_ref.dt_ekf[i_ekf]
             else:
@@ -362,13 +361,14 @@ def replicate(OPT: UserOptions):
             calc_ekf = True
         else:
             calc_ekf = False
-        if i_ekf == 0:
-            reset_ekf = True
+        SN.update_ekf(i_ekf)
 
         if reset_ekf and calc_ekf:
             mon.init_soc_ekf(OPT.mon_ref, i, i_ekf)  # when modeling (assumed in python) ekf wants to equal model
 
         # Monitor calculate
+        if i == 2:
+            pass
         if rp.modeling == 0:
             mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN,
                           rp=rp, bms_off_init=OPT.mon_ref.bms_off[0], ib_amp=OPT.mon_ref.ibmh[i], ib_noa=OPT.mon_ref.ibnh[i],

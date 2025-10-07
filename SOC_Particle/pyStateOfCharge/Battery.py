@@ -469,6 +469,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.wrap(reset=reset, ib_sel=self.ib, SN=SN,
                   ib_amp=self.ib_amp,
                   ib_noa=self.ib_noa,
+                  e_wrap_amp_filt_init=SN.LoopAmp.e_wrap_filt_init,
                   e_wrap_noa_filt_init=SN.LoopNoa.e_wrap_filt_init)
 
         # Reversionary model
@@ -857,6 +858,7 @@ class BatteryMonitor(Battery, EKF1x1):
             ib_noa_lo = ib_noa <= Battery.HDWE_IB_HI_LO_NOA_LO
             self.disable_amp_fault = (ib_amp_hi and ib_noa_hi) or (ib_amp_lo and ib_noa_lo)
             ib_amp_reset = reset or self.disable_amp_fault
+            # ib_amp_reset = reset
             self.ib_noa_rate = self.IbAmpRate.calculate(in_=ib_noa, reset=reset, dt=min(self.dt, Battery.F_MAX_T_WRAP))
             self.LoopIbAmp.calculate(reset=ib_amp_reset, ib=self.ib_amp, SN=SN.LoopAmp,
                                      loop_gain=Battery.AMP_WRAP_TRIM_GAIN, dt=min(self.dt, Battery.F_MAX_T_WRAP),
