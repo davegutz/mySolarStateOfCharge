@@ -298,8 +298,7 @@ def replicate(OPT: UserOptions):
 
         # Models
         if rp.modeling == 0:
-            if reset:
-                SN.update_ib_vb(i)
+            SN.update_ib_vb(i)
 
         if OPT.sim_ref is not None and not OPT.use_ib_mon:
             ib_in_s = OPT.sim_ref.ib_in_s[i]

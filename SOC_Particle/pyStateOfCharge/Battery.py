@@ -113,6 +113,8 @@ class Battery(Coulombs):
     TB_MIN = -40.  # Signal selection hard fault threshold 2wire only, C (-40.)
     TB_FILT = 120.  # Temperature filter lag, s (120)
     T_RLIM = 0.00085  # Temperature sensor rate limit to minimize jumps in Coulomb counting, deg C/s (0.00085 allows 0.05 deg for 1 minute)
+    DISAB_LO_SET = 0.4  # Disable lo=amp wrap fault set persistence, s (0.4)
+    DISAB_LO_RESET = 0.8  # Disable lo=amp wrap fault reset persistence, s (0.8)
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
@@ -364,6 +366,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap_n_rate = None
         self.e_wrap_m_rate = None
         self.disable_amp_fault = None
+        self.DisabAmpFltPer = TFDelay(False, Battery.DISAB_LO_SET, Battery.DISAB_LO_RESET, 0.1)
         self.IbAmpRate = RateLagExp(dt=0.1, tau=Battery.WRAP_ERR_FILT/4., min_=-Battery.MAX_WRAP_ERR_FILT,
                                     max_=Battery.MAX_WRAP_ERR_FILT)
         self.LoopIbAmp = Looparound(Mon_=self, wrap_hi_amp=Battery.WRAP_HI_AMP, wrap_lo_amp=Battery.WRAP_LO_AMP,
@@ -466,11 +469,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        self.wrap(reset=reset, ib_sel=self.ib, SN=SN,
-                  ib_amp=self.ib_amp,
-                  ib_noa=self.ib_noa,
-                  e_wrap_amp_filt_init=SN.LoopAmp.e_wrap_filt_init,
-                  e_wrap_noa_filt_init=SN.LoopNoa.e_wrap_filt_init)
+        self.wrap(reset=reset, ib_sel=self.ib, SN=SN, ib_amp=self.ib_amp, ib_noa=self.ib_noa)
 
         # Reversionary model
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
@@ -818,9 +817,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
 
-    def wrap(self, reset=True, ib_sel=0., SN=None,
-             ib_amp=0., e_wrap_amp_filt_init=None, e_wrap_trim_amp_init=None,
-             ib_noa=0., e_wrap_noa_filt_init=None, e_wrap_trim_noa_init=None):
+    def wrap(self, reset=True, ib_sel=0., SN=None, ib_amp=0., ib_noa=0.):
         """Wrap logic"""
 
         # e_wrap scalars normally calculated in Sensors
@@ -857,8 +854,9 @@ class BatteryMonitor(Battery, EKF1x1):
             ib_noa_hi = ib_noa >= Battery.HDWE_IB_HI_LO_NOA_HI
             ib_noa_lo = ib_noa <= Battery.HDWE_IB_HI_LO_NOA_LO
             self.disable_amp_fault = (ib_amp_hi and ib_noa_hi) or (ib_amp_lo and ib_noa_lo)
-            ib_amp_reset = reset or self.disable_amp_fault
-            # ib_amp_reset = reset
+            disable_amp_fault_per = self.DisabAmpFltPer.calculate(self.disable_amp_fault, Battery.DISAB_LO_SET,
+                                                                  Battery.DISAB_LO_RESET, self.dt, reset)
+            ib_amp_reset = reset or disable_amp_fault_per
             self.ib_noa_rate = self.IbAmpRate.calculate(in_=ib_noa, reset=reset, dt=min(self.dt, Battery.F_MAX_T_WRAP))
             self.LoopIbAmp.calculate(reset=ib_amp_reset, ib=self.ib_amp, SN=SN.LoopAmp,
                                      loop_gain=Battery.AMP_WRAP_TRIM_GAIN, dt=min(self.dt, Battery.F_MAX_T_WRAP),
