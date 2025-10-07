@@ -55,24 +55,24 @@ class ScaleSelector:
     """ Scale select between a high and low set of inputs.  Low might be a precise, amplified sensor and high might be the high range equivalent
     """
 
-    def __init__(self, i_big_neg, i_small_neg, i_small_pos, i_big_pos):
+    def __init__(self, n_lo, n_hi, p_lo, p_hi):
         # Defaults
-        self.i_big_neg = i_big_neg
-        self.i_small_neg = i_small_neg
-        self.i_small_pos = i_small_pos
-        self.i_big_pos = i_big_pos
-        self.del_neg = i_big_neg - i_small_neg
-        self.del_pos = i_big_pos - i_small_pos
+        self.n_lo = n_lo
+        self.n_hi = n_hi
+        self.p_lo = p_lo
+        self.p_hi = p_hi
+        self.n_d = n_hi - n_lo
+        self.p_d = p_hi - p_lo
 
-    def calculate(self, inp, big, small):
-        if self.i_small_neg <= inp <= self.i_small_pos:
-            return small
-        elif inp <= self.i_big_neg or inp >= self.i_big_pos:
-            return big
-        elif inp < self.i_small_neg:
-            return (inp - self.i_big_neg) / self.del_neg * ( big - small ) + big
+    def calculate(self, inp, lo, hi):
+        if self.n_hi <= inp <= self.p_lo:
+            return lo
+        elif inp <= self.n_lo or inp >= self.p_hi:
+            return hi
+        elif inp < self.n_hi:
+            return (inp - self.n_lo) / self.n_d * ( lo - hi ) + hi
         else:
-            return (inp - self.i_big_pos) / self.del_pos * ( big - small ) + big
+            return (inp - self.p_lo) / self.p_d * ( hi - lo ) + lo
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""

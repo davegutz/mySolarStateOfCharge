@@ -869,9 +869,9 @@ class BatteryMonitor(Battery, EKF1x1):
             self.e_wrap_m_trim = self.LoopIbAmp.e_wrap_trim
 
         # Scale for final selection
-        self.e_wrap = self.sel_brk_hdwe.calculate(ib_sel, self.e_wrap_n, self.e_wrap_m)
-        self.e_wrap_filt = self.sel_brk_hdwe.calculate(ib_sel, self.e_wrap_n_filt, self.e_wrap_m_filt)
-        self.e_wrap_rate = self.sel_brk_hdwe.calculate(ib_sel, self.e_wrap_n_rate, self.e_wrap_m_rate)
+        self.e_wrap = self.sel_brk_hdwe.calculate(ib_sel, self.e_wrap_m, self.e_wrap_n)
+        self.e_wrap_filt = self.sel_brk_hdwe.calculate(ib_sel, self.e_wrap_m_filt, self.e_wrap_n_filt)
+        self.e_wrap_rate = self.sel_brk_hdwe.calculate(ib_sel, self.e_wrap_m_rate, self.e_wrap_n_rate)
 
 
 class BatterySim(Battery):

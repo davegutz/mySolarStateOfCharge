@@ -1720,12 +1720,12 @@ float scale_select(const float in, const ScaleBrk *brk, const float lo, const fl
 
   else if ( in < brk->n_hi )
   {
-    return ( (in - brk->n_lo) / brk->n_d * (hi - lo) + hi );
+    return ( (in - brk->n_lo) / brk->n_d * (lo - hi) + hi );
   }
 
   else
   {
-    return ( (in - brk->p_lo) / brk->p_d * (hi - lo) + hi );
+    return ( (in - brk->p_lo) / brk->p_d * (hi - lo) + lo );
   }
 
 }
@@ -1747,13 +1747,13 @@ float scale_select(const float in, const ScaleBrk *brk, const float lo, const fl
   else if ( in < brk->n_hi )
   {
     *sel_stat = 0;
-    return ( (in - brk->n_lo) / brk->n_d * (hi - lo) + hi );
+    return ( (in - brk->n_lo) / brk->n_d * (lo - hi) + hi );
   }
 
   else
   {
     *sel_stat = 0;
-    return ( (in - brk->p_lo) / brk->p_d * (hi - lo) + hi );
+    return ( (in - brk->p_lo) / brk->p_d * (hi - lo) + lo );
   }
 
 }
