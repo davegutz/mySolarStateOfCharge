@@ -13,6 +13,7 @@
 #
 # See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
 """Utility to load data from csv files"""
+from idlelib.run import flush_stdout
 
 import numpy as np
 from DataOverModel import SavedData, SavedDataSim, write_clean_file
@@ -34,10 +35,19 @@ def find_sync(path_to_data):
         sync = np.array(sync)
     return sync
 
-
 def calculate_master_sync(ref, test):
     delta = np.maximum(ref, test)
     return delta
+
+def remove_0T(d_ra, info):
+    """Remove useless 0 Time elements"""
+    condition = d_ra['time_ux'] >= 1746684850783./1000.
+    filtered_data = d_ra[condition]
+    num_removed = len(d_ra) - len(filtered_data)
+    if num_removed > 0:
+        print(f"\nremove_0T:  screened out {num_removed} rows from {info} with bad time_ux element\n")
+        flush_stdout()
+    return filtered_data
 
 
 class SyncInfo:

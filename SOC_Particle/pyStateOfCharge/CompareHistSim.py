@@ -32,7 +32,7 @@ from myFilters import LagExp
 from DataOverModel import write_clean_file, plq
 from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files, precleanup_fig_files
 from datetime import datetime
-from load_data import load_data, remove_nan
+from load_data import load_data, remove_nan, remove_0T
 from local_paths import version_from_data_file, local_paths
 import os
 
@@ -1094,11 +1094,16 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
     if f_raw is not None:
         f_raw = np.unique(f_raw)
         f_raw = remove_nan(f_raw)
-        # noinspection PyTypeChecker
-        fault = add_stuff_f(f_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
-                            time_sync=sync_time, unit=unit)
-        print("\nfault after add_stuff_f:\n", fault.dtype.names, fault, "\n")
-        fault = filter_Tb(fault, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap_in)  # tb_band=100 disables banding
+        f_raw = remove_0T(f_raw, 'FAULTS in f_raw')
+        if len(f_raw) > 0:
+
+            # noinspection PyTypeChecker
+            fault = add_stuff_f(f_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
+                                time_sync=sync_time, unit=unit)
+            print("\nfault after add_stuff_f:\n", fault.dtype.names, fault, "\n")
+            fault = filter_Tb(fault, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap_in)  # tb_band=100 disables banding
+        else:
+            f_raw = None
 
     # sums and history
     h_combo_raw = hstack2((h_raw, s_raw))
@@ -1108,6 +1113,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
     else:
         h_combo_raw = np.unique(h_combo_raw)
         h_combo_raw = remove_nan(h_combo_raw)
+        h_combo_raw = remove_0T(h_combo_raw, 'HISTORY u and h in h_combo_raw')
         print("\nhist raw:\n", h_combo_raw.dtype.names, "\n", h_combo_raw, "\n", h_combo_raw.dtype.names, "\n")
         # noinspection PyTypeChecker
         hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in, time_sync=sync_time)
