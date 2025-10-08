@@ -274,7 +274,8 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mv.time, mv.dv_hys, color='cyan', linestyle='--', label='dv_hys'+test_str)
     # plt.plot(smv.time, np.array(smv.dv_hys_s)+0.1, color='red', linestyle='-', label='dv_hys_s'+test_str+'+0.1')
     plq(plt, smv, 'time', smv, 'dv_hys_s', add=0.1, color='red', linestyle='-', label='dv_hys_s'+test_str+'+0.1')
-    plt.plot(so.time, np.array(so.dv_hys_s)-0.1, color='magenta',  linestyle='-', label='dv_hys_s-0.1'+ref_str)
+    plq(plt, so, 'time', so, 'dv_hys_s', add=-0.1, color='magenta', linestyle='-', label='dv_hys_s'+test_str+'-0.1')
+    # plt.plot(so.time, np.array(so.dv_hys_s)-0.1, color='magenta',  linestyle='-', label='dv_hys_s-0.1'+ref_str)
     plt.legend(loc=1)
     plt.subplot(326)
     plq(plt, mo, 'time_t', mo, 'Tb', color='green', linestyle='-', label='Tb'+ref_str, stairs=True)
@@ -353,7 +354,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mv.time, mv.soc, color='black', linestyle=':', label='soc'+test_str)
     plt.legend(loc=1)
     plt.subplot(313)
-    plt.plot(mo.time, mo.Tb_rap, color='red', linestyle='-', label='Tb_rap'+ref_str)
+    plq(plt, mo, 'time', mo, 'Tb_rap', color='red', linestyle='-', label='Tb_rap'+ref_str)
     plt.plot(mv.time, mv.Tb_rap, color='cyan', linestyle='--', label='Tb_rap'+test_str)
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"

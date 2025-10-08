@@ -22,7 +22,7 @@ from Battery import BatteryMonitor, BatterySim, is_sat, Retained
 from Battery import overall_batt
 from TFDelay import TFDelay
 from MonSimNomConfig import *  # Global config parameters.   Overwrite in your own calls for studies
-from Scale import Scale
+from numpy import random as random
 from MonSimPrint import *
 from MonSimClasses import *
 from dataclasses import dataclass
@@ -251,7 +251,7 @@ def replicate(OPT: UserOptions):
             if hasattr(OPT.mon_ref, 'Tb_hdwe'):
                 mon.Tb_hdwe = OPT.mon_ref.Tb_hdwe[i_temp]
             else:
-                mon.Tb_hdwe = OPT.mon_ref.Tb
+                mon.Tb_hdwe = OPT.mon_ref.Tb[i_temp]
             sim.Tb = OPT.mon_ref.Tb[i_temp]
             mon.Tb = OPT.mon_ref.Tb[i_temp]
             mon.Tb_s = OPT.mon_ref.Tb[i_temp]
@@ -311,18 +311,18 @@ def replicate(OPT: UserOptions):
             _chm_s = OPT.Bsim
 
         prn_soc_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
-        sim.calculate(_chm_s, None, ib_in_s, OPT.sim_ref.dt_s[i], reset, None, None, SN,
+        sim.calculate(_chm_s, None, ib_in_s, SN.dt_s[i], reset, None, None, SN,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=OPT.sim_ref.bms_off_s[0])
         prn_soc_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
-        sim.count_coulombs(chem=_chm_s, dt=OPT.sim_ref.dt_s[i], reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=SN.Tb_f_rate_past,
-                           charge_curr=sim.ib_charge, sat=False, soc_s_init=OPT.sim_ref.soc_s[i], mon_sat=mon.sat,
-                           sim_delta_q=OPT.sim_ref.dq_s[i], use_soc_in=OPT.use_mon_soc, soc_in=OPT.sim_ref.soc_s[i])
+        sim.count_coulombs(chem=_chm_s, dt=SN.dt_s[i], reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=SN.Tb_f_rate_past,
+                           charge_curr=sim.ib_charge, sat=False, soc_s_init=SN.soc_s[i], mon_sat=mon.sat,
+                           sim_delta_q=SN.dq_s[i], use_soc_in=OPT.use_mon_soc, soc_in=SN.soc_s[i])
         prn_soc_debug(time=now, leader="after sim.count_cou:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
 
         # EKF
         if reset:
-            mon.apply_delta_q_t(OPT.mon_ref.delta_q[i], OPT.mon_ref.Tb_f_rap[i])
+            mon.apply_delta_q_t(SN.delta_q[i], SN.Tb_f_rap[i])
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
 
@@ -373,9 +373,9 @@ def replicate(OPT: UserOptions):
                           rp=rp, bms_off_init=OPT.mon_ref.bms_off[0], ib_amp=OPT.mon_ref.ibmh[i], ib_noa=OPT.mon_ref.ibnh[i],
                           reset_ekf=reset_ekf)
         else:
-            mon.calculate(_chm_m, vb_ + randn() * v_std + dv_sense, ib_ + randn() * i_std + di_sense, T,
+            mon.calculate(_chm_m, vb_ + random.randn() * v_std + dv_sense, ib_ + random.randn() * i_std + di_sense, T,
                           reset, calc_ekf, T_ekf, SN,
-                          rp=rp, bms_off_init=OPT.mon_ref.bms_off[0], ib_amp=OPT.mon_ref.ibmm[i], ib_noa=OPT.mon_ref.ibnm[i],
+                          rp=rp, bms_off_init=OPT.mon_ref.bms_off[0], ib_amp=SN.ibmm[i], ib_noa=SN.ibnm[i],
                           reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge
         sat = is_sat(SN.Tb_f_past, mon.chemistry.rated_temp, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat,
@@ -392,8 +392,8 @@ def replicate(OPT: UserOptions):
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
         mon.assign_soc_s(sim.soc)
 
-        # Break is data integrity questionable
-        if OPT.mon_ref.skip_e[i_ekf] or OPT.mon_ref.skip_t[i_temp] or OPT.mon_ref.skip_sel[i] or OPT.mon_ref.skip_rap[i] or OPT.sim_ref.skip_s[i]:
+        # Break if data integrity questionable
+        if SN.skip_e[i_ekf] or SN.skip_t[i_temp] or SN.skip_sel[i] or SN.skip_rap[i] or SN.skip_s[i]:
             break
 
         # Save plot info
@@ -430,7 +430,7 @@ def replicate(OPT: UserOptions):
     # Final hdr print
     if OPT.request_history is not None and OPT.request_history > 0:
         print(hdr)
-    if OPT.mon_ref.skip_e[i_ekf] or OPT.mon_ref.skip_t[i_temp] or OPT.mon_ref.skip_sel[i] or OPT.mon_ref.skip_rap[i] or OPT.sim_ref.skip_s[i]:
+    if SN.skip_e[i_ekf] or OPT.mon_ref.skip_t[i_temp] or OPT.mon_ref.skip_sel[i] or OPT.mon_ref.skip_rap[i] or OPT.sim_ref.skip_s[i]:
         print(f"\n\n************** Data integrity degraded by skip.  A digit could have been inserted anywhere in data.  Break.")
         print("   now {:5.3f}".format(now),
               "   time_end {:5.3f}\n\n".format(t[-1]),

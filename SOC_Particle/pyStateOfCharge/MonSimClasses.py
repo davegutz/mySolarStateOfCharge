@@ -82,6 +82,7 @@ class Sensors:
             self.soc_s_init = mon_ref.soc_s[0]
             self.ib_dyn_s_init = self.ib_dyn_s[0]
             self.dv_dyn_s = sim_ref.dv_dyn_s
+            self.dt_s = sim_ref.dt_s
             self.dv_dyn_s_init = self.dv_dyn_s[0]
             self.d_delta_q_s_init = 0.
             self.ib_s_init = self.ib_in_s_init
@@ -190,10 +191,27 @@ class Sensors:
                                             mon_ref.e_wrap_n_filt)
             self.ib_amp = mon_ref.ibmh
             self.ib_noa = mon_ref.ibnh
+            self.ib_init = mon_ref.ib[0]
             self.ib_dyn = np.copy(mon_ref.ib)
             self.ib_dyn_init = mon_ref.ib[0]
+            self.ib_charge_init = mon_ref.ib_charge[0]
+            self.vb_init = mon_ref.vb[0]
             self.z = mon_ref.z
             self.z_init = self.z[0]
+            self.sat_init = mon_ref.sat[0]
+            # dt_s
+            self.dt_s = []
+            for i in range(len(sim_ref.time)):
+                if i == 0:
+                    self.dt_s.append(sim_ref.time[1] - sim_ref.time[0])
+                else:
+                    self.dt_s.append(sim_ref.time[i] - sim_ref.time[i-1])
+            self.soc_s = mon_ref.soc_s
+            self.dq_s = -mon_ref.qcrs * (1. - mon_ref.soc_s)
+            self.delta_q = -mon_ref.qcrs * (1. - mon_ref.soc)
+            self.ibmm = mon_ref.ibmh
+            self.ibnm = mon_ref.ibnh
+            self.Tb_f_rap = mon_ref.Tb
             self.ib_in_s = sim_ref.ib_in_s
             self.ib_in_s_init = self.ib_in_s[0]
             self.ib_dyn_s = np.copy(self.ib_in_s)
@@ -216,6 +234,7 @@ class Sensors:
             self.soc_ekf_init = self.soc_init
             self.z_ekf_init = self.hx_init
             self.z_init = self.hx_init
+            self.skip_e = np.bool(np.ones(len(self.dv_dyn_s)))
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
