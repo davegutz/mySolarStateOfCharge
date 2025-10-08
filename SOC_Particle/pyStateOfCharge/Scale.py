@@ -64,15 +64,31 @@ class ScaleSelector:
         self.n_d = n_hi - n_lo
         self.p_d = p_hi - p_lo
 
-    def calculate(self, inp, lo, hi):
+"""
+                  ^ scale
+                  |
+------            |          ------- 1.0 ==> all lg
+       -          |        -
+         -        |      -
+      |    -------------             0.0 ==> all sm
+      |    |      |     |    |
+   n_lo   n_hi    |   p_lo   p_hi
+                  |
+                  |
+                  v
+n_d = n_hi - n_lo
+p_d = p_hi - p_lo
+
+"""
+    def scale_select(self, inp, sm, lg):
         if self.n_hi <= inp <= self.p_lo:
-            return lo
+            return sm
         elif inp <= self.n_lo or inp >= self.p_hi:
-            return hi
+            return lg
         elif inp < self.n_hi:
-            return (inp - self.n_lo) / self.n_d * ( lo - hi ) + hi
+            return (inp - self.n_lo) / self.n_d * ( sm - lg ) + lg
         else:
-            return (inp - self.p_lo) / self.p_d * ( hi - lo ) + lo
+            return (inp - self.p_lo) / self.p_d * ( lg - sm ) + sm
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""

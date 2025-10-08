@@ -58,14 +58,27 @@ struct Pins;
 
 enum ibSel {UsingNoa=-1, UsingDef=0, UsingAmp=1, UsingNone=2};
 
+/*
+                  ^ scale
+                  |
+------            |          ------- 1.0 ==> all lg
+       -          |        -
+         -        |      -
+      |    -------------             0.0 ==> all sm
+      |    |      |     |    |
+   n_lo   n_hi    |   p_lo   p_hi
+                  |
+                  |
+                  v
+*/
 struct ScaleBrk
 {
   float n_lo;
-  float n_hi;
   float n_d;
+  float n_hi;
   float p_lo;
-  float p_hi;
   float p_d;
+  float p_hi;
   ScaleBrk(const float n_l, const float n_h, const float p_l, const float p_h) : n_lo(n_l), n_hi(n_h), p_lo(p_l), p_hi(p_h)
   {
     n_d = n_hi - n_lo;

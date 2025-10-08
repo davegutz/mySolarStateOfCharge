@@ -1704,56 +1704,71 @@ void Sensors::vb_print()
 }
 
 
-// Scale select between a high and low set of inputs.  Low might be a precise, amplified sensor and high might be the high range equivalent
-float scale_select(const float in, const ScaleBrk *brk, const float lo, const float hi)
+/*
+                  ^ scale
+                  |
+------            |          ------- 1.0 ==> all lg
+       -          |        -
+         -        |      -
+      |    -------------             0.0 ==> all sm
+      |    |      |     |    |
+   n_lo   n_hi    |   p_lo   p_hi
+                  |
+                  |
+                  v
+n_d = n_hi - n_lo
+p_d = p_hi - p_lo
+*/
+// Scale select between a large and small set of inputs.  Small might be a precise, amplified sensor and large might be the high range equivalent
+float scale_select(const float in, const ScaleBrk *brk, const float sm, const float lg)
 {
   
   if ( brk->n_hi <= in && in <= brk->p_lo )
   {
-    return ( lo );
+    return ( sm );
   }
 
   else if ( in <= brk->n_lo || in >= brk->p_hi )
   {
-    return ( hi );
+    return ( lg );
   }
 
   else if ( in < brk->n_hi )
   {
-    return ( (in - brk->n_lo) / brk->n_d * (lo - hi) + hi );
+    return ( (in - brk->n_lo) / brk->n_d * (sm - lg) + lg );
   }
 
   else
   {
-    return ( (in - brk->p_lo) / brk->p_d * (hi - lo) + lo );
+    return ( (in - brk->p_lo) / brk->p_d * (lg - sm) + sm );
   }
 
 }
-float scale_select(const float in, const ScaleBrk *brk, const float lo, const float hi, int8_t *sel_stat)
+float scale_select(const float in, const ScaleBrk *brk, const float sm, const float lg, int8_t *sel_stat)
 {
   
   if ( brk->n_hi <= in && in <= brk->p_lo )
   {
     *sel_stat = 1;
-    return ( lo );
+    return ( sm );
   }
 
   else if ( in <= brk->n_lo || in >= brk->p_hi )
   {
     *sel_stat = -1;
-    return ( hi );
+    return ( lg );
   }
 
   else if ( in < brk->n_hi )
   {
     *sel_stat = 0;
-    return ( (in - brk->n_lo) / brk->n_d * (lo - hi) + hi );
+    return ( (in - brk->n_lo) / brk->n_d * (sm - lg) + lg );
   }
 
   else
   {
     *sel_stat = 0;
-    return ( (in - brk->p_lo) / brk->p_d * (hi - lo) + lo );
+    return ( (in - brk->p_lo) / brk->p_d * (lg - sm) + sm );
   }
 
 }
