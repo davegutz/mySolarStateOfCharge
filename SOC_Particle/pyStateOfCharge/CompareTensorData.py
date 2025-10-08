@@ -188,7 +188,7 @@ def seek_tensor(save_pdf_path='./figures', path_to_temp='./temp'):
     data_root_test = data_root_test.replace('.csv', '')
     filename = data_root_test
     plot_title = dir_root_test + '/' + data_root_test + '   ' + date_time
-    if temp_flt_file_clean and len(f.time) > 1:
+    if f is not None and temp_flt_file_clean and len(f.time) > 1:
         fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                          fig_list=fig_list, long_term=long_term_in, cc_dif_tol=cc_dif_tol_in)
     if plot_overall_in:

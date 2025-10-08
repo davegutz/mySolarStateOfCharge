@@ -514,7 +514,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mo, 'time', mo, 'e_wrap_filt', color='black', linestyle='-', label='e_wrap_filt' + ref_str)
     plq(plt, mo, 'time', mo, 'e_w_f', color='black', linestyle='-', label='e_wrap_filt' + ref_str)
     plq(plt, mv, 'time', mv, 'e_wrap', color='red', linestyle='-.', label='e_wrap' + test_str)
-    plq(plt, mv, 'time', mv, 'e_wrap_filt', color='blue', linestyle='--', label='e_wrap_filt' + test_str)
+    plq(plt, mv, 'time', mv, 'e_wrap_filt', color='magenta', linestyle='--', label='e_wrap_filt' + test_str)
     plq(plt, mo, 'time', mo, 'e_wrap_n', color='green', linestyle='-', label='e_wrap_n' + ref_str)
     plq(plt, mv, 'time', mv, 'e_wrap_n', color='pink', linestyle='-.', label='e_wrap_n' + test_str)
     plq(plt, mo, 'time', mo, 'e_wrap_n_filt', color='cyan', linestyle='--', label='e_wrap_n_filt' + ref_str)

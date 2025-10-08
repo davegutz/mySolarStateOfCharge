@@ -107,7 +107,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
         data_root_test = data_root_test.replace('.csv', '')
         filename = data_root_test
         plot_title = dir_root_test + '/' + data_root_test + '   ' + date_time
-        if temp_flt_file_clean and len(f.time_ux) > 1:
+        if f is not None and temp_flt_file_clean and len(f.time_ux) > 1:
             fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                              fig_list=fig_list, cc_dif_tol=cc_dif_tol_in)
         fig_list, fig_files = dom_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
@@ -148,7 +148,7 @@ def main():
     else:
         gdrive = 'G:/My Drive/'
 
-    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20251007am_soc4p2_hi_lo_bb.csv'
+    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4 20251008am_soc4p2_hi_lo_bb.csv'
     # gdrive = '/home/daveg/Documents/'
     # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
 

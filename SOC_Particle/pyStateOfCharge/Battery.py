@@ -958,13 +958,14 @@ class BatterySim(Battery):
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, reset_ekf=None,
                   soc=None, sat_init=None):
+        self.reset = reset
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)
             self.chm = chem
 
         self.dt = dt
         self.ib_in = ib
-        if reset and bms_off_init:
+        if self.reset and bms_off_init:
             self.ib_fut = 0.
         self.ib = max(min(self.ib_fut, Battery.IMAX_NUM), -Battery.IMAX_NUM)
         self.mod = rp.modeling
@@ -999,14 +1000,14 @@ class BatterySim(Battery):
             ib_charge_fut = 0.
         if self.bms_off and voltage_low:
             self.ib = 0.
-        self.ib_lag = self.IbLag.calculate_tau(self.ib, reset, self.dt, self.chemistry.ib_lag_tau)
+        self.ib_lag = self.IbLag.calculate_tau(self.ib, self.reset, self.dt, self.chemistry.ib_lag_tau)
 
         # Charge transfer dynamics
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, reset, dt,
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, self.reset, dt,
                                                                self.chemistry.tau_ct)
-        if reset:
+        if self.reset:
             pass
-        # if reset:
+        # if self.reset:
         #     print(f"{self.ib=} {SN.ib_dyn_s_init=} {self.ib_dyn=}")
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
@@ -1035,7 +1036,7 @@ class BatterySim(Battery):
                 self.ib_charge = 0.  # empty
         self.model_cutback = (self.voc_stat > self.vsat) & (self.ib_fut == self.sat_ib_max)
         self.model_saturated = self.model_cutback & (self.ib_fut < self.ib_sat)
-        if reset and sat_init is not None:
+        if self.reset and sat_init is not None:
             self.model_saturated = sat_init
             self.sat = sat_init
         self.sat = self.model_saturated

@@ -64,22 +64,22 @@ class ScaleSelector:
         self.n_d = n_hi - n_lo
         self.p_d = p_hi - p_lo
 
-"""
-                  ^ scale
-                  |
-------            |          ------- 1.0 ==> all lg
-       -          |        -
-         -        |      -
-      |    -------------             0.0 ==> all sm
-      |    |      |     |    |
-   n_lo   n_hi    |   p_lo   p_hi
-                  |
-                  |
-                  v
-n_d = n_hi - n_lo
-p_d = p_hi - p_lo
-
-"""
+    """
+                      ^ scale
+                      |
+    ------            |          ------- 1.0 ==> all lg
+           -          |        -
+             -        |      -
+          |    -------------             0.0 ==> all sm
+          |    |      |     |    |
+       n_lo   n_hi    |   p_lo   p_hi
+                      |
+                      |
+                      v
+    n_d = n_hi - n_lo
+    p_d = p_hi - p_lo
+    
+    """
     def scale_select(self, inp, sm, lg):
         if self.n_hi <= inp <= self.p_lo:
             return sm
