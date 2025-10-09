@@ -234,7 +234,11 @@ class Sensors:
             self.soc_ekf_init = self.soc_init
             self.z_ekf_init = self.hx_init
             self.z_init = self.hx_init
-            self.skip_e = np.bool(np.ones(len(self.dv_dyn_s)))
+            self.skip_e = np.bool(np.zeros(len(self.dv_dyn_s)))
+            self.skip_t = np.bool(np.zeros(len(self.dv_dyn_s)))
+            self.skip_sel = np.bool(np.zeros(len(self.dv_dyn_s)))
+            self.skip_rap = np.bool(np.zeros(len(self.dv_dyn_s)))
+            self.skip_s = np.bool(np.zeros(len(self.dv_dyn_s)))
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"

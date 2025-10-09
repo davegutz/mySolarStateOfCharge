@@ -430,7 +430,7 @@ def replicate(OPT: UserOptions):
     # Final hdr print
     if OPT.request_history is not None and OPT.request_history > 0:
         print(hdr)
-    if SN.skip_e[i_ekf] or OPT.mon_ref.skip_t[i_temp] or OPT.mon_ref.skip_sel[i] or OPT.mon_ref.skip_rap[i] or OPT.sim_ref.skip_s[i]:
+    if SN.skip_e[i_ekf] or SN.skip_t[i_temp] or SN.skip_sel[i] or SN.skip_rap[i] or SN.skip_s[i]:
         print(f"\n\n************** Data integrity degraded by skip.  A digit could have been inserted anywhere in data.  Break.")
         print("   now {:5.3f}".format(now),
               "   time_end {:5.3f}\n\n".format(t[-1]),
