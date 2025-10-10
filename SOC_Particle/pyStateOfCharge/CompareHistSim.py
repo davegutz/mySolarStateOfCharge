@@ -1076,7 +1076,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
             rated_batt_cap_in = 102.9  # A-hr capacity of test article (output of Calibrate_exe.py)
         else:
             rated_batt_cap_in = 108.4  # A-hr capacity of test article
-    qcrs = rated_batt_cap_in * Battery.UNIT_CAP_RATED * 3600.
+    qcrs = rated_batt_cap_in * 3600.
     batt = BatteryMonitor(mod_code=chm, unit=unit)
 
     # Force Tb.  This is useful for verifying calibration runs where voc(soc) schedule extracted from the run
