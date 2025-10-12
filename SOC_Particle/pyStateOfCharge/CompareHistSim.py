@@ -209,8 +209,16 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     d_mod = rf.rec_append_fields(d_mod, 'tweak_sclr_amp', np.array(d_zero, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'tweak_sclr_noa', np.array(d_zero, dtype=float))
 
-    time_e = d_mod.time_ux.copy()
+    time_e = d_mod.time.copy()
     d_mod = rf.rec_append_fields(d_mod, 'time_e', np.array(time_e, dtype=float))
+    dt_ekf = d_mod.time_ux.copy()*0.
+    for i in range(len(time_e)-1, -1, -1):
+        print(i)
+        if i > 0:
+            dt_ekf[i] = time_e[i] - time_e[i-1]
+        else:
+            dt_ekf[i] = dt_ekf[i+1]
+    d_mod = rf.rec_append_fields(d_mod, 'dt_ekf', np.array(dt_ekf, dtype=float))
     P = d_mod.time_ux.copy()*0.
     d_mod = rf.rec_append_fields(d_mod, 'P', np.array(P, dtype=float))
     z = d_mod.voc_stat.copy()
@@ -1190,7 +1198,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
         replicateOptions = UserOptions(mon_ref=mon_old, sim_ref=sim_old, init_time=1., verbose=False,
                                        max_time=time_end_in, use_vb_sim=False, scale_in=scale_in,
                                        use_mon_soc=use_mon_soc_in, add_voc_mon=dvoc_mon_in, add_voc_sim=dvoc_sim_in,
-                                       unit=unit)
+                                       unit=unit, use_ib_mon=True)
         mon_ver, sim_ver, sim_s_ver, mon_r, sim_r = replicate(replicateOptions)
         save_clean_file(mon_ver, mon_file_save, 'mon_rep_hist' + date_)
 
@@ -1242,6 +1250,7 @@ def main():
     # User inputs (multiple input_files allowed
     data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/Hd 20251003am_soc4p2_hi_lo_bb.csv'
     data_only = False
+    # data_only=True
     mon_t = False
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     dt_resample = 900
