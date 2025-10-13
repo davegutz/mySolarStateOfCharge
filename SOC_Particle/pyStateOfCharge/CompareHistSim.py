@@ -70,7 +70,7 @@ def add_ib_lag(data, mon):
     n = len(data.time)
     if n < 2:
         return data
-    if hasattr(data, 'ib_lag') is False:
+    if not hasattr(data, 'ib_lag'):
         data = rf.rec_append_fields(data, 'ib_lag', np.array(data.time, dtype=float))
         data.ib_lag = np.zeros(n)
     dt = data.time[1] - data.time[0]
@@ -1012,12 +1012,12 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
 
     # Save these
     rated_batt_cap_in = 100.
-    # Reconstruction of soc using sub-sampled data is poor.  Drive everything with soc from Monitor
+    # Reconstruction of soc using subsampled data is poor.  Drive everything with soc from Monitor
     dvoc_mon_in = 0.
 
     # Load mon to extract mod information
     # # Load mon v4 (old)
-    if mon_t is True:
+    if mon_t:
         mon, sim, fault, mon_t_file_clean, temp_mont_t_file_clean, _ = \
             load_data(data_file, 1, unit_key=unit_key, time_end_in=time_end_in, zero_zero_in=False)
     else:
@@ -1111,7 +1111,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
             print("\nfault after add_stuff_f:\n", fault.dtype.names, fault, "\n")
             fault = filter_Tb(fault, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap_in)  # tb_band=100 disables banding
         else:
-            f_raw = None
+            fault = None
 
     # sums and history
     h_combo_raw = hstack2((h_raw, s_raw))
@@ -1162,9 +1162,9 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
 
 
 def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=False, unit_key=None, sync_time=None,
-                     dt_resample=10, Tb_force=None):
+                     dt_resample=10, Tb_force=None, request_history=None):
 
-    print(f"\ncompare_hist_sim:\n{data_file=}\n{data_only=}\n{mon_t=}\n{unit_key=}\n{dt_resample=}\n{Tb_force=}\n")
+    print(f"\ncompare_hist_sim:\n{data_file=}\n{data_only=}\n{mon_t=}\n{unit_key=}\n{dt_resample=}\n{Tb_force=}\n{request_history=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
@@ -1173,7 +1173,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
     scale_in = 1
     cc_dif_tol_in = 0.2
     use_mon_soc_in = True
-    # Reconstruction of soc using sub-sampled data is poor.  Drive everything with soc from Monitor
+    # Reconstruction of soc using subsampled data is poor.  Drive everything with soc from Monitor
     dvoc_mon_in = 0.
     dvoc_sim_in = 0.
     mon_ver = None
@@ -1195,15 +1195,15 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
         # Replicate
         data_file_clean = path_to_temp + '/' + data_file_txt.replace('.csv', '_hist' + '.csv', 1)
         mon_file_save = data_file_clean.replace(".csv", "_rep_hist.csv")
-        replicateOptions = UserOptions(mon_ref=mon_old, sim_ref=sim_old, init_time=1., verbose=False,
-                                       max_time=time_end_in, use_vb_sim=False, scale_in=scale_in,
+        replicateOptions = UserOptions(mon_ref=mon_old, sim_ref=sim_old, run_type='HistSim', init_time=1.,
+                                       verbose=False, max_time=time_end_in, use_vb_sim=False, scale_in=scale_in,
                                        use_mon_soc=use_mon_soc_in, add_voc_mon=dvoc_mon_in, add_voc_sim=dvoc_sim_in,
-                                       unit=unit, use_ib_mon=True)
+                                       unit=unit, use_ib_mon=True, request_history=request_history)
         mon_ver, sim_ver, sim_s_ver, mon_r, sim_r = replicate(replicateOptions)
         save_clean_file(mon_ver, mon_file_save, 'mon_rep_hist' + date_)
 
     # Plots
-    if data_only is False:
+    if not data_only:
         fig_list = []
         fig_files = []
         plot_title = filename + '   ' + date_time
@@ -1249,17 +1249,18 @@ def main():
 
     # User inputs (multiple input_files allowed
     data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/Hd 20251003am_soc4p2_hi_lo_bb.csv'
-    data_only = False
-    # data_only=True
+    # data_only = False
+    data_only=True
     mon_t = False
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     dt_resample = 900
     Tb_force = None
     # Do this when running compare_hist_sim on run that schedule extracted assuming constant Tb
     # Tb_force = 35
+    request_hist_in = 5  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
 
     compare_hist_sim(data_file=data_file, mon_t=mon_t, unit_key=unit_key, dt_resample=dt_resample,
-                     data_only=data_only, Tb_force=Tb_force)
+                     data_only=data_only, Tb_force=Tb_force, request_history=request_hist_in)
 
 
 if __name__ == '__main__':

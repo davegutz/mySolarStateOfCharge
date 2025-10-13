@@ -90,7 +90,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
 
     # New run
     mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
-    replicateOptions = UserOptions(mon_ref=mon_old, sim_ref=sim_old, init_time=mon_old.init_time,
+    replicateOptions = UserOptions(mon_ref=mon_old, sim_ref=sim_old, run_type='RunSim', init_time=mon_old.init_time,
                                    use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in, use_vb_raw=use_vb_raw,
                                    add_voc_sim=dvoc_sim_in, add_voc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
                                    add_s_voc_soc=add_s_voc_soc_in, verbose=verbose, scale_in=scale_in,

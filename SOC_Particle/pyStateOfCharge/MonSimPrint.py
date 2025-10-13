@@ -38,24 +38,40 @@ def prn_soc_debug(leader="", time=None, i=None, i_temp=None, mon_old=None, mon=N
     "{:14.7f}".format(mon_old.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
         )
 
-def print_hist(request_history, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, Tb, Tb_past, sim_old, sim, SN):
+def print_hist(request_history, run_type, i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, Tb, Tb_past, sim_old, sim, SN):
     hdr = None
-    match request_history:
-        case 0:
-            hdr = ''
-        case 1:
-            hdr = print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf, calc_temp)
-        case 2:
-            hdr = print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp)
-        case 3:
-            hdr = print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf, calc_ekf, SN)
-        case 4:
-            hdr = print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb, Tb_past, SN, i_ekf, calc_ekf)
-        case 5:
-            hdr = print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, SN)
+    match run_type:
+        case 'RunSim':
+            match request_history:
+                case 0:
+                    hdr = ''
+                case 1:
+                    hdr = print_ekf_run_sim(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf, calc_temp)
+                case 2:
+                    hdr = print_soc_run_sim(i, i_temp, t, mon_old, mon, calc_temp)
+                case 3:
+                    hdr = print_soc_s_run_sim(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf, calc_ekf, SN)
+                case 4:
+                    hdr = print_temp_run_sim(i, i_temp, t, mon_old, mon, calc_temp, Tb, Tb_past, SN, i_ekf, calc_ekf)
+                case 5:
+                    hdr = print_volt_run_sim(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, SN)
+        case 'HistSim':
+            match request_history:
+                case 0:
+                    hdr = ''
+                case 1:
+                    hdr = print_ekf_hist_sim(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf, calc_temp)
+                case 2:
+                    hdr = print_soc_hist_sim(i, i_temp, t, mon_old, mon, calc_temp)
+                case 3:
+                    hdr = print_soc_s_hist_sim(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf, calc_ekf, SN)
+                case 4:
+                    hdr = print_temp_hist_sim(i, i_temp, t, mon_old, mon, calc_temp, Tb, Tb_past, SN, i_ekf, calc_ekf)
+                case 5:
+                    hdr = print_volt_hist_sim(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, SN)
     return hdr
 
-def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf, calc_temp):
+def print_ekf_run_sim(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf, calc_temp):
     hdr = "  i  time   r r_t  i_e  r_e  c_e   dt_ekf         sa      ib_charge             soc                    soc_ekf                 y_ekf                voc_ekf                Tb_f                    x_prior             fr     Tb_f_rap                x                       tb_f_for_hx             x_for_hx                  hx                       voc_stat_f            z                   z_ekf       P                              P_post                       P_prior                       H                      R                     S                    K                          x_post                 f_rstate               f_lstate                f_a                    f_b                    f_c                  f_tau                     f_T"
     i_ekf = max(i_ekf, 0)
     if calc_temp or calc_ekf:
@@ -96,7 +112,7 @@ def print_ekf_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf, calc_temp):
           )
     return hdr
 
-def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
+def print_soc_run_sim(i, i_temp, t, mon_old, mon, calc_temp):
     hdr = "  i  time   r r_t sa      ib_charge             soc                  dt                i * dt * coul_eff    Tb_f                      Tb_f_rap                    ddq                  delq                   qcrs                   q_cap                  Tb                        Tb_f_rate"
     if calc_temp:
         print(hdr)
@@ -127,7 +143,7 @@ def print_soc_hist(i, i_temp, t, mon_old, mon, calc_temp):
          )
     return hdr
 
-def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf, calc_ekf, SN):
+def print_soc_s_run_sim(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf, calc_ekf, SN):
     hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s             ib_in_s               ib_s                ib_fut       ib_dyn_s_rstate        ib_dyn_s_lstate        ib_dyn_s       ib_dyn_s_init      dv_hys_s               ib_charge_s            ioc_s               soc                   soc_s                     delq                     i * dt_s * coul_eff      d_delq_s               delq_s                 qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                     vb_s                 voc_stat               voc_stat_s            voc_s                 dv_dyn_s             vsat                 "
     if calc_temp:
         print(hdr)
@@ -181,7 +197,7 @@ def print_soc_s_hist(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf,
         pass
     return hdr
 
-def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, SN, i_ekf, calc_ekf):
+def print_temp_run_sim(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, SN, i_ekf, calc_ekf):
     hdr = "  i  time   r       rt   it   ct      re   ie  ce     Tt        Tb_hdwe                    Tb                        Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap              tb_f_for_hx"
     if calc_temp:
         print(hdr)
@@ -202,7 +218,68 @@ def print_temp_hist(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, SN, i_
           )
     return hdr
 
-def print_volt_hist(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, SN):
+def print_volt_hist_sim(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, SN):
+    hdr = "  i   time   r      rt   it   ct       re  ie   ce    sa      ib_charge             ib                    ib_hm                 ib_dyn_m     ib_dyn_m_init     e_wrap_m_filt        e_wrap_m_trim        ib_hn                ib_dyn_n            e_wrap_n_filt         e_wrap               soc                  dt                     Tb_f                 voc                     voc_stat              voc_stat_f             soc_ekf"
+    if i % 10 == 0:
+        print(hdr)
+    print("{:3d}".format(i), "{:7.0f}".format(t[i]), "{:2.0f}".format(mon.reset),
+          "{:7d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
+          "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
+          "{:4.0f}".format(mon_old.sat[i]), "{:2.0f}".format(mon.sat),
+          "{:11.5f}".format(mon_old.ib_charge[i]), "{:9.5f}".format(mon.ib_charge),
+          "{:11.5f}".format(mon_old.ib[i]), "{:9.5f}".format(mon.ib),
+          "{:11.5f}".format(mon_old.ibmh[i]), "{:8.5f}".format(mon.LoopIbAmp.ib),
+          "{:11.5f}".format(mon_old.ib_dyn_m[i]), "{:8.5f}".format(mon.LoopIbAmp.ib_dyn), "{:8.5f}".format(SN.LoopAmp.ib_init),
+          # "{:15.6f}".format(mon_old.ib_dyn_a_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.a),
+          # "{:12.6f}".format(mon_old.ib_dyn_b_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.b),
+          # "{:12.6f}".format(mon_old.ib_dyn_c_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.c),
+          # "{:9.3f}".format(mon_old.ib_dyn_T_m[i]), "{:5.3f}".format(mon.LoopIbAmp.ChargeTransfer.dt),
+          # "{:12.6f}".format(mon_old.ib_dyn_tau_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.tau),
+          # "{:12.6f}".format(mon_old.ib_dyn_rstate_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.rstate),
+          # "{:12.6f}".format(mon_old.ib_dyn_lstate_m[i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.state),
+          # "{:11.5f}".format(mon_old.dv_dyn_m[i]), "{:8.5f}".format(mon.LoopIbAmp.dv_dyn),
+          # "{:11.5f}".format(mon_old.e_wrap_m[i]), "{:8.5f}".format(mon.e_wrap_m),
+          "{:11.5f}".format(mon_old.e_wm_f[i]), "{:8.5f}".format(mon.e_wrap_m_filt),
+          "{:11.5f}".format(mon_old.e_wn_f[i]), "{:8.5f}".format(mon.e_wrap_n_filt),
+          "{:11.5f}".format(mon_old.e_wrap_m_trim[i]), "{:8.5f}".format(mon.e_wrap_m_trim),
+          "{:11.5f}".format(mon_old.ibnh[i]), "{:8.5f}".format(mon.LoopIbNoa.ib),
+          "{:11.5f}".format(mon_old.ib_dyn_n[i]), "{:8.5f}".format(mon.LoopIbNoa.ib_dyn),
+          # "{:10.5f}".format(mon_old.ib_dyn[i]), "{:9.5f}".format(mon.ib_dyn),
+          # "{:12.6f}".format(mon_old.ib_dyn_a_n[i]), "{:8.6f}".format(mon.LoopIbNoa.ChargeTransfer.a),
+          # "{:12.6f}".format(mon_old.ib_dyn_b_n[i]), "{:8.6f}".format(mon.LoopIbNoa.ChargeTransfer.b),
+          # "{:12.6f}".format(mon_old.ib_dyn_c_n[i]), "{:8.6f}".format(mon.LoopIbNoa.ChargeTransfer.c),
+          # "{:9.3f}".format(mon_old.ib_dyn_T_n[i]), "{:5.3f}".format(mon.LoopIbNoa.ChargeTransfer.dt),
+          # "{:12.6f}".format(mon_old.ib_dyn_tau_n[i]), "{:8.6f}".format(mon.LoopIbNoa.ChargeTransfer.tau),
+          # "{:12.6f}".format(mon_old.ib_dyn_rstate_n[i]), "{:9.6f}".format(mon.LoopIbNoa.ChargeTransfer.rstate),
+          # "{:12.6f}".format(mon_old.ib_dyn_lstate_n[i]), "{:9.6f}".format(mon.LoopIbNoa.ChargeTransfer.state),
+          # "{:11.5f}".format(mon_old.dv_dyn_n[i]), "{:8.5f}".format(mon.LoopIbNoa.dv_dyn),
+          # "{:12.6f}".format(mon_old.ib_wrp_a_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.a),
+          # "{:12.6f}".format(mon_old.ib_wrp_b_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.b),
+          # "{:12.6f}".format(mon_old.ib_wrp_T_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.dt),
+          # "{:12.6f}".format(mon_old.ib_wrp_tau_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.tau),
+          # "{:12.6f}".format(mon_old.ib_wrp_rate_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.rate),
+          # "{:12.6f}".format(mon_old.ib_wrp_state_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.state),
+          # "{:11.5f}".format(mon_old.e_wrap_n[i]), "{:8.5f}".format(mon.e_wrap_n),
+          "{:11.5f}".format(mon_old.e_wn_f[i]), "{:8.5f}".format(mon.e_wrap_n_filt),
+          "{:11.5f}".format(mon_old.e_wrap[i]), "{:8.5f}".format(mon.e_wrap),  # TODO:  is mon_old.e_wrap really e_wrap_f?
+          # "{:11.5f}".format(mon_old.e_wrap_filt[i]), "{:8.5f}".format(mon.e_wrap_filt),
+          # "{:10.5f}".format(mon_old.ib_dyn[i]), "{:9.5f}".format(mon.ib_dyn),
+          # "{:13.7f}".format(mon_old.dv_dyn[i]), "{:10.7f}".format(mon.dv_dyn),
+          # "{:13.7f}".format(mon_old.dv_hys[i]), "{:10.7f}".format(mon.dv_hys),
+          "{:13.7f}".format(mon_old.soc[i]), "{:10.7f}".format(mon.soc),
+          "{:9.3f}".format(mon_old.dt[i]), "{:5.3f}".format(mon.dt),
+          "{:14.7f}".format(mon_old.Tb[i_temp]), "{:10.7f}".format(mon.Tb_f),  # TODO: is Tb really Tb_f?
+          # "{:14.7f}".format(mon_old.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
+          # "{:11.5f}".format(mon_old.voc_soc[i]), "{:9.5f}".format(mon.voc_soc),
+          "{:11.5f}".format(mon_old.voc[i]), "{:9.5f}".format(mon.voc),
+          # "{:11.5f}".format(mon_old.voc_stat[i]), "{:9.5f}".format(mon.voc_stat_f),  # TODO: is voc_stat really stat_f?
+          "{:11.5f}".format(mon_old.z[i_ekf]), "{:9.5f}".format(mon.voc_stat_f),
+          "{:11.5f}".format(mon_old.soc_ekf[i]), "{:9.5f}".format(mon.soc_ekf),
+          # "{:11.5f}".format(mon_old.y_ekf[i]), "{:9.5f}".format(mon.y_ekf),
+          )
+    return hdr
+
+def print_volt_run_sim(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, SN):
     hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa      ib_charge             ib                    ib_hm                ib_dyn_m        ib_dyn_m_init        ib_dyn_a_m            ib_dyn_b_m            ib_dyn_c_m            ib_dyn_T_m     ib_dyn_tau_m           ib_dyn_rstate_m         ib_dyn_lstate_m          dv_dyn_m             e_wrap_m             e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n             ib_dyn                 ib_dyn_a_n            ib_dyn_b_n            ib_dyn_c_n            ib_dyn_T_n     ib_dyn_tau_n           ib_dyn_rstate_n         ib_dyn_lstate_n          dv_dyn_n             e_wrap_n_a             e_wrap_n_b             e_wrap_n_T             e_wrap_n_tau           e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt        e_wrap               e_wrap_filt         ib_dyn                dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_f             soc_ekf               y_ekf"
     if calc_temp or calc_ekf:
         print(hdr)

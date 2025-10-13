@@ -79,11 +79,12 @@ def vb_from_raw_or_selected(use_raw, mo):
 @dataclass
 class UserOptions:
     mon_ref: 'DataOverModel.SavedData'  # Mandatory reference data to be replicated
+    run_type: Optional[str] = None  # Either "RunSim" or "HistSim" depending on caller
     sim_ref: Optional['DataOverModel.SavedDataSim'] = None  # Embedded model data
     unit: Optional[str] = None  # Name of the battery instance derived from 'HDWE_UNIT' of configuration include .h file
     Bsim: Optional[int] = None  # sim model code BB=0 (Battleborn), CH=1 (Chins), CHG=2 (Chins in Garage)
     Bmon: Optional[int] = None  # mon model code BB=0 (Battleborn), CH=1 (Chins), CHG=2 (Chins in Garage)
-    init_time: Optional[int] = -4.  # The process tries to determine mon_ref.init_time when data is loaded by finding
+    init_time: Optional[float] = -4.  # The process tries to determine mon_ref.init_time when data is loaded by finding
     # when Ib changes. This input helps out to over-ride those results when they don't work as desired. It shouldn't
     # be needed often.
     max_time: Optional[float] = None  # Limit the simultation run, s
@@ -159,7 +160,7 @@ def replicate(OPT: UserOptions):
     21. **** _s values in print are off.  Where those there 9/29?  Yes.  Continue to debug...delays in ib_s model BatterySim
     22. **** Fig. 21 GP 3 Tune (3,3,6):  vb?  OK.  The battery is near saturation and the voc(soc) curve is slightly innacurate
     23. skip_* being set properly?
-    24. Run old model HistSim to see how it's supposed to look
+    24. HistSim:  dv_dyn_ver looks wrong.
     """
 
     # time
@@ -220,7 +221,7 @@ def replicate(OPT: UserOptions):
 
     # Print debug information
     if OPT.request_history is not None and OPT.request_history > 0:
-        hdr = print_hist(OPT.request_history, 0, i_temp, i_ekf, t, OPT.mon_ref, mon, True, True,
+        hdr = print_hist(OPT.request_history, OPT.run_type, 0, i_temp, i_ekf, t, OPT.mon_ref, mon, True, True,
                          SN.Tb, SN.Tb_past, OPT.sim_ref, sim, SN)
 
     # Top of time loop
@@ -412,7 +413,7 @@ def replicate(OPT: UserOptions):
 
         # History print
         if OPT.request_history is not None and OPT.request_history > 0:
-            hdr = print_hist(OPT.request_history, i, i_temp, i_ekf, t, OPT.mon_ref, mon, calc_temp, calc_ekf,
+            hdr = print_hist(OPT.request_history, OPT.run_type, i, i_temp, i_ekf, t, OPT.mon_ref, mon, calc_temp, calc_ekf,
                              SN.Tb, SN.Tb_past, OPT.sim_ref, sim, SN)
 
         prn_soc_debug(time=now, leader="end loop:", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
