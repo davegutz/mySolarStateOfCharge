@@ -73,7 +73,7 @@ def vb_from_raw_or_selected(use_raw, mo):
     if use_raw:
         vb_ = mo.vb_h
     else:
-        vb_ = mo.vb
+        vb_ = mo.vb_f
     return vb_
 
 @dataclass
@@ -181,7 +181,7 @@ def replicate(OPT: UserOptions):
     # tweaking
     tweak_test = rp.tweak_test()
 
-    SN = Sensors(mon_ref=OPT.mon_ref, sim_ref=OPT.sim_ref, add_Tb_in=OPT.add_Tb_in)
+    SN = Sensors(mon_ref=OPT.mon_ref, sim_ref=OPT.sim_ref, add_Tb_in=OPT.add_Tb_in, run_type=OPT.run_type)
 
     # Battery sizing
     scale_mon, scale_sim = battery_size(OPT.mon_ref, OPT.sim_ref, OPT.scale_in, unit_cap_rated)
