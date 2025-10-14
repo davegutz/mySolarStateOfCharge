@@ -187,6 +187,7 @@ public:
   float tcharge() { return tcharge_; };
   float dv_dyn() { return dv_dyn_; };
   float vb_model_rev() { return vb_model_rev_; };
+  float vb_filt() { return vb_filt_; };
   float voc_filt() { return voc_filt_; };
   float voc_soc() { return voc_soc_; };
   float voc_stat_f() { return voc_stat_f_; };
@@ -216,6 +217,7 @@ protected:
   float tcharge_;      // Counted charging time to 100%, hr
   float tcharge_ekf_;  // Solved charging time to 100% from ekf, hr
   float vb_model_rev_; // Reversionary model of vb, V
+  float vb_filt_;      // Filtered, dynamic open circuit voltage, V
   float voc_filt_;     // Filtered, static model open circuit voltage, V
   float voc_soc_;      // Raw table lookup of voc, V
   float voc_stat_f_;   // Filtered voc_stat for EKF use, V

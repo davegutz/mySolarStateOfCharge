@@ -33,18 +33,18 @@ String time_long_2_str(const time_t current_time, char *tempStr);
 struct Flt_st
 {
   unsigned long t_flt = 1UL; // Timestamp seconds since start of epoch
-  int16_t Tb_hdwe = 0;  // Battery bank temperature, hardware, C
-  int16_t vb_hdwe = 0;  // Battery single unit measured potential, hardware, V
-  int16_t ib_amp_hdwe = 0;  // Battery single unit measured input current, amp, A
-  int16_t ib_noa_hdwe = 0;  // Battery single unit measured input current, no amp, A
-  int16_t Tb = 0;       // Battery bank temperature, filtered, C
-  int16_t vb = 0;       // Battery single unit measured potential, filtered, V
-  int16_t ib = 0;       // Battery single unit measured input current, filtered, A
+  int16_t Tb_hdwe_filt = 0;  // Battery bank temperature, hardware, C
+  int16_t vb_hdwe_filt = 0;  // Battery single unit measured potential, hardware, V
+  int16_t ib_amp_hdwe_filt = 0;  // Battery single unit measured input current, amp, A
+  int16_t ib_noa_hdwe_filt = 0;  // Battery single unit measured input current, no amp, A
+  int16_t Tb_filt = 0;       // Battery bank temperature, filtered, C
+  int16_t vb_filt = 0;       // Battery single unit measured potential, filtered, V
+  int16_t ib_filt = 0;       // Battery single unit measured input current, filtered, A
   int16_t soc = 0;      // Battery bank state of charge, free Coulomb counting algorithm, frac
   int16_t soc_min = 0;  // Battery bank min state of charge, frac
   int16_t soc_ekf = 0;  // Battery bank state of charge, ekf, frac
-  int16_t voc = 0;      // Battery single unit open circuit voltage measured vb-ib*Z, V
-  int16_t voc_stat = 0; // Stored single unit charge voltage from measurement, V
+  int16_t voc_filt = 0;      // Battery single unit open circuit voltage measured vb-ib*Z, V
+  int16_t voc_stat_filt = 0; // Stored single unit charge voltage from measurement, V
   int16_t e_wrap_filt = 0;  // Wrap model error, filtered, V
   int16_t e_wrap_m_filt = 0;// Wrap amp model error, filtered, V
   int16_t e_wrap_n_filt = 0;// Wrap noa model error, filtered, V
@@ -94,53 +94,53 @@ public:
 
   #ifndef HDWE_47L16_EERAM
     void put_t_flt(const unsigned long value)     { t_flt = value; };
-    void put_Tb_hdwe(const int16_t value)         { Tb_hdwe = value; };
-    void put_vb_hdwe(const int16_t value)         { vb_hdwe = value; };
-    void put_ib_amp_hdwe(const int16_t value)     { ib_amp_hdwe = value; };
-    void put_ib_noa_hdwe(const int16_t value)     { ib_noa_hdwe = value; };
-    void put_Tb(const int16_t value)              { Tb = value; };
-    void put_vb(const int16_t value)              { vb = value; };
-    void put_ib(const int16_t value)              { ib = value; };
+    void put_Tb_hdwe_filt(const int16_t value)         { Tb_hdwe_filt = value; };
+    void put_vb_hdwe_filt(const int16_t value)         { vb_hdwe_filt = value; };
+    void put_ib_amp_hdwe_filt(const int16_t value)     { ib_amp_hdwe_filt = value; };
+    void put_ib_noa_hdwe_filt(const int16_t value)     { ib_noa_hdwe_filt = value; };
+    void put_Tb_filt(const int16_t value)              { Tb_filt = value; };
+    void put_vb_filt(const int16_t value)              { vb_filt = value; };
+    void put_ib_filt(const int16_t value)              { ib_filt = value; };
     void put_soc(const int16_t value)             { soc = value; };
     void put_soc_min(const int16_t value)         { soc_min = value; };
     void put_soc_ekf(const int16_t value)         { soc_ekf = value; };
-    void put_voc(const int16_t value)             { voc = value; };
-    void put_voc_stat(const int16_t value)        { voc_stat = value; };
+    void put_voc_filt(const int16_t value)             { voc_filt = value; };
+    void put_voc_stat_filt(const int16_t value)        { voc_stat_filt = value; };
     void put_e_wrap_filt(const int16_t value)     { e_wrap_filt = value; };
     void put_fltw(const uint32_t value)           { fltw = value; };
     void put_falw(const uint32_t value)           { falw = value; };
 #else
     void put_t_flt()        { rP_->put(t_flt_eeram_.a16, t_flt); };
-    void put_Tb_hdwe()      { rP_->put(Tb_hdwe_eeram_.a16, Tb_hdwe); };
-    void put_vb_hdwe()      { rP_->put(vb_hdwe_eeram_.a16, vb_hdwe); };
-    void put_ib_amp_hdwe()  { rP_->put(ib_amp_hdwe_eeram_.a16, ib_amp_hdwe); };
-    void put_ib_noa_hdwe()  { rP_->put(ib_noa_hdwe_eeram_.a16, ib_noa_hdwe); };
-    void put_tb_f()           { rP_->put(Tb_eeram_.a16, Tb); };
-    void put_vb()           { rP_->put(vb_eeram_.a16, vb); };
-    void put_ib()           { rP_->put(ib_eeram_.a16, ib); };
+    void put_Tb_hdwe_filt()      { rP_->put(Tb_hdwe_eeram_.a16, Tb_hdwe_filt); };
+    void put_vb_hdwe_filt()      { rP_->put(vb_hdwe_eeram_.a16, vb_hdwe_filt); };
+    void put_ib_amp_hdwe()  { rP_->put(ib_amp_hdwe_eeram_.a16, ib_amp_hdwe_filt); };
+    void put_ib_noa_hdwe()  { rP_->put(ib_noa_hdwe_eeram_.a16, ib_noa_hdwe_filt); };
+    void put_tb_f()           { rP_->put(Tb_eeram_.a16, Tb_filt); };
+    void put_vb_filt()           { rP_->put(vb_eeram_.a16, vb_filt); };
+    void put_ib_filt()           { rP_->put(ib_eeram_.a16, ib_filt); };
     void put_soc()          { rP_->put(soc_eeram_.a16, soc); };
     void put_soc_min()      { rP_->put(soc_min_eeram_.a16, soc_min); };
     void put_soc_ekf()      { rP_->put(soc_ekf_eeram_.a16, soc_ekf); };
-    void put_voc()          { rP_->put(voc_eeram_.a16, voc); };
-    void put_voc_stat()     { rP_->put(voc_stat_eeram_.a16, voc_stat); };
+    void put_voc_filt()     { rP_->put(voc_eeram_.a16, voc_filt); };
+    void put_voc_stat_filt()     { rP_->put(voc_stat_eeram_.a16, voc_stat_filt); };
     void put_e_wrap_filt()  { rP_->put(e_wrap_filt_eeram_.a16, e_wrap_filt); };
     void put_e_wrap_m_filt(){ rP_->put(e_wrap_m_filt_eeram_.a16, e_wrap_m_filt); };
     void put_e_wrap_n_filt(){ rP_->put(e_wrap_n_filt_eeram_.a16, e_wrap_n_filt); };
     void put_fltw()         { rP_->put(fltw_eeram_.a16, fltw); };
     void put_falw()         { rP_->put(falw_eeram_.a16, falw); };
     void put_t_flt(const unsigned long value)     { rP_->put(t_flt_eeram_.a16, value);        t_flt = value; };
-    void put_Tb_hdwe(const int16_t value)         { rP_->put(Tb_hdwe_eeram_.a16, value);      Tb_hdwe = value; };
-    void put_vb_hdwe(const int16_t value)         { rP_->put(vb_hdwe_eeram_.a16, value);      vb_hdwe = value; };
-    void put_ib_amp_hdwe(const int16_t value)     { rP_->put(ib_amp_hdwe_eeram_.a16, value);  ib_amp_hdwe = value; };
-    void put_ib_noa_hdwe(const int16_t value)     { rP_->put(ib_noa_hdwe_eeram_.a16, value);  ib_noa_hdwe = value; };
-    void put_Tb(const int16_t value)              { rP_->put(Tb_eeram_.a16, value);           Tb = value; };
-    void put_vb(const int16_t value)              { rP_->put(vb_eeram_.a16, value);           vb = value; };
-    void put_ib(const int16_t value)              { rP_->put(ib_eeram_.a16, value);           ib = value; };
+    void put_Tb_hdwe_filt(const int16_t value)         { rP_->put(Tb_hdwe_eeram_.a16, value);      Tb_hdwe_filt = value; };
+    void put_vb_hdwe_filt(const int16_t value)         { rP_->put(vb_hdwe_eeram_.a16, value);      vb_hdwe_filt = value; };
+    void put_ib_amp_hdwe_filt(const int16_t value)     { rP_->put(ib_amp_hdwe_eeram_.a16, value);  ib_amp_hdwe_filt = value; };
+    void put_ib_noa_hdwe_filt(const int16_t value)     { rP_->put(ib_noa_hdwe_eeram_.a16, value);  ib_noa_hdwe_filt = value; };
+    void put_Tb_filt(const int16_t value)              { rP_->put(Tb_eeram_.a16, value);           Tb_filt = value; };
+    void put_vb_filt(const int16_t value)              { rP_->put(vb_eeram_.a16, value);           vb_filt = value; };
+    void put_ib_filt(const int16_t value)              { rP_->put(ib_eeram_.a16, value);           ib_filt = value; };
     void put_soc(const int16_t value)             { rP_->put(soc_eeram_.a16, value);          soc = value; };
     void put_soc_min(const int16_t value)         { rP_->put(soc_min_eeram_.a16, value);      soc_min = value; };
     void put_soc_ekf(const int16_t value)         { rP_->put(soc_ekf_eeram_.a16, value);      soc_ekf = value; };
-    void put_voc(const int16_t value)             { rP_->put(voc_eeram_.a16, value);          voc = value; };
-    void put_voc_stat(const int16_t value)        { rP_->put(voc_stat_eeram_.a16, value);     voc_stat = value; };
+    void put_voc_filt(const int16_t value)             { rP_->put(voc_eeram_.a16, value);          voc = value; };
+    void put_voc_stat_filt(const int16_t value)        { rP_->put(voc_stat_eeram_.a16, value);     voc_stat_filt = value; };
     void put_e_wrap_filt(const int16_t value)     { rP_->put(e_wrap_filt_eeram_.a16, value);  e_wrap_filt = value; };
     void put_e_wrap_m_filt(const int16_t value)   { rP_->put(e_wrap_m_filt_eeram_.a16, value);e_wrap_m_filt = value; };
     void put_e_wrap_n_filt(const int16_t value)   { rP_->put(e_wrap_n_filt_eeram_.a16, value);e_wrap_n_filt = value; };

@@ -734,7 +734,7 @@ def calc_fault(d_ra, d_mod):
 # Fake stuff to get replicate to accept inputs and run
 def bandaid(h):
     res = np.zeros(len(h.time_ux))
-    res[0:10] = 1
+    res[0:1] = 1
     ib_sel = h['ib'].copy()
     vb_sel = h['vb'].copy()
     tb_sel = h['Tb'].copy()
