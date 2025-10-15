@@ -106,7 +106,7 @@ class Battery(Coulombs):
     WRAP_SOC_HI_SLR = 1000.  # Huge to disable e_wrap (1000)
     WRAP_SOC_LO_SLR = 60.  # Large to disable e_wrap (60. for startup)
     IB_CHARGE_NOA = True  # Force calculations to use noa signal
-    VOC_STAT_FILT = 120.  # Clean up noise on Vb fed to EKF (120)
+    VOC_STAT_FILT = 120.  # Clean up noise (120)
     VB_MIN = 2.  # Signal selection hard fault threshold, V (0.  < 2. < 10 bms shutoff, reads ~3 without power when off)
     VB_MAX = 17.  # Signal selection hard fault threshold, V (17. < VB_CONV_GAIN*4095)
     TB_MAX = 60.  # Signal selection hard fault threshold 2wire only, C (60.)
@@ -283,11 +283,12 @@ class BatteryMonitor(Battery, EKF1x1):
     def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1.,
                  tb_f=25., tweak_test=False, slr_res_0=1., slr_res_ct=1., stauct=1.,
                  slr_r_ss=1., s_hys=1., dvoc=0., eframe_mult=Battery.cp_eframe_mult,
-                 mod_code=0, slr_coul_eff=1., unit=None, dTb=None, ref=None, SN=None):
+                 mod_code=0, slr_coul_eff=1., unit=None, dTb=None, ref=None, SN=None, run_type=None):
         q_cap_rated_scaled = q_cap_rated * scale
         Battery.__init__(self, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
-                         tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct, slr_r_ss=slr_r_ss,
-                         s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, slr_coul_eff=slr_coul_eff, scale_cap=scale, unit=unit)
+                         tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct,
+                         slr_r_ss=slr_r_ss, s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, slr_coul_eff=slr_coul_eff,
+                         scale_cap=scale, unit=unit)
 
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
@@ -417,7 +418,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.reset = True
             self.sat = SN.sat_init
             self.reset_ekf = True
-            self.init_soc_ekf(ref, 0, 0)
+            self.init_soc_ekf(ref, 0, 0, run_type=run_type)
             self.voc_ekf = SN.hx_init
             self.x = SN.x_init
             self.x_prior = SN.x_prior_init
@@ -630,7 +631,7 @@ class BatteryMonitor(Battery, EKF1x1):
     def lag_ib(self, ib, reset):
         self.ib_lag = self.IbLag.calculate_tau(ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
-    def init_soc_ekf(self, mo, i, i_ekf):
+    def init_soc_ekf(self, mo, i, i_ekf, run_type=None):
         self.soc_ekf = mo.soc_ekf[i]
         self.y_ekf = mo.y_ekf[i]
 
@@ -670,7 +671,10 @@ class BatteryMonitor(Battery, EKF1x1):
         if hasattr(mo, 'hx'):
             self.hx = mo.hx[i_ekf]
         else:
-            self.hx = mo.voc[i]
+            if run_type == 'RunSim':
+                self.hx = mo.voc[i]
+            else:
+                self.hx = mo.voc_f[i]
 
         if hasattr(mo, 'dt_ekf'):
             self.dt_eframe = mo.dt_ekf[i_ekf]

@@ -37,7 +37,7 @@ void Flt_st::assign(const unsigned long now, BatteryMonitor *Mon, Sensors *Sen)
   this->ib_amp_hdwe_filt = int16_t(Sen->Ib_amp_hdwe_f/sp.nP()*sp.ib_hist_slr());
   this->ib_noa_hdwe_filt = int16_t(Sen->Ib_noa_hdwe_f/sp.nP()*sp.ib_hist_slr());
   this->Tb_filt = int16_t(Sen->Tb_f*600.);
-  this->vb_filt = int16_t(Mon->vb_filt()*sp.vb_hist_slr());
+  this->vb_filt = int16_t(Sen->Vb_f/sp.nS()*sp.vb_hist_slr());
   this->ib_filt = int16_t(Sen->Ib_f/sp.nP()*sp.ib_hist_slr());
   this->soc = int16_t(Mon->soc()*16000.);
   this->soc_min = int16_t(Mon->soc_min()*16000.);

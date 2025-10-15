@@ -73,7 +73,10 @@ def vb_from_raw_or_selected(use_raw, mo):
     if use_raw:
         vb_ = mo.vb_h
     else:
-        vb_ = mo.vb_f
+        if hasattr(mo, 'vb_f'):
+            vb_ = mo.vb_f
+        else:
+            vb_ = mo.vb
     return vb_
 
 @dataclass
@@ -196,7 +199,7 @@ def replicate(OPT: UserOptions):
     mon = BatteryMonitor(SN=SN, mod_code=chm_m[0], tb_f=SN.Tb0, scale=scale_mon, tweak_test=tweak_test,
                          slr_res_0=OPT.slr_res_0, slr_res_ct=OPT.slr_res_ct, stauct=OPT.stauct_mon,
                          slr_r_ss=OPT.slr_r_ss, s_hys=OPT.slr_hys_mon, dvoc=OPT.add_voc_mon, eframe_mult=OPT.eframe_mult,
-                         slr_coul_eff=OPT.slr_coul_eff, unit=OPT.unit, ref=OPT.mon_ref, dTb=SN.dTb)
+                         slr_coul_eff=OPT.slr_coul_eff, unit=OPT.unit, ref=OPT.mon_ref, dTb=SN.dTb, run_type=OPT.run_type)
     Is_sat_delay = TFDelay(in_=OPT.mon_ref.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
     # Time sync
@@ -254,10 +257,15 @@ def replicate(OPT: UserOptions):
             if hasattr(OPT.mon_ref, 'Tb_hdwe'):
                 mon.Tb_hdwe = OPT.mon_ref.Tb_hdwe[i_temp]
             else:
-                mon.Tb_hdwe = OPT.mon_ref.Tb[i_temp]
-            sim.Tb = OPT.mon_ref.Tb[i_temp]
-            mon.Tb = OPT.mon_ref.Tb[i_temp]
-            mon.Tb_s = OPT.mon_ref.Tb[i_temp]
+                mon.Tb_hdwe = OPT.mon_ref.Tb_f[i_temp]
+            if OPT.run_type == 'RunSim':
+                sim.Tb = OPT.mon_ref.Tb[i_temp]
+                mon.Tb = OPT.mon_ref.Tb[i_temp]
+                mon.Tb_s = OPT.mon_ref.Tb[i_temp]
+            else:
+                sim.Tb = OPT.mon_ref.Tb_f[i_temp]
+                mon.Tb = OPT.mon_ref.Tb_f[i_temp]
+                mon.Tb_s = OPT.mon_ref.Tb_f[i_temp]
             if i_temp > 0:
                 SN.update_tb()
                 mon.Tb_rap = SN.Tb_past
@@ -286,7 +294,7 @@ def replicate(OPT: UserOptions):
             sim.assign_tb(sim.Tb)
             sim.assign_tb_f(sim.Tb_f)
             sim.apply_delta_q_t(sim.delta_q, SN.Tb_f_past)
-            sat_s_init = OPT.mon_ref.voc_stat[0] > OPT.mon_ref.vsat[0]
+            sat_s_init = SN.voc_stat_init > OPT.mon_ref.vsat[0]
             if OPT.sim_ref is not None:
                 sat_s_init = OPT.sim_ref.sat_s[0]
             sim.sat = sat_s_init
@@ -306,7 +314,10 @@ def replicate(OPT: UserOptions):
         if OPT.sim_ref is not None and not OPT.use_ib_mon:
             ib_in_s = OPT.sim_ref.ib_in_s[i]
         else:
-            ib_in_s = OPT.mon_ref.ib[i]
+            if OPT.run_type == 'RunSim':
+                ib_in_s = OPT.mon_ref.ib[i]
+            else:
+                ib_in_s = OPT.mon_ref.ib_f[i]
 
         if OPT.Bsim is None:
             _chm_s = chm_s[i]
@@ -366,7 +377,7 @@ def replicate(OPT: UserOptions):
         SN.update_ekf(i_ekf)
 
         if reset_ekf and calc_ekf:
-            mon.init_soc_ekf(OPT.mon_ref, i, i_ekf)  # when modeling (assumed in python) ekf wants to equal model
+            mon.init_soc_ekf(OPT.mon_ref, i, i_ekf, run_type=OPT.run_type)  # when modeling (assumed in python) ekf wants to equal model
 
         # Monitor calculate
         if i == 2:

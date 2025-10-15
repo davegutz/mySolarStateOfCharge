@@ -180,7 +180,7 @@ BatteryMonitor::~BatteryMonitor() {}
         vsat_           Saturation threshold at temperature, V
         voc_            Charging voltage estimated from Vb and RC model, V
         dv_dyn_         ib-induced back emf, V
-        voc_filt_       Filtered open circuit voltage for saturation detect, V
+        voc_filt_       Deadband-filtered open circuit voltage for saturation detect, V
         ioc_            Best estimate of IOC charge current after hysteresis, A
         bms_off_        Calculated indication that the BMS has turned off charge current, T=off
         voc_stat_       Static model open circuit voltage est, should match voc(soc) except for hys, V\n

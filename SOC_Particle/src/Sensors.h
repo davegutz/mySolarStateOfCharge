@@ -493,6 +493,7 @@ public:
   ~Sensors();
   int Vb_raw;                 // Raw analog read, integer
   float Vb;                   // Selected battery bank voltage, V
+  float Vb_f;                 // Selected filtered battery bank voltage, V
   float Vb_hdwe;              // Sensed battery bank voltage, V
   float Vb_hdwe_f;            // Sensed, filtered battery bank voltage, V
   float Vb_model;             // Modeled battery bank voltage, V

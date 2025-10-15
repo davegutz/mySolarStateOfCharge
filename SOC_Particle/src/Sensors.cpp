@@ -1448,6 +1448,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
   // vb
   if ( sp.mod_vb() )
   {
+    Vb_f = Vb;
     if ( (Flt->wrap_vb_fa() || Flt->vb_fa()) && !ap.fake_faults )
     {
       Vb = Mon->vb_model_rev() * sp.nS();
@@ -1461,6 +1462,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
   }
   else
   {
+    Vb_f = Vb_hdwe_f;
     if ( (Flt->wrap_vb_fa() || Flt->vb_fa()) && !ap.fake_faults )
     {
       Vb = Mon->vb_model_rev() * sp.nS();

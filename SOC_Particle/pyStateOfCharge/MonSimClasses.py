@@ -49,7 +49,7 @@ class Sensors:
 
     def __init__(self, mon_ref=None, sim_ref=None, add_Tb_in=None, run_type=None):
 
-        if hasattr(mon_ref, 'Tb_hdwe'):
+        if run_type == 'RunSim':
             self.Tb0 = mon_ref.Tb_f[0]
             self.Tb0_s = mon_ref.Tb_mod[0]
             self.lut_dTb = None
@@ -90,6 +90,7 @@ class Sensors:
             self.ib_charge_s_init = self.ib_in_s_init
             self.ioc_s_init = self.ib_in_s_init
             self.vb_s_init = mon_ref.vb[0]
+            self.voc_stat_init = mon_ref.voc_stat[0]
             self.voc_s_init = sim_ref.voc_stat_s[0]  # is this right?
             self.Tb_hdwe_init = mon_ref.Tb_hdwe[0]
             self.Tb_hdwe_filt_init = mon_ref.Tb_hdwe_filt[0]
@@ -103,6 +104,7 @@ class Sensors:
             self.e_wrap_n_filt_init = mon_ref.e_wrap_n_filt[0]
             self.e_wrap_n_trim_init = 0.
             self.voc_soc_init = mon_ref.voc_soc[0]
+            self.vb_s_init = mon_ref.vb[0]
             if run_type == 'RunSim':
                 self.Tb_init = mon_ref.Tb[0]
             else:
@@ -116,6 +118,7 @@ class Sensors:
                 self.Tb0 += add_Tb_in[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
                 self.dTb = lut_dTb.interp(t[0])
+            self.Tb_f_rap = mon_ref.Tb_f_rap
             self.Tb_rap_init = mon_ref.Tb_rap[0] + self.dTb
             self.Tb_f_rap_init = mon_ref.Tb_f_rap[0] + self.dTb
             self.Tb_f_rate_rap_init = mon_ref.Tb_f_rate_rap[0]
@@ -128,7 +131,7 @@ class Sensors:
             self.sat_init = mon_ref.sat[0]
             self.reset_ekf_init = True
             self.voc_ekf_init = mon_ref.hx[0]
-            self.voc_stat_f_init = mon_ref.voc_stat[0]
+            self.voc_stat_init = mon_ref.voc_stat[0]
             self.x_init = mon_ref.x[0]
             self.x_prior_init = mon_ref.x_prior[0]
             self.hx_init = mon_ref.hx[0]
@@ -148,14 +151,11 @@ class Sensors:
             self.e_wrap_n_filt_init = mon_ref.e_wrap[0]
             self.e_wrap_n_trim_init = 0.
             self.voc_soc_init = mon_ref.voc_soc[0]
-            if run_type == 'RunSim':
-                self.Tb0 = mon_ref.Tb_f[0]
-                self.Tb_f_init = mon_ref.Tb[0]
-                self.Tb0_s = mon_ref.Tb[0]
-            else:
-                self.Tb0 = mon_ref.Tb_f[0]
-                self.Tb_f_init = mon_ref.Tb_f[0]
-                self.Tb0_s = mon_ref.Tb_f[0]
+            self.voc_stat_init = mon_ref.voc_stat_f[0]
+            self.vb_s_init = mon_ref.vb_f[0]
+            self.Tb0 = mon_ref.Tb_f[0]
+            self.Tb_f_init = mon_ref.Tb_f[0]
+            self.Tb0_s = mon_ref.Tb_f[0]
             self.Tb_f_rate_init = 0.
             self.lut_dTb = None
             self.dTb = 0.
@@ -164,131 +164,91 @@ class Sensors:
                 self.Tb0 += add_Tb_in[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
                 self.dTb = lut_dTb.interp(t[0])
-            if run_type == 'RunSim':
-                self.Tb_rap_init = mon_ref.Tb[0] + self.dTb
-                self.Tb_f_rap_init = mon_ref.Tb[0] + self.dTb
-                self.Tb_f_rate_rap_init = 0.
-                self.Tb = mon_ref.Tb[0]
-                self.Tb_f = np.copy(mon_ref.Tb)
-                self.Tb_f_rate = np.copy(self.Tb) * 0.
-                self.Tb_past = np.copy(self.Tb) + self.dTb
-                self.Tb_f_past = np.copy(self.Tb_past) + self.dTb
-                self.Tb_f_rate_past = np.copy(self.Tb) * 0.
-            else:
-                self.Tb_rap_init = mon_ref.Tb_f[0] + self.dTb
-                self.Tb_f_rap_init = mon_ref.Tb_f[0] + self.dTb
-                self.Tb_f_rate_rap_init = 0.
-                self.Tb = mon_ref.Tb_f[0]
-                self.Tb_f = np.copy(mon_ref.Tb_f)
-                self.Tb_f_rate = np.copy(self.Tb_f) * 0.
-                self.Tb_past = np.copy(self.Tb_f) + self.dTb
-                self.Tb_f_past = np.copy(self.Tb_past) + self.dTb
-                self.Tb_f_rate_past = np.copy(self.Tb_f) * 0.
+            self.Tb_rap_init = mon_ref.Tb_f[0] + self.dTb
+            self.Tb_f_rap_init = mon_ref.Tb_f[0] + self.dTb
+            self.Tb_f_rate_rap_init = 0.
+            self.Tb = mon_ref.Tb_f[0]
+            self.Tb_f = np.copy(mon_ref.Tb_f)
+            self.Tb_f_rate = np.copy(self.Tb_f) * 0.
+            self.Tb_past = mon_ref.Tb_f[0] + self.dTb
+            self.Tb_f_past = mon_ref.Tb_f[0] + self.dTb
+            self.Tb_f_rate_past = np.copy(self.Tb_f) * 0.
             self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
 
             if not hasattr(mon_ref, 'ib_dyn_m'):
-                if run_type == 'RunSim':
-                    mon_ref.ib_dyn_m = np.copy(mon_ref.ib)
-                else:
-                    mon_ref.ib_dyn_m = np.copy(mon_ref.ib_f)
+                mon_ref.ib_dyn_m = np.copy(mon_ref.ib_f)
 
             if not hasattr(mon_ref, 'e_wrap_m_trim'):
-                if run_type == 'RunSim':
-                    mon_ref.e_wrap_m_trim = np.copy(mon_ref.ib) * 0.
-                else:
-                    mon_ref.e_wrap_m_trim = np.copy(mon_ref.ib_f) * 0.
+                mon_ref.e_wrap_m_trim = np.copy(mon_ref.ib_f) * 0.
 
             if not hasattr(mon_ref, 'e_wrap_m_filt'):
                 mon_ref.e_wrap_m_filt = np.copy(mon_ref.e_wrap)
 
-            if run_type == 'RunSim':
-                self.LoopAmp = SensorLooparound(mon_ref.ibmh, mon_ref.ib_dyn_m, mon_ref.e_wrap_m_trim, mon_ref.e_wrap_m_filt)
-            else:
-                self.LoopAmp = SensorLooparound(mon_ref.ibmh_f, mon_ref.ib_dyn_m, mon_ref.e_wrap_m_trim,
-                                                mon_ref.e_wrap_m_filt)
+            self.LoopAmp = SensorLooparound(mon_ref.ibmh_f, mon_ref.ib_dyn_m, mon_ref.e_wrap_m_trim,
+                                            mon_ref.e_wrap_m_filt)
 
             if not hasattr(mon_ref, 'ib_dyn_n'):
-                if run_type == 'RunSim':
-                    mon_ref.ib_dyn_n = np.copy(mon_ref.ib)
-                else:
-                    mon_ref.ib_dyn_n = np.copy(mon_ref.ib_f)
+               mon_ref.ib_dyn_n = np.copy(mon_ref.ib_f)
 
             if not hasattr(mon_ref, 'e_wrap_n_trim'):
-                if run_type == 'RunSim':
-                    mon_ref.e_wrap_n_trim = np.copy(mon_ref.ib) * 0.
-                else:
-                    mon_ref.e_wrap_n_trim = np.copy(mon_ref.ib_f) * 0.
+                mon_ref.e_wrap_n_trim = np.copy(mon_ref.ib_f) * 0.
 
             if not hasattr(mon_ref, 'e_wrap_n_filt'):
                 mon_ref.e_wrap_n_filt = np.copy(mon_ref.e_wrap)
 
-            if run_type == 'RunSim':
-                self.LoopNoa = SensorLooparound(mon_ref.ibnh, mon_ref.ib_dyn_n, mon_ref.e_wrap_m_trim * 0.,
-                                                mon_ref.e_wrap_n_filt)
-                self.ib_amp = mon_ref.ibmh
-                self.ib_noa = mon_ref.ibnh
-                self.ib_init = mon_ref.ib[0]
-                self.ib_dyn = np.copy(mon_ref.ib)
-                self.ib_dyn_init = mon_ref.ib[0]
-                self.ib_charge_init = mon_ref.ib_charge[0]
-                self.vb_init = mon_ref.vb[0]
-                self.ibmm = mon_ref.ibmh
-                self.ibnm = mon_ref.ibnh
-                self.Tb_f_rap = mon_ref.Tb
-            else:
-                self.LoopNoa = SensorLooparound(mon_ref.ibnh_f, mon_ref.ib_dyn_n, mon_ref.e_wrap_m_trim * 0.,
-                                                mon_ref.e_wrap_n_filt)
-                self.ib_amp = mon_ref.ibmh_f
-                self.ib_noa = mon_ref.ibnh_f
-                self.ib_init = mon_ref.ib_f[0]
-                self.ib_dyn = np.copy(mon_ref.ib_f)
-                self.ib_dyn_init = mon_ref.ib_f[0]
-                self.ib_charge_init = mon_ref.ib_charge_f[0]
-                self.vb_init = mon_ref.vb_f[0]
-                self.ibmm = mon_ref.ibmh_f
-                self.ibnm = mon_ref.ibnh_f
-                self.Tb_f_rap = mon_ref.Tb_f
+            self.LoopNoa = SensorLooparound(mon_ref.ibnh_f, mon_ref.ib_dyn_n, mon_ref.e_wrap_m_trim * 0.,
+                                            mon_ref.e_wrap_n_filt)
+            self.ib_amp = mon_ref.ibmh_f
+            self.ib_noa = mon_ref.ibnh_f
+            self.ib_init = mon_ref.ib_f[0]
+            self.ib_dyn = np.copy(mon_ref.ib_f)
+            self.ib_dyn_init = mon_ref.ib_f[0]
+            self.ib_charge_init = mon_ref.ib_charge_f[0]
+            self.vb_init = mon_ref.vb_f[0]
+            self.ibmm = mon_ref.ibmh_f
+            self.ibnm = mon_ref.ibnh_f
+            self.Tb_f_rap = mon_ref.Tb_f
 
             self.z = mon_ref.z
             self.z_init = self.z[0]
-            self.sat_init = mon_ref.sat[0]
-            # dt_s
-            self.dt_s = []
-            for i in range(len(sim_ref.time)):
-                if i == 0:
-                    self.dt_s.append(sim_ref.time[1] - sim_ref.time[0])
-                else:
-                    self.dt_s.append(sim_ref.time[i] - sim_ref.time[i-1])
-            self.soc_s = mon_ref.soc_s
-            self.dq_s = -mon_ref.qcrs * (1. - mon_ref.soc_s)
-            self.delta_q = -mon_ref.qcrs * (1. - mon_ref.soc)
-            self.ib_in_s = sim_ref.ib_in_s
-            self.ib_in_s_init = self.ib_in_s[0]
-            self.ib_dyn_s = np.copy(self.ib_in_s)
-            self.ib_dyn_s_init = self.ib_dyn_s[0]
-            self.dv_dyn_s = sim_ref.dv_dyn_s
-            self.dv_dyn_s_init = self.dv_dyn_s[0]
-            self.d_delta_q_s_init = 0.
-            self.ib_s_init = self.ib_in_s_init
-            self.ib_fut_s_init = self.ib_in_s_init
-            self.ib_charge_s_init = self.ib_in_s_init
-            self.ioc_s_init = self.ib_in_s_init
-            self.vb_s_init = mon_ref.vb[0]
-            self.voc_s_init = sim_ref.voc_stat_s[0]  # is this right?
-            self.ib_dyn_s_init = self.ib_in_s_init
-            self.soc_s_init = mon_ref.soc_s[0]
-            self.hx_init = self.voc_soc_init
-            self.soc_init = mon_ref.soc[0]
-            self.x_init = self.soc_init
-            self.x_prior_init = self.x_init
-            self.soc_ekf_init = self.soc_init
-            self.z_ekf_init = self.hx_init
-            self.z_init = self.hx_init
-            self.skip_e = np.bool(np.zeros(len(self.dv_dyn_s)))
-            self.skip_t = np.bool(np.zeros(len(self.dv_dyn_s)))
-            self.skip_sel = np.bool(np.zeros(len(self.dv_dyn_s)))
-            self.skip_rap = np.bool(np.zeros(len(self.dv_dyn_s)))
-            self.skip_s = np.bool(np.zeros(len(self.dv_dyn_s)))
+
+        self.sat_init = mon_ref.sat[0]
+        # dt_s
+        self.dt_s = []
+        for i in range(len(sim_ref.time)):
+            if i == 0:
+                self.dt_s.append(sim_ref.time[1] - sim_ref.time[0])
+            else:
+                self.dt_s.append(sim_ref.time[i] - sim_ref.time[i-1])
+        self.soc_s = mon_ref.soc_s
+        self.dq_s = -mon_ref.qcrs * (1. - mon_ref.soc_s)
+        self.delta_q = -mon_ref.qcrs * (1. - mon_ref.soc)
+        self.ib_in_s = sim_ref.ib_in_s
+        self.ib_in_s_init = self.ib_in_s[0]
+        self.ib_dyn_s = np.copy(self.ib_in_s)
+        self.ib_dyn_s_init = self.ib_dyn_s[0]
+        self.dv_dyn_s = sim_ref.dv_dyn_s
+        self.dv_dyn_s_init = self.dv_dyn_s[0]
+        self.d_delta_q_s_init = 0.
+        self.ib_s_init = self.ib_in_s_init
+        self.ib_fut_s_init = self.ib_in_s_init
+        self.ib_charge_s_init = self.ib_in_s_init
+        self.ioc_s_init = self.ib_in_s_init
+        self.voc_s_init = sim_ref.voc_stat_s[0]  # is this right?
+        self.ib_dyn_s_init = self.ib_in_s_init
+        self.soc_s_init = mon_ref.soc_s[0]
+        self.hx_init = self.voc_soc_init
+        self.soc_init = mon_ref.soc[0]
+        self.x_init = self.soc_init
+        self.x_prior_init = self.x_init
+        self.soc_ekf_init = self.soc_init
+        self.z_ekf_init = self.hx_init
+        self.z_init = self.hx_init
+        self.skip_e = np.bool(np.zeros(len(self.dv_dyn_s)))
+        self.skip_t = np.bool(np.zeros(len(self.dv_dyn_s)))
+        self.skip_sel = np.bool(np.zeros(len(self.dv_dyn_s)))
+        self.skip_rap = np.bool(np.zeros(len(self.dv_dyn_s)))
+        self.skip_s = np.bool(np.zeros(len(self.dv_dyn_s)))
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"

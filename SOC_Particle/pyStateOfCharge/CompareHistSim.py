@@ -1252,6 +1252,7 @@ def main():
     mon_t = False
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     dt_resample = 900
+    # dt_resample = 9
     Tb_force = None
     # Do this when running compare_hist_sim on run that schedule extracted assuming constant Tb
     # Tb_force = 35

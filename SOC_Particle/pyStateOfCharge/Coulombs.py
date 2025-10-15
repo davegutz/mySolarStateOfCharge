@@ -109,7 +109,7 @@ class Coulombs:
         """Memory set, adjust bookkeeping as needed.  delta_q preserved"""
         self.soc = soc
         self.q_capacity = self.calculate_capacity(tb_f=tb_f)
-        self.q = soc*self.q_capacity
+        self.q = self.soc * self.q_capacity
         self.delta_q = self.q - self.q_capacity
         self.resetting = True  # momentarily turn off saturation check
 
