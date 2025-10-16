@@ -1246,13 +1246,13 @@ def main():
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/Hd 20251014am_soc4p2_hi_lo_bb.csv'
+    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/Hd 20251015am_soc4p2_hi_lo_bb.csv'
     # data_only = False
     data_only=True
     mon_t = False
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
-    dt_resample = 900
-    # dt_resample = 9
+    # dt_resample = 900
+    dt_resample = 9
     Tb_force = None
     # Do this when running compare_hist_sim on run that schedule extracted assuming constant Tb
     # Tb_force = 35

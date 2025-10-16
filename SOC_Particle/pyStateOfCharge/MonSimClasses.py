@@ -176,10 +176,10 @@ class Sensors:
             self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
 
             if not hasattr(mon_ref, 'ib_dyn_m'):
-                mon_ref.ib_dyn_m = np.copy(mon_ref.ib_f)
+                mon_ref.ib_dyn_m = np.copy(mon_ref.ibmh_f)
 
             if not hasattr(mon_ref, 'e_wrap_m_trim'):
-                mon_ref.e_wrap_m_trim = np.copy(mon_ref.ib_f) * 0.
+                mon_ref.e_wrap_m_trim = np.copy(mon_ref.ibmh_f) * 0.
 
             if not hasattr(mon_ref, 'e_wrap_m_filt'):
                 mon_ref.e_wrap_m_filt = np.copy(mon_ref.e_wrap)
@@ -188,10 +188,10 @@ class Sensors:
                                             mon_ref.e_wrap_m_filt)
 
             if not hasattr(mon_ref, 'ib_dyn_n'):
-               mon_ref.ib_dyn_n = np.copy(mon_ref.ib_f)
+               mon_ref.ib_dyn_n = np.copy(mon_ref.ibnh_f)
 
             if not hasattr(mon_ref, 'e_wrap_n_trim'):
-                mon_ref.e_wrap_n_trim = np.copy(mon_ref.ib_f) * 0.
+                mon_ref.e_wrap_n_trim = np.copy(mon_ref.ibnh_f) * 0.
 
             if not hasattr(mon_ref, 'e_wrap_n_filt'):
                 mon_ref.e_wrap_n_filt = np.copy(mon_ref.e_wrap)

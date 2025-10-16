@@ -1244,7 +1244,6 @@ class Looparound:
         trim_rate_lim = max(min(self.e_wrap_filt * loop_gain, Battery.MAX_TRIM_RATE), -Battery.MAX_TRIM_RATE)
         # e_wrap_trim_ = -Trim_->calculate(trim_rate_lim, min(Sen_->T, F_MAX_T_WRAP), reset_, trim_init);
         self.e_wrap_trim = -self.Trim.calculate(in_=trim_rate_lim, dt=self.dt_past, reset=self.reset,
-                                                # init_value=-e_wrap_trim_init)
                                                 init_value = -SN.e_wrap_trim_init)
         self.e_wrap_trimmed = self.e_wrap + self.e_wrap_trim
         self.e_wrap_filt = self.WrapErrFilt.calculate_seeded(in_=self.e_wrap_trimmed, _out_init=SN.e_wrap_filt_init,
