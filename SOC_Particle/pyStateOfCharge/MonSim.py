@@ -275,6 +275,7 @@ def replicate(OPT: UserOptions):
                 sim.Tb_f = OPT.mon_ref.Tb_mod[i_temp]
             else:
                 sim.Tb_f = sim.Tb
+            monx, simx = SN.calc_tb(mon, sim, i_temp, OPT)
 
         # Input
         dc_dc_on = False

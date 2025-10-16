@@ -17,6 +17,7 @@
 a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
+import copy
 
 import numpy as np
 import Battery
@@ -308,4 +309,37 @@ class Sensors:
         self.Tb_past = self.Tb
         self.Tb_f_past = self.Tb_f
         self.Tb_f_rate_past = self.Tb_f_rate
+
+    def calc_tb(self, mon_, sim_, i_temp, OPT):
+        mon = copy.deepcopy(mon_)
+        sim = copy.deepcopy(sim_)
+        mon.Tb = mon.Tb_hdwe  # past value
+        mon.reset_temp = (i_temp < 2)  # make sure temp init is longer than reset
+        if hasattr(OPT.mon_ref, 'Tt'):
+            mon.dt_temp = OPT.mon_ref.Tt[i_temp]
+        else:
+            mon.dt_temp = mon.dt
+        if hasattr(OPT.mon_ref, 'Tb_hdwe'):
+            mon.Tb_hdwe = OPT.mon_ref.Tb_hdwe[i_temp]
+        else:
+            mon.Tb_hdwe = OPT.mon_ref.Tb_f[i_temp]
+        if OPT.run_type == 'RunSim':
+            sim.Tb = OPT.mon_ref.Tb[i_temp]
+            mon.Tb = OPT.mon_ref.Tb[i_temp]
+            mon.Tb_s = OPT.mon_ref.Tb[i_temp]
+        else:
+            sim.Tb = OPT.mon_ref.Tb_f[i_temp]
+            mon.Tb = OPT.mon_ref.Tb_f[i_temp]
+            mon.Tb_s = OPT.mon_ref.Tb_f[i_temp]
+        if i_temp > 0:
+            self.update_tb()
+            mon.Tb_rap = self.Tb_past
+            mon.Tb_f_rap = self.Tb_f_past
+            mon.Tb_f_rate_rap = self.Tb_f_rate_past
+        if hasattr(OPT.mon_ref, 'Tb_mod'):
+            sim.Tb_f = OPT.mon_ref.Tb_mod[i_temp]
+        else:
+            sim.Tb_f = sim.Tb
+        return mon, sim
+
 

@@ -40,7 +40,6 @@ class Coulombs:
         self.chm = mod_code
         self.tweak_test = tweak_test
         self.reset = False
-        self.tb = 0.
         self.tb_f = 0.
         self.chemistry = Chemistry(mod_code=mod_code, dvoc=dvoc, unit=unit)
         self.chemistry.assign_all_mod(mod_code, unit=unit)
@@ -60,6 +59,7 @@ class Coulombs:
         s += "  sat =          {:1.0f}          // Indication from caller that battery is saturated, T=saturated\n"\
             .format(self.sat)
         s += "  t_rated =    {:5.1f}         // Rated temperature, deg C\n".format(self.t_rated)
+        s += "  Tb_f    =    {:5.1f}         // Rated temperature, deg C\n".format(self.tb_f)
         # s += "  temp_rlim =     {:7.3f}       // Tbatt rate limit, deg C / s\n".format(self.temp_rlim)
         s += "  resetting =     {:d}          // Flag to test coulomb counters, T = external reset of counter\n"\
             .format(self.resetting)
