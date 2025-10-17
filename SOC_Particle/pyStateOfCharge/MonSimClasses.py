@@ -269,7 +269,7 @@ class Sensors:
             dTb = self.dTb
         return dTb
 
-    def temp_calc(self, mon_ref, mon, Battery, i_temp):
+    def calc_temp_pass_2(self, mon_ref, mon, Battery, i_temp):
         if hasattr(mon_ref, 'Tb_hdwe_filt'):
             mon.Tb_hdwe_filt = \
                 self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_ref.Tb_hdwe_filt[i_temp],
@@ -310,7 +310,7 @@ class Sensors:
         self.Tb_f_past = self.Tb_f
         self.Tb_f_rate_past = self.Tb_f_rate
 
-    def calc_tb(self, mon_, sim_, i_temp, OPT):
+    def calc_temp_pass_1(self, mon_, sim_, i_temp, OPT):
         mon = copy.deepcopy(mon_)
         sim = copy.deepcopy(sim_)
         mon.Tb = mon.Tb_hdwe  # past value

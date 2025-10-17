@@ -552,12 +552,14 @@ def overall_fault(mo, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plq(plt, sv, 'time', sv, 'dv_hys', color='orange', linestyle='-.', label='dv_hys_s_ver')
     plt.legend(loc=1)
     plt.subplot(334)
-    plt.plot(mo.time, mo.vb, color='black', linestyle='-', label='vb')
+    plq(plt, mo, 'soc', mo, 'vb', color='black', linestyle='-', label='vb')
+    plq(plt, mo, 'soc', mo, 'vb_f', color='black', linestyle='-', label='vb_f')
     plt.plot(mv.time, mv.vb, color='cyan', linestyle='--', label='vb_ver')
     plq(plt, smv, 'time', smv, 'vb_s', color='orange', linestyle='-.', label='vb_s_ver')
     plt.legend(loc=1)
     plt.subplot(335)
-    plt.plot(mo.time, mo.voc, color='black', linestyle='-', label='voc')
+    plq(plt, mo, 'time', mo, 'voc', color='black', linestyle='-', label='voc')
+    plq(plt, mo, 'time', mo, 'voc_f', color='black', linestyle='-', label='voc_f')
     plt.plot(mv.time, mv.voc, color='cyan', linestyle='--', label='voc_ver')
     plq(plt, smv, 'time', smv, 'voc_s', color='orange', linestyle='-.', label='voc_s_ver')
     plt.legend(loc=1)
@@ -569,7 +571,8 @@ def overall_fault(mo, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plt.plot(mv.time, mv.soc_ekf, color='red', linestyle='--', label='soc_ekf_ver')
     plt.legend(loc=1)
     plt.subplot(337)
-    plt.plot(mo.time, mo.voc_stat, color='black', linestyle='-', label='voc_stat')
+    plq(plt, mo, 'time', mo, 'voc_stat', color='black', linestyle='-', label='voc_stat')
+    plq(plt, mo, 'time', mo, 'voc_stat_f', color='black', linestyle='-', label='voc_stat_f')
     plt.plot(mv.time, mv.voc_stat, color='cyan', linestyle='--', label='voc_stat_ver')
     plq(plt, smv, 'time', smv, 'voc_stat_s', color='orange', linestyle='-.', label='voc_stat_s_ver')
     plt.legend(loc=1)
@@ -603,8 +606,12 @@ def overall_fault(mo, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     fig_list.append(plt.figure())  # GP 2 Hist
     plt.subplot(331)
     plt.title(plot_title + ' GP 2 Hist')
-    mo.dv_dyn = mo.vb - mo.voc
-    plt.plot(mo.time, mo.dv_dyn, color='blue', linestyle='-', label='dv_dyn'+ref_str)
+    if hasattr(mo, 'vb'):
+        mo.dv_dyn = mo.vb - mo.voc
+    else:
+        mo.dv_dyn_f = mo.vb_f - mo.voc_f
+    plq(plt, mo, 'time', mo, 'dv_dyn', linestyle='-', color='blue', label='dv_dyn'+ref_str)
+    plq(plt, mo, 'time', mo, 'dv_dyn_f', linestyle='-', color='blue', label='dv_dyn_f'+ref_str)
     plt.plot(mv.time, mv.dv_dyn, color='cyan', linestyle='--', label='dv_dyn'+test_str)
     plq(plt, mv, 'time', smv, 'dv_dyn_s', color='magenta', linestyle=':', label='dv_dyn_s'+test_str)
     plt.xlabel('sec')
@@ -624,9 +631,11 @@ def overall_fault(mo, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plt.xlabel('sec')
     plt.legend(loc=3)
     plt.subplot(334)
-    plt.plot(mo.time, mo.voc, linestyle='-', color='blue', label='voc'+ref_str)
+    plq(plt, mo, 'time', mo, 'voc', linestyle='-', color='blue', label='voc'+ref_str)
+    plq(plt, mo, 'time', mo, 'voc_f', linestyle='-', color='blue', label='voc_f'+ref_str)
     plt.plot(mv.time, mv.voc, linestyle='--', color='cyan', label='voc'+test_str)
-    plt.plot(mo.time, mo.voc_stat, color='orange', linestyle='-', label='voc_stat'+ref_str)
+    plq(plt, mo, 'time', mo, 'voc_stat', linestyle='-', color='orange', label='voc_stat'+ref_str)
+    plq(plt, mo, 'time', mo, 'voc_stat_f', linestyle='-', color='orange', label='voc_stat_f'+ref_str)
     plq(plt, smv, 'time', smv, 'voc_stat_s', linestyle=':', color='red', label='voc_stat_s'+test_str)
     plq(plt, sv, 'time', smv, 'vb_s', linestyle='--', color='pink', label='vb_s'+test_str)
     plt.xlabel('sec')
@@ -637,26 +646,31 @@ def overall_fault(mo, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plt.xlabel('sec')
     plt.legend(loc=2)
     plt.subplot(336)
-    plt.plot(mo.soc, mo.vb, color='blue', linestyle='-', label='vb'+ref_str)
+    plq(plt, mo, 'time', mo, 'vb', linestyle='-', color='blue', label='vb'+ref_str)
+    plq(plt, mo, 'time', mo, 'vb_f', linestyle='-', color='blue', label='vb_f'+ref_str)
     plt.plot(mv.soc, mv.vb, color='cyan', linestyle='--', label='vb'+test_str)
     plq(plt, smv, 'soc_s', smv, 'vb_s', color='magenta', linestyle=':', label='vb_s'+test_str)
-    plt.plot(mo.soc, mo.voc_stat, color='orange', linestyle='-', label='voc_stat'+ref_str)
+    plq(plt, mo, 'time', mo, 'voc_stat', linestyle='-', color='orange', label='voc_stat'+ref_str)
+    plq(plt, mo, 'time', mo, 'voc_stat_f', linestyle='-', color='orange', label='voc_stat_f'+ref_str)
     plt.xlabel('state-of-charge')
     plt.legend(loc=2)
     plt.subplot(337)
-    plt.plot(mo.time, mo.vb, color='blue', linestyle='-', label='vb'+ref_str)
+    plq(plt, mo, 'time', mo, 'vb', linestyle='-', color='blue', label='vb'+ref_str)
+    plq(plt, mo, 'time', mo, 'vb_f', linestyle='-', color='blue', label='vb_f'+ref_str)
     plt.plot(mv.time, mv.vb, color='cyan', linestyle='--', label='vb'+test_str)
     plq(plt, smv, 'time', smv, 'vb_s', color='magenta', linestyle=':', label='vb_s'+test_str)
     plt.xlabel('sec')
     plt.legend(loc=2)
     plt.subplot(338)
-    plt.plot(mo.time, mo.dv_hys, color='blue', linestyle='-', label='dv_hys'+ref_str)
+    plq(plt, mo, 'time', mo, 'dv_hys', linestyle='-', color='blue', label='dv_hys'+ref_str)
+    plq(plt, mo, 'time', mo, 'dv_hys_f', linestyle='-', color='blue', label='dv_hys_f'+ref_str)
     plt.plot(mv.time, mv.dv_hys, color='cyan', linestyle='--', label='dv_hys'+test_str)
     plq(plt, smv, 'time', smv, 'dv_hys_s', color='magenta', linestyle=':', label='dv_hys_s'+test_str)
     plt.xlabel('sec')
     plt.legend(loc=3)
     plt.subplot(339)
-    plt.plot(mo.time, mo.Tb, color='blue', linestyle='-', label='Tb'+ref_str)
+    plq(plt, mo, 'time', mo, 'Tb', linestyle='-', color='blue', label='Tb'+ref_str)
+    plq(plt, mo, 'time', mo, 'Tb_f', linestyle='-', color='blue', label='Tb_f'+ref_str)
     plq(plt, mv, 'time', mv, 'tau_hys', color='cyan', linestyle='--', label='tau_hys' + test_str)
     plt.legend(loc=3)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -1247,8 +1261,8 @@ def main():
 
     # User inputs (multiple input_files allowed
     data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/Hd 20251015am_soc4p2_hi_lo_bb.csv'
-    # data_only = False
-    data_only=True
+    data_only = False
+    # data_only=True
     mon_t = False
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # dt_resample = 900

@@ -248,34 +248,7 @@ def replicate(OPT: UserOptions):
             calc_temp = True
         if calc_temp:
             i_temp += 1
-            mon.Tb = mon.Tb_hdwe  # past value
-            mon.reset_temp = (i_temp < 2)  # make sure temp init is longer than reset
-            if hasattr(OPT.mon_ref, 'Tt'):
-                mon.dt_temp = OPT.mon_ref.Tt[i_temp]
-            else:
-                mon.dt_temp = mon.dt
-            if hasattr(OPT.mon_ref, 'Tb_hdwe'):
-                mon.Tb_hdwe = OPT.mon_ref.Tb_hdwe[i_temp]
-            else:
-                mon.Tb_hdwe = OPT.mon_ref.Tb_f[i_temp]
-            if OPT.run_type == 'RunSim':
-                sim.Tb = OPT.mon_ref.Tb[i_temp]
-                mon.Tb = OPT.mon_ref.Tb[i_temp]
-                mon.Tb_s = OPT.mon_ref.Tb[i_temp]
-            else:
-                sim.Tb = OPT.mon_ref.Tb_f[i_temp]
-                mon.Tb = OPT.mon_ref.Tb_f[i_temp]
-                mon.Tb_s = OPT.mon_ref.Tb_f[i_temp]
-            if i_temp > 0:
-                SN.update_tb()
-                mon.Tb_rap = SN.Tb_past
-                mon.Tb_f_rap = SN.Tb_f_past
-                mon.Tb_f_rate_rap = SN.Tb_f_rate_past
-            if hasattr(OPT.mon_ref, 'Tb_mod'):
-                sim.Tb_f = OPT.mon_ref.Tb_mod[i_temp]
-            else:
-                sim.Tb_f = sim.Tb
-            monx, simx = SN.calc_tb(mon, sim, i_temp, OPT)
+            mon, sim = SN.calc_temp_pass_1(mon, sim, i_temp, OPT)
 
         # Input
         dc_dc_on = False
@@ -304,7 +277,7 @@ def replicate(OPT: UserOptions):
         if calc_temp:
             prn_soc_debug(time=now, leader="b temp filtr:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
 
-            mon = SN.temp_calc(OPT.mon_ref, mon, Battery, i_temp)
+            mon = SN.calc_temp_pass_2(OPT.mon_ref, mon, Battery, i_temp)
 
             prn_soc_debug(time=now, leader="a temp filtr:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
 
