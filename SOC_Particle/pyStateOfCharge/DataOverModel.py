@@ -133,6 +133,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mo, 'time', mo, 'e_wrap', color='black', linestyle='-', label='e_wrap'+ref_str)
     plq(plt, mv, 'time', mv, 'e_wrap', color='red', linestyle='--', label='e_wrap'+test_str)
     plq(plt, mo, 'time', mo, 'e_wrap_filt', color='black', linestyle='-.', label='e_wrap_filt'+ref_str)
+    plq(plt, mv, 'time', mv, 'e_wrap_filt', color='red', linestyle=':', label='e_wrap_filt'+test_str)
     plq(plt, mo, 'time', mo, 'y_ekf', slr=-1, color='green', linestyle='-.', label='-y_ekf'+ref_str, stairs=True)
     plq(plt, mo, 'time', mo, 'y_ekf_f', slr=-1, color='black', linestyle=':', label='-y_ekf_f'+ref_str, stairs=True)
     plq(plt, mv, 'time', mv, 'y_ekf_f', slr=-1, color='red', linestyle=':', label='-y_ekf_f'+test_str)
