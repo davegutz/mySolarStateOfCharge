@@ -998,15 +998,21 @@ def add_mod(hist, mon_t_=False, mon=None):
         return rf.rec_append_fields(hist, 'mod_data', np.array(mod_data, dtype=int))
 
 
-def add_qcrs(hist, mon_t_=False, mon=None, qcrs=None):
+def add_qcrs(hist, mon_t_=False, mon=None, qcrs=None, t_rated=None, dqdt=None):
     if mon_t_ is False or mon is None:
         print("add_qcrs:  not executing")
         if qcrs is not None:
             qcrs_m = []
+            t_rated_m = []
+            dqdt_m = []
             for i in range(len(hist.time)):
                 qcrs_m.append(qcrs)
+                t_rated_m.append(t_rated)
+                dqdt_m.append(dqdt)
             hist = rf.rec_append_fields(hist, 'qcrs_s', np.array(qcrs_m, dtype=float))
             hist = rf.rec_append_fields(hist, 'qcrs', np.array(qcrs_m, dtype=float))
+            hist = rf.rec_append_fields(hist, 't_rated', np.array(t_rated_m, dtype=float))
+            hist = rf.rec_append_fields(hist, 'dqdt', np.array(dqdt_m, dtype=float))
         return hist
     else:
         qcrs_m = []
@@ -1080,6 +1086,8 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
 
     # Load configuration
     unit = None
+    t_rated = None
+    dqdt = None
     if mon_t is True and mon is not None:
         chm = int(mon.chm[0])
     else:
@@ -1094,8 +1102,12 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
         unit = unit_key.split('_')[-2]
         if chm == 2:
             rated_batt_cap_in = 102.9  # A-hr capacity of test article (output of Calibrate_exe.py)
+            t_rated = 25.
+            dqdt = 0.01
         else:
             rated_batt_cap_in = 108.4  # A-hr capacity of test article
+            t_rated = 25.
+            dqdt = 0.01
     qcrs = rated_batt_cap_in * 3600.
     batt = BatteryMonitor(mod_code=chm, unit=unit)
 
@@ -1139,7 +1151,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
         hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in, time_sync=sync_time)
         hist = add_mod(hist, mon_t, mon)
         hist = add_chm(hist, mon_t, mon, chm)
-        hist = add_qcrs(hist, mon_t_=mon_t, mon=mon, qcrs=qcrs)
+        hist = add_qcrs(hist, mon_t_=mon_t, mon=mon, qcrs=qcrs, t_rated=t_rated, dqdt=dqdt)
         print("\nhist after adding stuff:\n", hist.dtype.names, "\n", hist, "\n", hist.dtype.names, "\n :hist after adding stuff\n")
         print("\nhist convert to 20C...:", end='')
 

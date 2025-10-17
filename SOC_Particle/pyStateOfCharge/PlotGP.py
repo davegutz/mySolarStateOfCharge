@@ -126,8 +126,8 @@ def gp_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.plot(mv.time, mv.ib_lag, color='red', linestyle='--', label='ib_lag' + test_str)
     plt.legend(loc=1)
     plt.subplot(325)
-    plq(plt, mo, 'time', mo, 'voc', linestyle='-', color='black', label='voc' + ref_str)
-    plq(plt, mo, 'time', mo, 'voc_f', linestyle='-', color='black', label='voc_f' + ref_str)
+    plq(plt, mo, 'soc', mo, 'voc', linestyle='-', color='black', label='voc' + ref_str)
+    plq(plt, mo, 'soc', mo, 'voc_f', linestyle='-', color='black', label='voc_f' + ref_str)
     plt.plot(mo.soc, mo.voc_soc, color='red', linestyle='-', label='voc_soc' + ref_str)
     plt.plot(mv.soc, mv.voc_soc, color='orange', linestyle='--', label='voc_soc' + test_str)
     if hasattr(mo, 'voc'):
@@ -135,7 +135,7 @@ def gp_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig_
     else:
         values = np.array(mo.voc_soc) - np.array(mo.voc_f)+13.
     plt.plot(mo.soc, values, color='blue', linestyle='-', label='dv' + ref_str + '+13')
-    plq(plt, mo, 'time', mo, 'voc', linestyle='-', color='black', label='voc' + ref_str)
+    plq(plt, mo, 'soc', mo, 'voc', linestyle='-', color='black', label='voc' + ref_str)
 
     plt.plot(mv.soc, np.array(mv.voc_soc) - np.array(mv.voc)+13., color='orange', linestyle='--',
              label='dv' + test_str + '+13')
@@ -145,7 +145,7 @@ def gp_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plq(plt, mo, 'time', mo, 'voc_f', linestyle='-', color='black', label='voc_f' + ref_str)
     plt.plot(mo.time, mo.voc_soc, color='red', linestyle='-', label='voc_soc' + ref_str)
     plt.plot(mv.time, mv.voc_soc, color='orange', linestyle='--', label='voc_soc' + test_str)
-    plt.plot(mo.soc, values, color='blue', linestyle='-', label='dv' + ref_str + '+13')
+    plt.plot(mo.time, values, color='blue', linestyle='-', label='dv' + ref_str + '+13')
     plt.plot(mv.time, np.array(mv.voc_soc) - np.array(mv.voc)+13., color='orange', linestyle='--',
              label='dv' + test_str + '+13')
     plt.legend(loc=1)
@@ -206,8 +206,8 @@ def gp_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.xlabel('state-of-charge')
     plt.legend(loc=2)
     plt.subplot(337)
-    plq(plt, mo, 'soc', mo, 'vb', color='blue', linestyle='-', label='vb' + ref_str)
-    plq(plt, mo, 'soc', mo, 'vb_f', color='blue', linestyle='-', label='vb_f' + ref_str)
+    plq(plt, mo, 'time', mo, 'vb', color='blue', linestyle='-', label='vb' + ref_str)
+    plq(plt, mo, 'time', mo, 'vb_f', color='blue', linestyle='-', label='vb_f' + ref_str)
     plt.plot(mv.time, mv.vb, color='cyan', linestyle='--', label='vb' + test_str)
     plq(plt, so, 'time', so, 'vb_s', color='black', linestyle='-.', label='vb_s' + ref_str)
     plq(plt, smv, 'time', smv, 'vb_s', color='magenta', linestyle=':', label='vb_s' + test_str)

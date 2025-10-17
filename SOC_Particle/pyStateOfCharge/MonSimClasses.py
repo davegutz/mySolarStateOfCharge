@@ -25,6 +25,7 @@ from Battery import Battery
 from myFilters import LagExp
 from pyDAGx import myTables
 
+
 class SensorLooparound:
     """Collect Looparound sense parameters to create proper delays in data feed and connections to model"""
 
@@ -222,8 +223,16 @@ class Sensors:
             else:
                 self.dt_s.append(sim_ref.time[i] - sim_ref.time[i-1])
         self.soc_s = mon_ref.soc_s
-        self.dq_s = -mon_ref.qcrs * (1. - mon_ref.soc_s)
-        self.delta_q = -mon_ref.qcrs * (1. - mon_ref.soc)
+        if not hasattr(mon_ref, 'q_capacity'):
+            self.q_cap = self.calculate_capacity(q_cap_rated_scaled=mon_ref.qcrs, dqdt=mon_ref.dqdt,
+                                                 tb_f=self.Tb_f, t_rated=mon_ref.t_rated)
+        else:
+            self.q_cap = mon_ref.q_capacity
+        self.dq_s = -self.q_cap * (1. - mon_ref.soc_s)
+        if not hasattr(mon_ref, 'delta_q'):
+            self.delta_q = -self.q_cap * (1. - mon_ref.soc)
+        else:
+            self.delta_q = mon_ref.delta_q
         self.ib_in_s = sim_ref.ib_in_s
         self.ib_in_s_init = self.ib_in_s[0]
         self.ib_dyn_s = np.copy(self.ib_in_s)
@@ -293,6 +302,10 @@ class Sensors:
         mon.Tb_rstate = self.TbSenseFilt.rstate
         mon.Tb_state = self.TbSenseFilt.state
         return mon
+
+    def calculate_capacity(self, q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=None):
+        q_cap = q_cap_rated_scaled * (1. + dqdt * (tb_f - t_rated))
+        return q_cap
 
     def update_ekf(self, i_ekf):
         self.z_init = self.z[i_ekf]
