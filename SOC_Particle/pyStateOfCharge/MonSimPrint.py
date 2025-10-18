@@ -72,7 +72,7 @@ def print_hist(request_history, run_type, i, i_temp, i_ekf, t, mon_old, mon, cal
     return hdr
 
 def print_ekf_RunSim(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf, calc_temp):
-    hdr = "  i  time   r r_t  i_e  r_e  c_e   dt_ekf         sa      ib_charge             soc                    soc_ekf                 y_ekf                voc_ekf                Tb_f                    x_prior             fr     Tb_f_rap                x                       tb_f_for_hx             x_for_hx                  hx                       voc_stat_f            z                   z_ekf       P                              P_post                       P_prior                       H                      R                     S                    K                          x_post                 f_rstate               f_lstate                f_a                    f_b                    f_c                  f_tau                     f_T"
+    hdr = "  i  time   r r_t  i_e  r_e  c_e   dt_ekf         sa      ib_charge             soc                    soc_ekf                 y_ekf                voc_ekf                Tb_f                    x_prior             fr     Tb_f_rap                x                       tb_f_for_hx             x_for_hx                  hx                       voc_stat_f            z                   z_ekf       P                              P_post                       P_prior                       H                      R                     S                    K                          x_post                 f_rstate             f_lstate              f_a                    f_b                    f_c                  f_tau                     f_T"
     i_ekf = max(i_ekf, 0)
     if calc_temp or calc_ekf:
         print(hdr)
@@ -113,7 +113,7 @@ def print_ekf_RunSim(i, i_temp, i_ekf, t, mon_old, mon, calc_ekf, calc_temp):
     return hdr
 
 def print_soc_RunSim(i, i_temp, t, mon_old, mon, calc_temp, i_ekf, calc_ekf):
-    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa     ib_charge            soc                     dt                i * dt * coul_eff    Tb_f                      Tb_f_rap                    ddq                delq                       qcrs                   q_cap                  Tb                        Tb_f_rate"
+    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa     ib_charge            soc                     dt                i * dt * coul_eff    Tb_f                      Tb_f_rap                    ddq                  delq                       qcrs                   q_cap                  Tb                       Tb_f_rate"
     if calc_temp:
         print(hdr)
     if i > 0:
@@ -201,7 +201,7 @@ def print_soc_s_RunSim(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ek
     return hdr
 
 def print_temp_RunSim(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, SN, i_ekf, calc_ekf):
-    hdr = "  i  time   r       rt   it   ct      re   ie  ce     Tt        Tb_hdwe                    Tb                        Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap              tb_f_for_hx"
+    hdr = "  i  time   r       rt   it   ct      re   ie  ce     Tt       Tb_hdwe                    Tb                         Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
     if calc_temp:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),
