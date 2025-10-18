@@ -146,7 +146,7 @@ def print_soc_RunSim(i, i_temp, t, mon_old, mon, calc_temp, i_ekf, calc_ekf):
     return hdr
 
 def print_soc_s_RunSim(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ekf, calc_ekf, SN):
-    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s            ib_in_s               ib_s                  ib_fut       ib_dyn_s_rstate         ib_dyn_s_lstate         ib_dyn_s          ib_dyn_s_init    ib_dyn              ib_dyn_init      dv_hys_s              ib_charge_s            ioc_s                soc                   soc_s                   delq                       i * dt_s * coul_eff          d_delq_s             delq_s                     qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_dyn_s             vsat                 "
+    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s            ib_in_s               ib_s                  ib_fut       ib_dyn_s_rstate         ib_dyn_s_lstate          ib_dyn_s       ib_dyn_s_init     ib_dyn           ib_dyn_init      dv_hys_s              ib_charge_s            ioc_s                soc                   soc_s                   delq                       i * dt_s * coul_eff        d_delq_s               delq_s                     qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_dyn_s             vsat                 "
     if calc_temp:
         print(hdr)
     # if i > 0:
@@ -170,8 +170,8 @@ def print_soc_s_RunSim(i, i_temp, t, mon_old, mon, calc_temp, sim_old, sim, i_ek
           "{:12.6f}".format(sim_old.ib_s[i]), "{:10.6f}".format(sim.ib), "{:10.6f}".format(sim.ib_fut),
           "{:12.6f}".format(sim_old.ib_dyn_s_rstate[i]), "{:10.6f}".format(sim.ChargeTransfer.rstate),
           "{:12.6f}".format(sim_old.ib_dyn_s_lstate[i]), "{:10.6f}".format(sim.ChargeTransfer.state),
-          "{:12.6f}".format(sim_old.ib_dyn_s[i]), "{:10.6f}".format(sim.ib_dyn), "{:10.6f}".format(SN.ib_dyn_s_init),
-          "{:12.6f}".format(mon_old.ib_dyn[i]), "{:10.6f}".format(mon.ib_dyn), "{:10.6f}".format(SN.ib_dyn_init),
+          "{:12.5f}".format(sim_old.ib_dyn_s[i]), "{:9.5f}".format(sim.ib_dyn), "{:9.5f}".format(SN.ib_dyn_s_init),
+          "{:12.5f}".format(mon_old.ib_dyn[i]), "{:9.5f}".format(mon.ib_dyn), "{:9.5f}".format(SN.ib_dyn_init),
           "{:12.5f}".format(sim_old.dv_hys_s[i]), "{:9.5f}".format(sim.dv_hys),
           "{:12.5f}".format(sim_old.ib_charge_s[i]), "{:9.5f}".format(sim.ib_charge),
           "{:12.5f}".format(sim_old.ioc_s[i]), "{:9.5f}".format(sim.ioc),
@@ -222,7 +222,7 @@ def print_temp_RunSim(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, SN, 
     return hdr
 
 def print_volt_HistSim(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, SN):
-    hdr = "  i   time   r      rt   it   ct       re  ie   ce    sa        Tb_sel                   vb_sel                ib_sel                ib_charge             ib                    ib_hn                 ib_hm                 ib_dyn_m       ib_dyn_m_init     e_wrap_m_filt        e_wrap_m_trim       ib_hn                ib_dyn_n              e_wrap_n_filt        e_wrap               soc                        dt                 Tb_f                     voc                   voc_stat_f             soc_ekf"
+    hdr = "  i   time   r      rt   it   ct       re  ie   ce    sa        Tb_sel                   vb_sel                ib_sel                ib_charge             ib                    ib_hn                 ib_hm                  ib_dyn_m      ib_dyn_m_init     e_wrap_m_filt        e_wrap_m_trim       ib_hn                ib_dyn_n              e_wrap_n_filt        e_wrap               soc                        dt                 Tb_f                     voc                   voc_stat_f             soc_ekf"
     if i % 10 == 0:
         print(hdr)
     print("{:3d}".format(i), "{:7.0f}".format(t[i]), "{:2.0f}".format(mon.reset),
@@ -241,8 +241,8 @@ def print_volt_HistSim(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, S
           # "{:11.5f}".format(mon_old.e_wrap_m[i]), "{:8.5f}".format(mon.e_wrap_m),
           "{:11.5f}".format(mon_old.e_wm_f[i]), "{:8.5f}".format(mon.e_wrap_m_filt),
           "{:11.5f}".format(mon_old.e_wrap_m_trim[i]), "{:8.5f}".format(mon.e_wrap_m_trim),
-          "{:11.5f}".format(mon_old.ibnh_f[i]), "{:8.5f}".format(mon.LoopIbNoa.ib),
-          "{:11.5f}".format(mon_old.ib_dyn_n[i]), "{:8.5f}".format(mon.LoopIbNoa.ib_dyn),
+          "{:11.5f}".format(mon_old.ibnh_f[i]), "{:9.5f}".format(mon.LoopIbNoa.ib),
+          "{:11.5f}".format(mon_old.ib_dyn_n[i]), "{:9.5f}".format(mon.LoopIbNoa.ib_dyn),
           # "{:10.5f}".format(mon_old.ib_dyn[i]), "{:9.5f}".format(mon.ib_dyn),
           # "{:11.5f}".format(mon_old.dv_dyn_n[i]), "{:8.5f}".format(mon.LoopIbNoa.dv_dyn),
           # "{:11.5f}".format(mon_old.e_wrap_n[i]), "{:8.5f}".format(mon.e_wrap_n),
@@ -266,7 +266,7 @@ def print_volt_HistSim(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, S
     return hdr
 
 def print_volt_RunSim(i, i_temp, i_ekf, t, mon_old, mon, sim_old, sim, calc_temp, calc_ekf, SN):
-    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa      vb                    ib_charge             ib                    ib_hm                ib_dyn_m        ib_dyn_m_init        ib_dyn_a_m            ib_dyn_b_m            ib_dyn_c_m            ib_dyn_T_m     ib_dyn_tau_m           ib_dyn_rstate_m         ib_dyn_lstate_m          dv_dyn_m             e_wrap_m             e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n             ib_dyn                 ib_dyn_a_n            ib_dyn_b_n            ib_dyn_c_n            ib_dyn_T_n     ib_dyn_tau_n           ib_dyn_rstate_n         ib_dyn_lstate_n          dv_dyn_n             e_wrap_n_a             e_wrap_n_b             e_wrap_n_T             e_wrap_n_tau           e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt        e_wrap               e_wrap_filt         ib_dyn                dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_s            voc_stat_f             soc_ekf               y_ekf"
+    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa      vb                    ib_charge             ib                    ib_hm                ib_dyn_m        ib_dyn_m_init        ib_dyn_a_m            ib_dyn_b_m            ib_dyn_c_m            ib_dyn_T_m     ib_dyn_tau_m           ib_dyn_rstate_m         ib_dyn_lstate_m          dv_dyn_m             e_wrap_m             e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n             ib_dyn                 ib_dyn_a_n            ib_dyn_b_n            ib_dyn_c_n            ib_dyn_T_n     ib_dyn_tau_n           ib_dyn_rstate_n         ib_dyn_lstate_n          dv_dyn_n              e_wrap_n_a             e_wrap_n_b             e_wrap_n_T             e_wrap_n_tau           e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt        e_wrap               e_wrap_filt        ib_dyn                 dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_s            voc_stat_f             soc_ekf               y_ekf"
     if calc_temp or calc_ekf:
         print(hdr)
     print("{:3d}".format(i), "{:6.3f}".format(t[i]), "{:2.0f}".format(mon.reset),
@@ -306,7 +306,6 @@ def print_volt_RunSim(i, i_temp, i_ekf, t, mon_old, mon, sim_old, sim, calc_temp
           "{:12.6f}".format(mon_old.ib_wrp_tau_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.tau),
           "{:12.6f}".format(mon_old.ib_wrp_rate_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.rate),
           "{:12.6f}".format(mon_old.ib_wrp_state_n[i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.state),
-
           "{:11.5f}".format(mon_old.e_wrap_n[i]), "{:8.5f}".format(mon.e_wrap_n),
           "{:11.5f}".format(mon_old.e_wrap_n_filt[i]), "{:8.5f}".format(mon.e_wrap_n_filt),
           "{:11.5f}".format(mon_old.e_wrap[i]), "{:8.5f}".format(mon.e_wrap),
