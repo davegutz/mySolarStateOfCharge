@@ -189,6 +189,7 @@ class Battery(Coulombs):
         self.s_hys = s_hys
         self.ib_lag = 0.
         self.IbLag = LagExp(1., 1., -100., 100.)  # Lag to be run on sat to produce ib_lag.  T and tau set at run time
+        self.voc_soc = None
         self.voc_soc_new = 0.
         self.unit = unit
         self.scale_cap = scale_cap
@@ -220,8 +221,10 @@ class Battery(Coulombs):
         s += "  ib_dyn =  {:7.3f}  // Current-induced back emf in current, A\n".format(self.ib_dyn)
         s += "  vb =      {:7.3f}  // Battery terminal voltage, V\n".format(self.vb)
         s += "  voc      ={:7.3f}  // Static model open circuit voltage, V\n".format(self.voc)
-        s += "  voc_stat ={:7.3f}  // Static model open circuit voltage from table (reference), V\n"\
+        s += "  voc_stat ={:7.3f}  // Estimated voc_soc (reference), V\n"\
             .format(self.voc_stat)
+        s += "  voc_soc ={:7.3f}   // Static model open circuit voltage from table (reference), V\n"\
+            .format(self.voc_soc)
         s += "  voc_stat_f={:7.3f} // Static filtered model open circuit voltage from table (reference), V\n"\
             .format(self.voc_stat_f)
         s += "  vsat =    {:7.3f}  // Saturation threshold at temperature, V\n".format(self.vsat)
@@ -324,7 +327,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vb_model_rev = 0.
         self.voc_stat = 0.
         self.voc_stat_f = 0.
-        self.voc_soc = 0.
         self.voc = 0.
         self.voc_filt = 0.
         self.vsat = 0.
@@ -435,8 +437,6 @@ class BatteryMonitor(Battery, EKF1x1):
         s += "  amp_hrs_remaining_wt_  =  {:7.3f}  // Discharge amp*time left if drain soc_wt_ to 0, A-h\n"\
             .format(self.amp_hrs_remaining_wt)
         s += "  q_ekf     {:7.3f}  // Filtered charge calculated by ekf, C\n".format(self.q_ekf)
-        s += "  voc_soc  ={:7.3f}  // Static model open circuit voltage from table (reference), V\n"\
-            .format(self.voc_soc)
         s += "  soc_ekf = {:7.3f}  // Solved state of charge, fraction\n".format(self.soc_ekf)
         s += "  tcharge = {:7.3f}  // Charging time to full, hr\n".format(self.tcharge)
         s += "  tcharge_ekf = {:7.3f}   // Charging time to full from ekf, hr\n".format(self.tcharge_ekf)
@@ -989,6 +989,7 @@ class BatterySim(Battery):
         self.dv_hys, self.tau_hys = self.hys.update(self.dt, init_high=self.sat, init_low=init_low, e_wrap=0.,
                                                     chem=self.chm)
         self.voc = self.voc_stat + self.dv_hys
+        self.voc_soc = self.voc_stat
         self.ioc = self.hys.ioc
 
         # Battery management system (bms)   I believe bms can see only vb but using this for a model causes

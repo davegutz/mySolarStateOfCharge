@@ -41,7 +41,8 @@ Battery::Battery(double *sp_delta_q, const float d_voc_soc, const float dx_voc, 
                 const float dz_voc)
     : Coulombs(sp_delta_q, (NOM_UNIT_CAP*3600), COULOMBIC_EFF_SCALE, dx_voc, dy_voc, dz_voc), bms_charging_(false),
 	bms_off_(false), dt_(0.1), dv_dsoc_(0.3), dv_dyn_(0.), dv_hys_(0.), ib_(0.), ibs_(0.), ioc_(0.), print_now_(false),
-    tb_f_(NOMINAL_TB), vb_(NOMINAL_VB), voc_(NOMINAL_VB), voc_stat_(NOMINAL_VB), voltage_low_(false), vsat_(NOMINAL_VB)
+    tb_f_(NOMINAL_TB), vb_(NOMINAL_VB), voc_(NOMINAL_VB),  voc_soc_(NOMINAL_VB), voc_stat_(NOMINAL_VB),
+    voltage_low_(false), vsat_(NOMINAL_VB)
 {
     nom_vsat_   = chem_.v_sat - HDB_VB;   // Center in hysteresis
     ChargeTransfer_ = new LagExp(EKF_NOM_DT, chem_.tau_ct, -NOM_UNIT_CAP, NOM_UNIT_CAP);  // Update time and time constant changed on the fly
@@ -148,7 +149,7 @@ float Battery::voc_soc_tab(const float soc, const double tb_f)
 BatteryMonitor::BatteryMonitor(const float dx_voc, const float dy_voc, const float dz_voc):
     Battery(&sp.delta_q_z, VM, dx_voc, dy_voc, dz_voc),
 	amp_hrs_remaining_ekf_(0.), amp_hrs_remaining_soc_(0.), eframe_(0), ib_charge_(0.), ib_past_(0.),
-    q_ekf_(NOM_UNIT_CAP*3600.), soc_ekf_(1.0), tcharge_(0.), tcharge_ekf_(0.), voc_filt_(NOMINAL_VB), voc_soc_(NOMINAL_VB),
+    q_ekf_(NOM_UNIT_CAP*3600.), soc_ekf_(1.0), tcharge_(0.), tcharge_ekf_(0.), voc_filt_(NOMINAL_VB),
     y_filt_(0.)
 {
     voc_filt_ = calc_vsat() - HDB_VB;
@@ -680,6 +681,7 @@ float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean 
     float dvdyn = (ib_dyn_*chem_.r_ct*ap.slr_res + ib_*chem_.r_0*ap.slr_res);
 
     vb_ = voc_ + dvdyn;
+    voc_soc_ = voc_stat_;
 
     // Special cases override
     if ( bms_off_ )

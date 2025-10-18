@@ -222,7 +222,7 @@ def print_temp_RunSim(i, i_temp, t, mon_old, mon, calc_temp, Tb_, Tb_past_, SN, 
     return hdr
 
 def print_volt_HistSim(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, SN):
-    hdr = "  i   time   r      rt   it   ct       re  ie   ce    sa        Tb_sel                   vb_sel                ib_sel                ib_charge             ib                    ib_hn                 ib_hm                  ib_dyn_m      ib_dyn_m_init     e_wrap_m_filt        e_wrap_m_trim       ib_hn                ib_dyn_n              e_wrap_n_filt        e_wrap               soc                        dt                 Tb_f                     voc                   voc_stat_f             soc_ekf"
+    hdr = "  i   time   r      rt   it   ct       re  ie   ce    sa       Tb_sel                    vb_sel                ib_sel                ib_charge             ib                    ib_hn                 ib_hm                 ib_dyn_m       ib_dyn_m_init     e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n               e_wrap_n_filt        e_wrap               soc                        dt                 Tb_f                     voc                   voc_stat_f             soc_ekf"
     if i % 10 == 0:
         print(hdr)
     print("{:3d}".format(i), "{:7.0f}".format(t[i]), "{:2.0f}".format(mon.reset),

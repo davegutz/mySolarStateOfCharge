@@ -126,6 +126,7 @@ public:
   double tb_f() { return tb_f_; };            // Battery temp, C
   float vb() { return vb_; };            // Battery terminal voltage, V
   float voc() { return voc_; };
+  float voc_soc() { return voc_soc_; };
   float voc_stat() { return voc_stat_; };
   float voc_soc_tab(const float soc, const double tb_f);
   float vsat() { return vsat_; };
@@ -145,6 +146,7 @@ protected:
   double tb_f_;    // Battery temperature, deg C
   float vb_;       // Battery terminal voltage, V
   float voc_;      // Static model open circuit voltage, V
+  float voc_soc_;      // Raw table lookup of voc, V
   float voc_stat_; // Static, table lookup value of voc before applying hysteresis, V
   boolean voltage_low_; // Battery below BMS, T = BMS will turn off
   float vsat_;     // Saturation threshold at temperature, V
@@ -189,7 +191,6 @@ public:
   float dv_dyn() { return dv_dyn_; };
   float vb_model_rev() { return vb_model_rev_; };
   float voc_filt() { return voc_filt_; };
-  float voc_soc() { return voc_soc_; };
   float voc_stat_f() { return voc_stat_f_; };
   double y_ekf() { return y_; };
   double y_ekf_filt() { return y_filt_; };
@@ -218,7 +219,6 @@ protected:
   float tcharge_ekf_;  // Solved charging time to 100% from ekf, hr
   float vb_model_rev_; // Reversionary model of vb, V
   float voc_filt_;     // Deadband-filtered, static model open circuit voltage, V
-  float voc_soc_;      // Raw table lookup of voc, V
   float voc_stat_f_;   // Filtered voc_stat for EKF use, V
   float y_filt_;       // Filtered EKF y value, V
   void ekf_predict(double *Fx_, double *Bu_);
