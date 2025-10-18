@@ -916,6 +916,7 @@ class BatterySim(Battery):
         self.saved_s = SavedS()  # for plots and prints
         self.ib_fut = 0.  # Future value of limited current, A
         self.reset_temp_past = True
+        self.dt_past = 0.
         if SN is not None:
             self.Tb = SN.Tb0
             self.dv_dyn = SN.dv_dyn_s_init
@@ -967,6 +968,7 @@ class BatterySim(Battery):
             self.chemistry.assign_all_mod(chem, self.unit)
             self.chm = chem
 
+        self.dt_past = self.dt
         self.dt = dt
         self.ib_in = ib
         if self.reset and bms_off_init:
@@ -1007,8 +1009,7 @@ class BatterySim(Battery):
         self.ib_lag = self.IbLag.calculate_tau(self.ib, self.reset, self.dt, self.chemistry.ib_lag_tau)
 
         # Charge transfer dynamics
-        # TODO:  self.dt_past in following?
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, self.reset, dt,
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, self.reset, self.dt_past,
                                                                self.chemistry.tau_ct)
         if self.reset:
             pass
@@ -1048,7 +1049,7 @@ class BatterySim(Battery):
 
         return self.vb
 
-    def count_coulombs(self, chem, dt, reset_temp, tb_f, charge_curr, sat, tb_f_rate=None, soc_s_init=None, sim_delta_q=None,
+    def count_coulombs(self, chem, reset_temp, tb_f, charge_curr, sat, tb_f_rate=None, soc_s_init=None, sim_delta_q=None,
                        mon_sat=None, use_soc_in=False, soc_in=0.):
         # BatterySim
         """Coulomb counter based on true=actual capacity
@@ -1068,7 +1069,7 @@ class BatterySim(Battery):
             self.chm = chem
         self.ib_charge = charge_curr
         self.Tb_f = tb_f
-        self.d_delta_q = self.ib_charge * dt
+        self.d_delta_q = self.ib_charge * self.dt
         if self.ib_charge > 0.:
             self.d_delta_q *= self.chemistry.coul_eff
 

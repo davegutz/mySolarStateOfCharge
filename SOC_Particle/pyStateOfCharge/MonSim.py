@@ -303,7 +303,7 @@ def replicate(OPT: UserOptions):
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=OPT.sim_ref.bms_off_s[0])
         prn_soc_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
-        sim.count_coulombs(chem=_chm_s, dt=SN.dt_s[i], reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=SN.Tb_f_rate_past,
+        sim.count_coulombs(chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=SN.Tb_f_rate_past,
                            charge_curr=sim.ib_charge, sat=False, soc_s_init=SN.soc_s[i], mon_sat=mon.sat,
                            sim_delta_q=SN.dq_s[i], use_soc_in=OPT.use_mon_soc, soc_in=SN.soc_s[i])
         prn_soc_debug(time=now, leader="after sim.count_cou:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
