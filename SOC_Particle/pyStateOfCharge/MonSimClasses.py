@@ -235,7 +235,8 @@ class Sensors:
             self.delta_q = mon_ref.delta_q
         self.ib_in_s = sim_ref.ib_in_s
         self.ib_in_s_init = self.ib_in_s[0]
-        # self.ib_dyn_s = np.copy(self.ib_in_s)
+        if not hasattr(self, 'ib_dyn_s'):
+            self.ib_dyn_s = np.copy(self.ib_in_s)
         self.ib_dyn_s_init = self.ib_dyn_s[0]
         self.dv_dyn_s = sim_ref.dv_dyn_s
         self.dv_dyn_s_init = self.dv_dyn_s[0]
