@@ -125,7 +125,7 @@ class Sensors:
             self.Tb_f_rap_init = mon_ref.Tb_f_rap[0] + self.dTb
             self.Tb_f_rate_rap_init = mon_ref.Tb_f_rate_rap[0]
             self.ib_init = mon_ref.ib[0]
-            self.ib_dyn_init = mon_ref.ib_dyn[0]
+            # self.ib_dyn_init = mon_ref.ib_dyn[0]
             self.ib_charge_init = mon_ref.ib_charge[0]
             self.vb_init = mon_ref.vb[0]
             self.soc_init = mon_ref.soc[0]
@@ -235,7 +235,7 @@ class Sensors:
             self.delta_q = mon_ref.delta_q
         self.ib_in_s = sim_ref.ib_in_s
         self.ib_in_s_init = self.ib_in_s[0]
-        self.ib_dyn_s = np.copy(self.ib_in_s)
+        # self.ib_dyn_s = np.copy(self.ib_in_s)
         self.ib_dyn_s_init = self.ib_dyn_s[0]
         self.dv_dyn_s = sim_ref.dv_dyn_s
         self.dv_dyn_s_init = self.dv_dyn_s[0]
@@ -244,8 +244,8 @@ class Sensors:
         self.ib_fut_s_init = self.ib_in_s_init
         self.ib_charge_s_init = self.ib_in_s_init
         self.ioc_s_init = self.ib_in_s_init
-        self.voc_s_init = sim_ref.voc_stat_s[0]  # is this right?
-        self.ib_dyn_s_init = self.ib_in_s_init
+        self.voc_s_init = sim_ref.voc_stat_s[0]
+        # self.ib_dyn_s_init = self.ib_in_s_init
         self.soc_s_init = mon_ref.soc_s[0]
         self.hx_init = self.voc_soc_init
         self.soc_init = mon_ref.soc[0]

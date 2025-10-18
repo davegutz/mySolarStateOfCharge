@@ -1007,6 +1007,7 @@ class BatterySim(Battery):
         self.ib_lag = self.IbLag.calculate_tau(self.ib, self.reset, self.dt, self.chemistry.ib_lag_tau)
 
         # Charge transfer dynamics
+        # TODO:  self.dt_past in following?
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, self.reset, dt,
                                                                self.chemistry.tau_ct)
         if self.reset:
@@ -1234,6 +1235,7 @@ class Looparound:
         self.dt_past = self.dt
         self.dt = dt
         self.ib = ib
+        # TODO:  following ib_dyn_init should depend on self.name
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib_past, SN.ib_dyn_init, self.reset, self.dt_past,
                                                                 self.chem.tau_ct, text=self.name)
         self.dv_dyn = (self.ib_dyn* self.chem.r_ct + self.ib_past * self.chem.r_0)
