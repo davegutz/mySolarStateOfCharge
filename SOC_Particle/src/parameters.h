@@ -231,8 +231,8 @@ public:
     void reset_flt();
     void reset_his();
     virtual void set_nominal();
-    float ib_hist_slr() { if ( abs(amp_z) > 40. ) return 30000./abs(amp_z); else return 600.; }
-    float vb_hist_slr() { if ( abs(amp_z) > 40. ) return 1500./abs(amp_z); else return 1200.; }
+    float ib_hist_slr() { if ( abs(amp_z) > SCL_40 ) return SCL_30000/abs(amp_z); else return SCL_600; }
+    float vb_hist_slr() { if ( abs(amp_z) > SCL_40 ) return SCL_1500/abs(amp_z); else return SCL_1200; }
     boolean mod_all_dscn() { return ( 111<modeling() ); }                // Bare all
     boolean mod_any() { return ( mod_ib() || mod_tb_f() || mod_vb() ); }  // Modeling any
     boolean mod_any_dscn() { return ( 15<modeling() ); }                 // Bare any

@@ -47,6 +47,7 @@ struct Flt_st
   int16_t voc_stat_filt = 0; // Stored single unit charge voltage from measurement, V
   int16_t e_wrap_filt = 0;  // Wrap model error, filtered, V
   int16_t e_wrap_m_filt = 0;// Wrap amp model error, filtered, V
+  int16_t e_wrap_m_trim = 0;// Wrap amp model trim, filtered, V
   int16_t e_wrap_n_filt = 0;// Wrap noa model error, filtered, V
   uint32_t fltw = 0;    // Fault word
   uint32_t falw = 0;    // Fail word
@@ -82,6 +83,7 @@ public:
     void get_voc_stat()     { int16_t value;        rP_->get(voc_stat_eeram_.a16, value);     voc_stat = value; };
     void get_e_wrap_filt()  { int16_t value;        rP_->get(e_wrap_filt_eeram_.a16, value);  e_wrap_filt = value; };
     void get_e_wrap_m_filt(){ int16_t value;        rP_->get(e_wrap_m_filt_eeram_.a16, value);  e_wrap_m_filt = value; };
+    void get_e_wrap_m_trim(){ int16_t value;        rP_->get(e_wrap_m_trim_eeram_.a16, value);  e_wrap_m_trim = value; };
     void get_e_wrap_n_filt(){ int16_t value;        rP_->get(e_wrap_n_filt_eeram_.a16, value);  e_wrap_n_filt = value; };
     void get_fltw()         { uint32_t value;       rP_->get(fltw_eeram_.a16, value);         fltw = value; };
     void get_falw()         { uint32_t value;       rP_->get(falw_eeram_.a16, value);         falw = value; };
@@ -125,6 +127,7 @@ public:
     void put_voc_stat_filt()     { rP_->put(voc_stat_eeram_.a16, voc_stat_filt); };
     void put_e_wrap_filt()  { rP_->put(e_wrap_filt_eeram_.a16, e_wrap_filt); };
     void put_e_wrap_m_filt(){ rP_->put(e_wrap_m_filt_eeram_.a16, e_wrap_m_filt); };
+    void put_e_wrap_m_trim(){ rP_->put(e_wrap_m_trim_eeram_.a16, e_wrap_m_trim); };
     void put_e_wrap_n_filt(){ rP_->put(e_wrap_n_filt_eeram_.a16, e_wrap_n_filt); };
     void put_fltw()         { rP_->put(fltw_eeram_.a16, fltw); };
     void put_falw()         { rP_->put(falw_eeram_.a16, falw); };
@@ -143,6 +146,7 @@ public:
     void put_voc_stat_filt(const int16_t value)        { rP_->put(voc_stat_eeram_.a16, value);     voc_stat_filt = value; };
     void put_e_wrap_filt(const int16_t value)     { rP_->put(e_wrap_filt_eeram_.a16, value);  e_wrap_filt = value; };
     void put_e_wrap_m_filt(const int16_t value)   { rP_->put(e_wrap_m_filt_eeram_.a16, value);e_wrap_m_filt = value; };
+    void put_e_wrap_m_trim(const int16_t value)   { rP_->put(e_wrap_m_trim_eeram_.a16, value);e_wrap_m_trim = value; };
     void put_e_wrap_n_filt(const int16_t value)   { rP_->put(e_wrap_n_filt_eeram_.a16, value);e_wrap_n_filt = value; };
     void put_fltw(const uint32_t value)           { rP_->put(fltw_eeram_.a16, value);         fltw = value; };
     void put_falw(const uint32_t value)           { rP_->put(falw_eeram_.a16, value);         falw = value; };
@@ -166,6 +170,7 @@ protected:
     address16b voc_stat_eeram_;
     address16b e_wrap_filt_eeram_;
     address16b e_wrap_m_filt_eeram_;
+    address16b e_wrap_m_trim_eeram_;
     address16b e_wrap_n_filt_eeram_;
     address16b fltw_eeram_;
     address16b falw_eeram_;

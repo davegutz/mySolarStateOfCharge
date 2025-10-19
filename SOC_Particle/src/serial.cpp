@@ -198,11 +198,13 @@ void print_ekf_header(void)
 }
 
 // print_signal_select for data collection
+// TODO:  delete the _a_, _b_, etc stuff
 void print_signal_sel_header(void)
 {
   if ( sp.debug()==2 || sp.debug()==4 ) // print_signal_sel_header
     Serial.printf("unit_s,c_time,res,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,   ib_diff, ib_diff_f,");
-    Serial.printf("    voc_soc,e_w,e_w_f,ib_dm,dv_dm,e_wm,e_wm_f,ib_dn,dv_dn,e_wn,e_wn_f,e_wm_t,  ib_sel_stat,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_h,vb_s,mvb,vb,  mtb,Tb_fa, ");
+    Serial.printf("  voc_soc,e_w,e_w_f,ib_dm,dv_dm,e_wm,e_wm_f,ib_dn,dv_dn,e_wn,e_wn_f,e_wm_t,");
+    Serial.printf("  ib_sel_stat,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_h,vb_s,mvb,vb,  mtb,Tb_fa, ");
     Serial.printf("  fltw, falw, ib_rate, ib_quiet, tb_sel, ccd_thr, ewh_thr, ewl_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,");
     Serial.printf("  ib_dyn_a_m, ib_dyn_b_m, ib_dyn_c_m, ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rstate_m, ib_dyn_lstate_m,");
     Serial.printf("  ib_dyn_a_n, ib_dyn_b_n, ib_dyn_c_n, ib_dyn_T_n, ib_dyn_tau_n, ib_dyn_rstate_n, ib_dyn_lstate_n,");

@@ -112,6 +112,12 @@ const String unit = version + "_" + HDWE_UNIT;
 #define TB_FILT               120.      // Temperature filter lag, s (120)
 #define F_W_I                 0.5       // Current filter wn, r/s (0.5)   
 #define F_Z_I                 0.80      // Current filter zeta (0.80)
+#define SCL_40                40.       // Data storage integer scaling
+#define SCL_600               600.      // Data storage integer scaling
+#define SCL_1200              1200.     // Data storage integer scaling
+#define SCL_1500              1500.     // Data storage integer scaling
+#define SCL_16000             16000.    // Data storage integer scaling
+#define SCL_30000             30000.    // Data storage integer scaling
 
 // If NSUM too large, will get flashing red with auto reboot on 'Hs' or compile error `.data' will not fit in region `APP_FLASH'
 // For all, there are 40 bytes for each unit of NSUM

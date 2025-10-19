@@ -315,6 +315,7 @@ public:
   float e_wrap_filt() { return e_wrap_filt_; };
   float e_wrap_m() { return LoopIbAmp->e_wrap(); };
   float e_wrap_m_filt() { return LoopIbAmp->e_wrap_filt(); };
+  float e_wrap_m_trim() { return LoopIbAmp->e_wrap_trim(); };
   float e_wrap_n() { return LoopIbNoa->e_wrap(); };
   float e_wrap_n_filt() { return LoopIbNoa->e_wrap_filt(); };
   float e_wrap_rate() { return e_wrap_rate_; };
