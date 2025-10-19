@@ -132,6 +132,13 @@ void Flt_st::pretty_print(const String code)
   }
 }
 
+void SavedPars::print_fault_header(Publish *pubList)
+{
+    Serial.printf("Config:  %s \n", pubList->unit.c_str());
+    Serial1.printf("Config:  %s \n", pubList->unit.c_str());
+    Serial.printf ("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, ibmh_f, ibnh_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_w_f, e_wm_f, e_wm_t, e_wn_f, fltw, falw,\n");
+    Serial1.printf ("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, ibmh_f, ibnh_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_w_f, e_wm_f, e_wm_t, e_wn_f, fltw, falw,\n");
+}
 
 void Flt_st::print_flt(const String code)
 {
