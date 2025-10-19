@@ -240,7 +240,7 @@ def print_volt_HistSim(i, i_temp, i_ekf, t, mon_old, mon, calc_temp, calc_ekf, S
           # "{:11.5f}".format(mon_old.dv_dyn_m[i]), "{:8.5f}".format(mon.LoopIbAmp.dv_dyn),
           # "{:11.5f}".format(mon_old.e_wrap_m[i]), "{:8.5f}".format(mon.e_wrap_m),
           "{:11.5f}".format(mon_old.e_wm_f[i]), "{:8.5f}".format(mon.e_wrap_m_filt),
-          "{:11.5f}".format(mon_old.e_wrap_m_trim[i]), "{:8.5f}".format(mon.e_wrap_m_trim),
+          "{:11.5f}".format(mon_old.e_wm_t[i]), "{:8.5f}".format(mon.e_wrap_m_trim),
           "{:11.5f}".format(mon_old.ibnh_f[i]), "{:9.5f}".format(mon.LoopIbNoa.ib),
           "{:11.5f}".format(mon_old.ib_dyn_n[i]), "{:9.5f}".format(mon.LoopIbNoa.ib_dyn),
           # "{:10.5f}".format(mon_old.ib_dyn[i]), "{:9.5f}".format(mon.ib_dyn),

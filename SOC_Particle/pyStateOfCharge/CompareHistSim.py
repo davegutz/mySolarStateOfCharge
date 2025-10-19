@@ -1271,7 +1271,7 @@ def main():
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/Hd 20251015am_soc4p2_hi_lo_bb.csv'
+    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/Hd 20251019am.csv'
     data_only = False
     # data_only=True
     mon_t = False

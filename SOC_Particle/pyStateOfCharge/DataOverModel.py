@@ -464,6 +464,7 @@ def ult_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mo, 'time', mo, 'e_wm_f', color='green', linestyle='-', label='e_wrap_m_filt' + ref_str)
     plq(plt, mv, 'time', mv, 'e_wrap_m_filt', color='red', linestyle='--', label='e_wrap_m_filt' + ver_str)
     plq(plt, mo, 'time', mo, 'e_wrap_m_trim', color='magenta', linestyle='-.', label='e_wrap_m_trim' + ref_str)
+    plq(plt, mo, 'time', mo, 'e_wm_t', color='magenta', linestyle='-.', label='e_wrap_m_trim' + ref_str)
     plq(plt, mv, 'time', mv, 'e_wrap_m_trim', color='cyan', linestyle=':', label='e_wrap_m_trim' + ver_str)
     plq(plt, mv, 'time', mv, 'ewmhi_thr', color='red', linestyle='-.', label='ewhm_thr' + ver_str)
     plq(plt, mv, 'time', mv, 'ewmlo_thr', color='red', linestyle='-.', label='ewlm_thr' + ver_str)
