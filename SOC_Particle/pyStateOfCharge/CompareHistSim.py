@@ -24,9 +24,9 @@ from Battery import Battery, BatteryMonitor, is_sat, Retained
 from MonSim import replicate, save_clean_file, UserOptions
 from resample import resample
 from PlotKiller import show_killer
-from DataOverModel import dom_plot
-from PlotGP import tune_r, gp_plot
+from PlotHist import tune_hs, hs_plot
 from PlotOffOn import off_on_plot
+from DataOverModel import dom_plot
 from Chemistry_BMS import ib_lag
 from myFilters import LagExp
 from DataOverModel import write_clean_file, plq
@@ -603,9 +603,9 @@ def overall_fault(mo, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     ref_str = ''
     test_str = '_ver'
 
-    fig_list.append(plt.figure())  # GP 2 Hist
+    fig_list.append(plt.figure())  # O_F 2
     plt.subplot(331)
-    plt.title(plot_title + ' GP 2 Hist')
+    plt.title(plot_title + ' O_F 2')
     if hasattr(mo, 'vb'):
         mo.dv_dyn = mo.vb - mo.voc
     else:
@@ -1237,21 +1237,20 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
         if hist_20C is not None and len(hist_20C.time) > 1:
             sim_old = None
             plot_init_in = False
-            fig_list, fig_files = dom_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename,
-                                           fig_files, plot_title=plot_title, fig_list=fig_list,
-                                           plot_init_in=plot_init_in, ref_str='', test_str='_ver')
-            fig_list, fig_files = gp_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename,
+            fig_list, fig_files = hs_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename,
                                           fig_files, plot_title=plot_title, fig_list=fig_list,
-                                          ref_str='', test_str='_ver')
+                                          ref_str='', ver_str='_ver')
             fig_list, fig_files = off_on_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename,
                                               fig_files, plot_title=plot_title, fig_list=fig_list,
                                               ref_str='', test_str='_ver')
             fig_list, fig_files = overall_fault(mon_old, mon_ver, sim_ver, sim_s_ver, filename,
                                                 fig_files, plot_title=plot_title, fig_list=fig_list)
-            fig_list, fig_files = tune_r(mon_old, mon_ver, sim_s_ver, filename,
+            fig_list, fig_files = tune_hs(mon_old, mon_ver, sim_s_ver, filename,
                                          fig_files, plot_title=plot_title, fig_list=fig_list,
-                                         ref_str='', test_str='_ver')
-
+                                         ref_str='', ver_str='_ver')
+            fig_list, fig_files = dom_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename,
+                                           fig_files, plot_title=plot_title, fig_list=fig_list,
+                                           plot_init_in=plot_init_in, ref_str='', test_str='_ver')
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
         unite_pictures_into_pdf(outputPdfName=filename+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
         cleanup_fig_files(fig_files)
