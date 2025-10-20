@@ -647,6 +647,7 @@ class SavedData:
             self.hm = None  # hours, minutes
             self.cTime = None  # Control time, s
             self.ib = None  # Bank current, A
+            self.ib_f = None  # Bank current filtered, A
             self.ioc = None  # Hys indicator current, A
             self.voc = None
             self.voc_soc = None
