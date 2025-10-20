@@ -118,7 +118,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
         tb_f_ = d_ra.Tb_f[i]
         vb_f_ = d_ra.vb_f[i]
         voc_f_ = d_ra.voc_f[i]
-        reset = i == 0
+        reset = True  # Always initializing in history mode - times spread out
         # Battery management system model (uses past value bms_off and voc_stat)
         if not bms_off:
             voltage_low = voc_stat_f < mon.chemistry.vb_down
@@ -1272,8 +1272,8 @@ def main():
 
     # User inputs (multiple input_files allowed
     data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/Hd 20251019am.csv'
-    data_only = False
-    # data_only=True
+    # data_only = False
+    data_only=True
     mon_t = False
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # dt_resample = 900
