@@ -25,7 +25,6 @@ Dependencies:
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
-from MonSim import replicate, save_clean_file, save_clean_file_sim
 from Battery import overall_batt
 from myFilters import LagExp
 # below suppresses runtime error display******************
@@ -1257,6 +1256,7 @@ if __name__ == '__main__':
 
 
     def main(data_file_old_txt, unit_key):
+        from MonSim import replicate, save_clean_file, save_clean_file_sim
         # Trade study inputs
         # i-->0 provides continuous anchor to reset filter (why?)  i shifts important --> 2 current sensors,
         #   hyst in ekf

@@ -17,7 +17,8 @@
 a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
-
+from DataOverModel import SavedData as SavedData
+from DataOverModel import SavedDataSim as SavedDataSim
 from MonSimNomConfig import *  # Global config parameters.   Overwrite in your own calls for studies
 from Battery import BatteryMonitor, BatterySim, is_sat, Retained
 from numpy import random as random
@@ -81,9 +82,9 @@ def vb_from_raw_or_selected(use_raw, mo):
 
 @dataclass
 class UserOptions:
-    mon_ref: 'DataOverModel.SavedData'  # Mandatory reference data to be replicated
+    mon_ref: SavedData  # Mandatory reference data to be replicated
     run_type: Optional[str] = None  # Either "RunSim" or "HistSim" depending on caller
-    sim_ref: Optional['DataOverModel.SavedDataSim'] = None  # Embedded model data
+    sim_ref: Optional[SavedDataSim] = None  # Embedded model data
     unit: Optional[str] = None  # Name of the battery instance derived from 'HDWE_UNIT' of configuration include .h file
     Bsim: Optional[int] = None  # sim model code BB=0 (Battleborn), CH=1 (Chins), CHG=2 (Chins in Garage)
     Bmon: Optional[int] = None  # mon model code BB=0 (Battleborn), CH=1 (Chins), CHG=2 (Chins in Garage)
