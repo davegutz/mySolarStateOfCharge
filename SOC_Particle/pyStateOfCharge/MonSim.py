@@ -18,27 +18,27 @@ a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 
-from Battery import BatteryMonitor, BatterySim, is_sat, Retained
-from Battery import overall_batt
-from TFDelay import TFDelay
 from MonSimNomConfig import *  # Global config parameters.   Overwrite in your own calls for studies
+from Battery import BatteryMonitor, BatterySim, is_sat, Retained
 from numpy import random as random
-from MonSimPrint import *
-from MonSimClasses import *
 from dataclasses import dataclass
+from Battery import overall_batt
 from typing import Optional
+from TFDelay import TFDelay
+from MonSimClasses import *
+from MonSimPrint import *
 
 def battery_size(mo, so, scale_in_, unit_cap_rated_):
     if hasattr(mo, 'qcrs'):
-        scale_mon_ = mo.qcrs[0] / (Battery.UNIT_CAP_RATED*3600)
+        scale_mon_ = mo.qcrs[0] / (unit_cap_rated_*3600)
     else:
-        scale_mon_ = unit_cap_rated / Battery.UNIT_CAP_RATED
+        scale_mon_ = unit_cap_rated / unit_cap_rated_
         if scale_in_:
-            scale_mon_ *= scale_in
+            scale_mon_ *= scale_in_
     if so is not None and hasattr(so, 'qcrs_s'):
-        scale_sim_ = so.qcrs_s[0] / (Battery.UNIT_CAP_RATED*3600)
+        scale_sim_ = so.qcrs_s[0] / (unit_cap_rated_*3600)
     else:
-        scale_sim_ = unit_cap_rated / Battery.UNIT_CAP_RATED
+        scale_sim_ = unit_cap_rated / unit_cap_rated_
         if scale_in_:
             scale_sim_ *= scale_in_
     return scale_mon_, scale_sim_
@@ -49,7 +49,7 @@ def chm_from_mon_or_sim(mo, so):
     if so is not None:
         chem_s = so.chm_s
     else:
-        chem_s = chm_m
+        chem_s = mo.chm_m
     return chem_m, chem_s
 
 def get_modeling(mo):
@@ -187,7 +187,7 @@ def replicate(OPT: UserOptions):
     SN = Sensors(mon_ref=OPT.mon_ref, sim_ref=OPT.sim_ref, add_Tb_in=OPT.add_Tb_in, run_type=OPT.run_type)
 
     # Battery sizing
-    scale_mon, scale_sim = battery_size(OPT.mon_ref, OPT.sim_ref, OPT.scale_in, unit_cap_rated)
+    scale_mon, scale_sim = battery_size(OPT.mon_ref, OPT.sim_ref, OPT.scale_in, Battery.UNIT_CAP_RATED)
 
     # Make batteries
     sim = BatterySim(SN=SN, mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
@@ -219,8 +219,6 @@ def replicate(OPT: UserOptions):
     i = None
     hdr = None
     sat_s_init = None
-    e_wrap_trim_amp_init = None
-    e_wrap_trim_noa_init = None
 
     # Print debug information
     if OPT.request_history is not None and OPT.request_history > 0:
@@ -463,7 +461,6 @@ if __name__ == '__main__':
         # unit_key = None
         # data_file_old_txt = None
         scale_r_ss_in = 1.
-        scale_hys_sim_in = 1.
         dvoc_sim_in = 0.
         dvoc_mon_in = 0.
         Bmon_in = None
@@ -496,8 +493,6 @@ if __name__ == '__main__':
             sel_old_raw = np.genfromtxt(sel_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
         mon_old = SavedData(rap=mon_old_raw, sel=sel_old_raw, time_end=time_end, zero_zero=zero_zero_in,
                             zero_thr=zero_thr_in, init_time_in=init_time_in)
-        # SavedData determines when to initialize
-        init_time = mon_old.init_time
 
         # Load _m v24 portion of real-time run (old)
         data_file_sim_clean = write_clean_file(data_file_old_txt, type_='_sim', hdr_key=hdr_key_sim,
@@ -513,11 +508,9 @@ if __name__ == '__main__':
 
         replicateOptions = UserOptions(mon_ref=mon_old, sim_ref=sim_old, Bmon=Bmon_in, Bsim=Bsim_in,
                                        init_time=mon_old.init_time, use_ib_mon=use_ib_mon_in,
-                                       use_mon_soc=use_mon_soc_in, use_vb_raw=use_vb_raw, add_voc_sim=dvoc_sim_in,
-                                       add_voc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
-                                       add_s_voc_soc=add_s_voc_soc_in, verbose=verbose, slr_r_ss=scale_r_ss_in,
-                                       scale_in=scale_in, slr_hys_sim=s_hys_sim_in, request_history=request_history,
-                                       ib_fail_t=ib_fail_t)
+                                       use_vb_raw=use_vb_raw, add_voc_sim=dvoc_sim_in,
+                                       add_voc_mon=dvoc_mon_in, slr_r_ss=scale_r_ss_in,
+                                       scale_in=scale_in, ib_fail_t=ib_fail_t)
         mon_ver, sim_ver, sim_s_ver, mon, sim = replicate(replicateOptions)
         save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
 
