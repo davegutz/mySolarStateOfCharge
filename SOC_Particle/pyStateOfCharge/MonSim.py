@@ -256,13 +256,9 @@ def replicate(OPT: UserOptions):
         # Basic reset model verification is to init to the input data
         # Tried hard not to re-implement solvers in the Python verification  tool
         # Also, BTW, did not implement signal selection or tweak logic
-        reset = None
-        if OPT.run_type == 'RunSim':
-            reset = bool((t[i] <= OPT.init_time) or (t[i] < 0. and t[0] > OPT.init_time))
-            if OPT.mon_ref.res is not None:
-                reset = reset or bool(OPT.mon_ref.res[i] > 0.)
-        elif OPT.run_type == 'HistSim':
-            reset = True
+        reset = bool((t[i] <= OPT.init_time) or (t[i] < 0. and t[0] > OPT.init_time))
+        if OPT.mon_ref.res is not None:
+            reset = reset or bool(OPT.mon_ref.res[i] > 0.)
         prn_soc_debug(time=now, leader="before sim init:     ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
 
         if reset:

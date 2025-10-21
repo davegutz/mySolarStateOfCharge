@@ -877,7 +877,7 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=100.):
             voc_f = np.interp(t_sec, h.time_sec, h.voc_f)
             e_wrap = np.interp(t_sec, h.time_sec, h.e_wrap)
             hys_redesign.calculate_hys(ib_f, soc)
-            init_low = bms_off or (soc < (soc_min + HYS_SOC_MIN_MARG) and ib > Battery.HYS_IB_THR)
+            init_low = bms_off or (soc < (soc_min + HYS_SOC_MIN_MARG) and ib_f > Battery.HYS_IB_THR)
             dvh = hys_redesign.update(dt_hys_sec, init_high=sat, init_low=init_low, e_wrap=e_wrap)
             res = hys_redesign.res
             ioc = hys_redesign.ioc
@@ -1271,7 +1271,7 @@ def main():
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/Hd 20251019am.csv'
+    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251021am_soc4p2_hi_lo_bb.csv'
     # data_only = False
     data_only=True
     mon_t = False
