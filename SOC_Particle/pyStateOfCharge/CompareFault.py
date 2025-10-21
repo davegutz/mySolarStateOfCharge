@@ -769,34 +769,34 @@ def bandaid(h, chm_in=0):
     sel = np.zeros(len(h.time_ux))
     preserving = np.ones(len(h.time_ux))
     chm_s = np.ones(len(h.time_ux))*chm_in
-    mon_old = rf.rec_append_fields(h, 'res', res)
-    mon_old = rf.rec_append_fields(mon_old, 'mod_data', mod)
-    mon_old = rf.rec_append_fields(mon_old, 'ib_past', ib_in_s)
-    if not hasattr(mon_old, 'ib_sel'):
-        mon_old = rf.rec_append_fields(mon_old, 'ib_sel', ib_sel)
-    mon_old = rf.rec_append_fields(mon_old, 'tb_sel', tb_sel)
-    if not hasattr(mon_old, 'voc'):
-        mon_old = rf.rec_append_fields(mon_old, 'voc', voc)
-    mon_old = rf.rec_append_fields(mon_old, 'preserving', preserving)
-    mon_old = rf.rec_append_fields(mon_old, 'vb_sel', vb_sel)
-    mon_old = rf.rec_append_fields(mon_old, 'soc_s', soc_s)
-    mon_old = rf.rec_append_fields(mon_old, 'chm', chm)
-    mon_old = rf.rec_append_fields(mon_old, 'sel', sel)
-    mon_old = rf.rec_append_fields(mon_old, 'ewh_thr', sel)
-    mon_old = rf.rec_append_fields(mon_old, 'ewl_thr', sel)
-    mon_old = rf.rec_append_fields(mon_old, 'ccd_thr', sel)
-    mon_old = rf.rec_append_fields(mon_old, 'voc_ekf', sel)
-    mon_old = rf.rec_append_fields(mon_old, 'y_ekf', sel)
-    sim_old = np.array(np.zeros(len(h.time_ux), dtype=[('time_ux', '<i4')])).view(np.recarray)
-    sim_old.time_ux = mon_old.time_ux.copy()
-    sim_old = rf.rec_append_fields(sim_old, 'chm_s', chm_s)
-    sim_old = rf.rec_append_fields(sim_old, 'sat_s', sat_s)
-    sim_old = rf.rec_append_fields(sim_old, 'ib_in_s', ib_in_s)
-    sim_old = rf.rec_append_fields(sim_old, 'bms_off_s', bms_off_s)
-    sim_old = rf.rec_append_fields(sim_old, 'dv_dyn_s', bms_off_s)
-    sim_old = rf.rec_append_fields(sim_old, 'dv_hys_s', bms_off_s)
-    sim_old = rf.rec_append_fields(sim_old, 'voc_stat_s', bms_off_s)
-    return mon_old, sim_old
+    mon_run = rf.rec_append_fields(h, 'res', res)
+    mon_run = rf.rec_append_fields(mon_run, 'mod_data', mod)
+    mon_run = rf.rec_append_fields(mon_run, 'ib_past', ib_in_s)
+    if not hasattr(mon_run, 'ib_sel'):
+        mon_run = rf.rec_append_fields(mon_run, 'ib_sel', ib_sel)
+    mon_run = rf.rec_append_fields(mon_run, 'tb_sel', tb_sel)
+    if not hasattr(mon_run, 'voc'):
+        mon_run = rf.rec_append_fields(mon_run, 'voc', voc)
+    mon_run = rf.rec_append_fields(mon_run, 'preserving', preserving)
+    mon_run = rf.rec_append_fields(mon_run, 'vb_sel', vb_sel)
+    mon_run = rf.rec_append_fields(mon_run, 'soc_s', soc_s)
+    mon_run = rf.rec_append_fields(mon_run, 'chm', chm)
+    mon_run = rf.rec_append_fields(mon_run, 'sel', sel)
+    mon_run = rf.rec_append_fields(mon_run, 'ewh_thr', sel)
+    mon_run = rf.rec_append_fields(mon_run, 'ewl_thr', sel)
+    mon_run = rf.rec_append_fields(mon_run, 'ccd_thr', sel)
+    mon_run = rf.rec_append_fields(mon_run, 'voc_ekf', sel)
+    mon_run = rf.rec_append_fields(mon_run, 'y_ekf', sel)
+    sim_run = np.array(np.zeros(len(h.time_ux), dtype=[('time_ux', '<i4')])).view(np.recarray)
+    sim_run.time_ux = mon_run.time_ux.copy()
+    sim_run = rf.rec_append_fields(sim_run, 'chm_s', chm_s)
+    sim_run = rf.rec_append_fields(sim_run, 'sat_s', sat_s)
+    sim_run = rf.rec_append_fields(sim_run, 'ib_in_s', ib_in_s)
+    sim_run = rf.rec_append_fields(sim_run, 'bms_off_s', bms_off_s)
+    sim_run = rf.rec_append_fields(sim_run, 'dv_dyn_s', bms_off_s)
+    sim_run = rf.rec_append_fields(sim_run, 'dv_hys_s', bms_off_s)
+    sim_run = rf.rec_append_fields(sim_run, 'voc_stat_s', bms_off_s)
+    return mon_run, sim_run
 
 
 def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=None):
@@ -1111,9 +1111,9 @@ if __name__ == '__main__':
                 h_20C_resamp_100.dt[i] = h_20C_resamp_100.time_ux[1] - h_20C_resamp_100.time_ux[0]
             else:
                 h_20C_resamp_100.dt[i] = h_20C_resamp_100.time_ux[i] - h_20C_resamp_100.time_ux[i-1]
-        mon_old_100, sim_old_100 = bandaid(h_20C_resamp_100, chm_in=chm_in)
+        mon_run_100, sim_run_100 = bandaid(h_20C_resamp_100, chm_in=chm_in)
         mon_ver_100, sim_ver_100, sim_s_ver_100, mon_r, sim_r =\
-            replicate(mon_old_100, sim_old=sim_old_100, init_time=1., verbose=False, max_time=t_max_in, slr_res_0=sres0_in,
+            replicate(mon_run_100, sim_run=sim_run_100, init_time=1., verbose=False, max_time=t_max_in, slr_res_0=sres0_in,
                       slr_res_ct=sresct_in, stauct_mon=stauct_in, slr_tauct_sim=stauct_in, use_vb_sim=False,
                       slr_hys_sim=s_hys_in, slr_hys_mon=s_hys_in,
                       slr_hys_cap_sim=s_hys_cap_in, slr_cap_chg=s_cap_chg_in, slr_cap_dis=s_cap_dis_in,
@@ -1132,9 +1132,9 @@ if __name__ == '__main__':
             fig_list, fig_files = overall_batt(mon_ver_100, sim_ver_100, suffix='_100',
                                                filename=filename, fig_files=fig_files,
                                                plot_title=plot_title, fig_list=fig_list)
-            fig_list, fig_files = overall_fault(mon_old_100, mon_ver_100, sim_ver_100, sim_s_ver_100, filename,
+            fig_list, fig_files = overall_fault(mon_run_100, mon_ver_100, sim_ver_100, sim_s_ver_100, filename,
                                                 fig_files, plot_title=plot_title, fig_list=fig_list)
-            fig_list, fig_files = tune_r(mon_old_100, mon_ver_100, sim_s_ver_100, filename,
+            fig_list, fig_files = tune_r(mon_run_100, mon_ver_100, sim_s_ver_100, filename,
                                          fig_files, plot_title=plot_title, fig_list=fig_list)
 
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=path_to_pdfs)

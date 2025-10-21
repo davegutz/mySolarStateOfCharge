@@ -259,7 +259,7 @@ def replicate(OPT: UserOptions):
         reset = bool((t[i] <= OPT.init_time) or (t[i] < 0. and t[0] > OPT.init_time))
         if OPT.mon_run.res is not None:
             reset = reset or bool(OPT.mon_run.res[i] > 0.)
-        prn_soc_debug(time=now, leader="before sim init:     ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
+        prn_soc_debug(time=now, leader="before sim init:     ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
 
         if reset:
             sim.apply_soc(OPT.mon_run.soc_s[i], SN.Tb_f_past)  # calculates delta_q
@@ -274,11 +274,11 @@ def replicate(OPT: UserOptions):
             mon.sat = OPT.mon_run.sat[0]
 
         if calc_temp:
-            prn_soc_debug(time=now, leader="b temp filtr:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
+            prn_soc_debug(time=now, leader="b temp filtr:    ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
 
             mon = SN.calc_temp_pass_2(OPT.mon_run, mon, Battery, i_temp)
 
-            prn_soc_debug(time=now, leader="a temp filtr:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
+            prn_soc_debug(time=now, leader="a temp filtr:    ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
 
         # Models
         if rp.modeling == 0:
@@ -297,15 +297,15 @@ def replicate(OPT: UserOptions):
         else:
             _chm_s = OPT.Bsim
 
-        prn_soc_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
+        prn_soc_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
         sim.calculate(_chm_s, None, ib_in_s, SN.dt_s[i], reset, None, None, SN,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=OPT.sim_run.bms_off_s[0])
-        prn_soc_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
+        prn_soc_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
         sim.count_coulombs(chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=SN.Tb_f_rate_past,
                            charge_curr=sim.ib_charge, sat=False, soc_s_init=SN.soc_s[i], mon_sat=mon.sat,
                            sim_delta_q=SN.dq_s[i], use_soc_in=OPT.use_mon_soc, soc_in=SN.soc_s[i])
-        prn_soc_debug(time=now, leader="after sim.count_cou:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
+        prn_soc_debug(time=now, leader="after sim.count_cou:    ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
 
         # EKF
         if reset:
@@ -313,7 +313,7 @@ def replicate(OPT: UserOptions):
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
 
-        prn_soc_debug(time=now, leader="after mon_soc_apply  ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
+        prn_soc_debug(time=now, leader="after mon_soc_apply  ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
 
         # Chemistry
         if OPT.Bmon is None:
@@ -400,7 +400,7 @@ def replicate(OPT: UserOptions):
             hdr = print_hist(OPT.request_history, OPT.run_type, i, i_temp, i_ekf, t, OPT.mon_run, mon, calc_temp, calc_ekf,
                              SN.Tb, SN.Tb_past, OPT.sim_run, sim, SN)
 
-        prn_soc_debug(time=now, leader="end loop:", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
+        prn_soc_debug(time=now, leader="end loop:", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
 
         # pick a pass to run debugger to a time
         if i >= 206:
@@ -480,7 +480,7 @@ if __name__ == '__main__':
         # Load mon v4 (old)
         data_file_clean = write_clean_file(data_file_old_txt, type_='_mon', hdr_key=hdr_key, unit_key=unit_key,
                                            skip=skip)
-        mon_old_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+        mon_run_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
 
         # Load sel (old)
         sel_file_clean = write_clean_file(data_file_old_txt, type_='_sel', hdr_key=hdr_key_sel,
@@ -488,23 +488,23 @@ if __name__ == '__main__':
         sel_old_raw = None
         if sel_file_clean:
             sel_old_raw = np.genfromtxt(sel_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-        mon_old = SavedData(rap=mon_old_raw, sel=sel_old_raw, time_end=time_end, zero_zero=zero_zero_in,
+        mon_run = SavedData(rap=mon_run_raw, sel=sel_old_raw, time_end=time_end, zero_zero=zero_zero_in,
                             zero_thr=zero_thr_in, init_time_in=init_time_in)
 
         # Load _m v24 portion of real-time run (old)
         data_file_sim_clean = write_clean_file(data_file_old_txt, type_='_sim', hdr_key=hdr_key_sim,
                                                unit_key=unit_key_sim, skip=skip)
         if data_file_sim_clean:
-            sim_old_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-            sim_old = SavedDataSim(time_run=mon_old.time_run, data=sim_old_raw, time_end=time_end)
+            sim_run_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+            sim_run = SavedDataSim(time_run=mon_run.time_run, data=sim_run_raw, time_end=time_end)
         else:
-            sim_old = None
+            sim_run = None
 
         # New run
         mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
 
-        replicateOptions = UserOptions(mon_run=mon_old, sim_run=sim_old, Bmon=Bmon_in, Bsim=Bsim_in,
-                                       init_time=mon_old.init_time, use_ib_mon=use_ib_mon_in,
+        replicateOptions = UserOptions(mon_run=mon_run, sim_run=sim_run, Bmon=Bmon_in, Bsim=Bsim_in,
+                                       init_time=mon_run.init_time, use_ib_mon=use_ib_mon_in,
                                        use_vb_raw=use_vb_raw, add_voc_sim=dvoc_sim_in,
                                        add_voc_mon=dvoc_mon_in, slr_r_ss=scale_r_ss_in,
                                        scale_in=scale_in, ib_fail_t=ib_fail_t)

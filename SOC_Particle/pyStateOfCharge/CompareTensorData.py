@@ -152,17 +152,17 @@ def seek_tensor(save_pdf_path='./figures', path_to_temp='./temp'):
             data_file = path_to_temp
 
     # # Load mon v4 (old)
-    mon_old, sim_old, f, data_file_clean, temp_flt_file_clean, _ = \
+    mon_run, sim_run, f, data_file_clean, temp_flt_file_clean, _ = \
         load_data(data_file, skip, unit_key, zero_zero_in, time_end_in, legacy=legacy_in, v1_only=v1_only_in)
-    mon_old = add_ib_lag(mon_old)
-    mon_old = adjust_soc(mon_old, dDA_in)
-    mon_old = add_voc_soc_new(mon_old)
-    mon_old = scale_sres0(mon_old, sres0_in)
-    mon_old_file_save = data_file_clean.replace(".csv", "_clean.csv")
-    save_clean_file(mon_old, mon_old_file_save, 'mon' + date_)
+    mon_run = add_ib_lag(mon_run)
+    mon_run = adjust_soc(mon_run, dDA_in)
+    mon_run = add_voc_soc_new(mon_run)
+    mon_run = scale_sres0(mon_run, sres0_in)
+    mon_run_file_save = data_file_clean.replace(".csv", "_clean.csv")
+    save_clean_file(mon_run, mon_run_file_save, 'mon' + date_)
 
     # How to initialize
-    if mon_old.time[0] == 0.:  # no initialization flat detected at beginning of recording
+    if mon_run.time[0] == 0.:  # no initialization flat detected at beginning of recording
         if init_time_in:
             init_time = init_time_in
         else:
@@ -176,7 +176,7 @@ def seek_tensor(save_pdf_path='./figures', path_to_temp='./temp'):
     # New run
     mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
     mon_ver, sim_ver, sim_s_ver, mon, sim = \
-        replicate(mon_old, sim_old=sim_old, init_time=init_time, use_ib_mon=use_ib_mon_in, verbose=verbose_in,
+        replicate(mon_run, sim_run=sim_run, init_time=init_time, use_ib_mon=use_ib_mon_in, verbose=verbose_in,
                   use_vb_sim=use_vb_sim_in, use_mon_soc=use_mon_soc_in,
                   slr_res_0=sres0_in, stauct_mon=stauct_mon_in, slr_res_ct=sresct_in)
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
@@ -192,19 +192,19 @@ def seek_tensor(save_pdf_path='./figures', path_to_temp='./temp'):
         fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                          fig_list=fig_list, long_term=long_term_in, cc_dif_tol=cc_dif_tol_in)
     if plot_overall_in:
-        fig_list, fig_files = dom_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
+        fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list, run_str='',
                                        ver_str='_ver')
-        fig_list, fig_files = ekf_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
+        fig_list, fig_files = ekf_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list, run_str='',
                                        ver_str='_ver')
-        fig_list, fig_files = sim_s_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
+        fig_list, fig_files = sim_s_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                          plot_title=plot_title, fig_list=fig_list, run_str='',
                                          ver_str='_ver')
-        fig_list, fig_files = gp_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
+        fig_list, fig_files = gp_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                       plot_title=plot_title, fig_list=fig_list, run_str='',
                                       ver_str='_ver')
-        fig_list, fig_files = off_on_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
+        fig_list, fig_files = off_on_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                           plot_title=plot_title, fig_list=fig_list, run_str='',
                                           ver_str='_ver')
 

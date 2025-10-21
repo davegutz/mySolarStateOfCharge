@@ -1281,16 +1281,16 @@ if __name__ == '__main__':
                                                unit_key='unit_sim,')
 
         # Load
-        mon_old_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-        mon_old = SavedData(mon_old_raw, time_end, zero_zero=zero_zero_in)
+        mon_run_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+        mon_run = SavedData(mon_run_raw, time_end, zero_zero=zero_zero_in)
         try:
-            sim_old_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-            sim_old = SavedDataSim(mon_old.time_run, sim_old_raw, time_end)
+            sim_run_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+            sim_run = SavedDataSim(mon_run.time_run, sim_run_raw, time_end)
         except IOError:
-            sim_old = None
+            sim_run = None
 
         # Run model
-        mon_ver, sim_ver, sim_s_ver = replicate(mon_old, init_time=1.)
+        mon_ver, sim_ver, sim_s_ver = replicate(mon_run, init_time=1.)
         date_ = datetime.now().strftime("%y%m%d")
         mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
         save_clean_file(mon_ver, mon_file_save, '_mon_rep' + date_)
@@ -1306,9 +1306,9 @@ if __name__ == '__main__':
         plot_title = filename + '   ' + date_time
         fig_list, fig_files = overall_batt(mon_ver, sim_ver, filename, fig_files, plot_title=plot_title,
                                            fig_list=fig_list, suffix='_ver')  # Could be confusing because sim over mon
-        fig_list, fig_files = dom_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
+        fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')
-        # fig_list, fig_files = tune_r(mon_old, mon_ver, sim_s_ver, filename, fig_files,
+        # fig_list, fig_files = tune_r(mon_run, mon_ver, sim_s_ver, filename, fig_files,
         #                           plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')
         unite_pictures_into_pdf(outputPdfName=filename+'_'+date_time+'.pdf',
                                 save_pdf_path='../dataReduction/figures')

@@ -16,7 +16,7 @@
 """1x1 General Purpose Extended Kalman Filter.   Inherit from this class and include ekf_predict and
 ekf_update methods in the parent."""
 
-global mon_old
+global mon_run
 
 
 class EKF1x1:

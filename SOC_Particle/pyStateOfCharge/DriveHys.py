@@ -192,13 +192,13 @@ if __name__ == '__main__':
     def main():
         # Transient  inputs
         data_file_clean = '../dataReduction/real world Xp20 20220626_sim.txt'
-        mon_old = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=None).view(np.recarray)
-        t_v = mon_old.c_time - mon_old.c_time[0]
-        # vb_t = mon_old.vb_m   # not useful except to back out voc
-        ib_t = mon_old.ib_s
-        # voc_stat_target_t = mon_old.voc_stat_m
-        soc_t = mon_old.soc_s
-        # dv_dyn_t = mon_old.dv_dyn_m
+        mon_run = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=None).view(np.recarray)
+        t_v = mon_run.c_time - mon_run.c_time[0]
+        # vb_t = mon_run.vb_m   # not useful except to back out voc
+        ib_t = mon_run.ib_s
+        # voc_stat_target_t = mon_run.voc_stat_m
+        soc_t = mon_run.soc_s
+        # dv_dyn_t = mon_run.dv_dyn_m
         # voc_t = vb_t - dv_dyn_t
         hys = Hysteresis_20220917d(dv_hys=-0.0, cap=3.6e5)
         dt = t_v[1] - t_v[0]

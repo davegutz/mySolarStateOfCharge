@@ -758,32 +758,32 @@ def bandaid(h):
     chm_s = h['chm_s'].copy()
     sel = np.zeros(len(h.time_ux))
     preserving = np.ones(len(h.time_ux))
-    mon_old = rf.rec_append_fields(h, 'res', res)
-    mon_old = rf.rec_append_fields(mon_old, 'ib_past', ib_in_s)
-    if not hasattr(mon_old, 'ib_sel'):
-        mon_old = rf.rec_append_fields(mon_old, 'ib_sel', ib_sel)
-    mon_old = rf.rec_append_fields(mon_old, 'tb_sel', tb_sel)
-    if not hasattr(mon_old, 'voc_f'):
-        mon_old = rf.rec_append_fields(mon_old, 'voc_f', voc_f)
-    mon_old = rf.rec_append_fields(mon_old, 'preserving', preserving)
-    mon_old = rf.rec_append_fields(mon_old, 'vb_sel', vb_sel)
-    mon_old = rf.rec_append_fields(mon_old, 'soc_s', soc_s)
-    mon_old = rf.rec_append_fields(mon_old, 'sel', sel)
-    # mon_old = rf.rec_append_fields(mon_old, 'ewh_thr', sel)
-    # mon_old = rf.rec_append_fields(mon_old, 'ewl_thr', sel)
-    mon_old = rf.rec_append_fields(mon_old, 'ccd_thr', sel)
-    mon_old = rf.rec_append_fields(mon_old, 'voc_ekf', sel)
-    mon_old = rf.rec_append_fields(mon_old, 'y_ekf', sel)
-    sim_old = np.array(np.zeros(len(h.time), dtype=[('time', '<f8')])).view(np.recarray)
-    sim_old.time = mon_old.time.copy()
-    sim_old = rf.rec_append_fields(sim_old, 'chm_s', chm_s)
-    sim_old = rf.rec_append_fields(sim_old, 'sat_s', sat_s)
-    sim_old = rf.rec_append_fields(sim_old, 'ib_in_s', ib_in_s)
-    sim_old = rf.rec_append_fields(sim_old, 'bms_off_s', bms_off_s)
-    sim_old = rf.rec_append_fields(sim_old, 'dv_dyn_s', bms_off_s)
-    sim_old = rf.rec_append_fields(sim_old, 'dv_hys_s', bms_off_s)
-    sim_old = rf.rec_append_fields(sim_old, 'voc_stat_s', bms_off_s)
-    return mon_old, sim_old
+    mon_run = rf.rec_append_fields(h, 'res', res)
+    mon_run = rf.rec_append_fields(mon_run, 'ib_past', ib_in_s)
+    if not hasattr(mon_run, 'ib_sel'):
+        mon_run = rf.rec_append_fields(mon_run, 'ib_sel', ib_sel)
+    mon_run = rf.rec_append_fields(mon_run, 'tb_sel', tb_sel)
+    if not hasattr(mon_run, 'voc_f'):
+        mon_run = rf.rec_append_fields(mon_run, 'voc_f', voc_f)
+    mon_run = rf.rec_append_fields(mon_run, 'preserving', preserving)
+    mon_run = rf.rec_append_fields(mon_run, 'vb_sel', vb_sel)
+    mon_run = rf.rec_append_fields(mon_run, 'soc_s', soc_s)
+    mon_run = rf.rec_append_fields(mon_run, 'sel', sel)
+    # mon_run = rf.rec_append_fields(mon_run, 'ewh_thr', sel)
+    # mon_run = rf.rec_append_fields(mon_run, 'ewl_thr', sel)
+    mon_run = rf.rec_append_fields(mon_run, 'ccd_thr', sel)
+    mon_run = rf.rec_append_fields(mon_run, 'voc_ekf', sel)
+    mon_run = rf.rec_append_fields(mon_run, 'y_ekf', sel)
+    sim_run = np.array(np.zeros(len(h.time), dtype=[('time', '<f8')])).view(np.recarray)
+    sim_run.time = mon_run.time.copy()
+    sim_run = rf.rec_append_fields(sim_run, 'chm_s', chm_s)
+    sim_run = rf.rec_append_fields(sim_run, 'sat_s', sat_s)
+    sim_run = rf.rec_append_fields(sim_run, 'ib_in_s', ib_in_s)
+    sim_run = rf.rec_append_fields(sim_run, 'bms_off_s', bms_off_s)
+    sim_run = rf.rec_append_fields(sim_run, 'dv_dyn_s', bms_off_s)
+    sim_run = rf.rec_append_fields(sim_run, 'dv_hys_s', bms_off_s)
+    sim_run = rf.rec_append_fields(sim_run, 'voc_stat_s', bms_off_s)
+    return mon_run, sim_run
 
 
 def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=None):
@@ -1205,7 +1205,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
     sim_s_ver = None
 
     # Load history, normalizing all soc and Tb to 20C
-    mon_old, sim_old, unit, fault, hist_20C, filename = \
+    mon_run, sim_run, unit, fault, hist_20C, filename = \
         load_hist_and_prep(data_file=data_file, time_end_in=time_end_in, data_only=data_only, mon_t=mon_t,
                            unit_key=unit_key, sync_time=sync_time, dt_resample=dt_resample, Tb_force=Tb_force)
 
@@ -1214,12 +1214,12 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
     version = version_from_data_file(data_file)
     path_to_temp, save_pdf_path, _ = local_paths(version)
 
-    if mon_old is not None and sim_old is not None:
+    if mon_run is not None and sim_run is not None:
 
         # Replicate
         data_file_clean = path_to_temp + '/' + data_file_txt.replace('.csv', '_hist' + '.csv', 1)
         mon_file_save = data_file_clean.replace(".csv", "_rep_hist.csv")
-        replicateOptions = UserOptions(mon_run=mon_old, sim_run=sim_old, run_type='HistSim', init_time=1.,
+        replicateOptions = UserOptions(mon_run=mon_run, sim_run=sim_run, run_type='HistSim', init_time=1.,
                                        verbose=False, max_time=time_end_in, use_vb_sim=False, scale_in=scale_in,
                                        use_mon_soc=use_mon_soc_in, add_voc_mon=dvoc_mon_in, add_voc_sim=dvoc_sim_in,
                                        unit=unit, use_ib_mon=True, request_history=request_history)
@@ -1235,20 +1235,20 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
             fig_list, fig_files = over_fault(fault, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                              fig_list=fig_list, cc_dif_tol=cc_dif_tol_in, time_units='sec')
         if hist_20C is not None and len(hist_20C.time) > 1:
-            sim_old = None
+            sim_run = None
             plot_init_in = False
-            fig_list, fig_files = hs_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename,
+            fig_list, fig_files = hs_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename,
                                           fig_files, plot_title=plot_title, fig_list=fig_list,
                                           run_str='', ver_str='_ver')
-            fig_list, fig_files = off_on_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename,
+            fig_list, fig_files = off_on_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename,
                                               fig_files, plot_title=plot_title, fig_list=fig_list,
                                               run_str='', ver_str='_ver')
-            fig_list, fig_files = overall_fault(mon_old, mon_ver, sim_ver, sim_s_ver, filename,
+            fig_list, fig_files = overall_fault(mon_run, mon_ver, sim_ver, sim_s_ver, filename,
                                                 fig_files, plot_title=plot_title, fig_list=fig_list)
-            fig_list, fig_files = tune_hs(mon_old, mon_ver, sim_s_ver, filename,
+            fig_list, fig_files = tune_hs(mon_run, mon_ver, sim_s_ver, filename,
                                          fig_files, plot_title=plot_title, fig_list=fig_list,
                                          run_str='', ver_str='_ver')
-            fig_list, fig_files = dom_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename,
+            fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename,
                                            fig_files, plot_title=plot_title, fig_list=fig_list,
                                            plot_init_in=plot_init_in, run_str='', ver_str='_ver')
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
@@ -1259,7 +1259,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         show_killer(string, 'CompareFault', fig_list=fig_list)
 
-    return mon_old, sim_old, mon_ver, sim_ver, sim_s_ver
+    return mon_run, sim_run, mon_ver, sim_ver, sim_s_ver
 
 
 def main():
@@ -1272,8 +1272,8 @@ def main():
 
     # User inputs (multiple input_files allowed
     data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251021am_soc4p2_hi_lo_bb.csv'
-    plots=True
-    # plots = False
+    # plots=True
+    plots = False
     mon_t = False
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # dt_resample = 900
