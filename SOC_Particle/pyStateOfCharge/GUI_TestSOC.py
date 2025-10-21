@@ -641,14 +641,14 @@ def compare_hist_hist_choose():
         for testpath in testpaths:
             test_folder_path, test_parent, test_basename, test_txt, test_key = contain_all(testpath)
             if test_key != '':
-                ref_path = filedialog.askopenfilename(title='Choose reference file', filetypes=[('csv', '.csv')],
+                run_path = filedialog.askopenfilename(title='Choose reference file', filetypes=[('csv', '.csv')],
                                                       initialdir=Ref.dataReduction_folder)
-                ref_folder_path, ref_parent, ref_basename, ref_txt, ref_key = contain_all(ref_path)
+                run_folder_path, ref_parent, ref_basename, ref_txt, ref_key = contain_all(ref_path)
                 print('GUI_TestSOC compare_hist_hist_choose:  Ref', ref_basename, ref_key)
                 print('GUI_TestSOC compare_hist_hist_choose:  Test', test_basename, test_key)
                 # keys = [(ref_basename, ref_key), (test_basename, test_key)]
                 # master.withdraw()
-                compare_hist_hist(data_file_ref=ref_path, unit_key_ref=ref_key,
+                compare_hist_hist(data_file_run=ref_path, unit_key_run=ref_key,
                                   data_file_tst=testpath, unit_key_tst=test_key,
                                   dt_resample=30.)
                 # master.deiconify()
@@ -715,7 +715,7 @@ def compare_run():
         print('GUI_TestSOC compare_run:  Test', Test.file_path, Test.key)
         keys = [(Ref.file_txt, Ref.key), (Test.file_txt, Test.key)]
         # master.withdraw()
-        compare_run_run(keys=keys, data_file_folder_ref=Ref.version_path, data_file_folder_test=Test.version_path)
+        compare_run_run(keys=keys, data_file_folder_run=Ref.version_path, data_file_folder_test=Test.version_path)
 
         # master.deiconify()
 
@@ -751,7 +751,7 @@ def compare_run_run_choose():
                 print('GUI_TestSOC compare_run_run_choose:  Test', test_basename, test_key)
                 keys = [(ref_basename, ref_key), (test_basename, test_key)]
                 # master.withdraw()
-                compare_run_run(keys=keys, data_file_folder_ref=ref_folder_path, data_file_folder_test=test_folder_path,
+                compare_run_run(keys=keys, data_file_folder_run=ref_folder_path, data_file_folder_test=test_folder_path,
                                 sync_to_ctime=True)
                 # master.deiconify()
             else:
@@ -953,13 +953,13 @@ def handle_option(*_args):
     update_data_buttons()
 
 
-def handle_ref_battery(*_args):
+def handle_run_battery(*_args):
     Ref.battery = ref_battery.get()
     Ref.update_battery_stuff()
     update_data_buttons()
 
 
-def handle_ref_unit(*_args):
+def handle_run_unit(*_args):
     Ref.unit = ref_unit.get()
     Ref.update_battery_stuff()
     update_data_buttons()
@@ -1271,7 +1271,7 @@ def start_timer():
     CountdownTimer(master, timer_val.get(), max_flash=60, exit_function=None, trigger=True)
 
 
-def swap_ref_test():
+def swap_run_test():
     """Swap and save Test and Ref choices"""
     global Test, Ref
     swap = Test.__copy__()
@@ -1397,7 +1397,7 @@ if __name__ == '__main__':
     Test.unit_button.pack(pady=2)
     ref_unit = tk.StringVar(master, Ref.unit)
     Ref.unit_button = tk.OptionMenu(top_panel_right, ref_unit, *unit_list)
-    ref_unit.trace_add('write', handle_ref_unit)
+    ref_unit.trace_add('write', handle_run_unit)
     Ref.unit_button.pack(pady=2)
     
     test_filename = tk.StringVar(master, putty_connection.get(Test.unit))
@@ -1410,7 +1410,7 @@ if __name__ == '__main__':
     Test.battery_button.pack(pady=2)
     ref_battery = tk.StringVar(master, Ref.battery)
     Ref.battery_button = tk.OptionMenu(top_panel_right, ref_battery, *battery_list)
-    ref_battery.trace_add('write', handle_ref_battery)
+    ref_battery.trace_add('write', handle_run_battery)
     Ref.battery_button.pack(pady=2)
 
     # Key row
@@ -1423,7 +1423,7 @@ if __name__ == '__main__':
     # Swap row
     tk.Label(top_panel_left, text="", font=label_font).pack(pady=2, expand=True, fill='both')
     tk.Label(top_panel_left_ctr, text="", font=label_font).pack(pady=2, expand=True, fill='both')
-    swap_button = myButton(top_panel_right, text="swap Ref<-->Test", command=swap_ref_test, bg=bg_color)
+    swap_button = myButton(top_panel_right, text="swap Ref<-->Test", command=swap_run_test, bg=bg_color)
     swap_button.pack(side=tk.RIGHT, padx=5, pady=5)
 
     # Image
@@ -1624,9 +1624,9 @@ if __name__ == '__main__':
 
     # Begin
     handle_test_unit()
-    handle_ref_unit()
+    handle_run_unit()
     handle_test_battery()
-    handle_ref_battery()
+    handle_run_battery()
     handle_modeling()
     handle_macro()
     handle_option()

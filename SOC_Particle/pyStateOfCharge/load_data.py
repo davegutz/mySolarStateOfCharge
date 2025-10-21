@@ -167,7 +167,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
                                            unit_key=unit_key_sim, skip=skip)
     if data_file_sim_clean and not v1_only:
         sim_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-        sim = SavedDataSim(time_ref=mon.time_ref, data=sim_raw, time_end=time_end_in)
+        sim = SavedDataSim(time_run=mon.time_run, data=sim_raw, time_end=time_end_in)
     else:
         sim = None
         print(f"load_data: returning sim=None")

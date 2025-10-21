@@ -631,78 +631,78 @@ class BatteryMonitor(Battery, EKF1x1):
     def lag_ib(self, ib, reset):
         self.ib_lag = self.IbLag.calculate_tau(ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
-    def init_soc_ekf(self, mo, i, i_ekf, run_type=None):
-        self.soc_ekf = mo.soc_ekf[i]
-        self.y_ekf = mo.y_ekf[i]
+    def init_soc_ekf(self, mr, i, i_ekf, run_type=None):
+        self.soc_ekf = mr.soc_ekf[i]
+        self.y_ekf = mr.y_ekf[i]
 
-        if hasattr(mo, 'x'):
-            self.init_ekf(mo.x[i_ekf], 0.0)
+        if hasattr(mr, 'x'):
+            self.init_ekf(mr.x[i_ekf], 0.0)
         else:
-            self.init_ekf(mo.soc_ekf[i_ekf], 0.0)
+            self.init_ekf(mr.soc_ekf[i_ekf], 0.0)
 
         self.q_ekf = self.soc * self.q_capacity
-        self.P = mo.P[i_ekf]
+        self.P = mr.P[i_ekf]
 
-        if hasattr(mo, 'P_post'):
-            self.P_post = mo.P_post[i_ekf]
+        if hasattr(mr, 'P_post'):
+            self.P_post = mr.P_post[i_ekf]
         else:
             self.P_post = self.P
 
-        if hasattr(mo, 'P_prior'):
-            self.P_prior = mo.P_prior[i_ekf]
+        if hasattr(mr, 'P_prior'):
+            self.P_prior = mr.P_prior[i_ekf]
         else:
             self.P_prior = self.P
 
-        if hasattr(mo, 'H'):
-            self.H = mo.H[i_ekf]
+        if hasattr(mr, 'H'):
+            self.H = mr.H[i_ekf]
         else:
-            self.H = mo.z[i_ekf]
+            self.H = mr.z[i_ekf]
 
-        if hasattr(mo, 'S'):
-            self.S = mo.S[i_ekf]
+        if hasattr(mr, 'S'):
+            self.S = mr.S[i_ekf]
         else:
             self.S = 0.
 
-        if hasattr(mo, 'K'):
-            self.K = mo.K[i_ekf]
+        if hasattr(mr, 'K'):
+            self.K = mr.K[i_ekf]
         else:
             self.K = 0.
 
-        if hasattr(mo, 'hx'):
-            self.hx = mo.hx[i_ekf]
+        if hasattr(mr, 'hx'):
+            self.hx = mr.hx[i_ekf]
         else:
             if run_type == 'RunSim':
-                self.hx = mo.voc[i]
+                self.hx = mr.voc[i]
             else:
-                self.hx = mo.voc_f[i]
+                self.hx = mr.voc_f[i]
 
-        if hasattr(mo, 'dt_ekf'):
-            self.dt_eframe = mo.dt_ekf[i_ekf]
+        if hasattr(mr, 'dt_ekf'):
+            self.dt_eframe = mr.dt_ekf[i_ekf]
         else:
-            self.dt_eframe = mo.dt[i] * Battery.EKF_EFRAME_MULT
+            self.dt_eframe = mr.dt[i] * Battery.EKF_EFRAME_MULT
 
-        if hasattr(mo, 'x'):
-            self.x = mo.x[i_ekf]
+        if hasattr(mr, 'x'):
+            self.x = mr.x[i_ekf]
         else:
-            self.x = mo.soc_ekf[i_ekf]
+            self.x = mr.soc_ekf[i_ekf]
 
-        if hasattr(mo, 'x_prior'):
-            self.x_prior = mo.x_prior[i_ekf]
+        if hasattr(mr, 'x_prior'):
+            self.x_prior = mr.x_prior[i_ekf]
         else:
             self.x_prior = self.x
 
-        if hasattr(mo, 'x_post'):
-            self.x_post = mo.x_post[i_ekf]
+        if hasattr(mr, 'x_post'):
+            self.x_post = mr.x_post[i_ekf]
         else:
             self.x_post = self.x
 
-        if hasattr(mo, 'tb_f_for_hx'):
-            self.tb_f_for_hx = mo.tb_f_for_hx[i_ekf]
+        if hasattr(mr, 'tb_f_for_hx'):
+            self.tb_f_for_hx = mr.tb_f_for_hx[i_ekf]
         else:
             self.tb_f_for_hx = self.Tb_f
 
-        if hasattr(mo, 'x_for_hx'):
-            self.x_for_hx = mo.x_for_hx[i_ekf]
+        if hasattr(mr, 'x_for_hx'):
+            self.x_for_hx = mr.x_for_hx[i_ekf]
         else:
             self.x_for_hx = self.x
 
@@ -712,7 +712,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.apply_soc(self.soc_ekf, tb_f)
             print("confirmed ", self.soc)
 
-    def save(self, time, dt, soc_ref, voc_ref):  # BatteryMonitor
+    def save(self, time, dt, soc_run, voc_run):  # BatteryMonitor
         self.saved.time.append(time)
         self.saved.time_min.append(time / 60.)
         self.saved.time_day.append(time / 3600. / 24.)
@@ -769,10 +769,10 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.P_prior.append(self.P_prior)
         self.saved.x_post.append(self.x_post)
         self.saved.P_post.append(self.P_post)
-        if abs(soc_ref) < 1e-6:
-            soc_ref = 1e-6
-        self.e_soc_ekf = (self.soc_ekf - soc_ref) / soc_ref
-        self.e_voc_ekf = (self.voc - voc_ref) / voc_ref
+        if abs(soc_run) < 1e-6:
+            soc_run = 1e-6
+        self.e_soc_ekf = (self.soc_ekf - soc_run) / soc_run
+        self.e_voc_ekf = (self.voc - voc_run) / voc_run
         self.saved.e_soc_ekf.append(self.e_soc_ekf)
         self.saved.e_voc_ekf.append(self.e_voc_ekf)
         self.saved.tb_f_for_hx.append(self.tb_f_for_hx)
@@ -885,7 +885,7 @@ class BatterySim(Battery):
                  tb_f=25., tweak_test=False, dv_hys=0., slr_res_0=1., slr_res_ct=1., slr_r_ss=1.,
                  s_hys=1., dvoc=0., scale_hys_cap=1., mod_code=0, slr_cap_chg=1., slr_cap_dis=1., slr_hys_chg=1.,
                  slr_hys_dis=1., slr_coul_eff=1., slr_cutback_gain=1., add_s_voc_soc=0., unit=None,
-                 mon_ref=None, sim_ref=None, SN=None):
+                 mon_run=None, sim_run=None, SN=None):
         Battery.__init__(self, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct,
                          slr_r_ss=slr_r_ss, s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, slr_coul_eff=slr_coul_eff,
@@ -1278,7 +1278,7 @@ class Looparound:
 class Saved:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
     def __init__(self):
-        self.time_ref = None
+        self.time_run = None
         self.time = []
         self.time_min = []
         self.time_day = []
@@ -1755,7 +1755,7 @@ def overall_batt(mv, sv, filename,
 class SavedS:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
     def __init__(self):
-        self.time_ref = None
+        self.time_run = None
         self.time = []
         self.time_min = []
         self.time_day = []

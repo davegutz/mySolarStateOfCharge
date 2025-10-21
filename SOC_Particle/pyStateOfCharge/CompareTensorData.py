@@ -193,20 +193,20 @@ def seek_tensor(save_pdf_path='./figures', path_to_temp='./temp'):
                                          fig_list=fig_list, long_term=long_term_in, cc_dif_tol=cc_dif_tol_in)
     if plot_overall_in:
         fig_list, fig_files = dom_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
-                                       plot_title=plot_title, fig_list=fig_list, ref_str='',
-                                       test_str='_ver')
+                                       plot_title=plot_title, fig_list=fig_list, run_str='',
+                                       ver_str='_ver')
         fig_list, fig_files = ekf_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
-                                       plot_title=plot_title, fig_list=fig_list, ref_str='',
-                                       test_str='_ver')
+                                       plot_title=plot_title, fig_list=fig_list, run_str='',
+                                       ver_str='_ver')
         fig_list, fig_files = sim_s_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
-                                         plot_title=plot_title, fig_list=fig_list, ref_str='',
-                                         test_str='_ver')
+                                         plot_title=plot_title, fig_list=fig_list, run_str='',
+                                         ver_str='_ver')
         fig_list, fig_files = gp_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
-                                      plot_title=plot_title, fig_list=fig_list, ref_str='',
-                                      test_str='_ver')
+                                      plot_title=plot_title, fig_list=fig_list, run_str='',
+                                      ver_str='_ver')
         fig_list, fig_files = off_on_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
-                                          plot_title=plot_title, fig_list=fig_list, ref_str='',
-                                          test_str='_ver')
+                                          plot_title=plot_title, fig_list=fig_list, run_str='',
+                                          ver_str='_ver')
 
     precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
     print('filename', filename, 'path', save_pdf_path)

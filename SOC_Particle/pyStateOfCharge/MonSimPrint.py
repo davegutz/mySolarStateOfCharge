@@ -337,7 +337,7 @@ def save_clean_file(mon_ver, csv_file, unit_key):
             dt_dt = timedelta(seconds=mon_ver.time[i]-mon_ver.time[0])
             time_stamp = date_time_start + dt_dt
             s += time_stamp.strftime("%Y-%m-%dT%H:%M:%S,")
-            s += "{:7.3f},".format(mon_ver.time[i] + mon_ver.time_ref)
+            s += "{:7.3f},".format(mon_ver.time[i] + mon_ver.time_run)
             s += "{:7.3f},".format(mon_ver.dt[i])
             s += "{:1.0f},".format(mon_ver.sat[i])
             s += "{:1.0f},".format(mon_ver.sel[i])

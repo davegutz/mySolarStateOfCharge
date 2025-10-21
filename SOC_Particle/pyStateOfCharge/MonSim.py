@@ -29,15 +29,15 @@ from TFDelay import TFDelay
 from MonSimClasses import *
 from MonSimPrint import *
 
-def battery_size(mo, so, scale_in_, unit_cap_rated_):
-    if hasattr(mo, 'qcrs'):
-        scale_mon_ = mo.qcrs[0] / (unit_cap_rated_*3600)
+def battery_size(mr, sr, scale_in_, unit_cap_rated_):
+    if hasattr(mr, 'qcrs'):
+        scale_mon_ = mr.qcrs[0] / (unit_cap_rated_*3600)
     else:
         scale_mon_ = unit_cap_rated / unit_cap_rated_
         if scale_in_:
             scale_mon_ *= scale_in_
-    if so is not None and hasattr(so, 'qcrs_s'):
-        scale_sim_ = so.qcrs_s[0] / (unit_cap_rated_*3600)
+    if sr is not None and hasattr(sr, 'qcrs_s'):
+        scale_sim_ = sr.qcrs_s[0] / (unit_cap_rated_*3600)
     else:
         scale_sim_ = unit_cap_rated / unit_cap_rated_
         if scale_in_:
@@ -45,50 +45,50 @@ def battery_size(mo, so, scale_in_, unit_cap_rated_):
     return scale_mon_, scale_sim_
 
 
-def chm_from_mon_or_sim(mo, so):
-    chem_m = mo.chm
-    if so is not None:
-        chem_s = so.chm_s
+def chm_from_mon_or_sim(mr, sr):
+    chem_m = mr.chm
+    if sr is not None:
+        chem_s = sr.chm_s
     else:
-        chem_s = mo.chm_m
+        chem_s = mr.chm_m
     return chem_m, chem_s
 
-def get_modeling(mo):
-    if hasattr(mo, 'mod_data'):
-        modeling_ = mo.mod_data
+def get_modeling(mr):
+    if hasattr(mr, 'mod_data'):
+        modeling_ = mr.mod_data
     else:
-        modeling_ = 255 * np.ones(len(mo.time))
+        modeling_ = 255 * np.ones(len(mr.time))
     return modeling_
 
-def sync_to_mon_or_sim(mo, so, t_mx=None):
-    if so is not None and len(so.time) < len(mo.time):
-        time = so.time
+def sync_to_mon_or_sim(mr, sr, t_mx=None):
+    if sr is not None and len(sr.time) < len(mr.time):
+        time = sr.time
     else:
-        time = mo.time
+        time = mr.time
     if t_mx is not None:
         t_delt = time - time[0]
         time = time[np.where(t_delt <= t_mx)]
     return time
 
-def vb_from_raw_or_selected(use_raw, mo):
+def vb_from_raw_or_selected(use_raw, mr):
     if use_raw:
-        vb_ = mo.vb_h
+        vb_ = mr.vb_h
     else:
-        if hasattr(mo, 'vb_f'):
-            vb_ = mo.vb_f
+        if hasattr(mr, 'vb_f'):
+            vb_ = mr.vb_f
         else:
-            vb_ = mo.vb
+            vb_ = mr.vb
     return vb_
 
 @dataclass
 class UserOptions:
-    mon_ref: SavedData  # Mandatory reference data to be replicated
+    mon_run: SavedData  # Mandatory reference data to be replicated
     run_type: Optional[str] = None  # Either "RunSim" or "HistSim" depending on caller
-    sim_ref: Optional[SavedDataSim] = None  # Embedded model data
+    sim_run: Optional[SavedDataSim] = None  # Embedded model data
     unit: Optional[str] = None  # Name of the battery instance derived from 'HDWE_UNIT' of configuration include .h file
     Bsim: Optional[int] = None  # sim model code BB=0 (Battleborn), CH=1 (Chins), CHG=2 (Chins in Garage)
     Bmon: Optional[int] = None  # mon model code BB=0 (Battleborn), CH=1 (Chins), CHG=2 (Chins in Garage)
-    init_time: Optional[float] = -4.  # The process tries to determine mon_ref.init_time when data is loaded by finding
+    init_time: Optional[float] = -4.  # The process tries to determine mon_run.init_time when data is loaded by finding
     # when Ib changes. This input helps out to over-ride those results when they don't work as desired. It shouldn't
     # be needed often.
     max_time: Optional[float] = None  # Limit the simultation run, s
@@ -168,63 +168,63 @@ def replicate(OPT: UserOptions):
     """
 
     # time
-    t = sync_to_mon_or_sim(OPT.mon_ref, OPT.sim_ref, t_mx=OPT.max_time)
+    t = sync_to_mon_or_sim(OPT.mon_run, OPT.sim_run, t_mx=OPT.max_time)
 
     # vb
-    vb = vb_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_ref)
+    vb = vb_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_run)
 
     # chem
-    chm_m, chm_s = chm_from_mon_or_sim(OPT.mon_ref, OPT.sim_ref)
+    chm_m, chm_s = chm_from_mon_or_sim(OPT.mon_run, OPT.sim_run)
 
     t_len = len(t)
     rp = Retained()
 
     # modeling
-    modeling = get_modeling(OPT.mon_ref)
+    modeling = get_modeling(OPT.mon_run)
 
     # tweaking
     tweak_test = rp.tweak_test()
 
-    SN = Sensors(mon_ref=OPT.mon_ref, sim_ref=OPT.sim_ref, add_Tb_in=OPT.add_Tb_in, run_type=OPT.run_type)
+    SN = Sensors(mon_run=OPT.mon_run, sim_run=OPT.sim_run, add_Tb_in=OPT.add_Tb_in, run_type=OPT.run_type)
 
     # Battery sizing
-    scale_mon, scale_sim = battery_size(OPT.mon_ref, OPT.sim_ref, OPT.scale_in, Battery.UNIT_CAP_RATED)
+    scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_in, Battery.UNIT_CAP_RATED)
 
     # Make batteries
     sim = BatterySim(SN=SN, mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
-                     dv_hys=OPT.mon_ref.dv_hys[0], slr_res_0=OPT.slr_res_0, slr_res_ct=OPT.slr_res_ct, stauct=OPT.slr_tauct_sim, slr_r_ss=OPT.slr_r_ss,
+                     dv_hys=OPT.mon_run.dv_hys[0], slr_res_0=OPT.slr_res_0, slr_res_ct=OPT.slr_res_ct, stauct=OPT.slr_tauct_sim, slr_r_ss=OPT.slr_r_ss,
                      s_hys=OPT.slr_hys_sim, dvoc=OPT.add_voc_sim, scale_hys_cap=OPT.slr_hys_cap_sim, slr_coul_eff=OPT.slr_coul_eff,
                      slr_cap_chg=OPT.slr_cap_chg, slr_cap_dis=OPT.slr_cap_dis, slr_hys_chg=OPT.slr_hys_chg, slr_hys_dis=OPT.slr_hys_dis,
-                     slr_cutback_gain=OPT.slr_cutback_gain, add_s_voc_soc=OPT.add_s_voc_soc, unit=OPT.unit, mon_ref=OPT.mon_ref,
-                     sim_ref=OPT.sim_ref)
+                     slr_cutback_gain=OPT.slr_cutback_gain, add_s_voc_soc=OPT.add_s_voc_soc, unit=OPT.unit, mon_run=OPT.mon_run,
+                     sim_run=OPT.sim_run)
     mon = BatteryMonitor(SN=SN, mod_code=chm_m[0], tb_f=SN.Tb0, scale=scale_mon, tweak_test=tweak_test,
                          slr_res_0=OPT.slr_res_0, slr_res_ct=OPT.slr_res_ct, stauct=OPT.stauct_mon,
                          slr_r_ss=OPT.slr_r_ss, s_hys=OPT.slr_hys_mon, dvoc=OPT.add_voc_mon, eframe_mult=OPT.eframe_mult,
-                         slr_coul_eff=OPT.slr_coul_eff, unit=OPT.unit, ref=OPT.mon_ref, dTb=SN.dTb, run_type=OPT.run_type)
-    Is_sat_delay = TFDelay(in_=OPT.mon_ref.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
+                         slr_coul_eff=OPT.slr_coul_eff, unit=OPT.unit, ref=OPT.mon_run, dTb=SN.dTb, run_type=OPT.run_type)
+    Is_sat_delay = TFDelay(in_=OPT.mon_run.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
     # Time sync
-    if hasattr(OPT.mon_ref, 'time_ref'):
-        mon.saved.time_ref = OPT.mon_ref.time_ref
-        sim.saved_s.time_ref = OPT.mon_ref.time_ref
+    if hasattr(OPT.mon_run, 'time_run'):
+        mon.saved.time_run = OPT.mon_run.time_run
+        sim.saved_s.time_run = OPT.mon_run.time_run
     else:
-        mon.saved.time_ref = 0.
-        sim.saved_s.time_ref = 0.
+        mon.saved.time_run = 0.
+        sim.saved_s.time_run = 0.
 
     # time loop initialization
     now = t[0]
     reset_ekf = True
     i_ekf = -1
     i_temp = -1
-    T = OPT.mon_ref.dt[0]
+    T = OPT.mon_run.dt[0]
     i = None
     hdr = None
     sat_s_init = None
 
     # Print debug information
     if OPT.request_history is not None and OPT.request_history > 0:
-        hdr = print_hist(OPT.request_history, OPT.run_type, 0, i_temp, i_ekf, t, OPT.mon_ref, mon, True, True,
-                         SN.Tb, SN.Tb_past, OPT.sim_ref, sim, SN)
+        hdr = print_hist(OPT.request_history, OPT.run_type, 0, i_temp, i_ekf, t, OPT.mon_run, mon, True, True,
+                         SN.Tb, SN.Tb_past, OPT.sim_run, sim, SN)
 
     # Top of time loop
     for i in range(t_len):
@@ -241,8 +241,8 @@ def replicate(OPT: UserOptions):
                 T = candidate_dt
 
         # Get temperature data
-        if hasattr(OPT.mon_ref, 'time_t'):
-            calc_temp = (i_temp+1 < len(OPT.mon_ref.time_t)) and (OPT.mon_ref.time_t[i_temp+1] <= OPT.mon_ref.time[i])
+        if hasattr(OPT.mon_run, 'time_t'):
+            calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[i])
         else:
             calc_temp = True
         if calc_temp:
@@ -257,55 +257,55 @@ def replicate(OPT: UserOptions):
         # Tried hard not to re-implement solvers in the Python verification  tool
         # Also, BTW, did not implement signal selection or tweak logic
         reset = bool((t[i] <= OPT.init_time) or (t[i] < 0. and t[0] > OPT.init_time))
-        if OPT.mon_ref.res is not None:
-            reset = reset or bool(OPT.mon_ref.res[i] > 0.)
-        prn_soc_debug(time=now, leader="before sim init:     ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
+        if OPT.mon_run.res is not None:
+            reset = reset or bool(OPT.mon_run.res[i] > 0.)
+        prn_soc_debug(time=now, leader="before sim init:     ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
 
         if reset:
-            sim.apply_soc(OPT.mon_ref.soc_s[i], SN.Tb_f_past)  # calculates delta_q
+            sim.apply_soc(OPT.mon_run.soc_s[i], SN.Tb_f_past)  # calculates delta_q
             sim.load(sim.delta_q)
             sim.assign_tb(sim.Tb)
             sim.assign_tb_f(sim.Tb_f)
             sim.apply_delta_q_t(sim.delta_q, SN.Tb_f_past)
-            sat_s_init = SN.voc_stat_init > OPT.mon_ref.vsat[0]
-            if OPT.sim_ref is not None:
-                sat_s_init = OPT.sim_ref.sat_s[0]
+            sat_s_init = SN.voc_stat_init > OPT.mon_run.vsat[0]
+            if OPT.sim_run is not None:
+                sat_s_init = OPT.sim_run.sat_s[0]
             sim.sat = sat_s_init
-            mon.sat = OPT.mon_ref.sat[0]
+            mon.sat = OPT.mon_run.sat[0]
 
         if calc_temp:
-            prn_soc_debug(time=now, leader="b temp filtr:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
+            prn_soc_debug(time=now, leader="b temp filtr:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
 
-            mon = SN.calc_temp_pass_2(OPT.mon_ref, mon, Battery, i_temp)
+            mon = SN.calc_temp_pass_2(OPT.mon_run, mon, Battery, i_temp)
 
-            prn_soc_debug(time=now, leader="a temp filtr:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
+            prn_soc_debug(time=now, leader="a temp filtr:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
 
         # Models
         if rp.modeling == 0:
             SN.update_ib_vb(i)
 
-        if OPT.sim_ref is not None and not OPT.use_ib_mon:
-            ib_in_s = OPT.sim_ref.ib_in_s[i]
+        if OPT.sim_run is not None and not OPT.use_ib_mon:
+            ib_in_s = OPT.sim_run.ib_in_s[i]
         else:
             if OPT.run_type == 'RunSim':
-                ib_in_s = OPT.mon_ref.ib[i]
+                ib_in_s = OPT.mon_run.ib[i]
             else:
-                ib_in_s = OPT.mon_ref.ib_f[i]
+                ib_in_s = OPT.mon_run.ib_f[i]
 
         if OPT.Bsim is None:
             _chm_s = chm_s[i]
         else:
             _chm_s = OPT.Bsim
 
-        prn_soc_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
+        prn_soc_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
         sim.calculate(_chm_s, None, ib_in_s, SN.dt_s[i], reset, None, None, SN,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
-                      bms_off_init=OPT.sim_ref.bms_off_s[0])
-        prn_soc_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
+                      bms_off_init=OPT.sim_run.bms_off_s[0])
+        prn_soc_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
         sim.count_coulombs(chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=SN.Tb_f_rate_past,
                            charge_curr=sim.ib_charge, sat=False, soc_s_init=SN.soc_s[i], mon_sat=mon.sat,
                            sim_delta_q=SN.dq_s[i], use_soc_in=OPT.use_mon_soc, soc_in=SN.soc_s[i])
-        prn_soc_debug(time=now, leader="after sim.count_cou:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
+        prn_soc_debug(time=now, leader="after sim.count_cou:    ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
 
         # EKF
         if reset:
@@ -313,7 +313,7 @@ def replicate(OPT: UserOptions):
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
 
-        prn_soc_debug(time=now, leader="after mon_soc_apply  ", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
+        prn_soc_debug(time=now, leader="after mon_soc_apply  ", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
 
         # Chemistry
         if OPT.Bmon is None:
@@ -324,10 +324,10 @@ def replicate(OPT: UserOptions):
         if OPT.ib_fail_t and t[i] > OPT.ib_fail_t:
             ib_ = OPT.ib_fail
         else:
-            if OPT.mon_ref.ib_sel is not None:
-                ib_ = OPT.mon_ref.ib_sel[i]
+            if OPT.mon_run.ib_sel is not None:
+                ib_ = OPT.mon_run.ib_sel[i]
             else:
-                ib_ = OPT.mon_ref.ib[i]
+                ib_ = OPT.mon_run.ib[i]
 
         if OPT.use_vb_sim:
             vb_ = sim.vb
@@ -337,32 +337,32 @@ def replicate(OPT: UserOptions):
             vb_ = vb[i]
 
         # Monitor EKF sequencing logic
-        if (i_ekf+1 < len(OPT.mon_ref.time_e)) and (OPT.mon_ref.time_e[i_ekf+1] <= OPT.mon_ref.time[i]):
+        if (i_ekf+1 < len(OPT.mon_run.time_e)) and (OPT.mon_run.time_e[i_ekf+1] <= OPT.mon_run.time[i]):
             i_ekf += 1
             reset_ekf = i_ekf == 0
             if i_ekf < 1:
-                T_ekf = OPT.mon_ref.dt_ekf[i_ekf]
+                T_ekf = OPT.mon_run.dt_ekf[i_ekf]
             else:
-                T_ekf = OPT.mon_ref.time_e[i_ekf] - OPT.mon_ref.time_e[i_ekf-1]  # update
+                T_ekf = OPT.mon_run.time_e[i_ekf] - OPT.mon_run.time_e[i_ekf-1]  # update
             calc_ekf = True
         else:
             calc_ekf = False
         SN.update_ekf(i_ekf)
 
         if reset_ekf and calc_ekf:
-            mon.init_soc_ekf(OPT.mon_ref, i, i_ekf, run_type=OPT.run_type)  # when modeling (assumed in python) ekf wants to equal model
+            mon.init_soc_ekf(OPT.mon_run, i, i_ekf, run_type=OPT.run_type)  # when modeling (assumed in python) ekf wants to equal model
 
         # Monitor calculate
         if i == 2:
             pass
         if rp.modeling == 0:
             mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN,
-                          rp=rp, bms_off_init=OPT.mon_ref.bms_off[0], ib_amp=OPT.mon_ref.ibmh[i], ib_noa=OPT.mon_ref.ibnh[i],
+                          rp=rp, bms_off_init=OPT.mon_run.bms_off[0], ib_amp=OPT.mon_run.ibmh[i], ib_noa=OPT.mon_run.ibnh[i],
                           reset_ekf=reset_ekf)
         else:
             mon.calculate(_chm_m, vb_ + random.randn() * v_std + dv_sense, ib_ + random.randn() * i_std + di_sense, T,
                           reset, calc_ekf, T_ekf, SN,
-                          rp=rp, bms_off_init=OPT.mon_ref.bms_off[0], ib_amp=SN.ibmm[i], ib_noa=SN.ibnm[i],
+                          rp=rp, bms_off_init=OPT.mon_run.bms_off[0], ib_amp=SN.ibmm[i], ib_noa=SN.ibnm[i],
                           reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge
         sat = is_sat(SN.Tb_f_past, mon.chemistry.rated_temp, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat,
@@ -372,10 +372,10 @@ def replicate(OPT: UserOptions):
         # Monitor count Coulumbs
         if rp.modeling == 0:
             mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=SN.Tb_f_past, charge_curr=ib_charge,
-                               sat=saturated, use_soc_in=OPT.use_mon_soc, soc_in=OPT.mon_ref.soc[i])
+                               sat=saturated, use_soc_in=OPT.use_mon_soc, soc_in=OPT.mon_run.soc[i])
         else:
             mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=SN.Tb_f_past, charge_curr=ib_charge,
-                               sat=saturated, use_soc_in=OPT.use_mon_soc, soc_in=OPT.mon_ref.soc[i])
+                               sat=saturated, use_soc_in=OPT.use_mon_soc, soc_in=OPT.mon_run.soc[i])
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
         mon.assign_soc_s(sim.soc)
 
@@ -397,10 +397,10 @@ def replicate(OPT: UserOptions):
 
         # History print
         if OPT.request_history is not None and OPT.request_history > 0:
-            hdr = print_hist(OPT.request_history, OPT.run_type, i, i_temp, i_ekf, t, OPT.mon_ref, mon, calc_temp, calc_ekf,
-                             SN.Tb, SN.Tb_past, OPT.sim_ref, sim, SN)
+            hdr = print_hist(OPT.request_history, OPT.run_type, i, i_temp, i_ekf, t, OPT.mon_run, mon, calc_temp, calc_ekf,
+                             SN.Tb, SN.Tb_past, OPT.sim_run, sim, SN)
 
-        prn_soc_debug(time=now, leader="end loop:", i=i, i_temp=i_temp, mon_old=OPT.mon_ref, mon=mon)
+        prn_soc_debug(time=now, leader="end loop:", i=i, i_temp=i_temp, mon_old=OPT.mon_run, mon=mon)
 
         # pick a pass to run debugger to a time
         if i >= 206:
@@ -425,7 +425,7 @@ def replicate(OPT: UserOptions):
 
     # Data
     if OPT.verbose:
-        print('   time mo.chm so.chm so.ib_in_s so.dv_hys  mo.ib mo.soc mo.dv_hys   smv.ib_in_s sim.ibs sim.ioc sim.sat sim.dis sim.dv_dot smv.dv_hys  mv.ib  mv.soc mon.ibs  mon.ioc   mon.sat   mon.dis    mon.dv_dot  mv.dv_hys')
+        print('   time mr.chm sr.chm sr.ib_in_s sr.dv_hys  mr.ib mr.soc mr.dv_hys   smv.ib_in_s sim.ibs sim.ioc sim.sat sim.dis sim.dv_dot smv.dv_hys  mv.ib  mv.soc mon.ibs  mon.ioc   mon.sat   mon.dis    mon.dv_dot  mv.dv_hys')
         print('time=', now)
         print('mon:  ', str(mon))
         print('sim:  ', str(sim))
@@ -496,14 +496,14 @@ if __name__ == '__main__':
                                                unit_key=unit_key_sim, skip=skip)
         if data_file_sim_clean:
             sim_old_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-            sim_old = SavedDataSim(time_ref=mon_old.time_ref, data=sim_old_raw, time_end=time_end)
+            sim_old = SavedDataSim(time_run=mon_old.time_run, data=sim_old_raw, time_end=time_end)
         else:
             sim_old = None
 
         # New run
         mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
 
-        replicateOptions = UserOptions(mon_ref=mon_old, sim_ref=sim_old, Bmon=Bmon_in, Bsim=Bsim_in,
+        replicateOptions = UserOptions(mon_run=mon_old, sim_run=sim_old, Bmon=Bmon_in, Bsim=Bsim_in,
                                        init_time=mon_old.init_time, use_ib_mon=use_ib_mon_in,
                                        use_vb_raw=use_vb_raw, add_voc_sim=dvoc_sim_in,
                                        add_voc_mon=dvoc_mon_in, slr_r_ss=scale_r_ss_in,

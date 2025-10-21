@@ -35,9 +35,9 @@ if sys.platform == 'darwin':
 plt.rcParams['axes.grid'] = True
 
 
-def compare_run_run(keys=None, data_file_folder_ref=None, data_file_folder_test=None, sync_to_ctime=False):
+def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=None, sync_to_ctime=False):
 
-    print(f"\ncompare_run_run:\n{keys=}\n{data_file_folder_ref=}\n{data_file_folder_test=}\n{sync_to_ctime=}\n")
+    print(f"\ncompare_run_run:\n{keys=}\n{data_file_folder_run=}\n{data_file_folder_test=}\n{sync_to_ctime=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     # date_ = datetime.now().strftime("%y%m%d")
@@ -45,12 +45,12 @@ def compare_run_run(keys=None, data_file_folder_ref=None, data_file_folder_test=
     # Transient  inputs
     zero_zero_in = False
     time_end_in = None
-    rated_batt_cap_ref_in = 108.4
+    rated_batt_cap_run_in = 108.4
     rated_batt_cap_test_in = 108.4
 
     # Regression suite
-    data_file_txt_ref = keys[0][0]
-    unit_key_ref = keys[0][1]
+    data_file_txt_run = keys[0][0]
+    unit_key_run = keys[0][1]
     data_file_txt_test = keys[1][0]
     unit_key_test = keys[1][1]
 
@@ -59,33 +59,33 @@ def compare_run_run(keys=None, data_file_folder_ref=None, data_file_folder_test=
     _, save_pdf_path, _ = local_paths(version)
 
     # Load old ref data
-    data_file_ref = os.path.join(data_file_folder_ref, data_file_txt_ref)
-    mon_ref, sim_ref, f_ref, data_file_ref_clean, temp_flt_file_ref_clean, sync_info_ref = \
-        load_data(data_file_ref, 1, unit_key_ref, zero_zero_in, time_end_in,
-                  rated_batt_cap=rated_batt_cap_ref_in)
+    data_file_run = os.path.join(data_file_folder_run, data_file_txt_run)
+    mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
+        load_data(data_file_run, 1, unit_key_run, zero_zero_in, time_end_in,
+                  rated_batt_cap=rated_batt_cap_run_in)
 
     # Load new test data
     data_file_test = os.path.join(data_file_folder_test, data_file_txt_test)
-    mon_test, sim_test, f_test, data_file_test_clean, temp_flt_file_test_clean, sync_info_test = \
+    mon_test, sim_test, f_test, data_file_ver_clean, temp_flt_file_ver_clean, sync_info_test = \
         load_data(data_file_test, 1, unit_key_test, zero_zero_in, time_end_in,
                   rated_batt_cap=rated_batt_cap_test_in)
 
     # Synchronize
     # Time since beginning of data to sync pulses
-    if sync_info_ref.is_empty is False and sync_info_test.is_empty is False and \
-            sync_info_ref.length == sync_info_test.length and (sync_info_ref.length > 0 or sync_to_ctime is True):
+    if sync_info_run.is_empty is False and sync_info_test.is_empty is False and \
+            sync_info_run.length == sync_info_test.length and (sync_info_run.length > 0 or sync_to_ctime is True):
         # Make target sync vector
-        master_sync_del = calculate_master_sync(sync_info_ref.del_mon, sync_info_test.del_mon)
-        sync_info_ref.synchronize(master_sync_del)
-        mon_ref.time = sync_info_ref.time_mon.copy()
+        master_sync_del = calculate_master_sync(sync_info_run.del_mon, sync_info_test.del_mon)
+        sync_info_run.synchronize(master_sync_del)
+        mon_run.time = sync_info_run.time_mon.copy()
         sync_info_test.synchronize(master_sync_del)
         mon_test.time = sync_info_test.time_mon.copy()
-        # print(f"{sync_to_ctime=}\n{sync_info_ref.del_mon=}\n{sync_info_test.del_mon=}\n{master_sync_del=}\n{mon_test.time=}")
+        # print(f"{sync_to_ctime=}\n{sync_info_run.del_mon=}\n{sync_info_test.del_mon=}\n{master_sync_del=}\n{mon_test.time=}")
     elif sync_to_ctime is True:
-        cTime_0_ref = mon_ref.cTime[0]
+        cTime_0_run = mon_run.cTime[0]
         cTime_0_test = mon_test.cTime[0]
-        cTime_sync = cTime_0_ref
-        mon_ref.time = mon_ref.cTime - cTime_sync
+        cTime_sync = cTime_0_run
+        mon_run.time = mon_run.cTime - cTime_sync
         mon_test.time = mon_test.cTime - cTime_sync
     else:
         print(f"Using simplified sync with |Ib|>0.  Data sets too small to sync or not equivalent number of sync pulses")
@@ -93,19 +93,19 @@ def compare_run_run(keys=None, data_file_folder_ref=None, data_file_folder_test=
     # Plots
     fig_list = []
     fig_files = []
-    dir_root_ref, data_root_ref = os.path.split(data_file_ref_clean)
-    data_root_ref = data_root_ref.replace('.csv', '')
-    dir_root_test, data_root_test = os.path.split(data_file_test_clean)
+    dir_root_run, data_root_run = os.path.split(data_file_run_clean)
+    data_root_run = data_root_run.replace('.csv', '')
+    dir_root_test, data_root_test = os.path.split(data_file_ver_clean)
     data_root_test = data_root_test.replace('.csv', '')
 
-    filename = data_root_ref + '__' + data_root_test
-    plot_title = dir_root_ref + '/' + data_root_ref + '__' + dir_root_test + '/' + data_root_test + '   ' + date_time
+    filename = data_root_run + '__' + data_root_test
+    plot_title = dir_root_run + '/' + data_root_run + '__' + dir_root_test + '/' + data_root_test + '   ' + date_time
 
-    if temp_flt_file_ref_clean and len(f_ref.time_ux) > 1:
-        fig_list, fig_files = over_fault(f_ref, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
+    if temp_flt_file_run_clean and len(f_run.time_ux) > 1:
+        fig_list, fig_files = over_fault(f_run, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                          fig_list=fig_list)
 
-    fig_list, fig_files = dom_plot(mon_ref, mon_test, sim_ref, sim_test, sim_test, filename, fig_files,
+    fig_list, fig_files = dom_plot(mon_run, mon_test, sim_run, sim_test, sim_test, filename, fig_files,
                                    plot_title=plot_title, fig_list=fig_list)  # all over all
 
     # Copies
@@ -123,10 +123,10 @@ def compare_run_run(keys=None, data_file_folder_ref=None, data_file_folder_test=
 def main():
     keys = [('ampHiFail_pro0p_chg.csv', 'mySolarStateOfCharge_last_g20240331_pro0p_chg'),
             ('ampHiFail_pro3p2_hi_lo_chg.csv', 'g20240704_pro3p2_hi_lo_chg')]
-    data_file_folder_ref = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\mySolarStateOfCharge_last_g20240331'
+    data_file_folder_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\mySolarStateOfCharge_last_g20240331'
     data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20240704'
     sync_to_ctime = False
-    compare_run_run(keys=keys, data_file_folder_ref=data_file_folder_ref, data_file_folder_test=data_file_folder_test,
+    compare_run_run(keys=keys, data_file_folder_run=data_file_folder_run, data_file_folder_test=data_file_folder_test,
                     sync_to_ctime=sync_to_ctime)
 
 

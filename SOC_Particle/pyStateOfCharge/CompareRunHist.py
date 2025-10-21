@@ -47,7 +47,7 @@ def compare_run_hist(data_file_=None, unit_key_=None, time_end_in_=None, data_on
         compare_run_sim(data_file=data_file_, unit_key=unit_key_, time_end_in=time_end_in_, data_only=data_only_)
     mo_h, so_h, mv_h, sv_h, ssv_h =\
         compare_hist_sim(data_file=data_file_, unit_key=unit_key_, time_end_in=time_end_in_, data_only=data_only_,
-                         mon_t=True, sync_time=mo_r.time_ref)
+                         mon_t=True, sync_time=mo_r.time_run)
 
     # Plots
     if mo_r is not None and mo_h is not None:
@@ -60,16 +60,16 @@ def compare_run_hist(data_file_=None, unit_key_=None, time_end_in_=None, data_on
 
         (data_file_folder, _) = os.path.split(data_file_)
 
-        data_root_ref = dfcs.split('/')[-1].replace('.csv', '')
-        dir_root_ref = data_file_folder.split('/')[-1].split('\\')[-1]
-        filename = data_root_ref + '__hist'
+        data_root_run = dfcs.split('/')[-1].replace('.csv', '')
+        dir_root_run = data_file_folder.split('/')[-1].split('\\')[-1]
+        filename = data_root_run + '__hist'
 
         # Plots
-        plot_title = dir_root_ref + '/' + data_root_ref + '   ' + date_time
+        plot_title = dir_root_run + '/' + data_root_run + '   ' + date_time
 
         fig_list, fig_files = dom_plot(mo_r, mo_h, so_r, so_h, ssv_h, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list,
-                                       ref_str='_run', test_str='_hist')  # all over all
+                                       run_str='_run', ver_str='_hist')  # all over all
 
         # Copies
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
