@@ -32,7 +32,7 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 
 def ekf_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
-             ref_str='_ref', test_str='_test'):
+             ref_str='_run', test_str='_test'):
     if so and smv:
         if mo.Fx is not None:  # ekf
             fig_list.append(plt.figure())  # EKF  1

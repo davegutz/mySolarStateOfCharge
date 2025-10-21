@@ -67,7 +67,7 @@ def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', labe
 
 
 def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
-             ref_str='_ref', test_str='_test'):
+             ref_str='_run', test_str='_test'):
     if fig_files is None:
         fig_files = []
 
@@ -409,7 +409,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
 
 
 def ult_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
-         ref_str='_ref', ver_str='_test'):
+         ref_str='_run', ver_str='_test'):
     if fig_files is None:
         fig_files = []
 

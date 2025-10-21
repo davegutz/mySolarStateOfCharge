@@ -40,7 +40,7 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 
 def gp_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
-            ref_str='_ref', test_str='_test'):
+            ref_str='_run', test_str='_test'):
     fig_list.append(plt.figure())  # GP 1
     plt.subplot(221)
     plt.title(plot_title + ' GP 1')
@@ -238,7 +238,7 @@ def gp_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig_
     return fig_list, fig_files
 
 
-def tune_r(mo, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None, ref_str='_ref', test_str='_test'):
+def tune_r(mo, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None, ref_str='_run', test_str='_test'):
     # delineate charging and discharging
     voc_stat_chg = np.copy(mv.voc_stat)
     voc_stat_dis = np.copy(mv.voc_stat)

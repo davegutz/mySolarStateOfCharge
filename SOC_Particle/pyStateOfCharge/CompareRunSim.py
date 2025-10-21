@@ -80,17 +80,17 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
     _, save_pdf_path, _ = local_paths(version)
 
     # # Load mon v4 (old)
-    mon_old, sim_old, f, data_file_clean, temp_flt_file_clean, _ = \
+    mon_run, sim_run, f, data_file_clean, temp_flt_file_clean, _ = \
         load_data(data_file, 1, unit_key, zero_zero_in, time_end_in, legacy=legacy_in)
 
     # How to initialize
-    if mon_old is None:
+    if mon_run is None:
         tkinter.messagebox.showwarning(message="CompareRunSim:  Data missing.  See monitor window for info.")
         return None, None, None, None, None, None
 
     # New run
     mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
-    replicateOptions = UserOptions(mon_ref=mon_old, sim_ref=sim_old, run_type='RunSim', init_time=mon_old.init_time,
+    replicateOptions = UserOptions(mon_ref=mon_run, sim_ref=sim_run, run_type='RunSim', init_time=mon_run.init_time,
                                    use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in, use_vb_raw=use_vb_raw,
                                    add_voc_sim=dvoc_sim_in, add_voc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
                                    add_s_voc_soc=add_s_voc_soc_in, verbose=verbose, scale_in=scale_in,
@@ -110,23 +110,23 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
         if f is not None and temp_flt_file_clean and len(f.time_ux) > 1:
             fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                              fig_list=fig_list, cc_dif_tol=cc_dif_tol_in)
-        fig_list, fig_files = dom_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
+        fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list, ref_str='',
                                        test_str='_ver')
-        fig_list, fig_files = ekf_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
+        fig_list, fig_files = ekf_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list, ref_str='',
                                        test_str='_ver')
-        fig_list, fig_files = sim_s_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
+        fig_list, fig_files = sim_s_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                          plot_title=plot_title, fig_list=fig_list, ref_str='',
                                          test_str='_ver')
-        fig_list, fig_files = gp_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
+        fig_list, fig_files = gp_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                       plot_title=plot_title, fig_list=fig_list, ref_str='',
                                       test_str='_ver')
-        fig_list, fig_files = off_on_plot(mon_old, mon_ver, sim_old, sim_ver, sim_s_ver, filename, fig_files,
+        fig_list, fig_files = off_on_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                           plot_title=plot_title, fig_list=fig_list, ref_str='',
                                           test_str='_ver')
         if tune_in:
-            fig_list, fig_files = tune_r(mon_old, mon_ver, sim_s_ver, filename, fig_files,
+            fig_list, fig_files = tune_r(mon_run, mon_ver, sim_s_ver, filename, fig_files,
                                          plot_title=plot_title, fig_list=fig_list, ref_str='', test_str='_ver')
 
         # Copies
@@ -137,7 +137,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         show_killer(string, 'CompareRunSim', fig_list=fig_list)
 
-    return data_file_clean, mon_old, sim_old, mon_ver, sim_ver, sim_s_ver
+    return data_file_clean, mon_run, sim_run, mon_ver, sim_ver, sim_s_ver
 
 
 def main():
