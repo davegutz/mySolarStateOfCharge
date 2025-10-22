@@ -514,7 +514,8 @@ public:
   float Ib_amp_hdwe;          // Sensed amp battery bank current, A
   float Ib_amp_hdwe_f;        // Sensed, filtered amp battery bank current, A
   float Ib_amp_model;         // Modeled amp battery bank current, A
-  float Ib_hdwe_f;            // Sensed, filtered selected battery bank current, A
+  float Ib_hdwe_f;            // Sensed, selected filtered battery bank current, A
+  float Ib_hdwe_f_cal;        // Sensed, filtered selected battery bank current for cal display, A
   float Ib_noa;               // Initial selected noa battery bank current, A
   float Ib_noa_hdwe;          // Sensed noa battery bank current, A
   float Ib_noa_hdwe_f;        // Sensed, filtered noa battery bank current, A
@@ -612,7 +613,7 @@ protected:
   unsigned long long sample_time_tb_;       // Exact moment of selected Tb sample, ms
   unsigned long long sample_time_vb_;       // Exact moment of selected Vb sample, ms
   unsigned long long sample_time_vb_hdwe_;  // Exact moment of Vb sample, ms
-  LagExp *SelFilt;      // Noise filter for calibration
+  LagExp *SelFiltCal;      // Noise filter for calibration
   LagExp *VbFilt;       // Noise filter for calibration
 };
 

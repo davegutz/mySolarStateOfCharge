@@ -1289,7 +1289,7 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *T
   Serial.printf("Vb sense ADC pin started\n");
   AmpFilt = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP, NOM_UNIT_CAP);
   NoaFilt = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*sp.nS()*sp.nP(), NOM_UNIT_CAP*sp.nS()*sp.nP());
-  SelFilt = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*sp.nS()*sp.nP(), NOM_UNIT_CAP*sp.nS()*sp.nP());
+  SelFiltCal = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*sp.nS()*sp.nP(), NOM_UNIT_CAP*sp.nS()*sp.nP());
   VbFilt = new LagExp(T, AMP_FILT_TAU, 0., NOMINAL_VB*2.5);
   #ifdef HDWE_IB_HI_LO
     sel_brk_hdwe = new ScaleBrk(HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI);
@@ -1306,6 +1306,7 @@ void Sensors::ib_choose_active_standby()
   if ( Flt->ib_sel_stat()==1 )
   {
     Ib_hdwe = Ib_amp_hdwe;
+    Ib_hdwe_f = Ib_amp_hdwe_f;
     Ib_hdwe_model = Ib_amp_model;
     sample_time_ib_hdwe_ = ShuntAmp->sample_time();
     dt_ib_hdwe_ = ShuntAmp->dt();
@@ -1313,6 +1314,7 @@ void Sensors::ib_choose_active_standby()
   else if ( Flt->ib_sel_stat()==-1 )
   {
     Ib_hdwe = Ib_noa_hdwe;
+    Ib_hdwe_f = Ib_noa_hdwe_f;
     Ib_hdwe_model = Ib_noa_model;
     sample_time_ib_hdwe_ = ShuntNoAmp->sample_time();
     dt_ib_hdwe_ = ShuntNoAmp->dt();
@@ -1320,6 +1322,7 @@ void Sensors::ib_choose_active_standby()
   else
   {
     Ib_hdwe = 0.;
+    Ib_hdwe_f = 0.;
     Ib_hdwe_model = 0.;
     sample_time_ib_hdwe_ = 0ULL;
     dt_ib_hdwe_ = 0ULL;
@@ -1335,6 +1338,7 @@ void Sensors::ib_choose_hi_lo()
   if ( Flt->ib_choice()==UsingDef )
   {
     Ib_hdwe = scale_select(Ib_noa_hdwe, sel_brk_hdwe, Ib_amp_hdwe, Ib_noa_hdwe, &sel_stat);
+    Ib_hdwe_f = scale_select(Ib_noa_hdwe, sel_brk_hdwe, Ib_amp_hdwe_f, Ib_noa_hdwe_f, &sel_stat);
     Ib_hdwe_model = scale_select(Ib_noa_model, sel_brk_hdwe, Ib_amp_model, Ib_noa_model, &sel_stat);
     sample_time_ib_hdwe_ = ShuntNoAmp->sample_time();
     dt_ib_hdwe_ = ShuntNoAmp->dt();
@@ -1343,6 +1347,7 @@ void Sensors::ib_choose_hi_lo()
   else if ( Flt->ib_choice()==UsingNoa )
   {
     Ib_hdwe = Ib_noa_hdwe;
+    Ib_hdwe_f = Ib_noa_hdwe_f;
     Ib_hdwe_model = Ib_noa_model;
     sample_time_ib_hdwe_ = ShuntNoAmp->sample_time();
     dt_ib_hdwe_ = ShuntNoAmp->dt();
@@ -1351,6 +1356,7 @@ void Sensors::ib_choose_hi_lo()
   else if ( Flt->ib_choice()==UsingAmp )
   {
     Ib_hdwe = Ib_amp_hdwe;
+    Ib_hdwe_f = Ib_amp_hdwe_f;
     Ib_hdwe_model = Ib_amp_model;
     sample_time_ib_hdwe_ = ShuntAmp->sample_time();
     dt_ib_hdwe_ = ShuntAmp->dt();
@@ -1359,6 +1365,7 @@ void Sensors::ib_choose_hi_lo()
   else
   {
     Ib_hdwe = 0.;
+    Ib_hdwe_f = 0.;
     Ib_hdwe_model = 0.;
     sample_time_ib_hdwe_ = 0ULL;
     dt_ib_hdwe_ = 0ULL;
@@ -1618,7 +1625,7 @@ void Sensors::shunt_select_initial(const boolean reset)
     Vc_hdwe = max(ShuntAmp->Vc(), ShuntNoAmp->Vc());
     Ib_noa_hdwe = ShuntNoAmp->Ishunt_cal() + hdwe_add;  // Sense fault injection feeds logic, not model
     Ib_noa_hdwe_f = NoaFilt->calculate(Ib_noa_hdwe, reset, AMP_FILT_TAU, T);
-    Ib_hdwe_f = SelFilt->calculate(Ib_hdwe, reset, AMP_FILT_TAU, T);
+    Ib_hdwe_f_cal = SelFiltCal->calculate(Ib_hdwe, reset, AMP_FILT_TAU, T);
     
     // Initial choice
     // Inputs:  ib_choice/ib_sel_stat_, Ib_amp_hdwe, Ib_noa_hdwe, Ib_amp_model(past), Ib_noa_model(past)

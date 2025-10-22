@@ -270,7 +270,7 @@ class Sensors:
         self.Tb_f_rate = mon_Tb_f_rate
 
     def calc_dTb(self, i, SN, t):
-        if self.dTb is not 0.:
+        if self.dTb != 0.:
             dTb = SN.lut_dTb.interp(t[i])
         else:
             dTb = self.dTb
