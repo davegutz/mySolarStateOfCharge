@@ -41,6 +41,10 @@ class Retained:
     def tweak_test(self):
         return 0b1000 & int(self.modeling)
 
+def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=None):
+    q_cap = q_cap_rated_scaled * (1. + dqdt * (tb_f - t_rated))
+    return q_cap
+
 
 class Battery(Coulombs):
     # Battery constants
@@ -1172,10 +1176,6 @@ class BatterySim(Battery):
 def is_sat(tb_f, rated_temp, voc, soc, nom_vsat, dvoc_dt, low_t):
     vsat = sat_voc(tb_f, rated_temp, nom_vsat, dvoc_dt)
     return tb_f > low_t and (voc >= vsat or soc >= Battery.mxeps_bb)
-
-
-# def calculate_capacity(tb_f, t_rat, q_sat, dqdt):
-#     return q_sat * (1-dqdt*(tb_f - t_rat))
 
 
 def calc_vsat(tb_f, rated_temp, vsat, dvoc_dt):

@@ -21,7 +21,7 @@ import copy
 
 import numpy as np
 import Battery
-from Battery import Battery
+from Battery import Battery, calculate_capacity
 from myFilters import LagExp
 from pyDAGx import myTables
 
@@ -60,7 +60,7 @@ class Sensors:
                 self.add_Tb_in = np.array(add_Tb_in)
                 self.Tb0 += add_Tb_in[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
-                self.dTb = lut_dTb.interp(t[0])
+                self.dTb = self.lut_dTb.interp(t[0])
             self.Tb = mon_run.Tb[0]
             self.Tb_f = mon_run.Tb_f[0]
             self.Tb_f_rate = mon_run.Tb_f_rate[0]
@@ -107,10 +107,7 @@ class Sensors:
             self.e_wrap_n_trim_init = 0.
             self.voc_soc_init = mon_run.voc_soc[0]
             self.vb_s_init = mon_run.vb[0]
-            if run_type == 'RunSim':
-                self.Tb_init = mon_run.Tb[0]
-            else:
-                self.Tb_init = mon_run.Tb_f[0]
+            self.Tb_init = mon_run.Tb[0]
             self.Tb_f_init = mon_run.Tb_f[0]
             self.Tb_f_rate_init = mon_run.Tb_f_rate[0]
             self.lut_dTb = None
@@ -119,7 +116,7 @@ class Sensors:
                 self.add_Tb_in = np.array(add_Tb_in)
                 self.Tb0 += add_Tb_in[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
-                self.dTb = lut_dTb.interp(t[0])
+                self.dTb = self.lut_dTb.interp(t[0])
             self.Tb_f_rap = mon_run.Tb_f_rap
             self.Tb_rap_init = mon_run.Tb_rap[0] + self.dTb
             self.Tb_f_rap_init = mon_run.Tb_f_rap[0] + self.dTb
@@ -165,7 +162,7 @@ class Sensors:
                 self.add_Tb_in = np.array(add_Tb_in)
                 self.Tb0 += add_Tb_in[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
-                self.dTb = lut_dTb.interp(t[0])
+                self.dTb = self.lut_dTb.interp(t[0])
             self.Tb_rap_init = mon_run.Tb_f[0] + self.dTb
             self.Tb_f_rap_init = mon_run.Tb_f[0] + self.dTb
             self.Tb_f_rate_rap_init = 0.
@@ -224,8 +221,8 @@ class Sensors:
                 self.dt_s.append(sim_run.time[i] - sim_run.time[i-1])
         self.soc_s = mon_run.soc_s
         if not hasattr(mon_run, 'q_capacity'):
-            self.q_cap = self.calculate_capacity(q_cap_rated_scaled=mon_run.qcrs, dqdt=mon_run.dqdt,
-                                                 tb_f=self.Tb_f, t_rated=mon_run.t_rated)
+            self.q_cap = calculate_capacity(q_cap_rated_scaled=mon_run.qcrs, dqdt=mon_run.dqdt, tb_f=self.Tb_f,
+                                            t_rated=mon_run.t_rated)
         else:
             self.q_cap = mon_run.q_capacity
         self.dq_s = -self.q_cap * (1. - mon_run.soc_s)
@@ -272,26 +269,26 @@ class Sensors:
         self.Tb_f = mon_Tb_f + self.dTb
         self.Tb_f_rate = mon_Tb_f_rate
 
-    def calc_dTb(self, i):
+    def calc_dTb(self, i, SN, t):
         if self.dTb is not 0.:
             dTb = SN.lut_dTb.interp(t[i])
         else:
             dTb = self.dTb
         return dTb
 
-    def calc_temp_pass_2(self, mon_run, mon, Battery, i_temp):
+    def calc_temp_pass_2(self, mon_run, mon, Battery_, i_temp):
         if hasattr(mon_run, 'Tb_hdwe_filt'):
             mon.Tb_hdwe_filt = \
                 self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_run.Tb_hdwe_filt[i_temp],
                                                       mon.reset_temp,
-                                                      mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
-                                                      rmin=-Battery.T_RLIM)
+                                                      mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
+                                                      rmin=-Battery_.T_RLIM)
         else:
             mon.Tb_hdwe_filt = \
                 self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon.Tb_hdwe,
                                                       mon.reset_temp,
-                                                      mon.dt_temp, Battery.TB_FILT, rmax=Battery.T_RLIM,
-                                                      rmin=-Battery.T_RLIM)
+                                                      mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
+                                                      rmin=-Battery_.T_RLIM)
 
         mon.Tb_hdwe_filt_rate = self.TbSenseFilt.rate
         mon.Tb_f_rate = mon.Tb_hdwe_filt_rate
@@ -303,10 +300,6 @@ class Sensors:
         mon.Tb_rstate = self.TbSenseFilt.rstate
         mon.Tb_state = self.TbSenseFilt.state
         return mon
-
-    def calculate_capacity(self, q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=None):
-        q_cap = q_cap_rated_scaled * (1. + dqdt * (tb_f - t_rated))
-        return q_cap
 
     def update_ekf(self, i_ekf):
         self.z_init = self.z[i_ekf]

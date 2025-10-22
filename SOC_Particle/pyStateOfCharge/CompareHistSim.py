@@ -20,7 +20,7 @@ import numpy.lib.recfunctions as rf
 import matplotlib.pyplot as plt
 from Hysteresis_20220917d import Hysteresis_20220917d
 from Hysteresis_20220926 import Hysteresis_20220926
-from Battery import Battery, BatteryMonitor, is_sat, Retained
+from Battery import Battery, BatteryMonitor, is_sat, Retained, calculate_capacity
 from MonSim import replicate, save_clean_file, UserOptions
 from resample import resample
 from PlotKiller import show_killer
@@ -784,11 +784,6 @@ def bandaid(h):
     sim_run = rf.rec_append_fields(sim_run, 'dv_hys_s', bms_off_s)
     sim_run = rf.rec_append_fields(sim_run, 'voc_stat_s', bms_off_s)
     return mon_run, sim_run
-
-
-def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=None):
-    q_cap = q_cap_rated_scaled * (1. + dqdt * (tb_f - t_rated))
-    return q_cap
 
 
 # Make an array useful for analysis (around temp) and add some metrics
