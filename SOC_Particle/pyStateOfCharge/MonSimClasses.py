@@ -328,7 +328,7 @@ class Sensors:
         mon = copy.deepcopy(mon_)
         sim = copy.deepcopy(sim_)
         mon.Tb = mon.Tb_hdwe  # past value
-        mon.reset_temp = (i_temp < 2)  # make sure temp init is longer than reset
+        mon.reset_temp = (i_temp < 2) or OPT.run_type == 'HistSim'  # make sure temp init is longer than reset
         if hasattr(OPT.mon_run, 'Tt'):
             mon.dt_temp = OPT.mon_run.Tt[i_temp]
         else:

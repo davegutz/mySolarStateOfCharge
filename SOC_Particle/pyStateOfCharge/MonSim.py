@@ -256,9 +256,13 @@ def replicate(OPT: UserOptions):
         # Basic reset model verification is to init to the input data
         # Tried hard not to re-implement solvers in the Python verification  tool
         # Also, BTW, did not implement signal selection or tweak logic
-        reset = bool((t[i] <= OPT.init_time) or (t[i] < 0. and t[0] > OPT.init_time))
-        if OPT.mon_run.res is not None:
-            reset = reset or bool(OPT.mon_run.res[i] > 0.)
+        reset = None
+        if OPT.run_type == 'RunSim':
+            reset = bool((t[i] <= OPT.init_time) or (t[i] < 0. and t[0] > OPT.init_time))
+            if OPT.mon_run.res is not None:
+                reset = reset or bool(OPT.mon_run.res[i] > 0.)
+        elif OPT.run_type == 'HistSim':
+            reset = True
         prn_soc_debug(time=now, leader="before sim init:     ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
 
         if reset:
@@ -339,7 +343,7 @@ def replicate(OPT: UserOptions):
         # Monitor EKF sequencing logic
         if (i_ekf+1 < len(OPT.mon_run.time_e)) and (OPT.mon_run.time_e[i_ekf+1] <= OPT.mon_run.time[i]):
             i_ekf += 1
-            reset_ekf = i_ekf == 0
+            reset_ekf = i_ekf == 0 or OPT.run_type == 'HistSim'
             if i_ekf < 1:
                 T_ekf = OPT.mon_run.dt_ekf[i_ekf]
             else:
