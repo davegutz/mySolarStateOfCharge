@@ -51,9 +51,11 @@ class Sensors:
 
     def __init__(self, mon_run=None, sim_run=None, add_Tb_in=None, run_type=None):
 
+        self.mon_run = mon_run
+        self.sim_run = sim_run
         if run_type == 'RunSim':
-            self.Tb0 = mon_run.Tb_f[0]
-            self.Tb0_s = mon_run.Tb_mod[0]
+            self.Tb0 = self.mon_run.Tb_f[0]
+            self.Tb0_s = self.mon_run.Tb_mod[0]
             self.lut_dTb = None
             self.dTb = 0.
             if add_Tb_in is not None:
@@ -61,11 +63,11 @@ class Sensors:
                 self.Tb0 += add_Tb_in[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
                 self.dTb = self.lut_dTb.interp(t[0])
-            self.Tb = mon_run.Tb[0]
-            self.Tb_f = mon_run.Tb_f[0]
-            self.Tb_f_rate = mon_run.Tb_f_rate[0]
-            self.Tb_past = mon_run.Tb_rap[0] + self.dTb
-            self.Tb_f_past = mon_run.Tb_f_rap[0] + self.dTb
+            self.Tb = self.mon_run.Tb[0]
+            self.Tb_f = self.mon_run.Tb_f[0]
+            self.Tb_f_rate = self.mon_run.Tb_f_rate[0]
+            self.Tb_past = self.mon_run.Tb_rap[0] + self.dTb
+            self.Tb_f_past = self.mon_run.Tb_f_rap[0] + self.dTb
             self.Tb_f_rate_past = mon_run.Tb_f_rate_rap[0]
             self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
             self.LoopAmp = SensorLooparound(mon_run.ibmh, mon_run.ib_dyn_m, mon_run.e_wrap_m_trim,
@@ -178,10 +180,10 @@ class Sensors:
                 mon_run.ib_dyn_m = np.copy(mon_run.ibmh_f)
 
             if not hasattr(mon_run, 'e_wrap_m_trim'):
-                mon_run.e_wrap_m_trim = np.copy(mon_run.ibmh_f) * 0.
+                mon_run.e_wrap_m_trim = np.copy(mon_run.e_wm_t)
 
             if not hasattr(mon_run, 'e_wrap_m_filt'):
-                mon_run.e_wrap_m_filt = np.copy(mon_run.e_wrap)
+                mon_run.e_wrap_m_filt = np.copy(mon_run.e_wm_f)
 
             self.LoopAmp = SensorLooparound(mon_run.ibmh_f, mon_run.ib_dyn_m, mon_run.e_wrap_m_trim,
                                             mon_run.e_wrap_m_filt)
@@ -190,10 +192,10 @@ class Sensors:
                mon_run.ib_dyn_n = np.copy(mon_run.ibnh_f)
 
             if not hasattr(mon_run, 'e_wrap_n_trim'):
-                mon_run.e_wrap_n_trim = np.copy(mon_run.ibnh_f) * 0.
+                mon_run.e_wrap_n_trim = np.copy(mon_run.e_wm_t) * 0.
 
             if not hasattr(mon_run, 'e_wrap_n_filt'):
-                mon_run.e_wrap_n_filt = np.copy(mon_run.e_wrap)
+                mon_run.e_wrap_n_filt = np.copy(mon_run.e_wn_f)
 
             self.LoopNoa = SensorLooparound(mon_run.ibnh_f, mon_run.ib_dyn_n, mon_run.e_wrap_m_trim * 0.,
                                             mon_run.e_wrap_n_filt)
@@ -311,6 +313,9 @@ class Sensors:
         self.ib_in_s_init = self.ib_in_s[i]
         self.ib_dyn_s_init = self.ib_dyn_s[i]
         self.dv_dyn_s_init = self.dv_dyn_s[i]
+        self.e_wrap_m_filt_init = self.mon_run.e_wrap_m_filt[i]
+        self.e_wrap_m_trim_init = self.mon_run.e_wrap_m_trim[i]
+        self.e_wrap_n_filt_init = self.mon_run.e_wrap_n_filt[i]
 
     def update_tb(self):
         self.Tb_past = self.Tb
@@ -318,8 +323,8 @@ class Sensors:
         self.Tb_f_rate_past = self.Tb_f_rate
 
     def calc_temp_pass_1(self, mon_, sim_, i_temp, OPT):
-        mon = copy.deepcopy(mon_)
-        sim = copy.deepcopy(sim_)
+        mon = mon_
+        sim = sim_
         mon.Tb = mon.Tb_hdwe  # past value
         mon.reset_temp = (i_temp < 2) or OPT.run_type == 'HistSim'  # make sure temp init is longer than reset
         if hasattr(OPT.mon_run, 'Tt'):
