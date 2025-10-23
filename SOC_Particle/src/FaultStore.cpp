@@ -34,11 +34,11 @@ void Flt_st::assign(const unsigned long now, BatteryMonitor *Mon, Sensors *Sen)
   this->t_flt = now;
   this->Tb_hdwe_filt = int16_t(Sen->Tb_hdwe_filt*SCL_600);
   this->vb_hdwe_filt = int16_t(Sen->Vb_hdwe_f/sp.nS()*sp.vb_hist_slr());
-  this->ib_amp_hdwe_filt = int16_t(Sen->Ib_amp_hdwe_f/sp.nP()*sp.ib_hist_slr());
-  this->ib_noa_hdwe_filt = int16_t(Sen->Ib_noa_hdwe_f/sp.nP()*sp.ib_hist_slr());
+  this->ib_amp_hdwe_filt = int16_t(Sen->Ib_amp_hdwe_f/sp.nP()*sp.ib_hist_m_slr());
+  this->ib_noa_hdwe_filt = int16_t(Sen->Ib_noa_hdwe_f/sp.nP()*sp.ib_hist_n_slr());
   this->Tb_filt = int16_t(Sen->Tb_f*SCL_600);
   this->vb_filt = int16_t(Sen->Vb_f/sp.nS()*sp.vb_hist_slr());
-  this->ib_filt = int16_t(Sen->Ib_f/sp.nP()*sp.ib_hist_slr());
+  this->ib_filt = int16_t(Sen->Ib_f/sp.nP()*sp.ib_hist_n_slr());
   this->soc = int16_t(Mon->soc()*SCL_16000);
   this->soc_min = int16_t(Mon->soc_min()*SCL_16000);
   this->soc_ekf = int16_t(Mon->soc_ekf()*SCL_16000);
@@ -114,11 +114,11 @@ void Flt_st::pretty_print(const String code)
     Serial.printf("t %ld\n", this->t_flt);
     Serial.printf("Tb_hdwe_filt %7.3f\n", float(this->Tb_hdwe_filt)/SCL_600);
     Serial.printf("vb_hdwe_filt %7.3f\n", float(this->vb_hdwe_filt)/sp.vb_hist_slr());
-    Serial.printf("ib_amp_hdwe_filt %7.3f\n", float(this->ib_amp_hdwe_filt)/sp.ib_hist_slr());
-    Serial.printf("ib_noa_hdwe_filt %7.3f\n", float(this->ib_noa_hdwe_filt)/sp.ib_hist_slr());
+    Serial.printf("ib_amp_hdwe_filt %7.3f\n", float(this->ib_amp_hdwe_filt)/sp.ib_hist_m_slr());
+    Serial.printf("ib_noa_hdwe_filt %7.3f\n", float(this->ib_noa_hdwe_filt)/sp.ib_hist_n_slr());
     Serial.printf("Tb_filt %7.3f\n", float(this->Tb_filt)/SCL_600);
     Serial.printf("vb_filt %7.3f\n", float(this->vb_filt)/sp.vb_hist_slr());
-    Serial.printf("ib_filt %7.3f\n", float(this->ib_filt)/sp.ib_hist_slr());
+    Serial.printf("ib_filt %7.3f\n", float(this->ib_filt)/sp.ib_hist_n_slr());
     Serial.printf("soc %7.4f\n", float(this->soc)/SCL_16000);
     Serial.printf("soc_min %7.4f\n", float(this->soc_min)/SCL_16000);
     Serial.printf("soc_ekf %7.4f\n", float(this->soc_ekf)/SCL_16000);
@@ -151,11 +151,11 @@ void Flt_st::print_flt(const String code)
       code.c_str(), buffer, this->t_flt,
       float(this->Tb_hdwe_filt)/SCL_600,
       float(this->vb_hdwe_filt)/sp.vb_hist_slr(),
-      float(this->ib_amp_hdwe_filt)/sp.ib_hist_slr(),
-      float(this->ib_noa_hdwe_filt)/sp.ib_hist_slr(),
+      float(this->ib_amp_hdwe_filt)/sp.ib_hist_m_slr(),
+      float(this->ib_noa_hdwe_filt)/sp.ib_hist_n_slr(),
       float(this->Tb_filt)/SCL_600,
       float(this->vb_filt)/sp.vb_hist_slr(),
-      float(this->ib_filt)/sp.ib_hist_slr(),
+      float(this->ib_filt)/sp.ib_hist_n_slr(),
       float(this->soc)/SCL_16000,
       float(this->soc_min)/SCL_16000,
       float(this->soc_ekf)/SCL_16000,
@@ -171,11 +171,11 @@ void Flt_st::print_flt(const String code)
       code.c_str(), buffer, this->t_flt,
       float(this->Tb_hdwe_filt)/SCL_600,
       float(this->vb_hdwe_filt)/sp.vb_hist_slr(),
-      float(this->ib_amp_hdwe_filt)/sp.ib_hist_slr(),
-      float(this->ib_noa_hdwe_filt)/sp.ib_hist_slr(),
+      float(this->ib_amp_hdwe_filt)/sp.ib_hist_m_slr(),
+      float(this->ib_noa_hdwe_filt)/sp.ib_hist_n_slr(),
       float(this->Tb_filt)/SCL_600,
       float(this->vb_filt)/sp.vb_hist_slr(),
-      float(this->ib_filt)/sp.ib_hist_slr(),
+      float(this->ib_filt)/sp.ib_hist_n_slr(),
       float(this->soc)/SCL_16000,
       float(this->soc_min)/SCL_16000,
       float(this->soc_ekf)/SCL_16000,

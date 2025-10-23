@@ -113,6 +113,7 @@ const String unit = version + "_" + HDWE_UNIT;
 #define F_W_I                 0.5       // Current filter wn, r/s (0.5)   
 #define F_Z_I                 0.80      // Current filter zeta (0.80)
 #define SCL_40                40.       // Data storage integer scaling
+#define SCL_60                60.       // Data storage integer scaling
 #define SCL_600               600.      // Data storage integer scaling
 #define SCL_1200              1200.     // Data storage integer scaling
 #define SCL_1500              1500.     // Data storage integer scaling
