@@ -756,10 +756,8 @@ def calc_fault(d_ra, d_mod):
 def bandaid(h):
     res = np.zeros(len(h.time_ux))
     res[0:1] = 1
-    # ib_sel = h['ib_f'].copy()  # TODO: fix selection logic
-    # ib_in_s = h['ib_f'].copy()
-    ib_sel = h['ibmh_f'].copy()
-    ib_in_s = h['ibmh_f'].copy()
+    ib_sel = h['ib_f'].copy()  # TODO: fix selection logic
+    ib_in_s = h['ib_f'].copy()
     vb_sel = h['vb_f'].copy()
     tb_sel = h['Tb_f'].copy()
     voc_f = h['voc_f'].copy()
@@ -923,7 +921,7 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=100.):
                 voc_stat_redesign_r_dis[i] = None
                 dv_hys_redesign_dis[i] = None
                 res_redesign_dis[i] = None
-            elif h.ib[i] < 0.5:
+            elif h.ib_f[i] < 0.5:
                 voc_stat_redesign_r_chg[i] = None
                 dv_hys_redesign_chg[i] = None
                 res_redesign_chg[i] = None
@@ -1279,9 +1277,9 @@ def main():
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251022am_soc4p2_hi_lo_bb.csv'
-    # plots=True
-    plots = False
+    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251023am_soc4p2_hi_lo_bb.csv'
+    plots=True
+    # plots = False
     mon_t = False
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # dt_resample = 900
