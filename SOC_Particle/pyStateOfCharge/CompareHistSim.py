@@ -64,6 +64,14 @@ HYS_SOC_MIN_MARG = 0.15  # add to soc_min to set thr for detecting low endpoint 
 
 
 # Add ib_lag = ib lagged by time constant
+def add_ib(data, mon):
+    if hasattr(data, 'ibmh_f'):
+        data = rf.rec_append_fields(data, 'ibmh', np.array(data.ibmh_f, dtype=float))
+    if hasattr(data, 'ibnh_f'):
+        data = rf.rec_append_fields(data, 'ibnh', np.array(data.ibnh_f, dtype=float))
+    return data
+
+# Add ib_lag = ib lagged by time constant
 def add_ib_lag(data, mon):
     lag_tau = ib_lag(mon.chemistry.mod_code)
     IbLag = LagExp(1., lag_tau, -100., 100.)
@@ -171,6 +179,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     d_mod = rf.rec_append_fields(d_mod, 'ib_charge_f', np.array(ib_charge_f, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'dv_dyn_f', np.array(dv_dyn_f, dtype=float))
     d_mod = add_ib_lag(d_mod, mon)
+    d_mod = add_ib(d_mod, mon)
     d_mod = calc_fault(d_ra, d_mod)
     voc_stat_chg = np.copy(d_mod.voc_stat_f)
     voc_stat_dis = np.copy(d_mod.voc_stat_f)
@@ -747,11 +756,13 @@ def calc_fault(d_ra, d_mod):
 def bandaid(h):
     res = np.zeros(len(h.time_ux))
     res[0:1] = 1
-    ib_sel = h['ib_f'].copy()
+    # ib_sel = h['ib_f'].copy()  # TODO: fix selection logic
+    # ib_in_s = h['ib_f'].copy()
+    ib_sel = h['ibmh_f'].copy()
+    ib_in_s = h['ibmh_f'].copy()
     vb_sel = h['vb_f'].copy()
     tb_sel = h['Tb_f'].copy()
     voc_f = h['voc_f'].copy()
-    ib_in_s = h['ib_f'].copy()
     soc_s = h['soc'].copy()
     bms_off_s = h['bms_off'].copy()
     sat_s = h['sat'].copy()
@@ -762,6 +773,8 @@ def bandaid(h):
     mon_run = rf.rec_append_fields(mon_run, 'ib_past', ib_in_s)
     if not hasattr(mon_run, 'ib_sel'):
         mon_run = rf.rec_append_fields(mon_run, 'ib_sel', ib_sel)
+    else:
+        mon_run.ib_sel = ib_sel.copy()
     mon_run = rf.rec_append_fields(mon_run, 'tb_sel', tb_sel)
     if not hasattr(mon_run, 'voc_f'):
         mon_run = rf.rec_append_fields(mon_run, 'voc_f', voc_f)
@@ -1217,7 +1230,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
         replicateOptions = UserOptions(mon_run=mon_run, sim_run=sim_run, run_type='HistSim', init_time=1.,
                                        verbose=False, max_time=time_end_in, use_vb_sim=False, scale_in=scale_in,
                                        use_mon_soc=use_mon_soc_in, add_voc_mon=dvoc_mon_in, add_voc_sim=dvoc_sim_in,
-                                       unit=unit, use_ib_mon=True, request_history=request_history)
+                                       unit=unit, use_ib_mon=True, request_history=request_history, mod_force=0)
         mon_ver, sim_ver, sim_s_ver, mon_r, sim_r = replicate(replicateOptions)
         save_clean_file(mon_ver, mon_file_save, 'mon_rep_hist' + date_)
 
@@ -1266,7 +1279,7 @@ def main():
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251021am_soc4p2_hi_lo_bb.csv'
+    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251022am_soc4p2_hi_lo_bb.csv'
     # plots=True
     plots = False
     mon_t = False

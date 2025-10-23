@@ -53,7 +53,9 @@ def chm_from_mon_or_sim(mr, sr):
         chem_s = mr.chm_m
     return chem_m, chem_s
 
-def get_modeling(mr):
+def get_modeling(mr, mod_force=None):
+    if mod_force is not None:
+        return mod_force * np.ones(len(mr.time))
     if hasattr(mr, 'mod_data'):
         modeling_ = mr.mod_data
     else:
@@ -133,6 +135,7 @@ class UserOptions:
     use_vb_raw: Optional[bool] = False  # Force usage of raw Vb bypassing the signal selection logic
     verbose: Optional[bool] = True  # Lots of 'helpful' information used to provide some quick clues about whatever
     # to or instead of plots
+    mod_force: Optional[int] = None  # Force modeling config that cannot be gleaned from input data or other reason
 
 #  Replicate the application in its entirety here.
 #  There are no 'bank' parameters anywhere in this model.   It is assumed that all inputs from the application have
@@ -180,7 +183,7 @@ def replicate(OPT: UserOptions):
     rp = Retained()
 
     # modeling
-    modeling = get_modeling(OPT.mon_run)
+    modeling = get_modeling(OPT.mon_run, OPT.mod_force)
 
     # tweaking
     tweak_test = rp.tweak_test()
@@ -325,7 +328,7 @@ def replicate(OPT: UserOptions):
         else:
             _chm_m = OPT.Bmon
 
-        if OPT.ib_fail_t and t[i] > OPT.ib_fail_t:
+        if OPT.ib_fail_t is not None and t[i] > OPT.ib_fail_t:
             ib_ = OPT.ib_fail
         else:
             if OPT.mon_run.ib_sel is not None:
