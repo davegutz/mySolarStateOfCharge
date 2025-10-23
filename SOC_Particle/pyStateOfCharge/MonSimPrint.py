@@ -245,7 +245,7 @@ def print_volt_HistSim(i, i_temp, i_ekf, t, mon_run, mon, calc_temp, calc_ekf, S
           "{:11.3f}".format(mon_run.dt[i]), "{:8.3f}".format(mon.dt),
           "{:14.7f}".format(mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:11.5f}".format(mon_run.vb_f[i]), "{:9.5f}".format(mon.vb),
-          "{:11.5f}".format(mon_run.ib_dyn_m[i]), "{:9.5f}".format(mon.LoopIbNoa.ib_dyn),
+          "{:11.5f}".format(mon_run.ib_dyn_m[i]), "{:9.5f}".format(mon.ib_dyn),
           "{:11.5f}".format(mon_run.voc_f[i]), "{:9.5f}".format(mon.voc), "{:9.5f}".format(mon.voc_filt),
           "{:11.5f}".format(mon_run.z[i_ekf]), "{:9.5f}".format(mon.voc_stat_f),
           "{:11.5f}".format(mon_run.soc_ekf[i]), "{:9.5f}".format(mon.soc_ekf),

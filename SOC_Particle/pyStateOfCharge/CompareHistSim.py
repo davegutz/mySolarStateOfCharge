@@ -756,11 +756,13 @@ def calc_fault(d_ra, d_mod):
 def bandaid(h):
     res = np.zeros(len(h.time_ux))
     res[0:1] = 1
-    ib_sel = h['ib_f'].copy()
+    # ib_sel = h['ib_f'].copy()  # TODO: fix selection logic
+    # ib_in_s = h['ib_f'].copy()
+    ib_sel = h['ibmh_f'].copy()
+    ib_in_s = h['ibmh_f'].copy()
     vb_sel = h['vb_f'].copy()
     tb_sel = h['Tb_f'].copy()
     voc_f = h['voc_f'].copy()
-    ib_in_s = h['ib_f'].copy()
     soc_s = h['soc'].copy()
     bms_off_s = h['bms_off'].copy()
     sat_s = h['sat'].copy()
@@ -771,6 +773,8 @@ def bandaid(h):
     mon_run = rf.rec_append_fields(mon_run, 'ib_past', ib_in_s)
     if not hasattr(mon_run, 'ib_sel'):
         mon_run = rf.rec_append_fields(mon_run, 'ib_sel', ib_sel)
+    else:
+        mon_run.ib_sel = ib_sel.copy()
     mon_run = rf.rec_append_fields(mon_run, 'tb_sel', tb_sel)
     if not hasattr(mon_run, 'voc_f'):
         mon_run = rf.rec_append_fields(mon_run, 'voc_f', voc_f)

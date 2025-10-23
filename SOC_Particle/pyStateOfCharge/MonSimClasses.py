@@ -202,8 +202,9 @@ class Sensors:
             self.ib_amp = mon_run.ibmh_f
             self.ib_noa = mon_run.ibnh_f
             self.ib_init = mon_run.ib_f[0]
-            self.ib_dyn = np.copy(mon_run.ib_f)
-            self.ib_dyn_init = mon_run.ib_f[0]
+            # self.ib_dyn = np.copy(mon_run.ib_f)
+            self.ib_dyn = np.copy(self.ib_amp)
+            self.ib_dyn_init = self.ib_dyn[0]
             self.ib_charge_init = mon_run.ib_charge_f[0]
             self.vb_init = mon_run.vb_f[0]
             self.ibmm = mon_run.ibmh_f

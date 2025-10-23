@@ -468,7 +468,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.dt = dt
         self.ib_in = ib
         if self.IB_CHARGE_NOA:
-            self.ib_in = self.ib_noa
+            self.ib_in = self.ib_amp
         self.mod = rp.modeling
         # Overflow protection since ib past value used
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)

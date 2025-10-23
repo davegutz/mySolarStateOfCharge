@@ -328,7 +328,7 @@ def replicate(OPT: UserOptions):
         else:
             _chm_m = OPT.Bmon
 
-        if OPT.ib_fail_t and t[i] > OPT.ib_fail_t:
+        if OPT.ib_fail_t is not None and t[i] > OPT.ib_fail_t:
             ib_ = OPT.ib_fail
         else:
             if OPT.mon_run.ib_sel is not None:
