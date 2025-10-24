@@ -38,6 +38,19 @@ def prn_soc_debug(leader="", time=None, i=None, i_temp=None, mon_run=None, mon=N
     "{:14.7f}".format(mon_run.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
         )
 
+def prn_soc_s_debug(leader="", time=None, i=None, i_temp=None, mon_run=None, mon=None, sim_run=None, sim=None):
+    execute = False
+    if execute:
+        return
+    else:
+        if time is not None:
+            print("time {:7.3f}".format(time), end='')
+        print("                                                                                                                                                                                                                                                                                                                                                                                                             " + leader, end='')
+        print(
+              "{:14.7f}".format(sim_run.Tb_f_s[i]), "{:11.7f}".format(sim.Tb_f),
+              "{:14.4f}".format(sim_run.d_delta_q_s[i]), "{:11.4f}".format(sim.d_delta_q),
+              "{:14.4f}".format(sim_run.dq_s[i]), "{:11.4f}".format(sim.delta_q),
+        )
 def print_hist(request_history, run_type, i, i_temp, i_ekf, t, mon_run, mon, calc_temp, calc_ekf, Tb, Tb_past, sim_run, sim, SN):
     hdr = None
     match run_type:
@@ -146,7 +159,7 @@ def print_soc_RunSim(i, i_temp, t, mon_run, mon, calc_temp, i_ekf, calc_ekf):
     return hdr
 
 def print_soc_s_RunSim(i, i_temp, t, mon_run, mon, calc_temp, sim_run, sim, i_ekf, calc_ekf, SN):
-    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s            ib_in_s               ib_s                  ib_fut       ib_dyn_s_rstate         ib_dyn_s_lstate          ib_dyn_s       ib_dyn_s_init     ib_dyn           ib_dyn_init      dv_hys_s              ib_charge_s            ioc_s                soc                   soc_s                   delq                       i * dt_s * coul_eff        d_delq_s               delq_s                     qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_dyn_s             vsat                 "
+    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s            ib_in_s               ib_s                  ib_fut       ib_dyn_s_rstate         ib_dyn_s_lstate          ib_dyn_s       ib_dyn_s_init     ib_dyn           ib_dyn_init      dv_hys_s              ib_charge_s            ioc_s                soc                   soc_s                   delq                       i * dt_s * coul_eff     Tb_f_s                       d_delq_s                delq_s                     qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_dyn_s             vsat                 "
     if calc_temp:
         print(hdr)
     # if i > 0:
@@ -179,6 +192,7 @@ def print_soc_s_RunSim(i, i_temp, t, mon_run, mon, calc_temp, sim_run, sim, i_ek
           "{:11.7f}".format(mon_run.soc_s[i]), "{:8.7f}".format(sim.soc),
           "{:14.4f}".format(mon_run.delta_q[i]), "{:11.4f}".format(mon.delta_q),
           "{:12.4f}".format(i_dt_old), "{:9.4f}".format(i_dt_new),
+          "{:14.7f}".format(sim_run.Tb_f_s[i]), "{:11.7f}".format(sim.Tb_f),
           "{:14.4f}".format(sim_run.d_delta_q_s[i]), "{:11.4f}".format(sim.d_delta_q),
           "{:14.4f}".format(sim_run.dq_s[i]), "{:11.4f}".format(sim.delta_q),
           "{:12.1f}".format(mon_run.qcrs[i]), "{:9.1f}".format(mon.q_cap_rated_scaled),

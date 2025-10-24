@@ -17,7 +17,7 @@
 
 import numpy as np
 from EKF1x1 import EKF1x1
-from Coulombs import Coulombs
+from Coulombs import Coulombs, Chemistry
 from Hysteresis import Hysteresis
 import matplotlib.pyplot as plt
 from TFDelay import TFDelay
@@ -897,6 +897,8 @@ class BatterySim(Battery):
                          tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct,
                          slr_r_ss=slr_r_ss, s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, slr_coul_eff=slr_coul_eff,
                          scale_cap=scale, unit=unit)
+        self.chemistry = Chemistry(mod_code=mod_code, dvoc=dvoc, unit=unit)
+        self.chemistry.assign_all_mod(mod_code, unit=unit)
         self.lut_voc = None
         self.sat_ib_max = 0.  # Current cutback to be applied to modeled ib output, A
         # self.sat_ib_null = 0.1*Battery.UNIT_CAP_RATED  # Current cutback value for voc=vsat, A
@@ -929,6 +931,7 @@ class BatterySim(Battery):
             self.dv_dyn = SN.dv_dyn_s_init
             self.ib_in = SN.ib_in_s_init
             self.d_delta_q = SN.d_delta_q_s_init
+            self.delta_q = SN.delta_q_s_init
             self.ib = SN.ib_s_init
             self.ib_fut = SN.ib_fut_s_init
             self.ib_charge = SN.ib_charge_s_init
