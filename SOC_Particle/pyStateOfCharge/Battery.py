@@ -844,6 +844,7 @@ class BatteryMonitor(Battery, EKF1x1):
         else:
             ewsat_slr = 1.
             ewmin_slr = 1.
+
         # Individual wrap logic
         if ib_noa is not None:
             self.ib_noa = ib_noa

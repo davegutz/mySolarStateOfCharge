@@ -195,8 +195,9 @@ def ekf_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         plt.title(plot_title + ' Hyst 1')
         # plt.plot(mr.time, mr.dv_hys_required, linestyle='-', color='black', label='dv_hys_required'+run_str)
         plq(plt, mr, 'time', mr, 'e_wrap', slr=-1., linestyle='-', color='red', label='-e_wrap' + run_str)
-        plt.plot(mv.time, (np.array(mv.voc_stat) - np.array(mv.voc_soc)), linestyle='--', color='blue',
-                 label='-e_wrap' + ver_str)
+        plq(plt, mv, 'time', mr, 'e_wrap', slr=-1., linestyle='--', color='blue', label='-e_wrap' + ver_str)
+        plq(plt, mr, 'time', mr, 'e_wrap_filt', slr=-1., linestyle='-', color='black', label='-e_wrap_filt' + run_str)
+        plq(plt, mv, 'time', mv, 'e_wrap_filt', slr=-1., linestyle='--', color='cyan', label='-e_wrap_filt' + run_str)
         plt.plot(mr.time, mr.dv_hys, linestyle='-.', color='orange', label='dv_hys' + run_str)
         plt.plot(mv.time, mv.dv_hys, marker='.', markersize='1', markevery=48, linestyle='None', color='magenta',
                  label='dv_hys' + ver_str)
