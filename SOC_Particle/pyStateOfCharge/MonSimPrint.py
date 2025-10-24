@@ -20,37 +20,67 @@ Coulomb Counter built in."""
 
 from datetime import datetime, timedelta
 
-def prn_soc_debug(leader="", time=None, i=None, i_temp=None, mon_run=None, mon=None):
-    execute = True
-    if execute:
-        return
-    else:
-        if time is not None:
-            print("\n\ntime {:7.3f}".format(time))
-        print("                                                                                              " + leader, end='')
-        print(
-    "{:14.7f}".format(mon_run.Tb_hdwe_filt[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt),
-    "{:14.7f}".format(mon_run.Tb_rap[i]), "{:11.7f}".format(mon.Tb_rap),
-    "{:14.7f}".format(mon_run.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
-    "{:14.7f}".format(mon_run.Tb_f_rap[i]), "{:11.7f}".format(mon.Tb_f_rap),
-    "{:14.7f}".format(mon_run.Tb_hdwe_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt_rate),
-    "{:14.7f}".format(mon_run.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate),
-    "{:14.7f}".format(mon_run.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
-        )
-
-def prn_soc_s_debug(leader="", time=None, i=None, i_temp=None, mon_run=None, mon=None, sim_run=None, sim=None):
+def prn_soc_debug(request_history, leader="", time=None, i=None, i_temp=None, mon_run=None, mon=None,
+                  sim_run=None, sim=None):
     execute = False
-    if execute:
+    if not execute:
         return
     else:
-        if time is not None:
-            print("time {:7.3f}".format(time), end='')
-        print("                                                                                                                                                                                                                                                                                                                                                                                                             " + leader, end='')
-        print(
-              "{:14.7f}".format(sim_run.Tb_f_s[i]), "{:11.7f}".format(sim.Tb_f),
-              "{:14.4f}".format(sim_run.d_delta_q_s[i]), "{:11.4f}".format(sim.d_delta_q),
-              "{:14.4f}".format(sim_run.dq_s[i]), "{:11.4f}".format(sim.delta_q),
-        )
+        if request_history == 2:  # soc
+            if i > 0:
+                d_dq = mon_run.delta_q[i] - mon_run.delta_q[i - 1]
+            else:
+                d_dq = mon_run.delta_q[i + 1] - mon_run.delta_q[i]
+            if time is not None:
+                print("time {:7.3f}".format(time), end='')
+            print(" " * 103 + leader, end='')
+            print(
+                  "{:14.7f}".format(mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
+                  "{:14.7f}".format(mon_run.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
+                  "{:12.4f}".format(d_dq), "{:11.4f}".format(mon.d_delta_q),
+                  "{:12.4f}".format(mon_run.delta_q[i]), "{:11.4f}".format(mon.delta_q),
+                  "{:12.1f}".format(mon_run.qcrs[i]), "{:9.1f}".format(mon.q_cap_rated_scaled),
+                  "{:12.1f}".format(mon_run.q_capacity[i]), "{:9.1f}".format(mon.q_capacity),
+            )
+        elif request_history == 3:  # soc_s
+            if time is not None:
+                print("time {:7.3f}".format(time), end='')
+            print(" " * 375 + leader, end='')
+            print(
+                "{:11.8f}".format(mon_run.soc_s[i]), "{:8.7f}".format(sim.soc),
+                "{:14.7f}".format(sim_run.Tb_f_s[i]), "{:11.7f}".format(sim.Tb_f),
+                "{:14.4f}".format(sim_run.d_delta_q_s[i]), "{:11.4f}".format(sim.d_delta_q),
+                "{:14.4f}".format(sim_run.dq_s[i]), "{:11.4f}".format(sim.delta_q),
+            )
+        elif request_history == 4:  # temp
+            if time is not None:
+                print("time {:7.3f}".format(time), end='')
+            print(" " * 75 + leader, end='')
+            print(
+        "{:14.7f}".format(mon_run.Tb_hdwe_filt[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt),
+        "{:14.7f}".format(mon_run.Tb_rap[i]), "{:11.7f}".format(mon.Tb_rap),
+        "{:14.7f}".format(mon_run.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
+        "{:14.7f}".format(mon_run.Tb_f_rap[i]), "{:11.7f}".format(mon.Tb_f_rap),
+        "{:14.7f}".format(mon_run.Tb_hdwe_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt_rate),
+        "{:14.7f}".format(mon_run.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate),
+        "{:14.7f}".format(mon_run.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
+            )
+
+# def prn_soc_s_debug(leader="", time=None, i=None, i_temp=None, mon_run=None, mon=None, sim_run=None, sim=None):
+#     execute = True
+#     if execute:
+#         return
+#     else:
+#         if time is not None:
+#             print("time {:7.3f}".format(time), end='')
+#         print(" " * 375 + leader, end='')
+#         print(
+#               "{:11.7f}".format(mon_run.soc_s[i]), "{:8.7f}".format(sim.soc),
+#               "{:14.7f}".format(sim_run.Tb_f_s[i]), "{:11.7f}".format(sim.Tb_f),
+#               "{:14.4f}".format(sim_run.d_delta_q_s[i]), "{:11.4f}".format(sim.d_delta_q),
+#               "{:14.4f}".format(sim_run.dq_s[i]), "{:11.4f}".format(sim.delta_q),
+#         )
+
 def print_hist(request_history, run_type, i, i_temp, i_ekf, t, mon_run, mon, calc_temp, calc_ekf, Tb, Tb_past, sim_run, sim, SN):
     hdr = None
     match run_type:
@@ -72,14 +102,14 @@ def print_hist(request_history, run_type, i, i_temp, i_ekf, t, mon_run, mon, cal
             match request_history:
                 case 0:
                     hdr = ''
-                case 1:
-                    hdr = print_ekf_HistSim(i, i_temp, i_ekf, t, mon_run, mon, calc_ekf, calc_temp)
-                case 2:
-                    hdr = print_soc_HistSim(i, i_temp, t, mon_run, mon, calc_temp)
-                case 3:
-                    hdr = print_soc_s_HistSim(i, i_temp, t, mon_run, mon, calc_temp, sim_run, sim, i_ekf, calc_ekf, SN)
-                case 4:
-                    hdr = print_temp_HistSim(i, i_temp, t, mon_run, mon, calc_temp, Tb, Tb_past, SN, i_ekf, calc_ekf)
+                # case 1:
+                #     hdr = print_ekf_HistSim(i, i_temp, i_ekf, t, mon_run, mon, calc_ekf, calc_temp)
+                # case 2:
+                #     hdr = print_soc_HistSim(i, i_temp, t, mon_run, mon, calc_temp)
+                # case 3:
+                #     hdr = print_soc_s_HistSim(i, i_temp, t, mon_run, mon, calc_temp, sim_run, sim, i_ekf, calc_ekf, SN)
+                # case 4:
+                #     hdr = print_temp_HistSim(i, i_temp, t, mon_run, mon, calc_temp, Tb, Tb_past, SN, i_ekf, calc_ekf)
                 case 5:
                     hdr = print_volt_HistSim(i, i_temp, i_ekf, t, mon_run, mon, calc_temp, calc_ekf, SN)
     return hdr
@@ -159,7 +189,7 @@ def print_soc_RunSim(i, i_temp, t, mon_run, mon, calc_temp, i_ekf, calc_ekf):
     return hdr
 
 def print_soc_s_RunSim(i, i_temp, t, mon_run, mon, calc_temp, sim_run, sim, i_ekf, calc_ekf, SN):
-    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s            ib_in_s               ib_s                  ib_fut       ib_dyn_s_rstate         ib_dyn_s_lstate          ib_dyn_s       ib_dyn_s_init     ib_dyn           ib_dyn_init      dv_hys_s              ib_charge_s            ioc_s                soc                   soc_s                   delq                       i * dt_s * coul_eff     Tb_f_s                       d_delq_s                delq_s                     qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_dyn_s             vsat                 "
+    hdr = "  i  time   r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s            ib_in_s               ib_s                  ib_fut       ib_dyn_s_rstate         ib_dyn_s_lstate          ib_dyn_s       ib_dyn_s_init     ib_dyn           ib_dyn_init      dv_hys_s              ib_charge_s            ioc_s                soc                      delq                    i * dt_s * coul_eff    soc_s                      Tb_f_s                       d_delq_s                delq_s                     qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_dyn_s             vsat                 "
     if calc_temp:
         print(hdr)
     # if i > 0:
@@ -189,15 +219,15 @@ def print_soc_s_RunSim(i, i_temp, t, mon_run, mon, calc_temp, sim_run, sim, i_ek
           "{:12.5f}".format(sim_run.ib_charge_s[i]), "{:9.5f}".format(sim.ib_charge),
           "{:12.5f}".format(sim_run.ioc_s[i]), "{:9.5f}".format(sim.ioc),
           "{:11.7f}".format(mon_run.soc[i]), "{:8.7f}".format(mon.soc),
-          "{:11.7f}".format(mon_run.soc_s[i]), "{:8.7f}".format(sim.soc),
           "{:14.4f}".format(mon_run.delta_q[i]), "{:11.4f}".format(mon.delta_q),
           "{:12.4f}".format(i_dt_old), "{:9.4f}".format(i_dt_new),
-          "{:14.7f}".format(sim_run.Tb_f_s[i]), "{:11.7f}".format(sim.Tb_f),
-          "{:14.4f}".format(sim_run.d_delta_q_s[i]), "{:11.4f}".format(sim.d_delta_q),
-          "{:14.4f}".format(sim_run.dq_s[i]), "{:11.4f}".format(sim.delta_q),
-          "{:12.1f}".format(mon_run.qcrs[i]), "{:9.1f}".format(mon.q_cap_rated_scaled),
-          "{:12.1f}".format(mon_run.q_capacity[i]), "{:9.1f}".format(mon.q_capacity),
-          "{:12.1f}".format(sim_run.qcap_s[i]), "{:9.1f}".format(sim.q_capacity),
+          "{:11.8f}".format(mon_run.soc_s[i]), "{:9.8f}".format(sim.soc),
+          "{:14.8f}".format(sim_run.Tb_f_s[i]), "{:11.8f}".format(sim.Tb_f),
+          "{:14.5f}".format(sim_run.d_delta_q_s[i]), "{:11.5f}".format(sim.d_delta_q),
+          "{:14.5f}".format(sim_run.dq_s[i]), "{:11.5f}".format(sim.delta_q),
+          "{:12.2f}".format(mon_run.qcrs[i]), "{:9.2f}".format(mon.q_cap_rated_scaled),
+          "{:12.2f}".format(mon_run.q_capacity[i]), "{:9.2f}".format(mon.q_capacity),
+          "{:12.2f}".format(sim_run.qcap_s[i]), "{:9.2f}".format(sim.q_capacity),
           "{:14.7f}".format(sim_run.Tb_f_s[i]), "{:10.7f}".format(sim.Tb_f),
           "{:14.7f}".format(mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:14.7f}".format(mon_run.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),

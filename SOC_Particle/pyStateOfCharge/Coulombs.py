@@ -110,7 +110,7 @@ class Coulombs:
         self.soc = soc
         self.q_capacity = self.calculate_capacity(tb_f=tb_f)
         self.q = self.soc * self.q_capacity
-        self.delta_q = self.q - self.q_capacity
+        self.delta_q = -self.q_capacity * (1. - self.soc)
         self.resetting = True  # momentarily turn off saturation check
 
     def calculate_capacity(self, tb_f):

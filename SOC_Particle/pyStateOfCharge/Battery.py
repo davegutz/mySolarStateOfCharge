@@ -924,7 +924,7 @@ class BatterySim(Battery):
         self.ib_charge = 0.  # Charge current, A
         self.saved_s = SavedS()  # for plots and prints
         self.ib_fut = 0.  # Future value of limited current, A
-        self.reset_temp_past = True
+        self.reset_temp_past = self.sat
         self.dt_past = 0.
         if SN is not None:
             self.Tb = SN.Tb0
@@ -1104,7 +1104,7 @@ class BatterySim(Battery):
             self.soc = soc_in
             self.q = self.q_capacity * self.soc
             self.delta_q = self.q - self.q_capacity
-        elif not self.reset_temp_past:
+        elif not self.reset_temp_past and not reset_temp:
             # Capacity changes with temperature so this effect would be double if used
             self.delta_q += self.d_delta_q
             self.delta_q = max(min( self.delta_q, 0.), -self.q_capacity * 1.2)

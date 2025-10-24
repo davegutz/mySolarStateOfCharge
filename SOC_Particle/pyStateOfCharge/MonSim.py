@@ -266,17 +266,19 @@ def replicate(OPT: UserOptions):
                 reset = reset or bool(OPT.mon_run.res[i] > 0.)
         elif OPT.run_type == 'HistSim':
             reset = True
-        prn_soc_debug(time=now, leader="before sim init:         ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
-        prn_soc_s_debug(time=now, leader="before sim init:         ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
+        prn_soc_debug(OPT.request_history, time=now, leader="before sim init:         ", i=i, i_temp=i_temp,
+                      mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
 
         if reset:
             sim.apply_soc(OPT.mon_run.soc_s[i], SN.Tb_f_past)  # calculates delta_q
-            prn_soc_s_debug(time=now, leader="after sim.apply_soc:     ", i=i, i_temp=i_temp, mon_run=OPT.mon_run,
-                            mon=mon, sim_run=OPT.sim_run, sim=sim)
+            prn_soc_debug(OPT.request_history, time=now, leader="after sim.apply_soc:     ", i=i, i_temp=i_temp,
+                          mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
             sim.load(sim.delta_q)
             sim.assign_tb(sim.Tb)
             sim.assign_tb_f(sim.Tb_f)
             sim.apply_delta_q_t(sim.delta_q, SN.Tb_f_past)
+            prn_soc_debug(request_history=OPT.request_history, time=now, leader="after sm.apply_delta_q_t:",
+                          i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
             sat_s_init = SN.voc_stat_init > OPT.mon_run.vsat[0]
             if OPT.sim_run is not None:
                 sat_s_init = OPT.sim_run.sat_s[0]
@@ -284,15 +286,13 @@ def replicate(OPT: UserOptions):
             mon.sat = OPT.mon_run.sat[0]
 
         if calc_temp:
-            prn_soc_debug(time=now, leader="b temp filtr:            ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
-            prn_soc_s_debug(time=now, leader="b temp filtr:            ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon,
-                            sim_run=OPT.sim_run, sim=sim)
+            prn_soc_debug(OPT.request_history, time=now, leader="b temp filtr:            ", i=i, i_temp=i_temp,
+                          mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
 
             mon = SN.calc_temp_pass_2(OPT.mon_run, mon, Battery, i_temp)
 
-            prn_soc_debug(time=now, leader="a temp filtr:            ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
-            prn_soc_s_debug(time=now, leader="a temp filtr:            ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon,
-                            sim_run=OPT.sim_run, sim=sim)
+            prn_soc_debug(OPT.request_history, time=now, leader="a temp filtr:            ", i=i, i_temp=i_temp,
+                          mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
 
         # Models
         if rp.modeling == 0:
@@ -311,28 +311,27 @@ def replicate(OPT: UserOptions):
         else:
             _chm_s = OPT.Bsim
 
-        prn_soc_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
-        prn_soc_s_debug(time=now, leader="befor sim.calculater:    ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
+        prn_soc_debug(OPT.request_history, time=now, leader="befor sim.calculate :    ", i=i, i_temp=i_temp,
+                      mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
         sim.calculate(_chm_s, None, ib_in_s, SN.dt_s[i], reset, None, None, SN,
                       soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
                       bms_off_init=OPT.sim_run.bms_off_s[0])
-        prn_soc_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
-        prn_soc_s_debug(time=now, leader="after sim.calculater:    ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
+        prn_soc_debug(OPT.request_history, time=now, leader="after sim.calculate :    ", i=i, i_temp=i_temp,
+                      mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
         sim.count_coulombs(chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=SN.Tb_f_rate_past,
                            charge_curr=sim.ib_charge, sat=False, soc_s_init=SN.soc_s[i], mon_sat=mon.sat,
-                           sim_delta_q=SN.dq_s[i], use_soc_in=OPT.use_mon_soc, soc_in=SN.soc_s[i])
-        prn_soc_debug(time=now, leader="after sim.count_cou:     ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
-        prn_soc_s_debug(time=now, leader="after sim.count_cou:     ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
+                           sim_delta_q=SN.delta_q_s[i], use_soc_in=OPT.use_mon_soc, soc_in=SN.soc_s[i])
+        prn_soc_debug(OPT.request_history, time=now, leader="after sim.count_cou:     ", i=i, i_temp=i_temp,
+                      mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
 
         # EKF
         if reset:
             mon.apply_delta_q_t(SN.delta_q[i], SN.Tb_f_rap[i])
+            prn_soc_debug(request_history=OPT.request_history, time=now, leader="after mon.apply_delta_q_t", i=i,
+                          i_temp=i_temp, mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
 
-        prn_soc_debug(time=now, leader="after mon_soc_apply      ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
-        prn_soc_s_debug(time=now, leader="after mon_soc_apply      ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon,
-                        sim_run=OPT.sim_run, sim=sim)
 
         # Chemistry
         if OPT.Bmon is None:
@@ -395,6 +394,8 @@ def replicate(OPT: UserOptions):
         else:
             mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=SN.Tb_f_past, charge_curr=ib_charge,
                                sat=saturated, use_soc_in=OPT.use_mon_soc, soc_in=OPT.mon_run.soc[i])
+        prn_soc_debug(OPT.request_history, time=now, leader="after mn.count_coulombs: ", i=i, i_temp=i_temp,
+                      mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
         mon.assign_soc_s(sim.soc)
 
@@ -419,9 +420,8 @@ def replicate(OPT: UserOptions):
             hdr = print_hist(OPT.request_history, OPT.run_type, i, i_temp, i_ekf, t, OPT.mon_run, mon, calc_temp, calc_ekf,
                              SN.Tb, SN.Tb_past, OPT.sim_run, sim, SN)
 
-        prn_soc_debug(time=now, leader="end loop:                ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon)
-        prn_soc_s_debug(time=now, leader="end loop:                ", i=i, i_temp=i_temp, mon_run=OPT.mon_run, mon=mon,
-                        sim_run=OPT.sim_run, sim=sim)
+        prn_soc_debug(OPT.request_history, time=now, leader="end loop:                ", i=i, i_temp=i_temp,
+                      mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
 
         # pick a pass to run debugger to a time
         if i >= 206:
