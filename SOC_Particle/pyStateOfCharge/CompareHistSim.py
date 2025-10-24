@@ -222,7 +222,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     d_mod = rf.rec_append_fields(d_mod, 'time_e', np.array(time_e, dtype=float))
     dt_ekf = d_mod.time_ux.copy()*0.
     for i in range(len(time_e)-1, -1, -1):
-        print(i)
+        # print(i)
         if i > 0:
             dt_ekf[i] = time_e[i] - time_e[i-1]
         else:
