@@ -50,7 +50,7 @@ def prn_soc_debug(request_history, leader="", time=None, i=None, i_temp=None, mo
                 "{:11.8f}".format(mon_run.soc_s[i]), "{:8.7f}".format(sim.soc),
                 "{:14.7f}".format(sim_run.Tb_f_s[i]), "{:11.7f}".format(sim.Tb_f),
                 "{:14.4f}".format(sim_run.d_delta_q_s[i]), "{:11.4f}".format(sim.d_delta_q),
-                "{:14.4f}".format(sim_run.dq_s[i]), "{:11.4f}".format(sim.delta_q),
+                "{:14.4f}".format(sim_run.dq_s[i]), "{:11.4f}".format(sim.delta_q), "{:2.0f}".format(sim.reset_temp_past),
             )
         elif request_history == 4:  # temp
             if time is not None:

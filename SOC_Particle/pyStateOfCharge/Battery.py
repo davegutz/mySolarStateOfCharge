@@ -1104,7 +1104,7 @@ class BatterySim(Battery):
             self.soc = soc_in
             self.q = self.q_capacity * self.soc
             self.delta_q = self.q - self.q_capacity
-        elif not self.reset_temp_past and not reset_temp:
+        elif not self.reset_temp_past and not reset_temp and not mon_sat:
             # Capacity changes with temperature so this effect would be double if used
             self.delta_q += self.d_delta_q
             self.delta_q = max(min( self.delta_q, 0.), -self.q_capacity * 1.2)
