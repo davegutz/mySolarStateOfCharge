@@ -90,7 +90,7 @@ void Flt_st::nominal()
   this->soc = int16_t(0);
   this->soc_min = int16_t(0);
   this->soc_ekf = int16_t(0);
-  this->voc = int16_t(0);
+  this->voc_filt = int16_t(0);
   this->voc_stat_filt = int16_t(0);
   this->e_wrap_filt = int16_t(0);
   this->e_wrap_m_filt = int16_t(0);

@@ -314,7 +314,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     eframe_++;
     if ( reset_temp || cp.soft_reset || eframe_ >= ap.eframe_mult ) eframe_ = 0;  // '>=' allows changing ap.eframe_mult on the fly
 
-    // Filter
+    // Deadband filter
     voc_dead_ = SdVb_->update(voc_);   // used for saturation test
 
     // if ( sp.debug()==13 || sp.debug()==2 || sp.debug()==4 )
