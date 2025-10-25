@@ -675,7 +675,7 @@ class BatteryMonitor(Battery, EKF1x1):
         if hasattr(mr, 'hx'):
             self.hx = mr.hx[i_ekf]
         else:
-            self.hx = mr.voc[i]
+            self.hx = mr.voc_f[i]
 
         if hasattr(mr, 'dt_ekf'):
             self.dt_eframe = mr.dt_ekf[i_ekf]

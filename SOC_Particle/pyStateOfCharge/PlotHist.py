@@ -93,7 +93,7 @@ def hs_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plq(plt, mr, 'soc', mr, 'voc_d', linestyle='-', color='black', label='voc_d' + run_str)
     plq(plt, mr, 'soc', mr, 'voc_soc', linestyle='-', color='red', label='voc_soc' + run_str)
     plq(plt, mv, 'soc', mv, 'voc_soc', linestyle='--', color='orange', label='voc_soc' + ver_str)
-    mr.dv = np.array(mr.voc_soc) - np.array(mr.voc)
+    mr.dv = np.array(mr.voc_soc) - np.array(mr.voc_f)
     plq(plt, mr, 'soc', mr, 'dv', add=13., linestyle='-', color='blue', label='dv' + run_str + '+13')
     mv.dv = np.array(mv.voc_soc) - np.array(mv.voc)
     plq(plt, mv, 'soc', mv, 'dv', add=13., linestyle='--', color='orange', label='dv' + ver_str + '+13')

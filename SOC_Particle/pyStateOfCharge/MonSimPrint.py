@@ -266,7 +266,7 @@ def print_temp_RunSim(i, i_temp, t, mon_run, mon, calc_temp, SN, i_ekf, calc_ekf
     return hdr
 
 def print_volt_HistSim(i, i_temp, i_ekf, t, mon_run, mon, calc_temp, calc_ekf):
-    hdr = "  i   time   r      rt   it   ct       re  ie   ce    sa       Tb_f                      vb_f                  ib_f                  ib_nh_f               ib_mh_f               ib_dyn_m               e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n               e_wrap_n_filt        e_wrap               soc                        dt                 Tb_f                     vb_f                  ib_dyn                voc                    voc_stat_f            soc_ekf"
+    hdr = "  i   time   r      rt   it   ct       re  ie   ce    sa       Tb_f                      vb_f                  ib_f                  ib_nh_f               ib_mh_f               ib_dyn_m               e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n               e_wrap_n_filt        e_wrap               soc                        dt                 Tb_f                     vb_f                  ib_dyn                voc_f                  voc_stat_f            soc_ekf"
     if i % 10 == 0:
         print(hdr)
     print("{:3d}".format(i), "{:7.0f}".format(t[i]), "{:2.0f}".format(mon.reset),
@@ -290,7 +290,7 @@ def print_volt_HistSim(i, i_temp, i_ekf, t, mon_run, mon, calc_temp, calc_ekf):
           "{:14.7f}".format(mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:11.5f}".format(mon_run.vb_f[i]), "{:9.5f}".format(mon.vb),
           "{:11.5f}".format(mon_run.ib_dyn_m[i]), "{:9.5f}".format(mon.ib_dyn),
-          "{:11.5f}".format(mon_run.voc[i]), "{:9.5f}".format(mon.voc),
+          "{:11.5f}".format(mon_run.voc_f[i]), "{:9.5f}".format(mon.voc),
           "{:11.5f}".format(mon_run.z[i_ekf]), "{:9.5f}".format(mon.voc_stat_f),
           "{:11.5f}".format(mon_run.soc_ekf[i]), "{:9.5f}".format(mon.soc_ekf),
           )
