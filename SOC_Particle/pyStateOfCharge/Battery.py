@@ -457,7 +457,7 @@ class BatteryMonitor(Battery, EKF1x1):
     # (EKF_EFRAME_MULT multi-frame always <= DP)
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
                   q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, soc=None,
-                  sat_init=None, reset_ekf=None):
+                  sat_init=None, reset_ekf=None, use_sat_in=None):
         self.ib_amp = ib_amp
         self.ib_noa = ib_noa
         if self.chm != chem:

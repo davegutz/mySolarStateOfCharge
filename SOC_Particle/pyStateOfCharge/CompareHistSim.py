@@ -1211,6 +1211,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
     mon_ver = None
     sim_ver = None
     sim_s_ver = None
+    use_sat_mon_in = True
 
     # Load history, normalizing all soc and Tb to 20C
     mon_run, sim_run, unit, fault, hist_20C, filename = \
@@ -1230,7 +1231,8 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
         replicateOptions = UserOptions(mon_run=mon_run, sim_run=sim_run, run_type='HistSim', init_time=1.,
                                        verbose=False, max_time=time_end_in, use_vb_sim=False, scale_in=scale_in,
                                        use_mon_soc=use_mon_soc_in, add_voc_mon=dvoc_mon_in, add_voc_sim=dvoc_sim_in,
-                                       unit=unit, use_ib_mon=True, request_history=request_history, mod_force=0)
+                                       unit=unit, use_ib_mon=True, request_history=request_history, mod_force=0,
+                                       use_sat_mon=use_sat_mon_in)
         mon_ver, sim_ver, sim_s_ver, mon_r, sim_r = replicate(replicateOptions)
         save_clean_file(mon_ver, mon_file_save, 'mon_rep_hist' + date_)
 

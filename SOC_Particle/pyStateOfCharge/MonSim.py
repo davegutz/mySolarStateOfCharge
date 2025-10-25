@@ -383,9 +383,13 @@ def replicate(OPT: UserOptions):
                           rp=rp, bms_off_init=OPT.mon_run.bms_off[0], ib_amp=SN.ibmm[i], ib_noa=SN.ibnm[i],
                           reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge
-        sat = is_sat(SN.Tb_f_past, mon.chemistry.rated_temp, mon.voc_dead, mon.soc, mon.chemistry.nom_vsat,
-                     mon.chemistry.dvoc_dt, mon.chemistry.low_t)
-        saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
+
+        if OPT.use_sat_mon:
+            saturated = OPT.mon_run.sat[i]
+        else:
+            sat = is_sat(SN.Tb_f_past, mon.chemistry.rated_temp, mon.voc_dead, mon.soc, mon.chemistry.nom_vsat,
+                         mon.chemistry.dvoc_dt, mon.chemistry.low_t)
+            saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
 
         # Monitor count Coulumbs
         if rp.modeling == 0:
