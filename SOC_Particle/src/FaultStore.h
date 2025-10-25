@@ -43,7 +43,7 @@ struct Flt_st
   int16_t soc = 0;      // Battery bank state of charge, free Coulomb counting algorithm, frac
   int16_t soc_min = 0;  // Battery bank min state of charge, frac
   int16_t soc_ekf = 0;  // Battery bank state of charge, ekf, frac
-  int16_t voc_filt = 0;      // Battery single unit open circuit voltage measured vb-ib*Z, V
+  int16_t voc = 0;      // Battery single unit open circuit voltage measured vb-ib*Z, V
   int16_t voc_stat_filt = 0; // Stored single unit charge voltage from measurement, V
   int16_t e_wrap_filt = 0;  // Wrap model error, filtered, V
   int16_t e_wrap_m_filt = 0;// Wrap amp model error, filtered, V
@@ -106,7 +106,7 @@ public:
     void put_soc(const int16_t value)             { soc = value; };
     void put_soc_min(const int16_t value)         { soc_min = value; };
     void put_soc_ekf(const int16_t value)         { soc_ekf = value; };
-    void put_voc_filt(const int16_t value)             { voc_filt = value; };
+    void put_voc(const int16_t value)             { voc = value; };
     void put_voc_stat_filt(const int16_t value)        { voc_stat_filt = value; };
     void put_e_wrap_filt(const int16_t value)     { e_wrap_filt = value; };
     void put_fltw(const uint32_t value)           { fltw = value; };
@@ -123,7 +123,7 @@ public:
     void put_soc()          { rP_->put(soc_eeram_.a16, soc); };
     void put_soc_min()      { rP_->put(soc_min_eeram_.a16, soc_min); };
     void put_soc_ekf()      { rP_->put(soc_ekf_eeram_.a16, soc_ekf); };
-    void put_voc_filt()     { rP_->put(voc_eeram_.a16, voc_filt); };
+    void put_voc()     { rP_->put(voc_eeram_.a16, voc); };
     void put_voc_stat_filt()     { rP_->put(voc_stat_eeram_.a16, voc_stat_filt); };
     void put_e_wrap_filt()  { rP_->put(e_wrap_filt_eeram_.a16, e_wrap_filt); };
     void put_e_wrap_m_filt(){ rP_->put(e_wrap_m_filt_eeram_.a16, e_wrap_m_filt); };
@@ -142,7 +142,7 @@ public:
     void put_soc(const int16_t value)             { rP_->put(soc_eeram_.a16, value);          soc = value; };
     void put_soc_min(const int16_t value)         { rP_->put(soc_min_eeram_.a16, value);      soc_min = value; };
     void put_soc_ekf(const int16_t value)         { rP_->put(soc_ekf_eeram_.a16, value);      soc_ekf = value; };
-    void put_voc_filt(const int16_t value)             { rP_->put(voc_eeram_.a16, value);          voc = value; };
+    void put_voc(const int16_t value)             { rP_->put(voc_eeram_.a16, value);          voc = value; };
     void put_voc_stat_filt(const int16_t value)        { rP_->put(voc_stat_eeram_.a16, value);     voc_stat_filt = value; };
     void put_e_wrap_filt(const int16_t value)     { rP_->put(e_wrap_filt_eeram_.a16, value);  e_wrap_filt = value; };
     void put_e_wrap_m_filt(const int16_t value)   { rP_->put(e_wrap_m_filt_eeram_.a16, value);e_wrap_m_filt = value; };

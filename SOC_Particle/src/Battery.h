@@ -190,7 +190,7 @@ public:
   float tcharge() { return tcharge_; };
   float dv_dyn() { return dv_dyn_; };
   float vb_model_rev() { return vb_model_rev_; };
-  float voc_filt() { return voc_filt_; };
+  float voc_dead() { return voc_dead_; };
   float voc_stat_f() { return voc_stat_f_; };
   double y_ekf() { return y_; };
   double y_ekf_filt() { return y_filt_; };
@@ -218,7 +218,7 @@ protected:
   float tcharge_;      // Counted charging time to 100%, hr
   float tcharge_ekf_;  // Solved charging time to 100% from ekf, hr
   float vb_model_rev_; // Reversionary model of vb, V
-  float voc_filt_;     // Deadband-filtered, static model open circuit voltage, V
+  float voc_dead_;     // Deadband-filtered, static model open circuit voltage, V
   float voc_stat_f_;   // Filtered voc_stat for EKF use, V
   float y_filt_;       // Filtered EKF y value, V
   void ekf_predict(double *Fx_, double *Bu_);

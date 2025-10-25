@@ -290,7 +290,7 @@ class BatteryMonitor(Battery, EKF1x1):
     def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1.,
                  tb_f=25., tweak_test=False, slr_res_0=1., slr_res_ct=1., stauct=1.,
                  slr_r_ss=1., s_hys=1., dvoc=0., eframe_mult=Battery.cp_eframe_mult,
-                 mod_code=0, slr_coul_eff=1., unit=None, dTb=None, ref=None, SN=None, run_type=None):
+                 mod_code=0, slr_coul_eff=1., unit=None, ref=None, SN=None, run_type=None):
         q_cap_rated_scaled = q_cap_rated * scale
         Battery.__init__(self, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct,
@@ -332,7 +332,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.voc_stat = 0.
         self.voc_stat_f = 0.
         self.voc = 0.
-        self.voc_filt = 0.
+        self.voc_dead = 0.
         self.vsat = 0.
         self.dv_dyn = 0.
         self.ib_dyn = 0.
@@ -567,7 +567,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.eframe = 0
 
         # Filtered voc
-        self.voc_filt = self.sdb_voc.update_res(self.voc, reset)
+        self.voc_dead = self.sdb_voc.update_res(self.voc, reset)
 
         # Charge time
         if self.ib_charge > 0.1:
@@ -675,10 +675,7 @@ class BatteryMonitor(Battery, EKF1x1):
         if hasattr(mr, 'hx'):
             self.hx = mr.hx[i_ekf]
         else:
-            if run_type == 'RunSim':
-                self.hx = mr.voc[i]
-            else:
-                self.hx = mr.voc_f[i]
+            self.hx = mr.voc[i]
 
         if hasattr(mr, 'dt_ekf'):
             self.dt_eframe = mr.dt_ekf[i_ekf]
@@ -892,8 +889,7 @@ class BatterySim(Battery):
     def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1., stauct=1.,
                  tb_f=25., tweak_test=False, dv_hys=0., slr_res_0=1., slr_res_ct=1., slr_r_ss=1.,
                  s_hys=1., dvoc=0., scale_hys_cap=1., mod_code=0, slr_cap_chg=1., slr_cap_dis=1., slr_hys_chg=1.,
-                 slr_hys_dis=1., slr_coul_eff=1., slr_cutback_gain=1., add_s_voc_soc=0., unit=None,
-                 mon_run=None, sim_run=None, SN=None):
+                 slr_hys_dis=1., slr_coul_eff=1., slr_cutback_gain=1., add_s_voc_soc=0., unit=None, SN=None):
         Battery.__init__(self, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct,
                          slr_r_ss=slr_r_ss, s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, slr_coul_eff=slr_coul_eff,

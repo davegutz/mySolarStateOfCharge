@@ -81,7 +81,7 @@ def prn_soc_debug(request_history, leader="", time=None, i=None, i_temp=None, mo
 #               "{:14.4f}".format(sim_run.dq_s[i]), "{:11.4f}".format(sim.delta_q),
 #         )
 
-def print_hist(request_history, run_type, i, i_temp, i_ekf, t, mon_run, mon, calc_temp, calc_ekf, Tb, Tb_past, sim_run, sim, SN):
+def print_hist(request_history, run_type, i, i_temp, i_ekf, t, mon_run, mon, calc_temp, calc_ekf, sim_run, sim, SN):
     hdr = None
     match run_type:
         case 'RunSim':
@@ -95,7 +95,7 @@ def print_hist(request_history, run_type, i, i_temp, i_ekf, t, mon_run, mon, cal
                 case 3:
                     hdr = print_soc_s_RunSim(i, i_temp, t, mon_run, mon, calc_temp, sim_run, sim, i_ekf, calc_ekf, SN)
                 case 4:
-                    hdr = print_temp_RunSim(i, i_temp, t, mon_run, mon, calc_temp, Tb, Tb_past, SN, i_ekf, calc_ekf)
+                    hdr = print_temp_RunSim(i, i_temp, t, mon_run, mon, calc_temp, SN, i_ekf, calc_ekf)
                 case 5:
                     hdr = print_volt_RunSim(i, i_temp, i_ekf, t, mon_run, mon, sim_run, sim, calc_temp, calc_ekf, SN)
         case 'HistSim':
@@ -111,7 +111,7 @@ def print_hist(request_history, run_type, i, i_temp, i_ekf, t, mon_run, mon, cal
                 # case 4:
                 #     hdr = print_temp_HistSim(i, i_temp, t, mon_run, mon, calc_temp, Tb, Tb_past, SN, i_ekf, calc_ekf)
                 case 5:
-                    hdr = print_volt_HistSim(i, i_temp, i_ekf, t, mon_run, mon, calc_temp, calc_ekf, SN)
+                    hdr = print_volt_HistSim(i, i_temp, i_ekf, t, mon_run, mon, calc_temp, calc_ekf)
     return hdr
 
 def print_ekf_RunSim(i, i_temp, i_ekf, t, mon_run, mon, calc_ekf, calc_temp):
@@ -244,7 +244,7 @@ def print_soc_s_RunSim(i, i_temp, t, mon_run, mon, calc_temp, sim_run, sim, i_ek
         pass
     return hdr
 
-def print_temp_RunSim(i, i_temp, t, mon_run, mon, calc_temp, Tb_, Tb_past_, SN, i_ekf, calc_ekf):
+def print_temp_RunSim(i, i_temp, t, mon_run, mon, calc_temp, SN, i_ekf, calc_ekf):
     hdr = "  i  time   r       rt   it   ct      re   ie  ce     Tt       Tb_hdwe                    Tb                         Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
     if calc_temp:
         print(hdr)
@@ -265,8 +265,8 @@ def print_temp_RunSim(i, i_temp, t, mon_run, mon, calc_temp, Tb_, Tb_past_, SN, 
           )
     return hdr
 
-def print_volt_HistSim(i, i_temp, i_ekf, t, mon_run, mon, calc_temp, calc_ekf, SN):
-    hdr = "  i   time   r      rt   it   ct       re  ie   ce    sa       Tb_f                      vb_f                  ib_f                  ib_nh_f               ib_mh_f               ib_dyn_m               e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n               e_wrap_n_filt        e_wrap               soc                        dt                 Tb_f                     vb_f                  ib_dyn                voc_f                           voc_stat_f             soc_ekf"
+def print_volt_HistSim(i, i_temp, i_ekf, t, mon_run, mon, calc_temp, calc_ekf):
+    hdr = "  i   time   r      rt   it   ct       re  ie   ce    sa       Tb_f                      vb_f                  ib_f                  ib_nh_f               ib_mh_f               ib_dyn_m               e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n               e_wrap_n_filt        e_wrap               soc                        dt                 Tb_f                     vb_f                  ib_dyn                voc                    voc_stat_f            soc_ekf"
     if i % 10 == 0:
         print(hdr)
     print("{:3d}".format(i), "{:7.0f}".format(t[i]), "{:2.0f}".format(mon.reset),
@@ -290,7 +290,7 @@ def print_volt_HistSim(i, i_temp, i_ekf, t, mon_run, mon, calc_temp, calc_ekf, S
           "{:14.7f}".format(mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:11.5f}".format(mon_run.vb_f[i]), "{:9.5f}".format(mon.vb),
           "{:11.5f}".format(mon_run.ib_dyn_m[i]), "{:9.5f}".format(mon.ib_dyn),
-          "{:11.5f}".format(mon_run.voc_f[i]), "{:9.5f}".format(mon.voc), "{:9.5f}".format(mon.voc_filt),
+          "{:11.5f}".format(mon_run.voc[i]), "{:9.5f}".format(mon.voc),
           "{:11.5f}".format(mon_run.z[i_ekf]), "{:9.5f}".format(mon.voc_stat_f),
           "{:11.5f}".format(mon_run.soc_ekf[i]), "{:9.5f}".format(mon.soc_ekf),
           )

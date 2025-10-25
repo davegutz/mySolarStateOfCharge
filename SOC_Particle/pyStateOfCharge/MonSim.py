@@ -131,6 +131,7 @@ class UserOptions:
     use_vb_sim: Optional[bool] = False
     request_history: Optional[int] = None  # Print simulation history (0 - 5) to check overplot using data in addition
     use_ib_mon: Optional[bool] = False  # Drive BatterySim directly with the BatteryMonitor input, useful when raw sim data not available
+    use_sat_mon: Optional[bool] = False  # Drive entire model directly with the run input, useful for HistSim unable to accurately run sliding deadbanc
     use_mon_soc: Optional[bool] = False  # Drive SOC of the model directly with data to focus on modeling that is downstream of SOC
     use_vb_raw: Optional[bool] = False  # Force usage of raw Vb bypassing the signal selection logic
     verbose: Optional[bool] = True  # Lots of 'helpful' information used to provide some quick clues about whatever
@@ -198,12 +199,11 @@ def replicate(OPT: UserOptions):
                      dv_hys=OPT.mon_run.dv_hys[0], slr_res_0=OPT.slr_res_0, slr_res_ct=OPT.slr_res_ct, stauct=OPT.slr_tauct_sim, slr_r_ss=OPT.slr_r_ss,
                      s_hys=OPT.slr_hys_sim, dvoc=OPT.add_voc_sim, scale_hys_cap=OPT.slr_hys_cap_sim, slr_coul_eff=OPT.slr_coul_eff,
                      slr_cap_chg=OPT.slr_cap_chg, slr_cap_dis=OPT.slr_cap_dis, slr_hys_chg=OPT.slr_hys_chg, slr_hys_dis=OPT.slr_hys_dis,
-                     slr_cutback_gain=OPT.slr_cutback_gain, add_s_voc_soc=OPT.add_s_voc_soc, unit=OPT.unit, mon_run=OPT.mon_run,
-                     sim_run=OPT.sim_run)
+                     slr_cutback_gain=OPT.slr_cutback_gain, add_s_voc_soc=OPT.add_s_voc_soc, unit=OPT.unit)
     mon = BatteryMonitor(SN=SN, mod_code=chm_m[0], tb_f=SN.Tb0, scale=scale_mon, tweak_test=tweak_test,
                          slr_res_0=OPT.slr_res_0, slr_res_ct=OPT.slr_res_ct, stauct=OPT.stauct_mon,
                          slr_r_ss=OPT.slr_r_ss, s_hys=OPT.slr_hys_mon, dvoc=OPT.add_voc_mon, eframe_mult=OPT.eframe_mult,
-                         slr_coul_eff=OPT.slr_coul_eff, unit=OPT.unit, ref=OPT.mon_run, dTb=SN.dTb, run_type=OPT.run_type)
+                         slr_coul_eff=OPT.slr_coul_eff, unit=OPT.unit, ref=OPT.mon_run, run_type=OPT.run_type)
     Is_sat_delay = TFDelay(in_=OPT.mon_run.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
     # Time sync
@@ -227,7 +227,7 @@ def replicate(OPT: UserOptions):
     # Print debug information
     if OPT.request_history is not None and OPT.request_history > 0:
         hdr = print_hist(OPT.request_history, OPT.run_type, 0, i_temp, i_ekf, t, OPT.mon_run, mon, True, True,
-                         SN.Tb, SN.Tb_past, OPT.sim_run, sim, SN)
+                         OPT.sim_run, sim, SN)
 
     # Top of time loop
     for i in range(t_len):
@@ -383,7 +383,7 @@ def replicate(OPT: UserOptions):
                           rp=rp, bms_off_init=OPT.mon_run.bms_off[0], ib_amp=SN.ibmm[i], ib_noa=SN.ibnm[i],
                           reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge
-        sat = is_sat(SN.Tb_f_past, mon.chemistry.rated_temp, mon.voc_filt, mon.soc, mon.chemistry.nom_vsat,
+        sat = is_sat(SN.Tb_f_past, mon.chemistry.rated_temp, mon.voc_dead, mon.soc, mon.chemistry.nom_vsat,
                      mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
 
@@ -418,7 +418,7 @@ def replicate(OPT: UserOptions):
         # History print
         if OPT.request_history is not None and OPT.request_history > 0:
             hdr = print_hist(OPT.request_history, OPT.run_type, i, i_temp, i_ekf, t, OPT.mon_run, mon, calc_temp, calc_ekf,
-                             SN.Tb, SN.Tb_past, OPT.sim_run, sim, SN)
+                             OPT.sim_run, sim, SN)
 
         prn_soc_debug(OPT.request_history, time=now, leader="end loop:                ", i=i, i_temp=i_temp,
                       mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)

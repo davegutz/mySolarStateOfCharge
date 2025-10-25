@@ -160,7 +160,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.legend(loc=1)
     plt.subplot(323)
     plq(plt, mr, 'time', mr, 'voc', color='green', linestyle='-', label='voc'+run_str)
-    plq(plt, mr, 'time', mr, 'voc_f', color='green', linestyle='-', label='voc_f'+run_str)
+    plq(plt, mr, 'time', mr, 'voc_d', color='green', linestyle='-', label='voc_d'+run_str)
     plt.plot(mv.time, mv.voc, color='orange', linestyle='--', label='voc'+ver_str)
     plq(plt, mr, 'time', mr, 'voc_ekf', color='blue', linestyle='-.', label='voc_ekf'+run_str, stairs=True)
     plt.plot(mv.time, mv.voc_ekf, color='red', linestyle=':', label='voc_ekf'+ver_str)

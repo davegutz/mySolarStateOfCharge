@@ -91,9 +91,9 @@ class Chemistry(BMS):
         if mod_code == 0:
             self.assign_BB()
         elif mod_code == 1:
-            self.assign_CH(unit=unit)
+            self.assign_CH()
         elif mod_code == 2:
-            self.assign_CHG(unit=unit)
+            self.assign_CHG()
 
     # Assign BattleBorn chemistry
     def assign_BB(self):
@@ -165,7 +165,7 @@ class Chemistry(BMS):
         self.lu_n_hys = myTables.TableInterp1D(t_soc0, t_dv_min0)
 
     # Assign CHINS chemistry
-    def assign_CH(self, unit=None):
+    def assign_CH(self):
         # Constants
         # self.cap = see below
         self.rated_temp = 25.  # Temperature at UNIT_CAP_RATED, deg C
@@ -236,7 +236,7 @@ class Chemistry(BMS):
         self.lu_n_hys = myTables.TableInterp1D(t_soc1, t_dv_min1)
 
     # Assign CHINS chemistry
-    def assign_CHG(self, unit=None):
+    def assign_CHG(self):
         # Constants
         # self.cap = see below
         self.rated_temp = 25.  # Temperature at UNIT_CAP_RATED, deg C

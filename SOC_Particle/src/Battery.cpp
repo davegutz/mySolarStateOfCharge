@@ -149,10 +149,10 @@ float Battery::voc_soc_tab(const float soc, const double tb_f)
 BatteryMonitor::BatteryMonitor(const float dx_voc, const float dy_voc, const float dz_voc):
     Battery(&sp.delta_q_z, VM, dx_voc, dy_voc, dz_voc),
 	amp_hrs_remaining_ekf_(0.), amp_hrs_remaining_soc_(0.), eframe_(0), ib_charge_(0.), ib_past_(0.),
-    q_ekf_(NOM_UNIT_CAP*3600.), soc_ekf_(1.0), tcharge_(0.), tcharge_ekf_(0.), voc_filt_(NOMINAL_VB),
+    q_ekf_(NOM_UNIT_CAP*3600.), soc_ekf_(1.0), tcharge_(0.), tcharge_ekf_(0.), voc_dead_(NOMINAL_VB),
     y_filt_(0.)
 {
-    voc_filt_ = calc_vsat() - HDB_VB;
+    voc_dead_ = calc_vsat() - HDB_VB;
     // EKF
     this->Q_ = EKF_Q_SD_NORM*EKF_Q_SD_NORM;
     this->R_ = EKF_R_SD_NORM*EKF_R_SD_NORM;
@@ -181,7 +181,7 @@ BatteryMonitor::~BatteryMonitor() {}
         vsat_           Saturation threshold at temperature, V
         voc_            Charging voltage estimated from Vb and RC model, V
         dv_dyn_         ib-induced back emf, V
-        voc_filt_       Deadband-filtered open circuit voltage for saturation detect, V
+        voc_dead_       Deadband-filtered open circuit voltage for saturation detect, V
         ioc_            Best estimate of IOC charge current after hysteresis, A
         bms_off_        Calculated indication that the BMS has turned off charge current, T=off
         voc_stat_       Static model open circuit voltage est, should match voc(soc) except for hys, V\n
@@ -261,7 +261,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     {
         if ( (bms_off_ && voltage_low_) ||  Sen->Flt->vb_fa() )
         {
-            voc_ = voc_stat_ = voc_filt_ = vb_;  // Keep high to avoid chatter with voc_stat_ used above in voltage_low
+            voc_ = voc_stat_ = voc_dead_ = vb_;  // Keep high to avoid chatter with voc_stat_ used above in voltage_low
         }
     }
     dv_dyn_ = vb_ - voc_;
@@ -275,8 +275,8 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     // Reversionary model
     vb_model_rev_ = voc_soc_ + dv_dyn_ + dv_hys_;
 
-// if ( sp.debug()==1 || sp.debug()==4) Serial.printf("ib_dyn%7.3f bms_off %d voltage_low %d bms_charging %d vb_fa %d tweak_test %d vb%7.3f voc_stat_f%7.3f voc_soc%7.3f voc%7.3f voc_filt%7.3f dvdyn%7.3f\n",
-//      ib_dyn, bms_off_, voltage_low_, bms_charging_, Sen->Flt->vb_fa(), sp.tweak_test(), vb_, voc_stat_f_, voc_soc_, voc_, voc_filt_, dvdyn);
+// if ( sp.debug()==1 || sp.debug()==4) Serial.printf("ib_dyn%7.3f bms_off %d voltage_low %d bms_charging %d vb_fa %d tweak_test %d vb%7.3f voc_stat_f%7.3f voc_soc%7.3f voc%7.3f voc_dead%7.3f dvdyn%7.3f\n",
+//      ib_dyn, bms_off_, voltage_low_, bms_charging_, Sen->Flt->vb_fa(), sp.tweak_test(), vb_, voc_stat_f_, voc_soc_, voc_, voc_dead_, dvdyn);
 
     // EKF 1x1
     if ( eframe_ == 0 )
@@ -315,7 +315,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     if ( reset_temp || cp.soft_reset || eframe_ >= ap.eframe_mult ) eframe_ = 0;  // '>=' allows changing ap.eframe_mult on the fly
 
     // Filter
-    voc_filt_ = SdVb_->update(voc_);   // used for saturation test
+    voc_dead_ = SdVb_->update(voc_);   // used for saturation test
 
     // if ( sp.debug()==13 || sp.debug()==2 || sp.debug()==4 )
     //     Serial.printf("bms_off,soc,ib,vb,voc,voc_stat_f,voc_soc,dv_hys,dv_dyn,%d,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,\n",
@@ -323,8 +323,8 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
 
     #ifndef HDWE_PHOTON
     if ( sp.debug()==34 || sp.debug()==7 )
-        Serial.printf("BatteryMonitor:dt,ib,voc_stat_tab,voc_stat_f,voc,voc_filt,dv_dyn,vb,   u,Fx,Bu,P,   z_,S_,K_,y_,soc_ekf, y_ekf_f, soc, conv,  %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,     %7.3f,%7.3f,%7.4f,%7.4f,       %7.3f,%7.4f,%10.7f,%7.4f,%7.4f,%7.4f, %7.4f,  %d,\n",
-            dt_, ib_, voc_soc_, voc_stat_f_, voc_, voc_filt_, dv_dyn_, vb_,     u_, Fx_, Bu_, P_,    z_, S_, K_, y_, soc_ekf_, y_filt_, soc_, converged_ekf());
+        Serial.printf("BatteryMonitor:dt,ib,voc_stat_tab,voc_stat_f,voc,voc_dead,dv_dyn,vb,   u,Fx,Bu,P,   z_,S_,K_,y_,soc_ekf, y_ekf_f, soc, conv,  %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,     %7.3f,%7.3f,%7.4f,%7.4f,       %7.3f,%7.4f,%10.7f,%7.4f,%7.4f,%7.4f, %7.4f,  %d,\n",
+            dt_, ib_, voc_soc_, voc_stat_f_, voc_, voc_dead_, dv_dyn_, vb_,     u_, Fx_, Bu_, P_,    z_, S_, K_, y_, soc_ekf_, y_filt_, soc_, converged_ekf());
     if ( sp.debug()==-24 ) Serial.printf("Mon:  ib%7.3f soc%8.4f reset_temp%d tau_ct%9.5f r_ct%7.3f r_0%7.3f dv_dyn%7.3f dv_hys%7.3f voc_soc%7.3f  voc_stat_f%7.3f voc%7.3f vb%7.3f ib _charge%7.3f ",
         ib_, soc_, reset_temp, chem_.tau_ct, chem_.r_ct, chem_.r_0, dv_dyn_, dv_hys_, voc_soc_, voc_stat_f_, voc_, vb_, ib_charge_);
     #endif
@@ -449,7 +449,7 @@ void BatteryMonitor::init_soc_ekf(const float soc)
     Inputs:
         soc         State of charge
         tb_f        Battery temperature, deg C
-        voc_filt    Filtered battery charging voltage, V
+        voc_dead    Filtered battery charging voltage, V
     State:
         sat_mem    Battery saturation status, T/F
 */
@@ -457,9 +457,9 @@ boolean BatteryMonitor::is_sat(const boolean reset)
 {
     static boolean sat_mem;
     if ( reset)
-        sat_mem = tb_f_ > chem_.low_t && (voc_filt_ >= vsat_);
+        sat_mem = tb_f_ > chem_.low_t && (voc_dead_ >= vsat_);
     else
-        sat_mem = tb_f_ > chem_.low_t && (voc_filt_ >= vsat_ || (soc_ >= MXEPS && !sat_mem) );
+        sat_mem = tb_f_ > chem_.low_t && (voc_dead_ >= vsat_ || (soc_ >= MXEPS && !sat_mem) );
     return sat_mem;
 }
 
@@ -478,7 +478,7 @@ void BatteryMonitor::pretty_print(Sensors *Sen)
     Serial.printf("  soc_ekf%8.4f frac\n", soc_ekf_);
     Serial.printf("  tc%5.1f hr\n", tcharge_);
     Serial.printf("  tc_ekf%5.1f hr\n", tcharge_ekf_);
-    Serial.printf("  voc_filt%7.3f V\n", voc_filt_);
+    Serial.printf("  voc_dead%7.3f V\n", voc_dead_);
     Serial.printf("  voc_soc%7.3f V\n", voc_soc_);
     Serial.printf("  voc_stat%7.3f V\n", voc_stat_);
     Serial.printf("  voc_stat_f%7.3f V\n", voc_stat_f_);

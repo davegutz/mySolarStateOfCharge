@@ -21,7 +21,6 @@ Dependencies:
     - matplotlib (plots)
     - reportlab  (figures, pdf)
 """
-import numpy as np
 import matplotlib.pyplot as plt
 from DataOverModel import plq
 import sys

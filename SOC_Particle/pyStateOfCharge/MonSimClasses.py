@@ -17,7 +17,6 @@
 a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
-import copy
 
 import numpy as np
 import Battery
@@ -62,7 +61,7 @@ class Sensors:
                 self.add_Tb_in = np.array(add_Tb_in)
                 self.Tb0 += add_Tb_in[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
-                self.dTb = self.lut_dTb.interp(t[0])
+                self.dTb = self.lut_dTb.interp(mon_run.t[0])
             self.Tb = self.mon_run.Tb[0]
             self.Tb_f = self.mon_run.Tb_f[0]
             self.Tb_f_rate = self.mon_run.Tb_f_rate[0]
@@ -118,7 +117,7 @@ class Sensors:
                 self.add_Tb_in = np.array(add_Tb_in)
                 self.Tb0 += add_Tb_in[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
-                self.dTb = self.lut_dTb.interp(t[0])
+                self.dTb = self.lut_dTb.interp(mon_run.t[0])
             self.Tb_f_rap = mon_run.Tb_f_rap
             self.Tb_rap_init = mon_run.Tb_rap[0] + self.dTb
             self.Tb_f_rap_init = mon_run.Tb_f_rap[0] + self.dTb
@@ -164,7 +163,7 @@ class Sensors:
                 self.add_Tb_in = np.array(add_Tb_in)
                 self.Tb0 += add_Tb_in[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
-                self.dTb = self.lut_dTb.interp(t[0])
+                self.dTb = self.lut_dTb.interp(mon_run.t[0])
             self.Tb_rap_init = mon_run.Tb_f[0] + self.dTb
             self.Tb_f_rap_init = mon_run.Tb_f[0] + self.dTb
             self.Tb_f_rate_rap_init = 0.

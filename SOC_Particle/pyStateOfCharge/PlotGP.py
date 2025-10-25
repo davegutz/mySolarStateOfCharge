@@ -75,7 +75,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plq(plt, mr, 'time', mr, 'vb_f', linestyle='-', color='black', label='vb_f' + run_str)
     plt.plot(mv.time, mv.vb, color='orange', linestyle='--', label='vb' + ver_str)
     plq(plt, mr, 'time', mr, 'voc', linestyle='-', color='blue', label='voc' + run_str)
-    plq(plt, mr, 'time', mr, 'voc_f', linestyle='-', color='blue', label='voc_f' + run_str)
+    plq(plt, mr, 'time', mr, 'voc_d', linestyle='-', color='blue', label='voc_d' + run_str)
     plt.plot(mv.time, mv.voc, color='red', linestyle='--', label='voc' + ver_str)
     plq(plt, mr, 'time', mr, 'voc_stat', linestyle='-.', color='cyan', label='voc_stat' + run_str)
     plq(plt, mr, 'time', mr, 'voc_stat_f', linestyle='-.', color='cyan', label='voc_stat_f' + run_str)
@@ -99,7 +99,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     fig_files.append(fig_file_name)
     plt.savefig(fig_file_name, format="png")
 
-    fig_list.append(plt.figure())  # GP 2 nn
+    fig_list.append(plt.figure())  # GP 2 nn lag
     plt.subplot(321)
     plt.title(plot_title + ' GP 2 nn lag')
     plt.plot(mr.time, mr.sat, color='black', linestyle='-', label='sat' + run_str)
@@ -107,7 +107,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.legend(loc=1)
     plt.subplot(322)
     plq(plt, mr, 'time', mr, 'voc', linestyle='-', color='black', label='voc' + run_str)
-    plq(plt, mr, 'time', mr, 'voc_f', linestyle='-', color='black', label='voc_f' + run_str)
+    plq(plt, mr, 'time', mr, 'voc_d', linestyle='-', color='black', label='voc_d' + run_str)
     plt.plot(mv.time, mv.voc, color='orange', linestyle='--', label='voc' + ver_str)
     plt.plot(mr.time, mr.vsat, color='blue', linestyle='-.', label='vsat' + run_str)
     plt.plot(mv.time, mv.vsat, color='red', linestyle=':', label='vsat' + ver_str)
@@ -127,13 +127,13 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.legend(loc=1)
     plt.subplot(325)
     plq(plt, mr, 'soc', mr, 'voc', linestyle='-', color='black', label='voc' + run_str)
-    plq(plt, mr, 'soc', mr, 'voc_f', linestyle='-', color='black', label='voc_f' + run_str)
+    plq(plt, mr, 'soc', mr, 'voc_d', linestyle='-', color='black', label='voc_d' + run_str)
     plt.plot(mr.soc, mr.voc_soc, color='red', linestyle='-', label='voc_soc' + run_str)
     plt.plot(mv.soc, mv.voc_soc, color='orange', linestyle='--', label='voc_soc' + ver_str)
     if hasattr(mr, 'voc'):
         values = np.array(mr.voc_soc) - np.array(mr.voc)+13.
     else:
-        values = np.array(mr.voc_soc) - np.array(mr.voc_f)+13.
+        values = np.array(mr.voc_soc) - np.array(mr.voc_d)+13.
     plt.plot(mr.soc, values, color='blue', linestyle='-', label='dv' + run_str + '+13')
     plq(plt, mr, 'soc', mr, 'voc', linestyle='-', color='black', label='voc' + run_str)
 
@@ -142,7 +142,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.legend(loc=1)
     plt.subplot(326)
     plq(plt, mr, 'time', mr, 'voc', linestyle='-', color='black', label='voc' + run_str)
-    plq(plt, mr, 'time', mr, 'voc_f', linestyle='-', color='black', label='voc_f' + run_str)
+    plq(plt, mr, 'time', mr, 'voc_d', linestyle='-', color='black', label='voc_d' + run_str)
     plt.plot(mr.time, mr.voc_soc, color='red', linestyle='-', label='voc_soc' + run_str)
     plt.plot(mv.time, mv.voc_soc, color='orange', linestyle='--', label='voc_soc' + ver_str)
     plt.plot(mr.time, values, color='blue', linestyle='-', label='dv' + run_str + '+13')
@@ -181,7 +181,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.legend(loc=3)
     plt.subplot(334)
     plq(plt, mr, 'time', mr, 'voc', linestyle='-', color='blue', label='voc' + run_str)
-    plq(plt, mr, 'time', mr, 'voc_f', linestyle='-', color='blue', label='voc_f' + run_str)
+    plq(plt, mr, 'time', mr, 'voc_d', linestyle='-', color='blue', label='voc_d' + run_str)
     plt.plot(mv.time, mv.voc, linestyle='--', color='cyan', label='voc' + ver_str)
     plq(plt, mr, 'time', mr, 'voc_stat', linestyle='-', color='orange', label='voc_stat' + run_str)
     plq(plt, mr, 'time', mr, 'voc_stat_f', linestyle='-', color='orange', label='voc_stat_f' + run_str)

@@ -42,7 +42,7 @@ void Flt_st::assign(const unsigned long now, BatteryMonitor *Mon, Sensors *Sen)
   this->soc = int16_t(Mon->soc()*SCL_16000);
   this->soc_min = int16_t(Mon->soc_min()*SCL_16000);
   this->soc_ekf = int16_t(Mon->soc_ekf()*SCL_16000);
-  this->voc_filt = int16_t(Mon->voc_filt()*sp.vb_hist_slr());
+  this->voc = int16_t(Mon->voc()*sp.vb_hist_slr());
   this->voc_stat_filt = int16_t(Mon->voc_stat_f()*sp.vb_hist_slr());
   this->e_wrap_filt = int16_t(Sen->Flt->e_wrap_filt()*sp.vb_hist_slr());
   this->e_wrap_m_filt = int16_t(Sen->Flt->e_wrap_m_filt()*sp.vb_hist_slr());
@@ -66,7 +66,7 @@ void Flt_st::copy_to_Flt_ram_from(Flt_st input)
   soc = input.soc;
   soc_min = input.soc_min;
   soc_ekf = input.soc_ekf;
-  voc_filt = input.voc_filt;
+  voc = input.voc;
   voc_stat_filt = input.voc_stat_filt;
   e_wrap_filt =input.e_wrap_filt;
   e_wrap_m_filt =input.e_wrap_m_filt;
@@ -90,7 +90,7 @@ void Flt_st::nominal()
   this->soc = int16_t(0);
   this->soc_min = int16_t(0);
   this->soc_ekf = int16_t(0);
-  this->voc_filt = int16_t(0);
+  this->voc = int16_t(0);
   this->voc_stat_filt = int16_t(0);
   this->e_wrap_filt = int16_t(0);
   this->e_wrap_m_filt = int16_t(0);
@@ -122,7 +122,7 @@ void Flt_st::pretty_print(const String code)
     Serial.printf("soc %7.4f\n", float(this->soc)/SCL_16000);
     Serial.printf("soc_min %7.4f\n", float(this->soc_min)/SCL_16000);
     Serial.printf("soc_ekf %7.4f\n", float(this->soc_ekf)/SCL_16000);
-    Serial.printf("voc_filt %7.3f\n", float(this->voc_filt)/sp.vb_hist_slr());
+    Serial.printf("voc %7.3f\n", float(this->voc)/sp.vb_hist_slr());
     Serial.printf("voc_stat_filt %7.3f\n", float(this->voc_stat_filt)/sp.vb_hist_slr());
     Serial.printf("e_wrap_filt %7.3f\n", float(this->e_wrap_filt)/sp.vb_hist_slr());
     Serial.printf("e_wrap_m_filt %7.3f\n", float(this->e_wrap_m_filt)/sp.vb_hist_slr());
@@ -136,8 +136,8 @@ void SavedPars::print_fault_header(Publish *pubList)
 {
     Serial.printf("Config:  %s \n", pubList->unit.c_str());
     Serial1.printf("Config:  %s \n", pubList->unit.c_str());
-    Serial.printf ("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, ibmh_f, ibnh_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_w_f, e_wm_f, e_wm_t, e_wn_f, fltw, falw,\n");
-    Serial1.printf ("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, ibmh_f, ibnh_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_w_f, e_wm_f, e_wm_t, e_wn_f, fltw, falw,\n");
+    Serial.printf ("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, ibmh_f, ibnh_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc, voc_stat_f, e_w_f, e_wm_f, e_wm_t, e_wn_f, fltw, falw,\n");
+    Serial1.printf ("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, ibmh_f, ibnh_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc, voc_stat_f, e_w_f, e_wm_f, e_wm_t, e_wn_f, fltw, falw,\n");
 }
 
 void Flt_st::print_flt(const String code)
@@ -159,7 +159,7 @@ void Flt_st::print_flt(const String code)
       float(this->soc)/SCL_16000,
       float(this->soc_min)/SCL_16000,
       float(this->soc_ekf)/SCL_16000,
-      float(this->voc_filt)/sp.vb_hist_slr(),
+      float(this->voc)/sp.vb_hist_slr(),
       float(this->voc_stat_filt)/sp.vb_hist_slr(),
       float(this->e_wrap_filt)/sp.vb_hist_slr(),
       float(this->e_wrap_m_filt)/sp.vb_hist_slr(),
@@ -179,7 +179,7 @@ void Flt_st::print_flt(const String code)
       float(this->soc)/SCL_16000,
       float(this->soc_min)/SCL_16000,
       float(this->soc_ekf)/SCL_16000,
-      float(this->voc_filt)/sp.vb_hist_slr(),
+      float(this->voc)/sp.vb_hist_slr(),
       float(this->voc_stat_filt)/sp.vb_hist_slr(),
       float(this->e_wrap_filt)/sp.vb_hist_slr(),
       float(this->e_wrap_m_filt)/sp.vb_hist_slr(),
