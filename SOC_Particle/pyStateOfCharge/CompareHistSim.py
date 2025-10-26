@@ -105,6 +105,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     dt = []
     ib_charge_f = []
     dv_dyn_f = []
+    ib_dyn = []
     bms_off_init = False
     bms_off = False
     rp = Retained()
@@ -126,6 +127,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
         tb_f_ = d_ra.Tb_f[i]
         vb_f_ = d_ra.vb_f[i]
         voc_f_ = d_ra.voc_f[i]
+        ib_dyn_ = d_ra.ib_f[i]
         reset = True  # Always initializing in history mode - times spread out
         # Battery management system model (uses past value bms_off and voc_stat)
         if not bms_off:
@@ -147,6 +149,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
         ib_diff_thr.append(ib_diff_thr_)
         ib_quiet_thr.append(ib_quiet_thr_)
         soc_min.append((BB.chemistry.lut_min_soc.interp(d_ra.Tb_f[i])))
+        ib_dyn.append(ib_dyn_)
         vsat.append(mon.chemistry.nom_vsat + (d_ra.Tb_f[i] - mon.chemistry.rated_temp) * mon.chemistry.dvoc_dt)
         time_sec.append(float(d_ra.time_ux[i] - time_sync))
         if i > 0:
@@ -168,7 +171,8 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     if not hasattr(d_mod, 'soc_min'):
         d_mod = rf.rec_append_fields(d_mod, 'soc_min', np.array(soc_min, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'vsat', np.array(vsat, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'ib_diff', np.array(ib_diff, dtype=float))
+    d_mod = rf.rec_append_fields(d_mod, 'ib_dyn', np.array(ib_dyn, dtype=float))
+    # d_mod = rf.rec_append_fields(d_mod, 'time_sec', np.array(time_sec, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'cc_diff_thr', np.array(cc_diff_thr, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'cc_dif', np.array(cc_dif, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ewhi_thr', np.array(ewhi_thr, dtype=float))
@@ -1282,8 +1286,8 @@ def main():
 
     # User inputs (multiple input_files allowed
     data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251025pm_soc4p2_hi_lo_bb.csv'
-    plots=True
-    # plots = False
+    # plots=True
+    plots = False
     mon_t = False
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # dt_resample = 900
