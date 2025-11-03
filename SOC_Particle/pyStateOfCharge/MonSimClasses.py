@@ -138,17 +138,34 @@ class Sensors:
             self.soc_ekf_init = mon_run.soc_ekf[0]
             self.z_ekf_init = mon_run.z[0]
             self.z_init = mon_run.z[0]
-        else:
+
+        elif run_type == 'HistSim':
+
+            if not hasattr(mon_run, 'e_wrap_f'):
+                mon_run.e_wrap_f = np.copy(mon_run.e_w_f)
+            if not hasattr(mon_run, 'e_wrap_m_filt'):
+                mon_run.e_wrap_m_filt = np.copy(mon_run.e_wm_f)
+            if not hasattr(mon_run, 'e_wrap_m_trim'):
+                mon_run.e_wrap_m_trim = np.copy(mon_run.e_wm_t)
+            if not hasattr(mon_run, 'e_wrap_n_filt'):
+                mon_run.e_wrap_n_filt = np.copy(mon_run.e_wn_f)
+            if not hasattr(mon_run, 'e_wrap_n_trim'):
+                mon_run.e_wrap_n_trim = np.copy(mon_run.e_wm_t) * 0.
+            if not hasattr(mon_run, 'ib_dyn_m'):
+                mon_run.ib_dyn_m = np.copy(mon_run.ibmh_f)
+            if not hasattr(mon_run, 'ib_dyn_n'):
+               mon_run.ib_dyn_n = np.copy(mon_run.ibnh_f)
+
             self.Tb_hdwe_init = mon_run.Tb_h_f[0]
             self.Tb_hdwe_filt_init = mon_run.Tb_h_f[0]
             self.Tb_hdwe_filt_rate_init = 0.
             self.e_wrap_init = mon_run.e_wrap[0]
-            self.e_wrap_filt_init = mon_run.e_wrap[0]
+            self.e_wrap_filt_init = mon_run.e_wrap_f[0]
             self.e_wrap_m_init = mon_run.e_wrap[0]
-            self.e_wrap_m_filt_init = mon_run.e_wrap[0]
+            self.e_wrap_m_filt_init = mon_run.e_wrap_m_filt[0]
             self.e_wrap_m_trim_init = 0.
             self.e_wrap_n_init = mon_run.e_wrap[0]
-            self.e_wrap_n_filt_init = mon_run.e_wrap[0]
+            self.e_wrap_n_filt_init = mon_run.e_wrap_n_filt[0]
             self.e_wrap_n_trim_init = 0.
             self.voc_soc_init = mon_run.voc_soc[0]
             self.voc_stat_init = mon_run.voc_stat_f[0]
@@ -175,26 +192,8 @@ class Sensors:
             self.Tb_f_rate_past = np.copy(self.Tb_f) * 0.
             self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
 
-            if not hasattr(mon_run, 'ib_dyn_m'):
-                mon_run.ib_dyn_m = np.copy(mon_run.ibmh_f)
-
-            if not hasattr(mon_run, 'e_wrap_m_trim'):
-                mon_run.e_wrap_m_trim = np.copy(mon_run.e_wm_t)
-
-            if not hasattr(mon_run, 'e_wrap_m_filt'):
-                mon_run.e_wrap_m_filt = np.copy(mon_run.e_wm_f)
-
             self.LoopAmp = SensorLooparound(mon_run.ibmh_f, mon_run.ib_dyn_m, mon_run.e_wrap_m_trim,
                                             mon_run.e_wrap_m_filt)
-
-            if not hasattr(mon_run, 'ib_dyn_n'):
-               mon_run.ib_dyn_n = np.copy(mon_run.ibnh_f)
-
-            if not hasattr(mon_run, 'e_wrap_n_trim'):
-                mon_run.e_wrap_n_trim = np.copy(mon_run.e_wm_t) * 0.
-
-            if not hasattr(mon_run, 'e_wrap_n_filt'):
-                mon_run.e_wrap_n_filt = np.copy(mon_run.e_wn_f)
 
             self.LoopNoa = SensorLooparound(mon_run.ibnh_f, mon_run.ib_dyn_n, mon_run.e_wrap_m_trim * 0.,
                                             mon_run.e_wrap_n_filt)
@@ -221,24 +220,17 @@ class Sensors:
             else:
                 self.dt_s.append(sim_run.time[i] - sim_run.time[i-1])
         self.soc_s = mon_run.soc_s
+
+        # q
         if not hasattr(mon_run, 'q_capacity'):
             self.q_cap = calculate_capacity(q_cap_rated_scaled=mon_run.qcrs, dqdt=mon_run.dqdt, tb_f=self.Tb_f,
                                             t_rated=mon_run.t_rated)
         else:
             self.q_cap = mon_run.q_capacity
-        # self.dq_s = -self.q_cap * (1. - mon_run.soc_s)
         if not hasattr(mon_run, 'delta_q'):
             self.delta_q = -self.q_cap * (1. - mon_run.soc)
         else:
             self.delta_q = mon_run.delta_q
-        self.ib_in_s = sim_run.ib_in_s
-        self.ib_in_s_init = self.ib_in_s[0]
-        if not hasattr(self, 'ib_dyn_s'):
-            self.ib_dyn_s = np.copy(self.ib_in_s)
-        self.ib_dyn_s_init = self.ib_dyn_s[0]
-        self.dv_dyn_s = sim_run.dv_dyn_s
-        self.dv_dyn_s_init = self.dv_dyn_s[0]
-        self.d_delta_q_s_init = 0.
         if not hasattr(sim_run, 'qcap_s'):
             self.q_cap_s = calculate_capacity(q_cap_rated_scaled=mon_run.qcrs_s, dqdt=mon_run.dqdt, tb_f=self.Tb_f,
                                               t_rated=mon_run.t_rated)
@@ -248,13 +240,21 @@ class Sensors:
             self.delta_q_s = -self.q_cap_s * (1. - mon_run.soc_s)
         else:
             self.delta_q_s = sim_run.dq_s
+        self.d_delta_q_s_init = 0.
         self.delta_q_s_init = self.delta_q_s[0]
+
+        self.ib_in_s = sim_run.ib_in_s
+        self.ib_in_s_init = self.ib_in_s[0]
+        if not hasattr(self, 'ib_dyn_s'):
+            self.ib_dyn_s = np.copy(self.ib_in_s)
+        self.ib_dyn_s_init = self.ib_dyn_s[0]
+        self.dv_dyn_s = sim_run.dv_dyn_s
+        self.dv_dyn_s_init = self.dv_dyn_s[0]
         self.ib_s_init = self.ib_in_s_init
         self.ib_fut_s_init = self.ib_in_s_init
         self.ib_charge_s_init = self.ib_in_s_init
         self.ioc_s_init = self.ib_in_s_init
         self.voc_s_init = sim_run.voc_stat_s[0]
-        # self.ib_dyn_s_init = self.ib_in_s_init
         self.soc_s_init = mon_run.soc_s[0]
         self.hx_init = self.voc_soc_init
         self.soc_init = mon_run.soc[0]
