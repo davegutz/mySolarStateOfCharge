@@ -237,6 +237,7 @@ def replicate(OPT: UserOptions):
 
         # Time
         now = t[i]
+        SN.update(i)
         T_ekf = None
         if i != 0:
             candidate_dt = t[i] - t[i-1]  # update
