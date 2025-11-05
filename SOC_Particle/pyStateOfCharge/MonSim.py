@@ -375,12 +375,12 @@ def replicate(OPT: UserOptions):
         if i == 2:
             pass
         if rp.modeling == 0:
-            mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN,
+            mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, irun=i,
                           rp=rp, bms_off_init=OPT.mon_run.bms_off[0], ib_amp=OPT.mon_run.ibmh[i], ib_noa=OPT.mon_run.ibnh[i],
                           reset_ekf=reset_ekf)
         else:
             mon.calculate(_chm_m, vb_ + random.randn() * v_std + dv_sense, ib_ + random.randn() * i_std + di_sense, T,
-                          reset, calc_ekf, T_ekf, SN,
+                          reset, calc_ekf, T_ekf, SN, irun=i,
                           rp=rp, bms_off_init=OPT.mon_run.bms_off[0], ib_amp=SN.ibmm[i], ib_noa=SN.ibnm[i],
                           reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge

@@ -214,7 +214,7 @@ def print_soc_s_RunSim(i, i_temp, t, mon_run, mon, calc_temp, sim_run, sim, i_ek
           "{:12.6f}".format(sim_run.ib_dyn_s_rstate[i]), "{:10.6f}".format(sim.ChargeTransfer.rstate),
           "{:12.6f}".format(sim_run.ib_dyn_s_lstate[i]), "{:10.6f}".format(sim.ChargeTransfer.state),
           "{:12.5f}".format(sim_run.ib_dyn_s[i]), "{:9.5f}".format(sim.ib_dyn), "{:9.5f}".format(SN.ib_dyn_s_init),
-          "{:12.5f}".format(mon_run.ib_dyn[i]), "{:9.5f}".format(mon.ib_dyn), "{:9.5f}".format(SN.ib_dyn_init),
+          "{:12.5f}".format(mon_run.ib_dyn[i]), "{:9.5f}".format(mon.ib_dyn), "{:9.5f}".format(SN.ib_dyn[0]),
           "{:12.5f}".format(sim_run.dv_hys_s[i]), "{:9.5f}".format(sim.dv_hys),
           "{:12.5f}".format(sim_run.ib_charge_s[i]), "{:9.5f}".format(sim.ib_charge),
           "{:12.5f}".format(sim_run.ioc_s[i]), "{:9.5f}".format(sim.ioc),

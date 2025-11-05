@@ -26,45 +26,29 @@ from pyDAGx import myTables
 
 
 class ProArray:
-    def __init__(self, data):
+    def __init__(self, data, mutable=False):
         # Initialize a NumPy array, marked as "internal" with a leading underscore
         if not isinstance(data, (list, np.ndarray)):
             raise TypeError("Data must be a list or NumPy array.")
-        self._data = np.array(data)
+        if not mutable:
+            self._data = np.array(data)
+        else:
+            self._data = data
 
     @property
-    def d(self):
+    def data(self):
         """
         Getter for the array data. Returns a copy to prevent external modification
         of the internal array.
         """
         return self._data.copy()
 
-    def el(self, index, value=None):
-        """
-        Provides controlled access to individual elements.
-        Includes bounds checking for safety.
-        """
+    def __getitem__(self, index=None):
+        return self._data[max(min(index, len(self._data)-1), 0)]
 
-        if value is None:
-            if 0 <= index < len(self._data):
-                return self._data[index]
-            else:
-                raise IndexError("Index out of bounds.")
-
-        else:
-            if 0 <= index < len(self._data):
-                # Optional: Add type checking for 'value' here if needed
-                self._data[index] = value
-                return None
-            else:
-                raise IndexError("Index out of bounds.")
-
-    def __getitem__(self, key):
-        return self.el(key)
-
-    def __setitem__(self, key, value):
-        self.el(value)
+    def __setitem__(self, index, value):
+        self._data[index] = value
+        return None
 
     def __len__(self):
         return len(self._data)
@@ -80,7 +64,7 @@ class SensorLooparound:
         self.ib = ib
         self.ib_init = self.ib[0]
         self.ib_dyn = ib_dyn
-        self.ib_dyn_init = self.ib_dyn[0]
+        # self.ib_dyn_init = self.ib_dyn[0]
         self.e_wrap_trim = e_wrap_trim
         self.e_wrap_trim_init = self.e_wrap_trim[0]
         self.e_wrap_filt = e_wrap_filt
@@ -88,7 +72,7 @@ class SensorLooparound:
 
     def update(self, i):
         self.ib_init = self.ib[max(i - 1, 0)]
-        self.ib_dyn_init = self.ib_dyn[i]
+        # self.ib_dyn_init = self.ib_dyn[i]
         self.e_wrap_trim_init = self.e_wrap_trim[i]
         self.e_wrap_filt_init = self.e_wrap_filt[i]
 
@@ -123,8 +107,8 @@ class Sensors:
                                             mon_run.e_wrap_n_filt)
             self.ib_amp = mon_run.ibmh
             self.ib_noa = mon_run.ibnh
-            self._ib_dyn = ProArray(mon_run.ib_dyn)
-            self.ib_dyn_init = self._ib_dyn[0]
+            self.ib_dyn = ProArray(mon_run.ib_dyn, mutable=True)
+            # self.ib_dyn_init = self.ib_dyn[0]
             self.z = mon_run.z
             self.z_init = self.z[0]
             self.ib_in_s = sim_run.ib_in_s
@@ -248,8 +232,8 @@ class Sensors:
             self.ib_amp = mon_run.ibmh_f
             self.ib_noa = mon_run.ibnh_f
             self.ib_init = mon_run.ib_f[0]
-            self._ib_dyn = ProArray(mon_run.ib_dyn)
-            self.ib_dyn_init = self._ib_dyn[0]
+            self.ib_dyn = ProArray(mon_run.ib_dyn)
+            # self.ib_dyn_init = self.ib_dyn[0]
             self.ib_charge_init = mon_run.ib_charge_f[0]
             self.vb_init = mon_run.vb_f[0]
             self.ibmm = mon_run.ibmh_f
@@ -366,9 +350,9 @@ class Sensors:
 
     # def ib_dyn(self, ind=None):
     #     if ind is None:
-    #         return self._ib_dyn.el(self.i)
+    #         return self.ib_dyn.el(self.i)
     #     else:
-    #         return self._ib_dyn.el(max(ind, 0))
+    #         return self.ib_dyn.el(max(ind, 0))
     #
     def update(self, i):
         self.i = min(max(i, 0), len(self.mon_run.time)-1)
@@ -378,7 +362,7 @@ class Sensors:
         self.LoopAmp.update(i)
         self.LoopNoa.update(i)
         # self.ib_dyn_init = self.ib_dyn[i]
-        self.ib_dyn_init = self._ib_dyn[i]
+        # self.ib_dyn_init = self.ib_dyn[i]
         self.ib_in_s_init = self.ib_in_s[i]
         self.ib_dyn_s_init = self.ib_dyn_s[i]
         self.dv_dyn_s_init = self.dv_dyn_s[i]
