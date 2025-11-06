@@ -143,8 +143,6 @@ class UserOptions:
 #  There are no 'bank' parameters anywhere in this model.   It is assumed that all inputs from the application have
 #  been converted to the single battery unit 12v form, S1P1, lower-case nomenclature.
 def replicate(OPT: UserOptions):
-    G.i = -1
-
     """TODO:
     7. Fig. 9 EKF 2a: hx(soc) negative slope?  This needs to be run just below saturation
     9. Run CompareHistSim etc.
@@ -197,6 +195,7 @@ def replicate(OPT: UserOptions):
     # time loop initialization
     now = t[0]
     reset_ekf = True
+    G.i = -1
     i_ekf = -1
     i_temp = -1
     T = OPT.mon_run.dt[0]
@@ -206,7 +205,7 @@ def replicate(OPT: UserOptions):
 
     # Print debug information
     if OPT.request_history is not None and OPT.request_history > 0:
-        hdr = print_hist(OPT, 0, SN, i_temp, i_ekf, t, mon, True, True, sim)
+        hdr = print_hist(OPT, SN, i_temp, i_ekf, t, mon, True, True, sim)
 
     # Top of time loop
     irun = -1
@@ -215,21 +214,21 @@ def replicate(OPT: UserOptions):
         irun += 1
         i = G.i
 
-        if i >= 206:
+        if G.i >= 206:
             pass  # used for debug breakpoint at i >= <val>
 
         # Time
-        now = t[i]
-        SN.update(i)
+        now = t[G.i]
+        SN.update(G.i)
         T_ekf = None
-        if i != 0:
-            candidate_dt = t[i] - t[i-1]  # update
+        if G.i != 0:
+            candidate_dt = t[G.i] - t[G.i-1]  # update
             if candidate_dt > 1e-6:
                 T = candidate_dt
 
         # Get temperature data
         if hasattr(OPT.mon_run, 'time_t'):
-            calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[i])
+            calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i])
         else:
             calc_temp = True
         if calc_temp:
@@ -238,28 +237,28 @@ def replicate(OPT: UserOptions):
 
         # Input
         dc_dc_on = False
-        rp.modeling = modeling[i]
+        rp.modeling = modeling[G.i]
 
         # Basic reset model verification is to init to the input data
         # Tried hard not to re-implement solvers in the Python verification  tool
         # Also, BTW, did not implement signal selection or tweak logic
         reset = None
         if OPT.run_type == 'RunSim':
-            reset = bool((t[i] <= OPT.init_time) or (t[i] < 0. and t[0] > OPT.init_time))
+            reset = bool((t[G.i] <= OPT.init_time) or (t[G.i] < 0. and t[0] > OPT.init_time))
             if OPT.mon_run.res is not None:
-                reset = reset or bool(OPT.mon_run.res[i] > 0.)
+                reset = reset or bool(OPT.mon_run.res[G.i] > 0.)
         elif OPT.run_type == 'HistSim':
             reset = True
-        prn_soc_debug(OPT, time=now, leader="before sim init:         ", i=i, i_temp=i_temp, mon=mon, sim=sim)
+        prn_soc_debug(OPT, time=now, leader="before sim init:         ", i_temp=i_temp, mon=mon, sim=sim)
 
         if reset:
-            sim.apply_soc(OPT.mon_run.soc_s[i], SN.Tb_f_past)  # calculates delta_q
-            prn_soc_debug(OPT, time=now, leader="after sim.apply_soc:     ", i=i, i_temp=i_temp, mon=mon, sim=sim)
+            sim.apply_soc(OPT.mon_run.soc_s[G.i], SN.Tb_f_past)  # calculates delta_q
+            prn_soc_debug(OPT, time=now, leader="after sim.apply_soc:     ", i_temp=i_temp, mon=mon, sim=sim)
             sim.load(sim.delta_q)
             sim.assign_tb(sim.Tb)
             sim.assign_tb_f(sim.Tb_f)
             sim.apply_delta_q_t(sim.delta_q, SN.Tb_f_past)
-            prn_soc_debug(OPT, time=now, leader="after sm.apply_delta_q_t:", i=i, i_temp=i_temp, mon=mon, sim=sim)
+            prn_soc_debug(OPT, time=now, leader="after sm.apply_delta_q_t:", i_temp=i_temp, mon=mon, sim=sim)
             sat_s_init = SN.voc_stat_init > OPT.mon_run.vsat[0]
             if OPT.sim_run is not None:
                 sat_s_init = OPT.sim_run.sat_s[0]
@@ -271,59 +270,59 @@ def replicate(OPT: UserOptions):
 
         # Models
         if rp.modeling == 0:
-            SN.update_ib_vb(i)
+            SN.update_ib_vb(G.i)
 
         if OPT.sim_run is not None and not OPT.use_ib_mon:
-            ib_in_s = OPT.sim_run.ib_in_s[i]
+            ib_in_s = OPT.sim_run.ib_in_s[G.i]
         else:
             if OPT.run_type == 'RunSim':
-                ib_in_s = OPT.mon_run.ib[i]
+                ib_in_s = OPT.mon_run.ib[G.i]
             else:
-                ib_in_s = OPT.mon_run.ib_f[i]
+                ib_in_s = OPT.mon_run.ib_f[G.i]
 
         if OPT.Bsim is None:
-            _chm_s = chm_s[i]
+            _chm_s = chm_s[G.i]
         else:
             _chm_s = OPT.Bsim
 
-        sim.calculate(_chm_s, None, ib_in_s, SN.dt_s[i], reset, None, None, SN,
+        sim.calculate(_chm_s, None, ib_in_s, SN.dt_s[G.i], reset, None, None, SN,
                       soc=sim.soc, q_capacity=sim.q_capacity, rp=rp, sat_init=sat_s_init)
 
         sim.count_coulombs(chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=SN.Tb_f_rate_past,
-                           charge_curr=sim.ib_charge, sat=False, soc_s_init=SN.soc_s[i], mon_sat=mon.sat,
-                           sim_delta_q=SN.delta_q_s[i], use_soc_in=OPT.use_mon_soc, soc_in=SN.soc_s[i])
+                           charge_curr=sim.ib_charge, sat=False, soc_s_init=SN.soc_s[G.i], mon_sat=mon.sat,
+                           sim_delta_q=SN.delta_q_s[G.i], use_soc_in=OPT.use_mon_soc, soc_in=SN.soc_s[G.i])
 
         # EKF
         if reset:
-            mon.apply_delta_q_t(SN.delta_q[i], SN.Tb_f_rap[i])
-            prn_soc_debug(OPT, time=now, leader="after mon.apply_delta_q_t", i=i, i_temp=i_temp, mon=mon, sim=sim)
+            mon.apply_delta_q_t(SN.delta_q[G.i], SN.Tb_f_rap[G.i])
+            prn_soc_debug(OPT, time=now, leader="after mon.apply_delta_q_t", i_temp=i_temp, mon=mon, sim=sim)
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
 
 
         # Chemistry
         if OPT.Bmon is None:
-            _chm_m = chm_m[i]
+            _chm_m = chm_m[G.i]
         else:
             _chm_m = OPT.Bmon
 
-        if OPT.ib_fail_t is not None and t[i] > OPT.ib_fail_t:
+        if OPT.ib_fail_t is not None and t[G.i] > OPT.ib_fail_t:
             ib_ = OPT.ib_fail
         else:
             if OPT.mon_run.ib_sel is not None:
-                ib_ = OPT.mon_run.ib_sel[i]
+                ib_ = OPT.mon_run.ib_sel[G.i]
             else:
-                ib_ = OPT.mon_run.ib[i]
+                ib_ = OPT.mon_run.ib[G.i]
 
         if OPT.use_vb_sim:
             vb_ = sim.vb
-        elif OPT.vb_fail_t and t[i] >= OPT.vb_fail_t:
+        elif OPT.vb_fail_t and t[G.i] >= OPT.vb_fail_t:
             vb_ = OPT.vb_fail
         else:
-            vb_ = vb[i]
+            vb_ = vb[G.i]
 
         # Monitor EKF sequencing logic
-        if (i_ekf+1 < len(OPT.mon_run.time_e)) and (OPT.mon_run.time_e[i_ekf+1] <= OPT.mon_run.time[i]):
+        if (i_ekf+1 < len(OPT.mon_run.time_e)) and (OPT.mon_run.time_e[i_ekf+1] <= OPT.mon_run.time[G.i]):
             i_ekf += 1
             reset_ekf = i_ekf == 0 or OPT.run_type == 'HistSim'
             if i_ekf < 1:
@@ -336,14 +335,14 @@ def replicate(OPT: UserOptions):
         SN.update_ekf(i_ekf)
 
         if reset_ekf and calc_ekf:
-            mon.init_soc_ekf(OPT.mon_run, i, i_ekf, run_type=OPT.run_type)  # when modeling (assumed in python) ekf wants to equal model
+            mon.init_soc_ekf(OPT.mon_run, G.i, i_ekf, run_type=OPT.run_type)  # when modeling (assumed in python) ekf wants to equal model
 
         # Monitor calculate
         mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, rp=rp, reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge
 
         if OPT.use_sat_mon:
-            saturated = OPT.mon_run.sat[i]
+            saturated = OPT.mon_run.sat[G.i]
         else:
             sat = is_sat(SN.Tb_f_past, mon.chemistry.rated_temp, mon.voc_dead, mon.soc, mon.chemistry.nom_vsat,
                          mon.chemistry.dvoc_dt, mon.chemistry.low_t)
@@ -352,38 +351,38 @@ def replicate(OPT: UserOptions):
         # Monitor count Coulumbs
         if rp.modeling == 0:
             mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=SN.Tb_f_past, charge_curr=ib_charge,
-                               sat=saturated, use_soc_in=OPT.use_mon_soc, soc_in=OPT.mon_run.soc[i])
+                               sat=saturated, use_soc_in=OPT.use_mon_soc, soc_in=OPT.mon_run.soc[G.i])
         else:
             mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=SN.Tb_f_past, charge_curr=ib_charge,
-                               sat=saturated, use_soc_in=OPT.use_mon_soc, soc_in=OPT.mon_run.soc[i])
-        prn_soc_debug(OPT, time=now, leader="after mn.count_coulombs: ", i=i, i_temp=i_temp, mon=mon, sim=sim)
+                               sat=saturated, use_soc_in=OPT.use_mon_soc, soc_in=OPT.mon_run.soc[G.i])
+        prn_soc_debug(OPT, time=now, leader="after mn.count_coulombs: ", i_temp=i_temp, mon=mon, sim=sim)
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
         mon.assign_soc_s(sim.soc)
 
         # Break if data integrity questionable
-        if SN.skip_e[i_ekf] or SN.skip_t[i_temp] or SN.skip_sel[i] or SN.skip_rap[i] or SN.skip_s[i]:
+        if SN.skip_e[i_ekf] or SN.skip_t[i_temp] or SN.skip_sel[G.i] or SN.skip_rap[G.i] or SN.skip_s[G.i]:
             break
 
         # Save plot info
-        mon.save(t[i], T, mon.soc, sim.voc)
-        sim.save(t[i], T)
-        sim.save_s(t[i])
+        mon.save(t[G.i], T, mon.soc, sim.voc)
+        sim.save(t[G.i], T)
+        sim.save_s(t[G.i])
 
         # Print initial
-        if i == 0 and OPT.verbose:
-            print('time=', t[i])
+        if G.i == 0 and OPT.verbose:
+            print('time=', t[G.i])
             print('mon:  ', str(mon))
-            print('time=', t[i])
+            print('time=', t[G.i])
             print('sim:  ', str(sim))
 
         # History print
         if OPT.request_history is not None and OPT.request_history > 0:
-            hdr = print_hist(OPT, i, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim)
+            hdr = print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim)
 
-        prn_soc_debug(OPT, time=now, leader="end loop:                ", i=i, i_temp=i_temp, mon=mon, sim=sim)
+        prn_soc_debug(OPT, time=now, leader="end loop:                ", i_temp=i_temp, mon=mon, sim=sim)
 
         # pick a pass to run debugger to a time
-        if i >= 206:
+        if G.i >= 206:
             pass  # used for debug breakpoint at i >= <val>
         if now > 2:
             pass  # used for debug breakpoint at now > <val>
@@ -397,7 +396,7 @@ def replicate(OPT: UserOptions):
     # Final hdr print
     if OPT.request_history is not None and OPT.request_history > 0:
         print(hdr)
-    if SN.skip_e[i_ekf] or SN.skip_t[i_temp] or SN.skip_sel[i] or SN.skip_rap[i] or SN.skip_s[i]:
+    if SN.skip_e[i_ekf] or SN.skip_t[i_temp] or SN.skip_sel[G.i] or SN.skip_rap[G.i] or SN.skip_s[G.i]:
         print(f"\n\n************** Data integrity degraded by skip.  A digit could have been inserted anywhere in data.  Break.")
         print("   now {:5.3f}".format(now),
               "   time_end {:5.3f}\n\n".format(t[-1]),
