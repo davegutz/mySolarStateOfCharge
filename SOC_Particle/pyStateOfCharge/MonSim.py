@@ -226,8 +226,7 @@ def replicate(OPT: UserOptions):
 
     # Print debug information
     if OPT.request_history is not None and OPT.request_history > 0:
-        hdr = print_hist(OPT.request_history, OPT.run_type, 0, i_temp, i_ekf, t, OPT.mon_run, mon, True, True,
-                         OPT.sim_run, sim, SN)
+        hdr = print_hist(OPT, 0, SN, i_temp, i_ekf, t, mon, True, True, sim)
 
     # Top of time loop
     for i in range(t_len):
@@ -411,8 +410,7 @@ def replicate(OPT: UserOptions):
 
         # History print
         if OPT.request_history is not None and OPT.request_history > 0:
-            hdr = print_hist(OPT.request_history, OPT.run_type, i, i_temp, i_ekf, t, OPT.mon_run, mon, calc_temp, calc_ekf,
-                             OPT.sim_run, sim, SN)
+            hdr = print_hist(OPT, i, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim)
 
         prn_soc_debug(OPT.request_history, time=now, leader="end loop:                ", i=i, i_temp=i_temp,
                       mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
