@@ -20,50 +20,49 @@ Coulomb Counter built in."""
 
 from datetime import datetime, timedelta
 
-def prn_soc_debug(request_history, leader="", time=None, i=None, i_temp=None, mon_run=None, mon=None,
-                  sim_run=None, sim=None):
+def prn_soc_debug(OPT, leader="", time=None, i=None, i_temp=None, mon=None, sim=None):
     execute = False
     if not execute:
         return
     else:
-        if request_history == 2:  # soc
+        if OPT.request_history == 2:  # soc
             if i > 0:
-                d_dq = mon_run.delta_q[i] - mon_run.delta_q[i - 1]
+                d_dq = OPT.mon_run.delta_q[i] - OPT.mon_run.delta_q[i - 1]
             else:
-                d_dq = mon_run.delta_q[i + 1] - mon_run.delta_q[i]
+                d_dq = OPT.mon_run.delta_q[i + 1] - OPT.mon_run.delta_q[i]
             if time is not None:
                 print("time {:7.3f}".format(time), end='')
             print(" " * 103 + leader, end='')
             print(
-                  "{:14.7f}".format(mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
-                  "{:14.7f}".format(mon_run.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
+                  "{:14.7f}".format(OPT.mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
+                  "{:14.7f}".format(OPT.mon_run.Tb_f_rap[i]), "{:10.7f}".format(mon.Tb_f_rap),
                   "{:12.4f}".format(d_dq), "{:11.4f}".format(mon.d_delta_q),
-                  "{:12.4f}".format(mon_run.delta_q[i]), "{:11.4f}".format(mon.delta_q),
-                  "{:12.1f}".format(mon_run.qcrs[i]), "{:9.1f}".format(mon.q_cap_rated_scaled),
-                  "{:12.1f}".format(mon_run.q_capacity[i]), "{:9.1f}".format(mon.q_capacity),
+                  "{:12.4f}".format(OPT.mon_run.delta_q[i]), "{:11.4f}".format(mon.delta_q),
+                  "{:12.1f}".format(OPT.mon_run.qcrs[i]), "{:9.1f}".format(mon.q_cap_rated_scaled),
+                  "{:12.1f}".format(OPT.mon_run.q_capacity[i]), "{:9.1f}".format(mon.q_capacity),
             )
-        elif request_history == 3:  # soc_s
+        elif OPT.request_history == 3:  # soc_s
             if time is not None:
                 print("time {:7.3f}".format(time), end='')
             print(" " * 375 + leader, end='')
             print(
-                "{:11.8f}".format(mon_run.soc_s[i]), "{:8.7f}".format(sim.soc),
-                "{:14.7f}".format(sim_run.Tb_f_s[i]), "{:11.7f}".format(sim.Tb_f),
-                "{:14.4f}".format(sim_run.d_delta_q_s[i]), "{:11.4f}".format(sim.d_delta_q),
-                "{:14.4f}".format(sim_run.dq_s[i]), "{:11.4f}".format(sim.delta_q), "{:2.0f}".format(sim.reset_temp_past),
+                "{:11.8f}".format(OPT.mon_run.soc_s[i]), "{:8.7f}".format(sim.soc),
+                "{:14.7f}".format(OPT.sim_run.Tb_f_s[i]), "{:11.7f}".format(sim.Tb_f),
+                "{:14.4f}".format(OPT.sim_run.d_delta_q_s[i]), "{:11.4f}".format(sim.d_delta_q),
+                "{:14.4f}".format(OPT.sim_run.dq_s[i]), "{:11.4f}".format(sim.delta_q), "{:2.0f}".format(sim.reset_temp_past),
             )
-        elif request_history == 4:  # temp
+        elif OPT.request_history == 4:  # temp
             if time is not None:
                 print("time {:7.3f}".format(time), end='')
             print(" " * 75 + leader, end='')
             print(
-        "{:14.7f}".format(mon_run.Tb_hdwe_filt[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt),
-        "{:14.7f}".format(mon_run.Tb_rap[i]), "{:11.7f}".format(mon.Tb_rap),
-        "{:14.7f}".format(mon_run.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
-        "{:14.7f}".format(mon_run.Tb_f_rap[i]), "{:11.7f}".format(mon.Tb_f_rap),
-        "{:14.7f}".format(mon_run.Tb_hdwe_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt_rate),
-        "{:14.7f}".format(mon_run.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate),
-        "{:14.7f}".format(mon_run.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
+        "{:14.7f}".format(OPT.mon_run.Tb_hdwe_filt[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt),
+        "{:14.7f}".format(OPT.mon_run.Tb_rap[i]), "{:11.7f}".format(mon.Tb_rap),
+        "{:14.7f}".format(OPT.mon_run.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
+        "{:14.7f}".format(OPT.mon_run.Tb_f_rap[i]), "{:11.7f}".format(mon.Tb_f_rap),
+        "{:14.7f}".format(OPT.mon_run.Tb_hdwe_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt_rate),
+        "{:14.7f}".format(OPT.mon_run.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate),
+        "{:14.7f}".format(OPT.mon_run.Tb_f_rate_rap[i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
             )
 
 # def prn_soc_s_debug(leader="", time=None, i=None, i_temp=None, mon_run=None, mon=None, sim_run=None, sim=None):
