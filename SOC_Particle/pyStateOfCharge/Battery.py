@@ -28,6 +28,7 @@ if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
 plt.rcParams.update({'figure.max_open_warning': 0})
+import globals as G
 
 
 class Retained:
@@ -455,14 +456,13 @@ class BatteryMonitor(Battery, EKF1x1):
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
-                  q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, irun=None):
-
+                  q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None):
         if rp.modeling == 0:
-            self.ib_amp = SN.mon_run.ibmh[irun]
-            self.ib_noa = SN.mon_run.ibnh[irun]
+            self.ib_amp = SN.mon_run.ibmh[G.i]
+            self.ib_noa = SN.mon_run.ibnh[G.i]
         else:
-            self.ib_amp = SN.ibmm[irun]
-            self.ib_noa = SN.ibnm[irun]
+            self.ib_amp = SN.ibmm[G.i]
+            self.ib_noa = SN.ibnm[G.i]
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
@@ -477,7 +477,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        self.wrap(reset=reset, ib_sel=self.ib, SN=SN, ib_amp=self.ib_amp, ib_noa=self.ib_noa, irun=irun)
+        self.wrap(reset=reset, ib_sel=self.ib, SN=SN, ib_amp=self.ib_amp, ib_noa=self.ib_noa)
 
         # Reversionary model
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
@@ -510,7 +510,7 @@ class BatteryMonitor(Battery, EKF1x1):
         else:
             ib_dc = self.ib
         self.vb = vb
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn[irun], reset, dt,
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn[G.i], reset, dt,
                                                                self.chemistry.tau_ct)
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
@@ -825,7 +825,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
 
-    def wrap(self, reset=True, ib_sel=0., SN=None, ib_amp=0., ib_noa=0., irun=None):
+    def wrap(self, reset=True, ib_sel=0., SN=None, ib_amp=0., ib_noa=0.):
         """Wrap logic"""
 
         # e_wrap scalars normally calculated in Sensors
@@ -850,7 +850,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_noa = ib_noa
             self.LoopIbNoa.calculate(reset=reset, ib=self.ib_noa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_init = SN.LoopNoa.ib_init, ib_dyn_init=SN.LoopNoa.ib_dyn[irun],
+                                     ib_init = SN.LoopNoa.ib_init, ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
                                      e_wrap_filt_init = SN.e_wrap_n_filt_init, e_wrap_trim_init = SN.e_wrap_n_trim_init)
             self.e_wrap_n = self.LoopIbNoa.e_wrap
             self.e_wrap_n_filt = self.LoopIbNoa.e_wrap_filt
@@ -871,7 +871,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_noa_rate = self.IbAmpRate.calculate(in_=ib_noa, reset=reset, dt=min(self.dt, Battery.F_MAX_T_WRAP))
             self.LoopIbAmp.calculate(reset=ib_amp_reset, ib=self.ib_amp, loop_gain=Battery.AMP_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_init=SN.LoopAmp.ib_init, ib_dyn_init=SN.LoopAmp.ib_dyn[irun],
+                                     ib_init=SN.LoopAmp.ib_init, ib_dyn_init=SN.LoopAmp.ib_dyn[G.i],
                                      e_wrap_filt_init=SN.e_wrap_m_filt_init, e_wrap_trim_init=SN.e_wrap_m_trim_init)
             self.ewmhi_thr = self.LoopIbAmp.ewhi_thr
             self.ewmlo_thr = self.LoopIbAmp.ewlo_thr

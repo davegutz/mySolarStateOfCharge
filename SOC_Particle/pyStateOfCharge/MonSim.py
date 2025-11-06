@@ -28,6 +28,7 @@ from typing import Optional
 from TFDelay import TFDelay
 from MonSimClasses import *
 from MonSimPrint import *
+import globals as G
 
 def battery_size(mr, sr, scale_in_, unit_cap_rated_):
     if hasattr(mr, 'qcrs'):
@@ -142,6 +143,7 @@ class UserOptions:
 #  There are no 'bank' parameters anywhere in this model.   It is assumed that all inputs from the application have
 #  been converted to the single battery unit 12v form, S1P1, lower-case nomenclature.
 def replicate(OPT: UserOptions):
+    G.i = -1
 
     """TODO:
     7. Fig. 9 EKF 2a: hx(soc) negative slope?  This needs to be run just below saturation
@@ -159,7 +161,6 @@ def replicate(OPT: UserOptions):
     chm_m, chm_s = chm_from_mon_or_sim(OPT.mon_run, OPT.sim_run)
 
     t_len = len(t)
-    irun = MutableInt(-1)
     rp = Retained()
 
     # modeling
@@ -168,8 +169,7 @@ def replicate(OPT: UserOptions):
     # tweaking
     tweak_test = rp.tweak_test()
 
-    irun_mutable = MutableInt(-1)
-    SN = Sensors(OPT, run_type=OPT.run_type, irun_mutable=irun)
+    SN = Sensors(OPT, run_type=OPT.run_type)
 
     # Battery sizing
     scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_in, Battery.UNIT_CAP_RATED)
@@ -209,9 +209,11 @@ def replicate(OPT: UserOptions):
         hdr = print_hist(OPT, 0, SN, i_temp, i_ekf, t, mon, True, True, sim)
 
     # Top of time loop
-    while irun.value < t_len-1:
+    irun = -1
+    while irun < t_len-1:
+        G.i += 1
         irun += 1
-        i = irun.value
+        i = G.i
 
         if i >= 206:
             pass  # used for debug breakpoint at i >= <val>
@@ -337,7 +339,7 @@ def replicate(OPT: UserOptions):
             mon.init_soc_ekf(OPT.mon_run, i, i_ekf, run_type=OPT.run_type)  # when modeling (assumed in python) ekf wants to equal model
 
         # Monitor calculate
-        mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, irun=i, rp=rp, reset_ekf=reset_ekf)
+        mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, rp=rp, reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge
 
         if OPT.use_sat_mon:

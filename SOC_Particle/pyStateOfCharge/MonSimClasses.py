@@ -23,7 +23,7 @@ import Battery
 from Battery import Battery, calculate_capacity
 from myFilters import LagExp
 from pyDAGx import myTables
-
+import globals as G
 
 class MutableInt:
     def __init__(self, value):
@@ -38,11 +38,10 @@ class MutableInt:
 
 
 class ProArray:
-    def __init__(self, data, mutable=False, irun=None):
+    def __init__(self, data, mutable=False):
         # Initialize a NumPy array, marked as "internal" with a leading underscore
         if not isinstance(data, (list, np.ndarray)):
             raise TypeError("Data must be a list or NumPy array.")
-        self.irun = irun
         if not mutable:
             self._data = np.array(data)
         else:
@@ -93,10 +92,9 @@ class SensorLooparound:
 class Sensors:
     """Collect various sense parameters to create proper delays in data feed and connections to model"""
 
-    def __init__(self, OPT, run_type=None, irun_mutable=None):
+    def __init__(self, OPT, run_type=None):
         self.mon_run = OPT.mon_run
         self.sim_run = OPT.sim_run
-        self.irun = irun_mutable
         if run_type == 'RunSim':
             self.Tb0 = self.mon_run.Tb_f[0]
             self.Tb0_s = self.mon_run.Tb_mod[0]
@@ -120,8 +118,7 @@ class Sensors:
                                             self.mon_run.e_wrap_n_filt)
             self.ib_amp = self.mon_run.ibmh
             self.ib_noa = self.mon_run.ibnh
-            self.irun = 0
-            self.ib_dyn = ProArray(self.mon_run.ib_dyn, mutable=True, irun=self.irun)
+            self.ib_dyn = ProArray(self.mon_run.ib_dyn, mutable=True)
             # self.ib_dyn_init = self.ib_dyn[0]
             self.z = self.mon_run.z
             self.z_init = self.z[0]
