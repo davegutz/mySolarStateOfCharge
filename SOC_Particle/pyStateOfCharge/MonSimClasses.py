@@ -25,11 +25,24 @@ from myFilters import LagExp
 from pyDAGx import myTables
 
 
+class MutableInt:
+    def __init__(self, value):
+        self.value = value
+
+    def __iadd__(self, other):
+        self.value += other
+        return self
+
+    def __repr__(self):
+        return str(self.value)
+
+
 class ProArray:
-    def __init__(self, data, mutable=False):
+    def __init__(self, data, mutable=False, irun=None):
         # Initialize a NumPy array, marked as "internal" with a leading underscore
         if not isinstance(data, (list, np.ndarray)):
             raise TypeError("Data must be a list or NumPy array.")
+        self.irun = irun
         if not mutable:
             self._data = np.array(data)
         else:
@@ -80,217 +93,218 @@ class SensorLooparound:
 class Sensors:
     """Collect various sense parameters to create proper delays in data feed and connections to model"""
 
-    def __init__(self, mon_run=None, sim_run=None, add_Tb_in=None, run_type=None):
-
-        self.mon_run = mon_run
-        self.sim_run = sim_run
+    def __init__(self, OPT, run_type=None, irun_mutable=None):
+        self.mon_run = OPT.mon_run
+        self.sim_run = OPT.sim_run
+        self.irun = irun_mutable
         if run_type == 'RunSim':
             self.Tb0 = self.mon_run.Tb_f[0]
             self.Tb0_s = self.mon_run.Tb_mod[0]
             self.lut_dTb = None
             self.dTb = 0.
-            if add_Tb_in is not None:
-                self.add_Tb_in = np.array(add_Tb_in)
-                self.Tb0 += add_Tb_in[1, 0]
-                self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
-                self.dTb = self.lut_dTb.interp(mon_run.t[0])
+            if OPT.add_Tb_in is not None:
+                self.add_Tb_in = np.array(OPT.add_Tb_in)
+                self.Tb0 += OPT.add_Tb_in[1, 0]
+                self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb_in[0, :]), np.array(OPT.add_Tb_in[1, :]))
+                self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
             self.Tb = self.mon_run.Tb[0]
             self.Tb_f = self.mon_run.Tb_f[0]
             self.Tb_f_rate = self.mon_run.Tb_f_rate[0]
             self.Tb_past = self.mon_run.Tb_rap[0] + self.dTb
             self.Tb_f_past = self.mon_run.Tb_f_rap[0] + self.dTb
-            self.Tb_f_rate_past = mon_run.Tb_f_rate_rap[0]
+            self.Tb_f_rate_past = self.mon_run.Tb_f_rate_rap[0]
             self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
-            self.LoopAmp = SensorLooparound(mon_run.ibmh, mon_run.ib_dyn_m, mon_run.e_wrap_m_trim,
-                                            mon_run.e_wrap_m_filt)
-            self.LoopNoa = SensorLooparound(mon_run.ibnh, mon_run.ib_dyn_n, mon_run.e_wrap_m_trim * 0.,
-                                            mon_run.e_wrap_n_filt)
-            self.ib_amp = mon_run.ibmh
-            self.ib_noa = mon_run.ibnh
-            self.ib_dyn = ProArray(mon_run.ib_dyn, mutable=True)
+            self.LoopAmp = SensorLooparound(self.mon_run.ibmh, self.mon_run.ib_dyn_m, self.mon_run.e_wrap_m_trim,
+                                            self.mon_run.e_wrap_m_filt)
+            self.LoopNoa = SensorLooparound(self.mon_run.ibnh, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_m_trim * 0.,
+                                            self.mon_run.e_wrap_n_filt)
+            self.ib_amp = self.mon_run.ibmh
+            self.ib_noa = self.mon_run.ibnh
+            self.irun = 0
+            self.ib_dyn = ProArray(self.mon_run.ib_dyn, mutable=True, irun=self.irun)
             # self.ib_dyn_init = self.ib_dyn[0]
-            self.z = mon_run.z
+            self.z = self.mon_run.z
             self.z_init = self.z[0]
-            self.ib_in_s = sim_run.ib_in_s
+            self.ib_in_s = self.sim_run.ib_in_s
             self.ib_in_s_init = self.ib_in_s[0]
-            self.ib_dyn_s = sim_run.ib_dyn_s
-            self.soc_s_init = mon_run.soc_s[0]
+            self.ib_dyn_s = self.sim_run.ib_dyn_s
+            self.soc_s_init = self.mon_run.soc_s[0]
             self.ib_dyn_s_init = self.ib_dyn_s[0]
-            self.dv_dyn_s = sim_run.dv_dyn_s
-            self.dt_s = sim_run.dt_s
+            self.dv_dyn_s = self.sim_run.dv_dyn_s
+            self.dt_s = self.sim_run.dt_s
             self.dv_dyn_s_init = self.dv_dyn_s[0]
             self.d_delta_q_s_init = 0.
             self.ib_s_init = self.ib_in_s_init
             self.ib_fut_s_init = self.ib_in_s_init
             self.ib_charge_s_init = self.ib_in_s_init
             self.ioc_s_init = self.ib_in_s_init
-            self.vb_s_init = mon_run.vb[0]
-            self.voc_stat_init = mon_run.voc_stat[0]
-            self.voc_s_init = sim_run.voc_stat_s[0]  # is this right?
-            self.Tb_hdwe_init = mon_run.Tb_hdwe[0]
-            self.Tb_hdwe_filt_init = mon_run.Tb_hdwe_filt[0]
-            self.Tb_hdwe_filt_rate_init = mon_run.Tb_hdwe_filt_rate[0]
-            self.e_wrap_init = mon_run.e_wrap[0]
-            self.e_wrap_filt_init = mon_run.e_wrap_filt[0]
-            self.e_wrap_m_init = mon_run.e_wrap_m[0]
-            self.e_wrap_m_filt_init = mon_run.e_wrap_m_filt[0]
-            self.e_wrap_m_trim_init = mon_run.e_wrap_m_trim[0]
-            self.e_wrap_n_init = mon_run.e_wrap_n[0]
-            self.e_wrap_n_filt_init = mon_run.e_wrap_n_filt[0]
+            self.vb_s_init = self.mon_run.vb[0]
+            self.voc_stat_init = self.mon_run.voc_stat[0]
+            self.voc_s_init = self.sim_run.voc_stat_s[0]  # is this right?
+            self.Tb_hdwe_init = self.mon_run.Tb_hdwe[0]
+            self.Tb_hdwe_filt_init = self.mon_run.Tb_hdwe_filt[0]
+            self.Tb_hdwe_filt_rate_init = self.mon_run.Tb_hdwe_filt_rate[0]
+            self.e_wrap_init = self.mon_run.e_wrap[0]
+            self.e_wrap_filt_init = self.mon_run.e_wrap_filt[0]
+            self.e_wrap_m_init = self.mon_run.e_wrap_m[0]
+            self.e_wrap_m_filt_init = self.mon_run.e_wrap_m_filt[0]
+            self.e_wrap_m_trim_init = self.mon_run.e_wrap_m_trim[0]
+            self.e_wrap_n_init = self.mon_run.e_wrap_n[0]
+            self.e_wrap_n_filt_init = self.mon_run.e_wrap_n_filt[0]
             self.e_wrap_n_trim_init = 0.
-            self.voc_soc_init = mon_run.voc_soc[0]
-            self.vb_s_init = mon_run.vb[0]
-            self.Tb_init = mon_run.Tb[0]
-            self.Tb_f_init = mon_run.Tb_f[0]
-            self.Tb_f_rate_init = mon_run.Tb_f_rate[0]
+            self.voc_soc_init = self.mon_run.voc_soc[0]
+            self.vb_s_init = self.mon_run.vb[0]
+            self.Tb_init = self.mon_run.Tb[0]
+            self.Tb_f_init = self.mon_run.Tb_f[0]
+            self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
             self.lut_dTb = None
             self.dTb = 0.
-            if add_Tb_in is not None:
-                self.add_Tb_in = np.array(add_Tb_in)
-                self.Tb0 += add_Tb_in[1, 0]
-                self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
-                self.dTb = self.lut_dTb.interp(mon_run.t[0])
-            self.Tb_f_rap = mon_run.Tb_f_rap
-            self.Tb_rap_init = mon_run.Tb_rap[0] + self.dTb
-            self.Tb_f_rap_init = mon_run.Tb_f_rap[0] + self.dTb
-            self.Tb_f_rate_rap_init = mon_run.Tb_f_rate_rap[0]
-            self.ib_init = mon_run.ib[0]
-            # self.ib_dyn_init = mon_run.ib_dyn[0]
-            self.ib_charge_init = mon_run.ib_charge[0]
-            self.vb_init = mon_run.vb[0]
-            self.soc_init = mon_run.soc[0]
+            if OPT.add_Tb_in is not None:
+                self.add_Tb_in = np.array(OPT.add_Tb_in)
+                self.Tb0 += OPT.add_Tb_in[1, 0]
+                self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb_in[0, :]), np.array(OPT.add_Tb_in[1, :]))
+                self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
+            self.Tb_f_rap = self.mon_run.Tb_f_rap
+            self.Tb_rap_init = self.mon_run.Tb_rap[0] + self.dTb
+            self.Tb_f_rap_init = self.mon_run.Tb_f_rap[0] + self.dTb
+            self.Tb_f_rate_rap_init = self.mon_run.Tb_f_rate_rap[0]
+            self.ib_init = self.mon_run.ib[0]
+            # self.ib_dyn_init = self.mon_run.ib_dyn[0]
+            self.ib_charge_init = self.mon_run.ib_charge[0]
+            self.vb_init = self.mon_run.vb[0]
+            self.soc_init = self.mon_run.soc[0]
             self.reset_init = True
-            self.sat_init = mon_run.sat[0]
+            self.sat_init = self.mon_run.sat[0]
             self.reset_ekf_init = True
-            self.voc_ekf_init = mon_run.hx[0]
-            self.voc_stat_init = mon_run.voc_stat[0]
-            self.x_init = mon_run.x[0]
-            self.x_prior_init = mon_run.x_prior[0]
-            self.hx_init = mon_run.hx[0]
-            self.soc_ekf_init = mon_run.soc_ekf[0]
-            self.z_ekf_init = mon_run.z[0]
-            self.z_init = mon_run.z[0]
+            self.voc_ekf_init = self.mon_run.hx[0]
+            self.voc_stat_init = self.mon_run.voc_stat[0]
+            self.x_init = self.mon_run.x[0]
+            self.x_prior_init = self.mon_run.x_prior[0]
+            self.hx_init = self.mon_run.hx[0]
+            self.soc_ekf_init = self.mon_run.soc_ekf[0]
+            self.z_ekf_init = self.mon_run.z[0]
+            self.z_init = self.mon_run.z[0]
 
         elif run_type == 'HistSim':
 
-            if not hasattr(mon_run, 'e_wrap_f'):
-                mon_run.e_wrap_f = np.copy(mon_run.e_w_f)
-            if not hasattr(mon_run, 'e_wrap_m_filt'):
-                mon_run.e_wrap_m_filt = np.copy(mon_run.e_wm_f)
-            if not hasattr(mon_run, 'e_wrap_m_trim'):
-                mon_run.e_wrap_m_trim = np.copy(mon_run.e_wm_t)
-            if not hasattr(mon_run, 'e_wrap_n_filt'):
-                mon_run.e_wrap_n_filt = np.copy(mon_run.e_wn_f)
-            if not hasattr(mon_run, 'e_wrap_n_trim'):
-                mon_run.e_wrap_n_trim = np.copy(mon_run.e_wm_t) * 0.
-            if not hasattr(mon_run, 'ib_dyn_m'):
-                mon_run.ib_dyn_m = np.copy(mon_run.ibmh_f)
-            if not hasattr(mon_run, 'ib_dyn_n'):
-               mon_run.ib_dyn_n = np.copy(mon_run.ibnh_f)
+            if not hasattr(self.mon_run, 'e_wrap_f'):
+                self.mon_run.e_wrap_f = np.copy(self.mon_run.e_w_f)
+            if not hasattr(self.mon_run, 'e_wrap_m_filt'):
+                self.mon_run.e_wrap_m_filt = np.copy(self.mon_run.e_wm_f)
+            if not hasattr(self.mon_run, 'e_wrap_m_trim'):
+                self.mon_run.e_wrap_m_trim = np.copy(self.mon_run.e_wm_t)
+            if not hasattr(self.mon_run, 'e_wrap_n_filt'):
+                self.mon_run.e_wrap_n_filt = np.copy(self.mon_run.e_wn_f)
+            if not hasattr(self.mon_run, 'e_wrap_n_trim'):
+                self.mon_run.e_wrap_n_trim = np.copy(self.mon_run.e_wm_t) * 0.
+            if not hasattr(self.mon_run, 'ib_dyn_m'):
+                self.mon_run.ib_dyn_m = np.copy(self.mon_run.ibmh_f)
+            if not hasattr(self.mon_run, 'ib_dyn_n'):
+               self.mon_run.ib_dyn_n = np.copy(self.mon_run.ibnh_f)
 
-            self.Tb_hdwe_init = mon_run.Tb_h_f[0]
-            self.Tb_hdwe_filt_init = mon_run.Tb_h_f[0]
+            self.Tb_hdwe_init = self.mon_run.Tb_h_f[0]
+            self.Tb_hdwe_filt_init = self.mon_run.Tb_h_f[0]
             self.Tb_hdwe_filt_rate_init = 0.
-            self.e_wrap_init = mon_run.e_wrap[0]
-            self.e_wrap_filt_init = mon_run.e_wrap_f[0]
-            self.e_wrap_m_init = mon_run.e_wrap[0]
-            self.e_wrap_m_filt_init = mon_run.e_wrap_m_filt[0]
+            self.e_wrap_init = self.mon_run.e_wrap[0]
+            self.e_wrap_filt_init = self.mon_run.e_wrap_f[0]
+            self.e_wrap_m_init = self.mon_run.e_wrap[0]
+            self.e_wrap_m_filt_init = self.mon_run.e_wrap_m_filt[0]
             self.e_wrap_m_trim_init = 0.
-            self.e_wrap_n_init = mon_run.e_wrap[0]
-            self.e_wrap_n_filt_init = mon_run.e_wrap_n_filt[0]
+            self.e_wrap_n_init = self.mon_run.e_wrap[0]
+            self.e_wrap_n_filt_init = self.mon_run.e_wrap_n_filt[0]
             self.e_wrap_n_trim_init = 0.
-            self.voc_soc_init = mon_run.voc_soc[0]
-            self.voc_stat_init = mon_run.voc_stat_f[0]
-            self.vb_s_init = mon_run.vb_f[0]
-            self.Tb0 = mon_run.Tb_f[0]
-            self.Tb_f_init = mon_run.Tb_f[0]
-            self.Tb0_s = mon_run.Tb_f[0]
+            self.voc_soc_init = self.mon_run.voc_soc[0]
+            self.voc_stat_init = self.mon_run.voc_stat_f[0]
+            self.vb_s_init = self.mon_run.vb_f[0]
+            self.Tb0 = self.mon_run.Tb_f[0]
+            self.Tb_f_init = self.mon_run.Tb_f[0]
+            self.Tb0_s = self.mon_run.Tb_f[0]
             self.Tb_f_rate_init = 0.
             self.lut_dTb = None
             self.dTb = 0.
-            if add_Tb_in is not None:
-                self.add_Tb_in = np.array(add_Tb_in)
-                self.Tb0 += add_Tb_in[1, 0]
-                self.lut_dTb = myTables.TableInterp1D(np.array(add_Tb_in[0, :]), np.array(add_Tb_in[1, :]))
-                self.dTb = self.lut_dTb.interp(mon_run.t[0])
-            self.Tb_rap_init = mon_run.Tb_f[0] + self.dTb
-            self.Tb_f_rap_init = mon_run.Tb_f[0] + self.dTb
+            if OPT.add_Tb_in is not None:
+                self.add_Tb_in = np.array(OPT.add_Tb_in)
+                self.Tb0 += OPT.add_Tb_in[1, 0]
+                self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb_in[0, :]), np.array(OPT.add_Tb_in[1, :]))
+                self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
+            self.Tb_rap_init = self.mon_run.Tb_f[0] + self.dTb
+            self.Tb_f_rap_init = self.mon_run.Tb_f[0] + self.dTb
             self.Tb_f_rate_rap_init = 0.
-            self.Tb = mon_run.Tb_f[0]
-            self.Tb_f = np.copy(mon_run.Tb_f)
+            self.Tb = self.mon_run.Tb_f[0]
+            self.Tb_f = np.copy(self.mon_run.Tb_f)
             self.Tb_f_rate = np.copy(self.Tb_f) * 0.
-            self.Tb_past = mon_run.Tb_f[0] + self.dTb
-            self.Tb_f_past = mon_run.Tb_f[0] + self.dTb
+            self.Tb_past = self.mon_run.Tb_f[0] + self.dTb
+            self.Tb_f_past = self.mon_run.Tb_f[0] + self.dTb
             self.Tb_f_rate_past = np.copy(self.Tb_f) * 0.
             self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
 
-            self.LoopAmp = SensorLooparound(mon_run.ibmh_f, mon_run.ib_dyn_m, mon_run.e_wrap_m_trim,
-                                            mon_run.e_wrap_m_filt)
+            self.LoopAmp = SensorLooparound(self.mon_run.ibmh_f, self.mon_run.ib_dyn_m, self.mon_run.e_wrap_m_trim,
+                                            self.mon_run.e_wrap_m_filt)
 
-            self.LoopNoa = SensorLooparound(mon_run.ibnh_f, mon_run.ib_dyn_n, mon_run.e_wrap_m_trim * 0.,
-                                            mon_run.e_wrap_n_filt)
-            self.ib_amp = mon_run.ibmh_f
-            self.ib_noa = mon_run.ibnh_f
-            self.ib_init = mon_run.ib_f[0]
-            self.ib_dyn = ProArray(mon_run.ib_dyn)
+            self.LoopNoa = SensorLooparound(self.mon_run.ibnh_f, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_m_trim * 0.,
+                                            self.mon_run.e_wrap_n_filt)
+            self.ib_amp = self.mon_run.ibmh_f
+            self.ib_noa = self.mon_run.ibnh_f
+            self.ib_init = self.mon_run.ib_f[0]
+            self.ib_dyn = ProArray(self.mon_run.ib_dyn)
             # self.ib_dyn_init = self.ib_dyn[0]
-            self.ib_charge_init = mon_run.ib_charge_f[0]
-            self.vb_init = mon_run.vb_f[0]
-            self.ibmm = mon_run.ibmh_f
-            self.ibnm = mon_run.ibnh_f
-            self.Tb_f_rap = mon_run.Tb_f
+            self.ib_charge_init = self.mon_run.ib_charge_f[0]
+            self.vb_init = self.mon_run.vb_f[0]
+            self.ibmm = self.mon_run.ibmh_f
+            self.ibnm = self.mon_run.ibnh_f
+            self.Tb_f_rap = self.mon_run.Tb_f
 
-            self.z = mon_run.z
+            self.z = self.mon_run.z
             self.z_init = self.z[0]
 
         self.i = 0
-        self.sat_init = mon_run.sat[0]
+        self.sat_init = self.mon_run.sat[0]
         # dt_s
         self.dt_s = []
-        for i in range(len(sim_run.time)):
+        for i in range(len(self.sim_run.time)):
             if i == 0:
-                self.dt_s.append(sim_run.time[1] - sim_run.time[0])
+                self.dt_s.append(self.sim_run.time[1] - self.sim_run.time[0])
             else:
-                self.dt_s.append(sim_run.time[i] - sim_run.time[i-1])
-        self.soc_s = mon_run.soc_s
+                self.dt_s.append(self.sim_run.time[i] - self.sim_run.time[i-1])
+        self.soc_s = self.mon_run.soc_s
 
         # q
-        if not hasattr(mon_run, 'q_capacity'):
-            self.q_cap = calculate_capacity(q_cap_rated_scaled=mon_run.qcrs, dqdt=mon_run.dqdt, tb_f=self.Tb_f,
-                                            t_rated=mon_run.t_rated)
+        if not hasattr(self.mon_run, 'q_capacity'):
+            self.q_cap = calculate_capacity(q_cap_rated_scaled=self.mon_run.qcrs, dqdt=self.mon_run.dqdt, tb_f=self.Tb_f,
+                                            t_rated=self.mon_run.t_rated)
         else:
-            self.q_cap = mon_run.q_capacity
-        if not hasattr(mon_run, 'delta_q'):
-            self.delta_q = -self.q_cap * (1. - mon_run.soc)
+            self.q_cap = self.mon_run.q_capacity
+        if not hasattr(self.mon_run, 'delta_q'):
+            self.delta_q = -self.q_cap * (1. - self.mon_run.soc)
         else:
-            self.delta_q = mon_run.delta_q
-        if not hasattr(sim_run, 'qcap_s'):
-            self.q_cap_s = calculate_capacity(q_cap_rated_scaled=mon_run.qcrs_s, dqdt=mon_run.dqdt, tb_f=self.Tb_f,
-                                              t_rated=mon_run.t_rated)
+            self.delta_q = self.mon_run.delta_q
+        if not hasattr(self.sim_run, 'qcap_s'):
+            self.q_cap_s = calculate_capacity(q_cap_rated_scaled=self.mon_run.qcrs_s, dqdt=self.mon_run.dqdt, tb_f=self.Tb_f,
+                                              t_rated=self.mon_run.t_rated)
         else:
-            self.q_cap_s = sim_run.qcap_s
-        if not hasattr(sim_run, 'dq_s'):
-            self.delta_q_s = -self.q_cap_s * (1. - mon_run.soc_s)
+            self.q_cap_s = self.sim_run.qcap_s
+        if not hasattr(self.sim_run, 'dq_s'):
+            self.delta_q_s = -self.q_cap_s * (1. - self.mon_run.soc_s)
         else:
-            self.delta_q_s = sim_run.dq_s
+            self.delta_q_s = self.sim_run.dq_s
         self.d_delta_q_s_init = 0.
         self.delta_q_s_init = self.delta_q_s[0]
 
-        self.ib_in_s = sim_run.ib_in_s
+        self.ib_in_s = self.sim_run.ib_in_s
         self.ib_in_s_init = self.ib_in_s[0]
         if not hasattr(self, 'ib_dyn_s'):
             self.ib_dyn_s = np.copy(self.ib_in_s)
         self.ib_dyn_s_init = self.ib_dyn_s[0]
-        self.dv_dyn_s = sim_run.dv_dyn_s
+        self.dv_dyn_s = self.sim_run.dv_dyn_s
         self.dv_dyn_s_init = self.dv_dyn_s[0]
         self.ib_s_init = self.ib_in_s_init
         self.ib_fut_s_init = self.ib_in_s_init
         self.ib_charge_s_init = self.ib_in_s_init
         self.ioc_s_init = self.ib_in_s_init
-        self.voc_s_init = sim_run.voc_stat_s[0]
-        self.soc_s_init = mon_run.soc_s[0]
+        self.voc_s_init = self.sim_run.voc_stat_s[0]
+        self.soc_s_init = self.mon_run.soc_s[0]
         self.hx_init = self.voc_soc_init
-        self.soc_init = mon_run.soc[0]
+        self.soc_init = self.mon_run.soc[0]
         self.x_init = self.soc_init
         self.x_prior_init = self.x_init
         self.soc_ekf_init = self.soc_init

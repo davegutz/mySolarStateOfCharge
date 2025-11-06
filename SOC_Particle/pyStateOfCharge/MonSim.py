@@ -144,31 +144,9 @@ class UserOptions:
 def replicate(OPT: UserOptions):
 
     """TODO:
-    1. *** Current sense class. Done
-    2. *** Fig. 9 EKF 2a:  dt_eframe at 0 ****->i_ekf = -1 --> i_ekf=max(i_ekf, 0) in MonSimPrint.py
-    2. *** Fig. 9 EKF 2a:  dt_eframe at i_ekf=0 is = 4.882 while ref is 5.255. *** dt_eframe[0] = dt_ekf[0]
-    3. *** Fig. 5 Dom 4a:  TB ver needs past value. *** Plotted wrong thing.  Tb-->Tb_rap and Tb_rap_ver
-    4. *** Fig. 7 EKF 1:  Bu_ver at 0.  Fixed by dt_eframe fix
-    5. *** Fig. 2 Dom 2: dv_hys plots not intelligible.  Not sure what these mean
-    6. *** Fig. 1 1a: e_wrap filter initialization.   Need filt_rates from Noa and Amp filters.  LoopIbNoa and Amp e_wrap_rate().  Fixed by incorporating the scale logic from app
     7. Fig. 9 EKF 2a: hx(soc) negative slope?  This needs to be run just below saturation
-    8. *** Fig. 10 EKF 3:  voc_ekv (hx) not equal at 0.  Fixed by modifying reset_ekf logic
     9. Run CompareHistSim etc.
-    10. *** Fig 18 dv_hys jitter around 0 in reference data  ***->0*dv_hys before return instead of in return Fixed by sending dv_hys over data stream instead of calculating in load.
-    11. *** Fig. 23 voltage resolutions off/on mon 1.  Resolutions of data corrected.
-    12. *** Can reorder execution so header printed before any relevant data?  Deleting first two rows of data before headers causes data mismatch in sim.  No change.  Not problem
-    13. *** Discarded sim data ('vv0') causes issue.  Don't record/save local entered data.  Fixed by 'skip' logic
-    14. *** Fig. 6 Ult 1:  e_wrap_m_filt_ver off (  e_wrap_m_filt = 1.5 ?).  Fixed by multitude of other fixes.
-    15. *** Fig. 7 EKF 1: S initialization.  Fixed by putting S calc inside reset
-    16. *** Fig 10  EKF 3:  z=voc_stat_f and ver not equal.  Fixed by updating variable names
-    17. *** Fig 12 Hyst 1: e_wrap_ver not equal.  Fixed by adding scale logic from app
-    18. *** Fig 13 sim_s 1:  ib_in_ver  Not fixed: OK because have manually over-ridden ib selection to force ib_noa use in logic but not selection
     19. Fig 15 sim_s 2a:  vb?   Keep looking for this when run at other op conditions.  Shutdown problem.
-    20. **** Fig. many:  delta_q_s_ver != delta_q_s   Fixed by changing Sen->T to t_ in Sim::count_coulombs
-    21. **** _s values in print are off.  Where those there 9/29?  Yes.  Continue to debug...delays in ib_s model BatterySim
-    22. **** Fig. 21 GP 3 Tune (3,3,6):  vb?  OK.  The battery is near saturation and the voc(soc) curve is slightly innacurate
-    23. skip_* being set properly?
-    24. HistSim:  dv_dyn_ver looks wrong.
     """
 
     # time
@@ -181,6 +159,7 @@ def replicate(OPT: UserOptions):
     chm_m, chm_s = chm_from_mon_or_sim(OPT.mon_run, OPT.sim_run)
 
     t_len = len(t)
+    irun = MutableInt(-1)
     rp = Retained()
 
     # modeling
@@ -189,7 +168,8 @@ def replicate(OPT: UserOptions):
     # tweaking
     tweak_test = rp.tweak_test()
 
-    SN = Sensors(mon_run=OPT.mon_run, sim_run=OPT.sim_run, add_Tb_in=OPT.add_Tb_in, run_type=OPT.run_type)
+    irun_mutable = MutableInt(-1)
+    SN = Sensors(OPT, run_type=OPT.run_type, irun_mutable=irun)
 
     # Battery sizing
     scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_in, Battery.UNIT_CAP_RATED)
@@ -229,7 +209,9 @@ def replicate(OPT: UserOptions):
         hdr = print_hist(OPT, 0, SN, i_temp, i_ekf, t, mon, True, True, sim)
 
     # Top of time loop
-    for i in range(t_len):
+    while irun.value < t_len-1:
+        irun += 1
+        i = irun.value
 
         if i >= 206:
             pass  # used for debug breakpoint at i >= <val>
