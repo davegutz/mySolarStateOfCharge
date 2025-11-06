@@ -66,21 +66,6 @@ def prn_soc_debug(OPT, leader="", time=None, i_temp=None, mon=None, sim=None):
         "{:14.7f}".format(OPT.mon_run.Tb_f_rate_rap[G.i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
             )
 
-# def prn_soc_s_debug(leader="", time=None, i=None, i_temp=None, mon_run=None, mon=None, sim_run=None, sim=None):
-#     execute = True
-#     if execute:
-#         return
-#     else:
-#         if time is not None:
-#             print("time {:7.3f}".format(time), end='')
-#         print(" " * 375 + leader, end='')
-#         print(
-#               "{:11.7f}".format(mon_run.soc_s[i]), "{:8.7f}".format(sim.soc),
-#               "{:14.7f}".format(sim_run.Tb_f_s[i]), "{:11.7f}".format(sim.Tb_f),
-#               "{:14.4f}".format(sim_run.d_delta_q_s[i]), "{:11.4f}".format(sim.d_delta_q),
-#               "{:14.4f}".format(sim_run.dq_s[i]), "{:11.4f}".format(sim.delta_q),
-#         )
-
 def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
     hdr = None
     match OPT.run_type:

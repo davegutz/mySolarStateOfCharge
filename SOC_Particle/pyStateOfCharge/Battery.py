@@ -28,7 +28,6 @@ if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
 plt.rcParams.update({'figure.max_open_warning': 0})
-import globals as G
 
 
 class Retained:
@@ -48,6 +47,7 @@ def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=No
 
 
 class Battery(Coulombs):
+    import globals as G
     # Battery constants
     UNIT_CAP_RATED = 108.4
     NOM_SYS_VOLT = 12.  # Nominal system output, V, at which the reported amps are used (12)
@@ -424,7 +424,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.reset = True
             self.sat = SN.sat_init
             self.reset_ekf = True
-            self.init_soc_ekf(ref, 0, 0, run_type=run_type)
+            self.init_soc_ekf(ref,  0, 0)
             self.voc_ekf = SN.hx_init
             self.x = SN.x_init
             self.x_prior = SN.x_prior_init
@@ -456,13 +456,13 @@ class BatteryMonitor(Battery, EKF1x1):
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
-                  q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None):
+                  q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, i=None):
         if rp.modeling == 0:
-            self.ib_amp = SN.mon_run.ibmh[G.i]
-            self.ib_noa = SN.mon_run.ibnh[G.i]
+            self.ib_amp = SN.mon_run.ibmh[i]
+            self.ib_noa = SN.mon_run.ibnh[i]
         else:
-            self.ib_amp = SN.ibmm[G.i]
-            self.ib_noa = SN.ibnm[G.i]
+            self.ib_amp = SN.ibmm[i]
+            self.ib_noa = SN.ibnm[i]
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
@@ -477,7 +477,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        self.wrap(reset=reset, ib_sel=self.ib, SN=SN, ib_amp=self.ib_amp, ib_noa=self.ib_noa)
+        self.wrap(reset=reset, ib_sel=self.ib, SN=SN, ib_amp=self.ib_amp, ib_noa=self.ib_noa, i=i)
 
         # Reversionary model
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
@@ -510,7 +510,7 @@ class BatteryMonitor(Battery, EKF1x1):
         else:
             ib_dc = self.ib
         self.vb = vb
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn[G.i], reset, dt,
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn[i], reset, dt,
                                                                self.chemistry.tau_ct)
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
@@ -638,7 +638,7 @@ class BatteryMonitor(Battery, EKF1x1):
     def lag_ib(self, ib, reset):
         self.ib_lag = self.IbLag.calculate_tau(ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
-    def init_soc_ekf(self, mr, i, i_ekf, run_type=None):
+    def init_soc_ekf(self, mr, i_ekf, i):
         self.soc_ekf = mr.soc_ekf[i]
         self.y_ekf = mr.y_ekf[i]
 
@@ -825,7 +825,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
 
-    def wrap(self, reset=True, ib_sel=0., SN=None, ib_amp=0., ib_noa=0.):
+    def wrap(self, reset=True, ib_sel=0., SN=None, ib_amp=0., ib_noa=0., i=None):
         """Wrap logic"""
 
         # e_wrap scalars normally calculated in Sensors
@@ -850,7 +850,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_noa = ib_noa
             self.LoopIbNoa.calculate(reset=reset, ib=self.ib_noa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_init = SN.LoopNoa.ib_init, ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
+                                     ib_init = SN.LoopNoa.ib_init, ib_dyn_init=SN.LoopNoa.ib_dyn[i],
                                      e_wrap_filt_init = SN.e_wrap_n_filt_init, e_wrap_trim_init = SN.e_wrap_n_trim_init)
             self.e_wrap_n = self.LoopIbNoa.e_wrap
             self.e_wrap_n_filt = self.LoopIbNoa.e_wrap_filt
@@ -871,7 +871,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_noa_rate = self.IbAmpRate.calculate(in_=ib_noa, reset=reset, dt=min(self.dt, Battery.F_MAX_T_WRAP))
             self.LoopIbAmp.calculate(reset=ib_amp_reset, ib=self.ib_amp, loop_gain=Battery.AMP_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_init=SN.LoopAmp.ib_init, ib_dyn_init=SN.LoopAmp.ib_dyn[G.i],
+                                     ib_init=SN.LoopAmp.ib_init, ib_dyn_init=SN.LoopAmp.ib_dyn[i],
                                      e_wrap_filt_init=SN.e_wrap_m_filt_init, e_wrap_trim_init=SN.e_wrap_m_trim_init)
             self.ewmhi_thr = self.LoopIbAmp.ewhi_thr
             self.ewmlo_thr = self.LoopIbAmp.ewlo_thr

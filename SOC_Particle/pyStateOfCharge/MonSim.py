@@ -335,10 +335,10 @@ def replicate(OPT: UserOptions):
         SN.update_ekf(i_ekf)
 
         if reset_ekf and calc_ekf:
-            mon.init_soc_ekf(OPT.mon_run, G.i, i_ekf, run_type=OPT.run_type)  # when modeling (assumed in python) ekf wants to equal model
+            mon.init_soc_ekf(OPT.mon_run, i_ekf, G.i)  # when modeling (assumed in python) ekf wants to equal model
 
         # Monitor calculate
-        mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, rp=rp, reset_ekf=reset_ekf)
+        mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, rp=rp, reset_ekf=reset_ekf, i=G.i)
         ib_charge = mon.ib_charge
 
         if OPT.use_sat_mon:
