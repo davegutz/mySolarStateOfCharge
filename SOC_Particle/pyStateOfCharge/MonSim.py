@@ -315,8 +315,7 @@ def replicate(OPT: UserOptions):
         prn_soc_debug(OPT.request_history, time=now, leader="befor sim.calculate :    ", i=i, i_temp=i_temp,
                       mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
         sim.calculate(_chm_s, None, ib_in_s, SN.dt_s[i], reset, None, None, SN,
-                      soc=sim.soc, q_capacity=sim.q_capacity, dc_dc_on=dc_dc_on, rp=rp, sat_init=sat_s_init,
-                      bms_off_init=OPT.sim_run.bms_off_s[0])
+                      soc=sim.soc, q_capacity=sim.q_capacity, rp=rp, sat_init=sat_s_init)
         prn_soc_debug(OPT.request_history, time=now, leader="after sim.calculate :    ", i=i, i_temp=i_temp,
                       mon_run=OPT.mon_run, mon=mon, sim_run=OPT.sim_run, sim=sim)
         sim.count_coulombs(chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=SN.Tb_f_rate_past,
@@ -372,17 +371,7 @@ def replicate(OPT: UserOptions):
             mon.init_soc_ekf(OPT.mon_run, i, i_ekf, run_type=OPT.run_type)  # when modeling (assumed in python) ekf wants to equal model
 
         # Monitor calculate
-        if i == 2:
-            pass
-        if rp.modeling == 0:
-            mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, irun=i,
-                          rp=rp, bms_off_init=OPT.mon_run.bms_off[0], ib_amp=OPT.mon_run.ibmh[i], ib_noa=OPT.mon_run.ibnh[i],
-                          reset_ekf=reset_ekf)
-        else:
-            mon.calculate(_chm_m, vb_ + random.randn() * v_std + dv_sense, ib_ + random.randn() * i_std + di_sense, T,
-                          reset, calc_ekf, T_ekf, SN, irun=i,
-                          rp=rp, bms_off_init=OPT.mon_run.bms_off[0], ib_amp=SN.ibmm[i], ib_noa=SN.ibnm[i],
-                          reset_ekf=reset_ekf)
+        mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, irun=i, rp=rp, reset_ekf=reset_ekf)
         ib_charge = mon.ib_charge
 
         if OPT.use_sat_mon:

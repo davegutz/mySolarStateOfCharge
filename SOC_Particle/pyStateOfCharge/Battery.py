@@ -275,8 +275,7 @@ class Battery(Coulombs):
         return voc, dv_dsoc
 
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
-                  q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None,
-                  reset_ekf=None, soc=None, sat_init=None):
+                  q_capacity=None, rp=None, reset_ekf=None, soc=None, sat_init=None):
         # Battery
         raise NotImplementedError
 
@@ -456,10 +455,14 @@ class BatteryMonitor(Battery, EKF1x1):
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
-                  q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, soc=None,
-                  sat_init=None, reset_ekf=None, use_sat_in=None, irun=None):
-        self.ib_amp = ib_amp
-        self.ib_noa = ib_noa
+                  q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, irun=None):
+
+        if rp.modeling == 0:
+            self.ib_amp = SN.mon_run.ibmh[irun]
+            self.ib_noa = SN.mon_run.ibnh[irun]
+        else:
+            self.ib_amp = SN.ibmm[irun]
+            self.ib_noa = SN.ibnm[irun]
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
@@ -488,8 +491,8 @@ class BatteryMonitor(Battery, EKF1x1):
         else:
             voltage_low = self.voc_stat < self.chemistry.vb_rising
         bms_charging = self.ib > Battery.IB_MIN_UP
-        if reset and bms_off_init is not None:
-            self.bms_off = bms_off_init
+        if reset and SN.mon_run.bms_off[0] is not None:
+            self.bms_off = SN.mon_run.bms_off[0]
         else:
             self.bms_off = (self.Tb_f <= self.chemistry.low_t) or (voltage_low and not rp.tweak_test())  # KISS
         self.ib_charge = self.ib
@@ -968,8 +971,7 @@ class BatterySim(Battery):
 
     # BatterySim::calculate()
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
-                  q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, reset_ekf=None,
-                  soc=None, sat_init=None):
+                  q_capacity=None, rp=None, reset_ekf=None, soc=None, sat_init=None):
         self.reset = reset
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)
@@ -978,7 +980,7 @@ class BatterySim(Battery):
         self.dt_past = self.dt
         self.dt = dt
         self.ib_in = ib
-        if self.reset and bms_off_init:
+        if self.reset and SN.sim_run.bms_off_s[0]:
             self.ib_fut = 0.
         self.ib = max(min(self.ib_fut, Battery.IMAX_NUM), -Battery.IMAX_NUM)
         self.mod = rp.modeling
