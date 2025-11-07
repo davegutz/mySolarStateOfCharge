@@ -1053,8 +1053,7 @@ class BatterySim(Battery):
 
         return self.vb
 
-    def count_coulombs(self, chem, reset_temp, tb_f, charge_curr, sat, tb_f_rate=None, soc_s_init=None, sim_delta_q=None,
-                       mon_sat=None, use_soc_in=False, soc_in=0.):
+    def count_coulombs(self, OPT, SN, chem, reset_temp, tb_f, charge_curr, sat, mon_sat=None):
         # BatterySim
         """Coulomb counter based on true=actual capacity
         Internal resistance of battery is a loss
@@ -1063,8 +1062,8 @@ class BatterySim(Battery):
             tb_f            Battery temperature, deg C  (filtered usually to reduce electrical noise artifacts)
             charge_curr     Charge, A
             sat             Indicator that battery is saturated (VOC>threshold(temp)), T/F
-            use_soc_in      Command to drive integrator with input mon_soc
-            soc_in          Auxiliary integrator setting, fraction soc
+            use_mon_soc     Command to drive integrator with input mon_soc
+            SN.soc_s        Auxiliary integrator setting, fraction soc
         Outputs:
             soc     State of charge, fraction (0-1.5)
         """
@@ -1079,13 +1078,13 @@ class BatterySim(Battery):
 
         # Rate limit temperature.  When modeling, initialize to no change
         self.Tb_f = tb_f
-        self.Tb_f_rate = tb_f_rate
+        self.Tb_f_rate = SN.Tb_f_rate_past
 
         # Saturation and re - init.Goal is to set q_capacity and hold it so remember last saturation status
         # But if not modeling in real world, set to Monitor when Monitor saturated and reset_temp to EKF otherwise static boolean
         if not self.mod:  # Real world init to track Monitor
             if mon_sat or self.reset_temp_past:
-                self.apply_delta_q_brief(sim_delta_q)
+                self.apply_delta_q_brief(SN.delta_q_s[G.i])
             elif self.model_saturated: # Modeling initializes on reset_temp to Tb=RATED_TEMP
                 if reset_temp:
                     self.delta_q = 0.
@@ -1093,8 +1092,8 @@ class BatterySim(Battery):
 
         # Integration can go to - 20 %
         self.q_capacity = self.calculate_capacity(self.Tb_f)
-        if use_soc_in:
-            self.soc = soc_in
+        if OPT.use_mon_soc:
+            self.soc = SN.soc_s[G.i]
             self.q = self.q_capacity * self.soc
             self.delta_q = self.q - self.q_capacity
         elif not self.reset_temp_past and not reset_temp and not mon_sat:

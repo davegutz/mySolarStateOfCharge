@@ -288,9 +288,8 @@ def replicate(OPT: UserOptions):
         sim.calculate(_chm_s, None, ib_in_s, SN.dt_s[G.i], reset, None, None, SN,
                       soc=sim.soc, q_capacity=sim.q_capacity, rp=rp, sat_init=sat_s_init)
 
-        sim.count_coulombs(chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, tb_f_rate=SN.Tb_f_rate_past,
-                           charge_curr=sim.ib_charge, sat=False, soc_s_init=SN.soc_s[G.i], mon_sat=mon.sat,
-                           sim_delta_q=SN.delta_q_s[G.i], use_soc_in=OPT.use_mon_soc, soc_in=SN.soc_s[G.i])
+        sim.count_coulombs(OPT, SN, chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, charge_curr=sim.ib_charge, sat=False,
+                           mon_sat=mon.sat)
 
         # EKF
         if reset:
@@ -349,12 +348,7 @@ def replicate(OPT: UserOptions):
             saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
 
         # Monitor count Coulumbs
-        if rp.modeling == 0:
-            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=SN.Tb_f_past, charge_curr=ib_charge,
-                               sat=saturated, use_soc_in=OPT.use_mon_soc, soc_in=OPT.mon_run.soc[G.i])
-        else:
-            mon.count_coulombs(chem=_chm_m, dt=T, reset=reset, tb_f=SN.Tb_f_past, charge_curr=ib_charge,
-                               sat=saturated, use_soc_in=OPT.use_mon_soc, soc_in=OPT.mon_run.soc[G.i])
+        mon.count_coulombs(OPT, chem=_chm_m, dt=T, reset=reset, tb_f=SN.Tb_f_past, charge_curr=ib_charge, sat=saturated)
         prn_soc_debug(OPT, time=now, leader="after mn.count_coulombs: ", i_temp=i_temp, mon=mon, sim=sim)
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
         mon.assign_soc_s(sim.soc)
