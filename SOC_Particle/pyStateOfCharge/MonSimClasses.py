@@ -386,7 +386,7 @@ class Sensors:
         self.Tb_f_past = self.Tb_f
         self.Tb_f_rate_past = self.Tb_f_rate
 
-    def calc_temp_pass_1(self, mon_, sim_, i_temp, OPT):
+    def calc_temp_pass_1(self, OPT, mon_, sim_, i_temp):
         mon = mon_
         sim = sim_
         mon.Tb = mon.Tb_hdwe  # past value

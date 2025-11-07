@@ -226,7 +226,7 @@ def replicate(OPT: UserOptions):
             calc_temp = True
         if calc_temp:
             i_temp += 1
-            mon, sim = SN.calc_temp_pass_1(mon, sim, i_temp, OPT)
+            mon, sim = SN.calc_temp_pass_1(OPT, mon, sim, i_temp)
 
         # Input
         dc_dc_on = False
