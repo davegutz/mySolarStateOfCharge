@@ -281,10 +281,10 @@ class Battery(Coulombs):
 class BatteryMonitor(Battery, EKF1x1):
     """Extend Battery class to make a monitor"""
 
-    def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1.,
+    def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1.,
                  tb_f=25., tweak_test=False, slr_res_0=1., slr_res_ct=1., stauct=1.,
                  slr_r_ss=1., s_hys=1., dvoc=0., eframe_mult=Battery.cp_eframe_mult,
-                 mod_code=0, slr_coul_eff=1., unit=None, ref=None, SN=None, run_type=None):
+                 mod_code=0, slr_coul_eff=1., unit=None, ref=None, run_type=None):
         q_cap_rated_scaled = q_cap_rated * scale
         Battery.__init__(self, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct,
@@ -883,23 +883,21 @@ class BatteryMonitor(Battery, EKF1x1):
 class BatterySim(Battery):
     """Extend Battery class to make a model"""
 
-    def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1., stauct=1.,
-                 tb_f=25., tweak_test=False, dv_hys=0., slr_res_0=1., slr_res_ct=1., slr_r_ss=1.,
-                 s_hys=1., dvoc=0., scale_hys_cap=1., mod_code=0, slr_cap_chg=1., slr_cap_dis=1., slr_hys_chg=1.,
-                 slr_hys_dis=1., slr_coul_eff=1., slr_cutback_gain=1., add_s_voc_soc=0., unit=None, SN=None):
+    def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017,
+                 scale=1., tb_f=25., tweak_test=False, mod_code=0):
         Battery.__init__(self, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
-                         tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct,
-                         slr_r_ss=slr_r_ss, s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, slr_coul_eff=slr_coul_eff,
-                         scale_cap=scale, unit=unit)
-        self.chemistry = Chemistry(mod_code=mod_code, dvoc=dvoc, unit=unit)
-        self.chemistry.assign_all_mod(mod_code, unit=unit)
+                         tweak_test=tweak_test, slr_res_0=OPT.slr_res_0, slr_res_ct=OPT.slr_res_ct, stauct=OPT.slr_tauct_sim,
+                         slr_r_ss=OPT.slr_r_ss, s_hys=OPT.slr_hys_sim, dvoc=OPT.add_voc_sim, mod_code=mod_code, slr_coul_eff=OPT.slr_coul_eff,
+                         scale_cap=scale, unit=OPT.unit)
+        self.chemistry = Chemistry(mod_code=mod_code, dvoc=OPT.add_voc_sim, unit=OPT.unit)
+        self.chemistry.assign_all_mod(mod_code, unit=OPT.unit)
         self.lut_voc = None
         self.sat_ib_max = 0.  # Current cutback to be applied to modeled ib output, A
         # self.sat_ib_null = 0.1*Battery.UNIT_CAP_RATED  # Current cutback value for voc=vsat, A
         self.sat_ib_null = 0.  # Current cutback value for soc=1, A
         # self.sat_cutback_gain = 4.8  # Gain to retard ib when voc exceeds vsat, dimensionless
-        self.sat_cutback_gain = 1000.*slr_cutback_gain  # Gain to retard ib when soc approaches 1, dimensionless
-        self.add_s_voc_soc = add_s_voc_soc
+        self.sat_cutback_gain = 1000.*OPT.slr_cutback_gain  # Gain to retard ib when soc approaches 1, dimensionless
+        self.add_s_voc_soc = OPT.add_s_voc_soc
         self.model_cutback = False  # Indicate current being limited on saturation cutback, T = cutback limited
         self.model_saturated = False  # Indicator of maximal cutback, T = cutback saturated
         self.ib_sat = 0.5  # Threshold to declare saturation.  This regeneratively slows down charging so if too
@@ -907,8 +905,8 @@ class BatterySim(Battery):
         self.s_cap = scale  # Rated capacity scalar
         if scale is not None:
             self.apply_cap_scale(scale)
-        self.hys = Hysteresis(scale=s_hys, dv_hys=dv_hys, scale_cap=scale_hys_cap, slr_cap_chg=slr_cap_chg,
-                              slr_cap_dis=slr_cap_dis, slr_hys_chg=slr_hys_chg, slr_hys_dis=slr_hys_dis, chem=self.chem,
+        self.hys = Hysteresis(scale=OPT.slr_hys_sim, dv_hys=OPT.mon_run.dv_hys[0], scale_cap=OPT.slr_hys_cap_sim, slr_cap_chg=OPT.slr_cap_chg,
+                              slr_cap_dis=OPT.slr_cap_dis, slr_hys_chg=OPT.slr_hys_chg, slr_hys_dis=OPT.slr_hys_dis, chem=self.chem,
                               chemistry=self.chemistry)  # Battery hysteresis model - drift of voc
         self.tweak_test = tweak_test
         self.voc = 0.  # Charging voltage, V
