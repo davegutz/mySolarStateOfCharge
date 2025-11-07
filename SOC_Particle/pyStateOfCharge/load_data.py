@@ -160,7 +160,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         chm = 1
     else:
         chm = None
-    batt = BatteryMonitor(chm)
+    batt = BatteryMonitor()
 
     # Load sim _s v24 portion of real-time run (old)
     data_file_sim_clean = write_clean_file(path_to_data, type_='_sim', hdr_key=hdr_key_sim,

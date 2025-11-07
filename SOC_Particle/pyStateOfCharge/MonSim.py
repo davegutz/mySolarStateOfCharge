@@ -174,10 +174,7 @@ def replicate(OPT: UserOptions):
 
     # Make batteries
     sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test)
-    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], tb_f=SN.Tb0, scale=scale_mon, tweak_test=tweak_test,
-                         slr_res_0=OPT.slr_res_0, slr_res_ct=OPT.slr_res_ct, stauct=OPT.stauct_mon,
-                         slr_r_ss=OPT.slr_r_ss, s_hys=OPT.slr_hys_mon, dvoc=OPT.add_voc_mon, eframe_mult=OPT.eframe_mult,
-                         slr_coul_eff=OPT.slr_coul_eff, unit=OPT.unit, ref=OPT.mon_run, run_type=OPT.run_type)
+    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], tb_f=SN.Tb0, scale=scale_mon, tweak_test=tweak_test)
     Is_sat_delay = TFDelay(in_=OPT.mon_run.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
     # Time sync

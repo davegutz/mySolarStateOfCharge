@@ -120,7 +120,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
         ib_diff.append(ib_diff_)
         C_rate = d_ra.ib_f[i] / rated_batt_cap
         voc_soc.append(mon.chemistry.lookup_voc(d_ra.soc[i], d_ra.Tb_f[i]) + Dw)
-        BB = BatteryMonitor(0, unit=unit)
+        BB = BatteryMonitor(OPT=None)
         cc_diff_thr_, ewhi_thr_, ewlo_thr_, ib_diff_thr_, ib_quiet_thr_ = \
             fault_thr_bb(Tb_f, soc, voc_soc[i], voc_stat_f, C_rate, BB)
         ib_f_ = d_ra.ib_f[i]
@@ -1121,7 +1121,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
             t_rated = 25.
             dqdt = 0.01
     qcrs = rated_batt_cap_in * 3600.
-    batt = BatteryMonitor(mod_code=chm, unit=unit)
+    batt = BatteryMonitor(mod_code=chm)
 
     # Force Tb.  This is useful for verifying calibration runs where voc(soc) schedule extracted from the run
     # with slightly varying Tb but assumed constant when making new schedule

@@ -132,9 +132,9 @@ class Battery(Coulombs):
                             what gets delivered, e.g.Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
                             or 20 - 40 A for a 100 Ah battery"""
 
-    def __init__(self, q_cap_rated=UNIT_CAP_RATED*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
-                 slr_res_0=1., slr_res_ct=1., stauct=1., slr_r_ss=1., s_hys=1., dvoc=0., mod_code=0, slr_coul_eff=1.,
-                 scale_cap=1., unit=None):
+    def __init__(self, OPT=None, q_cap_rated=UNIT_CAP_RATED*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
+                 dvoc=0., mod_code=0,
+                 scale_cap=1., mon=None):
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
         etal.pdf.'  SOC-OCV curve fit './Battery State/BattleBorn Rev1.xls:Model Fit' using solver with min slope
@@ -142,11 +142,10 @@ class Battery(Coulombs):
         so equation error when soc<=0 to match data.    See Battery.h
         """
         # Parents
-        Coulombs.__init__(self, q_cap_rated,  q_cap_rated, t_rated, temp_rlim, tweak_test, dvoc=dvoc, unit=unit)
+        Coulombs.__init__(self, OPT, q_cap_rated,  q_cap_rated, t_rated, temp_rlim, tweak_test, dvoc=dvoc)
 
         # Defaults
         self.chem = mod_code
-        self.dvoc = dvoc
         self.nz = None
         self.q = 0  # Charge, C
         self.voc = Battery.NOM_SYS_VOLT  # Model open circuit voltage, V
@@ -170,11 +169,20 @@ class Battery(Coulombs):
         self.vsat = self.chemistry.nom_vsat
         # range 0 - 50 C, V/deg C
         self.dt = 0  # Update time, s
-        self.chemistry.r_0 *= slr_res_0
-        self.chemistry.tau_ct *= stauct
-        self.chemistry.r_ct *= slr_res_ct
-        self.chemistry.r_ss *= slr_r_ss
-        self.chemistry.coul_eff *= slr_coul_eff
+        if OPT is not None:
+            self.chemistry.r_0 *= OPT.slr_res_0
+            self.chemistry.tau_ct *= OPT.stauct_mon
+            self.chemistry.r_ct *= OPT.slr_res_ct
+            self.chemistry.r_ss *= OPT.slr_r_ss
+            if mon:
+                self.s_hys = OPT.slr_hys_mon
+                self.dvoc = OPT.add_voc_mon
+            else:
+                self.s_hys = OPT.slr_hys_sim
+                self.dvoc = OPT.add_voc_sim
+            self.chemistry.coul_eff *= OPT.slr_coul_eff
+            if hasattr(OPT, 'unit'):
+                self.unit = OPT.unit
         self.Tb = tb_f
         self.Tb_f = tb_f
         self.Tb_f_rate = None
@@ -192,12 +200,10 @@ class Battery(Coulombs):
         self.mod = 7
         self.sel = 0
         self.tweak_test = tweak_test
-        self.s_hys = s_hys
         self.ib_lag = 0.
         self.IbLag = LagExp(1., 1., -100., 100.)  # Lag to be run on sat to produce ib_lag.  T and tau set at run time
         self.voc_soc = None
         self.voc_soc_new = 0.
-        self.unit = unit
         self.scale_cap = scale_cap
         self.Tb_rstate = None
         self.Tb_state = None
@@ -280,16 +286,15 @@ class Battery(Coulombs):
 
 class BatteryMonitor(Battery, EKF1x1):
     """Extend Battery class to make a monitor"""
-
     def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1.,
-                 tb_f=25., tweak_test=False, slr_res_0=1., slr_res_ct=1., stauct=1.,
-                 slr_r_ss=1., s_hys=1., dvoc=0., eframe_mult=Battery.cp_eframe_mult,
-                 mod_code=0, slr_coul_eff=1., unit=None, ref=None, run_type=None):
+                 tb_f=25., tweak_test=False, dvoc=0., mod_code=0):
+        if hasattr(OPT, 'slr_res_0'):
+            ref = OPT.mon_run
+        else:
+            pass
         q_cap_rated_scaled = q_cap_rated * scale
-        Battery.__init__(self, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
-                         tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct,
-                         slr_r_ss=slr_r_ss, s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, slr_coul_eff=slr_coul_eff,
-                         scale_cap=scale, unit=unit)
+        Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
+                         tweak_test=tweak_test, dvoc=dvoc, mod_code=mod_code, scale_cap=scale, mon=True)
 
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
@@ -345,8 +350,9 @@ class BatteryMonitor(Battery, EKF1x1):
         self.voc_ekf = 0.
         self.Temp_Rlim = RateLimit()
         self.eframe = 0
-        self.eframe_mult = eframe_mult
-        self.dt_eframe = self.dt*self.eframe_mult
+        if OPT is not None:
+            self.eframe_mult = OPT.eframe_mult
+            self.dt_eframe = self.dt*self.eframe_mult
         self.sdb_voc = SlidingDeadband(Battery.HDB_VBATT)
         self.e_wrap = 0.
         self.e_wrap_filt = 0.
@@ -885,10 +891,8 @@ class BatterySim(Battery):
 
     def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017,
                  scale=1., tb_f=25., tweak_test=False, mod_code=0):
-        Battery.__init__(self, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
-                         tweak_test=tweak_test, slr_res_0=OPT.slr_res_0, slr_res_ct=OPT.slr_res_ct, stauct=OPT.slr_tauct_sim,
-                         slr_r_ss=OPT.slr_r_ss, s_hys=OPT.slr_hys_sim, dvoc=OPT.add_voc_sim, mod_code=mod_code, slr_coul_eff=OPT.slr_coul_eff,
-                         scale_cap=scale, unit=OPT.unit)
+        Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
+                         tweak_test=tweak_test, dvoc=OPT.add_voc_sim, mod_code=mod_code, scale_cap=scale, mon=False)
         self.chemistry = Chemistry(mod_code=mod_code, dvoc=OPT.add_voc_sim, unit=OPT.unit)
         self.chemistry.assign_all_mod(mod_code, unit=OPT.unit)
         self.lut_voc = None

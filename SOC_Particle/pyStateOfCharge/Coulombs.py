@@ -24,8 +24,12 @@ import globals as G
 class Coulombs:
     """Coulomb Counting"""
 
-    def __init__(self, q_cap_rated, q_cap_rated_scaled, t_rated, tweak_test=False, mod_code=0, dvoc=0.,
-                 unit=None):
+    def __init__(self, OPT=None, q_cap_rated=None, q_cap_rated_scaled=None, t_rated=None, tweak_test=False, mod_code=0,
+                 dvoc=0.):
+        if OPT is not None and hasattr(OPT, 'unit'):
+            unit = OPT.unit
+        else:
+            unit = ''
         self.q_cap_rated = q_cap_rated
         self.q_cap_rated_scaled = q_cap_rated_scaled
         self.t_rated = t_rated
