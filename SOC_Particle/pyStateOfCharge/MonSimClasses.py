@@ -23,7 +23,6 @@ import Battery
 from Battery import Battery, calculate_capacity
 from myFilters import LagExp
 from pyDAGx import myTables
-import globals as G
 
 class MutableInt:
     def __init__(self, value):

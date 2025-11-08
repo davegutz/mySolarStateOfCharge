@@ -151,6 +151,7 @@ if __name__ == '__main__':
         fig_list.append(plt.figure())
         plt.subplot(221)
         plt.title(plot_title)
+        print(plot_title, end=':  ')
         plt.plot(hys.time, hys.soc, color='red', label='soc')
         plt.legend(loc=3)
         plt.subplot(222)

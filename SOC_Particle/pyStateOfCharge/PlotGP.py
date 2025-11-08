@@ -41,9 +41,11 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
             run_str='_run', ver_str='_ver'):
+    print('gp_plot', end=':  ')
     fig_list.append(plt.figure())  # GP 1
     plt.subplot(221)
     plt.title(plot_title + ' GP 1')
+    print('GP 1', end=':  ')
     plq(plt, sr, 'time', sr, 'vb_s', color='black', linestyle='-', label='vb_s' + run_str)
     plq(plt, smv, 'time', smv, 'vb_s', color='orange', linestyle='--', label='vb_s' + ver_str)
     plq(plt, sr, 'time', sr, 'voc_s', color='blue', linestyle='-.', label='voc_s' + run_str)
@@ -71,6 +73,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     fig_list.append(plt.figure())  # GP 2
     plt.subplot(221)
     plt.title(plot_title + ' GP 2')
+    print('GP 2', end=':  ')
     plq(plt, mr, 'time', mr, 'vb', linestyle='-', color='black', label='vb' + run_str)
     plq(plt, mr, 'time', mr, 'vb_f', linestyle='-', color='black', label='vb_f' + run_str)
     plt.plot(mv.time, mv.vb, color='orange', linestyle='--', label='vb' + ver_str)
@@ -102,6 +105,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     fig_list.append(plt.figure())  # GP 2 nn lag
     plt.subplot(321)
     plt.title(plot_title + ' GP 2 nn lag')
+    print('GP 2 nn lag', end=':  ')
     plt.plot(mr.time, mr.sat, color='black', linestyle='-', label='sat' + run_str)
     plt.plot(mv.time, mv.sat, color='orange', linestyle='--', label='sat' + ver_str)
     plt.legend(loc=1)
@@ -156,6 +160,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     fig_list.append(plt.figure())  # GP 3 Tune
     plt.subplot(331)
     plt.title(plot_title + ' GP 3 Tune')
+    print('GP 3 Tune', end=':  ')
     plq(plt, mr, 'time', mr, 'dv_dyn', color='blue', linestyle='-', label='dv_dyn' + run_str)
     plq(plt, mr, 'time', mr, 'dv_dyn_f', color='blue', linestyle='-', label='dv_dyn_f' + run_str)
     plt.plot(mv.time, mv.dv_dyn, color='cyan', linestyle='--', label='dv_dyn' + ver_str)
@@ -216,8 +221,9 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.subplot(338)
     plt.plot(mr.time, mr.dv_hys, color='blue', linestyle='-', label='dv_hys' + run_str)
     plt.plot(mv.time, mv.dv_hys, color='cyan', linestyle='--', label='dv_hys' + ver_str)
-    plq(plt, sr, 'time', sr, 'dv_hys_s', color='black', linestyle='-.', label='dv_hys_s' + run_str)
-    plq(plt, smv, 'time', smv, 'dv_hys_s', color='magenta', linestyle=':', label='dv_hys_s' + ver_str)
+    plq(plt, sr, 'time', sr, 'dv_hys_s', color='black', linestyle='-.', label='dv_hys_s' + run_str, warn=False)
+    plq(plt, smv, 'time', smv, 'dv_hys_s', color='magenta', linestyle=':', label='dv_hys_s' + ver_str,
+        warn=False)
     plt.plot(mr.time, mr.sat - 0.5, color='black', linestyle='-', label='sat' + run_str + '-0.5')
     plt.plot(mv.time, np.array(mv.sat) - 0.5, color='green', linestyle='--', label='sat' + ver_str + '-0.5')
     plq(plt, sr, 'time', sr, 'sat_s', add=-0.5, color='red', linestyle='-.', label='sat_s' + run_str + '-0.5')
@@ -239,6 +245,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
 
 
 def tune_r(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None, run_str='_run', ver_str='_ver'):
+    print('tune_r', end=':  ')
     # delineate charging and discharging
     voc_stat_chg = np.copy(mv.voc_stat)
     voc_stat_dis = np.copy(mv.voc_stat)
@@ -254,9 +261,6 @@ def tune_r(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None
     voc_soc = np.copy(mv.voc_soc)
     voc_stat = np.copy(mv.voc_stat)
     ib_f = np.copy(mv.ib)
-    if hasattr(mv, 'ioc'):
-        ioc_f = np.copy(mv.ioc)
-    to = np.copy(mr.time)
     tv = np.copy(mv.time)
     dv_hys_calc = voc - voc_stat  # assumes Charge Transfer tuned
     dv_hys_req = voc - voc_soc
@@ -287,8 +291,11 @@ def tune_r(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None
         dv_hys_calc_f[i] = dv_hys_calc_filter.update(dv_hys_calc[i], T, reset=reset)
         dv_hys_req_f[i] = dv_hys_req_filter.update(dv_hys_req[i], T, reset=reset)
         ib_f[i] = ib_filter.update(mv.ib[i], T, reset=reset)
+        ioc_f = mv.ioc.copy()
         if hasattr(mv, 'ioc'):
             ioc_f[i] = ios_filter.update(mv.ioc[i], T, reset=reset)
+        else:
+            ioc_f = None
 
         dv_dot_calc[i] = dv_hys_calc_filter.rate
         # dv_dot_req[i] = dv_hys_req_filter.rate
@@ -329,14 +336,18 @@ def tune_r(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None
     dv_hys_calc_f[n-1] = dv_hys_calc_f[n-2]
     ioc_calc_from_dot[n-1] = ioc_calc_from_dot[n-2]
     ib_f[n-1] = ib_f[n-2]
+    ioc_f  = ib_f.copy()
     if hasattr(mv, 'ioc'):
         ioc_f[n-1] = ioc_f[n-2]
+    else:
+        ioc_f = None
     dv_dot_cap[n-1] = dv_dot_cap[n-2]
     dv_bleed[-1] = dv_bleed[-2]
 
     fig_list.append(plt.figure())  # GP 3 Tune R
     plt.subplot(321)
     plt.title(plot_title + ' GP 3 Tune R')
+    print('GP 3 Tune R', end=':  ')
     plt.plot(tv, vb, color='blue', linestyle='-', label='vb_x')
     if hasattr(smv, 'vb_s'):
         plt.plot(tv, smv.vb_s, color='cyan', linestyle='--', label='vb_s_ver')
@@ -390,6 +401,7 @@ def tune_r(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None
     fig_list.append(plt.figure())  # GP 3 Tune Summ
     plt.subplot(221)
     plt.title(plot_title + ' GP 3 Tune Summ')
+    print('GP 3 Tune Summ', end=':  ')
     plq(plt, mr, 'time', mr, 'vb', linestyle='-', color='blue', label='vb' + run_str)
     plq(plt, mr, 'time', mr, 'vb_f', linestyle='-', color='blue', label='vb_f' + run_str)
     plq(plt, smv, 'time', smv, 'vb_s', color='magenta', linestyle=':', label='vb_s' + ver_str)

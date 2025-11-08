@@ -32,11 +32,13 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 def ekf_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
              run_str='_run', ver_str='_ver'):
+    print('ekf_plot', end=':  ')
     if sr and smv:
         if mr.Fx is not None:  # ekf
             fig_list.append(plt.figure())  # EKF  1
             plt.subplot(331)
             plt.title(plot_title + ' EKF 1')
+            print('EKF 1', end=':  ')
             plq(plt, mr, 'time_e', mr, 'u', color='blue', linestyle='-', label='u' + run_str, stairs=True)
             plt.plot(mv.time, mv.u_ekf, color='red', linestyle='--', label='u' + ver_str)
             plt.legend(loc=1)
@@ -81,6 +83,7 @@ def ekf_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
             fig_list.append(plt.figure())  # EKF  2
             plt.subplot(331)
             plt.title(plot_title + ' EKF 2')
+            print('EKF 2', end=':  ')
             plq(plt, mr, 'time_e', mr, 'K', color='blue', linestyle='-', label='K' + run_str, stairs=True)
             plt.plot(mv.time, mv.K, color='red', linestyle='--', label='K' + ver_str)
             plt.legend(loc=1)
@@ -129,6 +132,7 @@ def ekf_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
             fig_list.append(plt.figure())  # EKF2a
             plt.subplot(311)
             plt.title(plot_title + ' EKF 2a')
+            print('EKF 2a', end=':  ')
             plq(plt, mr, 'time', mr, 'voc_stat', add=-0.0, color='red', linestyle='-', label='voc_stat-0.0' + run_str, stairs=True)
             plq(plt, mv, 'time', mv, 'voc_stat', add=-0.0,  color='black', linestyle='--', label='voc_stat-0.0' + ver_str, stairs=True)
             plq(plt, mr, 'time_e', mr, 'z', color='cyan', linestyle='-', label='z=voc_stat_f' + run_str, stairs=True)
@@ -153,6 +157,7 @@ def ekf_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
             fig_list.append(plt.figure())  # EKF3
             plt.subplot(221)
             plt.title(plot_title + ' EKF 3')
+            print('EKF 3', end=':  ')
             plt.plot(mr.time, mr.ib, color='red', linestyle='-', label='ib' + run_str)
             plt.plot(mv.time, mv.ib, color='black', linestyle='--', label='ib' + ver_str)
             plq(plt, mr, 'time_e', mr, 'u', color='cyan', linestyle='-.', label='u' + run_str, stairs=True)
@@ -182,6 +187,7 @@ def ekf_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         fig_list.append(plt.figure())  # EKF  4
         plt.subplot(111)
         plt.title(plot_title + ' EKF 4')
+        print('EKF 4', end=':  ')
         plt.plot(mr.soc, mr.voc_stat, color='red', linestyle='-', label='voc_stat' + run_str)
         plt.plot(mr.soc, mr.voc_soc, color='black', linestyle=':', label='voc_soc' + run_str)
         plt.legend(loc=1)
@@ -192,6 +198,7 @@ def ekf_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         fig_list.append(plt.figure())  # Hyst 1
         plt.subplot(331)
         plt.title(plot_title + ' Hyst 1')
+        print('Hyst 1', end=':  ')
         # plt.plot(mr.time, mr.dv_hys_required, linestyle='-', color='black', label='dv_hys_required'+run_str)
         plq(plt, mr, 'time', mr, 'e_wrap', slr=-1., linestyle='-', color='red', label='-e_wrap' + run_str)
         plq(plt, mv, 'time', mr, 'e_wrap', slr=-1., linestyle='--', color='blue', label='-e_wrap' + ver_str)

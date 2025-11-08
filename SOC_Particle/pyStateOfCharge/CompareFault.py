@@ -364,6 +364,7 @@ def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb):
 
 def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, subtitle=None, long_term=True,
                cc_dif_tol=0.2):
+    print('over_fault', end=':  ')
     if fig_files is None:
         fig_files = []
 
@@ -371,6 +372,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         fig_list.append(plt.figure())  # 1
         plt.subplot(331)
         plt.title(plot_title + ' f1')
+        print('f1', end=':  ')
         plt.suptitle(subtitle)
         plt.plot(hi.time_ux, hi.soc, marker='.', markersize='3', linestyle='-', color='black', label='soc')
         plt.plot(hi.time_ux, hi.soc_ekf, marker='+', markersize='3', linestyle='--', color='blue',
@@ -448,6 +450,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         fig_list.append(plt.figure())  # 2
         plt.subplot(221)
         plt.title(plot_title + ' f2')
+        print('f2', end=':  ')
         plt.suptitle(subtitle)
         plt.plot(hi.time_ux, hi.vsat, marker='.', markersize='1', linestyle='-', color='orange', linewidth='1',
                  label='vsat')
@@ -507,6 +510,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         fig_list.append(plt.figure())  # 3
         plt.subplot(221)
         plt.title(plot_title + ' f3')
+        print('f3', end=':  ')
         plt.suptitle(subtitle)
         plt.plot(hi.time_ux, hi.dv_hys, marker='o', markersize='3', linestyle='-', color='blue', label='dv_hys')
         plt.plot(hi.time_ux, hi.dv_hys_rescaled, marker='o', markersize='3', linestyle='-', color='cyan',
@@ -547,6 +551,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     fig_list.append(plt.figure())  # 4
     plt.subplot(331)
     plt.title(plot_title + ' f4')
+    print('f4', end=':  ')
     plt.plot(hi.time_ux, hi.ib_f, color='green', linestyle='-', label='ib_f')
     plt.plot(hi.time_ux, hi.ib_diff, color='black', linestyle='-.', label='ib_diff')
     plt.plot(hi.time_ux, hi.ib_diff_thr, color='red', linestyle='-.', label='ib_diff_thr')
@@ -618,6 +623,7 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     fig_list.append(plt.figure())  # of 1
     plt.subplot(331)
     plt.title(plot_title + ' O_F 1')
+    print('0_F 1', end=':  ')
     plt.plot(mr.time_ux, mr.ib_sel, color='black', linestyle='-', label='ib_sel=ib_in')
     plt.plot(mv.time_ux, mv.ib_in, color='cyan', linestyle='--', label='ib_in_ver')
     plt.plot(smv.time_ux, smv.ib_in_s, color='orange', linestyle='-.', label='ib_in_s_ver')
@@ -691,6 +697,7 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     fig_list.append(plt.figure())  # GP 3 Tune
     plt.subplot(331)
     plt.title(plot_title + ' GP 3 Tune')
+    print('GP 3 Tune', end=':  ')
     mr.dv_dyn = mr.vb - mr.voc
     plt.plot(mr.time_ux, mr.dv_dyn, color='blue', linestyle='-', label='dv_dyn'+ref_str)
     plt.plot(mv.time_ux, mv.dv_dyn, color='cyan', linestyle='--', label='dv_dyn'+test_str)

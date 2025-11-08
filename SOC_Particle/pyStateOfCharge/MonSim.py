@@ -21,14 +21,13 @@ from DataOverModel import SavedData as SavedData
 from DataOverModel import SavedDataSim as SavedDataSim
 from MonSimNomConfig import *  # Global config parameters.   Overwrite in your own calls for studies
 from Battery import BatteryMonitor, BatterySim, is_sat, Retained
-from numpy import random as random
 from dataclasses import dataclass
 from Battery import overall_batt
 from typing import Optional
 from TFDelay import TFDelay
 from MonSimClasses import *
 from MonSimPrint import *
-import globals as G
+import Globals as G
 
 def battery_size(mr, sr, scale_in_, unit_cap_rated_):
     if hasattr(mr, 'qcrs'):
@@ -192,7 +191,6 @@ def replicate(OPT: UserOptions):
     i_ekf = -1
     i_temp = -1
     T = OPT.mon_run.dt[0]
-    i = None
     hdr = None
     sat_s_init = None
 
@@ -205,7 +203,6 @@ def replicate(OPT: UserOptions):
     while irun < t_len-1:
         G.i += 1
         irun += 1
-        i = G.i
 
         if G.i >= 206:
             pass  # used for debug breakpoint at i >= <val>
@@ -229,7 +226,6 @@ def replicate(OPT: UserOptions):
             mon, sim = SN.calc_temp_pass_1(OPT, mon, sim, i_temp)
 
         # Input
-        dc_dc_on = False
         rp.modeling = modeling[G.i]
 
         # Basic reset model verification is to init to the input data

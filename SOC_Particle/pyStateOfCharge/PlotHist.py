@@ -42,6 +42,7 @@ def hs_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     fig_list.append(plt.figure())  # HS 1
     plt.subplot(221)
     plt.title(plot_title + ' HS 1')
+    print('HS 1', end=':  ')
     plq(plt, mr, 'time', mr, 'vb_f', linestyle='-', color='black', label='vb_f' + run_str)
     plq(plt, mv, 'time', mv, 'vb', linestyle='--', color='orange', label='vb' + ver_str)
     plq(plt, mr, 'time', mr, 'voc_d', linestyle='-', color='blue', label='voc_d' + run_str)
@@ -70,6 +71,7 @@ def hs_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     fig_list.append(plt.figure())  # HS sat
     plt.subplot(321)
     plt.title(plot_title + 'HS sat')
+    print('HS sat', end=':  ')
     plq(plt, mr, 'time', mr, 'sat', linestyle='-', color='black', label='sat' + run_str)
     plq(plt, mv, 'time', mv, 'sat', linestyle='--', color='orange', label='sat' + ver_str)
     plt.legend(loc=1)
@@ -112,6 +114,7 @@ def hs_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     fig_list.append(plt.figure())  # HS 3 Tune
     plt.subplot(331)
     plt.title(plot_title + ' HS 3 Tune')
+    print('HS 3 Tune', end=':  ')
     plq(plt, mr, 'time', mr, 'dv_dyn_f', color='blue', linestyle='-', label='dv_dyn_f' + run_str)
     plt.plot(mv.time, mv.dv_dyn, color='cyan', linestyle='--', label='dv_dyn' + ver_str)
     plq(plt, sr, 'time', sr, 'dv_dyn_s', color='black', linestyle='-.', label='dv_dyn_s' + run_str)
@@ -284,6 +287,7 @@ def tune_hs(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=Non
     fig_list.append(plt.figure())  # HS 3 Tune R
     plt.subplot(321)
     plt.title(plot_title + ' HS 3 Tune R')
+    print('HS 3 Tune R', end=':  ')
     plt.plot(tv, vb, color='blue', linestyle='-', label='vb_x')
     if hasattr(smv, 'vb_s'):
         plt.plot(tv, smv.vb_s, color='cyan', linestyle='--', label='vb_s_ver')
@@ -337,6 +341,7 @@ def tune_hs(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=Non
     fig_list.append(plt.figure())  # HS 3 Tune Summ
     plt.subplot(221)
     plt.title(plot_title + ' HS 3 Tune Summ')
+    print('HS 3 Tune Summ', end=':  ')
     plq(plt, mr, 'time', mr, 'vb', linestyle='-', color='blue', label='vb' + run_str)
     plq(plt, mr, 'time', mr, 'vb_f', linestyle='-', color='blue', label='vb_f' + run_str)
     plq(plt, smv, 'time', smv, 'vb_s', color='magenta', linestyle=':', label='vb_s' + ver_str)

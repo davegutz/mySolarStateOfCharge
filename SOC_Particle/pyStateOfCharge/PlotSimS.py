@@ -39,10 +39,12 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
                run_str='_run', ver_str='_ver'):
+    print('sim_s_plot', end=':  ')
     if sr and smv:
         fig_list.append(plt.figure())  # sim_s  1
         plt.subplot(331)
         plt.title(plot_title + ' sim_s 1')
+        print('sim_s 1', end=':  ')
         plt.plot(mr.time, mr.ib_sel, color='blue',  linestyle='-', label='ib_sel=ib_in'+run_str)
         plq(plt, mv, 'time', mv, 'ib_in', color='cyan', linestyle='--', label='ib_in'+ver_str)
         plt.plot(sr.time, sr.ib_in_s, color='green', linestyle='-.', label='ib_in_s'+run_str)
@@ -111,6 +113,7 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         fig_list.append(plt.figure())  # sim_s  2
         plt.subplot(331)
         plt.title(plot_title + ' sim_s 2')
+        print('sim_s 2', end=':  ')
         plt.plot(mr.time, mr.vb, color='red', linestyle='-', label='vb'+run_str)
         plt.plot(mr.time, mr.voc, color='black',  linestyle='--', label='voc'+run_str)
         plt.plot(mr.time, mr.voc_stat, color='blue', linestyle='-.', label='voc_stat'+run_str)
@@ -165,6 +168,7 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         fig_list.append(plt.figure())  # sim_s  2a
         plt.subplot(221)
         plt.title(plot_title + ' sim_s 2a')
+        print('sim_s 2a', end=':  ')
         plt.plot(mr.time, mr.vb, color='black', linestyle='-', label='vb' + run_str)
         plt.plot(sr.time, sr.vb_s, color='green', linestyle='--', label='vb_s' + run_str)
         plt.plot(mr.time, mr.voc, color='brown', linestyle='-', label='voc'+run_str)
@@ -190,6 +194,7 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         fig_list.append(plt.figure())  # sim_s  3
         plt.subplot(321)
         plt.title(plot_title + ' sim_s 3')
+        print('sim_s 3', end=':  ')
         plt.plot(mr.time, mr.soc, color='blue', linestyle='-', label='soc'+run_str)
         plt.plot(mv.time, mv.soc, color='red', linestyle='--', label='soc'+ver_str)
         plt.plot(sr.time, sr.soc_s, color='green', linestyle='-.', label='soc_s'+run_str)
@@ -250,6 +255,7 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         fig_list.append(plt.figure())  # sim_s  4
         plt.subplot(221)
         plt.title(plot_title + ' sim_s 4')
+        print('sim_s 4', end=':  ')
         plt.plot(mr.time, mr.soc, color='blue', linestyle='-', label='soc'+run_str)
         plt.plot(mv.time, mv.soc, color='red', linestyle='--', label='soc'+ver_str)
         plt.plot(sr.time, sr.soc_s, color='green', linestyle='-.', label='soc_s'+run_str)

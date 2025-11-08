@@ -132,6 +132,7 @@ def plot_all(raw_data, mashed_data, finished_data, red_data, act_unit_cap, fig_f
     fig_list.append(plt.figure())  # raw data 1
     plt.subplot(111)
     plt.title(plot_title + ' raw')
+    print('raw', end=':  ')
     for (curve, nom_unit_cap, temp, p_color, p_style, marker, marker_size) in raw_data:
         plt.plot(curve.soc, curve.vstat, color=p_color, linestyle=p_style, marker=marker, markersize=marker_size,
                  label='vstat ' + str(nom_unit_cap) + '  ' + str(temp) + 'C')
@@ -143,6 +144,7 @@ def plot_all(raw_data, mashed_data, finished_data, red_data, act_unit_cap, fig_f
     fig_list.append(plt.figure())  # normalized data 2
     plt.subplot(111)
     plt.title(plot_title + ' mashed')
+    print('mashed', end=':  ')
     for (curve, nom_unit_cap, temp, p_color, p_style, marker, marker_size) in mashed_data:
         plt.plot(curve.soc, curve.vstat, color=p_color, linestyle=p_style, marker=marker, markersize=marker_size,
                  label='vstat ' + str(nom_unit_cap) + '  ' + str(temp) + 'C')
@@ -159,6 +161,7 @@ def plot_all(raw_data, mashed_data, finished_data, red_data, act_unit_cap, fig_f
     ax.text(0.4, 0.2, 'Set NOM_UNIT_CAP = ' + cap_str, transform=ax.transAxes, fontsize=14,
             verticalalignment='top', bbox=props)
     plt.title(plot_title + ' finished')
+    print('finished', end=':  ')
     for (curve, nom_unit_cap, temp, p_color, p_style, marker, marker_size) in finished_data:
         plt.plot(curve.soc, curve.vstat, color=p_color, linestyle=p_style, marker=marker, markersize=marker_size,
                  label='voc ' + str(temp) + 'C')
@@ -175,6 +178,7 @@ def plot_all(raw_data, mashed_data, finished_data, red_data, act_unit_cap, fig_f
     ax.text(0.4, 0.2, 'Set NOM_UNIT_CAP = ' + cap_str, transform=ax.transAxes, fontsize=14,
             verticalalignment='top', bbox=props)
     plt.title(plot_title + ' reduced')
+    print('reduced', end=':  ')
     for (curve, nom_unit_cap, temp, p_color, p_style, marker, marker_size) in red_data:
         plt.plot(curve.soc, curve.vstat, color=p_color, linestyle=p_style, marker=marker, markersize=marker_size,
                  label='voc ' + str(temp) + 'C')

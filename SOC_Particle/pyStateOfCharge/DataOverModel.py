@@ -47,7 +47,7 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 
 def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', label=None, marker=None,
-        markersize=None, markevery=None, stairs=False):
+        markersize=None, markevery=None, stairs=False, warn=True):
     if (sx is not None and sy is not None and hasattr(sx, st) and hasattr(sy, yt) and
             len(getattr(sy, yt)) > 0 and getattr(sy, yt)[0] is not None):
         try:
@@ -63,11 +63,13 @@ def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', labe
                 plt_.plot(getattr(sx, st), yscld, color=color, linestyle=linestyle, label=label, marker=marker,
                           markersize=markersize, markevery=markevery)
         except ValueError:
-            pass
+            if warn:
+                print(f"plq: skipping     {yt}({st})     labeled  '{label}'")
 
 
 def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
              run_str='_run', ver_str='_ver'):
+    print('dom_plot', end=':  ')
     if fig_files is None:
         fig_files = []
 
@@ -75,6 +77,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         fig_list.append(plt.figure())  # init 1
         plt.subplot(221)
         plt.title(plot_title + ' init 1')
+        print('init 1', end=':  ')
         plt.plot(sr.time, sr.reset_s, color='black', linestyle='-', label='reset_s'+run_str)
         plq(plt, smv, 'time', smv, 'reset_s', color='red', linestyle='--', label='reset_s'+ver_str)
         plt.plot(mr.time, mr.reset, color='magenta', linestyle='-', label='reset'+run_str)
@@ -105,6 +108,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     fig_list.append(plt.figure())  # 1a
     plt.subplot(221)
     plt.title(plot_title + ' 1a')
+    print('1a', end=':  ')
     if hasattr(mr, 'mod_data') and mr.mod_data[0] != 0:
         plq(plt, mr, 'time', mr, 'ibmm', color='black', linestyle='-', label='ib_amp_mod'+run_str)
         plq(plt, mv, 'time', mv, 'ibmm', color='red', linestyle='-.', label='ib_amp_mod'+ver_str)
@@ -149,6 +153,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     fig_list.append(plt.figure())  # DOM 2
     plt.subplot(321)
     plt.title(plot_title + ' DOM 2')
+    print('DOM 2', end=':  ')
     plq(plt, mr, 'time', mr, 'dv_dyn', color='green', linestyle='-', label='dv_dyn'+run_str)
     plq(plt, mr, 'time', mr, 'dv_dyn_f', color='green', linestyle='-', label='dv_dyn_f'+run_str)
     plt.plot(mv.time, mv.dv_dyn, color='orange', linestyle='--', label='dv_dyn'+ver_str)
@@ -176,8 +181,8 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mr.time, mr.dv_hys, color='green', linestyle='-', label='dv_hys'+run_str)
     plt.plot(mv.time, mv.dv_hys, color='cyan', linestyle='--', label='dv_hys'+ver_str)
     # plt.plot(smv.time, np.array(smv.dv_hys_s)+0.1, color='red', linestyle='-', label='dv_hys_s'+ver_str+'+0.1')
-    plq(plt, smv, 'time', smv, 'dv_hys_s', add=0.1, color='red', linestyle='-', label='dv_hys_s'+ver_str+'+0.1')
-    plq(plt, sr, 'time', sr, 'dv_hys_s', add=-0.1, color='magenta', linestyle='-', label='dv_hys_s'+ver_str+'-0.1')
+    plq(plt, smv, 'time', smv, 'dv_hys_s', add=0.1, color='red', linestyle='-', label='dv_hys_s'+ver_str+'+0.1', warn=False)
+    plq(plt, sr, 'time', sr, 'dv_hys_s', add=-0.1, color='magenta', linestyle='-', label='dv_hys_s'+ver_str+'-0.1', warn=False)
     # plt.plot(sr.time, np.array(sr.dv_hys_s)-0.1, color='magenta',  linestyle='-', label='dv_hys_s-0.1'+run_str)
     plt.legend(loc=1)
     plt.subplot(326)
@@ -195,6 +200,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     fig_list.append(plt.figure())  # DOM 3
     plt.subplot(221)
     plt.title(plot_title + ' DOM 3')
+    print('DOM 3', end=':  ')
     plt.plot(mr.time, mr.soc, color='blue', linestyle='-', label='soc'+run_str)
     plt.plot(mv.time, mv.soc, color='red', linestyle='--', label='soc'+ver_str)
     plt.legend(loc=1)
@@ -221,6 +227,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     fig_list.append(plt.figure())  # DOM 4
     plt.subplot(131)
     plt.title(plot_title + ' DOM 4')
+    print('DOM 4', end=':  ')
     plt.plot(mr.time, mr.soc, color='orange', linestyle='-', label='soc'+run_str)
     plt.plot(mv.time, mv.soc, color='green', linestyle='--', label='soc'+ver_str)
     plq(plt, smv, 'time', smv, 'soc_s', color='black', linestyle='-.', label='soc_s'+ver_str)
@@ -248,6 +255,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     fig_list.append(plt.figure())  # DOM 4a
     plt.subplot(311)
     plt.title(plot_title + ' DOM 4a')
+    print('DOM 4a', end=':  ')
     plq(plt, mr, 'time', mr, 'ib', color='orange', linestyle='-', label='ib'+run_str)
     plq(plt, mr, 'time', mr, 'ib_f', color='orange', linestyle='-', label='ib_f'+run_str)
     plt.plot(mv.time, mv.ib, color='green', linestyle='--', label='ib'+ver_str)
@@ -272,6 +280,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     # fig_list.append(plt.figure())  # DOM 5
     # plt.subplot(231)
     # plt.title(plot_title + ' DOM 5')
+    # print('DOM 5', end=':  ')
     # plt.plot(mr.time, mr.ib_charge, color='black', linestyle='-', label='ib_charge' + run_str)
     # plt.plot(mv.time, mv.ib_charge, linestyle='--', color='blue', label='ib_charge' + ver_str)
     # plt.plot(mr.time, mr.ib_diff_flt + 2, color='green', linestyle='-', label='ib_diff_flt' + run_str + '+2')
@@ -344,6 +353,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     # fig_list.append(plt.figure())  # DOM 6
     # plt.subplot(221)
     # plt.title(plot_title + ' DOM 6')
+    # print('DOM 6', end=':  ')
     # plq(plt, mr, 'time', mr, 'ibmh', color='blue', linestyle='-', label='ib_amp_hdwe' + run_str)
     # plq(plt, mr, 'time', mr, 'ibnh', color='green', linestyle='-', label='ib_noa_hdwe' + run_str)
     # plq(plt, mr, 'time', mr, 'ib_sel', color='red', linestyle='--', label='ib_sel' + run_str)
@@ -401,22 +411,22 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     # plq(plt, mv, 'time', mv, 'ewnlo_thr', color='orange', linestyle=':', label='ewnlo_thr' + ver_str)
     # plt.ylim(-1, 1)
     # plt.legend(loc=1)
-    fig_list, fig_files = ult_plot(mr, mv, sr, sv, smv, filename,
+    fig_list, fig_files = ult_plot(mr, mv, sr, smv, filename,
                                    fig_files, plot_title=plot_title, fig_list=fig_list,
-                                   plot_init_in=plot_init_in, run_str='', ver_str='_ver')
+                                   run_str='', ver_str='_ver')
 
     return fig_list, fig_files
 
 
 
-def ult_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
-         run_str='_run', ver_str='_ver'):
+def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_list=None, run_str='_run', ver_str='_ver'):
     if fig_files is None:
         fig_files = []
 
     fig_list.append(plt.figure())  # Ult 1
     plt.subplot(331)
     plt.title(plot_title + ' Ult 1')
+    print('Ult 1', end=':  ')
     plq(plt, mr, 'time', mr, 'ibmh', color='green', linestyle='-', label='ib_amp_hdwe' + run_str)
     plq(plt, mv, 'time', mv, 'ibmh', color='red', linestyle='--', label='ib_amp_hdwe' + ver_str)
     plq(plt, mr, 'time', mr, 'ibnh', color='blue', linestyle='-.', label='ib_noa_hdwe' + run_str)
@@ -1204,7 +1214,7 @@ class SavedDataSim:
     def __str__(self):
         s = "{},".format(self.unit[self.i])
         # s += "{:13.3f},".format(self.cTime[self.i])
-        s += "{:5.2f},".format(self.Tb_s[self.i])
+        # s += "{:5.2f},".format(self.Tb_s[self.i])
         s += "{:8.3f},".format(self.vsat_s[self.i])
         s += "{:5.2f},".format(self.voc_stat_s[self.i])
         s += "{:5.2f},".format(self.dv_dyn_s[self.i])
@@ -1291,7 +1301,9 @@ if __name__ == '__main__':
             sim_run = None
 
         # Run model
-        mon_ver, sim_ver, sim_s_ver = replicate(mon_run, init_time=1.)
+        from MonSim import UserOptions
+        replicateOptions = UserOptions(mon_run=mon_run, init_time=1.)
+        mon_ver, sim_ver, sim_s_ver = replicate(replicateOptions)
         date_ = datetime.now().strftime("%y%m%d")
         mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
         save_clean_file(mon_ver, mon_file_save, '_mon_rep' + date_)

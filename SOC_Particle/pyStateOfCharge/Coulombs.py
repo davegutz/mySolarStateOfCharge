@@ -18,7 +18,7 @@ of the totals and standardize the calculations."""
 
 # Constants
 from Chemistry_BMS import Chemistry
-import globals as G
+import Globals as G
 
 
 class Coulombs:

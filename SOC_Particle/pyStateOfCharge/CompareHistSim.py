@@ -142,6 +142,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         fig_list.append(plt.figure())  # 1
         plt.subplot(331)
         plt.title(plot_title + ' f1')
+        print('f1', end=':  ')
         plt.suptitle(subtitle)
         plt.plot(hi.time, hi.soc, marker='.', markersize='3', linestyle='-', color='black', label='soc')
         plt.plot(hi.time, hi.soc_ekf, marker='+', markersize='3', linestyle='--', color='blue', label='soc_ekf')
@@ -207,6 +208,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         fig_list.append(plt.figure())  # 2
         plt.subplot(221)
         plt.title(plot_title + ' f2')
+        print('f2', end=':  ')
         plt.suptitle(subtitle)
         plt.plot(hi.time, hi.vsat, marker='.', markersize='1', linestyle='-', color='orange', linewidth='1',
                  label='vsat')
@@ -265,6 +267,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         fig_list.append(plt.figure())  # 3
         plt.subplot(221)
         plt.title(plot_title + ' f3')
+        print('f3', end=':  ')
         plt.suptitle(subtitle)
         plt.plot(hi.time, hi.dv_hys, marker='o', markersize='3', linestyle='-', color='blue', label='dv_hys')
         plt.plot(hi.time, hi.dv_hys_rescaled, marker='o', markersize='3', linestyle='-', color='cyan',
@@ -304,6 +307,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     fig_list.append(plt.figure())  # 4
     plt.subplot(331)
     plt.title(plot_title + ' f4')
+    print('f4', end=':  ')
     plt.plot(hi.time, hi.ib, color='green', linestyle='-', label='ib')
     plt.plot(hi.time, hi.ib_diff, color='black', linestyle='-.', label='ib_diff')
     plt.plot(hi.time, hi.ib_diff_thr, color='red', linestyle='-.', label='ib_diff_thr')
@@ -363,12 +367,14 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
 
 
 def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None):
+    print('overall_fault', end=':  ')
     if fig_files is None:
         fig_files = []
 
     fig_list.append(plt.figure())  # of 1
     plt.subplot(331)
     plt.title(plot_title + ' O_F 1')
+    print('0_F 1', end=':  ')
     plt.plot(mr.time, mr.ib_sel, color='black', linestyle='-', label='ib_sel=ib_in')
     plq(plt, mv, 'time', mv, 'ib_in', color='cyan', linestyle='--', label='ib_in_ver')
     plq(plt, smv, 'time', smv, 'ib_in_s', color='orange', linestyle='-.', label='ib_in_s_ver')
@@ -441,6 +447,7 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     fig_list.append(plt.figure())  # O_F 2
     plt.subplot(331)
     plt.title(plot_title + ' O_F 2')
+    print('0_F 2', end=':  ')
     if hasattr(mr, 'vb'):
         mr.dv_dyn = mr.vb - mr.voc
     else:
@@ -994,6 +1001,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
         print("done")
 
         # Shift time by detecting when ib changes
+        sim = None
         if sync_time is None:
             print("\nShifting time by detecting when ib changes...", end='')
             hist_20C = shift_time(hist_20C)
@@ -1007,14 +1015,15 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
                                     ('wh_fa', 0), ('ccd_fa', 0), ('ib_noa_fa', 0), ('ib_amp_fa', 0), ('vb_fa', 0),
                                     ('tb_fa', 0), ('wl_m_fa', 0), ('wh_m_fa', 0), ('wl_n_fa', 0), ('wh_n_fa', 0),
                                     ])
-        for i in range(len(h_20C_resamp.time)):
-            if i == 0:
-                h_20C_resamp.dt[i] = h_20C_resamp.time[1] - h_20C_resamp.time[0]
-            else:
-                h_20C_resamp.dt[i] = h_20C_resamp.time[i] - h_20C_resamp.time[i-1]
+            h_20C_resamp.dt = h_20C_resamp.time.copy()
+            for i in range(len(h_20C_resamp.time)):
+                if i == 0:
+                    h_20C_resamp.dt[i] = h_20C_resamp.time[1] - h_20C_resamp.time[0]
+                else:
+                    h_20C_resamp.dt[i] = h_20C_resamp.time[i] - h_20C_resamp.time[i-1]
 
-        # Hand fix oddities
-        mon, sim = bandaid(h_20C_resamp)
+            # Hand fix oddities
+            mon, sim = bandaid(h_20C_resamp)
 
         return mon, sim, unit, fault, hist_20C, filename
 
@@ -1108,8 +1117,8 @@ def main():
 
     # User inputs (multiple input_files allowed
     data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251107pm_soc4p2_hi_lo_bb.csv'
-    # plots=True
-    plots = False
+    plots=True
+    # plots = False
     mon_t = False
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     # dt_resample = 900

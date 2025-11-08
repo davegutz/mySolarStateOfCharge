@@ -28,7 +28,7 @@ if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
 plt.rcParams.update({'figure.max_open_warning': 0})
-import globals as G
+import Globals as G
 
 
 class Retained:
@@ -48,7 +48,7 @@ def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=No
 
 
 class Battery(Coulombs):
-    import globals as G
+    import Globals as G
     # Battery constants
     UNIT_CAP_RATED = 108.4
     NOM_SYS_VOLT = 12.  # Nominal system output, V, at which the reported amps are used (12)
@@ -720,7 +720,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.time.append(time)
         self.saved.time_min.append(time / 60.)
         self.saved.time_day.append(time / 3600. / 24.)
-        self.saved.dt.append(dt)
         self.saved.dt_temp.append(self.dt_temp)
         self.saved.reset_temp.append(self.reset_temp)
         self.saved.chm.append(self.chm)
@@ -1417,6 +1416,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(321)
         plt.title(plot_title + ' B 1')
+        print('B 1', end=':  ')
         plt.plot(mv.time, mv.ib, color='green',   linestyle='-', label='ib'+suffix)
         plt.plot(mv.time, mv.ioc, color='magenta', linestyle='--', label='ioc'+suffix)
         plt.legend(loc=1)
@@ -1450,6 +1450,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(111)
         plt.title(plot_title + ' B 2')
+        print('B 2', end=':  ')
         plt.plot(mv.time, mv.vb, color='green', linestyle='-', label='vb'+suffix)
         plt.plot(sv.time, sv.vb, color='black', linestyle='--', label='vb_s'+suffix)
         plt.plot(mv.time, mv.voc_stat, color='orange', linestyle='-.', label='voc_stat'+suffix)
@@ -1465,6 +1466,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(321)
         plt.title(plot_title+' B 4 MON vs SIM')
+        print('B 4 MON vs SIM', end=':  ')
         plt.plot(mv.time, mv.ib, color='green', linestyle='-', label='ib'+suffix)
         plt.plot(sv.time, sv.ib, color='black', linestyle='--', label='ib_s'+suffix)
         plt.plot(sv.time, sv.ib_in, color='red', linestyle='-.', label='ib_in_s'+suffix)
@@ -1505,6 +1507,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(331)
         plt.title(plot_title+' B 5 **EKF')
+        print('B 5 **EKF', end=':  ')
         plt.plot(mv.time, mv.x_ekf, color='red', linestyle='-', label='x ekf'+suffix)
         plt.legend(loc=4)
         plt.subplot(332)
@@ -1539,6 +1542,7 @@ def overall_batt(mv, sv, filename,
         plt.figure()  # Batt 6
         fig_list += 1
         plt.title(plot_title + ' B 6')
+        print('B 6', end=':  ')
         plt.plot(mv.time, mv.e_voc_ekf, color='blue', linestyle='-.', label='e_voc'+suffix)
         plt.plot(mv.time, mv.e_soc_ekf, color='red', linestyle='dotted', label='e_soc_ekf'+suffix)
         plt.ylim(-0.01, 0.01)
@@ -1550,6 +1554,7 @@ def overall_batt(mv, sv, filename,
         plt.figure()  # Batt 7
         fig_list += 1
         plt.title(plot_title + ' B 7')
+        print('B 7', end=':  ')
         plt.plot(mv.time, mv.voc, color='red', linestyle='-', label='voc'+suffix)
         plt.plot(mv.time, mv.voc_ekf, color='blue', linestyle='-.', label='voc_ekf'+suffix)
         plt.plot(sv.time, sv.voc, color='green', linestyle=':', label='voc_s'+suffix)
@@ -1561,6 +1566,7 @@ def overall_batt(mv, sv, filename,
         plt.figure()  # Batt 8
         fig_list += 1
         plt.title(plot_title + ' B 8')
+        print('B 8', end=':  ')
         plt.plot(mv.time, mv.soc_ekf, color='blue', linestyle='-', label='soc_ekf'+suffix)
         plt.plot(sv.time, sv.soc, color='green', linestyle='-.', label='soc_s'+suffix)
         plt.plot(mv.time, mv.soc, color='red', linestyle=':', label='soc'+suffix)
@@ -1572,6 +1578,7 @@ def overall_batt(mv, sv, filename,
         plt.figure()  # Batt 9
         fig_list += 1
         plt.title(plot_title + ' B 9')
+        print('B 9', end=':  ')
         plt.plot(mv.time, mv.e_voc_ekf, color='blue', linestyle='-.', label='e_voc'+suffix)
         plt.plot(mv.time, mv.e_soc_ekf, color='red', linestyle='dotted', label='e_soc_ekf'+suffix)
         plt.legend(loc=2)
@@ -1583,6 +1590,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(221)
         plt.title(plot_title + ' B 10')
+        print('B 10', end=':  ')
         plt.plot(sv.time, sv.soc, color='red', linestyle='-', label='soc'+suffix)
         plt.legend(loc=1)
         plt.subplot(223)
@@ -1601,6 +1609,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(111)
         plt.title(plot_title + ' B 11')
+        print('B 11', end=':  ')
         plt.plot(sv.soc, sv.voc_stat, color='black', linestyle='dotted', label='SIM voc_stat vs soc'+suffix)
         plt.legend(loc=2)
         fig_file_name = filename + "_" + str(len(fig_list)) + ".png"
@@ -1632,6 +1641,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(331)
         plt.title(plot_title + ' Battover 1')
+        print('Battover 1', end=':  ')
         plt.plot(mv.time, mv.ib, color='green',   linestyle='-', label='ib'+suffix)
         plt.plot(mv1.time, mv1.ib, color='black', linestyle='--', label='ib' + suffix1)
         plt.plot(mv.time, mv.ioc, color='magenta', linestyle='-.', label='ioc'+suffix)
@@ -1677,6 +1687,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(321)
         plt.title(plot_title + ' Battover 2')
+        print('Battover 2', end=':  ')
         plt.plot(mv.time, mv.ib, color='green',   linestyle='-', label='ib'+suffix)
         plt.plot(mv1.time, mv1.ib, color='black', linestyle='--', label='ib' + suffix1)
         plt.plot(mv.time, mv.ioc, color='magenta', linestyle='-.', label='ioc'+suffix)
@@ -1702,6 +1713,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(331)
         plt.title(plot_title + ' **EKF' + 'Battover 3')
+        print('Battover 3', end=':  ')
         plt.plot(mv.time, mv.x_ekf, color='green', linestyle='-', label='x ekf' + suffix)
         plt.plot(mv1.time, mv1.x_ekf, color='black', linestyle='--', label='x ekf' + suffix1)
         plt.legend(loc=4)

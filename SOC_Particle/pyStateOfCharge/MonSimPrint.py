@@ -19,7 +19,7 @@ the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 
 from datetime import datetime, timedelta
-import globals as G
+import Globals as G
 
 def prn_soc_debug(OPT, leader="", time=None, i_temp=None, mon=None, sim=None):
     execute = False
