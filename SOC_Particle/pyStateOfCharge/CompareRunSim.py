@@ -44,7 +44,13 @@ plt.rcParams['axes.grid'] = True
 
 def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=True,
                     verbose=True, scale_in=None, slr_hys_sim=1., request_history=None):
-    print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n")
+
+    if data_file.count('soc4p2_hi_lo'):
+       IB_CHARGE_NOA = True
+    else:
+        IB_CHARGE_NOA = False
+
+    print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n{IB_CHARGE_NOA=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
@@ -169,9 +175,6 @@ def main():
     verbose_in = False
     scale_in = 1.0
     request_hist_in = 5  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
-
-
-
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=mon_soc_in, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,

@@ -111,7 +111,6 @@ class Battery(Coulombs):
     WRAP_SOC_MOD_OFF = 0.85  # Disable e_wrap_lo when nearing saturated and moderate C_rate(0.85)
     WRAP_SOC_HI_SLR = 1000.  # Huge to disable e_wrap (1000)
     WRAP_SOC_LO_SLR = 60.  # Large to disable e_wrap (60. for startup)
-    IB_CHARGE_NOA = True  # Force calculations to use noa signal
     VOC_STAT_FILT = 120.  # Clean up noise (120)
     VB_MIN = 2.  # Signal selection hard fault threshold, V (0.  < 2. < 10 bms shutoff, reads ~3 without power when off)
     VB_MAX = 17.  # Signal selection hard fault threshold, V (17. < VB_CONV_GAIN*4095)
@@ -275,7 +274,7 @@ class Battery(Coulombs):
         # print("soc=", soc, "tb_f=", tb_f, "dvoc=", self.dvoc, "voc=", voc)
         return voc, dv_dsoc
 
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
                   q_capacity=None, rp=None, reset_ekf=None, soc=None, sat_init=None):
         # Battery
         raise NotImplementedError
@@ -455,7 +454,7 @@ class BatteryMonitor(Battery, EKF1x1):
     # BatteryMonitor::calculate()
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
                   q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, i=None):
         if rp.modeling == 0:
             self.ib_amp = SN.mon_run.ibmh[G.i]
@@ -470,7 +469,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vsat = self.chemistry.nom_vsat + (self.Tb_f - 25.) * self.chemistry.dvoc_dt
         self.dt = dt
         self.ib_in = ib
-        if self.IB_CHARGE_NOA:
+        if OPT.IB_CHARGE_NOA:
             self.ib_in = self.ib_noa
         self.mod = rp.modeling
         # Overflow protection since ib past value used
@@ -965,7 +964,7 @@ class BatterySim(Battery):
         return s
 
     # BatterySim::calculate()
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
                   q_capacity=None, rp=None, reset_ekf=None, soc=None, sat_init=None):
         self.reset = reset
         if self.chm != chem:

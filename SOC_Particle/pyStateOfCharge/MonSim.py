@@ -137,6 +137,7 @@ class UserOptions:
     verbose: Optional[bool] = True  # Lots of 'helpful' information used to provide some quick clues about whatever
     # to or instead of plots
     mod_force: Optional[int] = None  # Force modeling config that cannot be gleaned from input data or other reason
+    IB_CHARGE_NOA: Optional[bool] = False  # Force use of ib_noa in coulomb counting but not signal selection or calculate
 
 #  Replicate the application in its entirety here.
 #  There are no 'bank' parameters anywhere in this model.   It is assumed that all inputs from the application have
@@ -274,7 +275,7 @@ def replicate(OPT: UserOptions):
         else:
             _chm_s = OPT.Bsim
 
-        sim.calculate(_chm_s, None, ib_in_s, SN.dt_s[G.i], reset, None, None, SN,
+        sim.calculate(_chm_s, None, ib_in_s, SN.dt_s[G.i], reset, None, None, SN, OPT,
                       soc=sim.soc, q_capacity=sim.q_capacity, rp=rp, sat_init=sat_s_init)
 
         sim.count_coulombs(OPT, SN, chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, charge_curr=sim.ib_charge, sat=False,
@@ -326,7 +327,7 @@ def replicate(OPT: UserOptions):
             mon.init_soc_ekf(OPT.mon_run, G.i, i_ekf)  # when modeling (assumed in python) ekf wants to equal model
 
         # Monitor calculate
-        mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, rp=rp, reset_ekf=reset_ekf, i=G.i)
+        mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, OPT, rp=rp, reset_ekf=reset_ekf, i=G.i)
         ib_charge = mon.ib_charge
 
         if OPT.use_sat_mon:
