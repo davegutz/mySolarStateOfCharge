@@ -39,7 +39,7 @@ def precleanup_fig_files(output_pdf_name='unite_pictures.pdf', path_to_pdfs='.')
     from glob import glob
     from os import remove
     for file in glob(os.path.join(path_to_pdfs, output_pdf_name+'*.pdf')):
-        print("removing", file)
+        print("\nremoving", file, end='')
         try:
             remove(file)
         except OSError:
@@ -99,10 +99,10 @@ def unite_pictures_into_pdf(outputPdfName='unite_pictures.pdf', save_pdf_path='.
                     if (numberOfFoldersAdded % numberOfEntitiesInOnePdf) == 0:
                         c.save()
                         # noinspection PyUnboundLocalVariable
-                        print("created", filename)
+                        print("\ncreated", filename)
                 if (numberOfFoldersAdded % numberOfEntitiesInOnePdf) != 0:
                     c.save()
-                    print("created", filename)
+                    print("\ncreated", filename)
             elif splitType == "picture":
                 numberOfPicturesAdded = 0
                 totalNumberOfPictures = 0
@@ -133,10 +133,10 @@ def unite_pictures_into_pdf(outputPdfName='unite_pictures.pdf', save_pdf_path='.
                         if (numberOfPicturesAdded % numberOfEntitiesInOnePdf) == 0:
                             c.save()
                             # noinspection PyUnboundLocalVariable
-                            print("created", filename)
+                            print("\ncreated", filename)
                 if (numberOfPicturesAdded % numberOfEntitiesInOnePdf) != 0:
                     c.save()
-                    print("created", filename)
+                    print("\ncreated", filename)
             elif splitType == "none":
                 filename = os.path.join(save_pdf_path, outputPdfName + ".pdf")
                 c = canvas.Canvas(filename)
@@ -148,7 +148,7 @@ def unite_pictures_into_pdf(outputPdfName='unite_pictures.pdf', save_pdf_path='.
                         c.drawImage(jPicture, 0, 0)
                         c.showPage()
                 c.save()
-                print("created", filename)
+                print("\ncreated", filename)
             else:
                 print("Wrong splitType value")
         else:
@@ -188,10 +188,10 @@ def unite_pictures_into_pdf(outputPdfName='unite_pictures.pdf', save_pdf_path='.
                     if (numberOfPicturesAdded % numberOfEntitiesInOnePdf) == 0:
                         c.save()
                         # noinspection PyUnboundLocalVariable
-                        print("created", filename)
+                        print("\ncreated", filename)
                 if (numberOfPicturesAdded % numberOfEntitiesInOnePdf) != 0:
                     c.save()
-                    print("created", filename)
+                    print("\ncreated", filename)
             elif splitType == "none":
                 filename = os.path.join(save_pdf_path, outputPdfName + ".pdf")
                 c = canvas.Canvas(filename)
@@ -202,7 +202,7 @@ def unite_pictures_into_pdf(outputPdfName='unite_pictures.pdf', save_pdf_path='.
                     c.drawImage(iPicture, 0, 0)
                     c.showPage()
                 c.save()
-                print("created", filename)
+                print("\ncreated", filename)
             else:
                 print("Wrong splitType value")
         else:

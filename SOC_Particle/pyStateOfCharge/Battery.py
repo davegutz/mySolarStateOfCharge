@@ -461,8 +461,8 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_amp = SN.mon_run.ibmh[G.i]
             self.ib_noa = SN.mon_run.ibnh[G.i]
         else:
-            self.ib_amp = SN.ibmm[G.i]
-            self.ib_noa = SN.ibnm[G.i]
+            self.ib_amp = SN.mon_run.ibmm[G.i]
+            self.ib_noa = SN.mon_run.ibnm[G.i]
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
