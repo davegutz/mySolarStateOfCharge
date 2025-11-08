@@ -100,7 +100,8 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
                                    use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in, use_vb_raw=use_vb_raw,
                                    add_voc_sim=dvoc_sim_in, add_voc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
                                    add_s_voc_soc=add_s_voc_soc_in, verbose=verbose, scale_in=scale_in,
-                                   slr_hys_sim=s_hys_sim_in, request_history=request_history)
+                                   slr_hys_sim=s_hys_sim_in, request_history=request_history,
+                                   IB_CHARGE_NOA=IB_CHARGE_NOA)
     mon_ver, sim_ver, sim_s_ver, mon, sim = replicate(replicateOptions)
     pass
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
