@@ -200,10 +200,8 @@ def replicate(OPT: UserOptions):
         hdr = print_hist(OPT, SN, i_temp, i_ekf, t, mon, True, True, sim)
 
     # Top of time loop
-    irun = -1
-    while irun < t_len-1:
+    while G.i < t_len-1:
         G.i += 1
-        irun += 1
 
         if G.i >= 206:
             pass  # used for debug breakpoint at i >= <val>
