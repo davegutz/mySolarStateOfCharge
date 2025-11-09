@@ -976,23 +976,15 @@ class SavedData:
                 self.y_ekf_f = np.array(sel.y_ekf_f[:i_end])
             if hasattr(sel, 'ib_dec'):
                 self.ib_dec = np.array(sel.ib_dec[:i_end])
-            self.ib_dyn_a_m = np.array(sel.ib_dyn_a_m[:i_end])
-            self.ib_dyn_b_m = np.array(sel.ib_dyn_b_m[:i_end])
-            self.ib_dyn_c_m = np.array(sel.ib_dyn_c_m[:i_end])
             self.ib_dyn_T_m = np.array(sel.ib_dyn_T_m[:i_end])
             self.ib_dyn_rstate_m = np.array(sel.ib_dyn_rstate_m[:i_end])
             self.ib_dyn_lstate_m = np.array(sel.ib_dyn_lstate_m[:i_end])
             self.ib_dyn_tau_m = np.array(sel.ib_dyn_tau_m[:i_end])
-            self.ib_dyn_a_n = np.array(sel.ib_dyn_a_n[:i_end])
-            self.ib_dyn_b_n = np.array(sel.ib_dyn_b_n[:i_end])
-            self.ib_dyn_c_n = np.array(sel.ib_dyn_c_n[:i_end])
             self.ib_dyn_T_n = np.array(sel.ib_dyn_T_n[:i_end])
             self.ib_dyn_rstate_n = np.array(sel.ib_dyn_rstate_n[:i_end])
             self.ib_dyn_lstate_n = np.array(sel.ib_dyn_lstate_n[:i_end])
             self.ib_dyn_tau_n = np.array(sel.ib_dyn_tau_n[:i_end])
 
-            self.ib_wrp_a_n = np.array(sel.ib_wrp_a_n[:i_end])
-            self.ib_wrp_b_n = np.array(sel.ib_wrp_b_n[:i_end])
             self.ib_wrp_T_n = np.array(sel.ib_wrp_T_n[:i_end])
             self.ib_wrp_rate_n = np.array(sel.ib_wrp_rate_n[:i_end])
             self.ib_wrp_state_n = np.array(sel.ib_wrp_state_n[:i_end])
@@ -1053,9 +1045,6 @@ class SavedData:
             self.H = np.array(ekf.H_[:i_end])
             self.tb_f_for_hx = np.array(ekf.tb_f_hx_[:i_end])
             self.x_for_hx = np.array(ekf.x_for_hx_[:i_end])
-            self.voc_stat_f_a = np.array(ekf.voc_stat_a[:i_end])
-            self.voc_stat_f_b = np.array(ekf.voc_stat_b[:i_end])
-            self.voc_stat_f_c = np.array(ekf.voc_stat_c[:i_end])
             self.voc_stat_f_rstate = np.array(ekf.voc_stat_rstate[:i_end])
             self.voc_stat_f_lstate = np.array(ekf.voc_stat_lstate[:i_end])
             self.voc_stat_f_T = np.array(ekf.voc_stat_T[:i_end])
@@ -1203,9 +1192,6 @@ class SavedDataSim:
             self.soc_s = data.soc_s[:i_end]
             self.reset_s = data.reset_s[:i_end]
             self.d_delta_q_s = data.ddq_s[:i_end]
-            self.ib_dyn_s_a = data.ib_dyn_s_a[:i_end]
-            self.ib_dyn_s_b = data.ib_dyn_s_b[:i_end]
-            self.ib_dyn_s_c = data.ib_dyn_s_c[:i_end]
             self.ib_dyn_s_T = data.ib_dyn_s_T[:i_end]
             self.ib_dyn_s_tau = data.ib_dyn_s_tau[:i_end]
             self.ib_dyn_s_rstate = data.ib_dyn_s_rstate[:i_end]

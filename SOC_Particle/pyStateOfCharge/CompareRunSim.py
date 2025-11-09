@@ -162,8 +162,8 @@ def main():
     unit_key = 'g20250612a_soc2p2_hi_lo_chg'
     # The following are not implemented in GUI
 
-    # time_end_in = None
-    time_end_in = 3.
+    time_end_in = None
+    # time_end_in = 3.
 
     plots = False
     # plots = True
