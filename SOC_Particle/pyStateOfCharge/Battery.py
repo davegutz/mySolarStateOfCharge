@@ -359,8 +359,10 @@ class BatteryMonitor(Battery, EKF1x1):
         self.reset_past = True
         self.ib_past = 0.
         self.ib_amp = None
+        self.ib_amp_pst = None
         self.ib_amp_fut = 0.
         self.ib_noa = None
+        self.ib_noa_pst = 0.
         self.ib_noa_fut = 0.
         self.e_wrap_m = None
         self.e_wrap_m_filt = None
@@ -459,9 +461,13 @@ class BatteryMonitor(Battery, EKF1x1):
         if rp.modeling == 0:
             self.ib_amp = SN.mon_run.ibmh[G.i]
             self.ib_noa = SN.mon_run.ibnh[G.i]
+            self.ib_amp_pst = SN.mon_run.ibmh[max(G.i-1, 0)]
+            self.ib_noa_pst = SN.mon_run.ibnh[max(G.i-1, 0)]
         else:
             self.ib_amp = SN.mon_run.ibmm[G.i]
             self.ib_noa = SN.mon_run.ibnm[G.i]
+            self.ib_amp_pst = SN.mon_run.ibmm[max(G.i - 1, 0)]
+            self.ib_noa_pst = SN.mon_run.ibnm[max(G.i - 1, 0)]
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
@@ -476,7 +482,10 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        self.wrap(reset=reset, ib_sel=self.ib, SN=SN, ib_amp=self.ib_amp, ib_noa=self.ib_noa, i=G.i)
+        if rp.modeling == 0:
+            self.wrap(reset=reset, ib_sel=self.ib, SN=SN, ib_amp=self.ib_amp, ib_noa=self.ib_noa, i=G.i)
+        else:
+            self.wrap(reset=reset, ib_sel=self.ib, SN=SN, ib_amp=self.ib_amp_pst, ib_noa=self.ib_noa_pst, i=G.i)
 
         # Reversionary model
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
