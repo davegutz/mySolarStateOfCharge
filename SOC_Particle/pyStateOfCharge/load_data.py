@@ -95,7 +95,7 @@ class SyncInfo:
 
 
 # Load from files
-def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_batt_cap=Battery.UNIT_CAP_RATED,
+def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_batt_cap=Battery.NOM_UNIT_CAP,
               legacy=False, v1_only=False, zero_thr_in=0.02):
 
     print(f"load_data: \n{path_to_data=}\n{skip=}\n{unit_key=}\n{zero_zero_in=}\n{time_end_in=}\n{rated_batt_cap=}\n"
@@ -116,7 +116,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
 
     data_file_clean = write_clean_file(path_to_data, type_='_mon', hdr_key=hdr_key, unit_key=unit_key, skip=skip)
     if data_file_clean is None:
-        return None, None, None, None, None
+        return None, None, None, None, None, None
     if data_file_clean is not None:
         mon_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
     else:

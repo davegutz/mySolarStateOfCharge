@@ -50,7 +50,8 @@ def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=No
 class Battery(Coulombs):
     import Globals as G
     # Battery constants
-    UNIT_CAP_RATED = 108.4
+    NOMINAL_TB = 15.  # Middle of the road Tb for decent reversionary operation, deg C (15.)
+    NOM_UNIT_CAP = 108.4  # Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah
     NOM_SYS_VOLT = 12.  # Nominal system output, V, at which the reported amps are used (12)
     mxeps_bb = 1.05  # Numerical maximum of coefficient model with scaled soc
     TCHARGE_DISPLAY_DEADBAND = 0.1  # Inside this +/- deadband, charge time is displayed '---', A
@@ -131,7 +132,7 @@ class Battery(Coulombs):
                             what gets delivered, e.g.Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
                             or 20 - 40 A for a 100 Ah battery"""
 
-    def __init__(self, OPT=None, q_cap_rated=UNIT_CAP_RATED*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
+    def __init__(self, OPT=None, q_cap_rated=NOM_UNIT_CAP*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
                  dvoc=0., mod_code=0,
                  scale_cap=1., mon=None):
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
@@ -285,7 +286,7 @@ class Battery(Coulombs):
 
 class BatteryMonitor(Battery, EKF1x1):
     """Extend Battery class to make a monitor"""
-    def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1.,
+    def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600, t_rated=25., temp_rlim=0.017, scale=1.,
                  tb_f=25., tweak_test=False, dvoc=0., mod_code=0):
         if hasattr(OPT, 'slr_res_0'):
             ref = OPT.mon_run
@@ -322,8 +323,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.y_filt_2Ord = General2Pole(0.1, Battery.WN_Y_FILT, Battery.ZETA_Y_FILT, Battery.MIN_Y_FILT,
                                         Battery.MAX_Y_FILT)
         self.y_filt2 = 0.
-        self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.UNIT_CAP_RATED*scale,
-                                     min_=-Battery.UNIT_CAP_RATED*scale, tau=self.chemistry.tau_ct)
+        self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.NOM_UNIT_CAP*scale,
+                                     min_=-Battery.NOM_UNIT_CAP*scale, tau=self.chemistry.tau_ct)
         self.ib = 0.
         self.vb = 0.
         self.vb_model_rev = 0.
@@ -582,9 +583,9 @@ class BatteryMonitor(Battery, EKF1x1):
 
         # Charge time
         if self.ib_charge > 0.1:
-            self.tcharge_ekf = min(Battery.UNIT_CAP_RATED/self.ib_charge * (1. - self.soc_ekf), 24.)
+            self.tcharge_ekf = min(Battery.NOM_UNIT_CAP/self.ib_charge * (1. - self.soc_ekf), 24.)
         elif self.ib_charge < -0.1:
-            self.tcharge_ekf = max(Battery.UNIT_CAP_RATED/self.ib_charge * self.soc_ekf, -24.)
+            self.tcharge_ekf = max(Battery.NOM_UNIT_CAP/self.ib_charge * self.soc_ekf, -24.)
         elif self.ib_charge >= 0.:
             self.tcharge_ekf = 24.*(1. - self.soc_ekf)
         else:
@@ -844,7 +845,7 @@ class BatteryMonitor(Battery, EKF1x1):
             ewmin_slr = Battery.WRAP_SOC_LO_SLR
         elif (self.voc_soc > (self.vsat - Battery.WRAP_HI_SAT_MARG) or
             (self.voc_stat > (self.vsat-Battery.WRAP_HI_SAT_MARG) and
-             self.ib / Battery.UNIT_CAP_RATED > Battery.WRAP_MOD_C_RATE and
+             self.ib / Battery.NOM_UNIT_CAP > Battery.WRAP_MOD_C_RATE and
              self.soc > Battery.WRAP_SOC_MOD_OFF)):
             ewsat_slr = Battery.WRAP_SOC_HI_SLR
             ewmin_slr = 1.
@@ -896,7 +897,7 @@ class BatteryMonitor(Battery, EKF1x1):
 class BatterySim(Battery):
     """Extend Battery class to make a model"""
 
-    def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017,
+    def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600, t_rated=25., temp_rlim=0.017,
                  scale=1., tb_f=25., tweak_test=False, mod_code=0):
         Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, dvoc=OPT.add_voc_sim, mod_code=mod_code, scale_cap=scale, mon=False)
@@ -904,7 +905,7 @@ class BatterySim(Battery):
         self.chemistry.assign_all_mod(mod_code, unit=OPT.unit)
         self.lut_voc = None
         self.sat_ib_max = 0.  # Current cutback to be applied to modeled ib output, A
-        # self.sat_ib_null = 0.1*Battery.UNIT_CAP_RATED  # Current cutback value for voc=vsat, A
+        # self.sat_ib_null = 0.1*Battery.NOM_UNIT_CAP  # Current cutback value for voc=vsat, A
         self.sat_ib_null = 0.  # Current cutback value for soc=1, A
         # self.sat_cutback_gain = 4.8  # Gain to retard ib when voc exceeds vsat, dimensionless
         self.sat_cutback_gain = 1000.*OPT.slr_cutback_gain  # Gain to retard ib when soc approaches 1, dimensionless
@@ -922,7 +923,7 @@ class BatterySim(Battery):
         self.tweak_test = tweak_test
         self.voc = 0.  # Charging voltage, V
         self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, tau=self.chemistry.tau_ct,
-                                     max_=Battery.UNIT_CAP_RATED*scale, min_=-Battery.UNIT_CAP_RATED*scale)
+                                     max_=Battery.NOM_UNIT_CAP*scale, min_=-Battery.NOM_UNIT_CAP*scale)
         self.d_delta_q = 0.  # Charging rate, Coulombs/sec
         self.ib_charge = 0.  # Charge current, A
         self.saved_s = SavedS()  # for plots and prints
@@ -1216,8 +1217,8 @@ class Looparound:
         self.lo_fail = False
         self.lo_fault = False
         self.chem = Mon_.chemistry
-        self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.UNIT_CAP_RATED*self.Mon.scale_cap,
-                                     min_=-Battery.UNIT_CAP_RATED*self.Mon.scale_cap, tau=self.chem.tau_ct)
+        self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.NOM_UNIT_CAP*self.Mon.scale_cap,
+                                     min_=-Battery.NOM_UNIT_CAP*self.Mon.scale_cap, tau=self.chem.tau_ct)
         self.ewhi_thr = 0.
         self.ewlo_thr = 0.
         self.ib = 0.

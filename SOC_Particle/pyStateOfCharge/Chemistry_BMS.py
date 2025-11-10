@@ -53,7 +53,7 @@ class Chemistry(BMS):
     """Properties of battery"""
     def __init__(self, mod_code=0, dvoc=0., unit=None):
         BMS.__init__(self)
-        self.rated_temp = 0.  # Temperature at UNIT_CAP_RATED, deg C
+        self.rated_temp = 0.  # Temperature at NOM_UNIT_CAP, deg C
         self.coul_eff = 0.  # Coulombic efficiency - the fraction of charging input that gets\
         # turned into usable Coulombs
         self.cap = 0.  # Hysteresis capacitance, F
@@ -99,7 +99,7 @@ class Chemistry(BMS):
     def assign_BB(self):
         # Constants
         # self.cap = see below
-        self.rated_temp = 25.  # Temperature at UNIT_CAP_RATED, deg C
+        self.rated_temp = 25.  # Temperature at NOM_UNIT_CAP, deg C
         self.coul_eff = 0.9985  # Coulombic efficiency - the fraction of charging input that gets\
         # turned into usable Coulombs (0.9985)
         self.dqdt = 0.01  # Change of charge with temperature, fraction/deg C (0.01 from literature)
@@ -168,7 +168,7 @@ class Chemistry(BMS):
     def assign_CH(self):
         # Constants
         # self.cap = see below
-        self.rated_temp = 25.  # Temperature at UNIT_CAP_RATED, deg C
+        self.rated_temp = 25.  # Temperature at NOM_UNIT_CAP, deg C
         self.coul_eff = 0.9976  # Coulombic efficiency - the fraction of charging input that gets turned into\
         # usable Coulombs (.9976)
         self.dqdt = 0.01  # Change of charge with temperature, fraction/deg C (0.01 from literature)
@@ -239,7 +239,7 @@ class Chemistry(BMS):
     def assign_CHG(self):
         # Constants
         # self.cap = see below
-        self.rated_temp = 25.  # Temperature at UNIT_CAP_RATED, deg C
+        self.rated_temp = 25.  # Temperature at NOM_UNIT_CAP, deg C
         self.coul_eff = 0.9976  # Coulombic efficiency - the fraction of charging input that gets turned into\
         # usable Coulombs (.9976)
         self.dqdt = 0.01  # Change of charge with temperature, fraction/deg C (0.01 from literature)
@@ -323,7 +323,7 @@ class Chemistry(BMS):
         s += "  vb_rising =    {:7.3f}  // Shutoff point when off, V\n".format(self.vb_rising)
         s += "  vb_down_sim=   {:7.3f}  // Shutoff point in Sim, V\n".format(self.vb_down_sim)
         s += "  vb_rising_sim ={:7.3f}  // Shutoff point in Sim when off, V\n".format(self.vb_rising_sim)
-        s += "  rated_temp =   {:7.3f}  // Temperature at UNIT_CAP_RATED, deg C\n".format(self.rated_temp)
+        s += "  rated_temp =   {:7.3f}  // Temperature at NOM_UNIT_CAP, deg C\n".format(self.rated_temp)
         s += "  coul_eff =      {:6.4f}  // Coulombic efficiency - the fraction of charging input that gets turned into usable Coulombs\n".format(self.coul_eff)
         s += "  cap      =  {:10.1f}  // Hysteresis capacitance, Farads\n".format(self.cap)
         s += "  dqdt      =    {:7.3f}  // Change of charge with temperature, fraction/deg C (0.01 from literature)\n".format(self.dqdt)

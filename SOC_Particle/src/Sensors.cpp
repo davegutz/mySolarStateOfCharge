@@ -651,7 +651,7 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
   Serial.printf(" Inh%7.3f Inm %7.3f Ib%7.3f\n", Sen->Ib_noa_hdwe, Sen->Ib_noa_model, Sen->Ib);
   Serial.printf(" Ibh%7.3f Ibh %7.3f Ib%7.3f\n\n", Sen->Ib_hdwe, Sen->Ib_hdwe_model, Sen->Ib);
 
-  Serial.printf(" mod_tb %d mod_vb %d mod_ib  %d\n", sp.mod_tb_f(), sp.mod_vb(), sp.mod_ib());
+  Serial.printf(" mod_tb %d mod_vb %d mod_ib  %d\n", sp.mod_tb(), sp.mod_vb(), sp.mod_ib());
   Serial.printf(" mod_tb_dscn %d mod_vb_dscn %d mod_ib_amp_dscn %d mod_ib_noa_dscn %d\n", sp.mod_tb_dscn(), sp.mod_vb_dscn(), sp.mod_ib_amp_dscn(), sp.mod_ib_noa_dscn());
   #ifdef HDWE_IB_HI_LO
     Serial.printf(" tb_s_st %d  vb_s_st %d  ib_choice %d ib_decision_ %d ib_s_st %d\n", tb_sel_stat_, vb_sel_stat_, ib_choice_, ib_decision_, ib_sel_stat_);
@@ -719,7 +719,7 @@ void Fault::pretty_print1(Sensors *Sen, BatteryMonitor *Mon)
   Serial1.printf(" Inh %7.3f  Inm %7.3f\n", Sen->Ib_noa_hdwe, Sen->Ib_noa_model);
   Serial1.printf(" Ibh %7.3f  Ibm %7.3f Ib %7.3f\n\n", Sen->Ib_hdwe, Sen->Ib_hdwe_model, Sen->Ib);
 
-  Serial1.printf(" mod_tb  %d  mod_vb  %d  mod_ib  %d\n", sp.mod_tb_f(), sp.mod_vb(), sp.mod_ib());
+  Serial1.printf(" mod_tb  %d  mod_vb  %d  mod_ib  %d\n", sp.mod_tb(), sp.mod_vb(), sp.mod_ib());
   #ifdef HDWE_IB_HI_LO
     Serial1.printf(" tb_s_st %d  vb_s_st %d  ib_choice %d ib_decision %d\n", tb_sel_stat_, vb_sel_stat_, ib_choice_, ib_decision_);
   #else
@@ -1148,7 +1148,7 @@ void Fault::tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, con
   {
     failAssign(false, TB_FA);
   }
-  if ( sp.mod_tb_f() )
+  if ( sp.mod_tb() )
   {
     faultAssign( ((Sen->Tb_model_filt<=_tb_min) || (Sen->Tb_model_filt>=_tb_max)) &&
                  !ap.disab_tb_fa, TB_FLT);
@@ -1170,7 +1170,7 @@ void Fault::tb_stale(const boolean reset, Sensors *Sen)
 {
   boolean reset_loc = reset | reset_all_faults_;
 
-  if ( ap.disab_tb_fa || reset_loc || (sp.mod_tb_f() && !ap.fail_tb) )
+  if ( ap.disab_tb_fa || reset_loc || (sp.mod_tb() && !ap.fail_tb) )
   {
     faultAssign( false, TB_FLT );
     failAssign( false, TB_FA );
@@ -1398,7 +1398,7 @@ void Sensors::select_temp(BatteryMonitor *Mon)
 {
   // Final assignments
   // tb
-  if ( sp.mod_tb_f() )
+  if ( sp.mod_tb() )
   {
     if ( Flt->tb_fa() )
     {

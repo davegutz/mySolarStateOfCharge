@@ -282,7 +282,7 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
     return hdr
 
 def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
-    hdr = "  i   time     r       rt   it   ct      re   ie  ce    sa      vb                    ib_charge             ib                     ib_amp                            ib_dyn_m      ib_dyn_m_init     ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rstate_m         ib_dyn_lstate_m          dv_dyn_m             e_wrap_m             e_wrap_m_filt        e_wrap_m_trim       ib_noa                            ib_dyn_n      ib_dyn_n_init     ib_dyn_T_n     ib_dyn_tau_n            dv_dyn_n             e_wrap_n             e_wrap_n_filt        ib_dyn_n             ib_dyn                 ib_dyn_T_n     ib_dyn_tau_n           ib_dyn_rstate_n         ib_dyn_lstate_n          dv_dyn_n              e_wrap_n_T             e_wrap_n_tau           e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt        e_wrap               e_wrap_filt        ib_dyn                 dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_s            voc_stat_f             soc_ekf               y_ekf"
+    hdr = "  i   time     r       rt   it   ct      re   ie  ce    sa      vb                    ib_charge             ib                     ibmh      ibmm     ib_amp       ib_dyn_m      ib_dyn_m_init     ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rstate_m         ib_dyn_lstate_m        vb                     dv_dyn_m            voc                   voc_soc                e_wrap_m             e_wrap_m_filt        e_wrap_m_trim     init        ibnh      ibnm     ib_noa       ib_dyn_n      ib_dyn_n_init     ib_dyn_T_n     ib_dyn_tau_n            dv_dyn_n             e_wrap_n             e_wrap_n_filt        ib_dyn_n             ib_dyn                 ib_dyn_T_n     ib_dyn_tau_n           ib_dyn_rstate_n         ib_dyn_lstate_n          dv_dyn_n              e_wrap_n_T             e_wrap_n_tau           e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt        e_wrap               e_wrap_filt        ib_dyn                 dv_dyn                   dv_hys                   soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_s            voc_stat_f             soc_ekf               y_ekf"
     if calc_temp or calc_ekf:
         print(hdr)
     print("{:4d}".format(G.i), "{:8.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
@@ -292,17 +292,20 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:11.5f}".format(SN.mon_run.vb[G.i]), "{:9.5f}".format(mon.vb),
           "{:11.5f}".format(SN.mon_run.ib_charge[G.i]), "{:9.5f}".format(mon.ib_charge),
           "{:11.5f}".format(SN.mon_run.ib[G.i]), "{:9.5f}".format(mon.ib),
-          "{:11.5f}".format(SN.mon_run.ibmh[G.i]), "{:11.5f}".format(SN.mon_run.ibmm[G.i]), "{:9.5f}".format(mon.LoopIbAmp.ib),
+          "{:11.5f}".format(SN.mon_run.ibmh[G.i]), "{:9.5f}".format(SN.mon_run.ibmm[G.i]), "{:9.5f}".format(mon.LoopIbAmp.ib),
           "{:11.5f}".format(SN.mon_run.ib_dyn_m[G.i]), "{:9.5f}".format(mon.LoopIbAmp.ib_dyn), "{:9.5f}".format(SN.LoopAmp.ib_init),
           "{:9.3f}".format(SN.mon_run.ib_dyn_T_m[G.i]), "{:5.3f}".format(mon.LoopIbAmp.ChargeTransfer.dt),
           "{:12.6f}".format(SN.mon_run.ib_dyn_tau_m[G.i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.tau),
           "{:12.6f}".format(SN.mon_run.ib_dyn_rstate_m[G.i]), "{:10.6f}".format(mon.LoopIbAmp.ChargeTransfer.rstate),
           "{:12.6f}".format(SN.mon_run.ib_dyn_lstate_m[G.i]), "{:10.6f}".format(mon.LoopIbAmp.ChargeTransfer.state),
+          "{:11.5f}".format(SN.mon_run.vb[G.i]), "{:9.5f}".format(mon.vb),
           "{:11.5f}".format(SN.mon_run.dv_dyn_m[G.i]), "{:8.5f}".format(mon.LoopIbAmp.dv_dyn),
+          "{:11.5f}".format(SN.mon_run.voc[G.i]), "{:9.5f}".format(mon.voc),
+          "{:11.5f}".format(SN.mon_run.voc_soc[G.i]), "{:9.5f}".format(mon.voc_soc),
           "{:11.5f}".format(SN.mon_run.e_wrap_m[G.i]), "{:8.5f}".format(mon.e_wrap_m),
           "{:11.5f}".format(SN.mon_run.e_wrap_m_filt[G.i]), "{:8.5f}".format(mon.e_wrap_m_filt),
-          "{:11.5f}".format(SN.mon_run.e_wrap_m_trim[G.i]), "{:8.5f}".format(mon.e_wrap_m_trim),
-          "{:11.5f}".format(SN.mon_run.ibnh[G.i]),  "{:11.5f}".format(SN.mon_run.ibnm[G.i]), "{:9.5f}".format(mon.LoopIbNoa.ib),
+          "{:11.5f}".format(SN.mon_run.e_wrap_m_trim[G.i]), "{:8.5f}".format(mon.e_wrap_m_trim), "{:8.5f}".format(SN.e_wrap_m_trim_init),
+          "{:11.5f}".format(SN.mon_run.ibnh[G.i]),  "{:9.5f}".format(SN.mon_run.ibnm[G.i]), "{:9.5f}".format(mon.LoopIbNoa.ib),
           "{:11.5f}".format(SN.mon_run.ib_dyn_n[G.i]), "{:9.5f}".format(mon.LoopIbNoa.ib_dyn), "{:9.5f}".format(SN.LoopAmp.ib_init),
           "{:9.3f}".format(SN.mon_run.ib_dyn_T_n[G.i]), "{:5.3f}".format(mon.LoopIbNoa.ChargeTransfer.dt),
           "{:12.6f}".format(SN.mon_run.ib_dyn_tau_n[G.i]), "{:8.6f}".format(mon.LoopIbNoa.ChargeTransfer.tau),

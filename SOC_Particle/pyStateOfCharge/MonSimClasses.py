@@ -95,6 +95,10 @@ class Sensors:
         self.mon_run = OPT.mon_run
         self.sim_run = OPT.sim_run
         if run_type == 'RunSim':
+            if hasattr(self.mon_run, 'mtb'):
+                self.mod_tb = self.mon_run.mtb
+            else:
+                self.mod_tb = self.mon_run.Tb_f.copy()*0.
             self.Tb0 = self.mon_run.Tb_f[0]
             self.Tb0_s = self.mon_run.Tb_mod[0]
             self.lut_dTb = None
@@ -328,13 +332,49 @@ class Sensors:
             dTb = self.dTb
         return dTb
 
+    def calc_temp_pass_1(self, OPT, mon_, sim_, i_temp):
+        mon = mon_
+        sim = sim_
+        if hasattr(OPT.mon_run, 'Tb_hdwe'):
+            mon.Tb_hdwe = OPT.mon_run.Tb_hdwe[i_temp]
+        else:
+            mon.Tb_hdwe = OPT.mon_run.Tb_f[i_temp]
+        mon.reset_temp = (i_temp < 2) or OPT.run_type == 'HistSim'  # make sure temp init is longer than reset
+        if hasattr(OPT.mon_run, 'Tt'):
+            mon.dt_temp = OPT.mon_run.Tt[i_temp]
+        else:
+            mon.dt_temp = mon.dt
+        if OPT.run_type == 'RunSim':
+            if bool(self.mod_tb[i_temp]):
+                mon.Tb = OPT.mon_run.Tb[i_temp]
+            else:
+                mon.Tb = mon.Tb_hdwe  # past value
+            sim.Tb = mon.Tb
+            mon.Tb_s =mon.Tb
+        else:
+            sim.Tb = OPT.mon_run.Tb_f[i_temp]
+            mon.Tb = OPT.mon_run.Tb_f[i_temp]
+            mon.Tb_s = OPT.mon_run.Tb_f[i_temp]
+        if i_temp > 0:
+            self.update_tb()
+            mon.Tb_rap = self.Tb_past
+            mon.Tb_f_rap = self.Tb_f_past
+            mon.Tb_f_rate_rap = self.Tb_f_rate_past
+        if hasattr(OPT.mon_run, 'Tb_mod'):
+            sim.Tb_f = OPT.mon_run.Tb_mod[i_temp]
+        else:
+            sim.Tb_f = sim.Tb
+        return mon, sim
+
     def calc_temp_pass_2(self, mon_run, mon, Battery_, i_temp):
         if hasattr(mon_run, 'Tb_hdwe_filt'):
-            mon.Tb_hdwe_filt = \
-                self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_run.Tb_hdwe_filt[i_temp],
-                                                      mon.reset_temp,
-                                                      mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
-                                                      rmin=-Battery_.T_RLIM)
+            if self.mod_tb[i_temp]:
+                mon.Tb_hdwe_filt = mon.Tb
+            else:
+                mon.Tb_hdwe_filt = \
+                    self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_run.Tb_hdwe_filt[i_temp], mon.reset_temp,
+                                                          mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
+                                                          rmin=-Battery_.T_RLIM)
         else:
             mon.Tb_hdwe_filt = \
                 self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon.Tb_hdwe,
@@ -382,37 +422,3 @@ class Sensors:
         self.Tb_past = self.Tb
         self.Tb_f_past = self.Tb_f
         self.Tb_f_rate_past = self.Tb_f_rate
-
-    def calc_temp_pass_1(self, OPT, mon_, sim_, i_temp):
-        mon = mon_
-        sim = sim_
-        mon.Tb = mon.Tb_hdwe  # past value
-        mon.reset_temp = (i_temp < 2) or OPT.run_type == 'HistSim'  # make sure temp init is longer than reset
-        if hasattr(OPT.mon_run, 'Tt'):
-            mon.dt_temp = OPT.mon_run.Tt[i_temp]
-        else:
-            mon.dt_temp = mon.dt
-        if hasattr(OPT.mon_run, 'Tb_hdwe'):
-            mon.Tb_hdwe = OPT.mon_run.Tb_hdwe[i_temp]
-        else:
-            mon.Tb_hdwe = OPT.mon_run.Tb_f[i_temp]
-        if OPT.run_type == 'RunSim':
-            sim.Tb = OPT.mon_run.Tb[i_temp]
-            mon.Tb = OPT.mon_run.Tb[i_temp]
-            mon.Tb_s = OPT.mon_run.Tb[i_temp]
-        else:
-            sim.Tb = OPT.mon_run.Tb_f[i_temp]
-            mon.Tb = OPT.mon_run.Tb_f[i_temp]
-            mon.Tb_s = OPT.mon_run.Tb_f[i_temp]
-        if i_temp > 0:
-            self.update_tb()
-            mon.Tb_rap = self.Tb_past
-            mon.Tb_f_rap = self.Tb_f_past
-            mon.Tb_f_rate_rap = self.Tb_f_rate_past
-        if hasattr(OPT.mon_run, 'Tb_mod'):
-            sim.Tb_f = OPT.mon_run.Tb_mod[i_temp]
-        else:
-            sim.Tb_f = sim.Tb
-        return mon, sim
-
-

@@ -71,7 +71,7 @@ class LocalChem(Chemistry):
     def assign_obs(self, keep_sim_happy=0.5):
         # Constants
         # self.cap = see below
-        self.rated_temp = 25.  # Temperature at UNIT_CAP_RATED, deg C
+        self.rated_temp = 25.  # Temperature at NOM_UNIT_CAP, deg C
         self.coul_eff = 0.9976  # Coulombic efficiency - the fraction of charging input that gets turned into usable Coulombs (.9976)
         self.dqdt = 0.01  # Change of charge with temperature, fraction/deg C (0.01 from literature)
         self.dvoc_dt = 0.004  # Change of VOC with operating temperature in range 0 - 50 C V/deg C (0.004)
@@ -184,9 +184,9 @@ class LocalChem(Chemistry):
         s += self.lut_voc_soc_new.__str__()
         s += "\nNew lut_soc_min:\n"
         s += self.lut_min_soc_new.__str__()
-        s += "\nIn app use \n#define UNIT_CAP_RATED        {:5.1f}   // Nominal battery unit capacity at RATED_TEMP.  (* 'Sc' or '*BS'/'*BP'), Ah\n".\
+        s += "\nIn app use \n#define NOM_UNIT_CAP        {:5.1f}   // Nominal battery unit capacity at RATED_TEMP.  (* 'Sc' or '*BS'/'*BP'), Ah\n".\
             format(self.new_rated_batt_cap)
-        s += "In Python use UNIT_CAP_RATED " + "{:7.2f}".format(self.rated_batt_cap)
+        s += "In Python use NOM_UNIT_CAP " + "{:7.2f}".format(self.rated_batt_cap)
         s += "  and allow ucrs over UART to automatically set simulation values (in replicate())"
 
         return s
@@ -229,7 +229,7 @@ if __name__ == '__main__':
     #  Copy current values of obs battery from Chemistry_BMS for mod_code entered below in LocalChem, into assign_obs above
     #  Check values below in LocalChem() for mod_code, rated_batt_cap, scale
     #    mod_code agrees with entries (for proper plotting and bookkeeping)
-    #    rated_batt_cap from Battery.UNIT_CAP_RATED in Python, not #define in app
+    #    rated_batt_cap from Battery.NOM_UNIT_CAP in Python, not #define in app
     #    scale from scale_in in CompareRunSim.   It doesn't appear in CompareRunSim there is a default value of 1.
     def main():
         date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")

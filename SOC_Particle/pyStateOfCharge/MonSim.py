@@ -170,7 +170,7 @@ def replicate(OPT: UserOptions):
     SN = Sensors(OPT, run_type=OPT.run_type)
 
     # Battery sizing
-    scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_in, Battery.UNIT_CAP_RATED)
+    scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_in, Battery.NOM_UNIT_CAP)
 
     # Make batteries
     sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test)
@@ -257,8 +257,7 @@ def replicate(OPT: UserOptions):
             mon = SN.calc_temp_pass_2(OPT.mon_run, mon, Battery, i_temp)
 
         # Models
-        if rp.modeling == 0:
-            SN.update_ib_vb(G.i)
+        SN.update_ib_vb(G.i)
 
         if OPT.sim_run is not None and not OPT.use_ib_mon:
             ib_in_s = OPT.sim_run.ib_in_s[G.i]
