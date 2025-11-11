@@ -101,6 +101,8 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     print(f"load_data: \n{path_to_data=}\n{skip=}\n{unit_key=}\n{zero_zero_in=}\n{time_end_in=}\n{rated_batt_cap=}\n"
           f"{legacy=}\n{v1_only=}")
 
+    battery_hdr = "Battery_hdr"
+    battery_val = "Battery_val"
     hdr_key = "unit,"  # Find one instance of title
     hdr_key_sel = "unit_s,"  # Find one instance of title
     unit_key_sel = "unit_sel"
@@ -123,7 +125,16 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         mon_raw = None
         print(f"load_data: returning mon=None")
 
-    # Load sel (old)
+    # Load battery (ref)
+    battery_file_clean = write_clean_file(path_to_data, type_='_battery', hdr_key=battery_hdr,
+                                          unit_key=battery_val, skip=skip)
+    if battery_file_clean and not v1_only:
+        battery_raw = np.genfromtxt(battery_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+    else:
+        battery_raw = None
+        print(f"load_data: returning battery_raw=None")
+
+    # Load sel (ref)
     sel_file_clean = write_clean_file(path_to_data, type_='_sel', hdr_key=hdr_key_sel,
                                       unit_key=unit_key_sel, skip=skip)
     if sel_file_clean and not v1_only:
@@ -132,7 +143,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         sel_raw = None
         print(f"load_data: returning sel_raw=None")
 
-    # Load temp (old)
+    # Load temp (ref)
     temp_file_clean = write_clean_file(path_to_data, type_='_temp', hdr_key=hdr_key_temp,
                                        unit_key=unit_key_temp, skip=skip)
     if temp_file_clean and not v1_only:
@@ -141,7 +152,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         temp_raw = None
         print(f"load_data: returning temp_raw=None")
 
-    # Load ekf (old)
+    # Load ekf (ref)
     ekf_file_clean = write_clean_file(path_to_data, type_='_ekf', hdr_key=hdr_key_ekf,
                                       unit_key=unit_key_ekf, skip=skip)
     if ekf_file_clean and not v1_only:
@@ -150,7 +161,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         ekf_raw = None
         print(f"load_data: returning ekf_raw=None")
 
-    mon = SavedData(rap=mon_raw, sel=sel_raw, ekf=ekf_raw, temp=temp_raw, time_end=time_end_in, zero_zero=zero_zero_in,
+    mon = SavedData(battery=battery_raw, rap=mon_raw, sel=sel_raw, ekf=ekf_raw, temp=temp_raw, time_end=time_end_in, zero_zero=zero_zero_in,
                     zero_thr=zero_thr_in, sync_cTime=sync)
     if mon.chm is not None:
         chm = int(mon.chm[-1])
@@ -162,7 +173,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         chm = None
     batt = BatteryMonitor()
 
-    # Load sim _s v24 portion of real-time run (old)
+    # Load sim _s v24 portion of real-time run (ref)
     data_file_sim_clean = write_clean_file(path_to_data, type_='_sim', hdr_key=hdr_key_sim,
                                            unit_key=unit_key_sim, skip=skip)
     if data_file_sim_clean and not v1_only:

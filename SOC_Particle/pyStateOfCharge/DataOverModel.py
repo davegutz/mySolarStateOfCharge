@@ -25,7 +25,7 @@ Dependencies:
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
-from Battery import overall_batt
+from Battery import Battery, overall_batt
 from myFilters import LagExp
 # below suppresses runtime error display******************
 # import os
@@ -640,12 +640,43 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
     return csv_file
 
 
+from dataclasses import dataclass
+# Define the class using a dataclass for simplicity and clarity
+@dataclass(frozen=True)  # frozen=True makes the values immutable (read-only)
+class DeviceConstants:
+    """Class to hold device constants from a dictionary."""
+    # The fields will be dynamically added later
+
+    @classmethod
+    def from_dict(cls, data_dict):
+        """Creates an instance of the class from a dictionary."""
+        # Create a new instance with unpacked dictionary values
+        return cls(**data_dict)
+
+
 class SavedData:
-    def __init__(self, rap=None, sel=None, ekf=None, temp=None, time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None,
-                 init_time_in=None):
+    def __init__(self, battery=None, rap=None, sel=None, ekf=None, temp=None, time_end=None, zero_zero=False,
+                 zero_thr=0.02, sync_cTime=None, init_time_in=None):
         i_end = 0
         n = None
         ib_lag = None
+
+        # Load off-nominal Battery values
+        if battery is not None:
+            # Scroll through all off-nominals make dictionary
+            self.Battery_off_dict = {}
+            for field_name in battery.dtype.names:
+                self.Battery_off_dict[field_name] = battery[field_name][-1]
+            # print(self.Battery_off_dict)
+            # Print affected values
+            print(f"dictionary to apply to Battery class")
+            if self.Battery_off_dict:
+                for key in dir(Battery):
+                    if key in self.Battery_off_dict and key.isupper() and not key.startswith('__'):
+                        print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
+                        print("Battery.{:s} = {:5.1f}".format(key, self.Battery_off_dict[key]))
+
+
         if rap is None:
             IbLag = None
             self.skip_rap = None

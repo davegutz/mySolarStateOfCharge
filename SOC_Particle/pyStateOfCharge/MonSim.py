@@ -20,7 +20,7 @@ Coulomb Counter built in."""
 from DataOverModel import SavedData as SavedData
 from DataOverModel import SavedDataSim as SavedDataSim
 from MonSimNomConfig import *  # Global config parameters.   Overwrite in your own calls for studies
-from Battery import BatteryMonitor, BatterySim, is_sat, Retained
+from Battery import Battery, BatteryMonitor, BatterySim, is_sat, Retained
 from dataclasses import dataclass
 from Battery import overall_batt
 from typing import Optional
@@ -176,6 +176,25 @@ def replicate(OPT: UserOptions):
     sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test)
     mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], tb_f=SN.Tb0, scale=scale_mon, tweak_test=tweak_test)
     Is_sat_delay = TFDelay(in_=OPT.mon_run.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
+
+    # Translate the off-nominal values imported from data stream
+    if OPT.mon_run.Battery_off_dict:
+        # print("Adding/over-writing off-nominal values into Battery class structure")
+        # for key, value in OPT.mon_run.Battery_off_dict.items():
+        #     setattr(mon, key, value)
+        print("Over-writing pre-existing off-nominal values into Battery class structure")
+        # for key, value in mon.__dict__.items():
+        #     if isinstance(value, (int, str, float, bool)):
+        #         print(f"{key=} = {value}")
+        #         if key in OPT.mon_run.Battery_off_dict:
+        #             setattr(mon, key, OPT.mon_run.Battery_off_dict[key])
+        #             print(f"  --> {key=} = {value}")
+        for key in dir(Battery):
+            if key.isupper() and not key.startswith('__'):
+                if key in OPT.mon_run.Battery_off_dict:
+                    print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
+                    setattr(Battery, key, OPT.mon_run.Battery_off_dict[key])
+                    print(f" {getattr(Battery, key)}")
 
     # Time sync
     if hasattr(OPT.mon_run, 'time_run'):
