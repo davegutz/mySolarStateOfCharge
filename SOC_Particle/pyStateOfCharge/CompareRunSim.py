@@ -165,8 +165,8 @@ def main():
 
     # The following are not implemented in GUI
 
-    time_end_in = None
-    # time_end_in = 3.
+    # time_end_in = None
+    time_end_in = 6.
 
     plots = False
     # plots = True

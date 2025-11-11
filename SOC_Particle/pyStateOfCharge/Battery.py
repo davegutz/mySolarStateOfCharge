@@ -512,6 +512,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_lag = self.IbLag.calculate_tau(self.ib, reset, self.dt, self.chemistry.ib_lag_tau)
         if reset:
             self.ib_past = self.ib
+            self.ib_past_past = self.ib
 
         # Dynamic emf
         if rp.modeling:
