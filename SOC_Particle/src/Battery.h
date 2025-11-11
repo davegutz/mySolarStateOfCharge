@@ -120,6 +120,8 @@ public:
   float ib() { return ib_; };            // Battery terminal current, A
   float ibs() { return ibs_; };          // Hysteresis input current, A
   float ib_dyn() { return ib_dyn_; };    // Battery terminal current lagged by charge transfer, A
+  float ib_dyn_lstate() { return ChargeTransfer_->lstate(); };
+  float ib_dyn_rstate() { return ChargeTransfer_->rstate(); };
   float ioc() { return ioc_; };          // Hysteresis output current, A
   virtual void pretty_print();
   void print_signal(const boolean print) { print_now_ = print; };

@@ -519,8 +519,7 @@ class BatteryMonitor(Battery, EKF1x1):
         else:
             ib_dc = self.ib
         self.vb = vb
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn[G.i], reset, dt,
-                                                               self.chemistry.tau_ct)
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(ib_dc, SN.ib_dyn[G.i], reset, dt, self.chemistry.tau_ct)
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
         self.ib_dyn_a = self.ChargeTransfer.a

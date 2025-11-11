@@ -722,6 +722,8 @@ class SavedData:
             self.time_run = 0.  # Adjust time for start of ib input
             self.voc_soc_new = None  # For studies
             self.init_time = None
+            self.ib_dyn_lstate = None
+            self.ib_dyn_rstate = None
         else:
             self.skip_rap = np.bool(np.array(rap.skip))
             self.i = 0
@@ -812,6 +814,8 @@ class SavedData:
             self.Tb_f_rate_rap = np.array(rap.Tb_f_rate_rap[:i_end])
             self.vsat = np.array(rap.vsat[:i_end])
             self.dv_dyn = np.array(rap.dv_dyn[:i_end])
+            self.ib_dyn_lstate = np.array(rap.ib_dyn_lstate[:i_end])
+            self.ib_dyn_rstate = np.array(rap.ib_dyn_rstate[:i_end])
             self.ib_dyn = np.array(rap.ib_dyn[:i_end])
             self.voc_stat = np.array(rap.voc_stat[:i_end])
             self.voc = self.vb - self.dv_dyn
