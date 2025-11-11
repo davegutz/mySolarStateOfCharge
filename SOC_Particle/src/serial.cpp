@@ -100,6 +100,8 @@ boolean is_finished(const char in_char)
 // Print consolidation
 void print_all_header(void)
 {
+  print_battery_header();
+  print_battery_serial();
   print_rapid_header();
   print_temp_header();
   if ( sp.debug()==2  )
@@ -120,16 +122,31 @@ void print_all_header(void)
   }
 }
 
+// print ekf for data collection
+void print_battery_header()
+{
+  Serial.printf("Battery_hdr, HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI,");
+  Serial.printf("\n");
+}
+ void print_battery_serial()
+ {
+  Serial.printf("Battery_val,%10.7f,%10.7f,%10.7f,%10.7f,",
+    HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI);
+
+  Serial.printf("\n");
+}
+
 // Print primary data
 void print_rapid_header(void)
 {
-  if ( ( sp.debug()==1 || sp.debug()==2 || sp.debug()==3 || sp.debug()==4 ) )
-  {
-    Serial.printf ("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb_rap, Tb_f_rap, Tb_f_rate_rap, vb, ib, ib_dyn, dv_hys,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
-    #ifdef HDWE_ARGON
-      Serial1.printf("unit,               hm,                  cTime,       dt,       chm,qcrs,qcap,sat,sel,mod,bmso, Tb_rap, Tb_f_rap, Tb_f_rate_rap, vb, ib, ib_dyn, dv_hys,   ib_charge, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min,delta_q,\n");
-    #endif
-  }
+  Serial.printf ("unit,               hm,                  cTime,       dt,       ");
+  Serial.printf("chm,qcrs,qcap,sat,sel,mod,bmso, "),
+  Serial.printf("Tb_rap, Tb_f_rap, Tb_f_rate_rap, vb, ib, ib_dyn, dv_hys,   ");
+  Serial.printf("ib_charge, voc_soc,    ");
+  Serial.printf("vsat,dv_dyn,voc_stat,voc_ekf,     ");
+  Serial.printf("y_ekf,    ");
+  Serial.printf("soc_s,soc_ekf,soc,soc_min,delta_q,");
+  Serial.printf("\n");
 }
 void print_rapid_create_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
@@ -173,11 +190,10 @@ void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, co
 // print ekf for data collection
 void print_ekf_header(void)
 {
-  if ( sp.debug()==3 || sp.debug()==4 ) // print_ekf_header
-    Serial.printf("unit_e,c_time,dt,Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_,");
-    Serial.printf("x_prior_, P_prior_, x_post_, P_post_, hx_, H_, frz_, tb_f_hx_, x_for_hx_,");
-    Serial.printf("  voc_stat_T, voc_stat_tau, voc_stat_rstate, voc_stat_lstate,");
-    Serial.printf("\n");
+  Serial.printf("unit_e,c_time,dt,Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_,");
+  Serial.printf("x_prior_, P_prior_, x_post_, P_post_, hx_, H_, frz_, tb_f_hx_, x_for_hx_,");
+  Serial.printf("  voc_stat_T, voc_stat_tau, voc_stat_rstate, voc_stat_lstate,");
+  Serial.printf("\n");
 }
  void EKF_1x1::print_ekf_serial(BatteryMonitor *Mon)
  {
@@ -200,15 +216,14 @@ void print_ekf_header(void)
 // TODO:  delete the _T, _tau, _rstate, _lstate stuff
 void print_signal_sel_header(void)
 {
-  if ( sp.debug()==2 || sp.debug()==4 ) // print_signal_sel_header
-    Serial.printf("unit_s,c_time,res,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,   ib_diff, ib_diff_f,");
-    Serial.printf("  voc_soc,e_w,e_w_f,ib_dm,dv_dm,e_wm,e_wm_f,ib_dn,dv_dn,e_wn,e_wn_f,e_wm_t,");
-    Serial.printf("  ib_sel_stat,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_h,vb_s,mvb,vb,  mtb,Tb_fa, ");
-    Serial.printf("  fltw, falw, ib_rate, ib_quiet, tb_sel, ccd_thr, ewh_thr, ewl_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,");
-    Serial.printf("  ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rstate_m, ib_dyn_lstate_m,");
-    Serial.printf("  ib_dyn_T_n, ib_dyn_tau_n, ib_dyn_rstate_n, ib_dyn_lstate_n,");
-    Serial.printf("  ib_wrp_T_n, ib_wrp_tau_n, ib_wrp_rate_n, ib_wrp_state_n,");
-    Serial.printf("\n");
+  Serial.printf("unit_s,c_time,res,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,   ib_diff, ib_diff_f,");
+  Serial.printf("  voc_soc,e_w,e_w_f,ib_dm,dv_dm,e_wm,e_wm_f,ib_dn,dv_dn,e_wn,e_wn_f,e_wm_t,");
+  Serial.printf("  ib_sel_stat,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_h,vb_s,mvb,vb,  mtb,Tb_fa, ");
+  Serial.printf("  fltw, falw, ib_rate, ib_quiet, tb_sel, ccd_thr, ewh_thr, ewl_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,");
+  Serial.printf("  ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rstate_m, ib_dyn_lstate_m,");
+  Serial.printf("  ib_dyn_T_n, ib_dyn_tau_n, ib_dyn_rstate_n, ib_dyn_lstate_n,");
+  Serial.printf("  ib_wrp_T_n, ib_wrp_tau_n, ib_wrp_rate_n, ib_wrp_state_n,");
+  Serial.printf("\n");
 }
 void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
 {
@@ -263,12 +278,11 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
 // print sim for data collection
 void print_sim_header(void)
 {
-  if ( sp.debug()==2  || sp.debug()==3 || sp.debug()==4 ) // print_sim_header
-    Serial.printf("unit_m,  c_time,      dt_s, chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, ");
-    Serial.printf("dv_dyn_s, vb_s, ib_s, ib_dyn_s, dv_hys_s, ib_in_s, ib_charge_s, ioc_s, ");
-    Serial.printf("sat_s, dq_s, q_cap_s, soc_s, reset_s, ddq_s, ");
-    Serial.printf("ib_dyn_s_T, ib_dyn_s_tau, ib_dyn_s_rstate, ib_dyn_s_lstate, ");
-    Serial.printf("\n");
+  Serial.printf("unit_m,  c_time,      dt_s, chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, ");
+  Serial.printf("dv_dyn_s, vb_s, ib_s, ib_dyn_s, dv_hys_s, ib_in_s, ib_charge_s, ioc_s, ");
+  Serial.printf("sat_s, dq_s, q_cap_s, soc_s, reset_s, ddq_s, ");
+  Serial.printf("ib_dyn_s_T, ib_dyn_s_tau, ib_dyn_s_rstate, ib_dyn_s_lstate, ");
+  Serial.printf("\n");
 }
 void print_sim_serial(const boolean initializing_all, const boolean reset_temp, Sensors *Sen, BatterySim *Sim)
 {
@@ -300,10 +314,7 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
 // print temperatures for data collection
 void print_temp_header(void)
 {
-  if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  )
-  {
-    Serial.printf("unit_t, c_time, T_t, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_hdwe_filt, Tb_f,  Tb_hdwe_filt_rate, Tb_f_rate,\n");
-  }
+ Serial.printf("unit_t, c_time, T_t, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_hdwe_filt, Tb_f,  Tb_hdwe_filt_rate, Tb_f_rate,\n");
 }
 void print_temp_serial(const boolean reset, Sensors *Sen)
 {

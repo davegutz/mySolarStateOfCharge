@@ -45,6 +45,8 @@ extern PublishPars pp;  // For publishing
 extern CommandPars cp;  // Various parameters to be static at system level
 
 // Headers
+void print_battery_header();
+void print_battery_serial();
 void print_rapid_create_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon);
 void delay_no_block(const unsigned long long int interval);
 String finish_request(const String in_str);
