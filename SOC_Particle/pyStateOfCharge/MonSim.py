@@ -172,11 +172,6 @@ def replicate(OPT: UserOptions):
     # Battery sizing
     scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_in, Battery.NOM_UNIT_CAP)
 
-    # Make batteries
-    sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test)
-    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], tb_f=SN.Tb0, scale=scale_mon, tweak_test=tweak_test)
-    Is_sat_delay = TFDelay(in_=OPT.mon_run.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
-
     # Translate the off-nominal values imported from data stream
     if OPT.mon_run.Battery_off_dict:
         # print("Adding/over-writing off-nominal values into Battery class structure")
@@ -195,6 +190,11 @@ def replicate(OPT: UserOptions):
                     print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
                     setattr(Battery, key, OPT.mon_run.Battery_off_dict[key])
                     print(f" {getattr(Battery, key)}")
+
+    # Make batteries
+    sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test)
+    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], tb_f=SN.Tb0, scale=scale_mon, tweak_test=tweak_test)
+    Is_sat_delay = TFDelay(in_=OPT.mon_run.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
     # Time sync
     if hasattr(OPT.mon_run, 'time_run'):
