@@ -339,7 +339,7 @@ class Sensors:
             mon.Tb_hdwe = OPT.mon_run.Tb_hdwe[i_temp]
         else:
             mon.Tb_hdwe = OPT.mon_run.Tb_f[i_temp]
-        mon.reset_temp = (i_temp < 2) or OPT.run_type == 'HistSim'  # make sure temp init is longer than reset
+        mon.reset_temp = (i_temp < 2) or mon.reset or OPT.run_type == 'HistSim'  # make sure temp init is longer than reset
         if hasattr(OPT.mon_run, 'Tt'):
             mon.dt_temp = OPT.mon_run.Tt[i_temp]
         else:

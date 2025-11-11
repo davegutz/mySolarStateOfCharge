@@ -295,7 +295,6 @@ def replicate(OPT: UserOptions):
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
 
-
         # Chemistry
         if OPT.Bmon is None:
             _chm_m = chm_m[G.i]
@@ -320,7 +319,7 @@ def replicate(OPT: UserOptions):
         # Monitor EKF sequencing logic
         if (i_ekf+1 < len(OPT.mon_run.time_e)) and (OPT.mon_run.time_e[i_ekf+1] <= OPT.mon_run.time[G.i]):
             i_ekf += 1
-            reset_ekf = i_ekf == 0 or OPT.run_type == 'HistSim'
+            reset_ekf = i_ekf == 0 or reset or OPT.run_type == 'HistSim'
             if i_ekf < 1:
                 T_ekf = OPT.mon_run.dt_ekf[i_ekf]
             else:
@@ -381,8 +380,8 @@ def replicate(OPT: UserOptions):
             pass
 
         # Finish loop
-        if calc_ekf:
-            reset_ekf = False
+        # if calc_ekf:
+        #     reset_ekf = False
 
     # Final hdr print
     if OPT.request_history is not None and OPT.request_history > 0:
