@@ -814,8 +814,14 @@ class SavedData:
             self.Tb_f_rate_rap = np.array(rap.Tb_f_rate_rap[:i_end])
             self.vsat = np.array(rap.vsat[:i_end])
             self.dv_dyn = np.array(rap.dv_dyn[:i_end])
-            self.ib_dyn_lstate = np.array(rap.ib_dyn_lstate[:i_end])
-            self.ib_dyn_rstate = np.array(rap.ib_dyn_rstate[:i_end])
+            if hasattr(rap, 'ib_dyn_lstate'):
+                self.ib_dyn_lstate = np.array(rap.ib_dyn_lstate[:i_end])
+            else:
+                self.ib_dyn_lstate = self.vsat*0.
+            if hasattr(rap, 'ib_dyn_rstate'):
+                self.ib_dyn_rstate = np.array(rap.ib_dyn_rstate[:i_end])
+            else:
+                self.ib_dyn_rstate = self.vsat*0.
             self.ib_dyn = np.array(rap.ib_dyn[:i_end])
             self.voc_stat = np.array(rap.voc_stat[:i_end])
             self.voc = self.vb - self.dv_dyn

@@ -173,7 +173,7 @@ def replicate(OPT: UserOptions):
     scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_in, Battery.NOM_UNIT_CAP)
 
     # Translate the off-nominal values imported from data stream
-    if OPT.mon_run.Battery_off_dict:
+    if hasattr(OPT.mon_run, 'Battery_off_dict'):
         print("Over-writing pre-existing off-nominal values into Battery class structure")
         for key in dir(Battery):
             if key.isupper() and not key.startswith('__'):
