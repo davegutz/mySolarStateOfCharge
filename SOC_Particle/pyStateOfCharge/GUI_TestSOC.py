@@ -644,12 +644,12 @@ def compare_hist_hist_choose():
             if test_key != '':
                 run_path = filedialog.askopenfilename(title='Choose reference file', filetypes=[('csv', '.csv')],
                                                       initialdir=Ref.dataReduction_folder)
-                run_folder_path, ref_parent, ref_basename, ref_txt, ref_key = contain_all(ref_path)
+                run_folder_path, ref_parent, ref_basename, ref_txt, ref_key = contain_all(run_path)
                 print('GUI_TestSOC compare_hist_hist_choose:  Ref', ref_basename, ref_key)
                 print('GUI_TestSOC compare_hist_hist_choose:  Test', test_basename, test_key)
                 # keys = [(ref_basename, ref_key), (test_basename, test_key)]
                 # master.withdraw()
-                compare_hist_hist(data_file_run=ref_path, unit_key_run=ref_key,
+                compare_hist_hist(data_file_run=run_path, unit_key_run=ref_key,
                                   data_file_tst=testpath, unit_key_tst=test_key,
                                   dt_resample=30.)
                 # master.deiconify()

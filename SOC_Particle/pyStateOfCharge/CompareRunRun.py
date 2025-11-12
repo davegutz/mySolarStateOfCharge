@@ -26,6 +26,7 @@ from datetime import datetime
 from PlotKiller import show_killer
 import os
 from load_data import load_data, calculate_master_sync
+from load_data20241006 import load_data20241006
 from local_paths import version_from_data_path, local_paths
 
 import sys
@@ -60,9 +61,14 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
 
     # Load old ref data
     data_file_run = os.path.join(data_file_folder_run, data_file_txt_run)
-    mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
-        load_data(data_file_run, 1, unit_key_run, zero_zero_in, time_end_in,
-                  rated_batt_cap=rated_batt_cap_run_in)
+    if data_file_run.__contains__('g20241006'):
+        mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
+            load_data20241006(data_file_run, 1, unit_key_run, zero_zero_in, time_end_in,
+                      rated_batt_cap=rated_batt_cap_run_in)
+    else:
+        mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
+            load_data(data_file_run, 1, unit_key_run, zero_zero_in, time_end_in,
+                      rated_batt_cap=rated_batt_cap_run_in)
 
     # Load new test data
     data_file_test = os.path.join(data_file_folder_test, data_file_txt_test)
@@ -121,10 +127,10 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
 
 
 def main():
-    keys = [('ampHiFail_pro0p_chg.csv', 'mySolarStateOfCharge_last_g20240331_pro0p_chg'),
-            ('ampHiFail_pro3p2_hi_lo_chg.csv', 'g20240704_pro3p2_hi_lo_chg')]
-    data_file_folder_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\mySolarStateOfCharge_last_g20240331'
-    data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20240704'
+    keys = [('rapidTweakRegression_pro2p2_hi_lo_chg.csv', 'g20241006_pro2p2_hi_lo_chg'),
+            ('rapidTweakRegression_soc2p2_hi_lo_chg.csv', 'g20250612a_soc2p2_hi_lo_chg')]
+    data_file_folder_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20241006'
+    data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a'
     sync_to_ctime = False
     compare_run_run(keys=keys, data_file_folder_run=data_file_folder_run, data_file_folder_test=data_file_folder_test,
                     sync_to_ctime=sync_to_ctime)
