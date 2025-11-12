@@ -1126,7 +1126,10 @@ class SavedData:
         for i in range(n):
             if self.time[i] <= self.init_time:
                 lag_reset = True
-                T_lag = self.cTime[i+1] - self.cTime[i]
+                if i < n-1:
+                    T_lag = self.cTime[i+1] - self.cTime[i]
+                else:
+                    T_lag = self.cTime[i] - self.cTime[i-1]
             else:
                 lag_reset = False
                 T_lag = self.cTime[i] - self.cTime[i-1]
