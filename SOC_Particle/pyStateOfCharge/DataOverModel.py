@@ -56,7 +56,12 @@ def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', labe
             yscld = np.array(getattr(sy, yt)) * slr + add
         try:
             if stairs:
-                dt = getattr(sx, st)[-1] - getattr(sx, st)[-2]
+                try:
+                    dt = getattr(sx, st)[-1] - getattr(sx, st)[-2]
+                except IndexError:
+                    if warn:
+                        print(f"plq: skipping     {yt}({st})     labeled  '{label}'  Dimensions of time different")
+                        return
                 x_in = np.append(getattr(sx, st), getattr(sx, st)[-1]+dt)
                 plt_.stairs(yscld, x_in, color=color, linestyle=linestyle, label=label)
             else:
@@ -189,6 +194,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mr, 'time_t', mr, 'Tb', color='green', linestyle='-', label='Tb'+run_str, stairs=True)
     plq(plt, mr, 'time_t', mr, 'Tb_f', color='green', linestyle='-', label='Tb_f'+run_str, stairs=True)
     plq(plt, mv, 'time_t', mv, 'Tb', color='orange', linestyle='--', label='Tb'+ver_str, stairs=True)
+    plq(plt, mv, 'time', mv, 'Tb', color='orange', linestyle='--', label='Tb'+ver_str)
     plt.plot(mr.time, mr.chm, color='black', linestyle='-', label='mon_chm'+run_str)
     plq(plt, sr, 'time', sr, 'chm_s', color='cyan', linestyle='--', label='sim_chm'+run_str)
     plt.ylim(0., 50.)
@@ -765,8 +771,8 @@ class SavedData:
             # Truncate
             if time_end is None:
                 if temp is not None:
-                    time_t = np.array(temp.c_time[:]) - self.time_run
-                    Tt = np.array(temp.T_t[:])
+                    time_t = np.atleast_1d(np.array(np.array(temp.c_time) - self.time_run))
+                    Tt = np.atleast_1d(np.array(temp.T_t))
                     time_end = time_t[-1] + Tt[-1]
                     i_end = np.where(self.time <= time_end)[0][-1] + 1
                 else:
@@ -775,7 +781,7 @@ class SavedData:
                     self.c_time_s = np.array(sel.c_time) - self.time_run
                     i_end = min(i_end, len(self.c_time_s))
                 if ekf is not None:
-                    self.time_e = np.array(ekf.c_time) - self.time_run
+                    self.time_e = np.array(np.atleast_1d(ekf.c_time) - self.time_run)
             else:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
                 if sel is not None:
@@ -784,7 +790,7 @@ class SavedData:
                     i_end = np.minimum(i_end, i_end_sel)
                     self.zero_end = np.minimum(self.zero_end, i_end-1)
                 if ekf is not None:
-                    self.time_e = np.array(ekf.c_time) - self.time_run
+                    self.time_e = np.array(np.atleast_1d(ekf.c_time) - self.time_run)
             self.cTime = self.cTime[:i_end]
             self.dt = np.array(rap.dt[:i_end])
             self.time = np.array(self.time[:i_end])
@@ -1066,33 +1072,33 @@ class SavedData:
             self.voc_stat_f_rstate = None
             self.voc_stat_f_lstate = None
         else:
-            self.skip_e = np.array(np.bool(ekf.skip[:i_end]))
-            self.time_e = np.array(ekf.c_time[:i_end]) - self.time_run
-            self.dt_ekf = np.array(ekf.dt[:i_end])
-            self.Fx = np.array(ekf.Fx_[:i_end])
-            self.Bu = np.array(ekf.Bu_[:i_end])
-            self.Q = np.array(ekf.Q_[:i_end])
-            self.R = np.array(ekf.R_[:i_end])
-            self.P = np.array(ekf.P_[:i_end])
-            self.S = np.array(ekf.S_[:i_end])
-            self.K = np.array(ekf.K_[:i_end])
-            self.u = np.array(ekf.u_[:i_end])
-            self.x = np.array(ekf.x_[:i_end])
-            self.y = np.array(ekf.y_[:i_end])
-            self.z = np.array(ekf.z_[:i_end])
-            self.x_prior = np.array(ekf.x_prior_[:i_end])
-            self.frz = np.array(np.bool(ekf.frz_[:i_end]))
-            self.P_prior = np.array(ekf.P_prior_[:i_end])
-            self.x_post = np.array(ekf.x_post_[:i_end])
-            self.P_post = np.array(ekf.P_post_[:i_end])
-            self.hx = np.array(ekf.hx_[:i_end])
-            self.H = np.array(ekf.H_[:i_end])
-            self.tb_f_for_hx = np.array(ekf.tb_f_hx_[:i_end])
-            self.x_for_hx = np.array(ekf.x_for_hx_[:i_end])
-            self.voc_stat_f_rstate = np.array(ekf.voc_stat_rstate[:i_end])
-            self.voc_stat_f_lstate = np.array(ekf.voc_stat_lstate[:i_end])
-            self.voc_stat_f_T = np.array(ekf.voc_stat_T[:i_end])
-            self.voc_stat_f_tau = np.array(ekf.voc_stat_tau[:i_end])
+            self.skip_e = np.bool(np.atleast_1d(ekf.skip)[:i_end])
+            self.time_e = np.array(np.atleast_1d(ekf.c_time)[:i_end] - self.time_run)
+            self.dt_ekf = np.array(np.atleast_1d(ekf.dt)[:i_end])
+            self.Fx = np.array(np.atleast_1d(ekf.Fx_)[:i_end])
+            self.Bu = np.array(np.atleast_1d(ekf.Bu_)[:i_end])
+            self.Q = np.array(np.atleast_1d(ekf.Q_)[:i_end])
+            self.R = np.array(np.atleast_1d(ekf.R_)[:i_end])
+            self.P = np.array(np.atleast_1d(ekf.P_)[:i_end])
+            self.S = np.array(np.atleast_1d(ekf.S_)[:i_end])
+            self.K = np.array(np.atleast_1d(ekf.K_)[:i_end])
+            self.u = np.array(np.atleast_1d(ekf.u_)[:i_end])
+            self.x = np.array(np.atleast_1d(ekf.x_)[:i_end])
+            self.y = np.array(np.atleast_1d(ekf.y_)[:i_end])
+            self.z = np.array(np.atleast_1d(ekf.z_)[:i_end])
+            self.x_prior = np.array(np.atleast_1d(ekf.x_prior_)[:i_end])
+            self.frz = np.array(np.bool(np.atleast_1d(ekf.frz_)[:i_end]))
+            self.P_prior = np.array(np.atleast_1d(ekf.P_prior_)[:i_end])
+            self.x_post = np.array(np.atleast_1d(ekf.x_post_)[:i_end])
+            self.P_post = np.array(np.atleast_1d(ekf.P_post_)[:i_end])
+            self.hx = np.array(np.atleast_1d(ekf.hx_)[:i_end])
+            self.H = np.array(np.atleast_1d(ekf.H_)[:i_end])
+            self.tb_f_for_hx = np.array(np.atleast_1d(ekf.tb_f_hx_)[:i_end])
+            self.x_for_hx = np.array(np.atleast_1d(ekf.x_for_hx_)[:i_end])
+            self.voc_stat_f_rstate = np.array(np.atleast_1d(ekf.voc_stat_rstate)[:i_end])
+            self.voc_stat_f_lstate = np.array(np.atleast_1d(ekf.voc_stat_lstate)[:i_end])
+            self.voc_stat_f_T = np.array(np.atleast_1d(ekf.voc_stat_T)[:i_end])
+            self.voc_stat_f_tau = np.array(np.atleast_1d(ekf.voc_stat_tau)[:i_end])
         if temp is None:
             self.skip_t = None
             self.time_t = None
@@ -1106,17 +1112,17 @@ class SavedData:
             self.Tb_hdwe_filt = None
             self.Tb_hdwe_filt_rate = None
         else:
-            self.skip_t = np.array(np.bool(temp.skip[:i_end]))
-            self.time_t = np.array(temp.c_time[:i_end]) - self.time_run
-            self.reset_temp = np.array(temp.reset_temp[:i_end])
-            self.Tt = np.array(temp.T_t[:i_end])
-            self.Tb_hdwe = np.array(temp.Tb_hdw[:i_end])
-            self.Tb = np.array(temp.Tb[:i_end])
-            self.Tb_f = np.array(temp.Tb_f[:i_end])
-            self.Tb_f_rate = np.array(temp.Tb_f_rate[:i_end])
-            self.Tb_mod = np.array(temp.Tb_mod[:i_end])
-            self.Tb_hdwe_filt = np.array(temp.Tb_hdwe_filt[:i_end])
-            self.Tb_hdwe_filt_rate = np.array(temp.Tb_hdwe_filt_rate[:i_end])
+            self.skip_t = np.array(np.bool(np.atleast_1d(temp.skip)[:i_end]))
+            self.time_t = np.array(np.atleast_1d(temp.c_time)[:i_end]) - self.time_run
+            self.reset_temp = np.array(np.atleast_1d(temp.reset_temp)[:i_end])
+            self.Tt = np.array(np.atleast_1d(temp.T_t)[:i_end])
+            self.Tb_hdwe = np.array(np.atleast_1d(temp.Tb_hdw)[:i_end])
+            self.Tb = np.array(np.atleast_1d(temp.Tb)[:i_end])
+            self.Tb_f = np.array(np.atleast_1d(temp.Tb_f)[:i_end])
+            self.Tb_f_rate = np.array(np.atleast_1d(temp.Tb_f_rate)[:i_end])
+            self.Tb_mod = np.array(np.atleast_1d(temp.Tb_mod)[:i_end])
+            self.Tb_hdwe_filt = np.array(np.atleast_1d(temp.Tb_hdwe_filt)[:i_end])
+            self.Tb_hdwe_filt_rate = np.array(np.atleast_1d(temp.Tb_hdwe_filt_rate)[:i_end])
 
             # Initialization time logic
         if self.time[0] == 0.:  # no initialization flat detected at beginning of recording

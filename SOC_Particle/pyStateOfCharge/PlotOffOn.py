@@ -46,7 +46,7 @@ def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, 
         plt.title(plot_title + ' off/on sim 1')
         print('off/on sim 1', end=':  ')
         plt.plot(sr.time, sr.vb_s, color='black', linestyle='-', label='vb_s' + run_str)
-        plq(plt, sv, 'time', sv, 'vb', color='green', linestyle='--', label='vb_s' + ver_str)
+        plq(plt, sv, 'time', sv, 'vb', color='cyan', linestyle='--', label='vb_s' + ver_str)
         plq(plt, sv, 'time', sv, 'vb_s', color='red', linestyle='-.', label='vb_s' + ver_str)
         plt.plot(sr.time, sr.voc_s, color='blue', linestyle='-', label='voc_s' + run_str)
         plq(plt, sv, 'time', sv, 'voc', color='magenta', linestyle='--', label='voc_s' + ver_str)
