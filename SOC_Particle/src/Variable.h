@@ -76,6 +76,13 @@ public:
     virtual boolean off_nominal(){return false;};
     virtual void print(){};
     virtual boolean print_adjust(const String &str){return false;};
+    boolean print_nominalize()
+    {
+        set_nominal();
+        Serial.printf(" Nominalizing:  ");
+        Serial1.printf(" Nominalizing:  ");
+        return ( true );
+    }
     virtual void set_nominal(){};
 
 protected:
@@ -190,7 +197,8 @@ public:
     {
         print();
         print1();
-        success_ = check_set_put(str.toInt());
+        if ( str == "" ) success_ = print_nominalize();
+        else success_ = check_set_put(str.toInt());
         print();
         print1();
         return success_;
@@ -322,7 +330,8 @@ public:
     {
         print();
         print1();
-        success_ = check_set_put(str.toFloat());
+        if ( str == "" ) success_ = print_nominalize();
+        else success_ = check_set_put(str.toFloat());
         print();
         print1();
         return success_;
@@ -454,7 +463,8 @@ public:
     {
         print();
         print1();
-        success_ = check_set_put(str.toFloat());
+        if ( str == "" ) success_ = print_nominalize();
+        else success_ = check_set_put(str.toFloat());
         print();
         print1();
         return success_;
@@ -585,7 +595,8 @@ public:
     {
         print();
         print1();
-        success_ = check_set_put(str.toInt());
+        if ( str == "" ) success_ = print_nominalize();
+        else success_ = check_set_put(str.toInt());
         print();
         print1();
         return success_;
@@ -717,7 +728,8 @@ public:
     {
         print();
         print1();
-        success_ = check_set_put(str.toInt());
+        if ( str == "" ) success_ = print_nominalize();
+        else success_ = check_set_put(str.toInt());
         print();
         print1();
         return success_;
@@ -849,7 +861,8 @@ public:
     {
         print();
         print1();
-        success_ = check_set_put(str.toInt());
+        if ( str == "" ) success_ = print_nominalize();
+        else success_ = check_set_put(str.toInt());
         print();
         print1();
         return success_;
@@ -977,7 +990,8 @@ public:
     {
         print();
         print1();
-        success_ = check_set_put(str.toInt());
+        if ( str == "" ) success_ = print_nominalize();
+        else success_ = check_set_put(str.toInt());
         print();
         print1();
         return success_;
@@ -1109,7 +1123,8 @@ public:
     {
         print();
         print1();
-        success_ = check_set_put((unsigned long) str.toInt());
+        if ( str == "" ) success_ = print_nominalize();
+        else success_ = check_set_put((unsigned long) str.toInt());
         print();
         print1();
         return success_;

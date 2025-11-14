@@ -178,7 +178,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.legend(loc=1)
     plt.subplot(324)
     plq(plt, mr, 'time', mr, 'y_ekf', color='green', linestyle='-', label='y_ekf'+run_str, stairs=True)
-    plt.plot(mv.time, mv.y_ekf, color='orange', linestyle='--', label='y_ekf'+ver_str)
+    plq(plt, mv, 'time', mv, 'y_ekf', color='orange', linestyle='--', label='y_ekf'+ver_str, stairs=True)
     plq(plt, mv, 'time', mv, 'y_filt', color='black', linestyle='-.', label='y_filt'+ver_str)
     plq(plt, mv, 'time', mv, 'y_filt2', color='cyan', linestyle=':', label='y_filt2'+ver_str)
     plt.legend(loc=1)

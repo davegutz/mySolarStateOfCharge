@@ -174,7 +174,7 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
     return hdr
 
 def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
-    hdr = "  i  time     r       rt   it   ct      re   ie  ce    sa       sa_s     dt               dt_s            ib_in_s               ib_s                  ib_fut       ib_dyn_s_rstate         ib_dyn_s_lstate          ib_dyn_s       ib_dyn_s_init     ib_dyn           ib_dyn_init      dv_hys_s              ib_charge_s            ioc_s                soc                      delq                    i * dt_s * coul_eff    soc_s                      Tb_f_s                       d_delq_s                delq_s                     qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_dyn_s             vsat                 "
+    hdr = "  i  time     r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s             ib                      ib_in_s                ib_s                  ib_fut       ib_dyn_s_rstate         ib_dyn_s_lstate          ib_dyn_s       ib_dyn_s_init     ib_dyn           ib_dyn_init      dv_hys_s              ib_charge_s            ioc_s                soc                      delq                    i * dt_s * coul_eff    soc_s                      Tb_f_s                       d_delq_s                delq_s                     qcrs                   q_cap                  q_cap_s                Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_dyn_s             vsat                 "
     if calc_temp:
         print(hdr)
     # if G.i > 0:
@@ -194,7 +194,8 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
           "{:5.0f}".format(SN.sim_run.sat_s[G.i]), "{:2.0f}".format(sim.sat),
           "{:9.3f}".format(SN.mon_run.dt[G.i]), "{:5.3f}".format(mon.dt),
           "{:9.3f}".format(SN.sim_run.dt_s[G.i]), "{:5.3f}".format(sim.dt),
-          "{:12.5f}".format(SN.sim_run.ib_in_s[G.i]), "{:9.5f}".format(sim.ib_in),
+          "{:12.5f}".format(SN.mon_run.ib[G.i]), "{:10.5f}".format(mon.ib_in),
+          "{:12.5f}".format(SN.sim_run.ib_in_s[G.i]), "{:10.5f}".format(sim.ib_in),
           "{:12.6f}".format(SN.sim_run.ib_s[G.i]), "{:10.6f}".format(sim.ib), "{:10.6f}".format(sim.ib_fut),
           "{:12.6f}".format(SN.sim_run.ib_dyn_s_rstate[G.i]), "{:10.6f}".format(sim.ChargeTransfer.rstate),
           "{:12.6f}".format(SN.sim_run.ib_dyn_s_lstate[G.i]), "{:10.6f}".format(sim.ChargeTransfer.state),

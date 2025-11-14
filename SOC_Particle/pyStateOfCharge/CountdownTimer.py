@@ -161,7 +161,7 @@ def stay_awake(up_set_min=3.):
             else:
                 pyautogui.press('shift')  # Shift key does not disturb fullscreen
         up_time_min = (time.time() - start_time) / 60.
-        print(f"stay_awake: {up_time_min=}")
+        print(f"stay_awake CountdownTimer: {up_time_min=}")
     print(f"stay_awake: ending\n")
 
 

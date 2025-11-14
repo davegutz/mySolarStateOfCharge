@@ -64,7 +64,6 @@
 #undef TB_MIN
 #undef CHEM_NOM_VSAT
 #undef IB_CHARGE_NOA
-#undef EKF_EFRAME_MULT_SUB
 #undef VOC_STAT_FILT
 
 // Software configuration
