@@ -157,9 +157,9 @@ def stay_awake(up_set_min=3.):
             keyboard = Controller()
         for i in range(0, 3):
             if sys.version_info.minor > 11:
-                keyboard.press(Key.shift)  # Shift key does not disturb fullscreen
+                keyboard.press(Key.f15)  # Shift key does not disturb fullscreen
             else:
-                pyautogui.press('shift')  # Shift key does not disturb fullscreen
+                pyautogui.press('f15')  # Shift key does not disturb fullscreen
         up_time_min = (time.time() - start_time) / 60.
         print(f"stay_awake CountdownTimer: {up_time_min=}")
     print(f"stay_awake: ending\n")
