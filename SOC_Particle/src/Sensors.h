@@ -489,8 +489,8 @@ class Sensors
 {
 public:
   Sensors();
-  Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *Talk, Sync *Summarize, unsigned long long time_now,
-    unsigned long long millis, BatteryMonitor *Mon);
+  Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *ReadTemp, Sync *Talk, Sync *Summarize,
+    unsigned long long time_now, unsigned long long millis, BatteryMonitor *Mon);
   ~Sensors();
   int Vb_raw;                 // Raw analog read, integer
   float Vb;                   // Selected battery bank voltage, V
@@ -532,6 +532,7 @@ public:
   double T_filt;              // Filter update time, s
   double T_temp;              // Temperature update time, s
   Sync *ReadSensors;          // Handle to debug read time
+  Sync *ReadTemp;             // Handle to debug read temperature time
   boolean saturated;          // Battery saturation status based on Temp and VOC
   Shunt *ShuntAmp;            // Ib sense amplified
   Shunt *ShuntNoAmp;          // Ib sense non-amplified

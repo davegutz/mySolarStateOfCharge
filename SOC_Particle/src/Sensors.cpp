@@ -1251,9 +1251,10 @@ void Fault::wrap_scalars(BatteryMonitor *Mon)
 
 
 // Class Sensors
-Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *Talk, Sync *Summarize, unsigned long long time_now,
-  unsigned long long millis, BatteryMonitor *Mon):  inst_millis_(millis), inst_time_(time_now), reset_temp_(false),
-  sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_vb_(0UL), sample_time_vb_hdwe_(0UL)
+Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *ReadTemp, Sync *Talk, Sync *Summarize,
+  unsigned long long time_now, unsigned long long millis, BatteryMonitor *Mon):  inst_millis_(millis),
+  inst_time_(time_now), reset_temp_(false), sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_vb_(0UL),
+  sample_time_vb_hdwe_(0UL)
 {
   this->T = T;
   this->T_filt = T;
@@ -1266,9 +1267,9 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *T
     this->ShuntNoAmp = new Shunt("No Amp", 0x48, &sp.ib_scale_noa_z, &sp.ib_bias_noa_z, SHUNT_NOA_GAIN, pins->Vcn_pin, pins->Von_pin, pins->Vh3v3_pin, false);
   #endif
   #if !defined(HDWE_2WIRE) & !defined(HDWE_BARE)
-    this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY);
+    this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY_DS18);
   #elif !defined(HDWE_BARE)
-    this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY, pins->VTb_pin);
+    this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY_DS18, pins->VTb_pin);
   #endif
   this->TbSenseFilt = new LagExp(double(READ_DELAY)/1000., TB_FILT, -20.0, 150.);
   this->Sim = new BatterySim(ap.ds_voc_soc, 0., 0.);
@@ -1277,6 +1278,7 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *T
   this->stop_inj = 0ULL;
   this->end_inj = 0ULL;
   this->ReadSensors = ReadSensors;
+  this->ReadTemp = ReadTemp;
   this->Summarize = Summarize;
   this->Talk = Talk;
   this->display = true;

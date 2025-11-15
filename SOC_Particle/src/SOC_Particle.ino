@@ -332,7 +332,7 @@ void loop()
   boolean read = false;
   static Sync *ReadSensors = new Sync(READ_DELAY);
   boolean read_temp = false;
-  static Sync *ReadTemp = new Sync(READ_TEMP_DELAY);
+  static Sync *ReadTemp = new Sync(TEMP_DELAY);
   boolean display_and_remember;
   static Sync *DisplayUserSync = new Sync(DISPLAY_USER_DELAY);
   boolean summarizing;
@@ -341,17 +341,19 @@ void loop()
   boolean control;
   static Sync *ControlSync = new Sync(CONTROL_DELAY);
   unsigned long long elapsed = 0;
+  unsigned long long elapsed_reset = 0;
   static boolean reset = true;
   static boolean reset_temp = true;
   static boolean reset_publish = true;
   static unsigned long long start = System.millis();
+  static unsigned long long start_reset = System.millis();
 
    // Monitor to count Coulombs and run EKF
   static BatteryMonitor *Mon = new BatteryMonitor(0., 0., sp.Dw());
 
   // Sensor conversions.  The embedded model 'Sim' is contained in Sensors
   unsigned long long time_now = (unsigned long long) Time.now();
-  static Sensors *Sen = new Sensors(EKF_NOM_DT, 0, myPins, ReadSensors, Talk, Summarize, time_now, start, Mon);
+  static Sensors *Sen = new Sensors(EKF_NOM_DT, 0, myPins, ReadSensors, ReadTemp, Talk, Summarize, time_now, start, Mon);
 
   // Battery saturation debounce
   static TFDelay *Is_sat_delay = new TFDelay(false, T_SAT, T_DESAT, EKF_NOM_DT);
@@ -371,6 +373,7 @@ void loop()
   read = ReadSensors->update(System.millis(), reset);
   chitchat = Talk->update(System.millis(), reset);
   elapsed = ReadSensors->now() - start;
+  elapsed_reset = ReadSensors->now() - start_reset;
   control = ControlSync->update(System.millis(), reset);
   display_and_remember = DisplayUserSync->update(System.millis(), reset);
   boolean boot_summ = boot_wait && ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay) ) && !sp.modeling_z;
@@ -530,8 +533,12 @@ void loop()
   }
 
   // Initialize complete once sensors and models started and summary written
-  if ( read ) reset = false;
-  if ( read_temp && elapsed>TEMP_INIT_DELAY && reset_temp )
+  if ( read )
+  {
+    reset = false;
+    if ( reset_temp ) Serial.printf("*");
+  }
+  if ( read_temp && elapsed_reset>ap.temp_delay && reset_temp )
   {
     Serial.printf("...temp init complete\n");
     reset_temp = false;
@@ -543,6 +550,7 @@ void loop()
   if ( cp.soft_reset || cp.soft_reset_sim )
   {
     reset = reset_temp = reset_publish = true;
+    start_reset = System.millis();
     if ( cp.soft_reset_sim ) cp.cmd_soft_sim_hold();
   }
   cp.soft_reset = false;

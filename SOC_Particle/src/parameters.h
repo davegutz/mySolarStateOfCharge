@@ -100,6 +100,7 @@ public:
     float Tb_bias_model;        // Bias on Tb for model
     float Tb_noise_amp;         // Tb noise amplitude model only, deg C pk-pk
     float tb_stale_time_slr;    // Scalar on persistences of Tb hardware stale check
+    unsigned long int temp_delay; // Temp frame, ms
     unsigned long int until_q;  // Time until set vv0, ms
     float vb_add;               // Fault injection bias, V
     float Vb_noise_amp;         // Vb bank noise amplitude model only, V pk-pk
@@ -145,6 +146,7 @@ public:
     FloatV *Tb_bias_model_p;
     FloatV *Tb_noise_amp_p;
     FloatV *tb_stale_time_slr_p;
+    ULongV *temp_delay_p;
     ULongV *until_q_p;
     FloatV *vb_add_p;
     FloatV *Vb_noise_amp_p;
