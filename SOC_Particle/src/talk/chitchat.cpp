@@ -80,7 +80,7 @@ void benign_zero(BatteryMonitor *Mon, Sensors *Sen) // BZ
   ap.Ib_noa_noise_amp = IB_NOA_NOISE; // DN 0
 
   // EKF
-  ap.eframe_mult = max(min(EKF_EFRAME_MULT, UINT8_MAX), 0); // ED
+  // ap.eframe_mult = max(min(EKF_EFRAME_MULT, UINT8_MAX), 0); // ED
  
   // Fault logic
   ap.cc_diff_slr = 1;  // Fc 1

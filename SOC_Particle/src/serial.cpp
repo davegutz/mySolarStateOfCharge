@@ -139,7 +139,7 @@ void print_battery_header()
 // Print primary data
 void print_rapid_header(void)
 {
-  Serial.printf ("unit, hm, cTime, dt,       ");
+  Serial.printf ("unit_rap, hm, cTime, dt,       ");
   Serial.printf("chm, qcrs, qcap, sat, sel, mod, bmso,  ");
   Serial.printf("Tb_rap, Tb_f_rap, Tb_f_rate_rap,  ");
   Serial.printf("vb, ib, ib_dyn, dv_hys,   ");

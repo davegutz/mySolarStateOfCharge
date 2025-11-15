@@ -120,9 +120,9 @@ modLowInitCHG = 'Xm247;Ca-0.004;BZ;Ff0;DP1;HR;Rf;XD;'
 modLowInitGen = 'Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;XD;'
 noisePackage = 'DT.05;DV0.3;DM.75;DN6;'
 silentPackage = 'DT0;DV0;DM0;DN0;'
-slow = 'Dr400;D>400;DP1;'
-quiet = 'vv0;Dr100;DP4;D>313;Dh;'
-quietwait = '<vv0;Dr100;DP4;D>313;Dh;'
+slow = 'Dr500;D>500;Dq500;ED1;DP1;'
+quiet = 'vv0;Dr;Dq;DP;D>;Dh;'
+quietwait = '<vv0;Dr;DP;D>;Dh;'
 cleanup = 'Hd;Pf;<HR;<Rf;<XD;'
 tempCleanup = 'Rf;XD; '
 time_stamp = 'XY;'
@@ -218,7 +218,7 @@ lookup = {
         'rapidTweakRegression': (200, 'Xp10;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'allProto': (552, modMidInit + tranPrep + c50 + 'XQ25000;' + c00 + tempCleanup + '  Xp10;  Xp13;  ' + modMidInitNoCc + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ('Proto multi', "Must have same 'vv*' throughout", "No 'HR' either")),
         # 'pulseSS': (20, slow + 'XS;Dm0;Dn0;Xm255;Ca.5;Rs;W20;vv4;W20;' + 'Xp7;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
-        'pulseSS': (38, slow + 'XS;Dm0;Dn0;Xm255;Ca.5;Pm;DP1;ED1;Rs;W10;vv4;W10;' + 'Xp7;W10;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
+        'pulseSS': (31, slow + 'XS;Dm0;Dn0;Xm255;Ca.5;Pm;W2;Rs;W10;vv4;W2;' + 'Xp7;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
         'rapidTweakRegressionH0': (200, 'Sh0;' + slow + 'Xp10;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'No hysteresis. Best test for seeing time skews and checking fault logic for false trips', 'Tease out cause of e_wrap faults.  e_wrap MUST be flat!', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'offLowSoc': (85, modLowInitGen + tranPrep  + vm12 + 'XQ55000;' + v00 + quiet + cleanup, ('Test for clean faults on shutoff.',)),
         'offSitHysBmsBB': (625, modLowInitBB + slowTwitchDef + 'Xa-162;' + tranPrep + twitch + 'XQ568000;' + 'Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),

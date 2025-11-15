@@ -103,7 +103,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
 
     battery_hdr = "Battery_hdr"
     battery_val = "Battery_val"
-    hdr_key = "unit,"  # Find one instance of title
+    hdr_key_rap = "unit_rap,"  # Find one instance of title
     hdr_key_sel = "unit_s,"  # Find one instance of title
     unit_key_sel = "unit_sel"
     hdr_key_ekf = "unit_e,"  # Find one instance of title
@@ -116,7 +116,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
 
     sync = find_sync(path_to_data)
 
-    data_file_clean = write_clean_file(path_to_data, type_='_mon', hdr_key=hdr_key, unit_key=unit_key, skip=skip)
+    data_file_clean = write_clean_file(path_to_data, type_='_mon', hdr_key=hdr_key_rap, unit_key=unit_key, skip=skip)
     if data_file_clean is None:
         return None, None, None, None, None, None
     if data_file_clean is not None:
