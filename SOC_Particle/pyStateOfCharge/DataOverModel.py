@@ -61,7 +61,7 @@ def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', labe
                 except IndexError:
                     if warn:
                         print(f"plq: skipping     {yt}({st})     labeled  '{label}'  Dimensions of time different")
-                        return
+                    return
                 x_in = np.append(getattr(sx, st), getattr(sx, st)[-1]+dt)
                 plt_.stairs(yscld, x_in, color=color, linestyle=linestyle, label=label)
             else:
@@ -193,7 +193,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.subplot(326)
     plq(plt, mr, 'time_t', mr, 'Tb', color='green', linestyle='-', label='Tb'+run_str, stairs=True)
     plq(plt, mr, 'time_t', mr, 'Tb_f', color='green', linestyle='-', label='Tb_f'+run_str, stairs=True)
-    plq(plt, mv, 'time_t', mv, 'Tb', color='orange', linestyle='--', label='Tb'+ver_str, stairs=True)
+    plq(plt, mv, 'time_t', mv, 'Tb', color='orange', linestyle='--', label='Tb'+ver_str, stairs=True, warn=False)
     plq(plt, mv, 'time', mv, 'Tb', color='orange', linestyle='--', label='Tb'+ver_str)
     plt.plot(mr.time, mr.chm, color='black', linestyle='-', label='mon_chm'+run_str)
     plq(plt, sr, 'time', sr, 'chm_s', color='cyan', linestyle='--', label='sim_chm'+run_str)
