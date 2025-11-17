@@ -334,6 +334,12 @@ class BatteryMonitor(Battery, EKF1x1):
         self.voc_dead = 0.
         self.vsat = 0.
         self.dv_dyn = 0.
+        self.ib_amp_hdwe = 0.
+        self.ib_amp_model = 0.
+        self.ib_noa_hdwe = 0.
+        self.ib_noa_model = 0.
+        self.ib_hdwe = 0.
+        self.ib_hdwe_model = 0.
         self.ib_dyn = 0.
         self.ib_dyn_rstate = 0.
         self.ib_dyn_lstate = 0.
@@ -359,10 +365,10 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap_rate = 0.
         self.reset_past = True
         self.ib_past = 0.
-        self.ib_amp = None
-        self.ib_amp_pst = None
+        self.ib_amp = 0.
+        self.ib_amp_pst = 0.
         self.ib_amp_fut = 0.
-        self.ib_noa = None
+        self.ib_noa = 0.
         self.ib_noa_pst = 0.
         self.ib_noa_fut = 0.
         self.e_wrap_m = None
@@ -459,16 +465,22 @@ class BatteryMonitor(Battery, EKF1x1):
     # (EKF_EFRAME_MULT multi-frame always <= DP)
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
                   q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, i=None):
+        self.ib_amp_hdwe = SN.mon_run.ibmh[G.i]
+        self.ib_amp_model = SN.mon_run.ibmm[G.i]
+        self.ib_noa_hdwe = SN.mon_run.ibmh[G.i]
+        self.ib_noa_model = SN.mon_run.ibnm[G.i]
         if rp.modeling == 0:
-            self.ib_amp = SN.mon_run.ibmh[G.i]
-            self.ib_noa = SN.mon_run.ibnh[G.i]
+            self.ib_amp = self.ib_amp_hdwe
+            self.ib_noa = self.ib_noa_hdwe
             self.ib_amp_pst = SN.mon_run.ibmh[max(G.i-1, 0)]
             self.ib_noa_pst = SN.mon_run.ibnh[max(G.i-1, 0)]
         else:
-            self.ib_amp = SN.mon_run.ibmm[G.i]
-            self.ib_noa = SN.mon_run.ibnm[G.i]
+            self.ib_amp =self.ib_amp_model
+            self.ib_noa = self.ib_noa_model
             self.ib_amp_pst = SN.mon_run.ibmm[max(G.i - 1, 0)]
             self.ib_noa_pst = SN.mon_run.ibnm[max(G.i - 1, 0)]
+        self.ib_hdwe = self.ib_noa_hdwe
+        self.ib_hdwe_model = self.ib_noa_model
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem

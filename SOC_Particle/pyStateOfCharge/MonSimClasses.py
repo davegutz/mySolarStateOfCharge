@@ -119,8 +119,8 @@ class Sensors:
                                             self.mon_run.e_wrap_m_filt)
             self.LoopNoa = SensorLooparound(self.mon_run.ibnh, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_m_trim * 0.,
                                             self.mon_run.e_wrap_n_filt)
-            self.ib_amp = self.mon_run.ibmh
-            self.ib_noa = self.mon_run.ibnh
+            self.ib_amp = 0.
+            self.ib_noa = 0.
             self.ib_dyn = ProArray(self.mon_run.ib_dyn, mutable=True)
             # self.ib_dyn_init = self.ib_dyn[0]
             self.z = self.mon_run.z

@@ -174,7 +174,7 @@ def main():
     # # The following are not implemented in GUI
     #
     # time_end_in = None
-    # # time_end_in = -8.
+    time_end_in = 16.
     #
     #
     # # s_hys_sim_in = 1.
@@ -182,14 +182,14 @@ def main():
     #
     verbose_in = False
     scale_in = 1.0
-    request_hist_in = 2  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
+    request_hist_in = 5  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
 
     # # mon_soc_in = False # old runsim work ******************
     mon_soc_in = True
 
 
-    # plots = False
-    plots = True
+    plots = False
+    # plots = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=mon_soc_in, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
