@@ -257,7 +257,7 @@ class Sensors:
 
         self.i = 0
         self.sat_init = self.mon_run.sat[0]
-        # dt_s
+        # dt_s   ****20251118 comment out to get tweakH0 to run correctly
         self.dt_s = []
         for i in range(len(self.sim_run.time)):
             if i == 0:

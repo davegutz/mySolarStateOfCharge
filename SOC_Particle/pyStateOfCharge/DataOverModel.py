@@ -580,6 +580,15 @@ def count_text_fields(line):
     return count
 
 
+def filter_f15_sequence(data_stream):
+    # The escape sequence is typically ^[[28~, where ^[ is the ESC character (ASCII 27)
+    # In a Python string, you can represent ESC as '\x1b' or '\033'
+    f15_sequence = re.escape('\x1b[28~')
+    # Use re.sub to replace the sequence with an empty string
+    filtered_data = re.sub(f15_sequence, '', data_stream)
+    return filtered_data
+
+
 def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip=1, comment_str='#'):
     """First line with hdr_key defines the number of fields to be imported cleanly"""
     import os
@@ -594,6 +603,7 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
         with open(csv_file, "w") as output:
             try:
                 for line in input_file:
+                    line = filter_f15_sequence(line)  # ESC[28~ injected by f15 keypress GUI_TestSOC to keep term awake
                     if line.__contains__('FRAG'):
                         print(Colors.fg.red, "\n\n\nDataOverModel(write_clean_file): Heap fragmentation error\
                          detected in Particle.  Decrease NSUM constant and re-run\n\n", Colors.reset)
@@ -615,6 +625,7 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
     with (open(path_to_data, "r", encoding='cp437') as input_file):  # reads all characters even bad ones
         with open(csv_file, "a") as output:
             for line in input_file:
+                line = filter_f15_sequence(line)  # ESC[28~ injected by f15 keypress GUI_TestSOC to keep term awake
                 if line.__contains__(unit_key) and not line.__contains__('Config:'):
                     unit_key_found = True
                     # if line.__contains__('946s868214.902'):
