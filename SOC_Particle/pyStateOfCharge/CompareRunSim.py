@@ -155,7 +155,7 @@ def main():
     else:
         gdrive = 'G:/My Drive/'
 
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegressionH0_soc2p2_hi_lo_chg.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_chg.csv'
     unit_key = 'g20250612a_soc2p2_hi_lo_chg'
     time_end_in = None
     data_only = False
@@ -173,20 +173,19 @@ def main():
     #
     # # The following are not implemented in GUI
     #
-    # time_end_in = None
-    time_end_in = 16.
+    time_end_in = None
+    # time_end_in = 16.
     #
     #
-    # # s_hys_sim_in = 1.
-    s_hys_sim_in = 0.
+    s_hys_sim_in = 1.
+    # s_hys_sim_in = 0.
     #
     verbose_in = False
     scale_in = 1.0
-    request_hist_in = 5  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
+    request_hist_in = 3  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
 
     # # mon_soc_in = False # old runsim work ******************
     mon_soc_in = True
-
 
     plots = False
     # plots = True
