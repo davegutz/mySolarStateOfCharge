@@ -1120,7 +1120,7 @@ def stay_awake(up_set_min=3.):
     while putty_running > 0 and (up_time_min < up_set_min):
         time.sleep(30.)
         for i in range(0, 3):
-            pyautogui.press('f15')  # Shift key does not disturb fullscreen
+            pyautogui.press('shift' + 'f15')  # Shift f15 does not disturb fullscreen
         up_time_min = (time.time() - start_time) / 60.
         print(f"stay_awake: {up_time_min=} out of {up_set_min}")
         # Check putty running

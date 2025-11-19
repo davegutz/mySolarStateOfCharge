@@ -189,8 +189,8 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
     i_dt_old = SN.sim_run.dt_s[G.i] * SN.sim_run.ib_charge_s[G.i]
     i_dt_new = sim.dt * sim.ib_charge
     if sim.ib_charge > 0:
-        i_dt_old *= sim.coul_eff
-        i_dt_new *= sim.coul_eff
+        i_dt_old *= sim.chemistry.coul_eff
+        i_dt_new *= sim.chemistry.coul_eff
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
