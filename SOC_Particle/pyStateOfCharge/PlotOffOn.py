@@ -39,12 +39,14 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
                 run_str='_run', ver_str='_ver'):
+    print('off_on_plot', end=':  ')
     if sr and smv:
         fig_list.append(plt.figure())  # 7 off/on sim
         plt.subplot(321)
         plt.title(plot_title + ' off/on sim 1')
+        print('off/on sim 1', end=':  ')
         plt.plot(sr.time, sr.vb_s, color='black', linestyle='-', label='vb_s' + run_str)
-        plq(plt, sv, 'time', sv, 'vb', color='green', linestyle='--', label='vb_s' + ver_str)
+        plq(plt, sv, 'time', sv, 'vb', color='cyan', linestyle='--', label='vb_s' + ver_str)
         plq(plt, sv, 'time', sv, 'vb_s', color='red', linestyle='-.', label='vb_s' + ver_str)
         plt.plot(sr.time, sr.voc_s, color='blue', linestyle='-', label='voc_s' + run_str)
         plq(plt, sv, 'time', sv, 'voc', color='magenta', linestyle='--', label='voc_s' + ver_str)
@@ -77,6 +79,7 @@ def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, 
         fig_list.append(plt.figure())  # 8 off/on mon 1
         plt.subplot(321)
         plt.title(plot_title + ' off/on mon 1')
+        print('off/on mon 1', end=':  ')
         plt.plot(mr.time, mr.vb, color='black', linestyle='-', label='vb' + run_str)
         plt.plot(mr.time, mr.voc, color='blue', linestyle='--', label='voc' + run_str)
         plt.plot(mr.time, mr.voc_stat, color='magenta', linestyle='-.', label='voc_stat' + run_str)
@@ -105,6 +108,7 @@ def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, 
         fig_list.append(plt.figure())  # 9 off/on soc
         plt.subplot(321)
         plt.title(plot_title + ' off/on soc')
+        print('off/on soc', end=':  ')
         plq(plt, mr, 'time', mr, 'qcrs', color='blue', linestyle='-', label='qcrs' + run_str)
         plq(plt, mv, 'time', mv, 'qcrs', color='magenta', linestyle='--', label='qcrs' + ver_str)
         plq(plt, sr, 'time', sr, 'qcrs_s', color='black', linestyle='-.', label='qcrs_s' + run_str)

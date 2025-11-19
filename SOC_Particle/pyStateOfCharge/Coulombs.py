@@ -18,13 +18,18 @@ of the totals and standardize the calculations."""
 
 # Constants
 from Chemistry_BMS import Chemistry
+import Globals as G
 
 
 class Coulombs:
     """Coulomb Counting"""
 
-    def __init__(self, q_cap_rated, q_cap_rated_scaled, t_rated, tweak_test=False, mod_code=0, dvoc=0.,
-                 unit=None):
+    def __init__(self, OPT=None, q_cap_rated=None, q_cap_rated_scaled=None, t_rated=None, tweak_test=False, mod_code=0,
+                 dvoc=0.):
+        if OPT is not None and hasattr(OPT, 'unit'):
+            unit = OPT.unit
+        else:
+            unit = ''
         self.q_cap_rated = q_cap_rated
         self.q_cap_rated_scaled = q_cap_rated_scaled
         self.t_rated = t_rated
@@ -125,8 +130,7 @@ class Coulombs:
             res = 1
         return res
 
-    def count_coulombs(self, chem, dt, reset, tb_f, charge_curr, sat, use_soc_in=False,
-                       soc_in=0.):
+    def count_coulombs(self, OPT, chem, dt, reset, tb_f, charge_curr, sat):
         """Count coulombs based on true=actual capacity
         Inputs:
             dt              Integration step, s
@@ -134,8 +138,8 @@ class Coulombs:
             charge_curr     Charge, A
             sat             Indicator that battery is saturated (VOC>threshold(temp)), T/F
             coul_eff        Coulombic efficiency - the fraction of charging input that gets turned into usable Coulombs
-            use_soc_in      Command to drive integrator with input mon_soc
-            soc_in          Auxiliary integrator setting, fraction soc
+            use_mon_soc     Command to drive integrator with input mon_soc
+            soc             Auxiliary integrator setting, fraction soc
         """
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem)
@@ -157,8 +161,8 @@ class Coulombs:
 
         # Integration
         self.q_capacity = self.calculate_capacity(tb_f=self.tb_f)
-        if use_soc_in:
-            self.soc = soc_in
+        if OPT.use_mon_soc:
+            self.soc = OPT.mon_run.soc[G.i]
             self.q = self.q_capacity * self.soc
             self.delta_q = self.q - self.q_capacity
         else:

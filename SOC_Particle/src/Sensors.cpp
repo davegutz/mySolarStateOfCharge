@@ -651,7 +651,7 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
   Serial.printf(" Inh%7.3f Inm %7.3f Ib%7.3f\n", Sen->Ib_noa_hdwe, Sen->Ib_noa_model, Sen->Ib);
   Serial.printf(" Ibh%7.3f Ibh %7.3f Ib%7.3f\n\n", Sen->Ib_hdwe, Sen->Ib_hdwe_model, Sen->Ib);
 
-  Serial.printf(" mod_tb %d mod_vb %d mod_ib  %d\n", sp.mod_tb_f(), sp.mod_vb(), sp.mod_ib());
+  Serial.printf(" mod_tb %d mod_vb %d mod_ib  %d\n", sp.mod_tb(), sp.mod_vb(), sp.mod_ib());
   Serial.printf(" mod_tb_dscn %d mod_vb_dscn %d mod_ib_amp_dscn %d mod_ib_noa_dscn %d\n", sp.mod_tb_dscn(), sp.mod_vb_dscn(), sp.mod_ib_amp_dscn(), sp.mod_ib_noa_dscn());
   #ifdef HDWE_IB_HI_LO
     Serial.printf(" tb_s_st %d  vb_s_st %d  ib_choice %d ib_decision_ %d ib_s_st %d\n", tb_sel_stat_, vb_sel_stat_, ib_choice_, ib_decision_, ib_sel_stat_);
@@ -719,7 +719,7 @@ void Fault::pretty_print1(Sensors *Sen, BatteryMonitor *Mon)
   Serial1.printf(" Inh %7.3f  Inm %7.3f\n", Sen->Ib_noa_hdwe, Sen->Ib_noa_model);
   Serial1.printf(" Ibh %7.3f  Ibm %7.3f Ib %7.3f\n\n", Sen->Ib_hdwe, Sen->Ib_hdwe_model, Sen->Ib);
 
-  Serial1.printf(" mod_tb  %d  mod_vb  %d  mod_ib  %d\n", sp.mod_tb_f(), sp.mod_vb(), sp.mod_ib());
+  Serial1.printf(" mod_tb  %d  mod_vb  %d  mod_ib  %d\n", sp.mod_tb(), sp.mod_vb(), sp.mod_ib());
   #ifdef HDWE_IB_HI_LO
     Serial1.printf(" tb_s_st %d  vb_s_st %d  ib_choice %d ib_decision %d\n", tb_sel_stat_, vb_sel_stat_, ib_choice_, ib_decision_);
   #else
@@ -1148,7 +1148,7 @@ void Fault::tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, con
   {
     failAssign(false, TB_FA);
   }
-  if ( sp.mod_tb_f() )
+  if ( sp.mod_tb() )
   {
     faultAssign( ((Sen->Tb_model_filt<=_tb_min) || (Sen->Tb_model_filt>=_tb_max)) &&
                  !ap.disab_tb_fa, TB_FLT);
@@ -1170,7 +1170,7 @@ void Fault::tb_stale(const boolean reset, Sensors *Sen)
 {
   boolean reset_loc = reset | reset_all_faults_;
 
-  if ( ap.disab_tb_fa || reset_loc || (sp.mod_tb_f() && !ap.fail_tb) )
+  if ( ap.disab_tb_fa || reset_loc || (sp.mod_tb() && !ap.fail_tb) )
   {
     faultAssign( false, TB_FLT );
     failAssign( false, TB_FA );
@@ -1251,9 +1251,10 @@ void Fault::wrap_scalars(BatteryMonitor *Mon)
 
 
 // Class Sensors
-Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *Talk, Sync *Summarize, unsigned long long time_now,
-  unsigned long long millis, BatteryMonitor *Mon):  inst_millis_(millis), inst_time_(time_now), reset_temp_(false),
-  sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_vb_(0UL), sample_time_vb_hdwe_(0UL)
+Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *ReadTemp, Sync *Talk, Sync *Summarize,
+  unsigned long long time_now, unsigned long long millis, BatteryMonitor *Mon):  inst_millis_(millis),
+  inst_time_(time_now), reset_temp_(false), sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_vb_(0UL),
+  sample_time_vb_hdwe_(0UL)
 {
   this->T = T;
   this->T_filt = T;
@@ -1266,9 +1267,9 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *T
     this->ShuntNoAmp = new Shunt("No Amp", 0x48, &sp.ib_scale_noa_z, &sp.ib_bias_noa_z, SHUNT_NOA_GAIN, pins->Vcn_pin, pins->Von_pin, pins->Vh3v3_pin, false);
   #endif
   #if !defined(HDWE_2WIRE) & !defined(HDWE_BARE)
-    this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY);
+    this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY_DS18);
   #elif !defined(HDWE_BARE)
-    this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY, pins->VTb_pin);
+    this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY_DS18, pins->VTb_pin);
   #endif
   this->TbSenseFilt = new LagExp(double(READ_DELAY)/1000., TB_FILT, -20.0, 150.);
   this->Sim = new BatterySim(ap.ds_voc_soc, 0., 0.);
@@ -1277,6 +1278,7 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *T
   this->stop_inj = 0ULL;
   this->end_inj = 0ULL;
   this->ReadSensors = ReadSensors;
+  this->ReadTemp = ReadTemp;
   this->Summarize = Summarize;
   this->Talk = Talk;
   this->display = true;
@@ -1398,7 +1400,7 @@ void Sensors::select_temp(BatteryMonitor *Mon)
 {
   // Final assignments
   // tb
-  if ( sp.mod_tb_f() )
+  if ( sp.mod_tb() )
   {
     if ( Flt->tb_fa() )
     {
@@ -1511,7 +1513,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
    Ib, Ib_hdwe, Ib_hdwe_model, Ib_amp, Ib_amp_model, Ib_amp_hdwe, Ib_noa, Ib_noa_model, Ib_noa_hdwe);
 
   // print_signal_select for data collection
-  print_signal_sel_serial(reset, this, Mon);
+  print_signal_sel_serial(reset, this, Mon, Sim);
 
 }
 

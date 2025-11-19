@@ -73,7 +73,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
         if ( !sp.mod_ib() ) Sen->Ib_model_in = Sen->Ib_noa_hdwe;
     #endif
   Sen->temp_load_and_filter(Sen, true);
-  if ( sp.mod_tb_f() )
+  if ( sp.mod_tb() )
   {
     Sen->Tb = Sen->Tb_model;
     Sen->Tb_f = Sen->Tb_model_filt;

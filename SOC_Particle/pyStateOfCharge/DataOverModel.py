@@ -25,7 +25,7 @@ Dependencies:
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
-from Battery import overall_batt
+from Battery import Battery, overall_batt
 from myFilters import LagExp
 # below suppresses runtime error display******************
 # import os
@@ -47,7 +47,7 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 
 def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', label=None, marker=None,
-        markersize=None, markevery=None, stairs=False):
+        markersize=None, markevery=None, stairs=False, warn=True):
     if (sx is not None and sy is not None and hasattr(sx, st) and hasattr(sy, yt) and
             len(getattr(sy, yt)) > 0 and getattr(sy, yt)[0] is not None):
         try:
@@ -56,18 +56,25 @@ def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', labe
             yscld = np.array(getattr(sy, yt)) * slr + add
         try:
             if stairs:
-                dt = getattr(sx, st)[-1] - getattr(sx, st)[-2]
+                try:
+                    dt = getattr(sx, st)[-1] - getattr(sx, st)[-2]
+                except IndexError:
+                    if warn:
+                        print(f"plq: skipping     {yt}({st})     labeled  '{label}'  Dimensions of time different")
+                    return
                 x_in = np.append(getattr(sx, st), getattr(sx, st)[-1]+dt)
                 plt_.stairs(yscld, x_in, color=color, linestyle=linestyle, label=label)
             else:
                 plt_.plot(getattr(sx, st), yscld, color=color, linestyle=linestyle, label=label, marker=marker,
                           markersize=markersize, markevery=markevery)
         except ValueError:
-            pass
+            if warn:
+                print(f"plq: skipping     {yt}({st})     labeled  '{label}'")
 
 
 def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
              run_str='_run', ver_str='_ver'):
+    print('dom_plot', end=':  ')
     if fig_files is None:
         fig_files = []
 
@@ -75,6 +82,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         fig_list.append(plt.figure())  # init 1
         plt.subplot(221)
         plt.title(plot_title + ' init 1')
+        print('init 1', end=':  ')
         plt.plot(sr.time, sr.reset_s, color='black', linestyle='-', label='reset_s'+run_str)
         plq(plt, smv, 'time', smv, 'reset_s', color='red', linestyle='--', label='reset_s'+ver_str)
         plt.plot(mr.time, mr.reset, color='magenta', linestyle='-', label='reset'+run_str)
@@ -105,6 +113,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     fig_list.append(plt.figure())  # 1a
     plt.subplot(221)
     plt.title(plot_title + ' 1a')
+    print('1a', end=':  ')
     if hasattr(mr, 'mod_data') and mr.mod_data[0] != 0:
         plq(plt, mr, 'time', mr, 'ibmm', color='black', linestyle='-', label='ib_amp_mod'+run_str)
         plq(plt, mv, 'time', mv, 'ibmm', color='red', linestyle='-.', label='ib_amp_mod'+ver_str)
@@ -123,11 +132,12 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mv, 'time', mv, 'ib_charge', add=+1, linestyle=':', color='blue', label='ib_charge'+ver_str+'+1')
     plt.legend(loc=1)
     plt.subplot(222)
-    plq(plt, mr, 'time', mr, 'ib_sel_stat', color='black', linestyle='-', label='ib_sel_stat'+run_str)
-    plq(plt, mv, 'time', mv, 'ib_sel_stat', color='red', linestyle='--', label='ib_sel_stat'+ver_str)
-    plq(plt, mr, 'time', mr, 'ib_dec', add=2, color='black', linestyle='-', label='ib_dec'+run_str+'+2')
-    plq(plt, mv, 'time', mv, 'ib_dec', add=2, color='red', linestyle='--', label='ib_dec'+ver_str+'+2')
-    plt.legend(loc=1)
+    if hasattr(mr, 'ib_sel_stat'):
+        plq(plt, mr, 'time', mr, 'ib_sel_stat', color='black', linestyle='-', label='ib_sel_stat'+run_str)
+        plq(plt, mv, 'time', mv, 'ib_sel_stat', color='red', linestyle='--', label='ib_sel_stat'+ver_str)
+        plq(plt, mr, 'time', mr, 'ib_dec', add=2, color='black', linestyle='-', label='ib_dec'+run_str+'+2')
+        plq(plt, mv, 'time', mv, 'ib_dec', add=2, color='red', linestyle='--', label='ib_dec'+ver_str+'+2')
+        plt.legend(loc=1)
     plt.subplot(223)
     plq(plt, mr, 'time', mr, 'e_wrap', color='black', linestyle='-', label='e_wrap'+run_str)
     plq(plt, mv, 'time', mv, 'e_wrap', color='red', linestyle='--', label='e_wrap'+ver_str)
@@ -148,6 +158,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     fig_list.append(plt.figure())  # DOM 2
     plt.subplot(321)
     plt.title(plot_title + ' DOM 2')
+    print('DOM 2', end=':  ')
     plq(plt, mr, 'time', mr, 'dv_dyn', color='green', linestyle='-', label='dv_dyn'+run_str)
     plq(plt, mr, 'time', mr, 'dv_dyn_f', color='green', linestyle='-', label='dv_dyn_f'+run_str)
     plt.plot(mv.time, mv.dv_dyn, color='orange', linestyle='--', label='dv_dyn'+ver_str)
@@ -155,8 +166,8 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.subplot(322)
     plq(plt, mr, 'time', mr, 'voc_stat', color='green', linestyle='-', label='voc_stat'+run_str)
     plq(plt, mr, 'time', mr, 'voc_stat_f', color='green', linestyle='-', label='voc_stat_f'+run_str)
-    plt.plot(mv.time, mv.voc_stat, color='orange', linestyle='--', label='voc_stat'+ver_str)
-    plt.plot(mv.time, mv.voc_stat_f, color='red', linestyle=':', label='voc_stat_f'+ver_str)
+    plq(plt, mv, 'time', mv, 'voc_stat', color='orange', linestyle='--', label='voc_stat'+ver_str)
+    plq(plt, mv, 'time', mv, 'voc_stat_f', color='red', linestyle=':', label='voc_stat_f'+ver_str)
     plt.legend(loc=1)
     plt.subplot(323)
     plq(plt, mr, 'time', mr, 'voc', color='green', linestyle='-', label='voc'+run_str)
@@ -167,7 +178,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.legend(loc=1)
     plt.subplot(324)
     plq(plt, mr, 'time', mr, 'y_ekf', color='green', linestyle='-', label='y_ekf'+run_str, stairs=True)
-    plt.plot(mv.time, mv.y_ekf, color='orange', linestyle='--', label='y_ekf'+ver_str)
+    plq(plt, mv, 'time', mv, 'y_ekf', color='orange', linestyle='--', label='y_ekf'+ver_str, stairs=True)
     plq(plt, mv, 'time', mv, 'y_filt', color='black', linestyle='-.', label='y_filt'+ver_str)
     plq(plt, mv, 'time', mv, 'y_filt2', color='cyan', linestyle=':', label='y_filt2'+ver_str)
     plt.legend(loc=1)
@@ -175,14 +186,15 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.plot(mr.time, mr.dv_hys, color='green', linestyle='-', label='dv_hys'+run_str)
     plt.plot(mv.time, mv.dv_hys, color='cyan', linestyle='--', label='dv_hys'+ver_str)
     # plt.plot(smv.time, np.array(smv.dv_hys_s)+0.1, color='red', linestyle='-', label='dv_hys_s'+ver_str+'+0.1')
-    plq(plt, smv, 'time', smv, 'dv_hys_s', add=0.1, color='red', linestyle='-', label='dv_hys_s'+ver_str+'+0.1')
-    plq(plt, sr, 'time', sr, 'dv_hys_s', add=-0.1, color='magenta', linestyle='-', label='dv_hys_s'+ver_str+'-0.1')
+    plq(plt, smv, 'time', smv, 'dv_hys_s', add=0.1, color='red', linestyle='-', label='dv_hys_s'+ver_str+'+0.1', warn=False)
+    plq(plt, sr, 'time', sr, 'dv_hys_s', add=-0.1, color='magenta', linestyle='-', label='dv_hys_s'+ver_str+'-0.1', warn=False)
     # plt.plot(sr.time, np.array(sr.dv_hys_s)-0.1, color='magenta',  linestyle='-', label='dv_hys_s-0.1'+run_str)
     plt.legend(loc=1)
     plt.subplot(326)
     plq(plt, mr, 'time_t', mr, 'Tb', color='green', linestyle='-', label='Tb'+run_str, stairs=True)
     plq(plt, mr, 'time_t', mr, 'Tb_f', color='green', linestyle='-', label='Tb_f'+run_str, stairs=True)
-    plt.plot(mv.time, mv.Tb, color='orange', linestyle='--', label='Tb'+ver_str)
+    plq(plt, mv, 'time_t', mv, 'Tb', color='orange', linestyle='--', label='Tb'+ver_str, stairs=True, warn=False)
+    plq(plt, mv, 'time', mv, 'Tb', color='orange', linestyle='--', label='Tb'+ver_str)
     plt.plot(mr.time, mr.chm, color='black', linestyle='-', label='mon_chm'+run_str)
     plq(plt, sr, 'time', sr, 'chm_s', color='cyan', linestyle='--', label='sim_chm'+run_str)
     plt.ylim(0., 50.)
@@ -194,6 +206,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     fig_list.append(plt.figure())  # DOM 3
     plt.subplot(221)
     plt.title(plot_title + ' DOM 3')
+    print('DOM 3', end=':  ')
     plt.plot(mr.time, mr.soc, color='blue', linestyle='-', label='soc'+run_str)
     plt.plot(mv.time, mv.soc, color='red', linestyle='--', label='soc'+ver_str)
     plt.legend(loc=1)
@@ -220,6 +233,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     fig_list.append(plt.figure())  # DOM 4
     plt.subplot(131)
     plt.title(plot_title + ' DOM 4')
+    print('DOM 4', end=':  ')
     plt.plot(mr.time, mr.soc, color='orange', linestyle='-', label='soc'+run_str)
     plt.plot(mv.time, mv.soc, color='green', linestyle='--', label='soc'+ver_str)
     plq(plt, smv, 'time', smv, 'soc_s', color='black', linestyle='-.', label='soc_s'+ver_str)
@@ -247,6 +261,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     fig_list.append(plt.figure())  # DOM 4a
     plt.subplot(311)
     plt.title(plot_title + ' DOM 4a')
+    print('DOM 4a', end=':  ')
     plq(plt, mr, 'time', mr, 'ib', color='orange', linestyle='-', label='ib'+run_str)
     plq(plt, mr, 'time', mr, 'ib_f', color='orange', linestyle='-', label='ib_f'+run_str)
     plt.plot(mv.time, mv.ib, color='green', linestyle='--', label='ib'+ver_str)
@@ -271,6 +286,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     # fig_list.append(plt.figure())  # DOM 5
     # plt.subplot(231)
     # plt.title(plot_title + ' DOM 5')
+    # print('DOM 5', end=':  ')
     # plt.plot(mr.time, mr.ib_charge, color='black', linestyle='-', label='ib_charge' + run_str)
     # plt.plot(mv.time, mv.ib_charge, linestyle='--', color='blue', label='ib_charge' + ver_str)
     # plt.plot(mr.time, mr.ib_diff_flt + 2, color='green', linestyle='-', label='ib_diff_flt' + run_str + '+2')
@@ -343,6 +359,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     # fig_list.append(plt.figure())  # DOM 6
     # plt.subplot(221)
     # plt.title(plot_title + ' DOM 6')
+    # print('DOM 6', end=':  ')
     # plq(plt, mr, 'time', mr, 'ibmh', color='blue', linestyle='-', label='ib_amp_hdwe' + run_str)
     # plq(plt, mr, 'time', mr, 'ibnh', color='green', linestyle='-', label='ib_noa_hdwe' + run_str)
     # plq(plt, mr, 'time', mr, 'ib_sel', color='red', linestyle='--', label='ib_sel' + run_str)
@@ -400,22 +417,22 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     # plq(plt, mv, 'time', mv, 'ewnlo_thr', color='orange', linestyle=':', label='ewnlo_thr' + ver_str)
     # plt.ylim(-1, 1)
     # plt.legend(loc=1)
-    fig_list, fig_files = ult_plot(mr, mv, sr, sv, smv, filename,
+    fig_list, fig_files = ult_plot(mr, mv, sr, smv, filename,
                                    fig_files, plot_title=plot_title, fig_list=fig_list,
-                                   plot_init_in=plot_init_in, run_str='', ver_str='_ver')
+                                   run_str='', ver_str='_ver')
 
     return fig_list, fig_files
 
 
 
-def ult_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
-         run_str='_run', ver_str='_ver'):
+def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_list=None, run_str='_run', ver_str='_ver'):
     if fig_files is None:
         fig_files = []
 
     fig_list.append(plt.figure())  # Ult 1
     plt.subplot(331)
     plt.title(plot_title + ' Ult 1')
+    print('Ult 1', end=':  ')
     plq(plt, mr, 'time', mr, 'ibmh', color='green', linestyle='-', label='ib_amp_hdwe' + run_str)
     plq(plt, mv, 'time', mv, 'ibmh', color='red', linestyle='--', label='ib_amp_hdwe' + ver_str)
     plq(plt, mr, 'time', mr, 'ibnh', color='blue', linestyle='-.', label='ib_noa_hdwe' + run_str)
@@ -563,6 +580,15 @@ def count_text_fields(line):
     return count
 
 
+def filter_f15_sequence(data_stream):
+    # The escape sequence is typically ^[[28~, where ^[ is the ESC character (ASCII 27)
+    # In a Python string, you can represent ESC as '\x1b' or '\033'
+    f15_sequence = re.escape('\x1b[28~')
+    # Use re.sub to replace the sequence with an empty string
+    filtered_data = re.sub(f15_sequence, '', data_stream)
+    return filtered_data
+
+
 def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip=1, comment_str='#'):
     """First line with hdr_key defines the number of fields to be imported cleanly"""
     import os
@@ -577,6 +603,7 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
         with open(csv_file, "w") as output:
             try:
                 for line in input_file:
+                    line = filter_f15_sequence(line)  # ESC[28~ injected by f15 keypress GUI_TestSOC to keep term awake
                     if line.__contains__('FRAG'):
                         print(Colors.fg.red, "\n\n\nDataOverModel(write_clean_file): Heap fragmentation error\
                          detected in Particle.  Decrease NSUM constant and re-run\n\n", Colors.reset)
@@ -598,6 +625,7 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
     with (open(path_to_data, "r", encoding='cp437') as input_file):  # reads all characters even bad ones
         with open(csv_file, "a") as output:
             for line in input_file:
+                line = filter_f15_sequence(line)  # ESC[28~ injected by f15 keypress GUI_TestSOC to keep term awake
                 if line.__contains__(unit_key) and not line.__contains__('Config:'):
                     unit_key_found = True
                     # if line.__contains__('946s868214.902'):
@@ -629,12 +657,46 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
     return csv_file
 
 
+from dataclasses import dataclass
+# Define the class using a dataclass for simplicity and clarity
+@dataclass(frozen=True)  # frozen=True makes the values immutable (read-only)
+class DeviceConstants:
+    """Class to hold device constants from a dictionary."""
+    # The fields will be dynamically added later
+
+    @classmethod
+    def from_dict(cls, data_dict):
+        """Creates an instance of the class from a dictionary."""
+        # Create a new instance with unpacked dictionary values
+        return cls(**data_dict)
+
+
 class SavedData:
-    def __init__(self, rap=None, sel=None, ekf=None, temp=None, time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None,
-                 init_time_in=None):
+    def __init__(self, battery=None, rap=None, sel=None, ekf=None, temp=None, time_end=None, zero_zero=False,
+                 zero_thr=0.02, sync_cTime=None, init_time_in=None):
         i_end = 0
         n = None
         ib_lag = None
+
+        # Load off-nominal Battery values
+        if battery is not None:
+            # Scroll through all off-nominals make dictionary
+            self.Battery_off_dict = {}
+            for field_name in battery.dtype.names:
+                try:
+                    self.Battery_off_dict[field_name] = battery[field_name][-1]
+                except IndexError:
+                    self.Battery_off_dict[field_name] = battery[field_name]
+            # print(self.Battery_off_dict)
+            # Print affected values
+            print(f"dictionary to apply to Battery class")
+            if self.Battery_off_dict:
+                for key in dir(Battery):
+                    if key in self.Battery_off_dict and key.isupper() and not key.startswith('__'):
+                        print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
+                        print("Battery.{:s} = {:5.1f}".format(key, self.Battery_off_dict[key]))
+
+
         if rap is None:
             IbLag = None
             self.skip_rap = None
@@ -680,6 +742,8 @@ class SavedData:
             self.time_run = 0.  # Adjust time for start of ib input
             self.voc_soc_new = None  # For studies
             self.init_time = None
+            self.ib_dyn_lstate = None
+            self.ib_dyn_rstate = None
         else:
             self.skip_rap = np.bool(np.array(rap.skip))
             self.i = 0
@@ -718,8 +782,8 @@ class SavedData:
             # Truncate
             if time_end is None:
                 if temp is not None:
-                    time_t = np.array(temp.c_time[:]) - self.time_run
-                    Tt = np.array(temp.T_t[:])
+                    time_t = np.atleast_1d(np.array(np.array(temp.c_time) - self.time_run))
+                    Tt = np.atleast_1d(np.array(temp.T_t))
                     time_end = time_t[-1] + Tt[-1]
                     i_end = np.where(self.time <= time_end)[0][-1] + 1
                 else:
@@ -728,7 +792,7 @@ class SavedData:
                     self.c_time_s = np.array(sel.c_time) - self.time_run
                     i_end = min(i_end, len(self.c_time_s))
                 if ekf is not None:
-                    self.time_e = np.array(ekf.c_time) - self.time_run
+                    self.time_e = np.array(np.atleast_1d(ekf.c_time) - self.time_run)
             else:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
                 if sel is not None:
@@ -737,7 +801,7 @@ class SavedData:
                     i_end = np.minimum(i_end, i_end_sel)
                     self.zero_end = np.minimum(self.zero_end, i_end-1)
                 if ekf is not None:
-                    self.time_e = np.array(ekf.c_time) - self.time_run
+                    self.time_e = np.array(np.atleast_1d(ekf.c_time) - self.time_run)
             self.cTime = self.cTime[:i_end]
             self.dt = np.array(rap.dt[:i_end])
             self.time = np.array(self.time[:i_end])
@@ -770,6 +834,14 @@ class SavedData:
             self.Tb_f_rate_rap = np.array(rap.Tb_f_rate_rap[:i_end])
             self.vsat = np.array(rap.vsat[:i_end])
             self.dv_dyn = np.array(rap.dv_dyn[:i_end])
+            if hasattr(rap, 'ib_dyn_lstate'):
+                self.ib_dyn_lstate = np.array(rap.ib_dyn_lstate[:i_end])
+            else:
+                self.ib_dyn_lstate = self.vsat*0.
+            if hasattr(rap, 'ib_dyn_rstate'):
+                self.ib_dyn_rstate = np.array(rap.ib_dyn_rstate[:i_end])
+            else:
+                self.ib_dyn_rstate = self.vsat*0.
             self.ib_dyn = np.array(rap.ib_dyn[:i_end])
             self.voc_stat = np.array(rap.voc_stat[:i_end])
             self.voc = self.vb - self.dv_dyn
@@ -965,23 +1037,15 @@ class SavedData:
                 self.y_ekf_f = np.array(sel.y_ekf_f[:i_end])
             if hasattr(sel, 'ib_dec'):
                 self.ib_dec = np.array(sel.ib_dec[:i_end])
-            self.ib_dyn_a_m = np.array(sel.ib_dyn_a_m[:i_end])
-            self.ib_dyn_b_m = np.array(sel.ib_dyn_b_m[:i_end])
-            self.ib_dyn_c_m = np.array(sel.ib_dyn_c_m[:i_end])
             self.ib_dyn_T_m = np.array(sel.ib_dyn_T_m[:i_end])
             self.ib_dyn_rstate_m = np.array(sel.ib_dyn_rstate_m[:i_end])
             self.ib_dyn_lstate_m = np.array(sel.ib_dyn_lstate_m[:i_end])
             self.ib_dyn_tau_m = np.array(sel.ib_dyn_tau_m[:i_end])
-            self.ib_dyn_a_n = np.array(sel.ib_dyn_a_n[:i_end])
-            self.ib_dyn_b_n = np.array(sel.ib_dyn_b_n[:i_end])
-            self.ib_dyn_c_n = np.array(sel.ib_dyn_c_n[:i_end])
             self.ib_dyn_T_n = np.array(sel.ib_dyn_T_n[:i_end])
             self.ib_dyn_rstate_n = np.array(sel.ib_dyn_rstate_n[:i_end])
             self.ib_dyn_lstate_n = np.array(sel.ib_dyn_lstate_n[:i_end])
             self.ib_dyn_tau_n = np.array(sel.ib_dyn_tau_n[:i_end])
 
-            self.ib_wrp_a_n = np.array(sel.ib_wrp_a_n[:i_end])
-            self.ib_wrp_b_n = np.array(sel.ib_wrp_b_n[:i_end])
             self.ib_wrp_T_n = np.array(sel.ib_wrp_T_n[:i_end])
             self.ib_wrp_rate_n = np.array(sel.ib_wrp_rate_n[:i_end])
             self.ib_wrp_state_n = np.array(sel.ib_wrp_state_n[:i_end])
@@ -1019,36 +1083,33 @@ class SavedData:
             self.voc_stat_f_rstate = None
             self.voc_stat_f_lstate = None
         else:
-            self.skip_e = np.array(np.bool(ekf.skip[:i_end]))
-            self.time_e = np.array(ekf.c_time[:i_end]) - self.time_run
-            self.dt_ekf = np.array(ekf.dt[:i_end])
-            self.Fx = np.array(ekf.Fx_[:i_end])
-            self.Bu = np.array(ekf.Bu_[:i_end])
-            self.Q = np.array(ekf.Q_[:i_end])
-            self.R = np.array(ekf.R_[:i_end])
-            self.P = np.array(ekf.P_[:i_end])
-            self.S = np.array(ekf.S_[:i_end])
-            self.K = np.array(ekf.K_[:i_end])
-            self.u = np.array(ekf.u_[:i_end])
-            self.x = np.array(ekf.x_[:i_end])
-            self.y = np.array(ekf.y_[:i_end])
-            self.z = np.array(ekf.z_[:i_end])
-            self.x_prior = np.array(ekf.x_prior_[:i_end])
-            self.frz = np.array(np.bool(ekf.frz_[:i_end]))
-            self.P_prior = np.array(ekf.P_prior_[:i_end])
-            self.x_post = np.array(ekf.x_post_[:i_end])
-            self.P_post = np.array(ekf.P_post_[:i_end])
-            self.hx = np.array(ekf.hx_[:i_end])
-            self.H = np.array(ekf.H_[:i_end])
-            self.tb_f_for_hx = np.array(ekf.tb_f_hx_[:i_end])
-            self.x_for_hx = np.array(ekf.x_for_hx_[:i_end])
-            self.voc_stat_f_a = np.array(ekf.voc_stat_a[:i_end])
-            self.voc_stat_f_b = np.array(ekf.voc_stat_b[:i_end])
-            self.voc_stat_f_c = np.array(ekf.voc_stat_c[:i_end])
-            self.voc_stat_f_rstate = np.array(ekf.voc_stat_rstate[:i_end])
-            self.voc_stat_f_lstate = np.array(ekf.voc_stat_lstate[:i_end])
-            self.voc_stat_f_T = np.array(ekf.voc_stat_T[:i_end])
-            self.voc_stat_f_tau = np.array(ekf.voc_stat_tau[:i_end])
+            self.skip_e = np.bool(np.atleast_1d(ekf.skip)[:i_end])
+            self.time_e = np.array(np.atleast_1d(ekf.c_time)[:i_end] - self.time_run)
+            self.dt_ekf = np.array(np.atleast_1d(ekf.dt)[:i_end])
+            self.Fx = np.array(np.atleast_1d(ekf.Fx_)[:i_end])
+            self.Bu = np.array(np.atleast_1d(ekf.Bu_)[:i_end])
+            self.Q = np.array(np.atleast_1d(ekf.Q_)[:i_end])
+            self.R = np.array(np.atleast_1d(ekf.R_)[:i_end])
+            self.P = np.array(np.atleast_1d(ekf.P_)[:i_end])
+            self.S = np.array(np.atleast_1d(ekf.S_)[:i_end])
+            self.K = np.array(np.atleast_1d(ekf.K_)[:i_end])
+            self.u = np.array(np.atleast_1d(ekf.u_)[:i_end])
+            self.x = np.array(np.atleast_1d(ekf.x_)[:i_end])
+            self.y = np.array(np.atleast_1d(ekf.y_)[:i_end])
+            self.z = np.array(np.atleast_1d(ekf.z_)[:i_end])
+            self.x_prior = np.array(np.atleast_1d(ekf.x_prior_)[:i_end])
+            self.frz = np.array(np.bool(np.atleast_1d(ekf.frz_)[:i_end]))
+            self.P_prior = np.array(np.atleast_1d(ekf.P_prior_)[:i_end])
+            self.x_post = np.array(np.atleast_1d(ekf.x_post_)[:i_end])
+            self.P_post = np.array(np.atleast_1d(ekf.P_post_)[:i_end])
+            self.hx = np.array(np.atleast_1d(ekf.hx_)[:i_end])
+            self.H = np.array(np.atleast_1d(ekf.H_)[:i_end])
+            self.tb_f_for_hx = np.array(np.atleast_1d(ekf.tb_f_hx_)[:i_end])
+            self.x_for_hx = np.array(np.atleast_1d(ekf.x_for_hx_)[:i_end])
+            self.voc_stat_f_rstate = np.array(np.atleast_1d(ekf.voc_stat_rstate)[:i_end])
+            self.voc_stat_f_lstate = np.array(np.atleast_1d(ekf.voc_stat_lstate)[:i_end])
+            self.voc_stat_f_T = np.array(np.atleast_1d(ekf.voc_stat_T)[:i_end])
+            self.voc_stat_f_tau = np.array(np.atleast_1d(ekf.voc_stat_tau)[:i_end])
         if temp is None:
             self.skip_t = None
             self.time_t = None
@@ -1062,17 +1123,17 @@ class SavedData:
             self.Tb_hdwe_filt = None
             self.Tb_hdwe_filt_rate = None
         else:
-            self.skip_t = np.array(np.bool(temp.skip[:i_end]))
-            self.time_t = np.array(temp.c_time[:i_end]) - self.time_run
-            self.reset_temp = np.array(temp.reset_temp[:i_end])
-            self.Tt = np.array(temp.T_t[:i_end])
-            self.Tb_hdwe = np.array(temp.Tb_hdw[:i_end])
-            self.Tb = np.array(temp.Tb[:i_end])
-            self.Tb_f = np.array(temp.Tb_f[:i_end])
-            self.Tb_f_rate = np.array(temp.Tb_f_rate[:i_end])
-            self.Tb_mod = np.array(temp.Tb_mod[:i_end])
-            self.Tb_hdwe_filt = np.array(temp.Tb_hdwe_filt[:i_end])
-            self.Tb_hdwe_filt_rate = np.array(temp.Tb_hdwe_filt_rate[:i_end])
+            self.skip_t = np.array(np.bool(np.atleast_1d(temp.skip)[:i_end]))
+            self.time_t = np.array(np.atleast_1d(temp.c_time)[:i_end]) - self.time_run
+            self.reset_temp = np.array(np.atleast_1d(temp.reset_temp)[:i_end])
+            self.Tt = np.array(np.atleast_1d(temp.T_t)[:i_end])
+            self.Tb_hdwe = np.array(np.atleast_1d(temp.Tb_hdw)[:i_end])
+            self.Tb = np.array(np.atleast_1d(temp.Tb)[:i_end])
+            self.Tb_f = np.array(np.atleast_1d(temp.Tb_f)[:i_end])
+            self.Tb_f_rate = np.array(np.atleast_1d(temp.Tb_f_rate)[:i_end])
+            self.Tb_mod = np.array(np.atleast_1d(temp.Tb_mod)[:i_end])
+            self.Tb_hdwe_filt = np.array(np.atleast_1d(temp.Tb_hdwe_filt)[:i_end])
+            self.Tb_hdwe_filt_rate = np.array(np.atleast_1d(temp.Tb_hdwe_filt_rate)[:i_end])
 
             # Initialization time logic
         if self.time[0] == 0.:  # no initialization flat detected at beginning of recording
@@ -1085,7 +1146,10 @@ class SavedData:
         for i in range(n):
             if self.time[i] <= self.init_time:
                 lag_reset = True
-                T_lag = self.cTime[i+1] - self.cTime[i]
+                if i < n-1:
+                    T_lag = self.cTime[i+1] - self.cTime[i]
+                else:
+                    T_lag = self.cTime[i] - self.cTime[i-1]
             else:
                 lag_reset = False
                 T_lag = self.cTime[i] - self.cTime[i-1]
@@ -1192,9 +1256,6 @@ class SavedDataSim:
             self.soc_s = data.soc_s[:i_end]
             self.reset_s = data.reset_s[:i_end]
             self.d_delta_q_s = data.ddq_s[:i_end]
-            self.ib_dyn_s_a = data.ib_dyn_s_a[:i_end]
-            self.ib_dyn_s_b = data.ib_dyn_s_b[:i_end]
-            self.ib_dyn_s_c = data.ib_dyn_s_c[:i_end]
             self.ib_dyn_s_T = data.ib_dyn_s_T[:i_end]
             self.ib_dyn_s_tau = data.ib_dyn_s_tau[:i_end]
             self.ib_dyn_s_rstate = data.ib_dyn_s_rstate[:i_end]
@@ -1203,7 +1264,7 @@ class SavedDataSim:
     def __str__(self):
         s = "{},".format(self.unit[self.i])
         # s += "{:13.3f},".format(self.cTime[self.i])
-        s += "{:5.2f},".format(self.Tb_s[self.i])
+        # s += "{:5.2f},".format(self.Tb_s[self.i])
         s += "{:8.3f},".format(self.vsat_s[self.i])
         s += "{:5.2f},".format(self.voc_stat_s[self.i])
         s += "{:5.2f},".format(self.dv_dyn_s[self.i])
@@ -1290,7 +1351,9 @@ if __name__ == '__main__':
             sim_run = None
 
         # Run model
-        mon_ver, sim_ver, sim_s_ver = replicate(mon_run, init_time=1.)
+        from MonSim import UserOptions
+        replicateOptions = UserOptions(mon_run=mon_run, init_time=1.)
+        mon_ver, sim_ver, sim_s_ver = replicate(replicateOptions)
         date_ = datetime.now().strftime("%y%m%d")
         mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
         save_clean_file(mon_ver, mon_file_save, '_mon_rep' + date_)

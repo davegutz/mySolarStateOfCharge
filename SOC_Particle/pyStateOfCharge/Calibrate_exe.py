@@ -67,7 +67,7 @@ def finish(mash_data, soc_rated_off, actual_nom_unit_cap):
         # The curve that goes to lowest soc is cap since all items start at soc = 1
         soc_scale = (curve.soc - soc_rated_off) / (1. - soc_rated_off)
         New_raw_data = DataCP(actual_nom_unit_cap, curve.temp_c, soc_scale, curve.vstat, curve.data_file)
-        fin_data.append((New_raw_data, Battery.UNIT_CAP_RATED, temp, p_color, p_style, marker, marker_size))
+        fin_data.append((New_raw_data, Battery.NOM_UNIT_CAP, temp, p_color, p_style, marker, marker_size))
 
     return fin_data        
 
@@ -80,27 +80,27 @@ def mash(raw_data, v_off_thresh=None, rated_temp=25.):
     soc_rated_off = 1.  # initial value only
     s_rf = None
     for (curve, nom_unit_cap, temp, p_color, p_style, marker, marker_size) in raw_data:
-        soc_norm = 1. - (1. - curve.soc) * nom_unit_cap / Battery.UNIT_CAP_RATED
+        soc_norm = 1. - (1. - curve.soc) * nom_unit_cap / Battery.NOM_UNIT_CAP
         lut_vstat_soc = myTables.TableInterp1D(curve.vstat, soc_norm)
         if abs(temp - rated_temp) < 3:
             soc_rated_off = lut_vstat_soc.interp(v_off_thresh)
         for i in np.arange(len(curve.soc)):
             soc_data = curve.soc[i]
             vstat = curve.vstat[i]
-            soc_normal = normalize_soc(soc_data, nom_unit_cap, Battery.UNIT_CAP_RATED)
+            soc_normal = normalize_soc(soc_data, nom_unit_cap, Battery.NOM_UNIT_CAP)
             soc.append(soc_normal)
     soc_sort = np.unique(np.array(soc))
 
     # Mash
     mashed_data = []
     for (curve, nom_unit_cap, temp, p_color, p_style, marker, marker_size) in raw_data:
-        soc_normal = normalize_soc(curve.soc, nom_unit_cap, Battery.UNIT_CAP_RATED)
+        soc_normal = normalize_soc(curve.soc, nom_unit_cap, Battery.NOM_UNIT_CAP)
         lut_voc_soc = myTables.TableInterp1D(soc_normal, curve.vstat)
         voc_soc_sort = []
         for soc in soc_sort:
             voc_soc_sort.append(lut_voc_soc.interp(soc))
         New_raw_data = DataCP(nom_unit_cap, curve.temp_c, soc_sort, voc_soc_sort, curve.data_file)
-        mashed_data.append((New_raw_data, Battery.UNIT_CAP_RATED, temp, p_color, p_style, marker, marker_size))
+        mashed_data.append((New_raw_data, Battery.NOM_UNIT_CAP, temp, p_color, p_style, marker, marker_size))
 
     return mashed_data, soc_rated_off
 
@@ -132,6 +132,7 @@ def plot_all(raw_data, mashed_data, finished_data, red_data, act_unit_cap, fig_f
     fig_list.append(plt.figure())  # raw data 1
     plt.subplot(111)
     plt.title(plot_title + ' raw')
+    print('raw', end=':  ')
     for (curve, nom_unit_cap, temp, p_color, p_style, marker, marker_size) in raw_data:
         plt.plot(curve.soc, curve.vstat, color=p_color, linestyle=p_style, marker=marker, markersize=marker_size,
                  label='vstat ' + str(nom_unit_cap) + '  ' + str(temp) + 'C')
@@ -143,6 +144,7 @@ def plot_all(raw_data, mashed_data, finished_data, red_data, act_unit_cap, fig_f
     fig_list.append(plt.figure())  # normalized data 2
     plt.subplot(111)
     plt.title(plot_title + ' mashed')
+    print('mashed', end=':  ')
     for (curve, nom_unit_cap, temp, p_color, p_style, marker, marker_size) in mashed_data:
         plt.plot(curve.soc, curve.vstat, color=p_color, linestyle=p_style, marker=marker, markersize=marker_size,
                  label='vstat ' + str(nom_unit_cap) + '  ' + str(temp) + 'C')
@@ -159,6 +161,7 @@ def plot_all(raw_data, mashed_data, finished_data, red_data, act_unit_cap, fig_f
     ax.text(0.4, 0.2, 'Set NOM_UNIT_CAP = ' + cap_str, transform=ax.transAxes, fontsize=14,
             verticalalignment='top', bbox=props)
     plt.title(plot_title + ' finished')
+    print('finished', end=':  ')
     for (curve, nom_unit_cap, temp, p_color, p_style, marker, marker_size) in finished_data:
         plt.plot(curve.soc, curve.vstat, color=p_color, linestyle=p_style, marker=marker, markersize=marker_size,
                  label='voc ' + str(temp) + 'C')
@@ -175,6 +178,7 @@ def plot_all(raw_data, mashed_data, finished_data, red_data, act_unit_cap, fig_f
     ax.text(0.4, 0.2, 'Set NOM_UNIT_CAP = ' + cap_str, transform=ax.transAxes, fontsize=14,
             verticalalignment='top', bbox=props)
     plt.title(plot_title + ' reduced')
+    print('reduced', end=':  ')
     for (curve, nom_unit_cap, temp, p_color, p_style, marker, marker_size) in red_data:
         plt.plot(curve.soc, curve.vstat, color=p_color, linestyle=p_style, marker=marker, markersize=marker_size,
                  label='voc ' + str(temp) + 'C')
@@ -199,7 +203,7 @@ def reduce(fin_data, breaks):
         for brk in breaks:
             val.append(lut_voc_soc.interp(brk))
         New_red_data = DataCP(nom_unit_cap, curve.temp_c, breaks, val, curve.data_file)
-        red_data.append((New_red_data, Battery.UNIT_CAP_RATED, temp, p_color, p_style, marker, marker_size))
+        red_data.append((New_red_data, Battery.NOM_UNIT_CAP, temp, p_color, p_style, marker, marker_size))
     return red_data
 
 
@@ -250,7 +254,7 @@ def main(data_files=None, breaks=None):
 
     # Mash all the data to one table and normalize to NOM_UNIT_CAP = 100
     Mashed_data, soc_rated_off = mash(Raw_files, v_off_thresh=vb_off)
-    actual_cap = (1.-soc_rated_off) * Battery.UNIT_CAP_RATED
+    actual_cap = (1.-soc_rated_off) * Battery.NOM_UNIT_CAP
 
     # Shift and scale curves for calculated capacity
     Finished_curves = finish(Mashed_data, soc_rated_off, actual_cap)
@@ -309,7 +313,7 @@ def main(data_files=None, breaks=None):
     print("t_x_soc_min1 = [{:s}]".format(t_min_str))
     print("t_soc_min1 = [{:s}]".format(soc_min_str))
     print(Colors.reset, "\n\nfor CompareHistSim.{:s}\n".format(unit))
-    print(Colors.fg.green, "rated_batt_cap_in = {:5.3f}".format(actual_cap/Battery.UNIT_CAP_RATED))
+    print(Colors.fg.green, "rated_batt_cap_in = {:5.3f}".format(actual_cap/Battery.NOM_UNIT_CAP))
     print(Colors.reset)
 
     filename = data_root + os.path.split(__file__)[1].split('.')[0]

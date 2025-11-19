@@ -44,7 +44,13 @@ plt.rcParams['axes.grid'] = True
 
 def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=True,
                     verbose=True, scale_in=None, slr_hys_sim=1., request_history=None):
-    print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n")
+
+    if data_file.count('soc4p2_hi_lo'):
+       IB_CHARGE_NOA = True
+    else:
+        IB_CHARGE_NOA = False
+
+    print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n{IB_CHARGE_NOA=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
@@ -94,7 +100,8 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
                                    use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in, use_vb_raw=use_vb_raw,
                                    add_voc_sim=dvoc_sim_in, add_voc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
                                    add_s_voc_soc=add_s_voc_soc_in, verbose=verbose, scale_in=scale_in,
-                                   slr_hys_sim=s_hys_sim_in, request_history=request_history)
+                                   slr_hys_sim=s_hys_sim_in, request_history=request_history,
+                                   IB_CHARGE_NOA=IB_CHARGE_NOA)
     mon_ver, sim_ver, sim_s_ver, mon, sim = replicate(replicateOptions)
     pass
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
@@ -148,27 +155,40 @@ def main():
     else:
         gdrive = 'G:/My Drive/'
 
-    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251023am_soc4p2_hi_lo_bb.csv'
-    # gdrive = '/home/daveg/Documents/'
-    # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
-
-    unit_key = 'g20250612a_soc4p2_hi_lo_bb'
-    # The following are not implemented in GUI
-
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_chg.csv'
+    unit_key = 'g20250612a_soc2p2_hi_lo_chg'
     time_end_in = None
-    # time_end_in = 20.
+    data_only = False
+    use_mon_soc_ = True
+    IB_CHARGE_NOA = False
 
-    # plots = False
-    plots = True
-
-    # s_hys_sim_in = 1.
-    s_hys_sim_in = 0.
-
-    # mon_soc_in = True
-    mon_soc_in = False
+    # # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251107pm_soc4p2_hi_lo_bb.csv'  # old runsim work ******************
+    # # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiFail_soc2p2_hi_lo_chg.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_chg.csv'
+    # # gdrive = '/home/daveg/Documents/'
+    # # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
+    #
+    # # unit_key = 'g20250612a_soc4p2_hi_lo_bb'  # old runsim work ******************
+    # unit_key = 'g20250612a_soc2p2_hi_lo_chg'
+    #
+    # # The following are not implemented in GUI
+    #
+    time_end_in = None
+    # time_end_in = 16.
+    #
+    #
+    s_hys_sim_in = 1.
+    # s_hys_sim_in = 0.
+    #
     verbose_in = False
     scale_in = 1.0
-    request_hist_in = 5  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
+    request_hist_in = 3  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
+
+    # # mon_soc_in = False # old runsim work ******************
+    mon_soc_in = True
+
+    plots = False
+    # plots = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=mon_soc_in, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,

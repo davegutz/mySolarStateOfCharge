@@ -28,6 +28,7 @@ if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
 plt.rcParams.update({'figure.max_open_warning': 0})
+import Globals as G
 
 
 class Retained:
@@ -47,8 +48,10 @@ def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=No
 
 
 class Battery(Coulombs):
+    import Globals as G
     # Battery constants
-    UNIT_CAP_RATED = 108.4
+    NOMINAL_TB = 15.  # Middle of the road Tb for decent reversionary operation, deg C (15.)
+    NOM_UNIT_CAP = 108.4  # Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah
     NOM_SYS_VOLT = 12.  # Nominal system output, V, at which the reported amps are used (12)
     mxeps_bb = 1.05  # Numerical maximum of coefficient model with scaled soc
     TCHARGE_DISPLAY_DEADBAND = 0.1  # Inside this +/- deadband, charge time is displayed '---', A
@@ -109,7 +112,6 @@ class Battery(Coulombs):
     WRAP_SOC_MOD_OFF = 0.85  # Disable e_wrap_lo when nearing saturated and moderate C_rate(0.85)
     WRAP_SOC_HI_SLR = 1000.  # Huge to disable e_wrap (1000)
     WRAP_SOC_LO_SLR = 60.  # Large to disable e_wrap (60. for startup)
-    IB_CHARGE_NOA = True  # Force calculations to use noa signal
     VOC_STAT_FILT = 120.  # Clean up noise (120)
     VB_MIN = 2.  # Signal selection hard fault threshold, V (0.  < 2. < 10 bms shutoff, reads ~3 without power when off)
     VB_MAX = 17.  # Signal selection hard fault threshold, V (17. < VB_CONV_GAIN*4095)
@@ -130,9 +132,9 @@ class Battery(Coulombs):
                             what gets delivered, e.g.Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
                             or 20 - 40 A for a 100 Ah battery"""
 
-    def __init__(self, q_cap_rated=UNIT_CAP_RATED*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
-                 slr_res_0=1., slr_res_ct=1., stauct=1., slr_r_ss=1., s_hys=1., dvoc=0., mod_code=0, slr_coul_eff=1.,
-                 scale_cap=1., unit=None):
+    def __init__(self, OPT=None, q_cap_rated=NOM_UNIT_CAP*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
+                 dvoc=0., mod_code=0,
+                 scale_cap=1., mon=None):
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
         etal.pdf.'  SOC-OCV curve fit './Battery State/BattleBorn Rev1.xls:Model Fit' using solver with min slope
@@ -140,11 +142,10 @@ class Battery(Coulombs):
         so equation error when soc<=0 to match data.    See Battery.h
         """
         # Parents
-        Coulombs.__init__(self, q_cap_rated,  q_cap_rated, t_rated, temp_rlim, tweak_test, dvoc=dvoc, unit=unit)
+        Coulombs.__init__(self, OPT, q_cap_rated,  q_cap_rated, t_rated, temp_rlim, tweak_test, dvoc=dvoc)
 
         # Defaults
         self.chem = mod_code
-        self.dvoc = dvoc
         self.nz = None
         self.q = 0  # Charge, C
         self.voc = Battery.NOM_SYS_VOLT  # Model open circuit voltage, V
@@ -168,11 +169,20 @@ class Battery(Coulombs):
         self.vsat = self.chemistry.nom_vsat
         # range 0 - 50 C, V/deg C
         self.dt = 0  # Update time, s
-        self.chemistry.r_0 *= slr_res_0
-        self.chemistry.tau_ct *= stauct
-        self.chemistry.r_ct *= slr_res_ct
-        self.chemistry.r_ss *= slr_r_ss
-        self.chemistry.coul_eff *= slr_coul_eff
+        if OPT is not None:
+            self.chemistry.r_0 *= OPT.slr_res_0
+            self.chemistry.tau_ct *= OPT.stauct_mon
+            self.chemistry.r_ct *= OPT.slr_res_ct
+            self.chemistry.r_ss *= OPT.slr_r_ss
+            if mon:
+                self.s_hys = OPT.slr_hys_mon
+                self.dvoc = OPT.add_voc_mon
+            else:
+                self.s_hys = OPT.slr_hys_sim
+                self.dvoc = OPT.add_voc_sim
+            self.chemistry.coul_eff *= OPT.slr_coul_eff
+            if hasattr(OPT, 'unit'):
+                self.unit = OPT.unit
         self.Tb = tb_f
         self.Tb_f = tb_f
         self.Tb_f_rate = None
@@ -190,12 +200,10 @@ class Battery(Coulombs):
         self.mod = 7
         self.sel = 0
         self.tweak_test = tweak_test
-        self.s_hys = s_hys
         self.ib_lag = 0.
         self.IbLag = LagExp(1., 1., -100., 100.)  # Lag to be run on sat to produce ib_lag.  T and tau set at run time
         self.voc_soc = None
         self.voc_soc_new = 0.
-        self.unit = unit
         self.scale_cap = scale_cap
         self.Tb_rstate = None
         self.Tb_state = None
@@ -251,13 +259,6 @@ class Battery(Coulombs):
     def assign_tb_f(self, tb_f):
         self.Tb_f = tb_f
 
-    # def assign_soc(self, soc, voc):
-    #     self.soc = soc
-    #     self.voc = voc
-    #     self.voc_stat = voc
-    #     self.vsat = self.chemistry.nom_vsat + (self.Tb - self.chemistry.rated_temp) * self.chemistry.dvoc_dt
-    #     self.sat = self.voc >= self.vsat
-
     def calc_h_jacobian(self, soc_lim, tb_f):
         if soc_lim > 0.5:
             dv_dsoc = (self.chemistry.lookup_voc(soc_lim, tb_f) -
@@ -274,9 +275,8 @@ class Battery(Coulombs):
         # print("soc=", soc, "tb_f=", tb_f, "dvoc=", self.dvoc, "voc=", voc)
         return voc, dv_dsoc
 
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
-                  q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None,
-                  reset_ekf=None, soc=None, sat_init=None):
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
+                  q_capacity=None, rp=None, reset_ekf=None, soc=None, sat_init=None):
         # Battery
         raise NotImplementedError
 
@@ -286,16 +286,15 @@ class Battery(Coulombs):
 
 class BatteryMonitor(Battery, EKF1x1):
     """Extend Battery class to make a monitor"""
-
-    def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1.,
-                 tb_f=25., tweak_test=False, slr_res_0=1., slr_res_ct=1., stauct=1.,
-                 slr_r_ss=1., s_hys=1., dvoc=0., eframe_mult=Battery.cp_eframe_mult,
-                 mod_code=0, slr_coul_eff=1., unit=None, ref=None, SN=None, run_type=None):
+    def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600, t_rated=25., temp_rlim=0.017, scale=1.,
+                 tb_f=25., tweak_test=False, dvoc=0., mod_code=0):
+        if hasattr(OPT, 'slr_res_0'):
+            ref = OPT.mon_run
+        else:
+            pass
         q_cap_rated_scaled = q_cap_rated * scale
-        Battery.__init__(self, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
-                         tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct,
-                         slr_r_ss=slr_r_ss, s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, slr_coul_eff=slr_coul_eff,
-                         scale_cap=scale, unit=unit)
+        Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
+                         tweak_test=tweak_test, dvoc=dvoc, mod_code=mod_code, scale_cap=scale, mon=True)
 
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
@@ -324,8 +323,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.y_filt_2Ord = General2Pole(0.1, Battery.WN_Y_FILT, Battery.ZETA_Y_FILT, Battery.MIN_Y_FILT,
                                         Battery.MAX_Y_FILT)
         self.y_filt2 = 0.
-        self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.UNIT_CAP_RATED*scale,
-                                     min_=-Battery.UNIT_CAP_RATED*scale, tau=self.chemistry.tau_ct)
+        self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.NOM_UNIT_CAP*scale,
+                                     min_=-Battery.NOM_UNIT_CAP*scale, tau=self.chemistry.tau_ct)
         self.ib = 0.
         self.vb = 0.
         self.vb_model_rev = 0.
@@ -335,6 +334,12 @@ class BatteryMonitor(Battery, EKF1x1):
         self.voc_dead = 0.
         self.vsat = 0.
         self.dv_dyn = 0.
+        self.ib_amp_hdwe = 0.
+        self.ib_amp_model = 0.
+        self.ib_noa_hdwe = 0.
+        self.ib_noa_model = 0.
+        self.ib_hdwe = 0.
+        self.ib_hdwe_model = 0.
         self.ib_dyn = 0.
         self.ib_dyn_rstate = 0.
         self.ib_dyn_lstate = 0.
@@ -351,17 +356,20 @@ class BatteryMonitor(Battery, EKF1x1):
         self.voc_ekf = 0.
         self.Temp_Rlim = RateLimit()
         self.eframe = 0
-        self.eframe_mult = eframe_mult
-        self.dt_eframe = self.dt*self.eframe_mult
+        if OPT is not None:
+            self.eframe_mult = OPT.eframe_mult
+            self.dt_eframe = self.dt*self.eframe_mult
         self.sdb_voc = SlidingDeadband(Battery.HDB_VBATT)
         self.e_wrap = 0.
         self.e_wrap_filt = 0.
         self.e_wrap_rate = 0.
         self.reset_past = True
         self.ib_past = 0.
-        self.ib_amp = None
+        self.ib_amp = 0.
+        self.ib_amp_pst = 0.
         self.ib_amp_fut = 0.
-        self.ib_noa = None
+        self.ib_noa = 0.
+        self.ib_noa_pst = 0.
         self.ib_noa_fut = 0.
         self.e_wrap_m = None
         self.e_wrap_m_filt = None
@@ -417,14 +425,14 @@ class BatteryMonitor(Battery, EKF1x1):
             self.Tb_f_rap = SN.Tb_f_rap_init
             self.Tb_f_rate_rap = SN.Tb_f_rate_rap_init
             self.ib = SN.ib_init
-            self.ib_dyn = SN.ib_dyn_init
+            self.ib_dyn = SN.ib_dyn[0]
             self.ib_charge = SN.ib_charge_init
             self.vb = SN.vb_init
             self.soc = SN.soc_init
             self.reset = True
             self.sat = SN.sat_init
             self.reset_ekf = True
-            self.init_soc_ekf(ref, 0, 0, run_type=run_type)
+            self.init_soc_ekf(ref,  0, 0)
             self.voc_ekf = SN.hx_init
             self.x = SN.x_init
             self.x_prior = SN.x_prior_init
@@ -455,11 +463,24 @@ class BatteryMonitor(Battery, EKF1x1):
     # BatteryMonitor::calculate()
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
-                  q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, soc=None,
-                  sat_init=None, reset_ekf=None, use_sat_in=None):
-        self.ib_amp = ib_amp
-        self.ib_noa = ib_noa
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
+                  q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, i=None):
+        self.ib_amp_hdwe = SN.mon_run.ibmh[G.i]
+        self.ib_amp_model = SN.mon_run.ibmm[G.i]
+        self.ib_noa_hdwe = SN.mon_run.ibmh[G.i]
+        self.ib_noa_model = SN.mon_run.ibnm[G.i]
+        if rp.modeling == 0:
+            self.ib_amp = self.ib_amp_hdwe
+            self.ib_noa = self.ib_noa_hdwe
+            self.ib_amp_pst = SN.mon_run.ibmh[max(G.i-1, 0)]
+            self.ib_noa_pst = SN.mon_run.ibnh[max(G.i-1, 0)]
+        else:
+            self.ib_amp =self.ib_amp_model
+            self.ib_noa = self.ib_noa_model
+            self.ib_amp_pst = SN.mon_run.ibmm[max(G.i - 1, 0)]
+            self.ib_noa_pst = SN.mon_run.ibnm[max(G.i - 1, 0)]
+        self.ib_hdwe = self.ib_noa_hdwe
+        self.ib_hdwe_model = self.ib_noa_model
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
@@ -467,14 +488,17 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vsat = self.chemistry.nom_vsat + (self.Tb_f - 25.) * self.chemistry.dvoc_dt
         self.dt = dt
         self.ib_in = ib
-        if self.IB_CHARGE_NOA:
+        if OPT.IB_CHARGE_NOA:
             self.ib_in = self.ib_noa
         self.mod = rp.modeling
         # Overflow protection since ib past value used
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        self.wrap(reset=reset, ib_sel=self.ib, SN=SN, ib_amp=self.ib_amp, ib_noa=self.ib_noa)
+        if rp.modeling == 0:
+            self.wrap(reset=reset, ib_sel=self.ib, SN=SN, ib_amp=self.ib_amp, ib_noa=self.ib_noa, i=G.i)
+        else:
+            self.wrap(reset=reset, ib_sel=self.ib, SN=SN, ib_amp=self.ib_amp_pst, ib_noa=self.ib_noa_pst, i=G.i)
 
         # Reversionary model
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
@@ -488,8 +512,8 @@ class BatteryMonitor(Battery, EKF1x1):
         else:
             voltage_low = self.voc_stat < self.chemistry.vb_rising
         bms_charging = self.ib > Battery.IB_MIN_UP
-        if reset and bms_off_init is not None:
-            self.bms_off = bms_off_init
+        if reset and SN.mon_run.bms_off[0] is not None:
+            self.bms_off = SN.mon_run.bms_off[0]
         else:
             self.bms_off = (self.Tb_f <= self.chemistry.low_t) or (voltage_low and not rp.tweak_test())  # KISS
         self.ib_charge = self.ib
@@ -500,6 +524,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_lag = self.IbLag.calculate_tau(self.ib, reset, self.dt, self.chemistry.ib_lag_tau)
         if reset:
             self.ib_past = self.ib
+            self.ib_past_past = self.ib
 
         # Dynamic emf
         if rp.modeling:
@@ -507,8 +532,7 @@ class BatteryMonitor(Battery, EKF1x1):
         else:
             ib_dc = self.ib
         self.vb = vb
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_init, reset, dt,
-                                                     self.chemistry.tau_ct)
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(ib_dc, SN.ib_dyn[G.i], reset, dt, self.chemistry.tau_ct)
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
         self.ib_dyn_a = self.ChargeTransfer.a
@@ -571,9 +595,9 @@ class BatteryMonitor(Battery, EKF1x1):
 
         # Charge time
         if self.ib_charge > 0.1:
-            self.tcharge_ekf = min(Battery.UNIT_CAP_RATED/self.ib_charge * (1. - self.soc_ekf), 24.)
+            self.tcharge_ekf = min(Battery.NOM_UNIT_CAP/self.ib_charge * (1. - self.soc_ekf), 24.)
         elif self.ib_charge < -0.1:
-            self.tcharge_ekf = max(Battery.UNIT_CAP_RATED/self.ib_charge * self.soc_ekf, -24.)
+            self.tcharge_ekf = max(Battery.NOM_UNIT_CAP/self.ib_charge * self.soc_ekf, -24.)
         elif self.ib_charge >= 0.:
             self.tcharge_ekf = 24.*(1. - self.soc_ekf)
         else:
@@ -635,7 +659,7 @@ class BatteryMonitor(Battery, EKF1x1):
     def lag_ib(self, ib, reset):
         self.ib_lag = self.IbLag.calculate_tau(ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
-    def init_soc_ekf(self, mr, i, i_ekf, run_type=None):
+    def init_soc_ekf(self, mr, i, i_ekf):
         self.soc_ekf = mr.soc_ekf[i]
         self.y_ekf = mr.y_ekf[i]
 
@@ -717,7 +741,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.time.append(time)
         self.saved.time_min.append(time / 60.)
         self.saved.time_day.append(time / 3600. / 24.)
-        self.saved.dt.append(dt)
         self.saved.dt_temp.append(self.dt_temp)
         self.saved.reset_temp.append(self.reset_temp)
         self.saved.chm.append(self.chm)
@@ -822,7 +845,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
 
-    def wrap(self, reset=True, ib_sel=0., SN=None, ib_amp=0., ib_noa=0.):
+    def wrap(self, reset=True, ib_sel=0., SN=None, ib_amp=0., ib_noa=0., i=None):
         """Wrap logic"""
 
         # e_wrap scalars normally calculated in Sensors
@@ -834,7 +857,7 @@ class BatteryMonitor(Battery, EKF1x1):
             ewmin_slr = Battery.WRAP_SOC_LO_SLR
         elif (self.voc_soc > (self.vsat - Battery.WRAP_HI_SAT_MARG) or
             (self.voc_stat > (self.vsat-Battery.WRAP_HI_SAT_MARG) and
-             self.ib / Battery.UNIT_CAP_RATED > Battery.WRAP_MOD_C_RATE and
+             self.ib / Battery.NOM_UNIT_CAP > Battery.WRAP_MOD_C_RATE and
              self.soc > Battery.WRAP_SOC_MOD_OFF)):
             ewsat_slr = Battery.WRAP_SOC_HI_SLR
             ewmin_slr = 1.
@@ -847,7 +870,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_noa = ib_noa
             self.LoopIbNoa.calculate(reset=reset, ib=self.ib_noa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_init = SN.LoopNoa.ib_init, ib_dyn_init = SN.LoopNoa.ib_dyn_init,
+                                     ib_init = SN.LoopNoa.ib_init, ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
                                      e_wrap_filt_init = SN.e_wrap_n_filt_init, e_wrap_trim_init = SN.e_wrap_n_trim_init)
             self.e_wrap_n = self.LoopIbNoa.e_wrap
             self.e_wrap_n_filt = self.LoopIbNoa.e_wrap_filt
@@ -868,7 +891,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_noa_rate = self.IbAmpRate.calculate(in_=ib_noa, reset=reset, dt=min(self.dt, Battery.F_MAX_T_WRAP))
             self.LoopIbAmp.calculate(reset=ib_amp_reset, ib=self.ib_amp, loop_gain=Battery.AMP_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_init=SN.LoopAmp.ib_init, ib_dyn_init=SN.LoopAmp.ib_dyn_init,
+                                     ib_init=SN.LoopAmp.ib_init, ib_dyn_init=SN.LoopAmp.ib_dyn[G.i],
                                      e_wrap_filt_init=SN.e_wrap_m_filt_init, e_wrap_trim_init=SN.e_wrap_m_trim_init)
             self.ewmhi_thr = self.LoopIbAmp.ewhi_thr
             self.ewmlo_thr = self.LoopIbAmp.ewlo_thr
@@ -886,23 +909,19 @@ class BatteryMonitor(Battery, EKF1x1):
 class BatterySim(Battery):
     """Extend Battery class to make a model"""
 
-    def __init__(self, q_cap_rated=Battery.UNIT_CAP_RATED*3600, t_rated=25., temp_rlim=0.017, scale=1., stauct=1.,
-                 tb_f=25., tweak_test=False, dv_hys=0., slr_res_0=1., slr_res_ct=1., slr_r_ss=1.,
-                 s_hys=1., dvoc=0., scale_hys_cap=1., mod_code=0, slr_cap_chg=1., slr_cap_dis=1., slr_hys_chg=1.,
-                 slr_hys_dis=1., slr_coul_eff=1., slr_cutback_gain=1., add_s_voc_soc=0., unit=None, SN=None):
-        Battery.__init__(self, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
-                         tweak_test=tweak_test, slr_res_0=slr_res_0, slr_res_ct=slr_res_ct, stauct=stauct,
-                         slr_r_ss=slr_r_ss, s_hys=s_hys, dvoc=dvoc, mod_code=mod_code, slr_coul_eff=slr_coul_eff,
-                         scale_cap=scale, unit=unit)
-        self.chemistry = Chemistry(mod_code=mod_code, dvoc=dvoc, unit=unit)
-        self.chemistry.assign_all_mod(mod_code, unit=unit)
+    def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600, t_rated=25., temp_rlim=0.017,
+                 scale=1., tb_f=25., tweak_test=False, mod_code=0):
+        Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
+                         tweak_test=tweak_test, dvoc=OPT.add_voc_sim, mod_code=mod_code, scale_cap=scale, mon=False)
+        self.chemistry = Chemistry(mod_code=mod_code, dvoc=OPT.add_voc_sim, unit=OPT.unit)
+        self.chemistry.assign_all_mod(mod_code, unit=OPT.unit)
         self.lut_voc = None
         self.sat_ib_max = 0.  # Current cutback to be applied to modeled ib output, A
-        # self.sat_ib_null = 0.1*Battery.UNIT_CAP_RATED  # Current cutback value for voc=vsat, A
+        # self.sat_ib_null = 0.1*Battery.NOM_UNIT_CAP  # Current cutback value for voc=vsat, A
         self.sat_ib_null = 0.  # Current cutback value for soc=1, A
         # self.sat_cutback_gain = 4.8  # Gain to retard ib when voc exceeds vsat, dimensionless
-        self.sat_cutback_gain = 1000.*slr_cutback_gain  # Gain to retard ib when soc approaches 1, dimensionless
-        self.add_s_voc_soc = add_s_voc_soc
+        self.sat_cutback_gain = 1000.*OPT.slr_cutback_gain  # Gain to retard ib when soc approaches 1, dimensionless
+        self.add_s_voc_soc = OPT.add_s_voc_soc
         self.model_cutback = False  # Indicate current being limited on saturation cutback, T = cutback limited
         self.model_saturated = False  # Indicator of maximal cutback, T = cutback saturated
         self.ib_sat = 0.5  # Threshold to declare saturation.  This regeneratively slows down charging so if too
@@ -910,13 +929,13 @@ class BatterySim(Battery):
         self.s_cap = scale  # Rated capacity scalar
         if scale is not None:
             self.apply_cap_scale(scale)
-        self.hys = Hysteresis(scale=s_hys, dv_hys=dv_hys, scale_cap=scale_hys_cap, slr_cap_chg=slr_cap_chg,
-                              slr_cap_dis=slr_cap_dis, slr_hys_chg=slr_hys_chg, slr_hys_dis=slr_hys_dis, chem=self.chem,
+        self.hys = Hysteresis(scale=OPT.slr_hys_sim, dv_hys=OPT.mon_run.dv_hys[0], scale_cap=OPT.slr_hys_cap_sim, slr_cap_chg=OPT.slr_cap_chg,
+                              slr_cap_dis=OPT.slr_cap_dis, slr_hys_chg=OPT.slr_hys_chg, slr_hys_dis=OPT.slr_hys_dis, chem=self.chem,
                               chemistry=self.chemistry)  # Battery hysteresis model - drift of voc
         self.tweak_test = tweak_test
         self.voc = 0.  # Charging voltage, V
         self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, tau=self.chemistry.tau_ct,
-                                     max_=Battery.UNIT_CAP_RATED*scale, min_=-Battery.UNIT_CAP_RATED*scale)
+                                     max_=Battery.NOM_UNIT_CAP*scale, min_=-Battery.NOM_UNIT_CAP*scale)
         self.d_delta_q = 0.  # Charging rate, Coulombs/sec
         self.ib_charge = 0.  # Charge current, A
         self.saved_s = SavedS()  # for plots and prints
@@ -967,9 +986,8 @@ class BatterySim(Battery):
         return s
 
     # BatterySim::calculate()
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN,
-                  q_capacity=None, dc_dc_on=None, rp=None, bms_off_init=None, ib_amp=None, ib_noa=None, reset_ekf=None,
-                  soc=None, sat_init=None):
+    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
+                  q_capacity=None, rp=None, reset_ekf=None, soc=None, sat_init=None):
         self.reset = reset
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)
@@ -978,7 +996,7 @@ class BatterySim(Battery):
         self.dt_past = self.dt
         self.dt = dt
         self.ib_in = ib
-        if self.reset and bms_off_init:
+        if self.reset and SN.sim_run.bms_off_s[0]:
             self.ib_fut = 0.
         self.ib = max(min(self.ib_fut, Battery.IMAX_NUM), -Battery.IMAX_NUM)
         self.mod = rp.modeling
@@ -1017,7 +1035,7 @@ class BatterySim(Battery):
         self.ib_lag = self.IbLag.calculate_tau(self.ib, self.reset, self.dt, self.chemistry.ib_lag_tau)
 
         # Charge transfer dynamics
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, self.reset, self.dt_past,
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, self.reset, self.dt,
                                                                self.chemistry.tau_ct)
         if self.reset:
             pass
@@ -1057,8 +1075,7 @@ class BatterySim(Battery):
 
         return self.vb
 
-    def count_coulombs(self, chem, reset_temp, tb_f, charge_curr, sat, tb_f_rate=None, soc_s_init=None, sim_delta_q=None,
-                       mon_sat=None, use_soc_in=False, soc_in=0.):
+    def count_coulombs(self, OPT, SN, chem, reset_temp, tb_f, charge_curr, sat, mon_sat=None):
         # BatterySim
         """Coulomb counter based on true=actual capacity
         Internal resistance of battery is a loss
@@ -1067,8 +1084,8 @@ class BatterySim(Battery):
             tb_f            Battery temperature, deg C  (filtered usually to reduce electrical noise artifacts)
             charge_curr     Charge, A
             sat             Indicator that battery is saturated (VOC>threshold(temp)), T/F
-            use_soc_in      Command to drive integrator with input mon_soc
-            soc_in          Auxiliary integrator setting, fraction soc
+            use_mon_soc     Command to drive integrator with input mon_soc
+            SN.soc_s        Auxiliary integrator setting, fraction soc
         Outputs:
             soc     State of charge, fraction (0-1.5)
         """
@@ -1083,13 +1100,13 @@ class BatterySim(Battery):
 
         # Rate limit temperature.  When modeling, initialize to no change
         self.Tb_f = tb_f
-        self.Tb_f_rate = tb_f_rate
+        self.Tb_f_rate = SN.Tb_f_rate_past
 
         # Saturation and re - init.Goal is to set q_capacity and hold it so remember last saturation status
         # But if not modeling in real world, set to Monitor when Monitor saturated and reset_temp to EKF otherwise static boolean
         if not self.mod:  # Real world init to track Monitor
             if mon_sat or self.reset_temp_past:
-                self.apply_delta_q_brief(sim_delta_q)
+                self.apply_delta_q_brief(SN.delta_q_s[G.i])
             elif self.model_saturated: # Modeling initializes on reset_temp to Tb=RATED_TEMP
                 if reset_temp:
                     self.delta_q = 0.
@@ -1097,8 +1114,8 @@ class BatterySim(Battery):
 
         # Integration can go to - 20 %
         self.q_capacity = self.calculate_capacity(self.Tb_f)
-        if use_soc_in:
-            self.soc = soc_in
+        if OPT.use_mon_soc:
+            self.soc = SN.soc_s[G.i]
             self.q = self.q_capacity * self.soc
             self.delta_q = self.q - self.q_capacity
         elif not self.reset_temp_past and not reset_temp and not mon_sat:
@@ -1212,8 +1229,8 @@ class Looparound:
         self.lo_fail = False
         self.lo_fault = False
         self.chem = Mon_.chemistry
-        self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.UNIT_CAP_RATED*self.Mon.scale_cap,
-                                     min_=-Battery.UNIT_CAP_RATED*self.Mon.scale_cap, tau=self.chem.tau_ct)
+        self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.NOM_UNIT_CAP*self.Mon.scale_cap,
+                                     min_=-Battery.NOM_UNIT_CAP*self.Mon.scale_cap, tau=self.chem.tau_ct)
         self.ewhi_thr = 0.
         self.ewlo_thr = 0.
         self.ib = 0.
@@ -1242,7 +1259,7 @@ class Looparound:
         self.dt = dt
         self.ib = ib
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib_past, ib_dyn_init, self.reset, self.dt_past,
-                                                                self.chem.tau_ct, text=self.name)
+                                                               self.chem.tau_ct, text=self.name)
         self.dv_dyn = (self.ib_dyn* self.chem.r_ct + self.ib_past * self.chem.r_0)
         self.voc = self.Mon.vb - self.dv_dyn
         self.e_wrap = self.Mon.voc_soc - self.voc
@@ -1420,6 +1437,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(321)
         plt.title(plot_title + ' B 1')
+        print('B 1', end=':  ')
         plt.plot(mv.time, mv.ib, color='green',   linestyle='-', label='ib'+suffix)
         plt.plot(mv.time, mv.ioc, color='magenta', linestyle='--', label='ioc'+suffix)
         plt.legend(loc=1)
@@ -1453,6 +1471,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(111)
         plt.title(plot_title + ' B 2')
+        print('B 2', end=':  ')
         plt.plot(mv.time, mv.vb, color='green', linestyle='-', label='vb'+suffix)
         plt.plot(sv.time, sv.vb, color='black', linestyle='--', label='vb_s'+suffix)
         plt.plot(mv.time, mv.voc_stat, color='orange', linestyle='-.', label='voc_stat'+suffix)
@@ -1468,6 +1487,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(321)
         plt.title(plot_title+' B 4 MON vs SIM')
+        print('B 4 MON vs SIM', end=':  ')
         plt.plot(mv.time, mv.ib, color='green', linestyle='-', label='ib'+suffix)
         plt.plot(sv.time, sv.ib, color='black', linestyle='--', label='ib_s'+suffix)
         plt.plot(sv.time, sv.ib_in, color='red', linestyle='-.', label='ib_in_s'+suffix)
@@ -1508,6 +1528,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(331)
         plt.title(plot_title+' B 5 **EKF')
+        print('B 5 **EKF', end=':  ')
         plt.plot(mv.time, mv.x_ekf, color='red', linestyle='-', label='x ekf'+suffix)
         plt.legend(loc=4)
         plt.subplot(332)
@@ -1542,6 +1563,7 @@ def overall_batt(mv, sv, filename,
         plt.figure()  # Batt 6
         fig_list += 1
         plt.title(plot_title + ' B 6')
+        print('B 6', end=':  ')
         plt.plot(mv.time, mv.e_voc_ekf, color='blue', linestyle='-.', label='e_voc'+suffix)
         plt.plot(mv.time, mv.e_soc_ekf, color='red', linestyle='dotted', label='e_soc_ekf'+suffix)
         plt.ylim(-0.01, 0.01)
@@ -1553,6 +1575,7 @@ def overall_batt(mv, sv, filename,
         plt.figure()  # Batt 7
         fig_list += 1
         plt.title(plot_title + ' B 7')
+        print('B 7', end=':  ')
         plt.plot(mv.time, mv.voc, color='red', linestyle='-', label='voc'+suffix)
         plt.plot(mv.time, mv.voc_ekf, color='blue', linestyle='-.', label='voc_ekf'+suffix)
         plt.plot(sv.time, sv.voc, color='green', linestyle=':', label='voc_s'+suffix)
@@ -1564,6 +1587,7 @@ def overall_batt(mv, sv, filename,
         plt.figure()  # Batt 8
         fig_list += 1
         plt.title(plot_title + ' B 8')
+        print('B 8', end=':  ')
         plt.plot(mv.time, mv.soc_ekf, color='blue', linestyle='-', label='soc_ekf'+suffix)
         plt.plot(sv.time, sv.soc, color='green', linestyle='-.', label='soc_s'+suffix)
         plt.plot(mv.time, mv.soc, color='red', linestyle=':', label='soc'+suffix)
@@ -1575,6 +1599,7 @@ def overall_batt(mv, sv, filename,
         plt.figure()  # Batt 9
         fig_list += 1
         plt.title(plot_title + ' B 9')
+        print('B 9', end=':  ')
         plt.plot(mv.time, mv.e_voc_ekf, color='blue', linestyle='-.', label='e_voc'+suffix)
         plt.plot(mv.time, mv.e_soc_ekf, color='red', linestyle='dotted', label='e_soc_ekf'+suffix)
         plt.legend(loc=2)
@@ -1586,6 +1611,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(221)
         plt.title(plot_title + ' B 10')
+        print('B 10', end=':  ')
         plt.plot(sv.time, sv.soc, color='red', linestyle='-', label='soc'+suffix)
         plt.legend(loc=1)
         plt.subplot(223)
@@ -1604,6 +1630,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(111)
         plt.title(plot_title + ' B 11')
+        print('B 11', end=':  ')
         plt.plot(sv.soc, sv.voc_stat, color='black', linestyle='dotted', label='SIM voc_stat vs soc'+suffix)
         plt.legend(loc=2)
         fig_file_name = filename + "_" + str(len(fig_list)) + ".png"
@@ -1635,6 +1662,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(331)
         plt.title(plot_title + ' Battover 1')
+        print('Battover 1', end=':  ')
         plt.plot(mv.time, mv.ib, color='green',   linestyle='-', label='ib'+suffix)
         plt.plot(mv1.time, mv1.ib, color='black', linestyle='--', label='ib' + suffix1)
         plt.plot(mv.time, mv.ioc, color='magenta', linestyle='-.', label='ioc'+suffix)
@@ -1680,6 +1708,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(321)
         plt.title(plot_title + ' Battover 2')
+        print('Battover 2', end=':  ')
         plt.plot(mv.time, mv.ib, color='green',   linestyle='-', label='ib'+suffix)
         plt.plot(mv1.time, mv1.ib, color='black', linestyle='--', label='ib' + suffix1)
         plt.plot(mv.time, mv.ioc, color='magenta', linestyle='-.', label='ioc'+suffix)
@@ -1705,6 +1734,7 @@ def overall_batt(mv, sv, filename,
         fig_list += 1
         plt.subplot(331)
         plt.title(plot_title + ' **EKF' + 'Battover 3')
+        print('Battover 3', end=':  ')
         plt.plot(mv.time, mv.x_ekf, color='green', linestyle='-', label='x ekf' + suffix)
         plt.plot(mv1.time, mv1.x_ekf, color='black', linestyle='--', label='x ekf' + suffix1)
         plt.legend(loc=4)

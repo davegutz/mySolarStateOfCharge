@@ -45,6 +45,8 @@ extern PublishPars pp;  // For publishing
 extern CommandPars cp;  // Various parameters to be static at system level
 
 // Headers
+void print_battery_header();
+void print_battery_serial();
 void print_rapid_create_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon);
 void delay_no_block(const unsigned long long int interval);
 String finish_request(const String in_str);
@@ -57,7 +59,7 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
 void print_sim_header(void);
 void print_temp_serial(const boolean reset, Sensors *Sen);
 void print_temp_header(void);
-void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
+void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, BatterySim *Sim);
 void print_signal_sel_header(void);
 void print_ekf_header(void);
 void rapid_print(Sensors *Sen, BatteryMonitor *Mon);

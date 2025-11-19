@@ -82,7 +82,7 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
         case ( 'D' ):
             switch ( letter_1 )
             {
-                case ( 'h' ):  //   Dh<>:  Summary sample time input
+                case ( 'h' ):  //   Dh<>:  Summary sample time input  TODO:  not sure this section needed since nominalizing capability added 11/2025
                     if ( ap.sum_delay_p->success() )
                         Sen->Summarize->delay(max(ap.read_delay, ap.sum_delay), Sen->now);  // validated
                     else if (ap.value_str()=="0" || ap.value_str()=="")
@@ -90,6 +90,14 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                         Serial.printf("setting NOMINAL instead\n");
                         ap.sum_delay_p->set_nominal();
                         Sen->Summarize->delay(max(ap.read_delay, ap.sum_delay), Sen->now);
+                    }
+                    break;
+
+                case ( 'q' ):  //   Dq<>:  TEMP sample time input
+                    if ( ap.temp_delay_p->success() )
+                    {
+                        Sen->ReadTemp->delay(ap.temp_delay);  // validated
+                        Sen->Summarize->delay(max(ap.temp_delay, ap.sum_delay));  // validated
                     }
                     break;
 
@@ -222,9 +230,9 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
             {
 
                 case ( 'T' ):  //*  UT<>:  Unix time since epoch
-                  time_long_2_str((time_t)sp.Time_now_z, buffer);
-                  Serial.printf(" time %ld hms:  %s -> ", sp.Time_now_z, buffer);
-                  Serial1.printf(" time %ld hms:  %s -> ", sp.Time_now_z, buffer);
+                //   time_long_2_str((time_t)sp.Time_now_z, buffer);
+                //   Serial.printf(" time %ld hms:  %s -> ", sp.Time_now_z, buffer);
+                //   Serial1.printf(" time %ld hms:  %s -> ", sp.Time_now_z, buffer);
                   Time.setTime( (time_t) (sp.Time_now_z) );
                   time_long_2_str((time_t)sp.Time_now_z, buffer);
                   Serial.printf(" time %ld hms:  %s\n", sp.Time_now_z, buffer);

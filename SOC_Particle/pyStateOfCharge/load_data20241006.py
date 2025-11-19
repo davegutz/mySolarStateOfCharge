@@ -13,13 +13,14 @@
 #
 # See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
 """Utility to load data from csv files"""
-from idlelib.run import flush_stdout
 
 import numpy as np
 from DataOverModel import SavedData, SavedDataSim, write_clean_file
 from CompareFault import add_stuff_f, filter_Tb, IB_BAND
 from Battery import Battery, BatteryMonitor
 from resample import remove_nan
+from DataOverModel20241006 import SavedData20241006, SavedDataSim20241006
+from CompareFault20241006 import add_stuff_f20241006, filter_Tb20241006
 
 
 def find_sync(path_to_data):
@@ -35,19 +36,10 @@ def find_sync(path_to_data):
         sync = np.array(sync)
     return sync
 
+
 def calculate_master_sync(ref, test):
     delta = np.maximum(ref, test)
     return delta
-
-def remove_0T(d_ra, info):
-    """Remove useless 0 Time elements"""
-    condition = d_ra['time_ux'] >= 1746684850783./1000.
-    filtered_data = d_ra[condition]
-    num_removed = len(d_ra) - len(filtered_data)
-    if num_removed > 0:
-        print(f"\nremove_0T:  screened out {num_removed} rows from {info} with bad time_ux element\n")
-        flush_stdout()
-    return filtered_data
 
 
 class SyncInfo:
@@ -95,15 +87,13 @@ class SyncInfo:
 
 
 # Load from files
-def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_batt_cap=Battery.NOM_UNIT_CAP,
-              legacy=False, v1_only=False, zero_thr_in=0.02):
+def load_data20241006(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_batt_cap=Battery.NOM_UNIT_CAP,
+              legacy=False, v1_only=False, zero_thr_in=0.02, sync_to_cTime=False):
 
     print(f"load_data: \n{path_to_data=}\n{skip=}\n{unit_key=}\n{zero_zero_in=}\n{time_end_in=}\n{rated_batt_cap=}\n"
           f"{legacy=}\n{v1_only=}")
 
-    battery_hdr = "Battery_hdr"
-    battery_val = "Battery_val"
-    hdr_key_rap = "unit_rap,"  # Find one instance of title
+    hdr_key = "unit,"  # Find one instance of title
     hdr_key_sel = "unit_s,"  # Find one instance of title
     unit_key_sel = "unit_sel"
     hdr_key_ekf = "unit_e,"  # Find one instance of title
@@ -111,30 +101,19 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     hdr_key_sim = "unit_m,"  # Find one instance of title
     unit_key_sim = "unit_sim"
     temp_flt_file = 'flt_compareRunSim.txt'
-    hdr_key_temp = "unit_t"
-    unit_key_temp = "temp_unit"
 
     sync = find_sync(path_to_data)
 
-    data_file_clean = write_clean_file(path_to_data, type_='_mon', hdr_key=hdr_key_rap, unit_key=unit_key, skip=skip)
+    data_file_clean = write_clean_file(path_to_data, type_='_mon', hdr_key=hdr_key, unit_key=unit_key, skip=skip)
     if data_file_clean is None:
-        return None, None, None, None, None, None
+        return None, None, None, None, None
     if data_file_clean is not None:
         mon_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
     else:
         mon_raw = None
         print(f"load_data: returning mon=None")
 
-    # Load battery (ref)
-    battery_file_clean = write_clean_file(path_to_data, type_='_battery', hdr_key=battery_hdr,
-                                          unit_key=battery_val, skip=skip)
-    if battery_file_clean and not v1_only:
-        battery_raw = np.genfromtxt(battery_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-    else:
-        battery_raw = None
-        print(f"load_data: returning battery_raw=None")
-
-    # Load sel (ref)
+    # Load sel (old)
     sel_file_clean = write_clean_file(path_to_data, type_='_sel', hdr_key=hdr_key_sel,
                                       unit_key=unit_key_sel, skip=skip)
     if sel_file_clean and not v1_only:
@@ -143,16 +122,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         sel_raw = None
         print(f"load_data: returning sel_raw=None")
 
-    # Load temp (ref)
-    temp_file_clean = write_clean_file(path_to_data, type_='_temp', hdr_key=hdr_key_temp,
-                                       unit_key=unit_key_temp, skip=skip)
-    if temp_file_clean and not v1_only:
-        temp_raw = np.genfromtxt(temp_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-    else:
-        temp_raw = None
-        print(f"load_data: returning temp_raw=None")
-
-    # Load ekf (ref)
+    # Load ekf (old)
     ekf_file_clean = write_clean_file(path_to_data, type_='_ekf', hdr_key=hdr_key_ekf,
                                       unit_key=unit_key_ekf, skip=skip)
     if ekf_file_clean and not v1_only:
@@ -161,7 +131,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         ekf_raw = None
         print(f"load_data: returning ekf_raw=None")
 
-    mon = SavedData(battery=battery_raw, rap=mon_raw, sel=sel_raw, ekf=ekf_raw, temp=temp_raw, time_end=time_end_in,
+    mon = SavedData20241006(data=mon_raw, sel=sel_raw, ekf=ekf_raw, time_end=time_end_in,
                     zero_zero=zero_zero_in, zero_thr=zero_thr_in, sync_cTime=sync)
     if mon.chm is not None:
         chm = int(mon.chm[-1])
@@ -173,12 +143,12 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         chm = None
     batt = BatteryMonitor()
 
-    # Load sim _s v24 portion of real-time run (ref)
+    # Load sim _s v24 portion of real-time run (old)
     data_file_sim_clean = write_clean_file(path_to_data, type_='_sim', hdr_key=hdr_key_sim,
                                            unit_key=unit_key_sim, skip=skip)
     if data_file_sim_clean and not v1_only:
         sim_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-        sim = SavedDataSim(time_run=mon.time_run, data=sim_raw, time_end=time_end_in)
+        sim = SavedDataSim20241006(time_ref=mon.time_ref, data=sim_raw, time_end=time_end_in)
     else:
         sim = None
         print(f"load_data: returning sim=None")
@@ -197,9 +167,9 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     if f_raw is not None:
         f_raw = np.unique(f_raw)
         f_raw = remove_nan(f_raw)
-        f = add_stuff_f(f_raw, batt, ib_band=IB_BAND)
+        f = add_stuff_f20241006(f_raw, batt, ib_band=IB_BAND)
         print("\nload_data:  f:\n", f, "\n")
-        f = filter_Tb(f, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap)
+        f = filter_Tb20241006(f, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap)
     else:
         f = None
         print(f"load_data: returning f=None")

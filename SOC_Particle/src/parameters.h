@@ -100,6 +100,7 @@ public:
     float Tb_bias_model;        // Bias on Tb for model
     float Tb_noise_amp;         // Tb noise amplitude model only, deg C pk-pk
     float tb_stale_time_slr;    // Scalar on persistences of Tb hardware stale check
+    unsigned long int temp_delay; // Temp frame, ms
     unsigned long int until_q;  // Time until set vv0, ms
     float vb_add;               // Fault injection bias, V
     float Vb_noise_amp;         // Vb bank noise amplitude model only, V pk-pk
@@ -145,6 +146,7 @@ public:
     FloatV *Tb_bias_model_p;
     FloatV *Tb_noise_amp_p;
     FloatV *tb_stale_time_slr_p;
+    ULongV *temp_delay_p;
     ULongV *until_q_p;
     FloatV *vb_add_p;
     FloatV *Vb_noise_amp_p;
@@ -235,7 +237,7 @@ public:
     float ib_hist_n_slr() { if ( abs(amp_z) > SCL_40 ) return SCL_30000/abs(amp_z); else return SCL_60; }
     float vb_hist_slr() { if ( abs(amp_z) > SCL_40 ) return SCL_1500/abs(amp_z); else return SCL_1200; }
     boolean mod_all_dscn() { return ( 111<modeling() ); }                // Bare all
-    boolean mod_any() { return ( mod_ib() || mod_tb_f() || mod_vb() ); }  // Modeling any
+    boolean mod_any() { return ( mod_ib() || mod_tb() || mod_vb() ); }  // Modeling any
     boolean mod_any_dscn() { return ( 15<modeling() ); }                 // Bare any
     boolean mod_ib() { return ( 1<<2 & modeling() || mod_ib_all_dscn() ); }  // Using Sim as source of ib
     boolean mod_ib_all_dscn() { return ( 191<modeling() ); }             // Nothing connected to ib sensors in I2C on SDA/SCL
@@ -244,7 +246,7 @@ public:
     boolean mod_ib_noa_dscn() { return ( 1<<7 & modeling() ); }          // Nothing connected to noa ib sensors in I2C on SDA/SCL
     boolean mod_none() { return ( 0==modeling() ); }                     // Using all
     boolean mod_none_dscn() { return ( 16>modeling() ); }                // Bare nothing
-    boolean mod_tb_f() { return ( 1<<0 & modeling() || mod_tb_dscn() ); }  // Using Sim as source of tb
+    boolean mod_tb() { return ( 1<<0 & modeling() || mod_tb_dscn() ); }  // Using Sim as source of tb
     boolean mod_tb_dscn() { return ( 1<<4 & modeling() ); }              // Nothing connected to one-wire Tb sensor on D6
     boolean mod_vb() { return ( 1<<1 & modeling() || mod_vb_dscn() ); }  // Using Sim as source of vb
     boolean mod_vb_dscn() { return ( 1<<5 & modeling() ); }              // Nothing connected to vb on A1
