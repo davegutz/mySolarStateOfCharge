@@ -156,10 +156,9 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
         d_dq = SN.mon_run.delta_q[G.i+1]-SN.mon_run.delta_q[G.i]
     i_dt_old = SN.mon_run.dt[G.i] * SN.mon_run.ib_charge[G.i]
     i_dt_new = mon.dt * mon.ib_charge
-    coul_eff = 0.9985
     if mon.ib_charge > 0:
-        i_dt_old *= coul_eff
-        i_dt_new *= coul_eff
+        i_dt_old *= mon.coul_eff
+        i_dt_new *= mon.coul_eff
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
@@ -181,7 +180,7 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
 
 def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
     global count_since_last_header
-    hdr = "  i  time     r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s            ib                          ib_in_s                     ib_s                          ib_dyn_s_rstate                ib_dyn_s_lstate               ib_dyn_s                    ib_dyn                      dv_hys_s              ib_charge_s                 ioc_s                     soc                     delq                       i * dt_s * coul_eff   soc_s                    Tb_f_s                      d_delq_s                   delq_s                      qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                dv_dyn_s               vsat                 "
+    hdr = "  i  time     r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s            ib                          ib_in_s                     ib_s                          ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s              ib_charge_s                 ioc_s                     soc                     delq                       i * dt_s * coul_eff   soc_s                    Tb_f_s                      d_delq_s                   delq_s                      qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                dv_dyn_s               vsat                 "
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -189,10 +188,9 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
         count_since_last_header += 1
     i_dt_old = SN.sim_run.dt_s[G.i] * SN.sim_run.ib_charge_s[G.i]
     i_dt_new = sim.dt * sim.ib_charge
-    coul_eff = 0.9985
     if sim.ib_charge > 0:
-        i_dt_old *= coul_eff
-        i_dt_new *= coul_eff
+        i_dt_old *= sim.coul_eff
+        i_dt_new *= sim.coul_eff
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
@@ -205,6 +203,7 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
           "{:15.6f}".format(SN.sim_run.ib_s[G.i]), "{:13.6f}".format(sim.ib),
           "{:15.6f}".format(SN.sim_run.ib_dyn_s_rstate[G.i]), "{:13.6f}".format(sim.ChargeTransfer.rstate),
           "{:15.6f}".format(SN.sim_run.ib_dyn_s_lstate[G.i]), "{:13.6f}".format(sim.ChargeTransfer.state),
+          "{:12.6f}".format(SN.sim_run.ib_dyn_s_T[G.i]), "{:8.6f}".format(sim.ChargeTransfer.dt),
           "{:14.5f}".format(SN.sim_run.ib_dyn_s[G.i]), "{:12.5f}".format(sim.ib_dyn),
           "{:14.5f}".format(SN.mon_run.ib_dyn[G.i]), "{:12.5f}".format(mon.ib_dyn),
           "{:12.5f}".format(SN.sim_run.dv_hys_s[G.i]), "{:9.5f}".format(sim.dv_hys),

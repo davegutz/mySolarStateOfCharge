@@ -226,7 +226,7 @@ void print_signal_sel_header(void)
   Serial.printf("  ib_wrp_T_n, ib_wrp_tau_n, ib_wrp_rate_n, ib_wrp_state_n,");
   Serial.printf("\n");
 }
-void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
+void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, BatterySim *Sim)
 {
   if ( (sp.debug()==2 || sp.debug()==4 || sp.debug()==61 )  && cp.publishS )
   {
@@ -246,7 +246,7 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
       Serial.printf("%s", pr.buff);
 
         sprintf(pr.buff, "  %d,%8.6f,%8.6f,%8.6f, %d,%8.6f,  %d,%8.6f,%8.6f, %d,%8.6f,  %d, %d, ",
-            Sen->Flt->ib_sel_stat(), Sen->vc_hdwe(), Sen->ib_hdwe(), Sen->ib_hdwe_model(), sp.mod_ib(), Sen->ib(),
+            Sen->Flt->ib_sel_stat(), Sen->vc_hdwe(), Sen->ib_hdwe(), Sim->ib_s(), sp.mod_ib(), Sen->ib(),
             Sen->Flt->vb_sel_stat(), Sen->vb_hdwe(), Sen->vb_model(), sp.mod_vb(), Sen->vb(),
             sp.mod_tb(), Sen->Flt->tb_fa());
       Serial.printf("%s", pr.buff);
@@ -282,7 +282,7 @@ void print_sim_header(void)
   Serial.printf("unit_m,  c_time,      dt_s, chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, ");
   Serial.printf("dv_dyn_s, vb_s, ib_s, ib_dyn_s, dv_hys_s, ib_in_s, ib_charge_s, ioc_s, ");
   Serial.printf("sat_s, dq_s, q_cap_s, soc_s, reset_s, ddq_s, ");
-  Serial.printf("ib_dyn_s_T, ib_dyn_s_tau, ib_dyn_s_rstate, ib_dyn_s_lstate, ");
+  Serial.printf("ib_dyn_s_T, ib_dyn_s_tau, ib_dyn_s_rstate, ib_dyn_s_lstate,");
   Serial.printf("\n");
 }
 void print_sim_serial(const boolean initializing_all, const boolean reset_temp, Sensors *Sen, BatterySim *Sim)
@@ -296,7 +296,7 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
         Serial.printf("%s", pr.buff);
 
         sprintf(pr.buff, "%7.6f,%8.6f, %7.6f,%7.6f,%7.6f,%7.6f,%7.6f,%7.6f, ",
-            Sim->dv_dyn(), Sim->vb(), Sim->ib(), Sim->ib_dyn(), Sim->dv_hys(), Sim->ib_in(), Sim->ib_charge(), Sim->ioc());
+            Sim->dv_dyn(), Sim->vb(), Sim->ib_s(), Sim->ib_dyn(), Sim->dv_hys(), Sim->ib_in(), Sim->ib_charge(), Sim->ioc());
         Serial.printf("%s", pr.buff);
 
         sprintf(pr.buff, " %d,  %9.4f, %9.4f,  %10.7f, %d, %7.6f,",

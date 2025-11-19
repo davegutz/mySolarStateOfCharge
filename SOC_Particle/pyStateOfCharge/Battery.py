@@ -1035,7 +1035,7 @@ class BatterySim(Battery):
         self.ib_lag = self.IbLag.calculate_tau(self.ib, self.reset, self.dt, self.chemistry.ib_lag_tau)
 
         # Charge transfer dynamics
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, self.reset, self.dt_past,
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, self.reset, self.dt,
                                                                self.chemistry.tau_ct)
         if self.reset:
             pass

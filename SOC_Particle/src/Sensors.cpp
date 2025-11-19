@@ -1513,7 +1513,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
    Ib, Ib_hdwe, Ib_hdwe_model, Ib_amp, Ib_amp_model, Ib_amp_hdwe, Ib_noa, Ib_noa_model, Ib_noa_hdwe);
 
   // print_signal_select for data collection
-  print_signal_sel_serial(reset, this, Mon);
+  print_signal_sel_serial(reset, this, Mon, Sim);
 
 }
 
