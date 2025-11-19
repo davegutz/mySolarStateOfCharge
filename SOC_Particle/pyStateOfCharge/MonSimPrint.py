@@ -180,7 +180,7 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
 
 def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
     global count_since_last_header
-    hdr = "  i  time     r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s            ib                          ib_in_s                     ib_s                          ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s              ib_charge_s                 ioc_s                     soc                     delq                       i * dt_s * coul_eff   soc_s                    Tb_f_s                      d_delq_s                   delq_s                      qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                dv_dyn_s               vsat                 "
+    hdr = "  i  time     r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s            ib                          ib_in_s                     ib_s                          ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s              ib_charge_s                 ioc_s                     soc                     delq                       i * dt_s * coul_eff     soc_s                    Tb_f_s                      d_delq_s                   delq_s                      qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                 "
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -211,7 +211,7 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
           "{:14.5f}".format(SN.sim_run.ioc_s[G.i]), "{:12.5f}".format(sim.ioc),
           "{:11.7f}".format(SN.mon_run.soc[G.i]), "{:8.7f}".format(mon.soc),
           "{:14.4f}".format(SN.mon_run.delta_q[G.i]), "{:11.4f}".format(mon.delta_q),
-          "{:13.4f}".format(i_dt_old), "{:10.4f}".format(i_dt_new),
+          "{:14.5f}".format(i_dt_old), "{:11.5f}".format(i_dt_new),
           "{:11.8f}".format(SN.mon_run.soc_s[G.i]), "{:9.8f}".format(sim.soc),
           "{:14.8f}".format(SN.sim_run.Tb_f_s[G.i]), "{:11.8f}".format(sim.Tb_f),
           "{:14.5f}".format(SN.sim_run.d_delta_q_s[G.i]), "{:12.5f}".format(sim.d_delta_q),
@@ -228,6 +228,7 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
           "{:11.5f}".format(SN.mon_run.voc_stat[G.i]), "{:9.5f}".format(mon.voc_stat),
           "{:11.5f}".format(SN.sim_run.voc_stat_s[G.i]), "{:9.5f}".format(sim.voc_stat),
           "{:11.5f}".format(SN.sim_run.voc_s[G.i]), "{:9.5f}".format(sim.voc),
+          "{:11.5f}".format(SN.sim_run.dv_hys_s[G.i]), "{:9.5f}".format(sim.dv_hys),
           "{:11.5f}".format(SN.sim_run.dv_dyn_s[G.i]), "{:9.5f}".format(sim.dv_dyn),
           "{:11.5f}".format(SN.mon_run.vsat[G.i]), "{:9.5f}".format(mon.vsat),
           )
