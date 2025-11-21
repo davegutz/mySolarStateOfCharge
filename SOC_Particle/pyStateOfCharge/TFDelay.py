@@ -91,7 +91,7 @@ class TFDelay:
         return self.calculate1(in_)
 
     def calculate4t(self, in_, t_true, t_false, dt):
-        self.dt = dt
+        self.dt = max(dt, 1e-9)
         self.t_true = t_true
         self.t_false = t_false
         self.nt = int(max(round(self.t_true / self.dt)+1, 0))

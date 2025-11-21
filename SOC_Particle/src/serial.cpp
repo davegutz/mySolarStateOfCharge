@@ -151,7 +151,7 @@ void print_rapid_header(void)
 }
 void print_rapid_create_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
-  if ( Sen->T == 0.) return;
+  // if ( Sen->T == 0.) return;
   double cTime = double(Sen->now)/1000;
   sprintf(pr.buff,  "%s,%s,%13.3f,%9.6f,   %d,%9.2f,%9.2f,%2d,%2d,%2d,%2d,   %11.8f,%11.8f,%11.8f,   %8.7f,%11.7f,%11.7f,%11.7f,   %9.7f,%8.7f,%9.7f,%9.7f,     %9.7f,%9.7f,%9.7f,%9.7f,  %10.7f,  %10.7f,%10.7f,%10.7f,%5.3f,%9.4f,", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
@@ -199,7 +199,7 @@ void print_ekf_header(void)
 }
  void EKF_1x1::print_ekf_serial(BatteryMonitor *Mon)
  {
-  if ( dt_ekf_ == 0. ) return;
+  // if ( dt_ekf_ == 0. ) return;
   double eTime = double(now_ekf_)/1000.;
 
   Serial.printf("unit_ekf,%13.3f,%7.3f,%13.10f,%13.10f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,",
@@ -291,7 +291,7 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
 {
     if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)
     {
-        if ( Sim->dt() == 0. ) return;
+        // if ( Sim->dt() == 0. ) return;
         double cTime = double(Sen->now)/1000.;
 
         sprintf(pr.buff, "unit_sim, %13.3f, %7.3f, %d, %9.2f, %d, %11.8f, %7.6f,%7.6f, ",
@@ -324,7 +324,7 @@ void print_temp_serial(const boolean reset, Sensors *Sen)
 {
   if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  || sp.debug()==16 )
   {
-    if ( Sen->T_temp == 0. ) return;
+    // if ( Sen->T_temp == 0. ) return;
     double cTime = double(Sen->now_temp)/1000.;
     Serial.printf("temp_unit, %13.3f, %11.8f, %11.8f, %11.8f, %11.8f, %d, %11.8f, %11.8f, %11.8f, %11.8f,\n",
       cTime, Sen->T_temp, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_hdwe_filt, Sen->Tb_f, Sen->Tb_hdwe_filt_rate,
