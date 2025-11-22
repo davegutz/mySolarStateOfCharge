@@ -718,6 +718,7 @@ class SavedData:
             self.vb = None  # Bank voltage, V
             self.chm = None  # Battery chemistry code
             self.qcrs = None  # Unit capacity rated scaled, Coulombs
+            self.d_delta_q = None  # Change in the charge for update, Coulombs
             self.delta_q = None  # Change in the charge for update, Coulombs
             self.q_capacity = None  # Charge capacity at instant, Coulombs
             self.sat = None  # Indication that battery is saturated, T=saturated
@@ -812,6 +813,8 @@ class SavedData:
             self.chm = np.array(rap.chm[:i_end])
             if hasattr(rap, 'qcrs'):
                 self.qcrs = rap.qcrs[:i_end]
+            if hasattr(rap, 'd_delta_q'):
+                self.d_delta_q = rap.d_delta_q[:i_end]
             if hasattr(rap, 'delta_q'):
                 self.delta_q = rap.delta_q[:i_end]
             if hasattr(rap, 'qcap'):

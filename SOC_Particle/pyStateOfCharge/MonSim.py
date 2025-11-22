@@ -65,12 +65,15 @@ def get_modeling(mr, mod_force=None):
 def sync_to_mon_or_sim(mr, sr, t_mx=None):
     if sr is not None and len(sr.time) < len(mr.time):
         time = sr.time
+        dtime = sr.dt_s
     else:
         time = mr.time
+        dtime = mr.dt
     if t_mx is not None:
         t_delt = time - time[0]
         time = time[np.where(t_delt <= t_mx)]
-    return time
+        dtime = dtime[np.where(t_delt <= t_mx)]
+    return time, dtime
 
 def vb_from_raw_or_selected(use_raw, mr):
     if use_raw:
@@ -129,7 +132,7 @@ class UserOptions:
 
     stauct_mon: Optional[float] = 1.
     use_vb_sim: Optional[bool] = False
-    request_history: Optional[int] = None  # Print simulation history (0 - 5) to check overplot using data in addition
+    request_history: Optional[int] = 5  # Print simulation history (0 - 5) to check overplot using data in addition
     use_ib_mon: Optional[bool] = False  # Drive BatterySim directly with the BatteryMonitor input, useful when raw sim data not available
     use_sat_mon: Optional[bool] = False  # Drive entire model directly with the run input, useful for HistSim unable to accurately run sliding deadbanc
     use_mon_soc: Optional[bool] = False  # Drive SOC of the model directly with data to focus on modeling that is downstream of SOC
@@ -148,9 +151,11 @@ def replicate(OPT: UserOptions):
     9. Run CompareHistSim etc.
     19. Fig 15 sim_s 2a:  vb?   Keep looking for this when run at other op conditions.  Shutdown problem.
     """
+    # Options
+    print(OPT)
 
     # time
-    t = sync_to_mon_or_sim(OPT.mon_run, OPT.sim_run, t_mx=OPT.max_time)
+    t, dt = sync_to_mon_or_sim(OPT.mon_run, OPT.sim_run, t_mx=OPT.max_time)
 
     # vb
     vb = vb_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_run)
@@ -197,6 +202,7 @@ def replicate(OPT: UserOptions):
 
     # time loop initialization
     now = t[0]
+    dtnow = dt[0]
     reset_ekf = True
     G.i = -1
     i_ekf = -1
@@ -217,13 +223,14 @@ def replicate(OPT: UserOptions):
             pass  # used for debug breakpoint at i >= <val>
 
         # Time
-        now = t[G.i]
+        now =t [G.i]
         SN.update(G.i)
         T_ekf = None
         if G.i != 0:
             candidate_dt = t[G.i] - t[G.i-1]  # update
+            # print(f"{t[G.i]=} {t[G.i-1]=} {candidate_dt=}")
             if candidate_dt > 1e-6:
-                T = candidate_dt
+                T = dt[G.i]
 
         # Get temperature data
         if hasattr(OPT.mon_run, 'time_t'):

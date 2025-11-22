@@ -145,7 +145,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
 
 def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header
-    hdr = "  i  time     r       rt   it   ct      re   ie  ce    sa     ib_charge            soc                     dt                G.i * dt * coul_eff    Tb_f                      Tb_f_rap                    ddq                  delq                       qcrs                   q_cap                  Tb                       Tb_f_rate"
+    hdr = "  i  time     r       rt   it   ct      re   ie  ce    sa     ib_charge            soc                     dt                G.i * dt * coul_eff    d_delq                           delq                       Tb_f                      Tb_f_rap                    ddq                  delq                       qcrs                   q_cap                  Tb                       Tb_f_rate"
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -167,6 +167,8 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
           "{:11.7f}".format(SN.mon_run.soc[G.i]), "{:8.7f}".format(mon.soc),
           "{:9.3f}".format(SN.mon_run.dt[G.i]), "{:5.3f}".format(mon.dt),
           "{:12.4f}".format(i_dt_old), "{:9.4f}".format(i_dt_new),
+          "{:14.7f}".format(SN.mon_run.d_delta_q[G.i]), "{:11.7f}".format(mon.d_delta_q),
+          "{:16.6f}".format(SN.mon_run.delta_q[G.i]), "{:13.6f}".format(mon.delta_q),
           "{:14.7f}".format(SN.mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:14.7f}".format(SN.mon_run.Tb_f_rap[G.i]), "{:10.7f}".format(mon.Tb_f_rap),
           "{:12.4f}".format(d_dq), "{:11.4f}".format(mon.d_delta_q),
@@ -180,7 +182,7 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
 
 def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
     global count_since_last_header
-    hdr = "  i  time     r       rt   it   ct      re   ie  ce    sa       sa_s     dt              dt_s            ib                          ib_in_s                     ib_s                          ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s              ib_charge_s                 ioc_s                     soc                     delq                       i * dt_s * coul_eff     soc_s                    Tb_f_s                      d_delq_s                   delq_s                      qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                 "
+    hdr = "  i  time     r       rt   it   ct      re   ie  ce    sa       sa_s     dt                    dt_s                  ib                          ib_in_s                     ib_s                          ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s              ib_charge_s                 ioc_s                     soc                     d_delq                           delq                       i * dt_s * coul_eff     soc_s                    Tb_f_s                      d_delq_s                   delq_s                      qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                 "
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -196,8 +198,8 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
           "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
           "{:5.0f}".format(SN.sim_run.sat_s[G.i]), "{:2.0f}".format(sim.sat),
-          "{:9.3f}".format(SN.mon_run.dt[G.i]), "{:5.3f}".format(mon.dt),
-          "{:9.3f}".format(SN.sim_run.dt_s[G.i]), "{:5.3f}".format(sim.dt),
+          "{:12.6f}".format(SN.mon_run.dt[G.i]), "{:8.6f}".format(mon.dt),
+          "{:12.6f}".format(SN.sim_run.dt_s[G.i]), "{:8.6f}".format(sim.dt),
           "{:14.5f}".format(SN.mon_run.ib[G.i]), "{:12.5f}".format(mon.ib_in),
           "{:14.5f}".format(SN.sim_run.ib_in_s[G.i]), "{:12.5f}".format(sim.ib_in),
           "{:15.6f}".format(SN.sim_run.ib_s[G.i]), "{:13.6f}".format(sim.ib),
@@ -210,7 +212,8 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
           "{:14.5f}".format(SN.sim_run.ib_charge_s[G.i]), "{:12.5f}".format(sim.ib_charge),
           "{:14.5f}".format(SN.sim_run.ioc_s[G.i]), "{:12.5f}".format(sim.ioc),
           "{:11.7f}".format(SN.mon_run.soc[G.i]), "{:8.7f}".format(mon.soc),
-          "{:14.4f}".format(SN.mon_run.delta_q[G.i]), "{:11.4f}".format(mon.delta_q),
+          "{:14.7f}".format(SN.mon_run.d_delta_q[G.i]), "{:11.7f}".format(mon.d_delta_q),
+          "{:16.6f}".format(SN.mon_run.delta_q[G.i]), "{:13.6f}".format(mon.delta_q),
           "{:14.5f}".format(i_dt_old), "{:11.5f}".format(i_dt_new),
           "{:11.8f}".format(SN.mon_run.soc_s[G.i]), "{:9.8f}".format(sim.soc),
           "{:14.8f}".format(SN.sim_run.Tb_f_s[G.i]), "{:11.8f}".format(sim.Tb_f),

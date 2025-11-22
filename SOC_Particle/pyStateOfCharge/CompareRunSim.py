@@ -42,15 +42,15 @@ if sys.platform == 'darwin':
 plt.rcParams['axes.grid'] = True
 
 
-def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=True,
-                    verbose=True, scale_in=None, slr_hys_sim=1., request_history=None):
+def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=False,
+                    verbose=True, scale_in=None, slr_hys_sim=1., request_history=3):
 
     if data_file.count('soc4p2_hi_lo'):
        IB_CHARGE_NOA = True
     else:
         IB_CHARGE_NOA = False
 
-    print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n{IB_CHARGE_NOA=}\n")
+    print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n{IB_CHARGE_NOA=}\n{request_history=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
@@ -173,8 +173,8 @@ def main():
     #
     # # The following are not implemented in GUI
     #
-    time_end_in = None
-    # time_end_in = 16.
+    # time_end_in = None
+    time_end_in = 4.6
     #
     #
     s_hys_sim_in = 1.
@@ -185,7 +185,8 @@ def main():
     request_hist_in = 3  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
 
     # # mon_soc_in = False # old runsim work ******************
-    mon_soc_in = True
+    mon_soc_in = False
+    # mon_soc_in = True
 
     plots = False
     # plots = True

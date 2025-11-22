@@ -1095,31 +1095,33 @@ class BatterySim(Battery):
         self.ib_charge = charge_curr
         self.Tb_f = tb_f
         self.d_delta_q = self.ib_charge * self.dt
+        # if self.ib_charge < 0.:
+        #     print(f"{SN.sim_run.ib_charge_s[G.i] * SN.sim_run.dt_s[G.i]=} {self.dt * self.ib_charge} {SN.sim_run.d_delta_q_s[G.i]=} {self.d_delta_q}")
         if self.ib_charge > 0.:
             self.d_delta_q *= self.chemistry.coul_eff
+        if self.ib_charge < 0.:
+            pass
 
         # Rate limit temperature.  When modeling, initialize to no change
         self.Tb_f = tb_f
         self.Tb_f_rate = SN.Tb_f_rate_past
 
         # Saturation and re - init.Goal is to set q_capacity and hold it so remember last saturation status
-        # But if not modeling in real world, set to Monitor when Monitor saturated and reset_temp to EKF otherwise static boolean
-        if not self.mod:  # Real world init to track Monitor
+        if OPT.use_mon_soc or not bool(SN.mon_run.mvb[G.i]):
             if mon_sat or self.reset_temp_past:
+                # self.soc = SN.soc_s[G.i]
+                # self.q = self.q_capacity * self.soc
+                # self.delta_q = self.q - self.q_capacity
                 self.apply_delta_q_brief(SN.delta_q_s[G.i])
-            elif self.model_saturated: # Modeling initializes on reset_temp to Tb=RATED_TEMP
-                if reset_temp:
-                    self.delta_q = 0.
-        self.resetting = False  # one pass flag
+        elif self.model_saturated and reset_temp:
+            self.delta_q = 0.
+
+        # one pass flag
+        self.resetting = False
 
         # Integration can go to - 20 %
         self.q_capacity = self.calculate_capacity(self.Tb_f)
-        if OPT.use_mon_soc:
-            self.soc = SN.soc_s[G.i]
-            self.q = self.q_capacity * self.soc
-            self.delta_q = self.q - self.q_capacity
-        elif not self.reset_temp_past and not reset_temp and not mon_sat:
-            # Capacity changes with temperature so this effect would be double if used
+        if not self.reset_temp_past:
             self.delta_q += self.d_delta_q
             self.delta_q = max(min( self.delta_q, 0.), -self.q_capacity * 1.2)
         self.q = self.q_capacity + self.delta_q

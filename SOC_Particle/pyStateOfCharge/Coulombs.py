@@ -151,6 +151,9 @@ class Coulombs:
         self.sat = sat
         self.tb_f = tb_f
 
+        # if charge_curr < 0.:
+        #     print(f"{OPT.mon_run.time[G.i]=} {OPT.mon_run.time[G.i]-OPT.mon_run.time[G.i-1]=} {OPT.mon_run.dt[G.i]=} {dt} {OPT.mon_run.ib_charge[G.i]=} {charge_curr} {OPT.mon_run.ib_charge[G.i] * OPT.mon_run.dt[G.i]=} {dt * charge_curr} {OPT.mon_run.d_delta_q[G.i]=} {self.d_delta_q}")
+
         # Saturation.   Goal is to set q_capacity and hold it so remembers last saturation status.
         if sat:
             if self.d_delta_q > 0:
