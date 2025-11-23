@@ -175,8 +175,8 @@ def main():
     #
     # # The following are not implemented in GUI
     #
-    # time_end_in = None
-    time_end_in = 28.2
+    time_end_in = None
+    # time_end_in = 28.2
     #
     #
     s_hys_sim_in = 1.
@@ -184,7 +184,7 @@ def main():
     #
     verbose_in = False
     scale_in = 1.0
-    request_hist_in = 5  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
+    request_hist_in = 4  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
 
     # # mon_soc_in = False # old runsim work ******************
     use_mon_soc_ = False

@@ -337,7 +337,7 @@ public:
   virtual double calculate(double in, int RESET, const double tau, const double T, const double max_rate, const double  min_rate);
   virtual void assignCoeff(double tau, double T);
   virtual void rateState(double in);
-  virtual void rateStateLim(double in, double max_rate, double min_rate);
+  virtual void rateStateLim(double in, int RESET, double max_rate, double min_rate);
   double a() { return (a_); };
   double b() { return (b_); };
   double c() { return (c_); };
