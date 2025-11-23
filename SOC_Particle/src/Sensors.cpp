@@ -877,6 +877,7 @@ void Fault::select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const boolean re
 
   // Make sure Rf command gets executed at least once all fault logic.  Asynchronous hence counter
   static uint8_t count = 0;
+  reset_all_faults_print_ = reset_all_faults_;
   if ( reset_all_faults_ )
   {
     if ( ( falw_==0 && fltw_==0 ) || count>1 )

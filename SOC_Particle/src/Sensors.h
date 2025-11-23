@@ -377,6 +377,7 @@ public:
   boolean red_loss() { return faultRead(RED_LOSS); };
   void reset_all_faults(const boolean cmd) { reset_all_faults_ = cmd; };
   boolean reset_all_faults() { return reset_all_faults_; };
+  boolean reset_all_faults_print() { return reset_all_faults_print_; };
   void select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const boolean reset);
   void reset_all_faults_select();
   void shunt_check(Sensors *Sen, BatteryMonitor *Mon, const boolean reset);  // Range check Ib signals
@@ -473,7 +474,8 @@ protected:
   int8_t ib_sel_stat_last_; // past value
   boolean latched_fail_;    // There is a latched fail, T=latched fail
   boolean latched_fail_fake_;  // There would be a latched fail if not faking, T=latched fail
-  boolean reset_all_faults_;// Reset all fault logic
+  boolean reset_all_faults_;// Reset all fault logic, gets reset before serial call
+  boolean reset_all_faults_print_;  // Reset all fault logic
   uint8_t *sp_preserving_;  // Saving fault buffer.   Stopped recording.  T=preserve
   int8_t tb_sel_stat_;      // Memory of Tb signal selection, 0=none, 1=sensor
   int8_t tb_sel_stat_last_; // past value

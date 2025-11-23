@@ -859,6 +859,7 @@ class SavedData:
             self.skip_sel = None
             self.c_time_s = None
             self.res = None
+            self.reset_all_faults = None
             self.user_sel = None
             self.cc_dif = None
             self.ccd_fa = None
@@ -961,6 +962,7 @@ class SavedData:
             self.skip_sel = np.array(np.bool(sel.skip[:i_end]))
             self.c_time_s = np.array(sel.c_time[:i_end]) - self.time_run
             self.res = np.array(sel.res[:i_end])
+            self.reset_all_faults = np.array(sel.resaf[:i_end])
             self.user_sel = np.array(sel.user_sel[:i_end])
             self.cc_dif = np.array(sel.cc_dif[:i_end])
             self.ccd_fa = np.bool_(np.array(falw) & 2**4)

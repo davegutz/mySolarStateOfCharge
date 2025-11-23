@@ -153,7 +153,7 @@ void print_rapid_create_string(Publish *pubList, Sensors *Sen, BatteryMonitor *M
 {
   // if ( Sen->T == 0.) return;
   double cTime = double(Sen->now)/1000;
-  sprintf(pr.buff,  "%s,%s,%16.6f,%9.6f,   %d,%9.2f,%9.2f,%2d,%2d,%2d,%2d,   %11.8f,%11.8f,%11.8f,   %8.7f,%11.7f,%11.7f,%11.7f,   %9.7f,%8.7f,%9.7f,%9.7f,     %9.7f,%9.7f,%9.7f,%9.7f,  %10.7f,  %10.7f,%10.7f,%10.7f,%5.3f,%12.7f,%10.7f,", \
+  sprintf(pr.buff,  "%s,%s,%13.4f,%8.4f,   %d,%9.2f,%9.2f,%2d,%2d,%2d,%2d,   %11.8f,%11.8f,%11.8f,   %8.7f,%11.7f,%11.7f,%11.7f,   %9.7f,%8.7f,%9.7f,%9.7f,     %9.7f,%9.7f,%9.7f,%9.7f,  %10.7f,  %10.7f,%10.7f,%10.7f,%5.3f,%12.7f,%10.7f,", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
     CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(), pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
     Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate,
@@ -202,7 +202,7 @@ void print_ekf_header(void)
   // if ( dt_ekf_ == 0. ) return;
   double eTime = double(now_ekf_)/1000.;
 
-  Serial.printf("unit_ekf,%13.3f,%10.6f,%13.10f,%13.10f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,",
+  Serial.printf("unit_ekf,%13.4f,%8.4f,%13.10f,%13.10f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,",
     eTime, dt_ekf_, Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_);
 
   Serial.printf("%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%d,%11.8f,%10.7f,",
@@ -219,7 +219,7 @@ void print_ekf_header(void)
 // TODO:  delete the _T, _tau, _rstate, _lstate stuff
 void print_signal_sel_header(void)
 {
-  Serial.printf("unit_s,c_time,res,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,   ib_diff, ib_diff_f,");
+  Serial.printf("unit_s,c_time,res,resaf,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,   ib_diff, ib_diff_f,");
   Serial.printf("  voc_soc,e_w,e_w_f,ib_dm,dv_dm,e_wm,e_wm_f,ib_dn,dv_dn,e_wn,e_wn_f,e_wm_t,");
   Serial.printf("  ib_sel_stat,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_h,vb_s,mvb,vb,  mtb,Tb_fa, ");
   Serial.printf("  fltw, falw, ib_rate, ib_quiet, tb_sel, ccd_thr, ewh_thr, ewl_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,");
@@ -234,8 +234,8 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
   {
       double cTime = double(Sen->now)/1000.;
 
-      sprintf(pr.buff, "unit_sel,%15.6f, %d, %d,  %10.7f, %8.6f,%8.6f,%8.6f,%8.6f,%8.6f, %8.6f,%8.6f, ",
-          cTime, reset, sp.ib_force(),
+      sprintf(pr.buff, "unit_sel,%13.4f, %d, %d, %d, %10.7f, %8.6f,%8.6f,%8.6f,%8.6f,%8.6f, %8.6f,%8.6f, ",
+          cTime, reset, Sen->Flt->reset_all_faults_print(), sp.ib_force(),
           Sen->Flt->cc_diff(),
           Sen->ib_amp_hdwe(), Sen->ib_noa_hdwe(), Sen->ib_amp_model(), Sen->ib_noa_model(), Sen->ib_model(), 
           Sen->Flt->ib_diff(), Sen->Flt->ib_diff_f());
@@ -294,7 +294,7 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
         // if ( Sim->dt() == 0. ) return;
         double cTime = double(Sen->now)/1000.;
 
-        sprintf(pr.buff, "unit_sim, %13.6f, %10.6f, %d, %9.2f, %d, %11.8f, %7.6f,%7.6f, ",
+        sprintf(pr.buff, "unit_sim, %13.4f, %8.4f, %d, %9.2f, %d, %11.8f, %7.6f,%7.6f, ",
             cTime, Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->tb_f(), Sim->vsat(), Sim->voc_stat());
         Serial.printf("%s", pr.buff);
 
@@ -326,7 +326,7 @@ void print_temp_serial(const boolean reset, Sensors *Sen)
   {
     // if ( Sen->T_temp == 0. ) return;
     double cTime = double(Sen->now_temp)/1000.;
-    Serial.printf("temp_unit, %13.6f, %11.8f, %11.8f, %11.8f, %11.8f, %d, %11.8f, %11.8f, %11.8f, %11.8f,\n",
+    Serial.printf("temp_unit, %13.4f, %8.4f, %11.8f, %11.8f, %11.8f, %d, %11.8f, %11.8f, %11.8f, %11.8f,\n",
       cTime, Sen->T_temp, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_hdwe_filt, Sen->Tb_f, Sen->Tb_hdwe_filt_rate,
       Sen->Tb_f_rate);
     Log.info("    print_temp_serial cTime,%9.3f,", cTime);

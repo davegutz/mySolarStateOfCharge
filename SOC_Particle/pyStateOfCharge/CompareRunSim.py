@@ -50,7 +50,8 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
     else:
         IB_CHARGE_NOA = False
 
-    print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n{IB_CHARGE_NOA=}\n{request_history=}\n")
+    print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n \
+{IB_CHARGE_NOA=}\n{verbose=}\n{scale_in=}\n{slr_hys_sim=}\n{request_history=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
@@ -155,12 +156,13 @@ def main():
     else:
         gdrive = 'G:/My Drive/'
 
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_chg.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_chg.csv'
     unit_key = 'g20250612a_soc2p2_hi_lo_chg'
     time_end_in = None
     data_only = False
-    use_mon_soc_ = True
+    use_mon_soc_ = False
     IB_CHARGE_NOA = False
+    request_history = 3
 
     # # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251107pm_soc4p2_hi_lo_bb.csv'  # old runsim work ******************
     # # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiFail_soc2p2_hi_lo_chg.csv'
@@ -174,7 +176,7 @@ def main():
     # # The following are not implemented in GUI
     #
     # time_end_in = None
-    time_end_in = 4.6
+    time_end_in = 28.2
     #
     #
     s_hys_sim_in = 1.
@@ -182,17 +184,17 @@ def main():
     #
     verbose_in = False
     scale_in = 1.0
-    request_hist_in = 3  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
+    request_hist_in = 5  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
 
     # # mon_soc_in = False # old runsim work ******************
-    mon_soc_in = False
-    # mon_soc_in = True
+    use_mon_soc_ = False
+    # use_mon_soc_ = True
 
     plots = False
     # plots = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
-                    use_mon_soc_=mon_soc_in, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
+                    use_mon_soc_=use_mon_soc_, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
                     request_history=request_hist_in)
 
 
