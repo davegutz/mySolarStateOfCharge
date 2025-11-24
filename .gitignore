@@ -13,3 +13,5 @@ SOC_Particle/pyStateOfCharge/build/*
 SOC_Particle/nul
 /SOC_Particle/pyStateOfChargeOld
 /SOC_Particle/pyStateOfChargeNew
+*.log
+*.raw
