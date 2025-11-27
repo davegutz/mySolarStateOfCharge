@@ -956,6 +956,8 @@ class SavedData:
             self.ib_wrp_tau_n = None
             self.ib_wrp_rstate_n = None
             self.ib_wrp_lstate_n = None
+            self.disable_amp_fault = None
+            self.disable_amp_fault_per = None
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
@@ -1055,6 +1057,8 @@ class SavedData:
             self.ib_wrp_rate_n = np.array(sel.ib_wrp_rate_n[:i_end])
             self.ib_wrp_state_n = np.array(sel.ib_wrp_state_n[:i_end])
             self.ib_wrp_tau_n = np.array(sel.ib_wrp_tau_n[:i_end])
+            self.disable_amp_fault = np.array(sel.disable_amp_fault[:i_end])
+            self.disable_amp_fault_per = np.array(sel.disable_amp_fault_per[:i_end])
 
         if ekf is None:
             self.skip_e = None

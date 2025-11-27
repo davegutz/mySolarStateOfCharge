@@ -305,6 +305,7 @@ public:
   boolean dscn_fa() { return failRead(IB_DSCN_FA); };
   boolean dscn_flt() { return faultRead(IB_DSCN_FLT); };
   boolean disable_amp_fault() { return disable_amp_fault_; };
+  boolean disable_amp_fault_per() { return disable_amp_fault_per_; };
   float ewhi_thr_;      // Threshold e_wrap failed high, V
   float ewhi_thr() { return ewhi_thr_; };
   float ewlo_thr_;      // Threshold e_wrap failed low, V
@@ -445,6 +446,7 @@ protected:
   boolean cc_diff_fa_;      // EKF tested disagree, T = error
   float cc_diff_empty_slr_; // Scale cc_diff when soc low, scalar
   boolean disable_amp_fault_;  // Disable amp faults (both sensors agree), T=disable
+  boolean disable_amp_fault_per_;  // Disable amp faults (both sensors agree) persisted, T=disable
   float ewmax_slr_;         // Scale wrap detection thresh when voc(soc) greater than max, scalar
   float ewmin_slr_;         // Scale wrap detection thresh when voc(soc) less than min, scalar
   float ewsat_slr_;         // Scale wrap detection thresh when voc(soc) saturated, scalar

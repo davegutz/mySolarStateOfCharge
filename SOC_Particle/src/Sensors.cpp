@@ -480,7 +480,8 @@ void Fault::ib_logic(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
       ib_lo_active_ = false;
     #endif
   }
-  disable_amp_fault_ = DisabAmpFltPer->calculate( (ib_amp_hi_ && ib_noa_hi_) || (ib_amp_lo_ && ib_noa_lo_), DISAB_LO_SET, DISAB_LO_RESET, Sen->T, reset);
+  disable_amp_fault_ = (ib_amp_hi_ && ib_noa_hi_) || (ib_amp_lo_ && ib_noa_lo_);
+  disable_amp_fault_per_ = DisabAmpFltPer->calculate( disable_amp_fault_, DISAB_LO_SET, DISAB_LO_RESET, Sen->T, reset);
 
 }
 
