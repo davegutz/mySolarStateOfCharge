@@ -236,6 +236,7 @@ public:
   float e_wrap() { return e_wrap_; };
   float e_wrap_filt() { return e_wrap_filt_; };
   float e_wrap_rate() { return e_wrap_rate_; };
+  boolean reset() { return reset_; };
   float e_wrap_trim() { return e_wrap_trim_; };
   uint8_t hi_fail() { return hi_fail_; };
   uint8_t hi_fault() { return hi_fault_; };
@@ -315,6 +316,7 @@ public:
   float e_wrap() { return e_wrap_; };
   float e_wrap_filt() { return e_wrap_filt_; };
   float e_wrap_m() { return LoopIbAmp->e_wrap(); };
+  boolean e_wrap_m_r() { return LoopIbAmp->reset(); };
   float e_wrap_m_filt() { return LoopIbAmp->e_wrap_filt(); };
   float e_wrap_m_trim() { return LoopIbAmp->e_wrap_trim(); };
   float e_wrap_n() { return LoopIbNoa->e_wrap(); };
@@ -595,7 +597,6 @@ public:
   float Vb_add();
   float Vb_noise();
   void vb_print(void);                  // Print Vb result
-  float vc() { return Vc_hdwe; };       // Common select hardware unit voltage, V
   float vc_hdwe() { return Vc_hdwe; };  // Common select hardware unit voltage, V
   Fault *Flt;
   ScaleBrk *sel_brk_hdwe;                  // Active/active scale break

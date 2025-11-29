@@ -104,6 +104,10 @@ def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, 
         plt.plot(smv.time, smv.ib_charge_s, linestyle='-.', color='blue', label='ib_charge_s' + run_str)
         plt.plot(smv.time, smv.ib_charge_s, linestyle=':', color='orange', label='ib_charge_s' + ver_str)
         plt.legend(loc=1)
+        if hasattr(mr, 'vr'):
+            plt.subplot(326)
+            plq(plt, mr, 'time', mr, 'vr', color='green', linestyle='-', label='vr' + run_str)
+            plt.legend(loc=1)
 
         fig_list.append(plt.figure())  # 9 off/on soc
         plt.subplot(321)

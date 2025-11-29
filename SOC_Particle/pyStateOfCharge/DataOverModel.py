@@ -883,6 +883,7 @@ class SavedData:
             self.e_wrap_m = None
             self.e_wrap_m_filt = None
             self.e_wrap_m_trim = None
+            self.e_wrap_m_reset = None
             self.e_wrap_n = None
             self.e_wrap_n_filt = None
             self.e_wrap_n_trim = None
@@ -958,6 +959,7 @@ class SavedData:
             self.ib_wrp_lstate_n = None
             self.disable_amp_fault = None
             self.disable_amp_fault_per = None
+            self.vr = None
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
@@ -989,6 +991,8 @@ class SavedData:
                 self.e_wrap_m = np.array(sel.e_wm[:i_end])
             if hasattr(sel, 'e_wm_f'):
                 self.e_wrap_m_filt = np.array(sel.e_wm_f[:i_end])
+            if hasattr(sel, 'e_wm_r'):
+                self.e_wrap_m_reset = np.array(sel.e_wm_r[:i_end])
             if hasattr(sel, 'e_wn'):
                 self.e_wrap_n = np.array(sel.e_wn[:i_end])
             if hasattr(sel, 'e_wn_f'):
@@ -1052,13 +1056,14 @@ class SavedData:
             self.ib_dyn_rstate_n = np.array(sel.ib_dyn_rstate_n[:i_end])
             self.ib_dyn_lstate_n = np.array(sel.ib_dyn_lstate_n[:i_end])
             self.ib_dyn_tau_n = np.array(sel.ib_dyn_tau_n[:i_end])
-
             self.ib_wrp_T_n = np.array(sel.ib_wrp_T_n[:i_end])
             self.ib_wrp_rate_n = np.array(sel.ib_wrp_rate_n[:i_end])
             self.ib_wrp_state_n = np.array(sel.ib_wrp_state_n[:i_end])
             self.ib_wrp_tau_n = np.array(sel.ib_wrp_tau_n[:i_end])
             self.disable_amp_fault = np.array(sel.disable_amp_fault[:i_end])
             self.disable_amp_fault_per = np.array(sel.disable_amp_fault_per[:i_end])
+            if hasattr(sel, 'vr'):
+                self.vr = np.array(sel.vr[:i_end])
 
         if ekf is None:
             self.skip_e = None

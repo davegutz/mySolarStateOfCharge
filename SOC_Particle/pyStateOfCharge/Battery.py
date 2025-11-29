@@ -381,8 +381,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap_n_trim = None
         self.e_wrap_n_rate = None
         self.e_wrap_m_rate = None
-        self.disable_amp_fault = None
-        self.disable_amp_fault_per = None
+        self.disable_amp_fault = False
+        self.disable_amp_fault_per = False
         self.DisabAmpFltPer = TFDelay(False, Battery.DISAB_LO_SET, Battery.DISAB_LO_RESET, 0.1)
         self.IbAmpRate = RateLagExp(dt=0.1, tau=Battery.WRAP_ERR_FILT/4., min_=-Battery.MAX_WRAP_ERR_FILT,
                                     max_=Battery.MAX_WRAP_ERR_FILT)
@@ -394,6 +394,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ewnhi_thr = None
         self.ewnlo_thr = None
         self.ewmhi_thr = None
+        self.e_wrap_m_reset = True
         self.ewmlo_thr = None
         self.reset_ekf = None
         self.voc_stat_ekf = 0.
@@ -840,6 +841,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.ib_lag.append(self.ib_lag)
         self.saved.voc_soc_new.append(self.voc_soc_new)
         self.saved.ewmhi_thr.append(self.ewmhi_thr)
+        self.saved.e_wrap_m_reset.append(self.e_wrap_m_reset)
         self.saved.ewmlo_thr.append(self.ewmlo_thr)
         self.saved.ewnhi_thr.append(self.ewnhi_thr)
         self.saved.ewnlo_thr.append(self.ewnlo_thr)
@@ -902,16 +904,15 @@ class BatteryMonitor(Battery, EKF1x1):
                 self.ib_amp_pst = ib_amp_pst
                 ib_m_init = SN.LoopAmp.ib[G.i]
                 ib_dyn_m_init = SN.LoopAmp.ib_dyn[G.i]
-            ib_amp_hi = ib_amp >= Battery.HDWE_IB_HI_LO_AMP_HI
-            ib_amp_lo = ib_amp <= Battery.HDWE_IB_HI_LO_AMP_LO
-            ib_noa_hi = ib_noa >= Battery.HDWE_IB_HI_LO_NOA_HI
-            ib_noa_lo = ib_noa <= Battery.HDWE_IB_HI_LO_NOA_LO
+            ib_amp_hi = self.ib_amp >= Battery.HDWE_IB_HI_LO_AMP_HI
+            ib_amp_lo = self.ib_amp <= Battery.HDWE_IB_HI_LO_AMP_LO
+            ib_noa_hi = self.ib_noa >= Battery.HDWE_IB_HI_LO_NOA_HI
+            ib_noa_lo = self.ib_noa <= Battery.HDWE_IB_HI_LO_NOA_LO
             self.disable_amp_fault = (ib_amp_hi and ib_noa_hi) or (ib_amp_lo and ib_noa_lo)
             self.disable_amp_fault_per = self.DisabAmpFltPer.calculate(self.disable_amp_fault, Battery.DISAB_LO_SET,
                                                                        Battery.DISAB_LO_RESET, self.dt, reset)
-            ib_amp_reset = reset or self.disable_amp_fault
-            # print(f"{self.ib_amp=}", end='')
-            self.LoopIbAmp.calculate(reset=ib_amp_reset, modeling=modeling, ib=self.ib_amp,
+            self.e_wrap_m_reset = reset or self.disable_amp_fault
+            self.LoopIbAmp.calculate(reset=self.e_wrap_m_reset, modeling=modeling, ib=self.ib_amp,
                                      loop_gain=Battery.AMP_WRAP_TRIM_GAIN, dt=min(self.dt, Battery.F_MAX_T_WRAP),
                                      ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr, ib_init=ib_m_init,
                                      ib_dyn_init=ib_dyn_m_init, e_wrap_filt_init=SN.e_wrap_m_filt_init,
@@ -1445,6 +1446,7 @@ class Saved:
         self.Tb_hdwe = []
         self.Tb_hdwe_filt = []
         self.Tb_hdwe_filt_rate = []
+        self.e_wrap_m_reset = []
 
 
 def overall_batt(mv, sv, filename,
