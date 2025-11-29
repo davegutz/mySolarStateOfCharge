@@ -39,7 +39,7 @@ void sample_burst(Pins *myPins, Sensors *Sen)
 {
   if ( ap.samp_points>0 )
   {
-    Serial.printf("micros, Vca, Voa, VoVca, Vcn, Von, VoVcn,\n");
+    Serial.printf("micros, Vca, Voa, VoVca, Vcn, Von, VoVcn,Tb, Vb,\n");
     for (unsigned long int i=0; i<ap.samp_points; i++ ) 
     {
       unsigned long int local_micros = micros();
