@@ -411,13 +411,9 @@ void loop()
     if ( read )
     {
       Log.info("Read shunt");
-      static unsigned int t_us_last = micros();
-      unsigned int t_us_now = micros();
-      float T = float(t_us_now - t_us_last) / 1e6;
-      t_us_last = t_us_now;
-      Sen->ShuntAmp->sample(reset, T);
+      Sen->ShuntAmp->sample();
       Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.);
-      Sen->ShuntNoAmp->sample(reset, T);
+      Sen->ShuntNoAmp->sample();
     }
   #endif
   
@@ -535,6 +531,9 @@ void loop()
     Serial.printf("Summ...\n");
     cp.write_summary = false;
   }
+
+  // Data capture
+  sample_burst(myPins, Sen);
 
   // Initialize complete once sensors and models started and summary written
   if ( read )

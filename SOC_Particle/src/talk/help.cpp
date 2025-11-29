@@ -92,6 +92,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sp.ib_bias_noa_p->print_help();  //  Dn
   ap.ib_max_noa_p->print_help();  // Nm
   ap.ib_min_noa_p->print_help();  // Nn
+  ap.samp_points_p->print_help();  //  Cx
   ap.Ib_noa_noise_amp_p->print_help();  // DN
   ap.vc_add_p->print_help();  // D3
   ap.print_mult_p->print_help();  //  DP

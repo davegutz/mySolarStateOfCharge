@@ -130,7 +130,7 @@ public:
   float ishunt_cal() { return Ishunt_cal_ / sp.nP(); };
   float Ishunt_cal_filt() { return Ishunt_cal_filt_; };
   void pretty_print();
-  void sample(const boolean reset_loc, const float T);
+  void sample();
   float scale() { return ( *sp_ib_scale_ ); };
   unsigned long long sample_time(void) { return sample_time_; };
   float v2a_s() { return v2a_s_ ; };
@@ -141,7 +141,6 @@ public:
   float Vc() { return Vc_; };
   float Vo() { return Vo_; };
   float Vo_Vc() { return Vo_Vc_; };
-  float Vo_Vc_f() { return Vo_Vc_f_; };
 protected:
   String name_;         // For print statements, multiple instances
   uint8_t port_;        // Octal I2C port used by Acafruit_ADS1015
@@ -166,7 +165,6 @@ protected:
   int Vo_raw_;          // Raw analog read, integer       
   float Vo_;            // Sensed Vo, output of op amp, V
   float Vo_Vc_;         // Sensed Vo-Vc, difference in output of op amps, V
-  float Vo_Vc_f_;       // Sensed, filtered Vo-Vc, difference in output of op amps, V
   boolean using_opamp_; // Using differential hardware amp
   General2_Pole *Filt_; // Linear filter to test for direction
 };

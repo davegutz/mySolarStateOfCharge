@@ -35,6 +35,28 @@ extern CommandPars cp;  // Various parameters shared at system level
 extern PrinterPars pr;  // Print buffer
 extern PublishPars pp;  // For publishing
 
+void sample_burst(Pins *myPins, Sensors *Sen)
+{
+  if ( ap.samp_points>0 )
+  {
+    Serial.printf("micros, Vca, Voa, VoVca, Vcn, Von, VoVcn,\n");
+    for (unsigned long int i=0; i<ap.samp_points; i++ ) 
+    {
+      unsigned long int local_micros = micros();
+      Sen->ShuntAmp->sample();
+      Sen->ShuntNoAmp->sample();
+      float local_Tb = Sen->SensorTb->sample(Sen);
+      Sen->vb_load(myPins->Vb_pin, false);
+      Serial.printf("%ld, %8.6f, %8.6f, %8.6f,   %8.6f, %8.6f, %8.6f,   %8.6f, %8.6f,\n",
+        local_micros,
+        Sen->ShuntAmp->Vc(), Sen->ShuntAmp->Vo(), Sen->ShuntAmp->Vo_Vc(),
+        Sen->ShuntNoAmp->Vc(), Sen->ShuntNoAmp->Vo(), Sen->ShuntNoAmp->Vo_Vc(),
+        local_Tb, Sen->Vb_hdwe);
+    }
+    ap.samp_points = 0;
+  }
+}
+
 // Harvest charge caused temperature change.   More charge becomes available as battery warms
 void harvest_temp_change(const double tb_f, BatteryMonitor *Mon, BatterySim *Sim, const float tb_rate, const float dt)
 {

@@ -251,7 +251,7 @@ void Shunt::convert(const boolean disconnect, const boolean reset, Sensors *Sen)
 }
 
 // Sample amplifier Vo-Vc
-void Shunt::sample(const boolean reset_loc, const float T)
+void Shunt::sample()
 {
   sample_time_z_ = sample_time_;
   if ( using_opamp_ )

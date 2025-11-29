@@ -92,6 +92,7 @@ public:
     float init_sim_soc;         // Reinitialize sim model only to this soc
     uint8_t print_mult;         // Print multiplier for objects
     unsigned long int read_delay; // Minor frame, ms
+    unsigned long int samp_points; // Number of sample readings to take, !=0 initiates sampling
     float slr_res;              // Scalar Randles R0, slr
     float s_t_sat;              // Scalar on saturation test time set and reset
     unsigned long int sum_delay; // Minor frame divisor, div
@@ -138,6 +139,7 @@ public:
     FloatV *init_sim_soc_p;
     Uint8tV *print_mult_p;
     ULongV *read_delay_p;
+    ULongV *samp_points_p;
     FloatV *slr_res_p;
     FloatV *s_t_sat_p;
     ULongV *sum_delay_p;
