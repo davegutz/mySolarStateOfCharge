@@ -115,10 +115,10 @@ float TempSensor::sample(Sensors *Sen)
 
   #elif defined(HDWE_2WIRE)
 
-    float volt = float(analogRead(VTb_pin_))*VTB_CONV_GAIN;
+    Tb_volt_ = float(analogRead(VTb_pin_))*VTB_CONV_GAIN;
     sample_time_ = System.millis();
 
-    float res = volt * float(HDWE_RS_2WIRE) / (V3V3 - volt);
+    float res = Tb_volt_ * float(HDWE_RS_2WIRE) / (V3V3 - Tb_volt_);
 
     #ifdef USE_SH_2WIRE
       // Steinhart-Hart (see '2-wireRTD.ods')
@@ -132,7 +132,7 @@ float TempSensor::sample(Sensors *Sen)
     #endif
 
     tb_stale_flt_ = false;
-    if ( sp.debug()==16 ) Serial.printf("I 2wire:  volt=%7.3f Tb_hdwe=%9.5f,\n", volt, Tb_hdwe);
+    if ( sp.debug()==16 ) Serial.printf("I 2wire:  volt=%7.3f Tb_hdwe=%9.5f,\n", Tb_volt_, Tb_hdwe);
 
   #endif
 
@@ -1701,6 +1701,7 @@ void Sensors::vb_load(const uint16_t vb_pin, const boolean reset)
   {
     #if !defined(HDWE_BARE)
       Vb_raw = analogRead(vb_pin);
+      Vb_volt = Vb_raw * VB_RAW_CONV_GAIN;
       Vb_hdwe =  float(Vb_raw)*VB_CONV_GAIN*sp.Vb_scale() + float(VB_A) + sp.Vb_bias_hdwe();
     #endif
     Vb_hdwe_f = VbFilt->calculate(Vb_hdwe, reset, AMP_FILT_TAU, T);

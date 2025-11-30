@@ -50,7 +50,7 @@ def chm_from_mon_or_sim(mr, sr):
     if sr is not None:
         chem_s = sr.chm_s
     else:
-        chem_s = mr.chm_m
+        chem_s = mr.chm
     return chem_m, chem_s
 
 def get_modeling(mr, mod_force=None):

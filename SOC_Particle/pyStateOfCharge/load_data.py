@@ -180,7 +180,8 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         sim_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
         sim = SavedDataSim(time_run=mon.time_run, data=sim_raw, time_end=time_end_in)
     else:
-        sim = None
+        sim_raw = None
+        sim = SavedDataSim(time_run=mon.time_run, data=sim_raw, time_end=time_end_in, fake=True, mon_for_fake=mon)
         print(f"load_data: returning sim=None")
 
     # Calculate sync information

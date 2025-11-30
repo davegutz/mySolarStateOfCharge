@@ -95,12 +95,20 @@ class Sensors:
         self.mon_run = OPT.mon_run
         self.sim_run = OPT.sim_run
         if run_type == 'RunSim':
-            if hasattr(self.mon_run, 'mtb'):
+            if hasattr(self.mon_run, 'mtb') and self.mon_run.mtb is not None:
                 self.mod_tb = self.mon_run.mtb
             else:
-                self.mod_tb = self.mon_run.Tb_f.copy()*0.
-            self.Tb0 = self.mon_run.Tb_f[0]
-            self.Tb0_s = self.mon_run.Tb_mod[0]
+                self.mod_tb = np.copy(self.mon_run.mod_data)
+            if self.mon_run.Tb_f is not None:
+                self.Tb0 = self.mon_run.Tb_f[0]
+                self.Tb0_s = self.mon_run.Tb_mod[0]
+                self.Tb = self.mon_run.Tb[0]
+                self.Tb_f = self.mon_run.Tb_f[0]
+            else:
+                self.Tb0 = self.mon_run.Tb_f_rap[0]
+                self.Tb0_s = self.mon_run.Tb_rap[0]
+                self.Tb = self.mon_run.Tb_rap[0]
+                self.Tb_f = self.mon_run.Tb_f_rap[0]
             self.lut_dTb = None
             self.dTb = 0.
             if OPT.add_Tb_in is not None:
@@ -108,11 +116,12 @@ class Sensors:
                 self.Tb0 += OPT.add_Tb_in[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb_in[0, :]), np.array(OPT.add_Tb_in[1, :]))
                 self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
-            self.Tb = self.mon_run.Tb[0]
-            self.Tb_f = self.mon_run.Tb_f[0]
-            self.Tb_f_rate = self.mon_run.Tb_f_rate[0]
+            if self.mon_run.Tb_f_rate is not None:
+                self.Tb_f_rate = self.mon_run.Tb_f_rate[0]
+            else:
+                self.Tb_f_rate = self.mon_run.Tb_f_rate_rap[0]
             self.Tb_past = self.mon_run.Tb_rap[0] + self.dTb
-            self.Tb_f_past = self.mon_run.Tb_f_rap[0] + self.dTb
+            self.Tb_f_past = self.mon_run.Tb_f_rate_rap[0] + self.dTb
             self.Tb_f_rate_past = self.mon_run.Tb_f_rate_rap[0]
             self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
             self.LoopAmp = SensorLooparound(self.mon_run.ibmh, self.mon_run.ib_dyn_m, self.mon_run.e_wrap_m_trim,

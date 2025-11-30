@@ -104,10 +104,12 @@ public:
   unsigned long long sample_time() { return sample_time_; };
   float sample(Sensors *Sen);
   float noise();
+  float Tb_volt(){ return Tb_volt_; };
 protected:
   SlidingDeadband *SdTb;
   boolean tb_stale_flt_;  // One-wire did not update last pass
   uint16_t VTb_pin_;      // Using 2wire
+  double Tb_volt_;              // Sensed battery temp voltage from ADC, V
   unsigned long long sample_time_;  // Sample time
 };
 
@@ -502,6 +504,7 @@ public:
   float Vb_hdwe;              // Sensed battery bank voltage, V
   float Vb_hdwe_f;            // Sensed, filtered battery bank voltage, V
   float Vb_model;             // Modeled battery bank voltage, V
+  float Vb_volt;              // Sensed battery bank voltage at ADC, V
   float Vc;                   // Selected common reference voltage, V
   float Vc_hdwe;              // Sensed common reference voltage, V
   double Tb;                   // Selected battery bank temp, C

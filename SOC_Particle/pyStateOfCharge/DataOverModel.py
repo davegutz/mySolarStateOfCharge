@@ -48,7 +48,7 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', label=None, marker=None,
         markersize=None, markevery=None, stairs=False, warn=True):
-    if (sx is not None and sy is not None and hasattr(sx, st) and hasattr(sy, yt) and
+    if (sx is not None and sy is not None and hasattr(sx, st) and hasattr(sy, yt) and getattr(sy, yt) is not None and
             len(getattr(sy, yt)) > 0 and getattr(sy, yt)[0] is not None):
         try:
             yscld = getattr(sy, yt) * slr + add
@@ -487,9 +487,10 @@ def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_lis
     plt.ylim(-0.2, 0.2)
     plt.legend(loc=1)
     plt.subplot(338)
-    plt.plot(mr.time, mr.cc_dif, color='black', linestyle='-', label='cc_diff'+run_str)
-    plt.plot(mr.time, mr.ccd_thr, color='red', linestyle='--', label='cc_diff_thr'+run_str)
-    plt.plot(mr.time, -mr.ccd_thr, color='red', linestyle='--')
+    plq(plt, mr, 'time', mr, 'cc_dif', color='black', linestyle='-', label='cc_dif' + run_str)
+    plq(plt, mr, 'time', mr, 'ccd_thr', color='red', linestyle='--', label='ccd_thr' + run_str)
+    # plt.plot(mr.time, -mr.ccd_thr, color='red', linestyle='--')
+    plq(plt, mr, 'time', mr, 'ccd_thr', slr=-1., color='red', linestyle='--')
     plt.ylim(-.01, .01)
     plt.legend(loc=3)
     plt.subplot(133)
@@ -960,6 +961,8 @@ class SavedData:
             self.disable_amp_fault = None
             self.disable_amp_fault_per = None
             self.vr = None
+            self.ib_wrp_rate_n = None
+            self.ib_wrp_state_n = None
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
@@ -1149,6 +1152,136 @@ class SavedData:
             self.Tb_hdwe_filt = np.array(np.atleast_1d(temp.Tb_hdwe_filt)[:i_end])
             self.Tb_hdwe_filt_rate = np.array(np.atleast_1d(temp.Tb_hdwe_filt_rate)[:i_end])
 
+        # Workarounds for incomplete data sets e.g. vv1, vv2, vv3
+        if self.dv_dyn_m is None:
+            self.dv_dyn_m = np.copy(self.dv_dyn)
+        if self.dv_dyn_n is None:
+            self.dv_dyn_n = np.copy(self.dv_dyn)
+        if self.ibmh is None:
+            self.ibmh = np.copy(self.ib)
+        if self.ibnh is None:
+            self.ibnh = np.copy(self.ib)
+        if self.ibmm is None:
+            self.ibmm = np.copy(self.ib)
+        if self.ibnm is None:
+            self.ibnm = np.copy(self.ib)
+        if self.ib_dyn_m is None:
+            self.ib_dyn_m = np.copy(self.ib_dyn)
+        if self.ib_dyn_lstate_m is None:
+            self.ib_dyn_lstate_m = np.copy(self.ib_dyn)
+        if self.ib_dyn_lstate_n is None:
+            self.ib_dyn_lstate_n = np.copy(self.ib_dyn)
+        if self.ib_dyn_rstate_m is None:
+            self.ib_dyn_rstate_m = np.copy(self.ib)
+        if self.ib_dyn_rstate_n is None:
+            self.ib_dyn_rstate_n = np.copy(self.ib)
+        if self.ib_dyn_T_m is None:
+            self.ib_dyn_T_m = np.copy(self.dt)
+        if self.ib_dyn_T_n is None:
+            self.ib_dyn_T_n = np.copy(self.dt)
+        if self.ib_dyn_tau_m is None:
+            self.ib_dyn_tau_m = np.copy(self.dt) * 0. + 10.
+        if self.ib_dyn_tau_n is None:
+            self.ib_dyn_tau_n = np.copy(self.dt) * 0. + 10.
+        if self.ib_dyn_n is None:
+            self.ib_dyn_n = np.copy(self.ib_dyn)
+        if self.ib_dec is None:
+            self.ib_dec = np.copy(self.ib) * 0
+        if self.ib_sel is None:
+            self.ib_sel = np.copy(self.ib)
+        if self.ib_sel_stat is None:
+            self.ib_sel_stat = np.copy(self.ib) * 0
+        if self.ib_h is None:
+            self.ib_h = np.copy(self.ib)
+        if self.ib_s is None:
+            self.ib_s = np.copy(self.ib)
+        if self.ib_wrp_rate_n is None:
+            self.ib_wrp_rate_n = np.copy(self.dt) * 0.
+        if self.ib_wrp_state_n is None:
+            self.ib_wrp_state_n = np.copy(self.dt) * 0.
+        if self.ib_wrp_T_n is None:
+            self.ib_wrp_T_n = np.copy(self.dt)
+        if self.ib_wrp_tau_n is None:
+            self.ib_wrp_tau_n = np.copy(self.dt) * 0. + 10.
+        if self.e_wrap_m is None:
+            self.e_wrap_m = np.copy(self.ib) * 0.
+        if self.e_wrap_m_filt is None:
+            self.e_wrap_m_filt = np.copy(self.ib) * 0.
+        if self.e_wrap_m_reset is None:
+            self.e_wrap_m_reset = np.copy(self.ib) * 0
+        if self.e_wrap_m_trim is None:
+            self.e_wrap_m_trim = np.copy(self.ib) * 0.
+        if self.e_wrap_n is None:
+            self.e_wrap_n = np.copy(self.ib) * 0.
+        if self.e_wrap_n_filt is None:
+            self.e_wrap_n_filt = np.copy(self.ib) * 0.
+        if self.e_wrap is None:
+            self.e_wrap = np.copy(self.ib) * 0.
+        if self.e_wrap_filt is None:
+            self.e_wrap_filt = np.copy(self.ib) * 0.
+        if self.e_wrap_trim is None:
+            self.e_wrap_trim = np.copy(self.ib) * 0.
+        if self.mvb is None:
+            self.mvb = np.bool(np.copy(self.mod_data))
+        if self.Tb is None:
+            self.Tb = np.copy(self.Tb_rap)
+        if self.Tb_f is None:
+            self.Tb_f = np.copy(self.Tb_f_rap)
+        if self.Tb_f_rate is None:
+            self.Tb_f_rate = np.copy(self.Tb_f_rate_rap)
+        if self.Tb_hdwe is None:
+            self.Tb_hdwe = np.copy(self.Tb_rap)
+        if self.Tb_hdwe_filt_rate is None:
+            self.Tb_hdwe_filt_rate = np.copy(self.Tb_f_rate_rap)
+        if self.Tb_hdwe_filt is None:
+            self.Tb_hdwe_filt = np.copy(self.Tb_f_rap)
+        if self.Tb_mod is None:
+            self.Tb_mod = np.copy(self.Tb_rap)
+        if self.dt_ekf is None:
+            self.dt_ekf = np.copy(self.dt)
+        if self.vb_h is None:
+            self.vb_h = np.copy(self.vb)
+        if self.x is None:
+            self.x = np.copy(self.soc_ekf)
+        if self.x_prior is None:
+            self.x_prior = np.copy(self.soc_ekf)
+        if self.x_post is None:
+            self.x_post = np.copy(self.soc_ekf)
+        if self.y_ekf is None:
+            self.y_ekf = np.copy(self.voc_stat) * 0.
+        if self.y_ekf_f is None:
+            self.y_ekf_f = np.copy(self.voc_stat) * 0.
+        if self.z is None:
+            self.z = np.copy(self.voc_stat)
+        if self.H is None:
+            self.H = np.copy(self.voc_stat)
+        if self.hx is None:
+            self.hx = np.copy(self.voc_stat)
+        if self.K is None:
+            self.K = np.copy(self.x) * 0.
+        if self.P is None:
+            self.P = np.copy(self.x) * 0.
+        if self.P_post is None:
+            self.P_post = np.copy(self.x) * 0.
+        if self.P_prior is None:
+            self.P_prior = np.copy(self.x) * 0.
+        if self.Q is None:
+            self.Q = np.copy(self.x) * 0.
+        if self.S is None:
+            self.S = np.copy(self.x) * 0.
+        if self.tb_f_for_hx is None:
+            self.tb_f_for_hx = np.copy(self.Tb_f)
+        if self.x_for_hx is None:
+            self.x_for_hx = np.copy(self.x)
+        if self.disable_amp_fault is None:
+            self.disable_amp_fault = np.copy(self.ib) * 0
+        if self.disable_amp_fault_per is None:
+            self.disable_amp_fault_per = np.copy(self.ib) * 0
+        if self.time_e is None:
+            self.time_e = np.copy(self.dt)
+        if self.time_t is None:
+            self.time_t = np.copy(self.dt)
+
             # Initialization time logic
         if self.time[0] == 0.:  # no initialization flat detected at beginning of recording
             self.init_time = 1.
@@ -1189,7 +1322,7 @@ class SavedData:
 
 
 class SavedDataSim:
-    def __init__(self, time_run, data=None, time_end=None):
+    def __init__(self, time_run, data=None, time_end=None, fake=False, mon_for_fake=None):
         if data is None:
             self.skip_s = None
             self.i = 0
@@ -1274,6 +1407,24 @@ class SavedDataSim:
             self.ib_dyn_s_tau = data.ib_dyn_s_tau[:i_end]
             self.ib_dyn_s_rstate = data.ib_dyn_s_rstate[:i_end]
             self.ib_dyn_s_lstate = data.ib_dyn_s_lstate[:i_end]
+
+        if fake:
+            self.ib_in_s = np.copy(mon_for_fake.ib)
+            self.ib_dyn_s = np.copy(mon_for_fake.ib_dyn)
+            self.time = np.copy(mon_for_fake.time)
+            self.dv_dyn_s = np.copy(mon_for_fake.dv_dyn)
+            self.dv_hys_s = np.copy(mon_for_fake.dv_hys)
+            self.Tb_hdwe = np.copy(mon_for_fake.Tb_rap)
+            self.dq_s = np.copy(mon_for_fake.delta_q)
+            self.delta_q_s = np.copy(mon_for_fake.delta_q)
+            self.voc_stat_s = np.copy(mon_for_fake.voc_stat)
+            self.qcrs_s = np.copy(mon_for_fake.qcrs)
+            self.chm_s = np.copy(mon_for_fake.chm)
+            self.sat_s = np.copy(mon_for_fake.sat)
+            self.soc_s = np.copy(mon_for_fake.soc_s)
+            self.dt_s = np.copy(mon_for_fake.dt)
+            self.bms_off_s = np.copy(mon_for_fake.bms_off)
+            self.mod_tb = np.bool(np.copy(mon_for_fake.mod_data))
 
     def __str__(self):
         s = "{},".format(self.unit[self.i])
