@@ -148,14 +148,14 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         plt.legend(loc=1)
         plt.subplot(333)
         plt.plot(mr.time, mr.vb, color='red', linestyle='-', label='vb'+run_str)
-        plt.plot(sr.time, sr.vb_s, color='black', linestyle='--',  label='vb_s'+run_str)
+        plq(plt, sr, 'time', sr, 'vb_s', color='black', linestyle='--', label='vb_s'+run_str)
         plt.plot(mv.time, mv.vb, color='blue', linestyle='-.', label='vb'+ver_str)
         plt.plot(smv.time, smv.vb_s, color='orange', linestyle=':', label='vb_s'+ver_str)
         plt.legend(loc=1)
         plt.subplot(336)
         plt.plot(mr.time, mr.voc, color='red', linestyle='-', label='voc'+run_str)
         plt.plot(mv.time, mv.voc, color='black', linestyle='--', label='voc'+ver_str)
-        plt.plot(sr.time, sr.voc_s, color='blue', linestyle='-.', label='voc_s'+run_str)
+        plq(plt, sr, 'time', sr, 'voc_s', color='blue', linestyle='-.', label='voc_s'+run_str)
         plt.plot(smv.time, smv.voc_s, color='orange', linestyle=':', label='voc_s'+ver_str)
         plt.legend(loc=1)
         plt.subplot(339)
@@ -170,9 +170,9 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         plt.title(plot_title + ' sim_s 2a')
         print('sim_s 2a', end=':  ')
         plt.plot(mr.time, mr.vb, color='black', linestyle='-', label='vb' + run_str)
-        plt.plot(sr.time, sr.vb_s, color='green', linestyle='--', label='vb_s' + run_str)
+        plq(plt, sr, 'time', sr, 'vb_s', color='green', linestyle='--', label='vb_s'+run_str)
         plt.plot(mr.time, mr.voc, color='brown', linestyle='-', label='voc'+run_str)
-        plt.plot(sr.time, sr.voc_s, color='blue', linestyle='-', label='voc_s'+run_str)
+        plq(plt, sr, 'time', sr, 'voc_s', color='blue', linestyle='-', label='voc_s'+run_str)
         plt.plot(mr.time, mr.voc_stat, color='lightgreen', linestyle=':', label='voc_stat'+run_str)
         plt.plot(sr.time, sr.voc_stat_s, color='magenta',  linestyle=':', label='voc_stat_s'+run_str)
         plt.legend(loc=1)
@@ -183,11 +183,15 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         plt.subplot(223)
         plt.plot(mr.time, mr.dv_dyn, color='black', linestyle='-', label='dv_dyn' + run_str)
         plt.plot(sr.time, sr.dv_dyn_s, color='red', linestyle='--', label='dv_dyn_s' + run_str)
-        plt.plot(sr.time, sr.voc_s-sr.voc_stat_s, color='cyan', linestyle=':', label='dv_hyst_s_est' + run_str)
+        if sr.voc_s is None:
+            sr.dv_hyst_s_est = None
+        else:
+            sr.dv_hyst_s_est = sr.voc_s - sr.voc_stat_s
+        plq(plt, sr, 'time', sr, 'dv_hyst_s_est', color='cyan', linestyle=':', label='dv_hyst_s_est'+run_str)
         plt.legend(loc=1)
         plt.subplot(224)
         plt.plot(mr.time, mr.ib_charge, color='black', linestyle='-', label='ib_charge' + run_str)
-        plt.plot(sr.time, sr.ib_charge_s, color='red', linestyle='--', label='ib_charge_s' + run_str)
+        plq(plt, sr, 'time', sr, 'ib_charge_s', color='red', linestyle='--', label='ib_charge_s'+run_str)
         plt.legend(loc=1)
 
         fig_list.append(plt.figure())  # sim_s  3

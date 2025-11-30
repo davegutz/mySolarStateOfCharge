@@ -96,7 +96,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plq(plt, mr, 'time', mr, 'ib_sel', linestyle='-', color='black', label='ib_sel' + run_str)
     plq(plt, sr, 'time', sr, 'ib_in_s', linestyle='--', color='cyan', label='ib_in_s' + run_str)
     plt.plot(mv.time, mv.ib_charge, linestyle='-.', color='orange', label='ib_charge' + ver_str)
-    plt.plot(mr.time, mr.ib_diff, linestyle=':', color='red', label='ib_diff' + run_str)
+    plq(plt, mr, 'time', mr, 'ib_diff', linestyle=':', color='red', label='ib_diff' + run_str)
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
