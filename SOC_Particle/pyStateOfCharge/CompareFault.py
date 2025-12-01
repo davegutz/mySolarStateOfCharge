@@ -33,6 +33,10 @@ from DataOverModel import plq
 from Chemistry_BMS import ib_lag
 from myFilters import LagExp
 
+# Suppress all UserWarning messages
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
 #  For this battery Battleborn 100 Ah with 1.084 x capacity
 IB_BAND = 1.  # Threshold to declare charging or discharging
 TB_BAND = 25.  # Band around temperature to group data and correct

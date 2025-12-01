@@ -41,6 +41,9 @@ if sys.platform == 'darwin':
     matplotlib.use('tkagg')
 plt.rcParams['axes.grid'] = True
 
+# Suppress all UserWarning messages
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 
 def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=False,
                     verbose=True, scale_in=1., slr_hys_sim=1., request_history=3):
@@ -156,21 +159,20 @@ def main():
     else:
         gdrive = 'G:/My Drive/'
 
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\vv1_soc2p2_hi_lo_chg.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_chg.csv'
     unit_key = 'g20250612a_soc2p2_hi_lo_chg'
-
     time_end_in = None
     data_only = False
     use_mon_soc_ = False
     IB_CHARGE_NOA = False
     verbose = True
-    scale_in = None
+    scale_in = 1.0
     slr_hys_sim = 1.0
     request_history = 3
-
 # # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251107pm_soc4p2_hi_lo_bb.csv'  # old runsim work ******************
     # # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiFail_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_chg.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_chg.csv'
     # # gdrive = '/home/daveg/Documents/'
     # # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
     #
@@ -179,8 +181,8 @@ def main():
     #
     # # The following are not implemented in GUI
     #
-    time_end_in = None
-    # time_end_in = 152.
+    # time_end_in = None
+    time_end_in = 165.
     #
     #
     s_hys_sim_in = 1.
@@ -194,8 +196,8 @@ def main():
     use_mon_soc_ = False
     # use_mon_soc_ = True
 
-    # plots = False
-    plots = True
+    plots = False
+    # plots = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=use_mon_soc_, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,

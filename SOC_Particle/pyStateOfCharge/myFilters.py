@@ -536,7 +536,7 @@ class LagTustin(DiscreteFilter):
         self.saved = Saved1()
         self.in_ = 0.
         self.out_ = 0.
-        self.reset = None
+        self.reset = True
 
     def __str__(self, prefix=''):
         s = prefix + "LagTustin:"

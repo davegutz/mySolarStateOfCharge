@@ -885,6 +885,7 @@ class SavedData:
             self.e_wrap_m_filt = None
             self.e_wrap_m_trim = None
             self.e_wrap_m_reset = None
+            self.ib_amp = None
             self.e_wrap_n = None
             self.e_wrap_n_filt = None
             self.e_wrap_n_trim = None
@@ -954,6 +955,10 @@ class SavedData:
             self.ib_dyn_lstate_n = None
             self.ib_wrp_a_n = None
             self.ib_wrp_b_n = None
+            self.ib_wrp_T_m = None
+            self.ib_wrp_tau_m = None
+            self.ib_wrp_rstate_m = None
+            self.ib_wrp_lstate_m = None
             self.ib_wrp_T_n = None
             self.ib_wrp_tau_n = None
             self.ib_wrp_rstate_n = None
@@ -1002,8 +1007,8 @@ class SavedData:
                 self.e_wrap_n_filt = np.array(sel.e_wn_f[:i_end])
             if hasattr(sel, 'e_wm_t'):
                 self.e_wrap_m_trim = np.array(sel.e_wm_t[:i_end])
-            # if hasattr(sel, 'e_wn_t'):   # trim gain is 0 for NOA
-            #     self.e_wrap_n_trim = np.array(sel.e_wn_t[:i_end])
+            if hasattr(sel, 'ib_amp'):
+                self.ib_amp = np.array(sel.ib_amp[:i_end])
             self.wh_flt = np.bool_(np.array(fltw) & 2**5)
             self.wl_flt = np.bool_(np.array(fltw) & 2**6)
             self.wh_m_flt = np.bool_(np.array(fltw) & 2**14)
@@ -1059,6 +1064,11 @@ class SavedData:
             self.ib_dyn_rstate_n = np.array(sel.ib_dyn_rstate_n[:i_end])
             self.ib_dyn_lstate_n = np.array(sel.ib_dyn_lstate_n[:i_end])
             self.ib_dyn_tau_n = np.array(sel.ib_dyn_tau_n[:i_end])
+            self.ib_wrp_T_m = np.array(sel.ib_wrp_T_m[:i_end])
+            self.ib_wrp_rate_m = np.array(sel.ib_wrp_rate_m[:i_end])
+            self.ib_wrp_reset_m = np.array(sel.ib_wrp_reset_m[:i_end])
+            self.ib_wrp_state_m = np.array(sel.ib_wrp_state_m[:i_end])
+            self.ib_wrp_tau_m = np.array(sel.ib_wrp_tau_m[:i_end])
             self.ib_wrp_T_n = np.array(sel.ib_wrp_T_n[:i_end])
             self.ib_wrp_rate_n = np.array(sel.ib_wrp_rate_n[:i_end])
             self.ib_wrp_state_n = np.array(sel.ib_wrp_state_n[:i_end])
@@ -1195,6 +1205,16 @@ class SavedData:
             self.ib_h = np.copy(self.ib)
         if self.ib_s is None:
             self.ib_s = np.copy(self.ib)
+        if self.ib_wrp_reset_m is None:
+            self.ib_wrp_reset_m = np.copy(self.dt) * 0
+        if self.ib_wrp_rate_m is None:
+            self.ib_wrp_rate_m = np.copy(self.dt) * 0.
+        if self.ib_wrp_state_m is None:
+            self.ib_wrp_state_m = np.copy(self.dt) * 0.
+        if self.ib_wrp_T_m is None:
+            self.ib_wrp_T_m = np.copy(self.dt)
+        if self.ib_wrp_tau_m is None:
+            self.ib_wrp_tau_m = np.copy(self.dt) * 0. + 10.
         if self.ib_wrp_rate_n is None:
             self.ib_wrp_rate_n = np.copy(self.dt) * 0.
         if self.ib_wrp_state_n is None:
@@ -1211,6 +1231,8 @@ class SavedData:
             self.e_wrap_m_reset = np.copy(self.ib) * 0
         if self.e_wrap_m_trim is None:
             self.e_wrap_m_trim = np.copy(self.ib) * 0.
+        if self.ib_amp is None:
+            self.ib_amp = np.copy(self.ib) * 0.
         if self.e_wrap_n is None:
             self.e_wrap_n = np.copy(self.ib) * 0.
         if self.e_wrap_n_filt is None:
@@ -1219,8 +1241,6 @@ class SavedData:
             self.e_wrap = np.copy(self.ib) * 0.
         if self.e_wrap_filt is None:
             self.e_wrap_filt = np.copy(self.ib) * 0.
-        if self.e_wrap_trim is None:
-            self.e_wrap_trim = np.copy(self.ib) * 0.
         if self.mvb is None:
             self.mvb = np.bool(np.copy(self.mod_data))
         if self.Tb is None:

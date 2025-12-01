@@ -226,6 +226,7 @@ void print_signal_sel_header(void)
   Serial.printf("  ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rstate_m, ib_dyn_lstate_m,");
   Serial.printf("  ib_dyn_T_n, ib_dyn_tau_n, ib_dyn_rstate_n, ib_dyn_lstate_n,");
   Serial.printf("  ib_wrp_T_n, ib_wrp_tau_n, ib_wrp_rate_n, ib_wrp_state_n, disable_amp_fault, disable_amp_fault_per,");
+  Serial.printf("  ib_wrp_reset_m, ib_wrp_T_m, ib_wrp_tau_m, ib_wrp_rate_m, ib_wrp_state_m,ib_amp,");
   Serial.printf("\n");
 }
 void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, BatterySim *Sim)
@@ -273,6 +274,11 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
           Sen->Flt->LoopIbNoa->ib_wrp_T(), Sen->Flt->LoopIbNoa->ib_wrp_tau(),
           Sen->Flt->LoopIbNoa->ib_wrp_rate(), Sen->Flt->LoopIbNoa->ib_wrp_state(),
           Sen->Flt->disable_amp_fault(), Sen->Flt->disable_amp_fault_per());
+      Serial.printf("%s", pr.buff);
+
+      sprintf(pr.buff, "%d,%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,",
+          Sen->Flt->LoopIbAmp->reset(), Sen->Flt->LoopIbAmp->ib_wrp_T(), Sen->Flt->LoopIbAmp->ib_wrp_tau(),
+          Sen->Flt->LoopIbAmp->ib_wrp_rate(), Sen->Flt->LoopIbAmp->ib_wrp_state(), Sen->ib_amp());
       Serial.printf("%s", pr.buff);
 
       Serial.printf("\n");

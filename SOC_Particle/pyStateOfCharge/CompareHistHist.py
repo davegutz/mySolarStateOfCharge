@@ -32,6 +32,9 @@ if sys.platform == 'darwin':
     matplotlib.use('tkagg')
 plt.rcParams['axes.grid'] = True
 
+# Suppress all UserWarning messages
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 
 def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None, unit_key_tst=None,
                       dt_resample=10, data_only=False):
