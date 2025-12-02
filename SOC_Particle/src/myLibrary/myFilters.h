@@ -317,7 +317,6 @@ public:
 protected:
   double a_;
   double b_;
-  double rate_;
   double state_;
 };
 
@@ -341,7 +340,6 @@ public:
   double a() { return (a_); };
   double b() { return (b_); };
   double c() { return (c_); };
-  double rate() { return (rate_); };
   double lstate() { return (lstate_); };
   void lstate(const double in) { lstate_ = in; };
   double rstate() { return (rstate_); };
@@ -350,7 +348,6 @@ protected:
   double a_;
   double b_;
   double c_;
-  double rate_;
   double lstate_;
   double rstate_;
 };

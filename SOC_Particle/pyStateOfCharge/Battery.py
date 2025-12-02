@@ -1242,6 +1242,7 @@ class Looparound:
         self.zero = False
         self.dt = 0.
         self.dt_past = 0.
+        self.dt_past2 = 0.
         self.dv_dyn = 0.
         self.e_wrap = 0.
         self.e_wrap_filt = 0.
@@ -1278,20 +1279,23 @@ class Looparound:
     def calculate(self, reset=True, modeling=None, ib=0., loop_gain=0., dt=None, ewsat_slr=1., ewmin_slr=1.,
                   ib_init=0., ib_dyn_init=0., e_wrap_filt_init=0., e_wrap_trim_init=0.):
         self.reset = reset
-        if self.reset:
-            self.ib_past2 = ib_init
-            self.ib_past = ib_init
-            self.dt_past = dt
+        # if self.reset:
+        #     self.ib_past2 = ib_init
+        #     self.ib_past = ib_init
+        #     self.dt_past2 = self.dt_past
+        #     self.dt_past = dt
         self.dt = dt
         self.ib = ib
+        dt_into_ct = self.dt_past
         ib_into_ct = self.ib
         if modeling:
+            dt_into_ct = self.dt_past
             ib_into_ct = self.ib_past2
         # print(f"  i   time     r       rt   it   ct      re   ie  ce    sa      vb                         ib_charge                   ib                          ibmh                        ibmm                        ibnh                        ibnm                        ibh                         ib_s                        ib_amp                    ib_amp_lo    ib_amp_hi   ib_noa_lo   ib_noa_hi dis_amp_flt   per      ib_dyn_m                   ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rstate_m                ib_dyn_lstate_m             vb                    dv_dyn_m              e_wrap_m_T             e_wrap_m_tau           e_wrap_m_rate          e_wrap_m_reset          e_wrap_m_state         voc                   voc_soc                e_wrap_m             e_wrap_m_filt     disable_amp_fault ib_amp_lo  ib_noa_lo  e_wrap_m_reset  e_wrap_m_trim        ib_dyn_n                   ib_dyn_T_n     ib_dyn_tau_n           dv_dyn_n               e_wrap_n             e_wrap_n_filt         ib_dyn_n                    ib_dyn                    {reset=} {ib=} {self.ib_past=} {modeling=} {ib_into_ct=} {ib_dyn_init=}    ", end='')
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(ib_into_ct, ib_dyn_init, self.reset, self.dt_past,
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(ib_into_ct, ib_dyn_init, self.reset, dt_into_ct,
                                                                self.chem.tau_ct, text=self.name)
         # print(f"{reset=} {ib=} {self.ib=} {self.ib_past=} {self.ChargeTransfer.rstate=}")
-        self.dv_dyn = (self.ib_dyn* self.chem.r_ct + self.ib_past2 * self.chem.r_0)
+        self.dv_dyn = (self.ib_dyn* self.chem.r_ct + ib_into_ct * self.chem.r_0)
         self.voc = self.Mon.vb - self.dv_dyn
         self.e_wrap = self.Mon.voc_soc - self.voc
 
@@ -1323,6 +1327,7 @@ class Looparound:
                                              dt=self.dt_past, reset=self.reset)  # non-latching
         self.ib_past2 = self.ib_past
         self.ib_past = self.ib
+        self.dt_past2 = self.dt_past
         self.dt_past = self.dt
 
 

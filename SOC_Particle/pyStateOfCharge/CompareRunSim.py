@@ -181,8 +181,8 @@ def main():
     #
     # # The following are not implemented in GUI
     #
-    # time_end_in = None
-    time_end_in = 75.
+    time_end_in = None
+    # time_end_in = 75.
     #
     #
     s_hys_sim_in = 1.
