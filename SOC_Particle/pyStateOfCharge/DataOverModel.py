@@ -869,6 +869,10 @@ class SavedData:
             self.ibmm = None
             self.ibnm = None
             self.ibm = None
+            self.ib_noa_lo = None
+            self.ib_noa_hi = None
+            self.ib_amp_lo = None
+            self.ib_amp_hi = None
             self.ib_diff = None
             self.ib_diff_f = None
             self.ib_diff_flt = None
@@ -983,6 +987,10 @@ class SavedData:
             self.ibmm = np.array(sel.ibmm[:i_end])
             self.ibnm = np.array(sel.ibnm[:i_end])
             self.ibm = np.array(sel.ibm[:i_end])
+            self.ib_noa_lo = np.array(sel.ib_noa_lo[:i_end])
+            self.ib_noa_hi = np.array(sel.ib_noa_hi[:i_end])
+            self.ib_amp_lo = np.array(sel.ib_amp_lo[:i_end])
+            self.ib_amp_hi = np.array(sel.ib_amp_hi[:i_end])
             self.ib_diff = np.array(sel.ib_diff[:i_end])
             self.ib_diff_f = np.array(sel.ib_diff_f[:i_end])
             self.ib_diff_flt = np.bool_((np.array(fltw) & 2**8) | (np.array(fltw) & 2**9))

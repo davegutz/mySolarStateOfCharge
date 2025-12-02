@@ -642,6 +642,7 @@ float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean 
     tb_f_ = Sen->Tb_f;
     dt_ = Sen->T;
     ib_in_ = Sen->Ib_model_in / sp.nP();
+ if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("BatterySim::calculate ib_in_=Sen->Ib_model_in= %8.6f\n", ib_in_);
     if ( reset ) ib_fut_ = ib_in_;
     ib_ = max(min(ib_fut_, IMAX_NUM), -IMAX_NUM);  //  Past value ib_.  Overflow protection when ib_ past value used
     vsat_ = calc_vsat();
@@ -675,6 +676,7 @@ float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean 
         ib_charge_fut = 0.;
     if ( bms_off_ && voltage_low_ )
         ib_ = 0.;
+ if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("BatterySim::calculate ib_charge_fut=ib_in_=Sen->Ib_model_in= %8.6f\n", ib_charge_fut);
 
     // ChargeTransfer dynamic model for model, reverse version to generate sensor inputs
     ib_dyn_ = ChargeTransfer_->calculate(ib_, reset, chem_.tau_ct, dt_);
@@ -698,6 +700,7 @@ float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean 
     sat_ib_max_ = sat_ib_null_ + (1. - (soc_ + ap.ds_voc_soc) ) * sat_cutback_gain_ * sp.cutback_gain_slr();  // Ds, Sk
     if ( sp.tweak_test() || !sp.mod_ib() ) sat_ib_max_ = ib_charge_fut;   // Disable cutback when real world or when doing tweak_test test
     ib_fut_ = min(ib_charge_fut, sat_ib_max_);      // the feedback of ib_
+ if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("BatterySim::calculate ib_fut_=ib_charge_fut= %8.6f\n", Sen->Sim->ib_fut_);
     // ib_charge_ = ib_charge_fut;  // Same time plane as volt calcs, added past value.  (This prevents sat logic from working)
     ib_charge_ = ib_fut_;  // Same time plane as volt calcs, added past value
 
@@ -815,6 +818,7 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
 {
     d_delta_q_s_ = ib_charge_ * dt_;
     if ( ib_charge_>0. ) d_delta_q_s_ *= coul_eff_;
+if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Sim::count_coulombs  ib_charge_ = %8.6f \n", ib_charge_);
 
     // Rate limit temperature.  When modeling, initialize to no change
     tb_f_ = Sen->Tb_f;

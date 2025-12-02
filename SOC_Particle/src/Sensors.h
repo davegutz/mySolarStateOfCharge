@@ -331,6 +331,8 @@ public:
   boolean ib_amp_bare() { return faultRead(IB_AMP_BARE);  };
   boolean ib_amp_fa() { return failRead(IB_AMP_FA); };
   boolean ib_amp_flt() { return faultRead(IB_AMP_FLT);  };
+  boolean ib_amp_hi() { return ib_amp_hi_; };
+  boolean ib_amp_lo() { return ib_amp_lo_; };
   boolean ib_amp_invalid() { return ib_amp_invalid_; };
   ibSel ib_choice() { return ib_choice_; };
   ibSel ib_choice_past() { return ib_choice_last_; };
@@ -355,6 +357,8 @@ public:
   boolean ib_noa_bare() { return faultRead(IB_NOA_BARE); };
   boolean ib_noa_fa() { return failRead(IB_NOA_FA); };
   boolean ib_noa_flt() { return faultRead(IB_NOA_FLT); };
+  boolean ib_noa_hi() { return ib_noa_hi_; };
+  boolean ib_noa_lo() { return ib_noa_lo_; };
   float ib_quiet_thr_;     // Threshold below which ib is quiet, A pk
   float ib_quiet_thr() { return ib_quiet_thr_; };
   void ib_range(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
