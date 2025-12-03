@@ -125,13 +125,13 @@ void print_all_header(void)
 // print ekf for data collection
 void print_battery_header()
 {
-  Serial.printf("Battery_hdr, HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI,");
+  Serial.printf("Battery_hdr, HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI, IB_ABS_MAX_NOA, IB_ABS_MAX_AMP,");
   Serial.printf("\n");
 }
  void print_battery_serial()
  {
-  Serial.printf("Battery_val,%10.7f,%10.7f,%10.7f,%10.7f,",
-    HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI);
+  Serial.printf("Battery_val,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+    HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI, IB_ABS_MAX_NOA, IB_ABS_MAX_AMP);
 
   Serial.printf("\n");
 }
