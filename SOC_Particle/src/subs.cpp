@@ -251,7 +251,6 @@ void  monitor(const boolean reset, const boolean reset_temp, const unsigned long
   // Memory store
   // Initialize to ekf when not saturated
   Mon->count_coulombs(Sen, reset_temp, Mon->ib_charge(), Sen->saturated, Mon->delta_q_ekf());
-if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("load_ib_vb  Mon->ib_charge() = %8.6f \n", Mon->ib_charge());
 
   // Charge charge time for display
   Mon->calc_charge_time(Mon->q(), Mon->q_capacity(), Sen->ib(), Mon->soc());
@@ -603,14 +602,12 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const uns
   //  Outputs:  Tb_hdwe, Ib_model, Vb_model, sp.inj_bias, Sim.model_saturated
   Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on, reset) * sp.nS() + Sen->Vb_add();
   Sen->Ib_model = Sen->Sim->ib_fut() * sp.nP();
- if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Sensors::sense_synth_select  Ib_model=ib_fut= %8.6f\n", Sen->Sim->ib_fut());
   cp.model_cutback = Sen->Sim->cutback();
   cp.model_saturated = Sen->Sim->saturated();
 
   // Inputs:  Sim->Ib
   Sen->Ib_amp_model = max(min(Sen->Ib_model + Sen->Ib_amp_add() + Sen->Ib_amp_noise(), Sen->Ib_amp_max()), Sen->Ib_amp_min());  // Dm
   Sen->Ib_noa_model = max(min(Sen->Ib_model + Sen->Ib_noa_add() + Sen->Ib_noa_noise(), Sen->Ib_noa_max()), Sen->Ib_noa_min());  // Dn
-    if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Sensors::sense_synth_select  Ib_amp_model=Ib_model= %8.6f\n", Sen->Ib_amp_model);
 
   // Select
   //  Inputs:                                       --->   Outputs:

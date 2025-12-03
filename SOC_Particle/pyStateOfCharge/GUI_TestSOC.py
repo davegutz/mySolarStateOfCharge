@@ -774,7 +774,7 @@ def compare_run_sim_choose():
         for testpath in testpaths:
             test_folder_path, test_parent, basename, test_txt, key = contain_all(testpath)
             if key != '':
-                compare_run_sim(data_file=testpath, unit_key=key)  # TODO:  make synced variable??
+                compare_run_sim(data_file=testpath, unit_key=key)
             else:
                 tk.messagebox.showerror(message='key not found in' + testpath)
         update_data_buttons()

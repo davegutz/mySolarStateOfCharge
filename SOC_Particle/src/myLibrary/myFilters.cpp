@@ -570,8 +570,6 @@ double LagTustin::calculate(double in, int RESET, const double T)
 void LagTustin::calcState(double in)
 {
   rate_ = a_ * (in - state_);
-  if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("LagTustin::calcState in=%8.6f stateU_=%8.6f a_=%8.6f rate_=%8.6f\n",
-    in, state_, a_, rate_);
   state_ =fmax(fmin(in * (1.0 - b_) + state_ * b_, max_), min_);
 }
 void LagTustin::calcState(double in, const double T)

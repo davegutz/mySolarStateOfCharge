@@ -508,8 +508,8 @@ class BatteryMonitor(Battery, EKF1x1):
 
         # Wrap logic
         modeling = not bool(rp.modeling == 0)
-        self.wrap(reset=reset, modeling=modeling, ib_sel=self.ib, SN=SN, ib_amp=self.ib_amp, ib_noa=self.ib_noa,
-                  ib_amp_pst=self.ib_amp_pst, ib_noa_pst=self.ib_noa_pst)
+        self.wrap(reset=reset, modeling=modeling, ib_noa_hdwe=self.ib_noa_hdwe, SN=SN, ib_amp=self.ib_amp,
+                  ib_noa=self.ib_noa, ib_amp_pst=self.ib_amp_pst, ib_noa_pst=self.ib_noa_pst)
 
         # Reversionary model
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
@@ -857,7 +857,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
 
-    def wrap(self, reset=True, modeling=None, ib_sel=0., SN=None, ib_amp=0., ib_noa=0.,
+    def wrap(self, reset=True, modeling=None, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
              ib_amp_pst=None, ib_noa_pst=None, ib_amp_2pst=None, ib_noa_2pst=None):
         """Wrap logic"""
 
@@ -930,9 +930,9 @@ class BatteryMonitor(Battery, EKF1x1):
             self.e_wrap_m_trim = self.LoopIbAmp.e_wrap_trim
 
         # Scale for final selection
-        self.e_wrap = self.sel_brk_hdwe.scale_select(ib_sel, self.e_wrap_m, self.e_wrap_n)
-        self.e_wrap_filt = self.sel_brk_hdwe.scale_select(ib_sel, self.e_wrap_m_filt, self.e_wrap_n_filt)
-        self.e_wrap_rate = self.sel_brk_hdwe.scale_select(ib_sel, self.e_wrap_m_rate, self.e_wrap_n_rate)
+        self.e_wrap = self.sel_brk_hdwe.scale_select(ib_noa_hdwe, self.e_wrap_m, self.e_wrap_n)
+        self.e_wrap_filt = self.sel_brk_hdwe.scale_select(ib_noa_hdwe, self.e_wrap_m_filt, self.e_wrap_n_filt)
+        self.e_wrap_rate = self.sel_brk_hdwe.scale_select(ib_noa_hdwe, self.e_wrap_m_rate, self.e_wrap_n_rate)
 
 
 class BatterySim(Battery):

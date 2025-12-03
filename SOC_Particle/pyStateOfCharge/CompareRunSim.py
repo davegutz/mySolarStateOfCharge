@@ -46,7 +46,7 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
 def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=False,
-                    verbose=True, scale_in=1., slr_hys_sim=1., request_history=3):
+                    verbose=True, scale_in=1., slr_hys_sim=1., request_history=5):
 
     if data_file.count('soc4p2_hi_lo'):
        IB_CHARGE_NOA = True
@@ -159,7 +159,7 @@ def main():
     else:
         gdrive = 'G:/My Drive/'
 
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_chg.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_chg.csv'
     unit_key = 'g20250612a_soc2p2_hi_lo_chg'
     time_end_in = None
     data_only = False
@@ -173,6 +173,7 @@ def main():
     # # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiFail_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_chg.csv'
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_chg.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_chg.csv'
     # # gdrive = '/home/daveg/Documents/'
     # # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
     #

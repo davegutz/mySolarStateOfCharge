@@ -485,7 +485,6 @@ void Fault::ib_logic(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
   }
   disable_amp_fault_ = (ib_amp_hi_ && ib_noa_hi_) || (ib_amp_lo_ && ib_noa_lo_);
   disable_amp_fault_per_ = DisabAmpFltPer->calculate( disable_amp_fault_, DISAB_LO_SET, DISAB_LO_RESET, Sen->T, reset);
-if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Fault::ib_logic sp.mod_ib() %d Sen->ib_amp_hdwe() %8.6f Sen->ib_noa_hdwe() %8.6f Sen->ib_amp_model() %8.6f Sen->ib_noa_model() %8.6f ib_amp_hi_ %d ib_amp_lo_ %d ib_noa_hi_ %d ib_noa_lo_ %d disable_amp_fault = %d disable_amp_fault_per_ = %d\n", sp.mod_ib(), Sen->ib_amp_hdwe(), Sen->ib_noa_hdwe(), Sen->ib_amp_model(), Sen->ib_noa_model(), ib_amp_hi_, ib_amp_lo_, ib_noa_hi_, ib_noa_lo_, disable_amp_fault_, disable_amp_fault_per_);
 
 }
 
@@ -588,7 +587,6 @@ void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
     LoopIbNoa->calculate(reset_loc, Sen->ib_noa(), Sen);
     boolean ib_amp_reset = reset_loc || disable_amp_fault_;
     LoopIbAmp->calculate(ib_amp_reset, Sen->ib_amp(), Sen);
-if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Fault::ib_wrap  disable_amp_fault_ = %d \n", disable_amp_fault_);
     faultAssign( LoopIbAmp->hi_fault(), WRAP_HI_M_FLT);
     failAssign( LoopIbAmp->hi_fail(), WRAP_HI_M_FA);  // WRAP_HI_M_FA not latched
     faultAssign( LoopIbAmp->lo_fault(), WRAP_LO_M_FLT);
@@ -1319,7 +1317,6 @@ void Sensors::ib_choose_active_standby()
     Ib_hdwe_model = Ib_amp_model;
     sample_time_ib_hdwe_ = ShuntAmp->sample_time();
     dt_ib_hdwe_ = ShuntAmp->dt();
-  if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Sensors::ib_choose_active_standby   Ib_hdwe = Ib_hdwe = %8.6f\n", Ib_hdwe);
   }
   else if ( Flt->ib_sel_stat()==-1 )
   {
@@ -1328,7 +1325,6 @@ void Sensors::ib_choose_active_standby()
     Ib_hdwe_model = Ib_noa_model;
     sample_time_ib_hdwe_ = ShuntNoAmp->sample_time();
     dt_ib_hdwe_ = ShuntNoAmp->dt();
-  if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Sensors::ib_choose_active_standby   Ib_hdwe = Ib_noa_hdwe = %8.6f\n", Ib_noa_hdwe);
   }
   else
   {
@@ -1499,7 +1495,6 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
     Ib = Ib_hdwe_model;
     Ib_f = Ib;
     Ib_amp = Ib_amp_model;
-    if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Sensors::select_volt_and_current  Ib_amp = %8.6f\n", Ib_amp);
     Ib_noa = Ib_noa_model;
     Vc = HALF_V3V3;
     sample_time_ib_ = Sim->sample_time();
@@ -1510,7 +1505,6 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
     Ib = Ib_hdwe;
     Ib_f = Ib_hdwe_f;
     Ib_amp = Ib_amp_hdwe;
-    if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Sensors::select_volt_and_current  Ib_amp = %8.6f\n", Ib_amp);
     Ib_noa = Ib_noa_hdwe;
     Vc = Vc_hdwe;
     sample_time_ib_ = sample_time_ib_hdwe_;
@@ -1631,16 +1625,12 @@ void Sensors::shunt_select_initial(const boolean reset)
       else
         hdwe_add = 0.;
     }
-  if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Sensors::shunt_select_initial   mod_add = inj_bias = %8.6f\n", mod_add);
     Ib_amp_model = max(min(Ib_amp_add() + mod_add, Ib_amp_max()/SIZE_MARG), Ib_amp_min()/SIZE_MARG); // uses past Ib.  Synthesized signal to use as substitute for sensor, Dm/Mm/Nm
     Ib_noa_model = max(min(Ib_noa_add() + mod_add, Ib_noa_max()/SIZE_MARG), Ib_noa_min()/SIZE_MARG); // uses past Ib.  Synthesized signal to use as substitute for sensor, Dn/Nx/Nm
-  if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Sensors::shunt_select_initial   Ib_amp_model = %8.6f\n", Ib_amp_model);
     Ib_amp_hdwe = ShuntAmp->Ishunt_cal() + hdwe_add;    // Sense fault injection feeds logic, not model
     Ib_amp_hdwe_f = AmpFilt->calculate(Ib_amp_hdwe, reset, AMP_FILT_TAU, T);
-  if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Sensors::shunt_select_initial   Ib_amp_hdwe = ShuntAmp Ical %8.6f\n", Ib_amp_hdwe);
     Vc_hdwe = max(ShuntAmp->Vc(), ShuntNoAmp->Vc());
     Ib_noa_hdwe = ShuntNoAmp->Ishunt_cal() + hdwe_add;  // Sense fault injection feeds logic, not model
-  if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Sensors::shunt_select_initial   Ib_noa_hdwe = ShuntAmp Ical %8.6f\n", Ib_noa_hdwe);
     Ib_noa_hdwe_f = NoaFilt->calculate(Ib_noa_hdwe, reset, AMP_FILT_TAU, T);
     Ib_hdwe_f_cal = SelFiltCal->calculate(Ib_hdwe, reset, AMP_FILT_TAU, T);
     
@@ -1660,13 +1650,11 @@ void Sensors::shunt_select_initial(const boolean reset)
       #ifdef IB_CHARGE_NOA  // Force use of noa but have full signal selection logic on both for evaluation
         Ib_model_in = Ib_noa_hdwe;
       #endif
- if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Sensors::shunt_select_initial !mood  Ib_model_in=Ib_hdwe= %8.6f\n", Ib_model_in);
     }
     // Otherwise it generates signals for feedback into monitor
     else
     {
       Ib_model_in = mod_add;
- if ( sp.debug()==53 || sp.debug()==4 ) Serial.printf("Sensors::shunr_select_initial mood=T Ib_model_in=mod_add= %8.6f\n", Ib_model_in);
     }
 }
 
