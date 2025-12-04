@@ -3,8 +3,17 @@ import matplotlib.pyplot as plt
 from DataOverModel import plq
 
 
+class Saved:
+    # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
+    def __init__(self):
+        self.time = []
+        self.dt = []
+        self.pos = []
+        self.velo = []
+
+
 class KalmanFilter1DVelocity:
-    def __init__(self, initial_position, initial_velocity, dt, process_noise_std, measurement_noise_std):
+    def __init__(self, initial_position, initial_velocity, dt, proc_noise_std, meas_noise_std):
         """
         Initializes a 1D Kalman filter with a constant velocity model.
 
@@ -12,8 +21,8 @@ class KalmanFilter1DVelocity:
             initial_position (float): Initial estimate of the position.
             initial_velocity (float): Initial estimate of the velocity.
             dt (float): Time step between measurements.
-            process_noise_std (float): Standard deviation of the process noise (acceleration).
-            measurement_noise_std (float): Standard deviation of the measurement noise (position).
+            proc_noise_std (float): Standard deviation of the process noise (acceleration).
+            meas_noise_std (float): Standard deviation of the measurement noise (position).
         """
         self.dt = dt
 
@@ -33,10 +42,10 @@ class KalmanFilter1DVelocity:
         self.Q = np.array([
             [0.25 * dt**4, 0.5 * dt**3],
             [0.5 * dt**3, dt**2]
-        ]) * process_noise_std**2
+        ]) * proc_noise_std**2
 
         # Measurement noise covariance matrix
-        self.R = np.array([[measurement_noise_std**2]])
+        self.R = np.array([[meas_noise_std**2]])
 
     def predict(self):
         """
@@ -74,66 +83,230 @@ class KalmanFilter1DVelocity:
         """
         return self.x[0, 0], self.x[1, 0]
 
+
+class KalmanFilter1dVarDt:
+    """
+    A one-dimensional Kalman filter for a signal with process noise.
+    Allows for varying update times between predict and update steps.
+    """
+
+    def __init__(self, initial_position, initial_velocity, proc_noise_std, meas_noise_std):
+        """
+        Initializes the Kalman filter.
+
+        Args:
+            initial_position (float): The initial estimated state (e.g., position).
+            initial_covariance (float): The initial uncertainty in the state estimate.
+            proc_noise_std (float): Standard deviation of the process noise (e.g., acceleration noise).
+            meas_noise_std (float): Standard deviation of the measurement noise.
+        """
+        self.x = np.array([initial_position, initial_velocity])  # State vector: [position, velocity]
+        self.P = np.array([[1.0, 0.0], [0.0, 1.0]]) * 100  # Large initial uncertainty
+        # self.P = np.diag([initial_covariance, 1.0]) # Covariance matrix: [[pos_cov, pos_vel_cov], [vel_pos_cov, vel_cov]]
+        self.Q_std = proc_noise_std
+        self.R = meas_noise_std**2  # Measurement noise covariance (scalar)
+
+        # Measurement matrix (maps state to measurement: only position is measured)
+        self.H = np.array([[1.0, 0.0]])
+
+    def predict(self, dt):
+        """
+        Performs the prediction step of the Kalman filter.
+
+        Args:
+            dt (float): The time difference since the last prediction/update.
+        """
+        # State transition matrix (constant velocity model)
+        F = np.array([[1.0, dt],
+                      [0.0, 1.0]])
+
+        # Process noise covariance matrix (assuming noise affects acceleration)
+        G = np.array([[0.5 * dt**2],
+                      [dt]])
+        Q = G @ G.T * self.Q_std**2
+
+        # Predict state and covariance
+        self.x = F @ self.x
+        self.P = F @ self.P @ F.T + Q
+
+    def update(self, measurement):
+        """
+        Performs the update step of the Kalman filter.
+
+        Args:
+            measurement (float): The current measurement.
+        """
+        # Calculate Kalman Gain
+        S = self.H @ self.P @ self.H.T + self.R
+        K = self.P @ self.H.T @ np.linalg.inv(S)
+
+        # Update state and covariance
+        y = measurement - (self.H @ self.x)  # Innovation
+        self.x = self.x + K @ y
+        self.P = (np.eye(self.P.shape[0]) - K @ self.H) @ self.P
+
+    def get_state(self):
+        """
+        Returns the current estimated state.
+
+        Returns:
+            numpy.ndarray: The current state vector [position, velocity].
+        """
+        return self.x
+
+    def get_covariance(self):
+        """
+        Returns the current estimated covariance matrix.
+
+        Returns:
+            numpy.ndarray: The current covariance matrix.
+        """
+        return self.P
+
 # Example Usage:
 if __name__ == "__main__":
     dt = 0.1  # Time step (seconds)
     process_noise_std = 0.1  # Standard deviation of acceleration noise
     measurement_noise_std = 0.5  # Standard deviation of position measurement noise
-
-    kf = KalmanFilter1DVelocity(initial_position=0.0, initial_velocity=0.0,
-                               dt=dt, process_noise_std=process_noise_std,
-                               measurement_noise_std=measurement_noise_std)
+    kf1 = KalmanFilter1DVelocity(initial_position=0.0, initial_velocity=0.0,
+                               dt=dt, proc_noise_std=process_noise_std,
+                               meas_noise_std=measurement_noise_std)
+    kf2 = KalmanFilter1DVelocity(initial_position=0.0, initial_velocity=0.0,
+                               dt=dt, proc_noise_std=process_noise_std,
+                               meas_noise_std=measurement_noise_std)
+    kf3 = KalmanFilter1dVarDt(initial_position=0.0, initial_velocity=0.0,
+                              proc_noise_std=process_noise_std,
+                              meas_noise_std=measurement_noise_std)
+    kf4 = KalmanFilter1dVarDt(initial_position=0.0, initial_velocity=0.0,
+                              proc_noise_std=process_noise_std,
+                              meas_noise_std=measurement_noise_std)
+    mr1 = Saved()
+    mv1 = Saved()
+    mr2 = Saved()
+    mv2 = Saved()
+    mr3 = Saved()
+    mv3 = Saved()
+    mr4 = Saved()
+    mv4 = Saved()
 
     # Simulate some measurements
-    true_position = 0.0
-    true_velocity = 1.0  # Constant velocity
-    measurements = []
-    velo = []
-    time = []
+    true_position1 = 0.0
+    true_velocity1 = 1.0  # Constant velocity
+    true_position2 = 0.0
+    true_velocity2 = 0.0  # Constant velocity
+    true_position3 = 0.0
+    true_velocity3 = 1.0  # Constant velocity
+    true_position4 = 0.0
+    true_velocity4 = 0.0  # Constant velocity
     t = -dt
     for i in range(50):
         t += dt
-        true_position += true_velocity * dt
+        true_position1 += true_velocity1 * dt
         # Add some random noise to the measurement
-        noisy_measurement = true_position + np.random.normal(0, measurement_noise_std)
-        measurements.append(noisy_measurement)
-        time.append(t)
-        velo.append(true_velocity)
+        noise = np.random.normal(0, measurement_noise_std)
+        noisy_measurement1 = true_position1 + noise
+        noisy_measurement2 = true_position2 + noise
+        mr1.pos.append(noisy_measurement1)
+        mr1.time.append(t)
+        mr1.dt.append(dt)
+        mr1.velo.append(true_velocity1)
+        mr2.pos.append(noisy_measurement2)
+        mr2.time.append(t)
+        mr2.dt.append(dt)
+        mr2.velo.append(true_velocity2)
+    t = 0
+    for i in range(50):
+        dt_noise = max(min(np.random.normal(dt, 0.002), .9*dt),  .1*dt)
+        dt_meas = dt + dt_noise
+        t += dt + dt_meas
+        true_position3 += true_velocity3 * dt_meas
+        # Add some random noise to the measurement
+        noise = np.random.normal(0, measurement_noise_std)
+        noisy_measurement3 = true_position3 + noise
+        noisy_measurement4 = true_position4 + noise
+        mr3.dt.append(dt_meas)
+        mr3.pos.append(noisy_measurement3)
+        mr3.time.append(t)
+        mr3.dt.append(dt_meas)
+        mr3.velo.append(true_velocity3)
+        mr4.dt.append(dt_meas)
+        mr4.pos.append(noisy_measurement4)
+        mr4.time.append(t)
+        mr4.dt.append(dt_meas)
+        mr4.velo.append(true_velocity4)
 
-    estimated_positions = []
-    estimated_velocities = []
+    for x in mr1.pos:
+        kf1.predict()
+        kf1.update(x)
+        pos, vel = kf1.get_state()
+        mv1.pos.append(pos)
+        mv1.velo.append(vel)
+    mv1.time = mr1.time
+    for x in mr2.pos:
+        kf2.predict()
+        kf2.update(x)
+        pos, vel = kf2.get_state()
+        mv2.pos.append(pos)
+        mv2.velo.append(vel)
+    mv2.time = mr1.time
+    n = len(mr3.pos)
+    for i in range(n):
+        x = mr3.pos[i]
+        dt = mr3.dt[i]
+        kf3.predict(dt)
+        kf3.update(x)
+        pos, vel = kf3.get_state()
+        mv3.pos.append(pos)
+        mv3.velo.append(vel)
+    mv3.time = mr3.time
+    n = len(mr4.pos)
+    for i in range(n):
+        x = mr4.pos[i]
+        dt = mr4.dt[i]
+        kf4.predict(dt)
+        kf4.update(x)
+        pos, vel = kf4.get_state()
+        mv4.pos.append(pos)
+        mv4.velo.append(vel)
+    mv4.time = mr4.time
 
-    for measurement in measurements:
-        kf.predict()
-        kf.update(measurement)
-        pos, vel = kf.get_state()
-        estimated_positions.append(pos)
-        estimated_velocities.append(vel)
-
-    print("Estimated Positions:", estimated_positions[:5])
-    print("Estimated Velocities:", estimated_velocities[:5])
-
-    mrr = []
-    mrr.time = time
-    mrr.meas = measurements
-    mrr.velo = velo
-    mr = np.recarray(mrr)
-    mvv = []
-    mvv.time = time
-    mvv.emeas = estimated_positions
-    mvv.evelo = estimated_velocities
-    mv = np.recarray(mvv)
-    run_str = 'data'
-    ver_str = 'filtered'
+    run_str1 = 'data 1'
+    ver_str1 = 'filtered 1'
+    run_str2 = 'data 2'
+    ver_str2 = 'filtered 2'
+    run_str3 = 'data 1 var dt'
+    ver_str3 = 'filtered 1 var dt'
+    run_str4 = 'data 2 var dt'
+    ver_str4 = 'filtered 2 var dt'
 
     plt.figure()
     plt.subplot(121)
-    plt.title(' kfDemo.py ')
-    plq(plt, mr, 'time', mr, 'meas', color='black', linestyle='-', label='meas' + run_str)
-    plq(plt, mv, 'time', mv, 'emeas', color='cyan', linestyle='--', label='emeas' + ver_str)
+    plt.title(' kfDemo.py cons dt=0.1')
+    plq(plt, mr1, 'time', mr1, 'pos', color='blue', linestyle='-', label='pos1' + run_str1)
+    plq(plt, mv1, 'time', mv1, 'pos', color='red', linestyle='--', label='pos1' + ver_str1)
+    plq(plt, mr2, 'time', mr2, 'pos', color='magenta', linestyle='-', label='pos2' + run_str2)
+    plq(plt, mv2, 'time', mv2, 'pos', color='black', linestyle='--', label='pos2' + ver_str2)
     plt.legend(loc=1)
     plt.subplot(122)
-    plq(plt, mr, 'time', mr, 'velo', color='black', linestyle='-', label='velo' + run_str)
-    plq(plt, mv, 'time', mv, 'evelo', color='cyan', linestyle='--', label='evelo' + ver_str)
+    plq(plt, mr1, 'time', mr1, 'velo', color='blue', linestyle='-', label='velo' + run_str1)
+    plq(plt, mv1, 'time', mv1, 'velo', color='red', linestyle='--', label='velo' + ver_str1)
+    plq(plt, mr2, 'time', mr2, 'velo', color='magenta', linestyle='-', label='velo' + run_str2)
+    plq(plt, mv2, 'time', mv2, 'velo', color='black', linestyle='--', label='velo' + ver_str2)
     plt.legend(loc=1)
-    plt.show(block=False)
+
+    plt.figure()
+    plt.subplot(121)
+    plt.title(' kfDemo.py var dt')
+    plq(plt, mr3, 'time', mr3, 'pos', color='blue', linestyle='-', label='pos1' + run_str3)
+    plq(plt, mv3, 'time', mv3, 'pos', color='red', linestyle='--', label='pos1' + ver_str3)
+    plq(plt, mr4, 'time', mr4, 'pos', color='magenta', linestyle='-', label='pos2' + run_str4)
+    plq(plt, mv4, 'time', mv4, 'pos', color='black', linestyle='--', label='pos2' + ver_str4)
+    plt.legend(loc=1)
+    plt.subplot(122)
+    plq(plt, mr3, 'time', mr3, 'velo', color='blue', linestyle='-', label='velo' + run_str3)
+    plq(plt, mv3, 'time', mv3, 'velo', color='red', linestyle='--', label='velo' + ver_str3)
+    plq(plt, mr4, 'time', mr4, 'velo', color='magenta', linestyle='-', label='velo' + run_str4)
+    plq(plt, mv4, 'time', mv4, 'velo', color='black', linestyle='--', label='velo' + ver_str4)
+    plt.legend(loc=1)
+
+    plt.show(block=True)
