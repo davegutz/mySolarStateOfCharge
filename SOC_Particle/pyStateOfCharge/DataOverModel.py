@@ -703,6 +703,10 @@ class SavedData:
             self.skip_rap = None
             self.i = 0
             self.time = None
+            self.reset = None
+            self.reset_all_faults = None
+            self.soft_reset = None
+            self.reset_temp = None
             self.time_min = None
             self.time_day = None
             self.dt = None  # Update time, s
@@ -751,6 +755,10 @@ class SavedData:
             self.i = 0
             self.cTime = np.array(rap.cTime)
             self.time = np.array(rap.cTime)
+            self.reset = np.array(rap.reset)
+            self.reset_all_faults = np.array(rap.reset_all_faults)
+            self.soft_reset = np.array(rap.soft_reset)
+            self.reset_temp = np.array(rap.reset_temp)
             self.ib = np.array(rap.ib)
             # manage data shape
             # Find first non-zero ib and use to adjust time
@@ -859,8 +867,6 @@ class SavedData:
         if sel is None:
             self.skip_sel = None
             self.c_time_s = None
-            self.res = None
-            self.reset_all_faults = None
             self.user_sel = None
             self.cc_dif = None
             self.ccd_fa = None
@@ -977,8 +983,6 @@ class SavedData:
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
             self.skip_sel = np.array(np.bool(sel.skip[:i_end]))
             self.c_time_s = np.array(sel.c_time[:i_end]) - self.time_run
-            self.res = np.array(sel.res[:i_end])
-            self.reset_all_faults = np.array(sel.resaf[:i_end])
             self.user_sel = np.array(sel.user_sel[:i_end])
             self.cc_dif = np.array(sel.cc_dif[:i_end])
             self.ccd_fa = np.bool_(np.array(falw) & 2**4)

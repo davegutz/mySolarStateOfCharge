@@ -140,6 +140,7 @@ void print_battery_header()
 void print_rapid_header(void)
 {
   Serial.printf ("unit_rap, hm, cTime, dt,       ");
+  Serial.printf("reset, reset_temp, soft_reset, reset_all_faults,   ");
   Serial.printf("chm, qcrs, qcap, sat, sel, mod, bmso,  ");
   Serial.printf("Tb_rap, Tb_f_rap, Tb_f_rate_rap,  ");
   Serial.printf("vb, ib, ib_dyn, dv_hys,   ");
@@ -149,12 +150,13 @@ void print_rapid_header(void)
   Serial.printf("soc_s, soc_ekf, soc, soc_min, d_delta_q, delta_q,");
   Serial.printf("\n");
 }
-void print_rapid_create_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
+void print_rapid_create_string(const boolean reset, Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
   // if ( Sen->T == 0.) return;
   double cTime = double(Sen->now)/1000;
-  sprintf(pr.buff,  "%s,%s,%13.4f,%8.4f,   %d,%9.2f,%9.2f,%2d,%2d,%2d,%2d,   %11.8f,%11.8f,%11.8f,   %8.7f,%11.7f,%11.7f,%11.7f,   %9.7f,%8.7f,%9.7f,%9.7f,     %9.7f,%9.7f,%9.7f,%9.7f,  %10.7f,  %10.7f,%10.7f,%10.7f,%5.3f,%12.7f,%10.7f,", \
+  sprintf(pr.buff,  "%s,%s,%13.4f,%8.4f,   %2d,%2d,%2d,%2d,    %d,%9.2f,%9.2f,%2d,%2d,%2d,%2d,   %11.8f,%11.8f,%11.8f,   %8.7f,%11.7f,%11.7f,%11.7f,   %9.7f,%8.7f,%9.7f,%9.7f,     %9.7f,%9.7f,%9.7f,%9.7f,  %10.7f,  %10.7f,%10.7f,%10.7f,%5.3f,%12.7f,%10.7f,", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
+    reset, Sen->reset_temp(), cp.soft_reset, Sen->Flt->reset_all_faults(),
     CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(), pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
     Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate,
     Mon->vb(), Mon->ib(), Mon->ib_dyn(), Mon->dv_hys(),
@@ -182,7 +184,7 @@ void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, co
     if ( cp.publishS )
     {
       Log.info("  print_rapid_data:  rapid_print");
-      rapid_print(Sen, Mon);
+      rapid_print(reset, Sen, Mon);
       cp.num_v_print++;
     }
   }
@@ -219,7 +221,7 @@ void print_ekf_header(void)
 // TODO:  delete the _T, _tau, _rstate, _lstate stuff
 void print_signal_sel_header(void)
 {
-  Serial.printf("unit_s,c_time,res,resaf,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,   ib_diff, ib_diff_f,");
+  Serial.printf("unit_s,c_time,reset,resaf,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,   ib_diff, ib_diff_f,");
   Serial.printf("  vr,voc_soc,e_w,e_w_f,ib_dm,dv_dm,e_wm,e_wm_r,e_wm_f,ib_dn,dv_dn,e_wn,e_wn_f,e_wm_t,");
   Serial.printf("  ib_sel_stat,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_h,vb_s,mvb,vb,  mtb,Tb_fa, ");
   Serial.printf("  fltw, falw, ib_rate, ib_quiet, tb_sel, ccd_thr, ewh_thr, ewl_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,");
@@ -346,9 +348,9 @@ void print_temp_serial(const boolean reset, Sensors *Sen)
 }
 
 // Inputs serial print
-void rapid_print(Sensors *Sen, BatteryMonitor *Mon)
+void rapid_print(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
 {
-  print_rapid_create_string(&pp.pubList, Sen, Mon);
+  print_rapid_create_string(reset, &pp.pubList, Sen, Mon);
   Serial.printf("%s\n", pr.buff);
   #ifdef HDWE_ARGON
     Serial1.printf("%s\n", pr.buff);
