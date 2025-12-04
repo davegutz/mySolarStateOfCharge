@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from DataOverModel import plq
 
+N = 100
+
 
 class Saved:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
@@ -199,7 +201,7 @@ if __name__ == "__main__":
     true_position4 = 0.0
     true_velocity4 = 0.0  # Constant velocity
     t = -dt
-    for i in range(50):
+    for i in range(N):
         t += dt
         true_position1 += true_velocity1 * dt
         # Add some random noise to the measurement
@@ -215,24 +217,23 @@ if __name__ == "__main__":
         mr2.dt.append(dt)
         mr2.velo.append(true_velocity2)
     t = 0
-    for i in range(50):
-        dt_noise = max(min(np.random.normal(dt, 0.002), .9*dt),  .1*dt)
-        dt_meas = dt + dt_noise
-        t += dt + dt_meas
-        true_position3 += true_velocity3 * dt_meas
+    for i in range(N):
+        dt_noise = max(np.random.normal(dt, 0.005), .0001)
+        t += dt + dt_noise
+        true_position3 += true_velocity3 * dt_noise
         # Add some random noise to the measurement
         noise = np.random.normal(0, measurement_noise_std)
         noisy_measurement3 = true_position3 + noise
         noisy_measurement4 = true_position4 + noise
-        mr3.dt.append(dt_meas)
+        mr3.dt.append(dt_noise)
         mr3.pos.append(noisy_measurement3)
         mr3.time.append(t)
-        mr3.dt.append(dt_meas)
+        mr3.dt.append(dt_noise)
         mr3.velo.append(true_velocity3)
-        mr4.dt.append(dt_meas)
+        mr4.dt.append(dt_noise)
         mr4.pos.append(noisy_measurement4)
         mr4.time.append(t)
-        mr4.dt.append(dt_meas)
+        mr4.dt.append(dt_noise)
         mr4.velo.append(true_velocity4)
 
     for x in mr1.pos:
@@ -242,6 +243,7 @@ if __name__ == "__main__":
         mv1.pos.append(pos)
         mv1.velo.append(vel)
     mv1.time = mr1.time
+    mv1.dt = mr1.dt
     for x in mr2.pos:
         kf2.predict()
         kf2.update(x)
@@ -249,6 +251,7 @@ if __name__ == "__main__":
         mv2.pos.append(pos)
         mv2.velo.append(vel)
     mv2.time = mr1.time
+    mv2.dt = mr2.dt
     n = len(mr3.pos)
     for i in range(n):
         x = mr3.pos[i]
@@ -259,6 +262,7 @@ if __name__ == "__main__":
         mv3.pos.append(pos)
         mv3.velo.append(vel)
     mv3.time = mr3.time
+    mv3.dt = mr3.dt
     n = len(mr4.pos)
     for i in range(n):
         x = mr4.pos[i]
@@ -269,6 +273,7 @@ if __name__ == "__main__":
         mv4.pos.append(pos)
         mv4.velo.append(vel)
     mv4.time = mr4.time
+    mv4.dt = mr4.dt
 
     run_str1 = 'data 1'
     ver_str1 = 'filtered 1'
