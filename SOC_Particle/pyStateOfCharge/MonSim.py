@@ -251,7 +251,7 @@ def replicate(OPT: UserOptions):
         if OPT.run_type == 'RunSim':
             reset = bool((t[G.i] <= OPT.init_time) or (t[G.i] < 0. and t[0] > OPT.init_time))
             if OPT.mon_run.reset is not None:
-                reset = reset or bool(OPT.mon_run.reset[G.i] > 0.) or bool(OPT.mon_run.reset_all_faults[G.i] > 0.)
+                reset = reset or bool(OPT.mon_run.reset[G.i] > 0.) or bool(OPT.mon_run.reset_all_faults[G.i] > 0.)  # TODO:  reset_all_faults needed here?  Resets Sim while app does not
         elif OPT.run_type == 'HistSim':
             reset = True
         prn_soc_debug(OPT, time=now, leader="before sim init:         ", i_temp=i_temp, mon=mon, sim=sim)
