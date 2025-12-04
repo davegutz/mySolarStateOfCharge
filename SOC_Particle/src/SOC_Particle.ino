@@ -550,6 +550,8 @@ void loop()
 
   // Soft reset
   if ( read ) cp.soft_sim_hold = false;
+  cp.soft_reset_print = cp.soft_reset;
+  cp.soft_reset_sim_print = cp.soft_reset_sim;
   if ( cp.soft_reset || cp.soft_reset_sim )
   {
     reset = reset_temp = reset_publish = true;

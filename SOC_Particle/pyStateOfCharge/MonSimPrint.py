@@ -180,6 +180,7 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
          )
     return hdr
 
+# 3
 def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
     global count_since_last_header
     hdr = "  i  time     r       rt   it   ct      re   ie  ce    sa       sa_s     dt                    dt_s                  ib                          ib_in_s                     ib_s                          ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s              ib_charge_s                 ioc_s                     soc                     d_delq                           delq                       i * dt_s * coul_eff     soc_s                    Tb_f_s                      d_delq_s                   delq_s                      qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                 "
@@ -239,6 +240,7 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
         pass
     return hdr
 
+#4
 def print_temp_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header
     hdr = "  i  time     r       rt   it   ct      re   ie  ce     Tt       Tb_hdwe                    Tb                         Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
@@ -299,9 +301,10 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
           )
     return hdr
 
+#5
 def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time     r       rt   it   ct      re   ie  ce    sa      vb                         ib_charge                   ib                          ibmh                        ibmm                        ibnh                        ibnm                        ibh                         ib_s                        ib_amp                    ib_amp_lo    ib_amp_hi   ib_noa_lo   ib_noa_hi dis_amp_flt   per      ib_dyn_m                   ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rstate_m                ib_dyn_lstate_m             vb                    dv_dyn_m              e_wrap_m_T             e_wrap_m_tau           e_wrap_m_rate          e_wrap_m_reset          e_wrap_m_state         voc                   voc_soc                e_wrap_m             e_wrap_m_filt     disable_amp_fault ib_amp_lo  ib_noa_lo  e_wrap_m_reset  e_wrap_m_trim        ib_dyn_n                   ib_dyn_T_n     ib_dyn_tau_n           dv_dyn_n               e_wrap_n             e_wrap_n_filt         ib_dyn_n                    ib_dyn                     ib_dyn_T_n     ib_dyn_tau_n            ib_dyn_rstate_n                ib_dyn_lstate_n             dv_dyn_n               e_wrap_n_T             e_wrap_n_tau           e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt        ib                          e_wrap               e_wrap_filt           ib_dyn_rstate                ib_dyn_lstate                   ib_dyn                      dv_dyn                 dv_hys                soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_s            voc_stat_f             soc_ekf               y_ekf"
+    hdr = "  i   time     r       rt   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim       sa      vb                         ib_charge                   ib                          ibmh                        ibmm                        ibnh                        ibnm                        ibh                         ib_s                        ib_amp                    ib_amp_lo    ib_amp_hi   ib_noa_lo   ib_noa_hi dis_amp_flt   per      ib_dyn_m                   ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rstate_m                ib_dyn_lstate_m             vb                    dv_dyn_m              e_wrap_m_T             e_wrap_m_tau           e_wrap_m_rate          e_wrap_m_reset          e_wrap_m_state         voc                   voc_soc                e_wrap_m             e_wrap_m_filt     disable_amp_fault ib_amp_lo  ib_noa_lo  e_wrap_m_reset  e_wrap_m_trim        ib_dyn_n                   ib_dyn_T_n     ib_dyn_tau_n           dv_dyn_n               e_wrap_n             e_wrap_n_filt         ib_dyn_n                    ib_dyn                     ib_dyn_T_n     ib_dyn_tau_n            ib_dyn_rstate_n                ib_dyn_lstate_n             dv_dyn_n               e_wrap_n_T             e_wrap_n_tau           e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt        ib                          e_wrap               e_wrap_filt           ib_dyn_rstate                ib_dyn_lstate                   ib_dyn                      dv_dyn                 dv_hys                soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_s            voc_stat_f             soc_ekf               y_ekf"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -310,6 +313,13 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     print("{:4d}".format(G.i), "{:8.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
+          "{:7d}".format(bool(SN.mon_run.reset[G.i])),
+          "{:7d}".format(bool(SN.mon_run.reset_temp[G.i])),
+          "{:14d}".format(bool(SN.mon_run.reset_all_faults[G.i])),
+          "{:15d}".format(bool(SN.mon_run.soft_reset[G.i])),
+          "{:15d}".format(bool(SN.mon_run.soft_reset_sim[G.i])),
+          "{:15d}".format(bool(SN.mon_run.init_mon[G.i])),
+          "{:15d}".format(bool(SN.mon_run.init_sim[G.i])),
           "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
           "{:13.7f}".format(SN.mon_run.vb[G.i]), "{:11.7f}".format(mon.vb),
           "{:14.5f}".format(SN.mon_run.ib_charge[G.i]), "{:12.5f}".format(mon.ib_charge),

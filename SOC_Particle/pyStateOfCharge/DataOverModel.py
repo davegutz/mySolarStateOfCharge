@@ -70,6 +70,9 @@ def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', labe
         except ValueError:
             if warn:
                 print(f"plq: skipping     {yt}({st})     labeled  '{label}'")
+    else:
+        if warn:
+            print(f"plq: skipping     {yt}({st})     labeled  '{label}'")
 
 
 def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
@@ -707,6 +710,9 @@ class SavedData:
             self.reset_all_faults = None
             self.soft_reset = None
             self.reset_temp = None
+            self.soft_reset_sim = None
+            self.init_mon = None
+            self.init_sim = None
             self.time_min = None
             self.time_day = None
             self.dt = None  # Update time, s
@@ -758,6 +764,9 @@ class SavedData:
             self.reset = np.array(rap.reset)
             self.reset_all_faults = np.array(rap.reset_all_faults)
             self.soft_reset = np.array(rap.soft_reset)
+            self.soft_reset_sim = np.array(rap.soft_reset_sim)
+            self.init_mon = np.array(rap.init_mon)
+            self.init_sim = np.array(rap.init_sim)
             self.reset_temp = np.array(rap.reset_temp)
             self.ib = np.array(rap.ib)
             # manage data shape
@@ -815,6 +824,13 @@ class SavedData:
             self.cTime = self.cTime[:i_end]
             self.dt = np.array(rap.dt[:i_end])
             self.time = np.array(self.time[:i_end])
+            self.reset = np.array(rap.reset[:i_end])
+            self.reset_all_faults = np.array(rap.reset_all_faults[:i_end])
+            self.reset_temp = np.array(rap.reset_temp[:i_end])
+            self.soft_reset = np.array(rap.soft_reset[:i_end])
+            self.soft_reset_sim = np.array(rap.soft_reset_sim[:i_end])
+            self.init_mon = np.array(rap.init_mon[:i_end])
+            self.init_sim = np.array(rap.init_sim[:i_end])
             self.ib = np.array(rap.ib[:i_end])
             self.ioc = np.array(rap.ib[:i_end])
             self.voc_soc = np.array(rap.voc_soc[:i_end])
@@ -1152,7 +1168,6 @@ class SavedData:
         if temp is None:
             self.skip_t = None
             self.time_t = None
-            self.reset_temp = None
             self.T_t = None
             self.Tb_hdwe = None
             self.Tb_mod = None
@@ -1164,7 +1179,6 @@ class SavedData:
         else:
             self.skip_t = np.array(np.bool(np.atleast_1d(temp.skip)[:i_end]))
             self.time_t = np.array(np.atleast_1d(temp.c_time)[:i_end]) - self.time_run
-            self.reset_temp = np.array(np.atleast_1d(temp.reset_temp)[:i_end])
             self.Tt = np.array(np.atleast_1d(temp.T_t)[:i_end])
             self.Tb_hdwe = np.array(np.atleast_1d(temp.Tb_hdw)[:i_end])
             self.Tb = np.array(np.atleast_1d(temp.Tb)[:i_end])

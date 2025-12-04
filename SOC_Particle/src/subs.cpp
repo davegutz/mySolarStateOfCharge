@@ -595,6 +595,7 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const uns
   }
   Sen->Sim->apply_delta_q_t(reset);
   Sen->Sim->init_battery_sim(reset, Sen);
+  Mon->init_battery_mon(reset, Sen);
 
   // Sim calculation
   //  Inputs:  Sen->Tb_f(past), Sen->Ib_model_in

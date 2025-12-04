@@ -140,7 +140,7 @@ void print_battery_header()
 void print_rapid_header(void)
 {
   Serial.printf ("unit_rap, hm, cTime, dt,       ");
-  Serial.printf("reset, reset_temp, soft_reset, reset_all_faults,   ");
+  Serial.printf("reset, reset_temp, soft_reset, soft_reset_sim, reset_all_faults, init_mon, init_sim,   ");
   Serial.printf("chm, qcrs, qcap, sat, sel, mod, bmso,  ");
   Serial.printf("Tb_rap, Tb_f_rap, Tb_f_rate_rap,  ");
   Serial.printf("vb, ib, ib_dyn, dv_hys,   ");
@@ -154,9 +154,9 @@ void print_rapid_create_string(const boolean reset, Publish *pubList, Sensors *S
 {
   // if ( Sen->T == 0.) return;
   double cTime = double(Sen->now)/1000;
-  sprintf(pr.buff,  "%s,%s,%13.4f,%8.4f,   %2d,%2d,%2d,%2d,    %d,%9.2f,%9.2f,%2d,%2d,%2d,%2d,   %11.8f,%11.8f,%11.8f,   %8.7f,%11.7f,%11.7f,%11.7f,   %9.7f,%8.7f,%9.7f,%9.7f,     %9.7f,%9.7f,%9.7f,%9.7f,  %10.7f,  %10.7f,%10.7f,%10.7f,%5.3f,%12.7f,%10.7f,", \
+  sprintf(pr.buff,  "%s,%s,%13.4f,%8.4f,   %2d,%2d,%2d,%2d,%2d,%2d,%2d,    %d,%9.2f,%9.2f,%2d,%2d,%2d,%2d,   %11.8f,%11.8f,%11.8f,   %8.7f,%11.7f,%11.7f,%11.7f,   %9.7f,%8.7f,%9.7f,%9.7f,     %9.7f,%9.7f,%9.7f,%9.7f,  %10.7f,  %10.7f,%10.7f,%10.7f,%5.3f,%12.7f,%10.7f,", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
-    reset, Sen->reset_temp(), cp.soft_reset, Sen->Flt->reset_all_faults(),
+    reset, Sen->reset_temp(), cp.soft_reset_print, cp.soft_reset_sim_print, Sen->Flt->reset_all_faults_print(), Mon->initializing(), Sen->Sim->initializing(),
     CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(), pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
     Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate,
     Mon->vb(), Mon->ib(), Mon->ib_dyn(), Mon->dv_hys(),

@@ -422,7 +422,12 @@ void BatteryMonitor::ekf_update(double *hx, double *H, double *x, double *tb)
 // Works in 12 V batteryunits.   Scales up/down to number of series/parallel batteries on output/input.
 void BatteryMonitor::init_battery_mon(const boolean reset, Sensors *Sen)
 {
-    if ( !reset ) return;
+    if ( !reset )
+    {
+        initializing_ = false;
+        return;
+    }
+    initializing_ = true; 
     vb_ = Sen->vb();
     ib_ = Sen->ib();
     ib_ = max(min(ib_, IMAX_NUM), -IMAX_NUM);  // Overflow protection when ib_ past value used
@@ -874,7 +879,12 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
 // Works in 12 V batteryunits.   Scales up/down to number of series/parallel batteries on output/input.
 void BatterySim::init_battery_sim(const boolean reset, Sensors *Sen)
 {
-    if ( !reset ) return;
+    if ( !reset )
+    {
+        initializing_ = false;
+        return;
+    }
+    initializing_ = true; 
     ib_ = Sen->ib_model_in();
     ib_ = max(min(ib_, IMAX_NUM), -IMAX_NUM);  // Overflow protection when ib_ past value used
     vb_ = Sen->vb();

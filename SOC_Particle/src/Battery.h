@@ -122,6 +122,7 @@ public:
   float ib_dyn() { return ib_dyn_; };    // Battery terminal current lagged by charge transfer, A
   float ib_dyn_lstate() { return ChargeTransfer_->lstate(); };
   float ib_dyn_rstate() { return ChargeTransfer_->rstate(); };
+  boolean initializing() { return initializing_; };
   float ioc() { return ioc_; };          // Hysteresis output current, A
   virtual void pretty_print();
   void print_signal(const boolean print) { print_now_ = print; };
@@ -142,9 +143,11 @@ protected:
   float ib_;       // Battery terminal current, A
   float ibs_;      // Hysteresis input current, A
   float ib_dyn_;   // ib lagged by charge transfer, A
+  boolean initializing_;  // Flag to indicate initializingn
   float ioc_;      // Hysteresis output current, A
   float nom_vsat_; // Nominal saturation threshold at 25C, V
   boolean print_now_; // Print command
+  boolean soft_reset_print_;  // Soft reset flag
   double tb_f_;    // Battery temperature, deg C
   float vb_;       // Battery terminal voltage, V
   float voc_;      // Static model open circuit voltage, V
