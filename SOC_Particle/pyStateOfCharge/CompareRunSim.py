@@ -173,8 +173,8 @@ def main():
     # # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiFail_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_chg.csv'
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_chg.csv'
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaHiFail_soc2p2_hi_lo_chg.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_chg.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaHiFail_soc2p2_hi_lo_chg.csv'
     # # gdrive = '/home/daveg/Documents/'
     # # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
     #
