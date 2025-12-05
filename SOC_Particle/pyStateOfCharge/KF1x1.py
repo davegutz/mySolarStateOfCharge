@@ -71,18 +71,18 @@ class KF1x1VarDt:
         s = prefix + "KF1x1VarDt:\n"
         s += "  Inputs:\n"
         s += "  z = {:10.6g}\n".format(self.z_kf)
-        s += "  Fx = {:13.10g}\n".format(self.Fx)
+        s += "  Fx = \n" + self.Fx.__str__() + "\n"
         s += "  Bu = {:13.10g}\n".format(self.Bu)
-        s += "  R = {:10.6g}\n".format(self.R)
+        s += "  R = {:10.6g}\n".format(self.R[0][0])
         s += "  Q_std = {:10.6g}\n".format(self.Q_std)
-        s += "  H = {:10.6g}\n".format(self.H)
+        s += "  H = " + self.H.__str__() + "\n"
         s += "  Outputs:\n"
-        s += "  x  = {:10.6g}\n".format(self.x)
+        s += "  x  = \n" + self.x.__str__() + "\n"
         s += "  hx = {:10.6g}\n".format(self.hx)
-        s += "  y  = {:10.6g}\n".format(self.y_kf)
-        s += "  P  = {:10.6g}\n".format(self.P)
-        s += "  K  = {:10.6g}\n".format(self.K)
-        s += "  S  = {:10.6g}\n".format(self.S)
+        s += "  y  = {:10.6g}\n".format(self.y_kf[0][0])
+        s += "  P  = \n" + self.P.__str__() + "\n"
+        s += "  K  = \n" + self.K.__str__() + "\n"
+        s += "  S  = {:10.6g}\n".format(self.S[0][0])
         return s
 
     def predict(self, dt):
@@ -245,6 +245,8 @@ if __name__ == "__main__":
         mv4.velo.append(vel)
     mv4.time = mr4.time
     mv4.dt = mr4.dt
+
+    print(kf3)
 
     run_str3 = 'data 1 var dt'
     ver_str3 = 'filtered 1 var dt'
