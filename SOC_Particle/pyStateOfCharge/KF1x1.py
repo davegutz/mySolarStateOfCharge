@@ -16,8 +16,6 @@
 """1x1 General Purpose Kalman Filter.   Inherit from this class and include kf_predict and
 kf_update methods in the parent."""
 
-import numpy as np
-
 global mon_run
 
 
@@ -34,7 +32,7 @@ class KF1x1VarDt:
     """1x1 General Purpose Extended Kalman Filter.   Inherit from this class and include kf_predict and
     kf_update methods in the parent."""
 
-    def __init__(self, initial_position, initial_velocity, proc_noise_std, meas_noise_std):
+    def __init__(self, initial_position, initial_velocity, dt, proc_noise_std, meas_noise_std):
         """
         Initializes a 1D Kalman filter with a constant velocity model.
 
@@ -98,11 +96,13 @@ class KF1x1VarDt:
             x   1x1 Kalman state variable = Vsoc (0-1 fraction)
             P   1x1 Kalman probability
         """
+        self.dt = dt
+
         # State transition matrix (constant velocity model)
-        self.Fx = np.array([[1.0, dt], [0.0, 1.0]])
+        self.Fx = np.array([[1.0, self.dt], [0.0, 1.0]])
 
         # Process noise covariance matrix (assuming noise affects acceleration)
-        G = np.array([[0.5 * dt ** 2], [dt]])
+        G = np.array([[0.5 * self.dt ** 2], [dt]])
         Q = G @ G.T * self.Q_std ** 2
 
         # Predict state and covariance
@@ -189,9 +189,9 @@ if __name__ == "__main__":
     dt = 0.1  # Time step (seconds)
     process_noise_std = 0.1  # Standard deviation of acceleration noise
     measurement_noise_std = 0.5  # Standard deviation of position measurement noise
-    kf3 = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, proc_noise_std=process_noise_std,
+    kf3 = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt, proc_noise_std=process_noise_std,
                      meas_noise_std=measurement_noise_std)
-    kf4 = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, proc_noise_std=process_noise_std,
+    kf4 = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt, proc_noise_std=process_noise_std,
                      meas_noise_std=measurement_noise_std)
     mr3 = Saved()
     mv3 = Saved()
