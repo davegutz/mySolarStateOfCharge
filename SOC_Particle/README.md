@@ -998,3 +998,6 @@ See 'State of Charge Monitor.odt' for full set of requirements, testing, discuss
 - [ ] Document Sen->ib_is_functional() in the DecisionTable file
 - [ ] Consider a lower gain amp for the amp device
 - [ ] Resolve 'WARN' for mlissing UT
+- [ ] Kalman filter of current measurement esp noa
+
+- [ ] Document spectrum study lombscargle.py performed as described in its contents.  It will be interesting to see if Kalman filter can get rid of it - normally aliased data is difficult to deal with but this is so predictable and regular.  40 Hz sampling will actually be 10 Hz in real life
