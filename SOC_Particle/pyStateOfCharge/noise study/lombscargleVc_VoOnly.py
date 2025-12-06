@@ -7,8 +7,10 @@ import matplotlib.pyplot as plt
 # primary peak at 1.6 Hz excites sample mode resolution artifacts at 1.6 +  3.1*n
 
 # Define frequencies to test
-data_file_clean = 'burstVo_Vc_Cx20000_soc2p2_hi_lo_chg.csv'
+# data_file_clean = 'burstVo_Vc_Cx20000_soc2p2_hi_lo_chg.csv'
 # data_file_clean = 'burstVo_Vc_Cx20000_BTremo_soc2p2_hi_lo_chg.csv'
+data_file_clean = 'burstVo_Vc_Cx20000_Bare_soc2p2_hi_lo_chg.csv'
+
 
 # Get data and statistics
 data_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
@@ -92,15 +94,6 @@ plt.grid(True)
 
 plt.figure(figsize=(10, 6))
 plt.semilogx(freqs_rps / (2 * np.pi), power_Vo_Vcn, color='magenta', linestyle='-', label='Vo-Vc noa at ADC, Volts') # Convert to Hz for x-axis
-plt.legend(loc=1)
-plt.xlabel('Frequency (Hz)')
-plt.ylabel('Power')
-plt.title('Lomb-Scargle Periodogram ' + data_file_clean)
-plt.grid(True)
-
-plt.figure(figsize=(10, 6))
-plt.plot(freqs_rps / (2 * np.pi), power_Vcn, color='blue', linestyle='--', label='Vc amp at ADC, Volts') # Convert to Hz for x-axis
-plt.xlim([1, nyquist])
 plt.legend(loc=1)
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('Power')
