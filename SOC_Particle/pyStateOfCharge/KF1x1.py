@@ -190,6 +190,7 @@ class Saved:
         self.Vcn = []
         self.Von = []
         self.VoVcn = []
+        self.VoVcnA = []
         self.Tbv = []
         self.Vbv = []
 
@@ -299,6 +300,8 @@ if __name__ == "__main__":
         vf, v_rat = kfVoVcn.get_state()
         mv.VoVcn.append(vf[0])
 
+        mv.VoVcnA.append(mv.Von[i] - mv.Vcn[i])
+
         kfVbv.predict(mr.dt[i])
         kfVbv.update(mr.Vbv[i])
         vf, v_rat = kfVbv.get_state()
@@ -329,11 +332,43 @@ if __name__ == "__main__":
     plq(plt, mr, 'time', mr, 'Tbv', add=-0.8, color='blue', linestyle='-', label='Tbv' + run_str + '-0.8')
     plq(plt, mv, 'time', mv, 'Tbv', add=-0.8, color='red', linestyle='--', label='Tbv' + ver_str + '-0.8')
     plt.legend(loc=1)
-    # plt.subplot(212)
-    # plq(plt, mr3, 'time', mr3, 'velo', color='blue', linestyle='-', label='velo' + run_str3)
-    # plq(plt, mv3, 'time', mv3, 'velo', color='red', linestyle='--', label='velo' + ver_str3)
-    # plq(plt, mr4, 'time', mr4, 'velo', color='magenta', linestyle='-', label='velo' + run_str4)
-    # plq(plt, mv4, 'time', mv4, 'velo', color='black', linestyle='--', label='velo' + ver_str4)
-    # plt.legend(loc=1)
+
+    plt.figure()
+    plt.subplot(111)
+    plt.title(' kfDemo.py var dt 2')
+    plq(plt, mv, 'time', mv, 'VoVcn', color='red', linestyle='-', label='VoVcn' + ver_str)
+    plq(plt, mv, 'time', mv, 'VoVcnA', color='green', linestyle='--', label='VoVcnA' + ver_str)
+    plt.legend(loc=1)
+    plt.figure()
+
+    plt.subplot(111)
+    plt.title(' kfDemo.py var dt 3')
+    plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Voa', add=0.0, color='red', linestyle='--', label='Voa' + ver_str + '+0.0')
+    plq(plt, mr, 'time', mr, 'Vca', add=-0.2, color='blue', linestyle='-', label='Vca' + run_str + '-0.2')
+    plq(plt, mv, 'time', mv, 'Vca', add=-0.2, color='red', linestyle='--', label='Vca' + ver_str + '-0.2')
+    plq(plt, mr, 'time', mr, 'VoVca', add=-0.4, color='blue', linestyle='-', label='VoVca' + run_str + '-0.4')
+    plq(plt, mv, 'time', mv, 'VoVca', add=-0.4, color='red', linestyle='--', label='VoVca' + ver_str + '-0.4')
+    plt.legend(loc=1)
+
+    plt.figure()
+    plt.subplot(111)
+    plt.title(' kfDemo.py var dt 3')
+    plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
+    plq(plt, mr, 'time', mr, 'Vcn', add=-0.2, color='blue', linestyle='-', label='Vcn' + run_str + '-0.2')
+    plq(plt, mv, 'time', mv, 'Vcn', add=-0.2, color='red', linestyle='--', label='Vcn' + ver_str + '-0.2')
+    plq(plt, mr, 'time', mr, 'VoVcn', add=-0.4, color='blue', linestyle='-', label='VoVcn' + run_str + '-0.4')
+    plq(plt, mv, 'time', mv, 'VoVcn', add=-0.4, color='red', linestyle='--', label='VoVcn' + ver_str + '-0.4')
+    plt.legend(loc=1)
+
+    plt.figure()
+    plt.subplot(111)
+    plt.title(' kfDemo.py var dt 4')
+    plq(plt, mr, 'time', mr, 'Vbv', add=-0.6, color='blue', linestyle='-', label='Vbv' + run_str + '-0.6')
+    plq(plt, mv, 'time', mv, 'Vbv', add=-0.6, color='red', linestyle='--', label='Vbv' + ver_str + '-0.6')
+    plq(plt, mr, 'time', mr, 'Tbv', add=-0.8, color='blue', linestyle='-', label='Tbv' + run_str + '-0.8')
+    plq(plt, mv, 'time', mv, 'Tbv', add=-0.8, color='red', linestyle='--', label='Tbv' + ver_str + '-0.8')
+    plt.legend(loc=1)
 
     plt.show(block=True)

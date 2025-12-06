@@ -46,7 +46,7 @@ void sample_burst(Pins *myPins, Sensors *Sen)
     {
       unsigned long int local_micros = micros();
       if ( i== 0 ) local_micros_init = local_micros;
-      Sen->ShuntNoAmp->sample();
+      Sen->ShuntAmp->sample();
       Sen->ShuntNoAmp->sample();
       Sen->SensorTb->sample(Sen);
       Sen->vb_load(myPins->Vb_pin, false);
