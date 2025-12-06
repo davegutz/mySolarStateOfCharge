@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 # Define frequencies to test
 # data_file_clean = 'burstVo_Vc_Cx20000_soc2p2_hi_lo_chg.csv'
 # data_file_clean = 'burstVo_Vc_Cx20000_BTremo_soc2p2_hi_lo_chg.csv'
+# data_file_clean = 'burstForKF_soc2p2_hi_lo_chg.csv'  # just to look at data
 data_file_clean = 'burstVo_Vc_Cx20000_Bare_soc2p2_hi_lo_chg.csv'
-
 
 # Get data and statistics
 data_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)

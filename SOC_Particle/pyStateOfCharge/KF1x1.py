@@ -179,93 +179,161 @@ class KF1x1VarDt:
         return self.P
 
 
+class Saved:
+    # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
+    def __init__(self):
+        self.time = []
+        self.dt = []
+        self.Vca = []
+        self.Voa = []
+        self.VoVca = []
+        self.Vcn = []
+        self.Von = []
+        self.VoVcn = []
+        self.Tbv = []
+        self.Vbv = []
+
+
 # Example Usage:
 if __name__ == "__main__":
     import numpy as np
     import matplotlib.pyplot as plt
     from DataOverModel import plq
 
-    N = 100
+    # data_file_clean = 'burstForKF_soc2p2_hi_lo_chg.csv'  # just to look at data
+    data_file_clean = './noise_study/burstForKF_soc2p2_hi_lo_chg.csv'
+
+    # Get data and statistics
+    data_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+
     dt = 0.1  # Time step (seconds)
     process_noise_std = 0.1  # Standard deviation of acceleration noise
-    measurement_noise_std = 0.5  # Standard deviation of position measurement noise
-    kf3 = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt, proc_noise_std=process_noise_std,
-                     meas_noise_std=measurement_noise_std)
-    kf4 = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt, proc_noise_std=process_noise_std,
-                     meas_noise_std=measurement_noise_std)
-    mr3 = Saved()
-    mv3 = Saved()
-    mr4 = Saved()
-    mv4 = Saved()
+    measurement_noise_std = 0.5  # Standard deviation of voltage measurement noise
+    proc_noise_std_Voa = 0.015  # volts
+    proc_noise_std_Von = 0.015  # volts
+    proc_noise_std_VoVcn = 0.030  # volts
+    proc_noise_std_VoVca = 0.030  # volts
+    proc_noise_std_Vca = 0.005  # volts
+    proc_noise_std_Vcn = 0.005  # volts
+    proc_noise_std_Vbv = 0.005  # volts
+    proc_noise_std_Tbv = 0.005  # volts
+    # Measurement noise probably 1 significant bit of converter
+    meas_noise_std_Voa = 0.001  # volts
+    meas_noise_std_Von = 0.001  # volts
+    meas_noise_std_VoVcn = 0.002  # volts
+    meas_noise_std_VoVca = 0.002  # volts
+    meas_noise_std_Vca = 0.001  # volts
+    meas_noise_std_Vcn = 0.001  # volts
+    meas_noise_std_Vbv = 0.001  # volts
+    meas_noise_std_Tbv = 0.001  # volts
+    kfVoa = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                       proc_noise_std=proc_noise_std_Voa, meas_noise_std=meas_noise_std_Voa)
+    kfVca = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                       proc_noise_std=proc_noise_std_Vca, meas_noise_std=meas_noise_std_Vca)
+    kfVoVca = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                       proc_noise_std=proc_noise_std_VoVca, meas_noise_std=meas_noise_std_VoVca)
+    kfVon = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                       proc_noise_std=proc_noise_std_Von, meas_noise_std=meas_noise_std_Von)
+    kfVcn = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                       proc_noise_std=proc_noise_std_Vcn, meas_noise_std=meas_noise_std_Vcn)
+    kfVoVcn = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                       proc_noise_std=proc_noise_std_VoVcn, meas_noise_std=meas_noise_std_VoVcn)
+    kfVbv = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                       proc_noise_std=proc_noise_std_Vbv, meas_noise_std=meas_noise_std_Vbv)
+    kfTbv = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                       proc_noise_std=proc_noise_std_Tbv, meas_noise_std=meas_noise_std_Tbv)
 
-    # Simulate some measurements
-    true_position3 = 0.0
-    true_velocity3 = 1.0  # Constant velocity
-    true_position4 = 0.0
-    true_velocity4 = 0.0  # Constant velocity
-    t = 0
-    for i in range(N):
-        dt_noise = max(np.random.normal(dt, 0.005), .0001)
-        t += dt + dt_noise
-        true_position3 += true_velocity3 * dt_noise
-        # Add some random noise to the measurement
-        noise = np.random.normal(0, measurement_noise_std)
-        noisy_measurement3 = true_position3 + noise
-        noisy_measurement4 = true_position4 + noise
-        mr3.dt.append(dt_noise)
-        mr3.pos.append(noisy_measurement3)
-        mr3.time.append(t)
-        mr3.dt.append(dt_noise)
-        mr3.velo.append(true_velocity3)
-        mr4.dt.append(dt_noise)
-        mr4.pos.append(noisy_measurement4)
-        mr4.time.append(t)
-        mr4.dt.append(dt_noise)
-        mr4.velo.append(true_velocity4)
+    run_str = 'burst data'
+    ver_str = 'filtered'
 
-    n = len(mr3.pos)
-    for i in range(n):
-        x = mr3.pos[i]
-        dt = mr3.dt[i]
-        kf3.predict(dt)
-        kf3.update(x)
-        pos, vel = kf3.get_state()
-        mv3.pos.append(pos)
-        mv3.velo.append(vel)
-    mv3.time = mr3.time
-    mv3.dt = mr3.dt
-    n = len(mr4.pos)
-    for i in range(n):
-        x = mr4.pos[i]
-        dt = mr4.dt[i]
-        kf4.predict(dt)
-        kf4.update(x)
-        pos, vel = kf4.get_state()
-        mv4.pos.append(pos)
-        mv4.velo.append(vel)
-    mv4.time = mr4.time
-    mv4.dt = mr4.dt
+    # Data structures
+    mr = Saved()
+    mr.time = np.array(data_raw.time)
+    mr.Vca = np.array(data_raw.Vca-1.65)
+    mr.Voa = np.array(data_raw.Voa-1.65)
+    mr.VoVca = np.array(data_raw.VoVca)
+    mr.Vcn = np.array(data_raw.Vcn-1.65)
+    mr.Von = np.array(data_raw.Von-1.65)
+    mr.VoVcn = np.array(data_raw.VoVcn)
+    mr.Tbv = np.array(data_raw.Tbv-1.65)
+    mr.Vbv = np.array(data_raw.Vbv)
+    for i in range(len(data_raw.time)):
+        if i == 0:
+            mr.dt.append(data_raw.time[1] - data_raw.time[0])
+        else:
+            mr.dt.append(data_raw.time[i] - data_raw.time[i-1])
 
-    print(kf3)
+    mv = Saved()
+    v_rat = None
 
-    run_str3 = 'data 1 var dt'
-    ver_str3 = 'filtered 1 var dt'
-    run_str4 = 'data 2 var dt'
-    ver_str4 = 'filtered 2 var dt'
+    for i in range(len(mr.time)):
+        mv.time.append(mr.time[i])
+
+        kfVoa.predict(mr.dt[i])
+        kfVoa.update(mr.Voa[i])
+        vf, v_rat = kfVoa.get_state()
+        mv.Voa.append(vf[0])
+
+        kfVca.predict(mr.dt[i])
+        kfVca.update(mr.Vca[i])
+        vf, v_rat = kfVca.get_state()
+        mv.Vca.append(vf[0])
+
+        kfVoVca.predict(mr.dt[i])
+        kfVoVca.update(mr.VoVca[i])
+        vf, v_rat = kfVoVca.get_state()
+        mv.VoVca.append(vf[0])
+
+        kfVon.predict(mr.dt[i])
+        kfVon.update(mr.Von[i])
+        vf, v_rat = kfVon.get_state()
+        mv.Von.append(vf[0])
+
+        kfVcn.predict(mr.dt[i])
+        kfVcn.update(mr.Vcn[i])
+        vf, v_rat = kfVcn.get_state()
+        mv.Vcn.append(vf[0])
+
+        kfVoVcn.predict(mr.dt[i])
+        kfVoVcn.update(mr.VoVcn[i])
+        vf, v_rat = kfVoVcn.get_state()
+        mv.VoVcn.append(vf[0])
+
+        kfVbv.predict(mr.dt[i])
+        kfVbv.update(mr.Vbv[i])
+        vf, v_rat = kfVbv.get_state()
+        mv.Vbv.append(vf[0])
+
+        kfTbv.predict(mr.dt[i])
+        kfTbv.update(mr.Tbv[i])
+        vf, v_rat = kfTbv.get_state()
+        mv.Tbv.append(vf[0])
 
     plt.figure()
-    plt.subplot(121)
+    plt.subplot(111)
     plt.title(' kfDemo.py var dt')
-    plq(plt, mr3, 'time', mr3, 'pos', color='blue', linestyle='-', label='pos1' + run_str3)
-    plq(plt, mv3, 'time', mv3, 'pos', color='red', linestyle='--', label='pos1' + ver_str3)
-    plq(plt, mr4, 'time', mr4, 'pos', color='magenta', linestyle='-', label='pos2' + run_str4)
-    plq(plt, mv4, 'time', mv4, 'pos', color='black', linestyle='--', label='pos2' + ver_str4)
+    plq(plt, mr, 'time', mr, 'Voa', add=0.6, color='blue', linestyle='-', label='Voa' + run_str + '+0.6')
+    plq(plt, mv, 'time', mv, 'Voa', add=0.6, color='red', linestyle='--', label='Voa' + ver_str + '+0.6')
+    plq(plt, mr, 'time', mr, 'Vca', add=0.4, color='blue', linestyle='-', label='Vca' + run_str + '+0.4')
+    plq(plt, mv, 'time', mv, 'Vca', add=0.4, color='red', linestyle='--', label='Vca' + ver_str + '+0.4')
+    plq(plt, mr, 'time', mr, 'VoVca', add=0.2, color='blue', linestyle='-', label='VoVca' + run_str + '+0.2')
+    plq(plt, mv, 'time', mv, 'VoVca', add=0.2, color='red', linestyle='--', label='VoVca' + ver_str + '+0.2')
+    plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
+    plq(plt, mr, 'time', mr, 'Vcn', add=-0.2, color='blue', linestyle='-', label='Vcn' + run_str + '-0.2')
+    plq(plt, mv, 'time', mv, 'Vcn', add=-0.2, color='red', linestyle='--', label='Vcn' + ver_str + '-0.2')
+    plq(plt, mr, 'time', mr, 'VoVcn', add=-0.4, color='blue', linestyle='-', label='VoVcn' + run_str + '-0.4')
+    plq(plt, mv, 'time', mv, 'VoVcn', add=-0.4, color='red', linestyle='--', label='VoVcn' + ver_str + '-0.4')
+    plq(plt, mr, 'time', mr, 'Vbv', add=-0.6, color='blue', linestyle='-', label='Vbv' + run_str + '-0.6')
+    plq(plt, mv, 'time', mv, 'Vbv', add=-0.6, color='red', linestyle='--', label='Vbv' + ver_str + '-0.6')
+    plq(plt, mr, 'time', mr, 'Tbv', add=-0.8, color='blue', linestyle='-', label='Tbv' + run_str + '-0.8')
+    plq(plt, mv, 'time', mv, 'Tbv', add=-0.8, color='red', linestyle='--', label='Tbv' + ver_str + '-0.8')
     plt.legend(loc=1)
-    plt.subplot(122)
-    plq(plt, mr3, 'time', mr3, 'velo', color='blue', linestyle='-', label='velo' + run_str3)
-    plq(plt, mv3, 'time', mv3, 'velo', color='red', linestyle='--', label='velo' + ver_str3)
-    plq(plt, mr4, 'time', mr4, 'velo', color='magenta', linestyle='-', label='velo' + run_str4)
-    plq(plt, mv4, 'time', mv4, 'velo', color='black', linestyle='--', label='velo' + ver_str4)
-    plt.legend(loc=1)
+    # plt.subplot(212)
+    # plq(plt, mr3, 'time', mr3, 'velo', color='blue', linestyle='-', label='velo' + run_str3)
+    # plq(plt, mv3, 'time', mv3, 'velo', color='red', linestyle='--', label='velo' + ver_str3)
+    # plq(plt, mr4, 'time', mr4, 'velo', color='magenta', linestyle='-', label='velo' + run_str4)
+    # plq(plt, mv4, 'time', mv4, 'velo', color='black', linestyle='--', label='velo' + ver_str4)
+    # plt.legend(loc=1)
 
     plt.show(block=True)
