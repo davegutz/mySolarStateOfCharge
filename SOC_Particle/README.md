@@ -999,5 +999,4 @@ See 'State of Charge Monitor.odt' for full set of requirements, testing, discuss
 - [ ] Consider a lower gain amp for the amp device
 - [ ] Resolve 'WARN' for mlissing UT
 - [ ] Kalman filter of current measurement esp noa
-
-- [ ] Document spectrum study lombscargle.py performed as described in its contents.  It will be interesting to see if Kalman filter can get rid of it - normally aliased data is difficult to deal with but this is so predictable and regular.  40 Hz sampling will actually be 10 Hz in real life
+- [ ] Document spectrum study lombscargleVcOnly.py performed as described in its contents.  It will be interesting to see if Kalman filter can get rid of it - it should - it's a fundamental 1.6 Hz mode well within sample frequency of 10 Hz (Nyquist 5 Hz).  The mode is present on all voltage measurements.  There are some harmonics beyond Nyquist.  1.6, 4.7, 7.8, 10.9, 14, 17.1, 20.3, and 23.1 Hz sampled using 'Cx10000' at 185 Hz.  This appears as very large noise in Ib_noa due to amplification after sampling.   The noise is in the sampling process somewhere. Should disconnect everything connected to the Photon 2 to try to isolate to Photon or infrastructire.
