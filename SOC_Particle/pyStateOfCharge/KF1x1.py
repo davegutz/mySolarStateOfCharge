@@ -196,6 +196,9 @@ class SavedData:
             self.Tbv = None
             self.Vbv = None
         else:
+            self.assign_all_from(x)
+
+            # Special handling
             self.skip_x = np.bool(np.array(x.skip))
             self.i = 0
             self.time = np.array(x.time)
@@ -205,27 +208,11 @@ class SavedData:
                     self.dt.append(self.time[1] - self.time[0])
                 else:
                     self.dt.append(self.time[i] - self.time[i-1])
-            self.Vca = np.array(x.Vca)
-            self.Voa = np.array(x.Voa)
-            self.VoVca = np.array(x.VoVca)
-            self.Vcn = np.array(x.Vcn)
-            self.Von = np.array(x.Von)
-            self.VoVcn = np.array(x.VoVcn)
-            self.Tbv = np.array(x.Tbv)
-            self.Vbv = np.array(x.Vbv)
 
             # Truncate
             if time_end is not None:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
-                self.time = self.time[:i_end]
-                self.Vca = self.Vca[:i_end]
-                self.Voa = self.Voa[:i_end]
-                self.VoVca = self.VoVca[:i_end]
-                self.Vcn = self.Vcn[:i_end]
-                self.Von = self.Von[:i_end]
-                self.VoVcn = self.VoVcn[:i_end]
-                self.Tbv = self.Tbv[:i_end]
-                self.Vbv = self.Vbv[:i_end]
+                self.truncate(i_end, 'time')
 
     def __str__(self):
         s = "{},".format(self.unit[self.i])
@@ -239,13 +226,39 @@ class SavedData:
         s += "{:8.6f},".format(self.Vbv[self.i])
         return s
 
+    def assign_all_from(self, x=None):
+        """
+        Iterates over members of a dataset x, assigns values to numpy.ndarray members
+        """
+        for name in list(x.dtype.names):
+            setattr(self, name, x[name])
+
+    def truncate(self, i_end=None, key_attr='time'):
+        """
+        Iterates over members of an self, assigns values to numpy.ndarray members
+        from rap_self.ib up to i_end.
+        """
+        for attr_name in dir(self):
+            # Filter out built-in attributes and methods
+            if not attr_name.startswith('__') and not callable(getattr(self, attr_name)):
+                member = getattr(self, attr_name)
+                if isinstance(member, np.ndarray):
+                    # Ensure the slice doesn't exceed the bounds of rap_self.ib
+                    end_index = min(i_end, len(getattr(self, key_attr)))
+
+                    # Assign the slice to the numpy.ndarray member
+                    # If the target array has a different shape, direct assignment
+                    # might fail or reshape the array. Using np.array() ensures
+                    # a new array is created with the correct slice.
+                    setattr(self, attr_name, getattr(self, attr_name)[:end_index])
+
 
 # Load from files
 def load_data(path_to_data, time_end_in):
 
     print(f"load_data: \n{path_to_data=}\n{time_end_in=}\n")
 
-    hdr_key_x = "unit_x,"  # Find one instance of title
+    hdr_key_x = "unit_x,"  # Find one self of title
     unit_key_x = "x_unit"
 
     data_file_clean = write_clean_file(path_to_data, type_='_x', hdr_key=hdr_key_x, unit_key=unit_key_x)
@@ -283,13 +296,19 @@ if __name__ == "__main__":
     import numpy as np
     import matplotlib.pyplot as plt
     from DataOverModel import plq
+    plt.rcParams['axes.grid'] = True
 
     time_end = None
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burstForKF_soc2p2_hi_lo_chg.csv'
     mr, data_file_clean = load_data(data_file, time_end)
+    mr.Vca -= 1.65
+    mr.Voa -= 1.65
+    mr.Vcn -= 1.65
+    mr.Von -= 1.65
+    mr.Tbv -= 1.65
 
     dt = 0.1  # Time step (seconds) used only on init
-    Qstd = 0.015  # Standard deviation of acceleration noise
+    Qstd = 0.015*2  # Standard deviation of acceleration noise
     R = 0.001  # Standard deviation of voltage measurement noise
     kfVoa = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
                        proc_noise_std=Qstd, meas_noise_std=R)
@@ -308,8 +327,8 @@ if __name__ == "__main__":
     kfTbv = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
                        proc_noise_std=Qstd, meas_noise_std=R)
 
-    run_str = 'burst data'
-    ver_str = 'filtered'
+    run_str = '_burst data'
+    ver_str = '_filtered'
 
     # Data structures
     mv = Saved()
@@ -404,18 +423,10 @@ if __name__ == "__main__":
     plt.title(' kfDemo.py var dt 3a')
     plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
     plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
-    # plq(plt, mr, 'time', mr, 'Vcn', add=-0.2, color='blue', linestyle='-', label='Vcn' + run_str + '-0.2')
-    # plq(plt, mv, 'time', mv, 'Vcn', add=-0.2, color='red', linestyle='--', label='Vcn' + ver_str + '-0.2')
-    # plq(plt, mr, 'time', mr, 'VoVcn', add=-0.4, color='blue', linestyle='-', label='VoVcn' + run_str + '-0.4')
-    # plq(plt, mv, 'time', mv, 'VoVcn', add=-0.4, color='red', linestyle='--', label='VoVcn' + ver_str + '-0.4')
     plt.legend(loc=1)
     plt.subplot(212)
     plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
     plq(plt, mv, 'time', mv, 'Voa', add=0.0, color='red', linestyle='--', label='Voa' + ver_str + '+0.0')
-    # plq(plt, mr, 'time', mr, 'Vca', add=-0.2, color='blue', linestyle='-', label='Vca' + run_str + '-0.2')
-    # plq(plt, mv, 'time', mv, 'Vca', add=-0.2, color='red', linestyle='--', label='Vca' + ver_str + '-0.2')
-    # plq(plt, mr, 'time', mr, 'VoVca', add=-0.4, color='blue', linestyle='-', label='VoVca' + run_str + '-0.4')
-    # plq(plt, mv, 'time', mv, 'VoVca', add=-0.4, color='red', linestyle='--', label='VoVca' + ver_str + '-0.4')
     plt.legend(loc=1)
 
 
@@ -428,4 +439,58 @@ if __name__ == "__main__":
     plq(plt, mv, 'time', mv, 'Tbv', add=-0.8, color='red', linestyle='--', label='Tbv' + ver_str + '-0.8')
     plt.legend(loc=1)
 
+    for Qstd, R in [ [0.015, 0.001], [0.03, 0.001], [0.0075, 0.001], [0.015, 0.002], [0.015, 0.0005]]:
+        mv = None
+        print(f"{Qstd=} {R=}")
+        kfVoa = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                           proc_noise_std=Qstd, meas_noise_std=R)
+        kfVca = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                           proc_noise_std=Qstd, meas_noise_std=R)
+        kfVon = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                           proc_noise_std=Qstd, meas_noise_std=R)
+        kfVcn = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                           proc_noise_std=Qstd, meas_noise_std=R)
+
+        run_str = '_burst data'
+        ver_str = '_filtered'
+
+        # Data structures
+        mv = Saved()
+        v_rat = None
+
+        for i in range(len(mr.time)):
+            mv.time.append(mr.time[i])
+
+            kfVoa.predict(mr.dt[i])
+            kfVoa.update(mr.Voa[i])
+            vf, v_rat = kfVoa.get_state()
+            mv.Voa.append(vf[0])
+
+            kfVca.predict(mr.dt[i])
+            kfVca.update(mr.Vca[i])
+            vf, v_rat = kfVca.get_state()
+            mv.Vca.append(vf[0])
+
+            kfVon.predict(mr.dt[i])
+            kfVon.update(mr.Von[i])
+            vf, v_rat = kfVon.get_state()
+            mv.Von.append(vf[0])
+
+            kfVcn.predict(mr.dt[i])
+            kfVcn.update(mr.Vcn[i])
+            vf, v_rat = kfVcn.get_state()
+            mv.Vcn.append(vf[0])
+
+        plt.figure()
+        plt.subplot(211)
+        plt.title(' kfDemo.py var dt 3a')
+        plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
+        plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
+        plt.legend(loc=1)
+        plt.subplot(212)
+        plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
+        plq(plt, mv, 'time', mv, 'Voa', add=0.0, color='red', linestyle='--', label='Voa' + ver_str + '+0.0')
+        plt.legend(loc=1)
+
     plt.show(block=True)
+
