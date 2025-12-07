@@ -288,42 +288,25 @@ if __name__ == "__main__":
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burstForKF_soc2p2_hi_lo_chg.csv'
     mr, data_file_clean = load_data(data_file, time_end)
 
-    dt = 0.1  # Time step (seconds)
-    process_noise_std = 0.1  # Standard deviation of acceleration noise
-    measurement_noise_std = 0.5  # Standard deviation of voltage measurement noise
-    proc_noise_std_Voa = 0.015  # volts
-    proc_noise_std_Von = 0.015  # volts
-    proc_noise_std_VoVcn = 0.030  # volts
-    proc_noise_std_VoVca = 0.030  # volts
-    proc_noise_std_Vca = 0.005  # volts
-    proc_noise_std_Vcn = 0.005  # volts
-    proc_noise_std_Vbv = 0.005  # volts
-    proc_noise_std_Tbv = 0.005  # volts
-    # Measurement noise probably 1 significant bit of converter
-    meas_noise_std_Voa = 0.001  # volts
-    meas_noise_std_Von = 0.001  # volts
-    meas_noise_std_VoVcn = 0.002  # volts
-    meas_noise_std_VoVca = 0.002  # volts
-    meas_noise_std_Vca = 0.001  # volts
-    meas_noise_std_Vcn = 0.001  # volts
-    meas_noise_std_Vbv = 0.001  # volts
-    meas_noise_std_Tbv = 0.001  # volts
+    dt = 0.1  # Time step (seconds) used only on init
+    Qstd = 0.015  # Standard deviation of acceleration noise
+    R = 0.001  # Standard deviation of voltage measurement noise
     kfVoa = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=proc_noise_std_Voa, meas_noise_std=meas_noise_std_Voa)
+                       proc_noise_std=Qstd, meas_noise_std=R)
     kfVca = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=proc_noise_std_Vca, meas_noise_std=meas_noise_std_Vca)
+                       proc_noise_std=Qstd, meas_noise_std=R)
     kfVoVca = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=proc_noise_std_VoVca, meas_noise_std=meas_noise_std_VoVca)
+                       proc_noise_std=Qstd*2., meas_noise_std=R*2.)
     kfVon = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=proc_noise_std_Von, meas_noise_std=meas_noise_std_Von)
+                       proc_noise_std=Qstd, meas_noise_std=R)
     kfVcn = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=proc_noise_std_Vcn, meas_noise_std=meas_noise_std_Vcn)
+                       proc_noise_std=Qstd, meas_noise_std=R)
     kfVoVcn = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=proc_noise_std_VoVcn, meas_noise_std=meas_noise_std_VoVcn)
+                       proc_noise_std=Qstd*2., meas_noise_std=R*2.)
     kfVbv = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=proc_noise_std_Vbv, meas_noise_std=meas_noise_std_Vbv)
+                       proc_noise_std=Qstd, meas_noise_std=R)
     kfTbv = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=proc_noise_std_Tbv, meas_noise_std=meas_noise_std_Tbv)
+                       proc_noise_std=Qstd, meas_noise_std=R)
 
     run_str = 'burst data'
     ver_str = 'filtered'
