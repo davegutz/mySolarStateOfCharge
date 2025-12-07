@@ -17,7 +17,7 @@
 kf_update methods in the parent."""
 
 global mon_run
-
+from load_data import write_clean_file
 
 class Saved:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
@@ -178,6 +178,89 @@ class KF1x1VarDt:
         """
         return self.P
 
+class SavedData:
+    def __init__(self, x=None, time_end=None):
+
+        if x is None:
+            unit_x = None
+            self.skip_x = None
+            self.i = 0
+            self.time = None
+            self.dt = None
+            self.Vca = None
+            self.Voa = None
+            self.VoVca = None
+            self.Vcn = None
+            self.Von = None
+            self.VoVcn = None
+            self.Tbv = None
+            self.Vbv = None
+        else:
+            self.skip_x = np.bool(np.array(x.skip))
+            self.i = 0
+            self.time = np.array(x.time)
+            self.dt = []
+            for i in range(len(self.time)):
+                if i == 0:
+                    self.dt.append(self.time[1] - self.time[0])
+                else:
+                    self.dt.append(self.time[i] - self.time[i-1])
+            self.Vca = np.array(x.Vca)
+            self.Voa = np.array(x.Voa)
+            self.VoVca = np.array(x.VoVca)
+            self.Vcn = np.array(x.Vcn)
+            self.Von = np.array(x.Von)
+            self.VoVcn = np.array(x.VoVcn)
+            self.Tbv = np.array(x.Tbv)
+            self.Vbv = np.array(x.Vbv)
+
+            # Truncate
+            if time_end is not None:
+                i_end = np.where(self.time <= time_end)[0][-1] + 1
+                self.time = self.time[:i_end]
+                self.Vca = self.Vca[:i_end]
+                self.Voa = self.Voa[:i_end]
+                self.VoVca = self.VoVca[:i_end]
+                self.Vcn = self.Vcn[:i_end]
+                self.Von = self.Von[:i_end]
+                self.VoVcn = self.VoVcn[:i_end]
+                self.Tbv = self.Tbv[:i_end]
+                self.Vbv = self.Vbv[:i_end]
+
+    def __str__(self):
+        s = "{},".format(self.unit[self.i])
+        s += "{:8.6f},".format(self.Vca[self.i])
+        s += "{:8.6f},".format(self.Voa[self.i])
+        s += "{:8.6f},".format(self.VoVca[self.i])
+        s += "{:8.6f},".format(self.Vcn[self.i])
+        s += "{:8.6f},".format(self.Von[self.i])
+        s += "{:8.6f},".format(self.VoVcn[self.i])
+        s += "{:8.6f},".format(self.Tbv[self.i])
+        s += "{:8.6f},".format(self.Vbv[self.i])
+        return s
+
+
+# Load from files
+def load_data(path_to_data, time_end_in):
+
+    print(f"load_data: \n{path_to_data=}\n{time_end_in=}\n")
+
+    hdr_key_x = "unit_x,"  # Find one instance of title
+    unit_key_x = "x_unit"
+
+    data_file_clean = write_clean_file(path_to_data, type_='_x', hdr_key=hdr_key_x, unit_key=unit_key_x)
+    if data_file_clean is None:
+        return None, None, None, None, None, None
+    if data_file_clean is not None:
+        mon_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+    else:
+        mon_raw = None
+        print(f"load_data: returning mon=None")
+
+    mon = SavedData(x=mon_raw, time_end=time_end_in)
+
+    return mon, data_file_clean
+
 
 class Saved:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
@@ -201,11 +284,9 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from DataOverModel import plq
 
-    # data_file_clean = 'burstForKF_soc2p2_hi_lo_chg.csv'  # just to look at data
-    data_file_clean = './noise_study/burstForKF_soc2p2_hi_lo_chg.csv'
-
-    # Get data and statistics
-    data_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+    time_end = None
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burstForKF_soc2p2_hi_lo_chg.csv'
+    mr, data_file_clean = load_data(data_file, time_end)
 
     dt = 0.1  # Time step (seconds)
     process_noise_std = 0.1  # Standard deviation of acceleration noise
@@ -248,22 +329,6 @@ if __name__ == "__main__":
     ver_str = 'filtered'
 
     # Data structures
-    mr = Saved()
-    mr.time = np.array(data_raw.time)
-    mr.Vca = np.array(data_raw.Vca-1.65)
-    mr.Voa = np.array(data_raw.Voa-1.65)
-    mr.VoVca = np.array(data_raw.VoVca)
-    mr.Vcn = np.array(data_raw.Vcn-1.65)
-    mr.Von = np.array(data_raw.Von-1.65)
-    mr.VoVcn = np.array(data_raw.VoVcn)
-    mr.Tbv = np.array(data_raw.Tbv-1.65)
-    mr.Vbv = np.array(data_raw.Vbv)
-    for i in range(len(data_raw.time)):
-        if i == 0:
-            mr.dt.append(data_raw.time[1] - data_raw.time[0])
-        else:
-            mr.dt.append(data_raw.time[i] - data_raw.time[i-1])
-
     mv = Saved()
     v_rat = None
 
@@ -352,15 +417,24 @@ if __name__ == "__main__":
     plt.legend(loc=1)
 
     plt.figure()
-    plt.subplot(111)
-    plt.title(' kfDemo.py var dt 3')
+    plt.subplot(211)
+    plt.title(' kfDemo.py var dt 3a')
     plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
     plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
-    plq(plt, mr, 'time', mr, 'Vcn', add=-0.2, color='blue', linestyle='-', label='Vcn' + run_str + '-0.2')
-    plq(plt, mv, 'time', mv, 'Vcn', add=-0.2, color='red', linestyle='--', label='Vcn' + ver_str + '-0.2')
-    plq(plt, mr, 'time', mr, 'VoVcn', add=-0.4, color='blue', linestyle='-', label='VoVcn' + run_str + '-0.4')
-    plq(plt, mv, 'time', mv, 'VoVcn', add=-0.4, color='red', linestyle='--', label='VoVcn' + ver_str + '-0.4')
+    # plq(plt, mr, 'time', mr, 'Vcn', add=-0.2, color='blue', linestyle='-', label='Vcn' + run_str + '-0.2')
+    # plq(plt, mv, 'time', mv, 'Vcn', add=-0.2, color='red', linestyle='--', label='Vcn' + ver_str + '-0.2')
+    # plq(plt, mr, 'time', mr, 'VoVcn', add=-0.4, color='blue', linestyle='-', label='VoVcn' + run_str + '-0.4')
+    # plq(plt, mv, 'time', mv, 'VoVcn', add=-0.4, color='red', linestyle='--', label='VoVcn' + ver_str + '-0.4')
     plt.legend(loc=1)
+    plt.subplot(212)
+    plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Voa', add=0.0, color='red', linestyle='--', label='Voa' + ver_str + '+0.0')
+    # plq(plt, mr, 'time', mr, 'Vca', add=-0.2, color='blue', linestyle='-', label='Vca' + run_str + '-0.2')
+    # plq(plt, mv, 'time', mv, 'Vca', add=-0.2, color='red', linestyle='--', label='Vca' + ver_str + '-0.2')
+    # plq(plt, mr, 'time', mr, 'VoVca', add=-0.4, color='blue', linestyle='-', label='VoVca' + run_str + '-0.4')
+    # plq(plt, mv, 'time', mv, 'VoVca', add=-0.4, color='red', linestyle='--', label='VoVca' + ver_str + '-0.4')
+    plt.legend(loc=1)
+
 
     plt.figure()
     plt.subplot(111)
