@@ -486,6 +486,13 @@ if __name__ == "__main__":
         plt.title(' kfDemo.py var dt 3a')
         plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
         plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
+        plt.text(0.5, 0.5, f"{Qstd=}   {R=}",
+                 horizontalalignment='center',
+                 verticalalignment='center',
+                 transform=plt.gca().transAxes,
+                 fontsize=14,
+                 color='blue',
+                 bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
         plt.legend(loc=1)
         plt.subplot(212)
         plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
