@@ -477,7 +477,8 @@ if __name__ == "__main__":
     plt = plot_5(plt, title+' F5')
 
     title = 'Part Factorial kfDemo.py var dt'
-    for Qstd, R in [ [0.015, 0.001], [0.03, 0.001], [0.0075, 0.001], [0.015, 0.002], [0.015, 0.0005]]:
+    for Qstd, R in [ [0.015, 0.001],  [0.03, 0.001],  [0.0075, 0.001],  [0.015, 0.002], [0.015, 0.0005],
+                     [0.015, 0.0005], [0.03, 0.0005], [0.0075, 0.0005], [0.015, 0.001], [0.015, 0.00025]]:
         mv = None
         print(f"{Qstd=} {R=}")
         kfVoa = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
