@@ -19,6 +19,96 @@ kf_update methods in the parent."""
 global mon_run
 from load_data import write_clean_file
 
+def plot_1(plt=None, title=None):
+    plt.figure()
+    plt.subplot(111)
+    plt.title(title)
+    plq(plt, mr, 'time', mr, 'Voa', add=0.6, color='blue', linestyle='-', label='Voa' + run_str + '+0.6')
+    plq(plt, mv, 'time', mv, 'Voa', add=0.6, color='red', linestyle='--', label='Voa' + ver_str + '+0.6')
+    plq(plt, mr, 'time', mr, 'Vca', add=0.4, color='blue', linestyle='-', label='Vca' + run_str + '+0.4')
+    plq(plt, mv, 'time', mv, 'Vca', add=0.4, color='red', linestyle='--', label='Vca' + ver_str + '+0.4')
+    plq(plt, mr, 'time', mr, 'VoVca', add=0.2, color='blue', linestyle='-', label='VoVca' + run_str + '+0.2')
+    plq(plt, mv, 'time', mv, 'VoVca', add=0.2, color='red', linestyle='--', label='VoVca' + ver_str + '+0.2')
+    plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
+    plq(plt, mr, 'time', mr, 'Vcn', add=-0.2, color='blue', linestyle='-', label='Vcn' + run_str + '-0.2')
+    plq(plt, mv, 'time', mv, 'Vcn', add=-0.2, color='red', linestyle='--', label='Vcn' + ver_str + '-0.2')
+    plq(plt, mr, 'time', mr, 'VoVcn', add=-0.4, color='blue', linestyle='-', label='VoVcn' + run_str + '-0.4')
+    plq(plt, mv, 'time', mv, 'VoVcn', add=-0.4, color='red', linestyle='--', label='VoVcn' + ver_str + '-0.4')
+    plq(plt, mr, 'time', mr, 'Vbv', add=-0.6, color='blue', linestyle='-', label='Vbv' + run_str + '-0.6')
+    plq(plt, mv, 'time', mv, 'Vbv', add=-0.6, color='red', linestyle='--', label='Vbv' + ver_str + '-0.6')
+    plq(plt, mr, 'time', mr, 'Tbv', add=-0.8, color='blue', linestyle='-', label='Tbv' + run_str + '-0.8')
+    plq(plt, mv, 'time', mv, 'Tbv', add=-0.8, color='red', linestyle='--', label='Tbv' + ver_str + '-0.8')
+    plt.legend(loc=1)
+    return plt
+
+def plot_2(plt=None, title=None):
+    plt.figure()
+    plt.subplot(111)
+    plt.title(title)
+    plq(plt, mv, 'time', mv, 'VoVcn', color='red', linestyle='-', label='VoVcn' + ver_str)
+    plq(plt, mv, 'time', mv, 'VoVcnA', color='green', linestyle='--', label='VoVcnA' + ver_str)
+    plt.legend(loc=1)
+    return plt
+
+def plot_3(plt=None, title=None):
+    plt.figure()
+    plt.subplot(111)
+    plt.title(title)
+    plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Voa', add=0.0, color='red', linestyle='--', label='Voa' + ver_str + '+0.0')
+    plq(plt, mr, 'time', mr, 'Vca', add=-0.2, color='blue', linestyle='-', label='Vca' + run_str + '-0.2')
+    plq(plt, mv, 'time', mv, 'Vca', add=-0.2, color='red', linestyle='--', label='Vca' + ver_str + '-0.2')
+    plq(plt, mr, 'time', mr, 'VoVca', add=-0.4, color='blue', linestyle='-', label='VoVca' + run_str + '-0.4')
+    plq(plt, mv, 'time', mv, 'VoVca', add=-0.4, color='red', linestyle='--', label='VoVca' + ver_str + '-0.4')
+    plt.legend(loc=1)
+    return plt
+
+def plot_4(plt=None, title=None):
+    plt.figure()
+    plt.subplot(211)
+    plt.title(title)
+    plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
+    plt.legend(loc=1)
+    plt.subplot(212)
+    plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Voa', add=0.0, color='red', linestyle='--', label='Voa' + ver_str + '+0.0')
+    plt.legend(loc=1)
+    return plt
+
+def plot_5(plt=None, title=None):
+    plt.figure()
+    plt.subplot(111)
+    plt.title(title)
+    plq(plt, mr, 'time', mr, 'Vbv', add=-0.6, color='blue', linestyle='-', label='Vbv' + run_str + '-0.6')
+    plq(plt, mv, 'time', mv, 'Vbv', add=-0.6, color='red', linestyle='--', label='Vbv' + ver_str + '-0.6')
+    plq(plt, mr, 'time', mr, 'Tbv', add=-0.8, color='blue', linestyle='-', label='Tbv' + run_str + '-0.8')
+    plq(plt, mv, 'time', mv, 'Tbv', add=-0.8, color='red', linestyle='--', label='Tbv' + ver_str + '-0.8')
+    plt.legend(loc=1)
+    return plt
+
+def plot_P(plt=None, title=None, Qstd=None, R=None):
+    plt.figure()
+    plt.subplot(211)
+    plt.title(title)
+    plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
+    plt.text(0.5, 0.5, f"{Qstd=}   {R=}",
+             horizontalalignment='center',
+             verticalalignment='center',
+             transform=plt.gca().transAxes,
+             fontsize=14,
+             color='blue',
+             bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
+    plt.legend(loc=1)
+    plt.subplot(212)
+    plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Voa', add=0.0, color='red', linestyle='--', label='Voa' + ver_str + '+0.0')
+    plt.legend(loc=1)
+    return plt
+
+
 class Saved:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
     def __init__(self):
@@ -307,6 +397,7 @@ if __name__ == "__main__":
     mr.Von -= 1.65
     mr.Tbv -= 1.65
 
+    title = 'Base kfDemo.py var dt'
     dt = 0.1  # Time step (seconds) used only on init
     Qstd = 0.015*2  # Standard deviation of acceleration noise
     R = 0.001  # Standard deviation of voltage measurement noise
@@ -379,66 +470,13 @@ if __name__ == "__main__":
         vf, v_rat = kfTbv.get_state()
         mv.Tbv.append(vf[0])
 
-    plt.figure()
-    plt.subplot(111)
-    plt.title(' kfDemo.py var dt')
-    plq(plt, mr, 'time', mr, 'Voa', add=0.6, color='blue', linestyle='-', label='Voa' + run_str + '+0.6')
-    plq(plt, mv, 'time', mv, 'Voa', add=0.6, color='red', linestyle='--', label='Voa' + ver_str + '+0.6')
-    plq(plt, mr, 'time', mr, 'Vca', add=0.4, color='blue', linestyle='-', label='Vca' + run_str + '+0.4')
-    plq(plt, mv, 'time', mv, 'Vca', add=0.4, color='red', linestyle='--', label='Vca' + ver_str + '+0.4')
-    plq(plt, mr, 'time', mr, 'VoVca', add=0.2, color='blue', linestyle='-', label='VoVca' + run_str + '+0.2')
-    plq(plt, mv, 'time', mv, 'VoVca', add=0.2, color='red', linestyle='--', label='VoVca' + ver_str + '+0.2')
-    plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
-    plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
-    plq(plt, mr, 'time', mr, 'Vcn', add=-0.2, color='blue', linestyle='-', label='Vcn' + run_str + '-0.2')
-    plq(plt, mv, 'time', mv, 'Vcn', add=-0.2, color='red', linestyle='--', label='Vcn' + ver_str + '-0.2')
-    plq(plt, mr, 'time', mr, 'VoVcn', add=-0.4, color='blue', linestyle='-', label='VoVcn' + run_str + '-0.4')
-    plq(plt, mv, 'time', mv, 'VoVcn', add=-0.4, color='red', linestyle='--', label='VoVcn' + ver_str + '-0.4')
-    plq(plt, mr, 'time', mr, 'Vbv', add=-0.6, color='blue', linestyle='-', label='Vbv' + run_str + '-0.6')
-    plq(plt, mv, 'time', mv, 'Vbv', add=-0.6, color='red', linestyle='--', label='Vbv' + ver_str + '-0.6')
-    plq(plt, mr, 'time', mr, 'Tbv', add=-0.8, color='blue', linestyle='-', label='Tbv' + run_str + '-0.8')
-    plq(plt, mv, 'time', mv, 'Tbv', add=-0.8, color='red', linestyle='--', label='Tbv' + ver_str + '-0.8')
-    plt.legend(loc=1)
+    plt = plot_1(plt, title+' F1')
+    plt = plot_2(plt, title+' F2')
+    plt = plot_3(plt, title+' F3')
+    plt = plot_4(plt, title+' F4')
+    plt = plot_5(plt, title+' F5')
 
-    plt.figure()
-    plt.subplot(111)
-    plt.title(' kfDemo.py var dt 2')
-    plq(plt, mv, 'time', mv, 'VoVcn', color='red', linestyle='-', label='VoVcn' + ver_str)
-    plq(plt, mv, 'time', mv, 'VoVcnA', color='green', linestyle='--', label='VoVcnA' + ver_str)
-    plt.legend(loc=1)
-    plt.figure()
-
-    plt.subplot(111)
-    plt.title(' kfDemo.py var dt 3')
-    plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
-    plq(plt, mv, 'time', mv, 'Voa', add=0.0, color='red', linestyle='--', label='Voa' + ver_str + '+0.0')
-    plq(plt, mr, 'time', mr, 'Vca', add=-0.2, color='blue', linestyle='-', label='Vca' + run_str + '-0.2')
-    plq(plt, mv, 'time', mv, 'Vca', add=-0.2, color='red', linestyle='--', label='Vca' + ver_str + '-0.2')
-    plq(plt, mr, 'time', mr, 'VoVca', add=-0.4, color='blue', linestyle='-', label='VoVca' + run_str + '-0.4')
-    plq(plt, mv, 'time', mv, 'VoVca', add=-0.4, color='red', linestyle='--', label='VoVca' + ver_str + '-0.4')
-    plt.legend(loc=1)
-
-    plt.figure()
-    plt.subplot(211)
-    plt.title(' kfDemo.py var dt 3a')
-    plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
-    plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
-    plt.legend(loc=1)
-    plt.subplot(212)
-    plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
-    plq(plt, mv, 'time', mv, 'Voa', add=0.0, color='red', linestyle='--', label='Voa' + ver_str + '+0.0')
-    plt.legend(loc=1)
-
-
-    plt.figure()
-    plt.subplot(111)
-    plt.title(' kfDemo.py var dt 4')
-    plq(plt, mr, 'time', mr, 'Vbv', add=-0.6, color='blue', linestyle='-', label='Vbv' + run_str + '-0.6')
-    plq(plt, mv, 'time', mv, 'Vbv', add=-0.6, color='red', linestyle='--', label='Vbv' + ver_str + '-0.6')
-    plq(plt, mr, 'time', mr, 'Tbv', add=-0.8, color='blue', linestyle='-', label='Tbv' + run_str + '-0.8')
-    plq(plt, mv, 'time', mv, 'Tbv', add=-0.8, color='red', linestyle='--', label='Tbv' + ver_str + '-0.8')
-    plt.legend(loc=1)
-
+    title = 'Part Factorial kfDemo.py var dt'
     for Qstd, R in [ [0.015, 0.001], [0.03, 0.001], [0.0075, 0.001], [0.015, 0.002], [0.015, 0.0005]]:
         mv = None
         print(f"{Qstd=} {R=}")
@@ -481,23 +519,7 @@ if __name__ == "__main__":
             vf, v_rat = kfVcn.get_state()
             mv.Vcn.append(vf[0])
 
-        plt.figure()
-        plt.subplot(211)
-        plt.title(' kfDemo.py var dt 3a')
-        plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
-        plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
-        plt.text(0.5, 0.5, f"{Qstd=}   {R=}",
-                 horizontalalignment='center',
-                 verticalalignment='center',
-                 transform=plt.gca().transAxes,
-                 fontsize=14,
-                 color='blue',
-                 bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
-        plt.legend(loc=1)
-        plt.subplot(212)
-        plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
-        plq(plt, mv, 'time', mv, 'Voa', add=0.0, color='red', linestyle='--', label='Voa' + ver_str + '+0.0')
-        plt.legend(loc=1)
+        plt = plot_P(plt, title + ' P1', Qstd=Qstd, R=R)
 
     plt.show(block=True)
 
