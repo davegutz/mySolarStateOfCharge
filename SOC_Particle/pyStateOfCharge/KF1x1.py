@@ -467,16 +467,18 @@ class Saved:
 
 # Example Usage:
 if __name__ == "__main__":
+    """
+    Test setup:  FY6900 Dominty Function Generator.  CH 1 connected across shunt leads.  CH 2 ground connected to
+    board ground.  Top level - Sweep.   - Freq 0.5 - 5.0, Ampl 0.01 - 0.01, Offs -0.01 - -0.01, Duty 50% - 50%,
+    Mode Logarithm.   Direction Forth, Time 120s.  Turn off generator.
+    'Cx27000',  wait 60 sec. Turn on generator and press OK on function generator.  When it reaches 0.5 Hz again press
+    OK to stop.  Then turn off generator.
+    """
+
     import numpy as np
     import matplotlib.pyplot as plt
     from DataOverModel import plq
     plt.rcParams['axes.grid'] = True
-
-    # Test setup:  FY6900 Dominty Function Generator.  CH 1 connected across shunt leads.  CH 2 ground connected to
-    # board ground.  Top level - Sweep.   - Freq 0.5 - 5.0, Ampl 0.01 - 0.01, Offs -0.01 - -0.01, Duty 50% - 50%,
-    # Mode Linear.   Direction Forth, Time 120s.  Turn off generator.
-    # 'Cx27000',  wait 60 sec. Turn on generator and press OK on function generator.  When it reaches 0.5 Hz again press
-    # OK to stop and turn off generator.
 
     time_end = None
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burstForKF_soc2p2_hi_lo_chg.csv'
