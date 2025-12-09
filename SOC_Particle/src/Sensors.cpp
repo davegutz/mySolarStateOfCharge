@@ -253,7 +253,19 @@ void Shunt::convert(const boolean disconnect, const boolean reset, Sensors *Sen)
 // Sample amplifier Vo-Vc
 void Shunt::sample()
 {
-  sample_time_z_ = sample_time_;
+  sample_Vo();
+  sample_Vc();
+  sample_combine();
+}
+void Shunt::sample_combine()
+{
+  Vo_Vc_ = Vo_ - Vc_;
+  #ifndef HDWE_PHOTON
+    if  ( sp.debug()==14 )Serial.printf("ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f Vc_%7.3f\n", (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, Vc_);
+  #endif
+}
+void Shunt::sample_Vc()
+{
   if ( using_opamp_ )
   {
     Vc_raw_ = analogRead(vr_pin_);
@@ -264,13 +276,13 @@ void Shunt::sample()
     Vc_raw_ = analogRead(vc_pin_);
     Vc_ =  float(Vc_raw_)*VC_CONV_GAIN + ap.vc_add;
   }
+}
+void Shunt::sample_Vo()
+{
+  sample_time_z_ = sample_time_;
   sample_time_ = System.millis();
   Vo_raw_ = analogRead(vo_pin_);
   Vo_ =  float(Vo_raw_)*VO_CONV_GAIN;
-  Vo_Vc_ = Vo_ - Vc_;
-  #ifndef HDWE_PHOTON
-    if  ( sp.debug()==14 )Serial.printf("ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f Vc_%7.3f\n", (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, Vc_);
-  #endif
 }
 
 

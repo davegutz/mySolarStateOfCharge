@@ -133,6 +133,9 @@ public:
   float Ishunt_cal_filt() { return Ishunt_cal_filt_; };
   void pretty_print();
   void sample();
+  void sample_combine();
+  void sample_Vc();
+  void sample_Vo();
   float scale() { return ( *sp_ib_scale_ ); };
   unsigned long long sample_time(void) { return sample_time_; };
   float v2a_s() { return v2a_s_ ; };

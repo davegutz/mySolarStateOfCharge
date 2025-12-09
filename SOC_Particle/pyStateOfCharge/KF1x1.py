@@ -104,7 +104,7 @@ def plot_5(plt=None, mr=None, mv=None, title=None):
 
 def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
     plt.figure()
-    plt.subplot(211)
+    plt.subplot(311)
     plt.title(title)
     plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
     plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
@@ -115,10 +115,6 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
              fontsize=14,
              color='blue',
              bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
-    plt.legend(loc=1)
-    plt.subplot(212)
-    plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
-    plq(plt, mv, 'time', mv, 'Voa', add=0.0, color='red', linestyle='--', label='Voa' + ver_str + '+0.0')
     plt.legend(loc=1)
     return plt
 
@@ -435,118 +431,77 @@ if __name__ == "__main__":
     from DataOverModel import plq
     plt.rcParams['axes.grid'] = True
 
+    # Test setup:  FY6900 Dominty Function Generator.  CH 1 connected across shunt leads.  CH 2 ground connected to
+    # board ground.  Top level - Sweep.   - Freq 0.5 - 5.0, Ampl 0.01 - 0.01, Offs -0.01 - -0.01, Duty 50% - 50%,
+    # Mode Linear.   Direction Forth, Time 120s.  Turn off generator.
+    # 'Cx27000',  wait 60 sec. Turn on generator and press OK on function generator.  When it reaches 0.5 Hz again press
+    # OK to stop and turn off generator.
+
     time_end = None
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burstForKF_soc2p2_hi_lo_chg.csv'
     mr, data_file_clean = load_data(data_file, time_end)
-    mr.Vca -= 1.65
-    mr.Voa -= 1.65
-    mr.Vcn -= 1.65
-    mr.Von -= 1.65
-    mr.Tbv -= 1.65
-
     title = 'Base kfDemo.py var dt'
     dt = 0.1  # Time step (seconds) used only on init
     Qstd = 0.015*2  # Standard deviation of acceleration noise
     R = 0.001  # Standard deviation of voltage measurement noise
-    kfVoa = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=Qstd, meas_noise_std=R)
-    kfVca = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=Qstd, meas_noise_std=R)
-    kfVoVca = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=Qstd*2., meas_noise_std=R*2.)
-    kfVon = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=Qstd, meas_noise_std=R)
-    kfVcn = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=Qstd, meas_noise_std=R)
-    kfVoVcn = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=Qstd*2., meas_noise_std=R*2.)
-    kfVbv = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=Qstd, meas_noise_std=R)
-    kfTbv = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                       proc_noise_std=Qstd, meas_noise_std=R)
+
+    have_Vca = False
+    have_Voa = False
+    have_Vcn = False
+    have_Von = False
+    have_VoVca = False
+    have_VoVca = False
+    have_Tbv = False
+    have_Vbv = False
+
+    if hasattr(mr, 'Vca'):
+        have_Vca = True
+        mr.Vca -= 1.65
+        kfVca = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                           proc_noise_std=Qstd, meas_noise_std=R)
+    if hasattr(mr, 'Voa'):
+        have_Voa = True
+        mr.Voa -= 1.65
+        kfVoa = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                           proc_noise_std=Qstd, meas_noise_std=R)
+    if hasattr(mr, 'Vcn'):
+        have_Vcn = True
+        mr.Vcn -= 1.65
+        kfVcn = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                           proc_noise_std=Qstd, meas_noise_std=R)
+    if hasattr(mr, 'Von'):
+        have_Von = True
+        mr.Von -= 1.65
+        kfVon = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                           proc_noise_std=Qstd, meas_noise_std=R)
+    if hasattr(mr, 'VoVca'):
+        have_VoVca = True
+        kfVoVca = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                           proc_noise_std=Qstd*2., meas_noise_std=R*2.)
+    if hasattr(mr, 'VoVcn'):
+        have_VoVcn = True
+        kfVoVcn = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                           proc_noise_std=Qstd*2., meas_noise_std=R*2.)
+    if hasattr(mr, 'Tbv'):
+        have_Tbv = True
+        mr.Tbv -= 1.65
+        kfTbv = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                           proc_noise_std=Qstd, meas_noise_std=R)
+    if hasattr(mr, 'Vbv'):
+        have_Vbv = True
+        kfVbv = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                           proc_noise_std=Qstd, meas_noise_std=R)
 
     run_str = '_burst data'
     ver_str = '_filtered'
 
-    # Data structures
-    mv = Saved()
-    v_rat = None
-
-    for i in range(len(mr.time)):
-        mv.time.append(mr.time[i])
-
-        kfVoa.predict(mr.dt[i])
-        kfVoa.update(mr.Voa[i])
-        vf, v_rat = kfVoa.get_state()
-        mv.Voa.append(vf[0])
-
-        kfVca.predict(mr.dt[i])
-        kfVca.update(mr.Vca[i])
-        vf, v_rat = kfVca.get_state()
-        mv.Vca.append(vf[0])
-
-        kfVoVca.predict(mr.dt[i])
-        kfVoVca.update(mr.VoVca[i])
-        vf, v_rat = kfVoVca.get_state()
-        mv.VoVca.append(vf[0])
-
-        kfVon.predict(mr.dt[i])
-        kfVon.update(mr.Von[i])
-        vf, v_rat = kfVon.get_state()
-        mv.Von.append(vf[0])
-
-        kfVcn.predict(mr.dt[i])
-        kfVcn.update(mr.Vcn[i])
-        vf, v_rat = kfVcn.get_state()
-        mv.Vcn.append(vf[0])
-
-        kfVoVcn.predict(mr.dt[i])
-        kfVoVcn.update(mr.VoVcn[i])
-        vf, v_rat = kfVoVcn.get_state()
-        mv.VoVcn.append(vf[0])
-
-        mv.VoVcnA.append(mv.Von[i] - mv.Vcn[i])
-
-        kfVbv.predict(mr.dt[i])
-        kfVbv.update(mr.Vbv[i])
-        vf, v_rat = kfVbv.get_state()
-        mv.Vbv.append(vf[0])
-
-        kfTbv.predict(mr.dt[i])
-        kfTbv.update(mr.Tbv[i])
-        vf, v_rat = kfTbv.get_state()
-        mv.Tbv.append(vf[0])
-
-    window = 20  # 5 Hz wiggle @ 40 Hz sampling X 2
-    mr.Von_rms = running_rms(np.array(mr.Von), window_size=window)
-    mr.Voa_rms = running_rms(np.array(mr.Voa), window_size=window)
-    mv.Von_rms = running_rms(np.array(mv.Von), window_size=window)
-    mv.Voa_rms = running_rms(np.array(mv.Voa), window_size=window)
-
-    mv.Von_atten = 20*np.log10(mv.Von_rms / mr.Von_rms)
-    mv.Voa_atten = 20*np.log10(mv.Voa_rms / mr.Voa_rms)
-
-    plt = plot_1(plt, mr, mv, title+' F1')
-    plt = plot_2(plt, mr, mv, title+' F2')
-    plt = plot_3(plt, mr, mv, title+' F3')
-    plt = plot_4(plt, mr, mv, title+' F4')
-    plt = plot_5(plt, mr, mv, title+' F5')
-
-    plt.show(block=True)
-    exit(0)
-
     title = 'Part Factorial kfDemo.py var dt'
-    for Qstd, R in [ [0.015, 0.001],  [0.03, 0.001],  [0.0075, 0.001],  [0.015, 0.002], [0.015, 0.0005],
-                     [0.015, 0.0005], [0.03, 0.0005], [0.0075, 0.0005], [0.015, 0.001], [0.015, 0.00025]]:
+    # for Qstd, R in [[0.015, 0.001], [0.03, 0.001], [0.0075, 0.001], [0.015, 0.002], [0.015, 0.0005],
+    #                 [0.015, 0.0005], [0.03, 0.0005], [0.0075, 0.0005], [0.015, 0.001], [0.015, 0.00025]]:
+    for Qstd, R in [[0.015, 0.001],  [0.015, 0.00025]]:
         mv = None
         print(f"{Qstd=} {R=}")
-        kfVoa = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                           proc_noise_std=Qstd, meas_noise_std=R)
-        kfVca = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                           proc_noise_std=Qstd, meas_noise_std=R)
         kfVon = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                           proc_noise_std=Qstd, meas_noise_std=R)
-        kfVcn = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
                            proc_noise_std=Qstd, meas_noise_std=R)
 
         run_str = '_burst data'
@@ -559,27 +514,88 @@ if __name__ == "__main__":
         for i in range(len(mr.time)):
             mv.time.append(mr.time[i])
 
-            kfVoa.predict(mr.dt[i])
-            kfVoa.update(mr.Voa[i])
-            vf, v_rat = kfVoa.get_state()
-            mv.Voa.append(vf[0])
-
-            kfVca.predict(mr.dt[i])
-            kfVca.update(mr.Vca[i])
-            vf, v_rat = kfVca.get_state()
-            mv.Vca.append(vf[0])
-
             kfVon.predict(mr.dt[i])
             kfVon.update(mr.Von[i])
             vf, v_rat = kfVon.get_state()
             mv.Von.append(vf[0])
 
-            kfVcn.predict(mr.dt[i])
-            kfVcn.update(mr.Vcn[i])
-            vf, v_rat = kfVcn.get_state()
-            mv.Vcn.append(vf[0])
+        window = 20  # 5 Hz wiggle @ 40 Hz sampling X 2
+        mr.Von_rms = running_rms(np.array(mr.Von), window_size=window)
+        # mr.Voa_rms = running_rms(np.array(mr.Voa), window_size=window)
+        mv.Von_rms = running_rms(np.array(mv.Von), window_size=window)
+        # mv.Voa_rms = running_rms(np.array(mv.Voa), window_size=window)
+
+        mv.Von_atten = 20 * np.log10(mv.Von_rms / mr.Von_rms)
+        # mv.Voa_atten = 20 * np.log10(mv.Voa_rms / mr.Voa_rms)
 
         plt = plot_P(plt, mr, mv, title + ' P1', Qstd=Qstd, R=R)
 
+
+    # General purpose results
+    # Data structures
+    if have_Vca and have_VoVca and have_Tbv and have_Vbv and have_VoVcn and have_Vcn and have_Von:
+        mv = Saved()
+        v_rat = None
+
+        for i in range(len(mr.time)):
+            mv.time.append(mr.time[i])
+
+            if hasattr(mr, 'Voa'):
+                kfVoa.predict(mr.dt[i])
+                kfVoa.update(mr.Voa[i])
+                vf, v_rat = kfVoa.get_state()
+                mv.Voa.append(vf[0])
+
+            if hasattr(mr, 'Vca'):
+                kfVca.predict(mr.dt[i])
+                kfVca.update(mr.Vca[i])
+                vf, v_rat = kfVca.get_state()
+                mv.Vca.append(vf[0])
+
+            if hasattr(mr, 'VoVca'):
+                kfVoVca.predict(mr.dt[i])
+                kfVoVca.update(mr.VoVca[i])
+                vf, v_rat = kfVoVca.get_state()
+                mv.VoVca.append(vf[0])
+
+            if hasattr(mr, 'Von'):
+                kfVon.predict(mr.dt[i])
+                kfVon.update(mr.Von[i])
+                vf, v_rat = kfVon.get_state()
+                mv.Von.append(vf[0])
+
+            if hasattr(mr, 'Vcn'):
+                kfVcn.predict(mr.dt[i])
+                kfVcn.update(mr.Vcn[i])
+                vf, v_rat = kfVcn.get_state()
+                mv.Vcn.append(vf[0])
+
+            if hasattr(mr, 'VoVcn'):
+                kfVoVcn.predict(mr.dt[i])
+                kfVoVcn.update(mr.VoVcn[i])
+                vf, v_rat = kfVoVcn.get_state()
+                mv.VoVcn.append(vf[0])
+                mv.VoVcnA.append(mv.Von[i] - mv.Vcn[i])
+
+            if hasattr(mr, 'Vbv'):
+                kfVbv.predict(mr.dt[i])
+                kfVbv.update(mr.Vbv[i])
+                vf, v_rat = kfVbv.get_state()
+                mv.Vbv.append(vf[0])
+
+            if hasattr(mr, 'Tbv'):
+                kfTbv.predict(mr.dt[i])
+                kfTbv.update(mr.Tbv[i])
+                vf, v_rat = kfTbv.get_state()
+                mv.Tbv.append(vf[0])
+
+        plt = plot_1(plt, mr, mv, title+' F1')
+        plt = plot_2(plt, mr, mv, title+' F2')
+        plt = plot_3(plt, mr, mv, title+' F3')
+        plt = plot_4(plt, mr, mv, title+' F4')
+        plt = plot_5(plt, mr, mv, title+' F5')
+
     plt.show(block=True)
+
+
 
