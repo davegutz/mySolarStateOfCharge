@@ -19,7 +19,7 @@ kf_update methods in the parent."""
 global mon_run
 from load_data import write_clean_file
 
-def plot_1(plt=None, title=None):
+def plot_1(plt=None, mr=None, mv=None, title=None):
     plt.figure()
     plt.subplot(111)
     plt.title(title)
@@ -42,7 +42,7 @@ def plot_1(plt=None, title=None):
     plt.legend(loc=1)
     return plt
 
-def plot_2(plt=None, title=None):
+def plot_2(plt=None, mr=None, mv=None, title=None):
     plt.figure()
     plt.subplot(111)
     plt.title(title)
@@ -51,7 +51,7 @@ def plot_2(plt=None, title=None):
     plt.legend(loc=1)
     return plt
 
-def plot_3(plt=None, title=None):
+def plot_3(plt=None, mr=None, mv=None, title=None):
     plt.figure()
     plt.subplot(111)
     plt.title(title)
@@ -64,20 +64,34 @@ def plot_3(plt=None, title=None):
     plt.legend(loc=1)
     return plt
 
-def plot_4(plt=None, title=None):
+def plot_4(plt=None, mr=None, mv=None, title=None):
     plt.figure()
-    plt.subplot(211)
+    plt.subplot(231)
     plt.title(title)
     plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
     plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
     plt.legend(loc=1)
-    plt.subplot(212)
+    plt.subplot(234)
     plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
     plq(plt, mv, 'time', mv, 'Voa', add=0.0, color='red', linestyle='--', label='Voa' + ver_str + '+0.0')
     plt.legend(loc=1)
+    plt.subplot(232)
+    plq(plt, mr, 'time', mr, 'Von_rms', add=0.0, color='blue', linestyle='-', label='Von_rms' + run_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Von_rms', add=0.0, color='red', linestyle='--', label='Von_rms' + ver_str + '+0.0')
+    plt.legend(loc=1)
+    plt.subplot(235)
+    plq(plt, mr, 'time', mr, 'Voa_rms', add=0.0, color='blue', linestyle='-', label='Voa_rms' + run_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Voa_rms', add=0.0, color='red', linestyle='--', label='Voa_rms' + ver_str + '+0.0')
+    plt.legend(loc=1)
+    plt.subplot(233)
+    plq(plt, mv, 'time', mv, 'Von_atten', add=0.0, color='blue', linestyle='-', label='Von_atten' + run_str + '+0.0')
+    plt.legend(loc=1)
+    plt.subplot(236)
+    plq(plt, mv, 'time', mv, 'Voa_atten', add=0.0, color='blue', linestyle='-', label='Voa_atten' + run_str + '+0.0')
+    plt.legend(loc=1)
     return plt
 
-def plot_5(plt=None, title=None):
+def plot_5(plt=None, mr=None, mv=None, title=None):
     plt.figure()
     plt.subplot(111)
     plt.title(title)
@@ -88,7 +102,7 @@ def plot_5(plt=None, title=None):
     plt.legend(loc=1)
     return plt
 
-def plot_P(plt=None, title=None, Qstd=None, R=None):
+def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
     plt.figure()
     plt.subplot(211)
     plt.title(title)
@@ -107,6 +121,39 @@ def plot_P(plt=None, title=None, Qstd=None, R=None):
     plq(plt, mv, 'time', mv, 'Voa', add=0.0, color='red', linestyle='--', label='Voa' + ver_str + '+0.0')
     plt.legend(loc=1)
     return plt
+
+def running_rms(signal, window_size):
+    """
+    Calculates the running RMS amplitude of a signal using a sliding window.
+    Args:
+        signal (np.ndarray): The input signal (1D NumPy array).
+        window_size (int): The size of the sliding window.
+    Returns:
+        np.ndarray: A NumPy array containing the running RMS values.
+    """
+    if not isinstance(signal, np.ndarray) or signal.ndim != 1:
+        raise ValueError("Input signal must be a 1D NumPy array.")
+    if not isinstance(window_size, int) or window_size <= 0:
+        raise ValueError("Window size must be a positive integer.")
+    if window_size > len(signal):
+        raise ValueError("Window size cannot be greater than the signal length.")
+
+    # Square the signal
+    squared_signal = np.power(signal, 2)
+
+    # Create a window of ones for averaging
+    window = np.ones(window_size) / float(window_size)
+
+    # Convolve the squared signal with the window to get the moving average of squares
+    moving_average_of_squares = np.convolve(squared_signal, window, mode='valid')
+
+    # Take the square root to get the running RMS
+    running_rms_amplitude = np.sqrt(moving_average_of_squares)
+
+    # Copy first window points to beginning to get same array size out as in
+    running_rms_amplitude = np.insert(running_rms_amplitude, 0, running_rms_amplitude[0:window_size-1])
+
+    return running_rms_amplitude
 
 
 class Saved:
@@ -470,11 +517,23 @@ if __name__ == "__main__":
         vf, v_rat = kfTbv.get_state()
         mv.Tbv.append(vf[0])
 
-    plt = plot_1(plt, title+' F1')
-    plt = plot_2(plt, title+' F2')
-    plt = plot_3(plt, title+' F3')
-    plt = plot_4(plt, title+' F4')
-    plt = plot_5(plt, title+' F5')
+    window = 20  # 5 Hz wiggle @ 40 Hz sampling X 2
+    mr.Von_rms = running_rms(np.array(mr.Von), window_size=window)
+    mr.Voa_rms = running_rms(np.array(mr.Voa), window_size=window)
+    mv.Von_rms = running_rms(np.array(mv.Von), window_size=window)
+    mv.Voa_rms = running_rms(np.array(mv.Voa), window_size=window)
+
+    mv.Von_atten = 20*np.log10(mv.Von_rms / mr.Von_rms)
+    mv.Voa_atten = 20*np.log10(mv.Voa_rms / mr.Voa_rms)
+
+    plt = plot_1(plt, mr, mv, title+' F1')
+    plt = plot_2(plt, mr, mv, title+' F2')
+    plt = plot_3(plt, mr, mv, title+' F3')
+    plt = plot_4(plt, mr, mv, title+' F4')
+    plt = plot_5(plt, mr, mv, title+' F5')
+
+    plt.show(block=True)
+    exit(0)
 
     title = 'Part Factorial kfDemo.py var dt'
     for Qstd, R in [ [0.015, 0.001],  [0.03, 0.001],  [0.0075, 0.001],  [0.015, 0.002], [0.015, 0.0005],
@@ -520,7 +579,7 @@ if __name__ == "__main__":
             vf, v_rat = kfVcn.get_state()
             mv.Vcn.append(vf[0])
 
-        plt = plot_P(plt, title + ' P1', Qstd=Qstd, R=R)
+        plt = plot_P(plt, mr, mv, title + ' P1', Qstd=Qstd, R=R)
 
     plt.show(block=True)
 
