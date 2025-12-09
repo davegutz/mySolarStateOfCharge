@@ -18,6 +18,7 @@ kf_update methods in the parent."""
 
 global mon_run
 from load_data import write_clean_file
+from myFilters import LagTustin
 
 def plot_1(plt=None, mr=None, mv=None, title=None):
     plt.figure()
@@ -103,11 +104,42 @@ def plot_5(plt=None, mr=None, mv=None, title=None):
     return plt
 
 def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
+    N = len(mr.Von)
+    total_time = mr.time[-1]
+    sample_freq_hz = float(N) / total_time
+    sample_time = 1. / sample_freq_hz
+    sample_freq_rps = sample_freq_hz * 2. * np.pi
+    nyquist_freq_rps = sample_freq_rps / 2.
+    lpf_tau = 0.07 / nyquist_freq_rps * 2.
+    lpf_tau = 0.03
+    mr_lpf = LagTustin(dt=sample_time, tau=lpf_tau, max_=5., min_=-5.)
+    mv_lpf = LagTustin(dt=sample_time, tau=lpf_tau, max_=5., min_=-5.)
+
+    print(f"{sample_freq_hz=} {lpf_tau=}")
+
+    mr.Von_lpf = []
+    mv.Von_lpf = []
+    mv.dt = mr.dt
+    for i in range(N):
+        if i == 0:
+            reset = True
+        else:
+            reset = False
+        mr.Von_lpf.append(mr_lpf.calculate(mr.Von[i], reset=reset, dt=mr.dt[i]))
+        mv.Von_lpf.append(mv_lpf.calculate(mv.Von[i], reset=reset, dt=mv.dt[i]))
+
+    window = 20  # 5 Hz wiggle @ 40 Hz sampling X 2
+    mr.Von_rms = running_rms(np.array(mr.Von), window_size=window)
+    mv.Von_rms = running_rms(np.array(mv.Von), window_size=window)
+
+    mv.Von_atten = 20 * np.log10(mv.Von_rms / mr.Von_rms)
+    # mv.Voa_atten = 20 * np.log10(mv.Voa_rms / mr.Voa_rms)
+
     plt.figure()
     plt.subplot(311)
     plt.title(title)
-    plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
-    plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
+    plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von' + run_str)
+    plq(plt, mv, 'time', mv, 'Von', color='red', linestyle='--', label='Von' + ver_str)
     plt.text(0.5, 0.5, f"{Qstd=}   {R=}",
              horizontalalignment='center',
              verticalalignment='center',
@@ -116,6 +148,15 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
              color='blue',
              bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
     plt.legend(loc=1)
+    plt.subplot(312)
+    plq(plt, mr, 'time', mr, 'Von_lpf', color='blue', linestyle='-', label='Von_lpf' + run_str)
+    plq(plt, mv, 'time', mv, 'Von_lpf', color='red', linestyle='--', label='Von_lpf' + ver_str)
+    plt.legend(loc=1)
+    plt.subplot(313)
+    plq(plt, mr, 'time', mr, 'Von_rms', color='blue', linestyle='-', label='Von_rms' + run_str)
+    plq(plt, mv, 'time', mv, 'Von_rms', color='red', linestyle='--', label='Von_rms' + ver_str)
+    plt.legend(loc=1)
+
     return plt
 
 def running_rms(signal, window_size):
@@ -518,15 +559,6 @@ if __name__ == "__main__":
             kfVon.update(mr.Von[i])
             vf, v_rat = kfVon.get_state()
             mv.Von.append(vf[0])
-
-        window = 20  # 5 Hz wiggle @ 40 Hz sampling X 2
-        mr.Von_rms = running_rms(np.array(mr.Von), window_size=window)
-        # mr.Voa_rms = running_rms(np.array(mr.Voa), window_size=window)
-        mv.Von_rms = running_rms(np.array(mv.Von), window_size=window)
-        # mv.Voa_rms = running_rms(np.array(mv.Voa), window_size=window)
-
-        mv.Von_atten = 20 * np.log10(mv.Von_rms / mr.Von_rms)
-        # mv.Voa_atten = 20 * np.log10(mv.Voa_rms / mr.Voa_rms)
 
         plt = plot_P(plt, mr, mv, title + ' P1', Qstd=Qstd, R=R)
 
