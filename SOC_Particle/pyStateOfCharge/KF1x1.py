@@ -110,13 +110,13 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
     sample_time = 1. / sample_freq_hz
     sample_freq_rps = sample_freq_hz * 2. * np.pi
     nyquist_freq_rps = sample_freq_rps / 2.
-    lpf_tau = 0.07 / nyquist_freq_rps * 2.
-    lpf_tau = 0.03
+    lpf_tau = 0.07 / nyquist_freq_rps * 50.
     mr_lpf = LagTustin(dt=sample_time, tau=lpf_tau, max_=5., min_=-5.)
     mv_lpf = LagTustin(dt=sample_time, tau=lpf_tau, max_=5., min_=-5.)
 
     print(f"{sample_freq_hz=} {lpf_tau=}")
 
+    # Filter signal for cleaner statistical testing
     mr.Von_lpf = []
     mv.Von_lpf = []
     mv.dt = mr.dt
@@ -127,6 +127,40 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
             reset = False
         mr.Von_lpf.append(mr_lpf.calculate(mr.Von[i], reset=reset, dt=mr.dt[i]))
         mv.Von_lpf.append(mv_lpf.calculate(mv.Von[i], reset=reset, dt=mv.dt[i]))
+    mr.Von_lpf = np.array(mr.Von_lpf)
+    mv.Von_lpf = np.array(mv.Von_lpf)
+
+    # Get initial steady offset so can search for start of sweep.  Assume initial 50 seconds are steady.
+    vec_initial = np.where(mr.time <= 50.)
+    steady_level = np.average(mr.Von[vec_initial])
+    mr.Von = mr.Von - steady_level
+    std_dev = np.std(mr.Von[vec_initial])
+    index_start_sweep = np.array(np.where( abs(mr.Von) > 5.*std_dev ))[0][0]
+    time_start_sweep = mr.time[index_start_sweep]
+    print(f"{steady_level=} {std_dev=} {index_start_sweep=} {time_start_sweep=}")
+    std_dev_lpf = np.std(mr.Von_lpf[vec_initial])
+    steady_level_lpf = np.average(mr.Von_lpf[vec_initial])
+    mr.Von_lpf = mr.Von_lpf - steady_level
+    index_start_sweep_lpf = np.array(np.where( abs(mr.Von_lpf) > 3.*std_dev_lpf))[0][0]
+    time_start_sweep_lpf = mr.time[index_start_sweep_lpf]
+    print(f"{steady_level_lpf=} {std_dev_lpf=} {index_start_sweep_lpf=} {time_start_sweep_lpf=}")
+
+    # Detect positive zero crossings
+    is_positive = mr.Von_lpf[index_start_sweep_lpf:-1]  > 0
+    positive_crossings = (~is_positive[:-1]) & is_positive[1:]
+    crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep  # Add 1 to account for the shift
+    time_zero_crossing = mr.time[crossing_indices]
+    print(f"mr  {time_zero_crossing=}")
+
+    is_positive = mv.Von_lpf[index_start_sweep_lpf:-1]  > 0
+    positive_crossings = (~is_positive[:-1]) & is_positive[1:]
+    crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep  # Add 1 to account for the shift
+    time_zero_crossing = mr.time[crossing_indices]
+    print(f"mv  {time_zero_crossing=}")
+
+
+    index_end_sweep_lpf = np.array(np.where( abs(mr.Von_lpf[index_start_sweep_lpf:-1] - steady_level_lpf) <= 3.*std_dev_lpf))[0][0]
+
 
     window = 20  # 5 Hz wiggle @ 40 Hz sampling X 2
     mr.Von_rms = running_rms(np.array(mr.Von), window_size=window)
