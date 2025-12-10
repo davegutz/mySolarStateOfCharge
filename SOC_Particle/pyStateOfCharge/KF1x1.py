@@ -161,6 +161,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
     # This also implies minimum phase behavior (magnitude decreasing) so normalize to max
     print("Frequency, Hz  /  Magnitude, dB   /  Phase, deg")
     transfer_function = []
+    mag_normal = 0.
     for j in range(len(mr.time_zero_crossing)-1):
         time = mr.time_zero_crossing[j]
         period = mr.time_zero_crossing[j+1] - mr.time_zero_crossing[j]
@@ -173,12 +174,13 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
         response = mv.Von_lpf[mv.crossing_indices[j]:mv.crossing_indices[j+1]]
         response_magnitude = max(response) - min(response)
         tf_magnitude = 20.*np.log10(response_magnitude/input_magnitude)
+        if frequency < 2.5:
+            mag_normal = max(mag_normal, tf_magnitude)
         tf_phase = -360. * lag / period
         transfer_function.append([frequency, tf_magnitude, tf_phase, time])
         # print(f"{frequency}  /  {tf_magnitude}    / {tf_phase}")
     transfer_function = np.array(transfer_function)
-    max_for_normal = max(transfer_function[:, 1])
-    transfer_function[:, 1] -= max_for_normal
+    transfer_function[:, 1] -= mag_normal
 
     # Cleanup the result
     d = np.diff(transfer_function, axis=0)[:, 0]
