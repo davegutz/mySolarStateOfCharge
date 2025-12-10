@@ -158,9 +158,11 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
     mv.time_zero_crossing = mr.time[mv.crossing_indices]
 
     # For simplicity assume mv zero crossing is always after mr zero crossing (lags behave like lags)
+    # This also implies minimum phase behavior (magnitude decreasing) so normalize to max
     print("Frequency, Hz  /  Magnitude, dB   /  Phase, deg")
     transfer_function = []
     for j in range(len(mr.time_zero_crossing)-1):
+        time = mr.time_zero_crossing[j]
         period = mr.time_zero_crossing[j+1] - mr.time_zero_crossing[j]
         frequency = 1. / period
         lag = mv.time_zero_crossing[j] - mr.time_zero_crossing[j]
@@ -172,9 +174,11 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
         response_magnitude = max(response) - min(response)
         tf_magnitude = 20.*np.log10(response_magnitude/input_magnitude)
         tf_phase = -360. * lag / period
-        transfer_function.append([frequency, tf_magnitude, tf_phase])
+        transfer_function.append([frequency, tf_magnitude, tf_phase, time])
         # print(f"{frequency}  /  {tf_magnitude}    / {tf_phase}")
     transfer_function = np.array(transfer_function)
+    max_for_normal = max(transfer_function[:, 1])
+    transfer_function[:, 1] -= max_for_normal
 
     # Cleanup the result
     d = np.diff(transfer_function, axis=0)[:, 0]
@@ -194,11 +198,15 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
         k += 1
     tf_clean = np.array(tf_clean)
     for j in range(len(tf_clean)):
-        print(f"{tf_clean[j][0]}  /  {tf_clean[j][1]}    / {tf_clean[j][2]}")
+        print(f"{tf_clean[j][3]}: {tf_clean[j][0]}  /  {tf_clean[j][1]}    / {tf_clean[j][2]}")
+    mv.time_clean = tf_clean[:, 3]
+    mv.f_clean = tf_clean[:, 0]
+    mv.mdB_clean = tf_clean[:, 1]
+    mv.phs_clean = tf_clean[:, 2]
 
 
     plt.figure()
-    plt.subplot(311)
+    plt.subplot(321)
     plt.title(title)
     plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von' + run_str)
     plq(plt, mv, 'time', mv, 'Von', color='red', linestyle='--', label='Von' + ver_str)
@@ -210,13 +218,21 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
              color='blue',
              bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
     plt.legend(loc=1)
-    plt.subplot(312)
+    left_limit, right_limit = plt.xlim()
+    plt.subplot(322)
     plq(plt, mr, 'time', mr, 'Von_lpf', color='blue', linestyle='-', label='Von_lpf' + run_str)
     plq(plt, mv, 'time', mv, 'Von_lpf', color='red', linestyle='--', label='Von_lpf' + ver_str)
     plt.legend(loc=1)
-    plt.subplot(313)
-    plq(plt, mr, 'time', mr, 'Von_rms', color='blue', linestyle='-', label='Von_rms' + run_str)
-    plq(plt, mv, 'time', mv, 'Von_rms', color='red', linestyle='--', label='Von_rms' + ver_str)
+    plt.subplot(324)
+    plq(plt, mv, 'time_clean', mv, 'f_clean', color='blue', linestyle='-', label='freq_hz' + ver_str)
+    plq(plt, mv, 'time_clean', mv, 'mdB_clean', color='red', linestyle='--', label='mag_dB' + ver_str)
+    plt.xlim([left_limit,right_limit])
+    plt.ylim([-6, 6])
+    plt.legend(loc=1)
+    plt.subplot(326)
+    plq(plt, mv, 'time_clean', mv, 'phs_clean', color='green', linestyle='-', label='phs_deg' + ver_str)
+    plt.xlim([left_limit,right_limit])
+    plt.ylim([-90, 0])
     plt.legend(loc=1)
 
     return plt
