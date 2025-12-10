@@ -116,6 +116,12 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
 
     print(f"{sample_freq_hz=} {lpf_tau=}")
 
+    # Get initial steady offset so can search for start of sweep.  Assume initial 50 seconds are steady.
+    vec_initial = np.where(mr.time <= 50.)
+    steady_level = np.average(mr.Von[vec_initial])
+    mr.Von = mr.Von - steady_level
+    mv.Von = mv.Von - steady_level
+
     # Filter signal for cleaner statistical testing
     mr.Von_lpf = []
     mv.Von_lpf = []
@@ -130,17 +136,12 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
     mr.Von_lpf = np.array(mr.Von_lpf)
     mv.Von_lpf = np.array(mv.Von_lpf)
 
-    # Get initial steady offset so can search for start of sweep.  Assume initial 50 seconds are steady.
-    vec_initial = np.where(mr.time <= 50.)
-    steady_level = np.average(mr.Von[vec_initial])
-    mr.Von = mr.Von - steady_level
     std_dev = np.std(mr.Von[vec_initial])
     index_start_sweep = np.array(np.where( abs(mr.Von) > 5.*std_dev ))[0][0]
     time_start_sweep = mr.time[index_start_sweep]
     print(f"{steady_level=} {std_dev=} {index_start_sweep=} {time_start_sweep=}")
     std_dev_lpf = np.std(mr.Von_lpf[vec_initial])
     steady_level_lpf = np.average(mr.Von_lpf[vec_initial])
-    mr.Von_lpf = mr.Von_lpf - steady_level
     index_start_sweep_lpf = np.array(np.where( abs(mr.Von_lpf) > 3.*std_dev_lpf))[0][0]
     time_start_sweep_lpf = mr.time[index_start_sweep_lpf]
     print(f"{steady_level_lpf=} {std_dev_lpf=} {index_start_sweep_lpf=} {time_start_sweep_lpf=}")
@@ -148,26 +149,53 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
     # Detect positive zero crossings
     is_positive = mr.Von_lpf[index_start_sweep_lpf:-1]  > 0
     positive_crossings = (~is_positive[:-1]) & is_positive[1:]
-    crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep  # Add 1 to account for the shift
-    time_zero_crossing = mr.time[crossing_indices]
-    print(f"mr  {time_zero_crossing=}")
+    mr.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep  # Add 1 to account for the shift
+    mr.time_zero_crossing = mr.time[mr.crossing_indices]
 
     is_positive = mv.Von_lpf[index_start_sweep_lpf:-1]  > 0
     positive_crossings = (~is_positive[:-1]) & is_positive[1:]
-    crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep  # Add 1 to account for the shift
-    time_zero_crossing = mr.time[crossing_indices]
-    print(f"mv  {time_zero_crossing=}")
+    mv.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep  # Add 1 to account for the shift
+    mv.time_zero_crossing = mr.time[mv.crossing_indices]
 
+    # For simplicity assume mv zero crossing is always after mr zero crossing (lags behave like lags)
+    print("Frequency, Hz  /  Magnitude, dB   /  Phase, deg")
+    transfer_function = []
+    for j in range(len(mr.time_zero_crossing)-1):
+        period = mr.time_zero_crossing[j+1] - mr.time_zero_crossing[j]
+        frequency = 1. / period
+        lag = mv.time_zero_crossing[j] - mr.time_zero_crossing[j]
+        input = mr.Von_lpf[mr.crossing_indices[j]:mr.crossing_indices[j+1]]
+        input_magnitude = max(input) - min(input)
+        if j >= len(mv.crossing_indices) - 1:
+            break
+        response = mv.Von_lpf[mv.crossing_indices[j]:mv.crossing_indices[j+1]]
+        response_magnitude = max(response) - min(response)
+        tf_magnitude = 20.*np.log10(response_magnitude/input_magnitude)
+        tf_phase = -360. * lag / period
+        transfer_function.append([frequency, tf_magnitude, tf_phase])
+        # print(f"{frequency}  /  {tf_magnitude}    / {tf_phase}")
+    transfer_function = np.array(transfer_function)
 
-    index_end_sweep_lpf = np.array(np.where( abs(mr.Von_lpf[index_start_sweep_lpf:-1] - steady_level_lpf) <= 3.*std_dev_lpf))[0][0]
+    # Cleanup the result
+    d = np.diff(transfer_function, axis=0)[:, 0]
+    pos_indeces = np.where(d > 0.)
+    transfer_function = transfer_function[pos_indeces]
+    # Go through one-by-one and delete bad steps
+    tf_clean = []
+    tf_clean.append(transfer_function[0, :])
+    k_clean = 0
+    n = len(transfer_function[:, 0])
+    k = 1
+    while k < n:
+        if (abs(transfer_function[k, 0] - tf_clean[k_clean][0]) < 1. and
+                (transfer_function[k, 0] - tf_clean[k_clean][0]) > 0.):
+            tf_clean.append(transfer_function[k, :])
+            k_clean += 1
+        k += 1
+    tf_clean = np.array(tf_clean)
+    for j in range(len(tf_clean)):
+        print(f"{tf_clean[j][0]}  /  {tf_clean[j][1]}    / {tf_clean[j][2]}")
 
-
-    window = 20  # 5 Hz wiggle @ 40 Hz sampling X 2
-    mr.Von_rms = running_rms(np.array(mr.Von), window_size=window)
-    mv.Von_rms = running_rms(np.array(mv.Von), window_size=window)
-
-    mv.Von_atten = 20 * np.log10(mv.Von_rms / mr.Von_rms)
-    # mv.Voa_atten = 20 * np.log10(mv.Voa_rms / mr.Voa_rms)
 
     plt.figure()
     plt.subplot(311)
