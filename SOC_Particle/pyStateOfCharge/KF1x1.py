@@ -164,6 +164,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
     mag_normal = 0.
     for j in range(len(mr.time_zero_crossing)-1):
         time = mr.time_zero_crossing[j]
+        index = mr.crossing_indices[j]
         period = mr.time_zero_crossing[j+1] - mr.time_zero_crossing[j]
         frequency = 1. / period
         lag = mv.time_zero_crossing[j] - mr.time_zero_crossing[j]
@@ -174,13 +175,35 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
         response = mv.Von_lpf[mv.crossing_indices[j]:mv.crossing_indices[j+1]]
         response_magnitude = max(response) - min(response)
         tf_magnitude = 20.*np.log10(response_magnitude/input_magnitude)
+        tf_phase = -360. * lag / period
         if frequency < 2.5:
             mag_normal = max(mag_normal, tf_magnitude)
-        tf_phase = -360. * lag / period
-        transfer_function.append([frequency, tf_magnitude, tf_phase, time])
+        transfer_function.append([frequency, tf_magnitude, tf_phase, time, index])
         # print(f"{frequency}  /  {tf_magnitude}    / {tf_phase}")
     transfer_function = np.array(transfer_function)
     transfer_function[:, 1] -= mag_normal
+
+    # Metrics
+    phase45_tf_index = 0
+    db3_tf_index = 0
+    for j in range(len(transfer_function)-1):
+        frequency = transfer_function[j][0]
+        phase_dg = transfer_function[j][2]
+        mag_db = transfer_function[j][1]
+        time = transfer_function[j][3]
+        if frequency < 2.5:
+            if mag_db < transfer_function[db3_tf_index][1] and mag_db >= -3.:
+                db3_tf_index = j
+            if  phase_dg < transfer_function[phase45_tf_index][2] and phase_dg >= 45.:
+                phase45_tf_index =j
+    freq_3db = transfer_function[db3_tf_index][0]
+    mag_3db = transfer_function[db3_tf_index][1]
+    time_3db = transfer_function[db3_tf_index][3]
+    freq_45 = transfer_function[phase45_tf_index][0]
+    phase_45 = transfer_function[phase45_tf_index][2]
+    time_45 = transfer_function[phase45_tf_index][3]
+    print(f"{time_3db=} {freq_3db=} {mag_3db=}")
+    print(f"{time_45=}  {freq_45=} {phase_45=}")
 
     # Cleanup the result
     d = np.diff(transfer_function, axis=0)[:, 0]
