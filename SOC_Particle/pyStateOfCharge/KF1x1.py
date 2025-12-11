@@ -18,7 +18,7 @@ kf_update methods in the parent."""
 
 global mon_run
 from load_data import write_clean_file
-from myFilters import LagTustin
+from myFilters import LagTustin, LagExp
 
 def plot_1(plt=None, mr=None, mv=None, title=None):
     plt.figure()
@@ -110,52 +110,45 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     sample_time = 1. / sample_freq_hz
     sample_freq_rps = sample_freq_hz * 2. * np.pi
     nyquist_freq_rps = sample_freq_rps / 2.
-    # lpf_tau = 0.07 / nyquist_freq_rps * 50.
-    mr_lpf = LagTustin(dt=sample_time, tau=lpf_tau, max_=5., min_=-5.)
-    mv_lpf = LagTustin(dt=sample_time, tau=lpf_tau, max_=5., min_=-5.)
-
-    print(f"{sample_freq_hz=} {lpf_tau=}")
+    min_possible_lpf_tau = 0.07 / nyquist_freq_rps * 50.
+    print(f" nyquist {nyquist_freq_rps} r/s, min possible tau {min_possible_lpf_tau} s")
+    mr_lpf = LagTustin(dt=sample_time, tau=0.008, max_=3.3, min_=-3.3)
 
     # Get initial steady offset so can search for start of sweep.  Assume initial 50 seconds are steady.
     vec_initial = np.where(mr.time <= 50.)
-    steady_level = np.average(mr.Von[vec_initial])
-    mr.Von = mr.Von - steady_level
-    mv.Von = mv.Von - steady_level
+    mr.Von = mr.Von - np.average(mr.Von[vec_initial])
 
     # Filter signal for cleaner statistical testing
     mr.Von_lpf = []
-    mv.Von_lpf = []
     mv.dt = mr.dt
     for i in range(N):
-        if i == 0:
-            reset = True
-        else:
-            reset = False
-        mr.Von_lpf.append(mr_lpf.calculate(mr.Von[i], reset=reset, dt=mr.dt[i]))
-        mv.Von_lpf.append(mv_lpf.calculate(mv.Von[i], reset=reset, dt=mv.dt[i]))
+        mr.Von_lpf.append(mr_lpf.calculate(mr.Von[i], reset=i<1, dt=mr.dt[i]))
     mr.Von_lpf = np.array(mr.Von_lpf)
-    mv.Von_lpf = np.array(mv.Von_lpf)
 
-    std_dev = np.std(mr.Von[vec_initial])
-    index_start_sweep = np.array(np.where( abs(mr.Von) > 5.*std_dev ))[0][0]
-    time_start_sweep = mr.time[index_start_sweep]
-    print(f"{steady_level=} {std_dev=} {index_start_sweep=} {time_start_sweep=}")
+    # std_dev = np.std(mr.Von[vec_initial])
+    # index_start_sweep = np.array(np.where( abs(mr.Von) > 5.*std_dev ))[0][0]
+    # time_start_sweep = mr.time[index_start_sweep]
+    # print(f"{std_dev=} {index_start_sweep=} {time_start_sweep=}")
+
     std_dev_lpf = np.std(mr.Von_lpf[vec_initial])
     steady_level_lpf = np.average(mr.Von_lpf[vec_initial])
-    index_start_sweep_lpf = np.array(np.where( abs(mr.Von_lpf) > 3.*std_dev_lpf))[0][0]
+    index_start_sweep_lpf = np.array(np.where( abs(mr.Von_lpf) > 4.*std_dev_lpf))[0][0]
     time_start_sweep_lpf = mr.time[index_start_sweep_lpf]
     print(f"{steady_level_lpf=} {std_dev_lpf=} {index_start_sweep_lpf=} {time_start_sweep_lpf=}")
 
     # Detect positive zero crossings
     is_positive = mr.Von_lpf[index_start_sweep_lpf:-1]  > 0
     positive_crossings = (~is_positive[:-1]) & is_positive[1:]
-    mr.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep  # Add 1 to account for the shift
+    mr.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lpf  # Add 1 to account for the shift
     mr.time_zero_crossing = mr.time[mr.crossing_indices]
 
-    is_positive = mv.Von_lpf[index_start_sweep_lpf:-1]  > 0
+    mv.Von = np.array(mv.Von)
+    mv.Von = mv.Von - np.average(mv.Von[vec_initial])
+    mv.time = mr.time
+    is_positive = mv.Von[index_start_sweep_lpf:-1]  > 0
     positive_crossings = (~is_positive[:-1]) & is_positive[1:]
-    mv.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep  # Add 1 to account for the shift
-    mv.time_zero_crossing = mr.time[mv.crossing_indices]
+    mv.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lpf  # Add 1 to account for the shift
+    mv.time_zero_crossing = mv.time[mv.crossing_indices]
 
     # For simplicity assume mv zero crossing is always after mr zero crossing (lags behave like lags)
     # This also implies minimum phase behavior (magnitude decreasing) so normalize to max
@@ -172,7 +165,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
         input_magnitude = max(input) - min(input)
         if j >= len(mv.crossing_indices) - 1:
             break
-        response = mv.Von_lpf[mv.crossing_indices[j]:mv.crossing_indices[j+1]]
+        response = mv.Von[mv.crossing_indices[j]:mv.crossing_indices[j+1]]
         response_magnitude = max(response) - min(response)
         tf_magnitude = 20.*np.log10(response_magnitude/input_magnitude)
         tf_phase = -360. * lag / period
@@ -211,7 +204,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     mr.Von_steady = mr.Von[vec_initial]
     mv.Von_steady = mv.Von[vec_initial]
     mr.Von_steady_lpf = mr.Von_lpf[vec_initial]
-    mv.Von_steady_lpf = mv.Von_lpf[vec_initial]
+    mv.Von_steady_lpf = mv.Von[vec_initial]
     attenuation = (np.max(mv.Von_steady) - np.min(mv.Von_steady)) / (np.max(mr.Von_steady) - np.min(mr.Von_steady))
     attenuation_lpf = (np.max(mv.Von_steady_lpf) - np.min(mv.Von_steady_lpf)) / (np.max(mr.Von_steady_lpf) - np.min(mr.Von_steady_lpf))
     phase45_tf_index = 0
@@ -248,9 +241,10 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     plt.figure()
     plt.figtext(0.1, 0.3, metric_string, fontsize=10, color='black', horizontalalignment='left',
                 verticalalignment='center', bbox=dict(facecolor='orange', alpha=0.5, pad=5))
-    plt.subplot(321)
+    plt.subplot(311)
     plt.title(title)
     plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von' + run_str)
+    plq(plt, mr, 'time', mr, 'Von_lpf', color='cyan', linestyle='--', label='Von_lpf' + run_str)
     plq(plt, mv, 'time', mv, 'Von', color='red', linestyle='--', label='Von' + ver_str)
     plt.text(0.5, 0.2, f"{Qstd=}   {R=} {lpf_tau=}",
              horizontalalignment='center',
@@ -261,15 +255,11 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
              bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
     plt.legend(loc=1)
     left_limit, right_limit = plt.xlim()
-    plt.subplot(322)
-    plq(plt, mr, 'time', mr, 'Von_lpf', color='blue', linestyle='-', label='Von_lpf' + run_str)
-    plq(plt, mv, 'time', mv, 'Von_lpf', color='red', linestyle='--', label='Von_lpf' + ver_str)
-    plt.legend(loc=1)
     plt.subplot(324)
     plq(plt, mv, 'time_clean', mv, 'f_clean', color='blue', linestyle='-', label='freq_hz' + ver_str)
     plq(plt, mv, 'time_clean', mv, 'mdB_clean', color='red', linestyle='--', label='mag_dB' + ver_str)
     plt.xlim([left_limit,right_limit])
-    plt.ylim([-12, 6])
+    plt.ylim([-18, 6])
     plt.legend(loc=1)
     plt.subplot(326)
     plq(plt, mv, 'time_clean', mv, 'phs_clean', color='green', linestyle='-', label='phs_deg' + ver_str)
@@ -583,6 +573,7 @@ class Saved:
         self.VoVcnA = []
         self.Tbv = []
         self.Vbv = []
+        self.vf_kf = []
 
 
 # Example Usage:
@@ -614,28 +605,24 @@ if __name__ == "__main__":
     have_Vcn = False
     have_Von = False
     have_VoVca = False
-    have_VoVca = False
+    have_VoVcn = False
     have_Tbv = False
     have_Vbv = False
 
     if hasattr(mr, 'Vca'):
         have_Vca = True
-        mr.Vca -= 1.65
         kfVca = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
                            proc_noise_std=Qstd, meas_noise_std=R)
     if hasattr(mr, 'Voa'):
         have_Voa = True
-        mr.Voa -= 1.65
         kfVoa = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
                            proc_noise_std=Qstd, meas_noise_std=R)
     if hasattr(mr, 'Vcn'):
         have_Vcn = True
-        mr.Vcn -= 1.65
         kfVcn = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
                            proc_noise_std=Qstd, meas_noise_std=R)
     if hasattr(mr, 'Von'):
         have_Von = True
-        mr.Von -= 1.65
         kfVon = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
                            proc_noise_std=Qstd, meas_noise_std=R)
     if hasattr(mr, 'VoVca'):
@@ -648,7 +635,6 @@ if __name__ == "__main__":
                            proc_noise_std=Qstd*2., meas_noise_std=R*2.)
     if hasattr(mr, 'Tbv'):
         have_Tbv = True
-        mr.Tbv -= 1.65
         kfTbv = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
                            proc_noise_std=Qstd, meas_noise_std=R)
     if hasattr(mr, 'Vbv'):
@@ -669,11 +655,11 @@ if __name__ == "__main__":
                 [0.015, 0.0005, 0.100], [0.03, 0.0005, 0.100], [0.0075, 0.0005, 0.100], [0.015, 0.001, 0.100], [0.015, 0.00025, 0.100],
               ]:
     # for Qstd, R, lpf_tau in [[0.015, 0.001, 0.008]]:
-        # for Qstd, R in [[0.015, 0.001], [0.015, 0.00025]]:
-        mv = None
         print(f"{Qstd=} {R=} {lpf_tau=}")
         kfVon = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
                            proc_noise_std=Qstd, meas_noise_std=R)
+        lpfVon = LagExp(dt=dt, tau=lpf_tau, min_=-3.3, max_=3.3)
+
 
         run_str = '_burst data'
         ver_str = '_filtered'
@@ -687,8 +673,23 @@ if __name__ == "__main__":
 
             kfVon.predict(mr.dt[i])
             kfVon.update(mr.Von[i])
-            vf, v_rat = kfVon.get_state()
-            mv.Von.append(vf[0])
+            vf_kf, v_rat = kfVon.get_state()
+            mv.vf_kf.append(vf_kf)
+
+            vf_lpf = lpfVon.calculate_tau(vf_kf[0], i<1, mr.dt[i], lpf_tau)
+            mv.Von.append(vf_lpf)
+            print(lpfVon)
+
+        # plt.figure()
+        # plt.subplot(111)
+        # plt.title(title)
+        # plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von' + run_str)
+        # plq(plt, mr, 'time', mr, 'Von_lpf', color='cyan', linestyle='-', label='Von_lpf' + run_str)
+        # plq(plt, mv, 'time', mv, 'vf_kf', color='red', linestyle='-.', label='vf_kf' + ver_str)
+        # plq(plt, mv, 'time', mv, 'Von', color='magenta', linestyle=':', label='Von' + ver_str)
+        # plt.legend(loc=1)
+        # plt.show()
+        #
 
         plt, res, res_title = plot_P(plt, mr, mv, title + ' P1', Qstd=Qstd, R=R, lpf_tau=lpf_tau)
         Res.append(res)

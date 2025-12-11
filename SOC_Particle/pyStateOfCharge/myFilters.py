@@ -403,6 +403,7 @@ class LagExp(DiscreteFilter):
         return self.out_
 
     def calculate_tau(self, in_, reset, dt, tau_):
+        self.reset = reset
         self.in_ = in_
         self.tau = tau_
         if reset:
