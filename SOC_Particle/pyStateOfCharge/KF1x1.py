@@ -226,9 +226,11 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
         if  phase_dg < tf_clean[phase45_tf_index][2] and phase_dg >= -45.:
             phase45_tf_index =j
     freq_3db = tf_clean[db3_tf_index][0]
+    tau_3db = 1. / (freq_3db * 2. * np.pi)
     mag_3db = tf_clean[db3_tf_index][1]
     time_3db = tf_clean[db3_tf_index][3]
     freq_45 = tf_clean[phase45_tf_index][0]
+    tau_45 = 1. / (freq_45 * 2. * np.pi)
     phase_45 = tf_clean[phase45_tf_index][2]
     time_45 = tf_clean[phase45_tf_index][3]
     print(f"{attenuation=} {attenuation_lpf=}")
@@ -239,8 +241,9 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     metric_string += "  Attn = {:5.2f}  Attn_lpf = {:5.2f}\n\n".format(attenuation, attenuation_lpf)
     metric_string += "  -3db @    {:4.2f} Hz,  ({:5.1f} sec)\n".format(freq_3db, time_3db)
     metric_string += "  -45 deg @ {:4.2f} Hz   ({:5.1f} sec)\n\n".format(freq_45, time_45)
-    metric_string += "  tau @ -3db = {:5.3f}\n  tau @ -45 = {:5.3f}\n".format(1. / (freq_3db * 2. * np.pi), 1. / (freq_45 * 2. * np.pi))
-
+    metric_string += "  tau @ -3db = {:5.3f}\n  tau @ -45 = {:5.3f}\n".format(tau_3db, tau_45)
+    res_title = "Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45,"
+    res = [Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45]
 
     plt.figure()
     plt.figtext(0.1, 0.3, metric_string, fontsize=10, color='black', horizontalalignment='left',
@@ -274,7 +277,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     plt.ylim([-90, 0])
     plt.legend(loc=1)
 
-    return plt
+    return plt, res, res_title
 
 def running_rms(signal, window_size):
     """
@@ -657,9 +660,10 @@ if __name__ == "__main__":
     ver_str = '_filtered'
 
     title = 'Part Factorial kfDemo.py var dt'
-    # for Qstd, R in [[0.015, 0.001], [0.03, 0.001], [0.0075, 0.001], [0.015, 0.002], [0.015, 0.0005],
-    #                 [0.015, 0.0005], [0.03, 0.0005], [0.0075, 0.0005], [0.015, 0.001], [0.015, 0.00025]]:
-    for Qstd, R, lpf_tau in [[0.015, 0.001, 0.008]]:
+    Res = []
+    for Qstd, R in [[0.015, 0.001], [0.03, 0.001], [0.0075, 0.001], [0.015, 0.002], [0.015, 0.0005],
+                    [0.015, 0.0005], [0.03, 0.0005], [0.0075, 0.0005], [0.015, 0.001], [0.015, 0.00025]]:
+    # for Qstd, R, lpf_tau in [[0.015, 0.001, 0.008]]:
         # for Qstd, R in [[0.015, 0.001], [0.015, 0.00025]]:
         mv = None
         print(f"{Qstd=} {R=} {lpf_tau=}")
@@ -681,8 +685,12 @@ if __name__ == "__main__":
             vf, v_rat = kfVon.get_state()
             mv.Von.append(vf[0])
 
-        plt = plot_P(plt, mr, mv, title + ' P1', Qstd=Qstd, R=R, lpf_tau=lpf_tau)
-
+        plt, res, res_title = plot_P(plt, mr, mv, title + ' P1', Qstd=Qstd, R=R, lpf_tau=lpf_tau)
+        Res.append(res)
+    print(f"{res_title}")
+    for i in range(len(Res)):
+        print("{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},"\
+              .format(Res[i][0], Res[i][1], Res[i][2], Res[i][3], Res[i][4], Res[i][5]))
 
     # General purpose results
     # Data structures
