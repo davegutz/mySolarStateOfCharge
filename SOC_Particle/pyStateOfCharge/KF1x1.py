@@ -103,14 +103,14 @@ def plot_5(plt=None, mr=None, mv=None, title=None):
     plt.legend(loc=1)
     return plt
 
-def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
+def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=None):
     N = len(mr.Von)
     total_time = mr.time[-1]
     sample_freq_hz = float(N) / total_time
     sample_time = 1. / sample_freq_hz
     sample_freq_rps = sample_freq_hz * 2. * np.pi
     nyquist_freq_rps = sample_freq_rps / 2.
-    lpf_tau = 0.07 / nyquist_freq_rps * 50.
+    # lpf_tau = 0.07 / nyquist_freq_rps * 50.
     mr_lpf = LagTustin(dt=sample_time, tau=lpf_tau, max_=5., min_=-5.)
     mv_lpf = LagTustin(dt=sample_time, tau=lpf_tau, max_=5., min_=-5.)
 
@@ -183,28 +183,6 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
     transfer_function = np.array(transfer_function)
     transfer_function[:, 1] -= mag_normal
 
-    # Metrics
-    phase45_tf_index = 0
-    db3_tf_index = 0
-    for j in range(len(transfer_function)-1):
-        frequency = transfer_function[j][0]
-        phase_dg = transfer_function[j][2]
-        mag_db = transfer_function[j][1]
-        time = transfer_function[j][3]
-        if frequency < 2.5:
-            if mag_db < transfer_function[db3_tf_index][1] and mag_db >= -3.:
-                db3_tf_index = j
-            if  phase_dg < transfer_function[phase45_tf_index][2] and phase_dg >= 45.:
-                phase45_tf_index =j
-    freq_3db = transfer_function[db3_tf_index][0]
-    mag_3db = transfer_function[db3_tf_index][1]
-    time_3db = transfer_function[db3_tf_index][3]
-    freq_45 = transfer_function[phase45_tf_index][0]
-    phase_45 = transfer_function[phase45_tf_index][2]
-    time_45 = transfer_function[phase45_tf_index][3]
-    print(f"{time_3db=} {freq_3db=} {mag_3db=}")
-    print(f"{time_45=}  {freq_45=} {phase_45=}")
-
     # Cleanup the result
     d = np.diff(transfer_function, axis=0)[:, 0]
     pos_indeces = np.where(d > 0.)
@@ -229,17 +207,53 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
     mv.mdB_clean = tf_clean[:, 1]
     mv.phs_clean = tf_clean[:, 2]
 
+    # Metrics
+    mr.Von_steady = mr.Von[vec_initial]
+    mv.Von_steady = mv.Von[vec_initial]
+    mr.Von_steady_lpf = mr.Von_lpf[vec_initial]
+    mv.Von_steady_lpf = mv.Von_lpf[vec_initial]
+    attenuation = (np.max(mv.Von_steady) - np.min(mv.Von_steady)) / (np.max(mr.Von_steady) - np.min(mr.Von_steady))
+    attenuation_lpf = (np.max(mv.Von_steady_lpf) - np.min(mv.Von_steady_lpf)) / (np.max(mr.Von_steady_lpf) - np.min(mr.Von_steady_lpf))
+    phase45_tf_index = 0
+    db3_tf_index = 0
+    for j in range(len(tf_clean)-1):
+        frequency = tf_clean[j][0]
+        phase_dg = tf_clean[j][2]
+        mag_db = tf_clean[j][1]
+        time = tf_clean[j][3]
+        if mag_db < tf_clean[db3_tf_index][1] and mag_db >= -3.:
+            db3_tf_index = j
+        if  phase_dg < tf_clean[phase45_tf_index][2] and phase_dg >= -45.:
+            phase45_tf_index =j
+    freq_3db = tf_clean[db3_tf_index][0]
+    mag_3db = tf_clean[db3_tf_index][1]
+    time_3db = tf_clean[db3_tf_index][3]
+    freq_45 = tf_clean[phase45_tf_index][0]
+    phase_45 = tf_clean[phase45_tf_index][2]
+    time_45 = tf_clean[phase45_tf_index][3]
+    print(f"{attenuation=} {attenuation_lpf=}")
+    print(f"{time_3db=} {freq_3db=} {mag_3db=}")
+    print(f"{time_45=}  {freq_45=} {phase_45=}")
+    metric_string = "Metrics:\n"
+    metric_string += "  Qstd = {:9.6f}\n  R =     {:9.6f}\n  lpf_tau = {:7.4f}\n\n".format(Qstd, R, lpf_tau)
+    metric_string += "  Attn = {:5.2f}  Attn_lpf = {:5.2f}\n\n".format(attenuation, attenuation_lpf)
+    metric_string += "  -3db @    {:4.2f} Hz,  ({:5.1f} sec)\n".format(freq_3db, time_3db)
+    metric_string += "  -45 deg @ {:4.2f} Hz   ({:5.1f} sec)\n\n".format(freq_45, time_45)
+    metric_string += "  tau @ -3db = {:5.3f}\n  tau @ -45 = {:5.3f}\n".format(1. / (freq_3db * 2. * np.pi), 1. / (freq_45 * 2. * np.pi))
+
 
     plt.figure()
+    plt.figtext(0.1, 0.3, metric_string, fontsize=10, color='black', horizontalalignment='left',
+                verticalalignment='center', bbox=dict(facecolor='orange', alpha=0.5, pad=5))
     plt.subplot(321)
     plt.title(title)
     plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von' + run_str)
     plq(plt, mv, 'time', mv, 'Von', color='red', linestyle='--', label='Von' + ver_str)
-    plt.text(0.5, 0.5, f"{Qstd=}   {R=}",
+    plt.text(0.5, 0.2, f"{Qstd=}   {R=} {lpf_tau=}",
              horizontalalignment='center',
              verticalalignment='center',
              transform=plt.gca().transAxes,
-             fontsize=14,
+             fontsize=12,
              color='blue',
              bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
     plt.legend(loc=1)
@@ -252,7 +266,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None):
     plq(plt, mv, 'time_clean', mv, 'f_clean', color='blue', linestyle='-', label='freq_hz' + ver_str)
     plq(plt, mv, 'time_clean', mv, 'mdB_clean', color='red', linestyle='--', label='mag_dB' + ver_str)
     plt.xlim([left_limit,right_limit])
-    plt.ylim([-6, 6])
+    plt.ylim([-12, 6])
     plt.legend(loc=1)
     plt.subplot(326)
     plq(plt, mv, 'time_clean', mv, 'phs_clean', color='green', linestyle='-', label='phs_deg' + ver_str)
@@ -589,6 +603,7 @@ if __name__ == "__main__":
     title = 'Base kfDemo.py var dt'
     dt = 0.1  # Time step (seconds) used only on init
     Qstd = 0.015*2  # Standard deviation of acceleration noise
+    lpf_tau = 0.008
     R = 0.001  # Standard deviation of voltage measurement noise
 
     have_Vca = False
@@ -644,9 +659,10 @@ if __name__ == "__main__":
     title = 'Part Factorial kfDemo.py var dt'
     # for Qstd, R in [[0.015, 0.001], [0.03, 0.001], [0.0075, 0.001], [0.015, 0.002], [0.015, 0.0005],
     #                 [0.015, 0.0005], [0.03, 0.0005], [0.0075, 0.0005], [0.015, 0.001], [0.015, 0.00025]]:
-    for Qstd, R in [[0.015, 0.001],  [0.015, 0.00025]]:
+    for Qstd, R, lpf_tau in [[0.015, 0.001, 0.008]]:
+        # for Qstd, R in [[0.015, 0.001], [0.015, 0.00025]]:
         mv = None
-        print(f"{Qstd=} {R=}")
+        print(f"{Qstd=} {R=} {lpf_tau=}")
         kfVon = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
                            proc_noise_std=Qstd, meas_noise_std=R)
 
@@ -665,7 +681,7 @@ if __name__ == "__main__":
             vf, v_rat = kfVon.get_state()
             mv.Von.append(vf[0])
 
-        plt = plot_P(plt, mr, mv, title + ' P1', Qstd=Qstd, R=R)
+        plt = plot_P(plt, mr, mv, title + ' P1', Qstd=Qstd, R=R, lpf_tau=lpf_tau)
 
 
     # General purpose results
