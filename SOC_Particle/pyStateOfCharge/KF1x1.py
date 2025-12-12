@@ -125,11 +125,6 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
         mr.Von_lpf.append(mr_lpf.calculate(mr.Von[i], reset=i<1, dt=mr.dt[i]))
     mr.Von_lpf = np.array(mr.Von_lpf)
 
-    # std_dev = np.std(mr.Von[vec_initial])
-    # index_start_sweep = np.array(np.where( abs(mr.Von) > 5.*std_dev ))[0][0]
-    # time_start_sweep = mr.time[index_start_sweep]
-    # print(f"{std_dev=} {index_start_sweep=} {time_start_sweep=}")
-
     std_dev_lpf = np.std(mr.Von_lpf[vec_initial])
     steady_level_lpf = np.average(mr.Von_lpf[vec_initial])
     index_start_sweep_lpf = np.array(np.where( abs(mr.Von_lpf) > 4.*std_dev_lpf))[0][0]
@@ -204,9 +199,8 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     mr.Von_steady = mr.Von[vec_initial]
     mv.Von_steady = mv.Von[vec_initial]
     mr.Von_steady_lpf = mr.Von_lpf[vec_initial]
-    mv.Von_steady_lpf = mv.Von[vec_initial]
     attenuation = (np.max(mv.Von_steady) - np.min(mv.Von_steady)) / (np.max(mr.Von_steady) - np.min(mr.Von_steady))
-    attenuation_lpf = (np.max(mv.Von_steady_lpf) - np.min(mv.Von_steady_lpf)) / (np.max(mr.Von_steady_lpf) - np.min(mr.Von_steady_lpf))
+    attenuation_lpf = (np.max(mv.Von_steady) - np.min(mv.Von_steady)) / (np.max(mr.Von_steady_lpf) - np.min(mr.Von_steady_lpf))
     phase45_tf_index = 0
     db3_tf_index = 0
     for j in range(len(tf_clean)-1):
@@ -696,6 +690,8 @@ if __name__ == "__main__":
 
         plt, res, res_title = plot_P(plt, mr, mv, title + ' P1', Qstd=Qstd, R=R, lpf_tau=lpf_tau)
         Res.append(res)
+
+    # Summarize
     print(f"{res_title}")
     for i in range(len(Res)):
         print("{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},"\
