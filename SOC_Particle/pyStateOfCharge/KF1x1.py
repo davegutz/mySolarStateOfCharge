@@ -127,7 +127,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
 
     std_dev_lpf = np.std(mr.Von_lpf[vec_initial])
     steady_level_lpf = np.average(mr.Von_lpf[vec_initial])
-    index_start_sweep_lpf = np.array(np.where( abs(mr.Von_lpf) > 4.*std_dev_lpf))[0][0]
+    index_start_sweep_lpf = np.array(np.where( abs(mr.Von_lpf) > 4.*std_dev_lpf))[0, 0]
     time_start_sweep_lpf = mr.time[index_start_sweep_lpf]
     print(f"{steady_level_lpf=} {std_dev_lpf=} {index_start_sweep_lpf=} {time_start_sweep_lpf=}")
 
@@ -326,7 +326,7 @@ class KF1x1VarDt:
         self.Bu = 0.  # Control transition
         # Process noise covariance matrix (assuming noise in acceleration)
         self.Q_std = proc_noise_std
-        self.R = np.array([[meas_noise_std**2]])  # State uncertainty.  Measurement noise covariance matrix
+        self.R = np.array([meas_noise_std**2])  # State uncertainty.  Measurement noise covariance matrix
         self.P = np.array([[1.0, 0.0], [0.0, 1.0]]) * 100  # Uncertainty covariance.  Large initial
         self.H = np.array([[1.0, 0.0]])  # Jacobian of h(x).  Measurement matrix (Only measure position)
         self.S = 0.  # System uncertainty
@@ -351,16 +351,16 @@ class KF1x1VarDt:
         s += "  z = {:10.6g}\n".format(self.z_kf)
         s += "  Fx = \n" + self.Fx.__str__() + "\n"
         s += "  Bu = {:13.10g}\n".format(self.Bu)
-        s += "  R = {:10.6g}\n".format(self.R[0][0])
+        s += "  R = {:10.6g}\n".format(self.R[0])
         s += "  Q_std = {:10.6g}\n".format(self.Q_std)
         s += "  H = " + self.H.__str__() + "\n"
         s += "  Outputs:\n"
         s += "  x  = \n" + self.x.__str__() + "\n"
         s += "  hx = {:10.6g}\n".format(self.hx)
-        s += "  y  = {:10.6g}\n".format(self.y_kf[0][0])
+        s += "  y  = {:10.6g}\n".format(self.y_kf[0, 0])
         s += "  P  = \n" + self.P.__str__() + "\n"
         s += "  K  = \n" + self.K.__str__() + "\n"
-        s += "  S  = {:10.6g}\n".format(self.S[0][0])
+        s += "  S  = {:10.6g}\n".format(self.S[0, 0])
         return s
 
     def predict(self, dt):
@@ -369,10 +369,10 @@ class KF1x1VarDt:
         Inputs:
             u   1x1 input, =ib, A
             Bu  1x1 control transition, Ohms
-            Fx  1x1 state transition, V/V
+            Fx  2x2 state transition, V/V
         Outputs:
-            x   1x1 Kalman state variable = Vsoc (0-1 fraction)
-            P   1x1 Kalman probability
+            x   2x1 Kalman state variable =
+            P   2x2 Kalman probability
         """
         self.dt = dt
 
@@ -385,6 +385,7 @@ class KF1x1VarDt:
 
         # Predict state and covariance
         self.x = self.Fx @ self.x
+        print("Dt predict:", self.x)
         self.P = self.Fx @ self.P @ self.Fx.T + Q
 
     def update(self, measurement):
@@ -394,41 +395,38 @@ class KF1x1VarDt:
 
         Args:
             measurement (float): The new position measurement.
+
+        Inputs:
+            u   1x1 input, =ib, A
+            Bu  1x1 control transition, Ohms
+            Fx  2x2 state transition, V/V
+        Outputs:
+            S   1x1 Kalman gain
+            K   2x1 Kalman gain
+            H   1x2 Jacobian
+            x   2x1 Kalman state variable = [input units, rate of change of input units]
+            y_kf    1x1 output, units of input u (unity gain filter)
+            P   2x2 Kalman probability matrix
+
         """
         # Kalman Gain
         self.S = self.H @ self.P @ self.H.T + self.R
         self.K = self.P @ self.H.T @ np.linalg.inv(self.S)
+        print("Dt update K=:", self.K)
 
         # Update state estimate
         self.y_kf = measurement - (self.H @ self.x)  # Innovation
         self.x = self.x + (self.K @ self.y_kf)
+        print("x=", self.x)
 
         # Update covariance matrix
+
         self.P = (np.eye(self.x.shape[0]) - self.K @ self.H) @ self.P
 
     def init_kf(self, soc, p_init):
         """Initialize on demand"""
         self.x = soc
         self.P = p_init
-
-    def update_kf(self, measurement):
-        """
-        Performs the update step of the Kalman filter.
-        Updates the state estimate and covariance matrix based on the new measurement.
-
-        Args:
-            measurement (float): The new position measurement.
-        """
-        # Kalman Gain
-        self.S = self.H @ self.P @ self.H.T + self.R
-        self.K = self.P @ self.H.T @ np.linalg.inv(self.S)
-
-        # Update state estimate
-        self.y_kf = measurement - (self.H @ self.x)  # Innovation
-        self.x = self.x + (self.K @ self.y_kf)
-
-        # Update covariance matrix
-        self.P = (np.eye(self.x.shape[0]) - self.K @ self.H) @ self.P
 
     def h_jacobian(self, x):
         # implemented by child
@@ -455,6 +453,181 @@ class KF1x1VarDt:
             numpy.ndarray: The current covariance matrix.
         """
         return self.P
+
+
+class KF1x1VarDtX:
+    """Explicit 1x1 General Purpose Extended Kalman Filter.   Inherit from this class and include kf_predict and
+    kf_update methods in the parent."""
+
+    def __init__(self, initial_position, initial_velocity, dt, proc_noise_std, meas_noise_std):
+        """
+        Initializes a 1D Kalman filter with a constant velocity model.
+
+        Args:
+            initial_position (float): Initial estimate of the position.
+            initial_velocity (float): Initial estimate of the velocity.
+            dt (float): Time step between measurements.
+            proc_noise_std (float): Standard deviation of the process noise (acceleration).
+            meas_noise_std (float): Standard deviation of the measurement noise (position).
+        """
+        self.dt = dt
+        self.Fx = np.array([[1.0, self.dt], [0.0, 1.0]])  # State transition
+        self.Bu = 0.  # Control transition
+        # Process noise covariance matrix (assuming noise in acceleration)
+        self.Q_std = proc_noise_std
+        self.R = meas_noise_std**2  # State uncertainty.  Measurement noise covariance matrix
+        self.P = np.array([[1.0, 0.0], [0.0, 1.0]]) * 100  # Uncertainty covariance.  Large initial
+        self.H = np.array([[1.0, 0.0]])  # Jacobian of h(x).  Measurement matrix (Only measure position)
+        self.S = 0.  # System uncertainty
+        self.K = 0.  # Kalman gain
+        self.hx = 0.  # Output of observation function h(x)
+        self.u_kf = 0.  # Control input
+        self.x = np.array([initial_position, initial_velocity])  # Kalman state vector [position, velocity]
+        self.y_kf = 0.  # Residual z-hx
+        self.y_kf_f = 0.  # Residual filtered z-hx
+        self.z_kf = 0.  # Observation of state x
+        self.x_prior = self.x
+        self.P_prior = self.P
+        self.x_post = self.x
+        self.P_post = self.P
+        self.tb_f_for_hx = 25.
+        self.x_for_hx = 1.
+        self.x = np.array([[0], [0]])
+
+    def __str__(self, prefix=''):
+        """Returns representation of the object"""
+        s = prefix + "KF1x1VarDt:\n"
+        s += "  Inputs:\n"
+        s += "  z = {:10.6g}\n".format(self.z_kf)
+        s += "  Fx = \n" + self.Fx.__str__() + "\n"
+        s += "  Bu = {:13.10g}\n".format(self.Bu)
+        s += "  R = {:10.6g}\n".format(self.R)
+        s += "  Q_std = {:10.6g}\n".format(self.Q_std)
+        s += "  H = " + self.H.__str__() + "\n"
+        s += "  Outputs:\n"
+        s += "  x  = \n" + self.x.__str__() + "\n"
+        s += "  hx = {:10.6g}\n".format(self.hx)
+        s += "  y  = {:10.6g}\n".format(self.y_kf)
+        s += "  P  = \n" + self.P.__str__() + "\n"
+        s += "  K  = \n" + self.K.__str__() + "\n"
+        s += "  S  = {:10.6g}\n".format(self.S)
+        return s
+
+    def predict(self, dt):
+        """
+        Performs the prediction step of the Kalman filter.
+        Inputs:
+            u   1x1 input, =ib, A
+            Bu  1x1 control transition, Ohms
+            Fx  2x2 state transition, V/V
+        Outputs:
+            x   2x1 Kalman state variable =
+            P   2x2 Kalman probability
+        """
+        self.dt = dt
+
+        # State transition matrix (constant velocity model)
+        self.Fx = np.array([[1.0, self.dt], [0.0, 1.0]])
+        Fx = self.Fx
+
+        # Process noise covariance matrix (assuming noise affects acceleration)
+        G = np.array([[0.5 * self.dt ** 2], [dt]])
+        # Q = G @ G.T * self.Q_std ** 2
+        Q = np.array([ [dt*dt/4, dt/2], [dt/2, 1]])*dt*dt*self.Q_std
+
+        # Predict state and covariance
+        # self.x = self.Fx @ self.x
+        x = self.x
+        self.x = np.array( [ [float(Fx[0, 0])*float(x[0, 0]) + float(Fx[0, 1])*float(x[1, 0])], [float(Fx[1, 0])*float(x[0, 0]) + float(Fx[1, 1])*float(x[1, 0])] ])
+        print("DtX predict:", self.x)
+        p00 = self.P[0, 0]
+        p01 = self.P[0, 1]
+        p10 = self.P[1, 0]
+        p11 = self.P[1, 1]
+        q00 = Q[0, 0]
+        q01 = Q[0, 1]
+        q10 = Q[1, 0]
+        q11 = Q[1, 1]
+        # self.P = self.Fx @ self.P @ self.Fx.T + Q
+        self.P = np.array(( [ [p00+p01*dt+p10*dt+p11*dt*dt + q00,  p01+p11*dt + q01], [p10+p11*dt + q10, p11 + q11] ] ))
+
+    def update(self, measurement):
+        """
+        Performs the update step of the Kalman filter.
+        Updates the state estimate and covariance matrix based on the new measurement.
+
+        Args:
+            measurement (float): The new position measurement.
+
+        Inputs:
+            u   1x1 input, =ib, A
+            Bu  1x1 control transition, Ohms
+            Fx  2x2 state transition, V/V
+        Outputs:
+            S   1x1 Kalman gain
+            K   2x1 Kalman gain
+            H   1x2 Jacobian
+            x   2x1 Kalman state variable = [input units, rate of change of input units]
+            y_kf    1x1 output, units of input u (unity gain filter)
+            P   2x2 Kalman probability matrix
+
+        """
+        # Kalman Gain
+        p00 = self.P[0, 0]
+        p01 = self.P[0, 1]
+        p10 = self.P[1, 0]
+        p11 = self.P[1, 1]
+        # self.S = self.H @ self.P @ self.H.T + self.R
+        self.S = p00+self.R
+        PHT = np.array([ [p00], [p10] ])
+        # self.K = self.P @ self.H.T @ np.linalg.inv(self.S)
+        self.K = np.array([ [p00], [p10] ]) * 1./(p00 + self.R)
+        print("DtX update K=:", self.K)
+        k0 = float(self.K[0,0])
+        k1 = float(self.K[1,0])
+
+        # Update state estimate
+        # self.y_kf = measurement - (self.H @ self.x)  # Innovation
+        self.y_kf = measurement - float(self.x[0,0])
+        # self.x = self.x + (self.K @ self.y_kf)
+        self.x = np.array( [ [float(self.x[0,0])+k0/(p00+R)], [float(self.x[1,0])+k1/(p00+R)]])
+        print("x=", self.x)
+
+        # Update covariance matrix
+        # self.P = (np.eye(self.x.shape[0]) - self.K @ self.H) @ self.P
+        self.P = np.array( [[(1-k0)*p00, (1-k0)*p01], [-k1*p00+p10, -k1*p01+p11]])
+
+    def init_kf(self, soc, p_init):
+        """Initialize on demand"""
+        self.x = soc
+        self.P = p_init
+
+    def h_jacobian(self, x):
+        # implemented by child
+        raise NotImplementedError
+
+    def hx_calc(self):
+        # implemented by child
+        raise NotImplementedError
+
+    def get_state(self):
+        """
+        Returns the current estimated state.
+
+        Returns:
+            numpy.ndarray: The current state vector [position, velocity].
+        """
+        return self.x
+
+    def get_covariance(self):
+        """
+        Returns the current estimated covariance matrix.
+
+        Returns:
+            numpy.ndarray: The current covariance matrix.
+        """
+        return self.P
+
 
 class SavedData:
     def __init__(self, x=None, time_end=None):
@@ -656,6 +829,8 @@ if __name__ == "__main__":
         print(f"{Qstd=} {R=} {lpf_tau=}")
         kfVon = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
                            proc_noise_std=Qstd, meas_noise_std=R)
+        kfVonX = KF1x1VarDtX(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                           proc_noise_std=Qstd, meas_noise_std=R)
         lpfVon = LagExp(dt=dt, tau=lpf_tau, min_=-3.3, max_=3.3)
 
 
@@ -671,6 +846,10 @@ if __name__ == "__main__":
 
             kfVon.predict(mr.dt[i])
             kfVon.update(mr.Von[i])
+            kfVonX.predict(mr.dt[i])
+            kfVonX.update(mr.Von[i])
+            if i >= 3:
+                pass
             vf_kf, v_rat = kfVon.get_state()
             mv.vf_kf.append(vf_kf)
 

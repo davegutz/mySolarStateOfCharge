@@ -1,0 +1,286 @@
+//
+// MIT License
+//
+// Copyright (C) 2023 - Dave Gutz
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+/**
+* Implementation of KalmanFilter class.
+*
+* @author: Hayk Martirosyan
+* @date: 2014.11.15
+*/
+#include "application.h"
+#include "KF_1x1.h"
+#include <math.h>
+#include "parameters.h"
+extern SavedPars sp; // Various parameters to be static at system level and saved through power cycle
+extern VolatilePars ap; // Various adjustment parameters shared at system level
+// extern int8_t debug();
+
+#include "KF_1x1.h"
+
+KalmanFilter::KalmanFilter(
+    double dt,
+)
+{
+  I.setIdentity();
+}
+
+KalmanFilter::KalmanFilter() {}
+
+void KalmanFilter::init(double t0, const Eigen::VectorXd& x0) {
+  x_hat = x0;
+  P = P0;
+  this->t0 = t0;
+  t = t0;
+  initialized = true;
+}
+
+void KalmanFilter::init() {
+  x_hat.setZero();
+  P = P0;
+  t0 = 0;
+  t = t0;
+  initialized = true;
+}
+
+void KalmanFilter::update(const Eigen::VectorXd& y) {
+
+  if(!initialized)
+    throw std::runtime_error("Filter is not initialized!");
+
+  x_hat_new = A * x_hat;
+  P = A*P*A.transpose() + Q;
+  K = P*C.transpose()*(C*P*C.transpose() + R).inverse();
+  x_hat_new += K * (y - C*x_hat_new);
+  P = (I - K*C)*P;
+  x_hat = x_hat_new;
+
+  t += dt;
+}
+
+void KalmanFilter::update(const Eigen::VectorXd& y, double dt, const Eigen::MatrixXd A) {
+
+  this->A = A;
+  this->dt = dt;
+  update(y);
+}
+
+// Pretty Print
+ void KalmanFilter::pretty_print(void)
+ {
+#ifndef SOFT_DEPLOY_PHOTON
+  Serial.printf("KF:\n");
+  Serial.printf("In:\n");
+  Serial.printf("  u  %8.4f, A\n", u_);
+  Serial.printf("  frz %d, T=frz\n", freeze_);
+  Serial.printf("  dt_ekf %8.4f, s\n", dt_ekf_);
+  Serial.printf("  z  %8.4f, V\n", z_);
+  Serial.printf("  R%13.10f\n", R_);
+  Serial.printf("  Q%13.10f\n", Q_);
+  Serial.printf("  H   %7.3f\n", H_);
+  Serial.printf("Out:\n");
+  Serial.printf("  xp %13.10f, Vsoc (0-1 fraction)\n", x_prior_);
+  Serial.printf("  x  %13.10f, Vsoc (0-1 fraction)\n", x_);
+  Serial.printf("  Fx %13.10f\n", Fx_);
+  Serial.printf("  Bu %13.10f\n", Bu_);
+  Serial.printf("  hx %8.4f\n", hx_);
+  Serial.printf("  y   %8.4f, V\n", y_);
+  Serial.printf("  Pp%13.10f\n", P_prior_);
+  Serial.printf("  P%13.10f\n", P_);
+  Serial.printf("  K%13.10f\n", K_);
+  Serial.printf("  S%13.10f\n", S_);
+#else
+     Serial.printf("EKF_1x1: silent DEPLOY\n");
+#endif
+ }
+
+ /*
+ class KF1x1VarDt:
+    """1x1 General Purpose Extended Kalman Filter.   Inherit from this class and include kf_predict and
+    kf_update methods in the parent."""
+
+    def __init__(self, initial_position, initial_velocity, dt, proc_noise_std, meas_noise_std):
+        """
+        Initializes a 1D Kalman filter with a constant velocity model.
+
+        Args:
+            initial_position (float): Initial estimate of the position.
+            initial_velocity (float): Initial estimate of the velocity.
+            dt (float): Time step between measurements.
+            proc_noise_std (float): Standard deviation of the process noise (acceleration).
+            meas_noise_std (float): Standard deviation of the measurement noise (position).
+        """
+        self.dt = dt
+        self.Fx = np.array([[1.0, self.dt], [0.0, 1.0]])  # State transition
+        self.Bu = 0.  # Control transition
+        # Process noise covariance matrix (assuming noise in acceleration)
+        self.Q_std = proc_noise_std
+        self.R = np.array([[meas_noise_std**2]])  # State uncertainty.  Measurement noise covariance matrix
+        self.P = np.array([[1.0, 0.0], [0.0, 1.0]]) * 100  # Uncertainty covariance.  Large initial
+        self.H = np.array([[1.0, 0.0]])  # Jacobian of h(x).  Measurement matrix (Only measure position)
+        self.S = 0.  # System uncertainty
+        self.K = 0.  # Kalman gain
+        self.hx = 0.  # Output of observation function h(x)
+        self.u_kf = 0.  # Control input
+        self.x = np.array([[initial_position], [initial_velocity]])  # Kalman state vector [position, velocity]
+        self.y_kf = 0.  # Residual z-hx
+        self.y_kf_f = 0.  # Residual filtered z-hx
+        self.z_kf = 0.  # Observation of state x
+        self.x_prior = self.x
+        self.P_prior = self.P
+        self.x_post = self.x
+        self.P_post = self.P
+        self.tb_f_for_hx = 25.
+        self.x_for_hx = 1.
+
+    def __str__(self, prefix=''):
+        """Returns representation of the object"""
+        s = prefix + "KF1x1VarDt:\n"
+        s += "  Inputs:\n"
+        s += "  z = {:10.6g}\n".format(self.z_kf)
+        s += "  Fx = \n" + self.Fx.__str__() + "\n"
+        s += "  Bu = {:13.10g}\n".format(self.Bu)
+        s += "  R = {:10.6g}\n".format(self.R[0][0])
+        s += "  Q_std = {:10.6g}\n".format(self.Q_std)
+        s += "  H = " + self.H.__str__() + "\n"
+        s += "  Outputs:\n"
+        s += "  x  = \n" + self.x.__str__() + "\n"
+        s += "  hx = {:10.6g}\n".format(self.hx)
+        s += "  y  = {:10.6g}\n".format(self.y_kf[0][0])
+        s += "  P  = \n" + self.P.__str__() + "\n"
+        s += "  K  = \n" + self.K.__str__() + "\n"
+        s += "  S  = {:10.6g}\n".format(self.S[0][0])
+        return s
+
+    def predict(self, dt):
+        """
+        Performs the prediction step of the Kalman filter.
+        Inputs:
+            u   1x1 input, =ib, A
+            Bu  1x1 control transition, Ohms
+            Fx  1x1 state transition, V/V
+        Outputs:
+            x   1x1 Kalman state variable = Vsoc (0-1 fraction)
+            P   1x1 Kalman probability
+        """
+        self.dt = dt
+
+        # State transition matrix (constant velocity model)
+        self.Fx = np.array([[1.0, self.dt], [0.0, 1.0]])
+
+        # Process noise covariance matrix (assuming noise affects acceleration)
+        G = np.array([[0.5 * self.dt ** 2], [dt]])
+        Q = G @ G.T * self.Q_std ** 2
+
+        # Predict state and covariance
+        self.x = self.Fx @ self.x
+        self.P = self.Fx @ self.P @ self.Fx.T + Q
+
+    def update(self, measurement):
+        """
+        Performs the update step of the Kalman filter.
+        Updates the state estimate and covariance matrix based on the new measurement.
+
+        Args:
+            measurement (float): The new position measurement.
+        """
+        # Kalman Gain
+        self.S = self.H @ self.P @ self.H.T + self.R
+        self.K = self.P @ self.H.T @ np.linalg.inv(self.S)
+
+        # Update state estimate
+        self.y_kf = measurement - (self.H @ self.x)  # Innovation
+        self.x = self.x + (self.K @ self.y_kf)
+
+        # Update covariance matrix
+        self.P = (np.eye(self.x.shape[0]) - self.K @ self.H) @ self.P
+
+    def init_kf(self, soc, p_init):
+        """Initialize on demand"""
+        self.x = soc
+        self.P = p_init
+
+    def update_kf(self, measurement):
+        """
+        Performs the update step of the Kalman filter.
+        Updates the state estimate and covariance matrix based on the new measurement.
+
+        Args:
+            measurement (float): The new position measurement.
+        """
+        # Kalman Gain
+        self.S = self.H @ self.P @ self.H.T + self.R
+        self.K = self.P @ self.H.T @ np.linalg.inv(self.S)
+
+        # Update state estimate
+        self.y_kf = measurement - (self.H @ self.x)  # Innovation
+        self.x = self.x + (self.K @ self.y_kf)
+
+        # Update covariance matrix
+        self.P = (np.eye(self.x.shape[0]) - self.K @ self.H) @ self.P
+
+    def h_jacobian(self, x):
+        # implemented by child
+        raise NotImplementedError
+
+    def hx_calc(self):
+        # implemented by child
+        raise NotImplementedError
+
+    def get_state(self):
+        """
+        Returns the current estimated state.
+
+        Returns:
+            numpy.ndarray: The current state vector [position, velocity].
+        """
+        return self.x
+
+    def get_covariance(self):
+        """
+        Returns the current estimated covariance matrix.
+
+        Returns:
+            numpy.ndarray: The current covariance matrix.
+        """
+        return self.P
+
+
+    def __str__(self, prefix=''):
+        """Returns representation of the object"""
+        s = prefix + "KF1x1VarDt:\n"
+        s += "  Inputs:\n"
+        s += "  z = {:10.6g}\n".format(self.z_kf)
+        s += "  Fx = \n" + self.Fx.__str__() + "\n"
+        s += "  Bu = {:13.10g}\n".format(self.Bu)
+        s += "  R = {:10.6g}\n".format(self.R[0][0])
+        s += "  Q_std = {:10.6g}\n".format(self.Q_std)
+        s += "  H = " + self.H.__str__() + "\n"
+        s += "  Outputs:\n"
+        s += "  x  = \n" + self.x.__str__() + "\n"
+        s += "  hx = {:10.6g}\n".format(self.hx)
+        s += "  y  = {:10.6g}\n".format(self.y_kf[0][0])
+        s += "  P  = \n" + self.P.__str__() + "\n"
+        s += "  K  = \n" + self.K.__str__() + "\n"
+        s += "  S  = {:10.6g}\n".format(self.S[0][0])
+        return s
+*/
