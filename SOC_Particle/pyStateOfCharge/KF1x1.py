@@ -127,73 +127,77 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
 
     std_dev_lpf = np.std(mr.Von_lpf[vec_initial])
     steady_level_lpf = np.average(mr.Von_lpf[vec_initial])
-    index_start_sweep_lpf = np.array(np.where( abs(mr.Von_lpf) > 4.*std_dev_lpf))[0, 0]
-    time_start_sweep_lpf = mr.time[index_start_sweep_lpf]
-    print(f"{steady_level_lpf=} {std_dev_lpf=} {index_start_sweep_lpf=} {time_start_sweep_lpf=}")
-
-    # Detect positive zero crossings
-    is_positive = mr.Von_lpf[index_start_sweep_lpf:-1]  > 0
-    positive_crossings = (~is_positive[:-1]) & is_positive[1:]
-    mr.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lpf  # Add 1 to account for the shift
-    mr.time_zero_crossing = mr.time[mr.crossing_indices]
-
+    try:
+        index_start_sweep_lpf = np.array(np.where( abs(mr.Von_lpf) > 4.*std_dev_lpf))[0, 0]
+        time_start_sweep_lpf = mr.time[index_start_sweep_lpf]
+        print(f"{steady_level_lpf=} {std_dev_lpf=} {index_start_sweep_lpf=} {time_start_sweep_lpf=}")
+    except IndexError:
+        steady_only = True
     mv.Von = np.array(mv.Von)
-    mv.Von = mv.Von - np.average(mv.Von[vec_initial])
-    mv.time = mr.time
-    is_positive = mv.Von[index_start_sweep_lpf:-1]  > 0
-    positive_crossings = (~is_positive[:-1]) & is_positive[1:]
-    mv.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lpf  # Add 1 to account for the shift
-    mv.time_zero_crossing = mv.time[mv.crossing_indices]
 
-    # For simplicity assume mv zero crossing is always after mr zero crossing (lags behave like lags)
-    # This also implies minimum phase behavior (magnitude decreasing) so normalize to max
-    print("Frequency, Hz  /  Magnitude, dB   /  Phase, deg")
-    transfer_function = []
-    mag_normal = 0.
-    for j in range(len(mr.time_zero_crossing)-1):
-        time = mr.time_zero_crossing[j]
-        index = mr.crossing_indices[j]
-        period = mr.time_zero_crossing[j+1] - mr.time_zero_crossing[j]
-        frequency = 1. / period
-        lag = mv.time_zero_crossing[j] - mr.time_zero_crossing[j]
-        input = mr.Von_lpf[mr.crossing_indices[j]:mr.crossing_indices[j+1]]
-        input_magnitude = max(input) - min(input)
-        if j >= len(mv.crossing_indices) - 1:
-            break
-        response = mv.Von[mv.crossing_indices[j]:mv.crossing_indices[j+1]]
-        response_magnitude = max(response) - min(response)
-        tf_magnitude = 20.*np.log10(response_magnitude/input_magnitude)
-        tf_phase = -360. * lag / period
-        if frequency < 2.5:
-            mag_normal = max(mag_normal, tf_magnitude)
-        transfer_function.append([frequency, tf_magnitude, tf_phase, time, index])
-        # print(f"{frequency}  /  {tf_magnitude}    / {tf_phase}")
-    transfer_function = np.array(transfer_function)
-    transfer_function[:, 1] -= mag_normal
+    if not steady_only:
+        # Detect positive zero crossings
+        is_positive = mr.Von_lpf[index_start_sweep_lpf:-1]  > 0
+        positive_crossings = (~is_positive[:-1]) & is_positive[1:]
+        mr.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lpf  # Add 1 to account for the shift
+        mr.time_zero_crossing = mr.time[mr.crossing_indices]
 
-    # Cleanup the result
-    d = np.diff(transfer_function, axis=0)[:, 0]
-    pos_indeces = np.where(d > 0.)
-    transfer_function = transfer_function[pos_indeces]
-    # Go through one-by-one and delete bad steps
-    tf_clean = []
-    tf_clean.append(transfer_function[0, :])
-    k_clean = 0
-    n = len(transfer_function[:, 0])
-    k = 1
-    while k < n:
-        if (abs(transfer_function[k, 0] - tf_clean[k_clean][0]) < 1. and
-                (transfer_function[k, 0] - tf_clean[k_clean][0]) > 0.):
-            tf_clean.append(transfer_function[k, :])
-            k_clean += 1
-        k += 1
-    tf_clean = np.array(tf_clean)
-    for j in range(len(tf_clean)):
-        print(f"{tf_clean[j][3]}: {tf_clean[j][0]}  /  {tf_clean[j][1]}    / {tf_clean[j][2]}")
-    mv.time_clean = tf_clean[:, 3]
-    mv.f_clean = tf_clean[:, 0]
-    mv.mdB_clean = tf_clean[:, 1]
-    mv.phs_clean = tf_clean[:, 2]
+        mv.Von = mv.Von - np.average(mv.Von[vec_initial])
+        mv.time = mr.time
+        is_positive = mv.Von[index_start_sweep_lpf:-1]  > 0
+        positive_crossings = (~is_positive[:-1]) & is_positive[1:]
+        mv.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lpf  # Add 1 to account for the shift
+        mv.time_zero_crossing = mv.time[mv.crossing_indices]
+
+        # For simplicity assume mv zero crossing is always after mr zero crossing (lags behave like lags)
+        # This also implies minimum phase behavior (magnitude decreasing) so normalize to max
+        print("Frequency, Hz  /  Magnitude, dB   /  Phase, deg")
+        transfer_function = []
+        mag_normal = 0.
+        for j in range(len(mr.time_zero_crossing)-1):
+            time = mr.time_zero_crossing[j]
+            index = mr.crossing_indices[j]
+            period = mr.time_zero_crossing[j+1] - mr.time_zero_crossing[j]
+            frequency = 1. / period
+            lag = mv.time_zero_crossing[j] - mr.time_zero_crossing[j]
+            input = mr.Von_lpf[mr.crossing_indices[j]:mr.crossing_indices[j+1]]
+            input_magnitude = max(input) - min(input)
+            if j >= len(mv.crossing_indices) - 1:
+                break
+            response = mv.Von[mv.crossing_indices[j]:mv.crossing_indices[j+1]]
+            response_magnitude = max(response) - min(response)
+            tf_magnitude = 20.*np.log10(response_magnitude/input_magnitude)
+            tf_phase = -360. * lag / period
+            if frequency < 2.5:
+                mag_normal = max(mag_normal, tf_magnitude)
+            transfer_function.append([frequency, tf_magnitude, tf_phase, time, index])
+            # print(f"{frequency}  /  {tf_magnitude}    / {tf_phase}")
+        transfer_function = np.array(transfer_function)
+        transfer_function[:, 1] -= mag_normal
+
+        # Cleanup the result
+        d = np.diff(transfer_function, axis=0)[:, 0]
+        pos_indeces = np.where(d > 0.)
+        transfer_function = transfer_function[pos_indeces]
+        # Go through one-by-one and delete bad steps
+        tf_clean = []
+        tf_clean.append(transfer_function[0, :])
+        k_clean = 0
+        n = len(transfer_function[:, 0])
+        k = 1
+        while k < n:
+            if (abs(transfer_function[k, 0] - tf_clean[k_clean][0]) < 1. and
+                    (transfer_function[k, 0] - tf_clean[k_clean][0]) > 0.):
+                tf_clean.append(transfer_function[k, :])
+                k_clean += 1
+            k += 1
+        tf_clean = np.array(tf_clean)
+        for j in range(len(tf_clean)):
+            print(f"{tf_clean[j][3]}: {tf_clean[j][0]}  /  {tf_clean[j][1]}    / {tf_clean[j][2]}")
+        mv.time_clean = tf_clean[:, 3]
+        mv.f_clean = tf_clean[:, 0]
+        mv.mdB_clean = tf_clean[:, 1]
+        mv.phs_clean = tf_clean[:, 2]
 
     # Metrics
     mr.Von_steady = mr.Von[vec_initial]
@@ -201,36 +205,42 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     mr.Von_steady_lpf = mr.Von_lpf[vec_initial]
     attenuation = (np.max(mv.Von_steady) - np.min(mv.Von_steady)) / (np.max(mr.Von_steady) - np.min(mr.Von_steady))
     attenuation_lpf = (np.max(mv.Von_steady) - np.min(mv.Von_steady)) / (np.max(mr.Von_steady_lpf) - np.min(mr.Von_steady_lpf))
-    phase45_tf_index = 0
-    db3_tf_index = 0
-    for j in range(len(tf_clean)-1):
-        frequency = tf_clean[j][0]
-        phase_dg = tf_clean[j][2]
-        mag_db = tf_clean[j][1]
-        time = tf_clean[j][3]
-        if mag_db < tf_clean[db3_tf_index][1] and mag_db >= -3.:
-            db3_tf_index = j
-        if  phase_dg < tf_clean[phase45_tf_index][2] and phase_dg >= -45.:
-            phase45_tf_index =j
-    freq_3db = tf_clean[db3_tf_index][0]
-    tau_3db = 1. / (freq_3db * 2. * np.pi)
-    mag_3db = tf_clean[db3_tf_index][1]
-    time_3db = tf_clean[db3_tf_index][3]
-    freq_45 = tf_clean[phase45_tf_index][0]
-    tau_45 = 1. / (freq_45 * 2. * np.pi)
-    phase_45 = tf_clean[phase45_tf_index][2]
-    time_45 = tf_clean[phase45_tf_index][3]
-    print(f"{attenuation=} {attenuation_lpf=}")
-    print(f"{time_3db=} {freq_3db=} {mag_3db=}")
-    print(f"{time_45=}  {freq_45=} {phase_45=}")
+
+    if not steady_only:
+        phase45_tf_index = 0
+        db3_tf_index = 0
+        for j in range(len(tf_clean)-1):
+            frequency = tf_clean[j][0]
+            phase_dg = tf_clean[j][2]
+            mag_db = tf_clean[j][1]
+            time = tf_clean[j][3]
+            if mag_db < tf_clean[db3_tf_index][1] and mag_db >= -3.:
+                db3_tf_index = j
+            if  phase_dg < tf_clean[phase45_tf_index][2] and phase_dg >= -45.:
+                phase45_tf_index =j
+        freq_3db = tf_clean[db3_tf_index][0]
+        tau_3db = 1. / (freq_3db * 2. * np.pi)
+        mag_3db = tf_clean[db3_tf_index][1]
+        time_3db = tf_clean[db3_tf_index][3]
+        freq_45 = tf_clean[phase45_tf_index][0]
+        tau_45 = 1. / (freq_45 * 2. * np.pi)
+        phase_45 = tf_clean[phase45_tf_index][2]
+        time_45 = tf_clean[phase45_tf_index][3]
+        print(f"{attenuation=} {attenuation_lpf=}")
+        print(f"{time_3db=} {freq_3db=} {mag_3db=}")
+        print(f"{time_45=}  {freq_45=} {phase_45=}")
     metric_string = "Metrics:\n"
     metric_string += "  Qstd = {:9.6f}\n  R =     {:9.6f}\n  lpf_tau = {:7.4f}\n\n".format(Qstd, R, lpf_tau)
     metric_string += "  Attn = {:5.2f}  Attn_lpf = {:5.2f}\n\n".format(attenuation, attenuation_lpf)
-    metric_string += "  -3db @    {:4.2f} Hz,  ({:5.1f} sec)\n".format(freq_3db, time_3db)
-    metric_string += "  -45 deg @ {:4.2f} Hz   ({:5.1f} sec)\n\n".format(freq_45, time_45)
-    metric_string += "  tau @ -3db = {:5.3f}\n  tau @ -45 = {:5.3f}\n".format(tau_3db, tau_45)
-    res_title = "Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45,"
-    res = [Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45]
+    if not steady_only:
+        metric_string += "  -3db @    {:4.2f} Hz,  ({:5.1f} sec)\n".format(freq_3db, time_3db)
+        metric_string += "  -45 deg @ {:4.2f} Hz   ({:5.1f} sec)\n\n".format(freq_45, time_45)
+        metric_string += "  tau @ -3db = {:5.3f}\n  tau @ -45 = {:5.3f}\n".format(tau_3db, tau_45)
+        res_title = "Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45,"
+        res = [Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45]
+    else:
+        res_title = "Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45,"
+        res = [Qstd, R, lpf_tau, attenuation_lpf, 0., 0.]
 
     plt.figure()
     plt.figtext(0.1, 0.3, metric_string, fontsize=10, color='black', horizontalalignment='left',
@@ -744,9 +754,9 @@ class Saved:
 # Example Usage:
 if __name__ == "__main__":
     """
-    Test setup:  FY6900 Dominty Function Generator.  CH 1 connected across shunt leads.  CH 2 ground connected to
+    Test setup:  FY6900 Dominty Function Generator.  FY6900 CH 1 connected across shunt leads.  CH 2 ground connected to
     board ground.  Top level - Sweep.   - Freq 0.5 - 5.0, Ampl 0.01 - 0.01, Offs -0.01 - -0.01, Duty 50% - 50%,
-    Mode Logarithm.   Direction Forth, Time 120s.  Turn off generator.
+    Mode Linear.   Direction Forth, Time 120s.  Turn off generator.
     'Cx27000',  wait 60 sec. Turn on generator and press OK on function generator.  When it reaches 0.5 Hz again press
     OK to stop.  Then turn off generator.
     """
@@ -757,7 +767,12 @@ if __name__ == "__main__":
     plt.rcParams['axes.grid'] = True
 
     time_end = None
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burstForKF_soc2p2_hi_lo_chg.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burstForKF_soc2p2_hi_lo_chg.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst470uF_ForKF_soc2p2_hi_lo_chg.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst220uF_ForKF_soc2p2_hi_lo_chg.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst100uF_ForKF_soc2p2_hi_lo_chg.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst47uF_ForKF_soc2p2_hi_lo_chg.csv'
+
     mr, data_file_clean = load_data(data_file, time_end)
     title = 'Base kfDemo.py var dt'
     dt = 0.1  # Time step (seconds) used only on init
