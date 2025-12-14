@@ -323,9 +323,11 @@ class KF1x1VarDt:
         """
         self.dt = dt
         self.Fx = np.array([[1.0, self.dt], [0.0, 1.0]])  # State transition
+        self.G = None
         self.Bu = 0.  # Control transition
         # Process noise covariance matrix (assuming noise in acceleration)
         self.Q_std = proc_noise_std
+        self.Q = np.array([[0.0, 0.0], [0.0, 0.0]])
         self.R = np.array([meas_noise_std**2])  # State uncertainty.  Measurement noise covariance matrix
         self.P = np.array([[1.0, 0.0], [0.0, 1.0]]) * 100  # Uncertainty covariance.  Large initial
         self.H = np.array([[1.0, 0.0]])  # Jacobian of h(x).  Measurement matrix (Only measure position)
@@ -380,13 +382,12 @@ class KF1x1VarDt:
         self.Fx = np.array([[1.0, self.dt], [0.0, 1.0]])
 
         # Process noise covariance matrix (assuming noise affects acceleration)
-        G = np.array([[0.5 * self.dt ** 2], [dt]])
-        Q = G @ G.T * self.Q_std ** 2
+        self.G = np.array([[0.5 * self.dt ** 2], [dt]])
+        self.Q = self.G @ self.G.T * self.Q_std**2
 
         # Predict state and covariance
         self.x = self.Fx @ self.x
-        print("Dt predict:", self.x)
-        self.P = self.Fx @ self.P @ self.Fx.T + Q
+        self.P = self.Fx @ self.P @ self.Fx.T + self.Q
 
     def update(self, measurement):
         """
@@ -412,12 +413,10 @@ class KF1x1VarDt:
         # Kalman Gain
         self.S = self.H @ self.P @ self.H.T + self.R
         self.K = self.P @ self.H.T @ np.linalg.inv(self.S)
-        print("Dt update K=:", self.K)
 
         # Update state estimate
         self.y_kf = measurement - (self.H @ self.x)  # Innovation
         self.x = self.x + (self.K @ self.y_kf)
-        print("x=", self.x)
 
         # Update covariance matrix
 
@@ -472,9 +471,11 @@ class KF1x1VarDtX:
         """
         self.dt = dt
         self.Fx = np.array([[1.0, self.dt], [0.0, 1.0]])  # State transition
+        self.G  = None
         self.Bu = 0.  # Control transition
         # Process noise covariance matrix (assuming noise in acceleration)
         self.Q_std = proc_noise_std
+        self.Q = self.P = np.array([[0.0, 0.0], [0.0, 0.0]])
         self.R = meas_noise_std**2  # State uncertainty.  Measurement noise covariance matrix
         self.P = np.array([[1.0, 0.0], [0.0, 1.0]]) * 100  # Uncertainty covariance.  Large initial
         self.H = np.array([[1.0, 0.0]])  # Jacobian of h(x).  Measurement matrix (Only measure position)
@@ -531,24 +532,23 @@ class KF1x1VarDtX:
         Fx = self.Fx
 
         # Process noise covariance matrix (assuming noise affects acceleration)
-        G = np.array([[0.5 * self.dt ** 2], [dt]])
-        # Q = G @ G.T * self.Q_std ** 2
-        Q = np.array([ [dt*dt/4, dt/2], [dt/2, 1]])*dt*dt*self.Q_std
+        self.G = np.array([[0.5 * self.dt ** 2], [dt]])
+        # self.Q = self.G @ G.T * self.Q_std**2
+        self.Q = np.array([ [dt*dt/4, dt/2], [dt/2, 1]])*dt*dt*self.Q_std**2
 
         # Predict state and covariance
         # self.x = self.Fx @ self.x
         x = self.x
         self.x = np.array( [ [float(Fx[0, 0])*float(x[0, 0]) + float(Fx[0, 1])*float(x[1, 0])], [float(Fx[1, 0])*float(x[0, 0]) + float(Fx[1, 1])*float(x[1, 0])] ])
-        print("DtX predict:", self.x)
         p00 = self.P[0, 0]
         p01 = self.P[0, 1]
         p10 = self.P[1, 0]
         p11 = self.P[1, 1]
-        q00 = Q[0, 0]
-        q01 = Q[0, 1]
-        q10 = Q[1, 0]
-        q11 = Q[1, 1]
-        # self.P = self.Fx @ self.P @ self.Fx.T + Q
+        q00 = self.Q[0, 0]
+        q01 = self.Q[0, 1]
+        q10 = self.Q[1, 0]
+        q11 = self.Q[1, 1]
+        # self.P = self.Fx @ self.P @ self.Fx.T + self.Q
         self.P = np.array(( [ [p00+p01*dt+p10*dt+p11*dt*dt + q00,  p01+p11*dt + q01], [p10+p11*dt + q10, p11 + q11] ] ))
 
     def update(self, measurement):
@@ -582,7 +582,6 @@ class KF1x1VarDtX:
         PHT = np.array([ [p00], [p10] ])
         # self.K = self.P @ self.H.T @ np.linalg.inv(self.S)
         self.K = np.array([ [p00], [p10] ]) * 1./(p00 + self.R)
-        print("DtX update K=:", self.K)
         k0 = float(self.K[0,0])
         k1 = float(self.K[1,0])
 
@@ -590,8 +589,7 @@ class KF1x1VarDtX:
         # self.y_kf = measurement - (self.H @ self.x)  # Innovation
         self.y_kf = measurement - float(self.x[0,0])
         # self.x = self.x + (self.K @ self.y_kf)
-        self.x = np.array( [ [float(self.x[0,0])+k0/(p00+R)], [float(self.x[1,0])+k1/(p00+R)]])
-        print("x=", self.x)
+        self.x = np.array( [ [float(self.x[0,0])+self.y_kf*self.K[0,0]], [float(self.x[1,0])+self.y_kf*self.K[1,0]] ] )
 
         # Update covariance matrix
         # self.P = (np.eye(self.x.shape[0]) - self.K @ self.H) @ self.P
@@ -845,10 +843,10 @@ if __name__ == "__main__":
             mv.time.append(mr.time[i])
 
             kfVon.predict(mr.dt[i])
+            # kfVonX.predict(mr.dt[i])
             kfVon.update(mr.Von[i])
-            kfVonX.predict(mr.dt[i])
-            kfVonX.update(mr.Von[i])
-            if i >= 3:
+            # kfVonX.update(mr.Von[i])
+            if i > 3:
                 pass
             vf_kf, v_rat = kfVon.get_state()
             mv.vf_kf.append(vf_kf)
