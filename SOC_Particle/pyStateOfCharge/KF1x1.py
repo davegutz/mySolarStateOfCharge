@@ -104,6 +104,7 @@ def plot_5(plt=None, mr=None, mv=None, title=None):
     return plt
 
 def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=None):
+    steady_only = False
     N = len(mr.Von)
     total_time = mr.time[-1]
     sample_freq_hz = float(N) / total_time
@@ -134,6 +135,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     except IndexError:
         steady_only = True
     mv.Von = np.array(mv.Von)
+    steady_only = True
 
     if not steady_only:
         # Detect positive zero crossings
@@ -771,12 +773,17 @@ if __name__ == "__main__":
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst470uF_ForKF_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst220uF_ForKF_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst100uF_ForKF_soc2p2_hi_lo_chg.csv'
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst47uF_ForKF_soc2p2_hi_lo_chg.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst47uF_ForKF_soc2p2_hi_lo_chg.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst0uF_VoVc_ForKF_soc2p2_hi_lo_chg.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst100uF_VoVc_ForKF_soc2p2_hi_lo_chg.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\temp_soc2p2_hi_lo_chg.csv'
 
     mr, data_file_clean = load_data(data_file, time_end)
     title = 'Base kfDemo.py var dt'
     dt = 0.1  # Time step (seconds) used only on init
-    Qstd = 0.015*2  # Standard deviation of acceleration noise
+
+    # The best design of filter
+    Qstd = 0.015  # Standard deviation of acceleration noise
     lpf_tau = 0.008
     R = 0.001  # Standard deviation of voltage measurement noise
 
@@ -826,6 +833,74 @@ if __name__ == "__main__":
     ver_str = '_filtered'
 
     title = 'Part Factorial kfDemo.py var dt'
+
+    # General purpose results
+    # Data structures
+    # if have_Vca and have_VoVca and have_Tbv and have_Vbv and have_VoVcn and have_Vcn and have_Von:
+    if have_VoVcn and have_Vcn and have_Von:
+        mv = Saved()
+        v_rat = None
+
+        for i in range(len(mr.time)):
+            mv.time.append(mr.time[i])
+
+            if hasattr(mr, 'Voa'):
+                kfVoa.predict(mr.dt[i])
+                kfVoa.update(mr.Voa[i])
+                vf, v_rat = kfVoa.get_state()
+                mv.Voa.append(vf[0])
+
+            if hasattr(mr, 'Vca'):
+                kfVca.predict(mr.dt[i])
+                kfVca.update(mr.Vca[i])
+                vf, v_rat = kfVca.get_state()
+                mv.Vca.append(vf[0])
+
+            if hasattr(mr, 'VoVca'):
+                kfVoVca.predict(mr.dt[i])
+                kfVoVca.update(mr.VoVca[i])
+                vf, v_rat = kfVoVca.get_state()
+                mv.VoVca.append(vf[0])
+
+            if hasattr(mr, 'Von'):
+                kfVon.predict(mr.dt[i])
+                kfVon.update(mr.Von[i])
+                vf, v_rat = kfVon.get_state()
+                mv.Von.append(vf[0])
+
+            if hasattr(mr, 'Vcn'):
+                kfVcn.predict(mr.dt[i])
+                kfVcn.update(mr.Vcn[i])
+                vf, v_rat = kfVcn.get_state()
+                mv.Vcn.append(vf[0])
+
+            if hasattr(mr, 'VoVcn'):
+                kfVoVcn.predict(mr.dt[i])
+                kfVoVcn.update(mr.VoVcn[i])
+                vf, v_rat = kfVoVcn.get_state()
+                mv.VoVcn.append(vf[0])
+                mv.VoVcnA.append(mv.Von[i] - mv.Vcn[i])
+
+            if hasattr(mr, 'Vbv'):
+                kfVbv.predict(mr.dt[i])
+                kfVbv.update(mr.Vbv[i])
+                vf, v_rat = kfVbv.get_state()
+                mv.Vbv.append(vf[0])
+
+            if hasattr(mr, 'Tbv'):
+                kfTbv.predict(mr.dt[i])
+                kfTbv.update(mr.Tbv[i])
+                vf, v_rat = kfTbv.get_state()
+                mv.Tbv.append(vf[0])
+
+        plt = plot_1(plt, mr, mv, title+' F1')
+        plt = plot_2(plt, mr, mv, title+' F2')
+        plt = plot_3(plt, mr, mv, title+' F3')
+        plt = plot_4(plt, mr, mv, title+' F4')
+        plt = plot_5(plt, mr, mv, title+' F5')
+
+
+
     Res = []
     for Qstd, R, lpf_tau in \
             [
@@ -897,70 +972,6 @@ if __name__ == "__main__":
 
 
 
-
-    # General purpose results
-    # Data structures
-    if have_Vca and have_VoVca and have_Tbv and have_Vbv and have_VoVcn and have_Vcn and have_Von:
-        mv = Saved()
-        v_rat = None
-
-        for i in range(len(mr.time)):
-            mv.time.append(mr.time[i])
-
-            if hasattr(mr, 'Voa'):
-                kfVoa.predict(mr.dt[i])
-                kfVoa.update(mr.Voa[i])
-                vf, v_rat = kfVoa.get_state()
-                mv.Voa.append(vf[0])
-
-            if hasattr(mr, 'Vca'):
-                kfVca.predict(mr.dt[i])
-                kfVca.update(mr.Vca[i])
-                vf, v_rat = kfVca.get_state()
-                mv.Vca.append(vf[0])
-
-            if hasattr(mr, 'VoVca'):
-                kfVoVca.predict(mr.dt[i])
-                kfVoVca.update(mr.VoVca[i])
-                vf, v_rat = kfVoVca.get_state()
-                mv.VoVca.append(vf[0])
-
-            if hasattr(mr, 'Von'):
-                kfVon.predict(mr.dt[i])
-                kfVon.update(mr.Von[i])
-                vf, v_rat = kfVon.get_state()
-                mv.Von.append(vf[0])
-
-            if hasattr(mr, 'Vcn'):
-                kfVcn.predict(mr.dt[i])
-                kfVcn.update(mr.Vcn[i])
-                vf, v_rat = kfVcn.get_state()
-                mv.Vcn.append(vf[0])
-
-            if hasattr(mr, 'VoVcn'):
-                kfVoVcn.predict(mr.dt[i])
-                kfVoVcn.update(mr.VoVcn[i])
-                vf, v_rat = kfVoVcn.get_state()
-                mv.VoVcn.append(vf[0])
-                mv.VoVcnA.append(mv.Von[i] - mv.Vcn[i])
-
-            if hasattr(mr, 'Vbv'):
-                kfVbv.predict(mr.dt[i])
-                kfVbv.update(mr.Vbv[i])
-                vf, v_rat = kfVbv.get_state()
-                mv.Vbv.append(vf[0])
-
-            if hasattr(mr, 'Tbv'):
-                kfTbv.predict(mr.dt[i])
-                kfTbv.update(mr.Tbv[i])
-                vf, v_rat = kfTbv.get_state()
-                mv.Tbv.append(vf[0])
-
-        plt = plot_1(plt, mr, mv, title+' F1')
-        plt = plot_2(plt, mr, mv, title+' F2')
-        plt = plot_3(plt, mr, mv, title+' F3')
-        plt = plot_4(plt, mr, mv, title+' F4')
-        plt = plot_5(plt, mr, mv, title+' F5')
 
     plt.show(block=True)
 
