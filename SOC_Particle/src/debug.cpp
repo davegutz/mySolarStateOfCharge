@@ -151,19 +151,19 @@ soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
 // Calibration
 void debug_98(BatteryMonitor *Mon, Sensors *Sen)
 {
-  Serial.printf("imh imfh inh infh: %6.2fA %6.2fA, %6.2fA %6.2fA,\n",
-  Sen->Ib_amp_hdwe_f, Sen->ShuntAmp->Ishunt_cal_filt(), Sen->Ib_noa_hdwe_f, Sen->ShuntNoAmp->Ishunt_cal_filt());
+  Serial.printf("imh imhkf imfh inh inkfh infh: %6.2fA %6.2fA,%6.2fA  %6.2fA,%6.2fA %6.2fA,\n",
+  Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->ShuntAmp->Ishunt_cal_filt(), Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->ShuntNoAmp->Ishunt_cal_filt());
   
-  Serial1.printf("imh imfh inh infh: %6.2fA %6.2fA, %6.2fA %6.2fA,\n",
-  Sen->Ib_amp_hdwe_f, Sen->ShuntAmp->Ishunt_cal_filt(), Sen->Ib_noa_hdwe_f, Sen->ShuntNoAmp->Ishunt_cal_filt());
+  Serial1.printf("imh imhkf imfh inh inkfh infh: %6.2fA %6.2fA,%6.2fA  %6.2fA,%6.2fA %6.2fA,\n",
+  Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->ShuntAmp->Ishunt_cal_filt(), Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->ShuntNoAmp->Ishunt_cal_filt());
 }
 void debug_99(BatteryMonitor *Mon, Sensors *Sen)
 {
-  Serial.printf("Tb Vb Vr imh inh sel voc voc_soc |*SV,*Dc |*SA,*DA|*SB,*DB| *SD| *Dw| *Sr: %6.2fC %7.3fv %6.3fv %6.2fA %6.2fA %6.2fA %6.2fv %6.2fv |%6.3f %6.3fv  |%6.3f %6.3fA | %6.3f %6.3fA |%6.3f|%6.3fv|%6.3f,\n",
-  Sen->Tb_hdwe_filt, Sen->Vb_hdwe_f, Sen->ShuntAmp->Vc(), Sen->Ib_amp_hdwe_f, Sen->Ib_noa_hdwe_f, Sen->Ib_hdwe_f_cal, Mon->voc(), Mon->voc_soc(), sp.Vb_scale(), sp.Vb_bias_hdwe(), sp.ib_scale_amp(), sp.ib_bias_amp(), sp.ib_scale_noa(), sp.ib_bias_noa(), sp.ib_disch_slr(), sp.Dw(), ap.slr_res);
+  Serial.printf("Tb Vb Vr imh imhkf inh inhkf sel voc voc_soc |*SV,*Dc |*SA,*DA|*SB,*DB| *SD| *Dw| *Sr: %6.2fC %7.3fv %6.3fv %6.2fA %6.2fA %6.2fA %6.2fA %6.2fA %6.2fv %6.2fv |%6.3f %6.3fv  |%6.3f %6.3fA | %6.3f %6.3fA |%6.3f|%6.3fv|%6.3f,\n",
+  Sen->Tb_hdwe_filt, Sen->Vb_hdwe_f, Sen->ShuntAmp->Vc(), Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->Ib_hdwe_f_cal, Mon->voc(), Mon->voc_soc(), sp.Vb_scale(), sp.Vb_bias_hdwe(), sp.ib_scale_amp(), sp.ib_bias_amp(), sp.ib_scale_noa(), sp.ib_bias_noa(), sp.ib_disch_slr(), sp.Dw(), ap.slr_res);
   
-  Serial1.printf("Tb Vb Vr imh inh sel voc voc_soc |*SV,*Dc |*SA,*DA|*SB,*DB| *SD| *Dw| *Sr: %6.2fC %7.3fv %6.3fv %6.2fA %6.2fA %6.2fA %6.2fv %6.2fv |%6.3f %6.3fv  |%6.3f %6.3fA | %6.3f %6.3fA |%6.3f|%6.3fv|%6.3f,\n",
-  Sen->Tb_hdwe_filt, Sen->Vb_hdwe_f, Sen->ShuntAmp->Vc(), Sen->Ib_amp_hdwe_f, Sen->Ib_noa_hdwe_f, Sen->Ib_hdwe_f_cal, Mon->voc(), Mon->voc_soc(), sp.Vb_scale(), sp.Vb_bias_hdwe(), sp.ib_scale_amp(), sp.ib_bias_amp(), sp.ib_scale_noa(), sp.ib_bias_noa(), sp.ib_disch_slr(), sp.Dw(), ap.slr_res);
+  Serial1.printf("Tb Vb Vr imh imhkf inh inhkf sel voc voc_soc |*SV,*Dc |*SA,*DA|*SB,*DB| *SD| *Dw| *Sr: %6.2fC %7.3fv %6.3fv %6.2fA %6.2fA %6.2fA %6.2fA %6.2fA %6.2fv %6.2fv |%6.3f %6.3fv  |%6.3f %6.3fA | %6.3f %6.3fA |%6.3f|%6.3fv|%6.3f,\n",
+  Sen->Tb_hdwe_filt, Sen->Vb_hdwe_f, Sen->ShuntAmp->Vc(), Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->Ib_hdwe_f_cal, Mon->voc(), Mon->voc_soc(), sp.Vb_scale(), sp.Vb_bias_hdwe(), sp.ib_scale_amp(), sp.ib_bias_amp(), sp.ib_scale_noa(), sp.ib_bias_noa(), sp.ib_disch_slr(), sp.Dw(), ap.slr_res);
  }
 
 #ifdef DEBUG_DETAIL

@@ -34,7 +34,7 @@ public:
   double get_v() { return x_[1]; };
   void predict(const double dt);
   void pretty_print(void);
-  void update(const double meas);
+  double update(const double meas);
 private:
   double dt_;     // Update time, s
   const int ROWS_ = 2;

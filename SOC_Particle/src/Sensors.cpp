@@ -174,6 +174,7 @@ Shunt::Shunt(const String name, const uint8_t port, float *sp_ib_scale,  float *
     else Serial.printf("Ib %s sense ADC pins %d and %d started\n", name_.c_str(), vo_pin_, vc_pin_);
   #endif
   Filt_ = new General2_Pole(0.1, F_W_I, F_Z_I, -NOM_UNIT_CAP*sp.nP(), NOM_UNIT_CAP*sp.nP());  // actual update time provided run time
+  KF_ = new KalmanFilter(0.1, 0., KF_Q_STD, KF_R);
 }
 Shunt::~Shunt() {}
 // operators
@@ -196,7 +197,8 @@ void Shunt::pretty_print()
   Serial.printf(" Vo_raw %d;\n", Vo_raw_);
   Serial.printf(" vshunt_int %d; count\n", vshunt_int_);
   Serial.printf("Shunt(%s)::\n", name_.c_str());
-  // Serial.printf("Shunt(%s)::", name_.c_str()); Adafruit_ADS1015::pretty_print(name_);
+  Serial.printf(" KF\n");
+  KF_->pretty_print();
 #else
      Serial.printf("Shunt: silent DEPLOY\n");
 #endif
@@ -230,19 +232,26 @@ void Shunt::convert(const boolean disconnect, const boolean reset, Sensors *Sen)
     if ( !bare_shunt_ && !dscn_cmd_ )
     {
       vshunt_ = Vo_Vc_;
+      vshunt_kf_ = Vo_Vc_kf_;
       vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0;
     }
     else
     {
-      vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0; vshunt_ = 0.;
+      vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0; vshunt_ = 0.; vshunt_kf_ = 0.;
       Vc_raw_ = 0; Vc_ = 0.; Vo_raw_ = 0; Vo_ = 0.;
       Ishunt_cal_ = 0.;
     }
   #endif
   if ( disconnect )
+  {
     Ishunt_cal_ = 0.;
+    Ishunt_cal_kf_ = 0.;
+  }
   else
+  {
     Ishunt_cal_ = vshunt_*v2a_s_*(*sp_ib_scale_) + *sp_ib_bias_;
+    Ishunt_cal_kf_ = vshunt_kf_*v2a_s_*(*sp_ib_scale_) + *sp_ib_bias_;
+  }
 
       // 2-pole filter
   Ishunt_cal_filt_ = Filt_->calculate(Ishunt_cal_, disconnect || reset, min(Sen->T, MAX_T_Q_FILT));
@@ -260,8 +269,10 @@ void Shunt::sample()
 void Shunt::sample_combine()
 {
   Vo_Vc_ = Vo_ - Vc_;
+  KF_->predict(dt());
+  Vo_Vc_kf_ = KF_->update(Vo_Vc_);
   #ifndef HDWE_PHOTON
-    if  ( sp.debug()==14 )Serial.printf("ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f Vc_%7.3f\n", (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, Vc_);
+    if  ( sp.debug()==14 )Serial.printf("ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f Vo_Vc_kf_%7.3f Vc_%7.3f\n", (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, Vo_Vc_kf_, Vc_);
   #endif
 }
 void Shunt::sample_Vc()
@@ -1326,6 +1337,7 @@ void Sensors::ib_choose_active_standby()
   {
     Ib_hdwe = Ib_amp_hdwe;
     Ib_hdwe_f = Ib_amp_hdwe_f;
+    Ib_hdwe_kf = Ib_amp_hdwe_kf;
     Ib_hdwe_model = Ib_amp_model;
     sample_time_ib_hdwe_ = ShuntAmp->sample_time();
     dt_ib_hdwe_ = ShuntAmp->dt();
@@ -1334,6 +1346,7 @@ void Sensors::ib_choose_active_standby()
   {
     Ib_hdwe = Ib_noa_hdwe;
     Ib_hdwe_f = Ib_noa_hdwe_f;
+    Ib_hdwe_kf = Ib_noa_hdwe_kf;
     Ib_hdwe_model = Ib_noa_model;
     sample_time_ib_hdwe_ = ShuntNoAmp->sample_time();
     dt_ib_hdwe_ = ShuntNoAmp->dt();
@@ -1358,6 +1371,7 @@ void Sensors::ib_choose_hi_lo()
   {
     Ib_hdwe = scale_select(Ib_noa_hdwe, sel_brk_hdwe, Ib_amp_hdwe, Ib_noa_hdwe, &sel_stat);
     Ib_hdwe_f = scale_select(Ib_noa_hdwe, sel_brk_hdwe, Ib_amp_hdwe_f, Ib_noa_hdwe_f, &sel_stat);
+    Ib_hdwe_kf = scale_select(Ib_noa_hdwe, sel_brk_hdwe, Ib_amp_hdwe_kf, Ib_noa_hdwe_kf, &sel_stat);
     Ib_hdwe_model = scale_select(Ib_noa_model, sel_brk_hdwe, Ib_amp_model, Ib_noa_model, &sel_stat);
     sample_time_ib_hdwe_ = ShuntNoAmp->sample_time();
     dt_ib_hdwe_ = ShuntNoAmp->dt();
@@ -1367,6 +1381,7 @@ void Sensors::ib_choose_hi_lo()
   {
     Ib_hdwe = Ib_noa_hdwe;
     Ib_hdwe_f = Ib_noa_hdwe_f;
+    Ib_hdwe_kf = Ib_noa_hdwe_kf;
     Ib_hdwe_model = Ib_noa_model;
     sample_time_ib_hdwe_ = ShuntNoAmp->sample_time();
     dt_ib_hdwe_ = ShuntNoAmp->dt();
@@ -1376,6 +1391,7 @@ void Sensors::ib_choose_hi_lo()
   {
     Ib_hdwe = Ib_amp_hdwe;
     Ib_hdwe_f = Ib_amp_hdwe_f;
+    Ib_hdwe_kf = Ib_amp_hdwe_kf;
     Ib_hdwe_model = Ib_amp_model;
     sample_time_ib_hdwe_ = ShuntAmp->sample_time();
     dt_ib_hdwe_ = ShuntAmp->dt();
@@ -1385,6 +1401,7 @@ void Sensors::ib_choose_hi_lo()
   {
     Ib_hdwe = 0.;
     Ib_hdwe_f = 0.;
+    Ib_hdwe_kf = 0.;
     Ib_hdwe_model = 0.;
     sample_time_ib_hdwe_ = 0ULL;
     dt_ib_hdwe_ = 0ULL;
@@ -1640,9 +1657,11 @@ void Sensors::shunt_select_initial(const boolean reset)
     Ib_amp_model = max(min(Ib_amp_add() + mod_add, Ib_amp_max()/SIZE_MARG), Ib_amp_min()/SIZE_MARG); // uses past Ib.  Synthesized signal to use as substitute for sensor, Dm/Mm/Nm
     Ib_noa_model = max(min(Ib_noa_add() + mod_add, Ib_noa_max()/SIZE_MARG), Ib_noa_min()/SIZE_MARG); // uses past Ib.  Synthesized signal to use as substitute for sensor, Dn/Nx/Nm
     Ib_amp_hdwe = ShuntAmp->Ishunt_cal() + hdwe_add;    // Sense fault injection feeds logic, not model
+    Ib_amp_hdwe_kf = ShuntAmp->Ishunt_cal_kf() + hdwe_add;    // Sense fault injection feeds logic, not model
     Ib_amp_hdwe_f = AmpFilt->calculate(Ib_amp_hdwe, reset, AMP_FILT_TAU, T);
     Vc_hdwe = max(ShuntAmp->Vc(), ShuntNoAmp->Vc());
     Ib_noa_hdwe = ShuntNoAmp->Ishunt_cal() + hdwe_add;  // Sense fault injection feeds logic, not model
+    Ib_noa_hdwe_kf = ShuntNoAmp->Ishunt_cal_kf() + hdwe_add;  // Sense fault injection feeds logic, not model
     Ib_noa_hdwe_f = NoaFilt->calculate(Ib_noa_hdwe, reset, AMP_FILT_TAU, T);
     Ib_hdwe_f_cal = SelFiltCal->calculate(Ib_hdwe, reset, AMP_FILT_TAU, T);
     

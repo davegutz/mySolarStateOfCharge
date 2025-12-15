@@ -32,6 +32,7 @@
 #include "command.h"
 #include "Sync.h"
 #include "parameters.h"
+#include "myLibrary/KF_1x1.h"
 
 // Temp sensor
 #include <OneWire.h>
@@ -130,6 +131,8 @@ public:
   void convert(const boolean disconnect, const boolean reset, Sensors *Sen);
   float Ishunt_cal() { return Ishunt_cal_; };
   float ishunt_cal() { return Ishunt_cal_ / sp.nP(); };
+  float Ishunt_cal_kf() { return Ishunt_cal_kf_; };
+  float ishunt_cal_kf() { return Ishunt_cal_kf_ / sp.nP(); };
   float Ishunt_cal_filt() { return Ishunt_cal_filt_; };
   void pretty_print();
   void sample();
@@ -146,6 +149,7 @@ public:
   float Vc() { return Vc_; };
   float Vo() { return Vo_; };
   float Vo_Vc() { return Vo_Vc_; };
+  float Vo_Vc_kf() { return Vo_Vc_kf_; };
 protected:
   String name_;         // For print statements, multiple instances
   uint8_t port_;        // Octal I2C port used by Acafruit_ADS1015
@@ -155,7 +159,9 @@ protected:
   int16_t vshunt_int_0_;// Interim conversion, count
   int16_t vshunt_int_1_;// Interim conversion, count
   float vshunt_;        // Sensed shunt voltage, V
+  float vshunt_kf_;     // Sensed kalman filtered shunt voltage, V
   float Ishunt_cal_;    // Sensed bank current, calibrated ADC, A
+  float Ishunt_cal_kf_; // Sensed kalman filtered bank current, calibrated ADC, A
   float Ishunt_cal_filt_; // Filtered bank current, calibrated ADC, A
   float *sp_ib_bias_;   // Global bias, A
   float *sp_ib_scale_;  // Global scale, A
@@ -170,8 +176,10 @@ protected:
   int Vo_raw_;          // Raw analog read, integer       
   float Vo_;            // Sensed Vo, output of op amp, V
   float Vo_Vc_;         // Sensed Vo-Vc, difference in output of op amps, V
+  float Vo_Vc_kf_;      // Kalman filter output on Vo-Vc, V
   boolean using_opamp_; // Using differential hardware amp
   General2_Pole *Filt_; // Linear filter to test for direction
+  KalmanFilter *KF_;    // Noise filter
 };
 
 // Fault word bits.   All faults heal
@@ -527,12 +535,15 @@ public:
   float Ib_amp;               // Initial selected amp battery bank current, A
   float Ib_amp_hdwe;          // Sensed amp battery bank current, A
   float Ib_amp_hdwe_f;        // Sensed, filtered amp battery bank current, A
+  float Ib_amp_hdwe_kf;       // Sensed, kalman filtered amp battery bank current, A
   float Ib_amp_model;         // Modeled amp battery bank current, A
   float Ib_hdwe_f;            // Sensed, selected filtered battery bank current, A
+  float Ib_hdwe_kf;           // Sensed, selected kalman filtered battery bank current, A
   float Ib_hdwe_f_cal;        // Sensed, filtered selected battery bank current for cal display, A
   float Ib_noa;               // Initial selected noa battery bank current, A
   float Ib_noa_hdwe;          // Sensed noa battery bank current, A
   float Ib_noa_hdwe_f;        // Sensed, filtered noa battery bank current, A
+  float Ib_noa_hdwe_kf;       // Sensed, kalman filtered noa battery bank current, A
   float Ib_noa_model;         // Modeled noa battery bank current, A
   float Ib_hdwe;              // Sensed battery bank current, A
   float Ib_hdwe_model;        // Selected model hardware signal, A
