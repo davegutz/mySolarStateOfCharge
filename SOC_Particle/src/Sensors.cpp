@@ -269,7 +269,7 @@ void Shunt::sample()
 void Shunt::sample_combine()
 {
   Vo_Vc_ = Vo_ - Vc_;
-  KF_->predict(dt());
+  KF_->predict(dt()/1000.);
   Vo_Vc_kf_ = KF_->update(Vo_Vc_);
   #ifndef HDWE_PHOTON
     if  ( sp.debug()==14 )Serial.printf("ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f Vo_Vc_kf_%7.3f Vc_%7.3f\n", (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, Vo_Vc_kf_, Vc_);
