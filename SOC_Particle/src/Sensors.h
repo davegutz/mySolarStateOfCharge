@@ -580,6 +580,7 @@ public:
   float ib() { return Ib / sp.nP(); };                            // Battery unit current, A
   float ib_amp() { return Ib_amp / sp.nP(); };                    // Battery amp unit current, A
   float ib_amp_hdwe() { return Ib_amp_hdwe / sp.nP(); };          // Battery amp unit current, A
+  float ib_amp_hdwe_kf() { return Ib_amp_hdwe_kf / sp.nP(); };    // Battery amp kalman filtered unit current, A
   float ib_amp_model() { return Ib_amp_model / sp.nP(); };        // Battery amp model unit current, A
   float ib_hdwe() { return Ib_hdwe / sp.nP(); };                  // Battery select hardware unit current, A
   float ib_hdwe_model() { return Ib_hdwe_model / sp.nP(); };      // Battery select hardware model unit current, A
@@ -587,6 +588,7 @@ public:
   float ib_model_in() { return Ib_model_in / sp.nP(); };          // Battery select model input unit current, A
   float ib_noa() { return Ib_noa / sp.nP(); };                    // Battery noa unit current, A
   float ib_noa_hdwe() { return Ib_noa_hdwe / sp.nP(); };          // Battery no amp unit current, A
+  float ib_noa_hdwe_kf() { return Ib_noa_hdwe_kf / sp.nP(); };    // Battery no amp kalman filtered unit current, A
   float ib_noa_model() { return Ib_noa_model / sp.nP(); };        // Battery no amp model unit current, A
   float Ib_amp_add();
   float Ib_amp_max();

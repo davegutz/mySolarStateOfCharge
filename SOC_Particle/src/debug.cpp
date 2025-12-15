@@ -159,10 +159,10 @@ void debug_98(BatteryMonitor *Mon, Sensors *Sen)
 }
 void debug_99(BatteryMonitor *Mon, Sensors *Sen)
 {
-  Serial.printf("Tb Vb Vr imh imhkf inh inhkf sel voc voc_soc |*SV,*Dc |*SA,*DA|*SB,*DB| *SD| *Dw| *Sr: %6.2fC %7.3fv %6.3fv %6.2fA %6.2fA %6.2fA %6.2fA %6.2fA %6.2fv %6.2fv |%6.3f %6.3fv  |%6.3f %6.3fA | %6.3f %6.3fA |%6.3f|%6.3fv|%6.3f,\n",
+  Serial.printf("Tb Vb Vr imh imhkf inh inhkf ibsel voc voc_soc |*SV,*Dc |*SA,*DA|*SB,*DB| *SD| *Dw| *Sr: %6.2fC %7.3fv %6.3fv %6.2fA %6.2fA %6.2fA %6.2fA %6.2fA %6.2fv %6.2fv |%6.3f %6.3fv  |%6.3f %6.3fA | %6.3f %6.3fA |%6.3f|%6.3fv|%6.3f,\n",
   Sen->Tb_hdwe_filt, Sen->Vb_hdwe_f, Sen->ShuntAmp->Vc(), Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->Ib_hdwe_f_cal, Mon->voc(), Mon->voc_soc(), sp.Vb_scale(), sp.Vb_bias_hdwe(), sp.ib_scale_amp(), sp.ib_bias_amp(), sp.ib_scale_noa(), sp.ib_bias_noa(), sp.ib_disch_slr(), sp.Dw(), ap.slr_res);
   
-  Serial1.printf("Tb Vb Vr imh imhkf inh inhkf sel voc voc_soc |*SV,*Dc |*SA,*DA|*SB,*DB| *SD| *Dw| *Sr: %6.2fC %7.3fv %6.3fv %6.2fA %6.2fA %6.2fA %6.2fA %6.2fA %6.2fv %6.2fv |%6.3f %6.3fv  |%6.3f %6.3fA | %6.3f %6.3fA |%6.3f|%6.3fv|%6.3f,\n",
+  Serial1.printf("Tb Vb Vr imh imhkf inh inhkf ibsel voc voc_soc |*SV,*Dc |*SA,*DA|*SB,*DB| *SD| *Dw| *Sr: %6.2fC %7.3fv %6.3fv %6.2fA %6.2fA %6.2fA %6.2fA %6.2fA %6.2fv %6.2fv |%6.3f %6.3fv  |%6.3f %6.3fA | %6.3f %6.3fA |%6.3f|%6.3fv|%6.3f,\n",
   Sen->Tb_hdwe_filt, Sen->Vb_hdwe_f, Sen->ShuntAmp->Vc(), Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->Ib_hdwe_f_cal, Mon->voc(), Mon->voc_soc(), sp.Vb_scale(), sp.Vb_bias_hdwe(), sp.ib_scale_amp(), sp.ib_bias_amp(), sp.ib_scale_noa(), sp.ib_bias_noa(), sp.ib_disch_slr(), sp.Dw(), ap.slr_res);
  }
 
