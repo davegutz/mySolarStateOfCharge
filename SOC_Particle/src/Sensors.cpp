@@ -205,16 +205,6 @@ void Shunt::pretty_print()
 #endif
 }
 
-void Shunt::print_serial_header(const char suffix)
-{
-  KF_->print_serial_header(suffix);
-}
-
-void Shunt::print_serial()
-{
-  KF_->print_serial();
-}
-
 // Convert sampled shunt data to Ib engineering units
 void Shunt::convert(const boolean disconnect, const boolean reset, const boolean reset_kf, Sensors *Sen)
 {

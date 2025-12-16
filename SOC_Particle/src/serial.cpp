@@ -241,6 +241,36 @@ void print_shunt_serial(const boolean reset, Sensors *Sen)
     Serial.printf("\n");
   }
 }
+void Shunt::print_serial_header(const char suffix)
+{
+  KF_->print_serial_header(suffix);
+}
+
+void Shunt::print_serial()
+{
+  KF_->print_serial();
+}
+// Data stream
+void KalmanFilter::print_serial_header(const char s)
+{
+  Serial.printf("x0%c,x1%c,  Fx00%c,Fx01%c,Fx10%c,Fx11%c,  P00%c,P01%c,P10%c,P11%c,  Q00%c,Q01%c,Q10%c,Q11%c,  ",
+    s, s, s, s, s, s, s, s, s, s, s, s, s, s);
+
+  Serial.printf("G0%c,G1%c,  H0%c,H1%c,  K0%c,K1%c,  S%d, u%c, y%c,  ",
+    s, s, s, s, s, s, s, s, s);
+
+}
+void KalmanFilter::print_serial()
+{
+    sprintf(pr.buff, "%8.6f,%8.6f,  %8.6f,%8.6f,%8.6f,%8.6f,  %8.6f,%8.6f,%8.6f,%8.6f,  %8.6f,%8.6f,%8.6f,%8.6f,  ",
+        x_[0],x_[1],  Fx_[0][0],Fx_[0][1],Fx_[1][0],Fx_[1][1], P_[0][0],P_[0][1],P_[1][0],P_[1][1],  Q_[0][0],Q_[0][1],Q_[1][0],Q_[1][1]);
+    Serial.printf("%s", pr.buff);
+
+    sprintf(pr.buff, "%8.6f,%8.6f,  %8.6f,%8.6f,  %8.6f,%8.6f,  %8.6f,  %8.6f, %8.6f,  ",
+        G_[0],G_[1],  H_[0],H_[1],  K_[0],K_[1],  S_, u_, y_);
+    Serial.printf("%s", pr.buff);
+}
+
 
 // print_signal_select for data collection
 // TODO:  delete the _T, _tau, _rstate, _lstate stuff

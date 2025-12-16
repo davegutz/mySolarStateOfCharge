@@ -211,17 +211,6 @@ Outputs:
     return ( x_[0] );
 }
 
-// Data stream
-void KalmanFilter::print_serial_header(const char suffix)
-{
-    Serial.printf("x0%c, x1%c, ", suffix, suffix);
-}
-void KalmanFilter::print_serial()
-{
-    sprintf(pr.buff, "%8.6f,%8.6f,  ",  x_[0], x_[1]);
-    Serial.printf("%s", pr.buff);
-}
-
 // Pretty Print
  void KalmanFilter::pretty_print(void)
  {
