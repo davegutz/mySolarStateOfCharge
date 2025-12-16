@@ -228,7 +228,7 @@ void print_shunt_header(Sensors *Sen)
 }
 void print_shunt_serial(const boolean reset, Sensors *Sen)
 {
-  if ( ( sp.debug()==2 ) )
+  if ( ( sp.debug()==2 ) && cp.publishS )
   {
     double cTime = double(Sen->now)/1000.;
 
