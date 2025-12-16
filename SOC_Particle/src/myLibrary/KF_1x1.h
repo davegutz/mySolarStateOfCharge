@@ -32,12 +32,16 @@ public:
   ~KalmanFilter();
   double calculate(const boolean reset, const double dt, const double in);
   boolean get_reset() { return reset_; };
+  double **Fx() { return Fx_; };
+  double *x() { return x_; };
   double get_u() { return u_; };
   double get_v() { return x_[1]; };
   double get_x() { return x_[0]; };
   void init(const double in);
   void predict(const double dt);
   void pretty_print(void);
+  void print_serial_header(const char suffix);
+  void print_serial();
   double update(const double meas);
 private:
   double dt_;     // Update time, s

@@ -134,6 +134,8 @@ public:
   float Ishunt_cal_kf() { return Ishunt_cal_kf_; };
   float ishunt_cal_kf() { return Ishunt_cal_kf_ / sp.nP(); };
   float Ishunt_cal_filt() { return Ishunt_cal_filt_; };
+  void print_serial_header(const char suffix);
+  void print_serial();
   void pretty_print();
   void sample(const boolean reset_kf);
   void sample_combine(const boolean reset_kf);

@@ -98,7 +98,7 @@ boolean is_finished(const char in_char)
 
 
 // Print consolidation
-void print_all_header(void)
+void print_all_header(Sensors *Sen)
 {
   print_battery_header();
   print_battery_serial();
@@ -108,6 +108,7 @@ void print_all_header(void)
   {
     print_sim_header();
     print_signal_sel_header();
+    print_shunt_header(Sen);
   }
   if ( sp.debug()==3  )
   {
@@ -174,7 +175,7 @@ void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, co
     if ( reset || (last_read_debug != sp.debug()) )
     {
       cp.num_v_print = 0UL;
-      print_all_header();
+      print_all_header(Sen);
     }
     if ( sp.tweak_test() )
     {
@@ -215,6 +216,30 @@ void print_ekf_header(void)
     Mon->vocStatFilt_rstate(), Mon->vocStatFilt_lstate());
 
   Serial.printf("\n");
+}
+
+// Print shunt logic data
+void print_shunt_header(Sensors *Sen)
+{
+  Serial.printf("unit_shunt,c_time,reset,kfreset, kfres,vovcm,vovcn,ibmkf,ibnkf,  ");
+  Sen->ShuntAmp->print_serial_header('m');
+  Sen->ShuntNoAmp->print_serial_header('n');
+  Serial.printf("\n");
+}
+void print_shunt_serial(const boolean reset, Sensors *Sen)
+{
+  if ( ( sp.debug()==2 ) )
+  {
+    double cTime = double(Sen->now)/1000.;
+
+    sprintf(pr.buff, "shunt_unit,%13.4f, %d, %d,  %8.6f,%8.6f,%8.6f,%8.6f,  ",
+      cTime, reset, cp.kf_reset_print, Sen->ib_amp_vo_vc(), Sen->ib_noa_vo_vc(), Sen->ib_amp_hdwe_kf(), Sen->ib_noa_hdwe_kf());
+    Serial.printf("%s", pr.buff);
+
+    Sen->ShuntAmp->print_serial();
+    Sen->ShuntNoAmp->print_serial();
+    Serial.printf("\n");
+  }
 }
 
 // print_signal_select for data collection

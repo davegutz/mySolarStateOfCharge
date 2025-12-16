@@ -168,6 +168,7 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                 case ( 2 ):  // l2:
                 print_signal_sel_header();
                 print_sim_header();
+                print_shunt_header(Sen);
                 print_rapid_header();
                 print_temp_header();
                 break;

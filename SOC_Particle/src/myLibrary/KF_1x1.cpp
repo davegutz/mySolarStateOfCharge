@@ -164,35 +164,6 @@ Outputs:
     P_[1][1] = P_[1][1] + Q_[1][1];
 }
 
-
-// Pretty Print
- void KalmanFilter::pretty_print(void)
- {
-#ifndef SOFT_DEPLOY_PHOTON
-  Serial.printf("KF:\n");
-  Serial.printf("In:\n");
-  Serial.printf(" u   %8.4f, V\n", u_);
-  Serial.printf(" dt_ %8.4f, s\n", dt_);
-  Serial.printf(" Fx [ %8.4f, %8.4f]\n    [ %8.4f, %8.4f]\n",
-     Fx_[0][0], Fx_[0][1], Fx_[1][0], Fx_[1][1]);
-  Serial.printf(" G  [ %8.4f, \n      %8.4f]\n", G_[0], G_[1]);
-  Serial.printf(" Rsq%8.4g\n", Rsq_);
-  Serial.printf(" Qstdsq%8.4g\n", Qstdsq_);
-  Serial.printf(" Q  [%8.4f, %8.4f]\n    [%8.4f, %8.4f]\n",
-     Q_[0][0], Q_[0][1], Q_[1][0], Q_[1][1]);
-  Serial.printf(" H  [ %8.4f, %8.4f ]\n", H_[0], H_[1]);
-  Serial.printf("Out:\n");
-  Serial.printf(" x  [%8.4f, \n     %8.4f]\n", x_[0], x_[1]);
-  Serial.printf(" y   %8.4f, units of x\n", y_);
-  Serial.printf(" P  [%8.4f, %8.4f]\n    [%8.4f, %8.4f]\n",
-     P_[0][0], P_[0][1], P_[1][0], P_[1][1]);
-  Serial.printf(" K  [%8.4f, \n     %8.4f  ]\n", K_[0], K_[1]);
-  Serial.printf(" S   %8.4f\n", S_);
-#else
-     Serial.printf("EKF_1x1: silent DEPLOY\n");
-#endif
- }
-
 double KalmanFilter::update(const double meas)
 {
 /*
@@ -239,3 +210,42 @@ Outputs:
 
     return ( x_[0] );
 }
+
+// Data stream
+void KalmanFilter::print_serial_header(const char suffix)
+{
+    Serial.printf("x0%c, x1%c, ", suffix, suffix);
+}
+void KalmanFilter::print_serial()
+{
+    sprintf(pr.buff, "%8.6f,%8.6f,  ",  x_[0], x_[1]);
+    Serial.printf("%s", pr.buff);
+}
+
+// Pretty Print
+ void KalmanFilter::pretty_print(void)
+ {
+#ifndef SOFT_DEPLOY_PHOTON
+  Serial.printf("KF:\n");
+  Serial.printf("In:\n");
+  Serial.printf(" u   %8.4f, V\n", u_);
+  Serial.printf(" dt_ %8.4f, s\n", dt_);
+  Serial.printf(" Fx [ %8.4f, %8.4f]\n    [ %8.4f, %8.4f]\n",
+     Fx_[0][0], Fx_[0][1], Fx_[1][0], Fx_[1][1]);
+  Serial.printf(" G  [ %8.4f, \n      %8.4f]\n", G_[0], G_[1]);
+  Serial.printf(" Rsq%8.4g\n", Rsq_);
+  Serial.printf(" Qstdsq%8.4g\n", Qstdsq_);
+  Serial.printf(" Q  [%8.4f, %8.4f]\n    [%8.4f, %8.4f]\n",
+     Q_[0][0], Q_[0][1], Q_[1][0], Q_[1][1]);
+  Serial.printf(" H  [ %8.4f, %8.4f ]\n", H_[0], H_[1]);
+  Serial.printf("Out:\n");
+  Serial.printf(" x  [%8.4f, \n     %8.4f]\n", x_[0], x_[1]);
+  Serial.printf(" y   %8.4f, units of x\n", y_);
+  Serial.printf(" P  [%8.4f, %8.4f]\n    [%8.4f, %8.4f]\n",
+     P_[0][0], P_[0][1], P_[1][0], P_[1][1]);
+  Serial.printf(" K  [%8.4f, \n     %8.4f  ]\n", K_[0], K_[1]);
+  Serial.printf(" S   %8.4f\n", S_);
+#else
+     Serial.printf("EKF_1x1: silent DEPLOY\n");
+#endif
+ }

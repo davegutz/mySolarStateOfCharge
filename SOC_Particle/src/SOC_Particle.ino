@@ -415,6 +415,7 @@ void loop()
       Sen->ShuntAmp->sample(reset_kf);
       Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.);
       Sen->ShuntNoAmp->sample(reset_kf);
+      print_shunt_serial(reset, Sen);
     }
   #endif
   
@@ -556,7 +557,7 @@ void loop()
   cp.soft_reset_sim_print = cp.soft_reset_sim;
   if ( cp.soft_reset || cp.soft_reset_sim )
   {
-    reset = reset_temp = reset_publish = true;
+    reset = reset_temp = reset_kf = reset_publish = true;
     start_reset = System.millis();
     if ( cp.soft_reset_sim ) cp.cmd_soft_sim_hold();
   }
