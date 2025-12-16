@@ -183,6 +183,7 @@ Shunt::~Shunt() {}
 void Shunt::pretty_print()
 {
 #ifndef SOFT_DEPLOY_PHOTON
+  Serial.printf(" reset %d;\n", reset_);
   Serial.printf(" *sp_Ib_bias%7.3f; A\n", *sp_ib_bias_);
   Serial.printf(" *sp_ib_scale%7.3f; A\n", *sp_ib_scale_);
   Serial.printf(" bare_shunt %d dscn_cmd %d\n", bare_shunt_, dscn_cmd_);
@@ -193,7 +194,7 @@ void Shunt::pretty_print()
   Serial.printf(" Vc%10.6f; V\n", Vc_);
   Serial.printf(" Vc_raw %d;\n", Vc_raw_);
   Serial.printf(" Vo%10.6f; V\n", Vo_);
-  Serial.printf(" Vo-Vc%10.6f; V\n", Vo_-Vc_);
+  Serial.printf(" Vo-Vc%10.6f; V\n", Vo_Vc());
   Serial.printf(" Vo_raw %d;\n", Vo_raw_);
   Serial.printf(" vshunt_int %d; count\n", vshunt_int_);
   Serial.printf("Shunt(%s)::\n", name_.c_str());
@@ -205,7 +206,7 @@ void Shunt::pretty_print()
 }
 
 // Convert sampled shunt data to Ib engineering units
-void Shunt::convert(const boolean disconnect, const boolean reset, Sensors *Sen)
+void Shunt::convert(const boolean disconnect, const boolean reset, const boolean reset_kf, Sensors *Sen)
 {
   #ifdef HDWE_ADS1013_AMP_NOA
     if ( !bare_shunt_ && !dscn_cmd_ )
@@ -260,17 +261,16 @@ void Shunt::convert(const boolean disconnect, const boolean reset, Sensors *Sen)
 }
 
 // Sample amplifier Vo-Vc
-void Shunt::sample()
+void Shunt::sample(const boolean reset_kf)
 {
   sample_Vo();
   sample_Vc();
-  sample_combine();
+  sample_combine(reset_kf);
 }
-void Shunt::sample_combine()
+void Shunt::sample_combine(const boolean reset_kf)
 {
   Vo_Vc_ = Vo_ - Vc_;
-  KF_->predict(dt()/1000.);
-  Vo_Vc_kf_ = KF_->update(Vo_Vc_);
+  Vo_Vc_kf_ = KF_->calculate(reset_kf, dt()/1000., Vo_Vc_);
   #ifndef HDWE_PHOTON
     if  ( sp.debug()==14 )Serial.printf("ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f Vo_Vc_kf_%7.3f Vc_%7.3f\n", (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, Vo_Vc_kf_, Vc_);
   #endif

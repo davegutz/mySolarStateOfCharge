@@ -66,19 +66,7 @@ Args:
         P_[i] = new double[COLS_];
         Q_[i] = new double[COLS_];
     }
-    Fx_[0][0] = 1.0; Fx_[0][1] = dt_;
-    Fx_[1][0] = 0.0; Fx_[1][1] = 1.0;
-    H_[0] = 1.0;     H_[1] = 0.;
-    K_[0] = 0.;      K_[1] = 0.;
-    x_[0] = init_pos;x_[1] = 0.;
-    for (int i=0; i<ROWS_; i++)
-    {
-        for (int j=0; j<COLS_; j++)
-        {
-            P_[i][j] = 0.;
-            Q_[i][j] = 0.;
-        }
-    }
+    init(init_pos);
 }
 
 KalmanFilter::~KalmanFilter()
@@ -103,6 +91,37 @@ KalmanFilter::~KalmanFilter()
     Q_ = nullptr;
     delete x_;
     x_ = nullptr;
+}
+
+double KalmanFilter::calculate(const boolean reset, const double dt, const double in)
+{
+    double out = 0.;
+    reset_ = reset;
+
+    if ( reset_ ) init(in);
+
+    predict(dt);
+    out = update(in);
+
+    return ( out );
+}
+
+void KalmanFilter::init(const double in)
+{
+    u_ = in;
+    Fx_[0][0] = 1.0; Fx_[0][1] = dt_;
+    Fx_[1][0] = 0.0; Fx_[1][1] = 1.0;
+    H_[0] = 1.0;     H_[1] = 0.;
+    K_[0] = 0.;      K_[1] = 0.;
+    x_[0] = in;      x_[1] = 0.;
+    for (int i=0; i<ROWS_; i++)
+    {
+        for (int j=0; j<COLS_; j++)
+        {
+            P_[i][j] = 0.;
+            Q_[i][j] = 0.;
+        }
+    }
 }
 
 void KalmanFilter::predict(const double dt)

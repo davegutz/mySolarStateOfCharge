@@ -128,15 +128,15 @@ public:
   boolean bare_shunt() { return ( bare_shunt_ ); };
   void dscn_cmd(const boolean cmd) { dscn_cmd_ = cmd; };
   unsigned long long dt() { return sample_time_ - sample_time_z_; };
-  void convert(const boolean disconnect, const boolean reset, Sensors *Sen);
+  void convert(const boolean disconnect, const boolean reset, const boolean reset_kf, Sensors *Sen);
   float Ishunt_cal() { return Ishunt_cal_; };
   float ishunt_cal() { return Ishunt_cal_ / sp.nP(); };
   float Ishunt_cal_kf() { return Ishunt_cal_kf_; };
   float ishunt_cal_kf() { return Ishunt_cal_kf_ / sp.nP(); };
   float Ishunt_cal_filt() { return Ishunt_cal_filt_; };
   void pretty_print();
-  void sample();
-  void sample_combine();
+  void sample(const boolean reset_kf);
+  void sample_combine(const boolean reset_kf);
   void sample_Vc();
   void sample_Vo();
   float scale() { return ( *sp_ib_scale_ ); };
@@ -165,6 +165,7 @@ protected:
   float Ishunt_cal_filt_; // Filtered bank current, calibrated ADC, A
   float *sp_ib_bias_;   // Global bias, A
   float *sp_ib_scale_;  // Global scale, A
+  boolean reset_;       // Status of reset command input
   unsigned long long sample_time_;   // Exact moment of hardware sample
   unsigned long long sample_time_z_; // Exact moment of past hardware sample
   boolean dscn_cmd_;    // User command to ignore hardware, T=ignore
@@ -582,6 +583,7 @@ public:
   float ib_amp_hdwe() { return Ib_amp_hdwe / sp.nP(); };          // Battery amp unit current, A
   float ib_amp_hdwe_kf() { return Ib_amp_hdwe_kf / sp.nP(); };    // Battery amp kalman filtered unit current, A
   float ib_amp_model() { return Ib_amp_model / sp.nP(); };        // Battery amp model unit current, A
+  float ib_amp_vo_vc() { return ShuntAmp->Vo_Vc(); };             // Battery amp kalman filter input, V
   float ib_hdwe() { return Ib_hdwe / sp.nP(); };                  // Battery select hardware unit current, A
   float ib_hdwe_model() { return Ib_hdwe_model / sp.nP(); };      // Battery select hardware model unit current, A
   float ib_model() { return Ib_model / sp.nP(); };                // Battery select model unit current, A
@@ -590,6 +592,7 @@ public:
   float ib_noa_hdwe() { return Ib_noa_hdwe / sp.nP(); };          // Battery no amp unit current, A
   float ib_noa_hdwe_kf() { return Ib_noa_hdwe_kf / sp.nP(); };    // Battery no amp kalman filtered unit current, A
   float ib_noa_model() { return Ib_noa_model / sp.nP(); };        // Battery no amp model unit current, A
+  float ib_noa_vo_vc() { return ShuntNoAmp->Vo_Vc(); };             // Battery no amp kalman filter input, V
   float Ib_amp_add();
   float Ib_amp_max();
   float Ib_amp_min();

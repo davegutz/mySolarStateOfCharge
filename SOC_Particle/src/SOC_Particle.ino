@@ -343,6 +343,7 @@ void loop()
   unsigned long long elapsed = 0;
   unsigned long long elapsed_reset = 0;
   static boolean reset = true;
+  static boolean reset_kf = true;
   static boolean reset_temp = true;
   static boolean reset_publish = true;
   static unsigned long long start = System.millis();
@@ -411,9 +412,9 @@ void loop()
     if ( read )
     {
       Log.info("Read shunt");
-      Sen->ShuntAmp->sample();
+      Sen->ShuntAmp->sample(reset_kf);
       Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.);
-      Sen->ShuntNoAmp->sample();
+      Sen->ShuntNoAmp->sample(reset_kf);
     }
   #endif
   
@@ -443,7 +444,7 @@ void loop()
     // Inputs:  sp.config, sp.sim_chm
     // Outputs: Sen->Ib, Sen->Vb, sp.inj_bias
     Log.info("ino:  sense_synth_select");
-    sense_synth_select(reset, reset_temp, ReadSensors->now(), elapsed, myPins, Mon, Sen);
+    sense_synth_select(reset, reset_temp, reset_kf, ReadSensors->now(), elapsed, myPins, Mon, Sen);
 
     // Calculate Ah remaining`
     // Inputs:  sp.mon_chm, Sen->Ib, Sen->Vb, Sen->Tb_f
@@ -551,6 +552,7 @@ void loop()
   // Soft reset
   if ( read ) cp.soft_sim_hold = false;
   cp.soft_reset_print = cp.soft_reset;
+  cp.kf_reset_print = cp.kf_reset;
   cp.soft_reset_sim_print = cp.soft_reset_sim;
   if ( cp.soft_reset || cp.soft_reset_sim )
   {
@@ -560,6 +562,7 @@ void loop()
   }
   cp.soft_reset = false;
   cp.soft_reset_sim = false;
+  cp.kf_reset = false;
   Log.info("ino:  end loop\n\n\n");
 
 } // loop

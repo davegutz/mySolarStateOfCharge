@@ -222,12 +222,12 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
 
 // Load high fidelity signals; filtered in hardware the same bandwidth, sampled the same
 // Outputs:   Sen->Ib_model_in, Sen->Ib_hdwe, 
-void load_ib_vb(const boolean reset, const boolean reset_temp, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon)
+void load_ib_vb(const boolean reset, const boolean reset_temp, const boolean reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon)
 {
   // Load shunts Ib
   // Outputs:  Sen->Ib_model_in, Sen->Ib_hdwe, Sen->Vb, Sen->Wb
-  Sen->ShuntAmp->convert(sp.mod_ib_amp_dscn(), reset, Sen);
-  Sen->ShuntNoAmp->convert(sp.mod_ib_noa_dscn(), reset, Sen);
+  Sen->ShuntAmp->convert(sp.mod_ib_amp_dscn(), reset, reset_kf, Sen);
+  Sen->ShuntNoAmp->convert(sp.mod_ib_noa_dscn(), reset, reset_kf, Sen);
   Sen->Flt->vc_check(Sen, Mon, VC_MIN, VC_MAX, reset);
   Sen->shunt_select_initial(reset);
   if ( sp.debug()==14 ) Sen->shunt_print();
@@ -582,8 +582,8 @@ void oled_display(Sensors *Sen, BatteryMonitor *Mon)
 // States:  Sim.soc
 // Outputs: Sim.tb_f_, Sen->Tb_f, Sen->Ib, Sen->Ib_model,
 //   Sen->Vb_model, Sen->Tb_f, sp.inj_bias
-void sense_synth_select(const boolean reset, const boolean reset_temp, const unsigned long long now, const unsigned long long elapsed,
-  Pins *myPins, BatteryMonitor *Mon, Sensors *Sen)
+void sense_synth_select(const boolean reset, const boolean reset_temp, const boolean reset_kf, const unsigned long long now,
+  const unsigned long long elapsed,  Pins *myPins, BatteryMonitor *Mon, Sensors *Sen)
 {
   static unsigned long long int last_snap = now;
   boolean storing_fault_data = ( now - last_snap )>SNAP_WAIT;
@@ -591,7 +591,7 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const uns
 
   // Load Ib and Vb
   // Outputs: Sen->Ib_model_in, Sen->Ib, Sen->Vb
-  load_ib_vb(reset, reset_temp, Sen, myPins, Mon);
+  load_ib_vb(reset, reset_temp, reset_kf, Sen, myPins, Mon);
   Sen->Flt->ib_range(reset, Sen, Mon);
   Sen->Flt->ib_logic(reset, Sen, Mon);
   Sen->Flt->ib_wrap(reset, Sen, Mon);

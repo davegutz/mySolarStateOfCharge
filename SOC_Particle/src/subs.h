@@ -115,13 +115,13 @@ struct Pins
 void sample_burst(Pins *myPins, Sensors *SenS);
 void harvest_temp_change(const double tb_f, BatteryMonitor *Mon, BatterySim *Sim, const float rate, const float dt);
 void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const boolean use_soc_in);
-void load_ib_vb(const boolean reset, const boolean reset_temp, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon);
+void load_ib_vb(const boolean reset, const boolean reset_temp, const boolean reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon);
 void monitor(const boolean reset, const boolean reset_temp, const unsigned long long now,
   TFDelay *Is_sat_delay, BatteryMonitor *Mon, Sensors *Sen);
 void oled_display(Adafruit_SSD1306 *display, Sensors *Sen, BatteryMonitor *Mon);
 void oled_display(Sensors *Sen, BatteryMonitor *Mon);
-void sense_synth_select(const boolean reset, const boolean reset_temp, const unsigned long long now, const unsigned long long elapsed,
-  Pins *myPins, BatteryMonitor *Mon, Sensors *Sen);
+void sense_synth_select(const boolean reset, const boolean reset_temp, const boolean reset_kf, const unsigned long long now,
+  const unsigned long long elapsed, Pins *myPins, BatteryMonitor *Mon, Sensors *Sen);
 void sync_time(unsigned long long now, unsigned long long *last_sync, unsigned long long *millis_flip);
 String time_long_2_str(const time_t current_time, char *tempStr);
 

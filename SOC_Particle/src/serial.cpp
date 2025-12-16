@@ -221,7 +221,7 @@ void print_ekf_header(void)
 // TODO:  delete the _T, _tau, _rstate, _lstate stuff
 void print_signal_sel_header(void)
 {
-  Serial.printf("unit_s,c_time,reset,resaf,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm, ibmkf,ibnkf,  ib_diff, ib_diff_f,");
+  Serial.printf("unit_s,c_time,reset,resaf,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,  kfres,vovcm,vovcn,libmkf,ibnkf,  ib_diff, ib_diff_f,");
   Serial.printf("  vr,voc_soc,e_w,e_w_f,ib_dm,dv_dm,e_wm,e_wm_r,e_wm_f,ib_dn,dv_dn,e_wn,e_wn_f,e_wm_t,");
   Serial.printf("  ib_sel_stat,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_h,vb_s,mvb,vb,  mtb,Tb_fa, ");
   Serial.printf("  fltw, falw, ib_rate, ib_quiet, tb_sel, ccd_thr, ewh_thr, ewl_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,");
@@ -238,11 +238,11 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
   {
       double cTime = double(Sen->now)/1000.;
 
-      sprintf(pr.buff, "unit_sel,%13.4f, %d, %d, %d, %10.7f, %8.6f,%8.6f,%8.6f,%8.6f,%8.6f, %8.6f,%8.6f, %8.6f,%8.6f, ",
+      sprintf(pr.buff, "unit_sel,%13.4f, %d, %d, %d, %10.7f, %8.6f,%8.6f,%8.6f,%8.6f,%8.6f, %d,%8.6f,%8.6f,%8.6f,%8.6f, %8.6f,%8.6f, ",
           cTime, reset, Sen->Flt->reset_all_faults_print(), sp.ib_force(),
           Sen->Flt->cc_diff(),
           Sen->ib_amp_hdwe(), Sen->ib_noa_hdwe(), Sen->ib_amp_model(), Sen->ib_noa_model(), Sen->ib_model(), 
-          Sen->ib_amp_hdwe_kf(), Sen->ib_noa_hdwe_kf(),
+          cp.kf_reset_print, Sen->ib_amp_vo_vc(), Sen->ib_noa_vo_vc(), Sen->ib_amp_hdwe_kf(), Sen->ib_noa_hdwe_kf(),
           Sen->Flt->ib_diff(), Sen->Flt->ib_diff_f());
       Serial.printf("%s", pr.buff);
 

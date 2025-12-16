@@ -30,8 +30,12 @@ class KalmanFilter {
 public:
   KalmanFilter(const double dt, const double init_pos, const double Q_std, const double R);
   ~KalmanFilter();
-  double get_x() { return x_[0]; };
+  double calculate(const boolean reset, const double dt, const double in);
+  boolean get_reset() { return reset_; };
+  double get_u() { return u_; };
   double get_v() { return x_[1]; };
+  double get_x() { return x_[0]; };
+  void init(const double in);
   void predict(const double dt);
   void pretty_print(void);
   double update(const double meas);
@@ -46,6 +50,7 @@ private:
   double **P_;    // Kalman probability matrix
   double **Q_;    
   double Qstdsq_; // Standard deviation squared of the process noise
+  boolean reset_; // Reset command status
   double Rsq_;    // Standard deviation squared of the measurement noise
   double S_;
   double u_;      // Measurement update for x

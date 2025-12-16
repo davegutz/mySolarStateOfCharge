@@ -75,6 +75,8 @@ public:
   boolean soft_sim_hold;    // Use talk to reset sim only
   Tb_union tb_info;         // Use cp to pass DS2482 I2C information
   boolean write_summary;    // Use talk to issue a write command to summary
+  boolean kf_reset;         // Reset kalman filters
+  boolean kf_reset_print;   // Reset kalman filters status saved for printing
 
   CommandPars()
   {
@@ -101,9 +103,11 @@ public:
     queue_str = "";
     soon_str = "";
     asap_str = "";
+    kf_reset = false;
+    kf_reset_print = false;
   }
 
-  void cmd_reset(void) { soft_reset = true; }
+  void cmd_reset(void) { soft_reset = true; kf_reset = true; }
 
   void cmd_reset_sim(void) { soft_reset_sim = true; }
 
@@ -116,6 +120,7 @@ public:
     model_cutback = true;
     model_saturated = true;
     soft_reset = true;
+    kf_reset = true;
     num_v_print = 0UL;
   }
 
@@ -132,6 +137,7 @@ public:
       Serial.printf(" tb_info.t_c %7.3f\n", tb_info.t_c);
       Serial.printf(" tb_info.ready %d\n", tb_info.ready);
       Serial.printf(" write_summary %d\n\n", write_summary);
+      Serial.printf(" kf_reset %d\n", kf_reset);
     #endif
   }
 
