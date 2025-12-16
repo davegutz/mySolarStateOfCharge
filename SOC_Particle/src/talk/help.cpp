@@ -166,6 +166,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   Serial.printf("  Rb= "); Serial.printf("batteries to present inputs\n");
   Serial.printf("  Rf= "); Serial.printf("fault logic latches\n");
   Serial.printf("  Ri= "); Serial.printf("infinite counter\n");
+  Serial.printf("  Rk= "); Serial.printf("kalman filters in shunt\n");
   Serial.printf("  Rr= "); Serial.printf("saturate Mon and equalize Sim & Mon\n");
   Serial.printf("  RR= "); Serial.printf("DEPLOY\n");
   Serial.printf("  Rs= "); Serial.printf("small.  Reinitialize filters\n");

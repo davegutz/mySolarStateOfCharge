@@ -55,6 +55,11 @@ boolean recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             cp.inf_reset = true;
             break;
 
+        case ( 'k' ):  // Rk:  Reset fault Rk
+            Serial.printf("Reset kalman filters\n");
+            cp.cmd_reset_kf();
+            break;
+
         case ( 'r' ):  // Rr:  small reset counters
             Serial.printf("CC reset\n");
             Sen->Sim->apply_soc(1.0, Sen->Tb_f);

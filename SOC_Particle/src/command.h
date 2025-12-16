@@ -109,6 +109,8 @@ public:
 
   void cmd_reset(void) { soft_reset = true; kf_reset = true; }
 
+  void cmd_reset_kf(void) { kf_reset = true; }
+
   void cmd_reset_sim(void) { soft_reset_sim = true; }
 
   void cmd_soft_sim_hold(void) { soft_sim_hold = true; }
