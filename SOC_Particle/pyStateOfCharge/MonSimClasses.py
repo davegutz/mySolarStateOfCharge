@@ -23,6 +23,7 @@ import Battery
 from Battery import Battery, calculate_capacity
 from myFilters import LagExp
 from pyDAGx import myTables
+from KF1x1 import KF1x1VarDt
 
 class MutableInt:
     def __init__(self, value):
@@ -128,6 +129,9 @@ class Sensors:
                                             self.mon_run.e_wrap_m_filt)
             self.LoopNoa = SensorLooparound(self.mon_run.ibnh, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_m_trim * 0.,
                                             self.mon_run.e_wrap_n_filt)
+            self.KfNoa = KF1x1VarDt(initial_position=self.mon_run.vovcn[0], initial_velocity=self.mon_run.x1n[0],
+                                    dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R)
+
             self.ib_amp = 0.
             self.ib_noa = 0.
             self.ib_dyn = ProArray(self.mon_run.ib_dyn, mutable=True)
@@ -411,6 +415,9 @@ class Sensors:
         self.i = min(max(i, 0), len(self.mon_run.time)-1)
         self.LoopAmp.update(i)
         self.LoopNoa.update(i)
+        self.KfNoa.predict(self.mon_run.dt[i])
+        self.KfNoa.update(self.mon_run.vovcn[i])
+        self.vf, self.v_rat = self.KfNoa.get_state()
         # self.ib_dyn_init = self.ib_dyn[i]
         # self.ib_dyn_init = self.ib_dyn[i]
         self.ib_in_s_init = self.ib_in_s[i]

@@ -696,7 +696,7 @@ class SavedData:
                 for key in dir(Battery):
                     if key in self.Battery_off_dict and key.isupper() and not key.startswith('__'):
                         print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
-                        print("Battery.{:s} = {:5.1f}".format(key, self.Battery_off_dict[key]))
+                        print("Battery.{:s} = {:8.6g}".format(key, self.Battery_off_dict[key]))
 
 
         if rap is None:
@@ -810,6 +810,9 @@ class SavedData:
                     i_end = min(i_end, len(self.c_time_s))
                 if ekf is not None:
                     self.time_e = np.array(np.atleast_1d(ekf.c_time) - self.time_run)
+                if shunt is not None:
+                    self.c_time_shunt = np.array(np.atleast_1d(shunt.c_time) - self.time_run)
+                    i_end = min(i_end, len(self.c_time_shunt))
             else:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
                 if sel is not None:
@@ -1112,7 +1115,6 @@ class SavedData:
             self.disable_amp_fault_per = np.array(sel.disable_amp_fault_per[:i_end])
             if hasattr(sel, 'vr'):
                 self.vr = np.array(sel.vr[:i_end])
-
         if shunt is None:
             unit_shunt = None
             self.skip_shunt = None
@@ -1128,7 +1130,7 @@ class SavedData:
             self.Tbv = None
             self.Vbv = None
         else:
-            self.assign_all_from(shunt)
+            self.assign_all_from(shunt, i_end)
             # Special handling
             self.c_time_shunt = np.array(shunt.c_time[:i_end]) - self.time_run
             self.skip_shunt = np.bool(np.array(shunt.skip[:i_end]))
@@ -1375,17 +1377,20 @@ class SavedData:
                 T_lag = self.cTime[i] - self.cTime[i-1]
             self.ib_lag[i] = IbLag.calculate_tau(float(self.ib[i]), lag_reset, T_lag, ib_lag)
 
-    def assign_all_from(self, x=None):
+    def assign_all_from(self, x=None, i_end=None):
         """
         Iterates over members of a dataset x, assigns values to numpy.ndarray members
         """
         for name in list(x.dtype.names):
-            setattr(self, name, x[name])
+            if i_end is None:
+                setattr(self, name, x[name])
+            else:
+                setattr(self, name, getattr(x, name)[:i_end])
 
     def truncate(self, i_end=None, key_attr='time'):
         """
         Iterates over members of an self, assigns values to numpy.ndarray members
-        from rap_self.ib up to i_end.
+        up to i_end.
         """
         for attr_name in dir(self):
             # Filter out built-in attributes and methods

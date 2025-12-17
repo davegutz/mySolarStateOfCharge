@@ -121,6 +121,8 @@ class Battery(Coulombs):
     T_RLIM = 0.00085  # Temperature sensor rate limit to minimize jumps in Coulomb counting, deg C/s (0.00085 allows 0.05 deg for 1 minute)
     DISAB_LO_SET = 0.4  # Disable lo=amp wrap fault set persistence, s (0.4)
     DISAB_LO_RESET = 0.8  # Disable lo=amp wrap fault reset persistence, s (0.8)
+    KF_Q_STD = 0.015  # Shunt KF
+    KF_R = 0.001  # Shunt KF
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
@@ -406,6 +408,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.dt_temp = 0.
         self.sel_brk_hdwe = ScaleSelector(Battery.HDWE_IB_HI_LO_NOA_LO, Battery.HDWE_IB_HI_LO_AMP_LO,
                                           Battery.HDWE_IB_HI_LO_AMP_HI, Battery.HDWE_IB_HI_LO_NOA_HI)
+        self.reset_kf = False
         if SN is not None:
             self.Tb_hdwe = SN.Tb_hdwe_init
             self.Tb_hdwe_filt =SN.Tb_hdwe_filt_init
@@ -856,6 +859,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe.append(self.Tb_hdwe)
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
+        self.saved.reset_kf.append(self.reset_kf)
 
     def wrap(self, reset=True, modeling=None, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
              ib_amp_pst=None, ib_noa_pst=None, ib_amp_2pst=None, ib_noa_2pst=None):
@@ -1291,7 +1295,7 @@ class Looparound:
         if modeling:
             dt_into_ct = self.dt_past
             ib_into_ct = self.ib_past2
-        # print(f"  i   time     r       rt   it   ct      re   ie  ce    sa      vb                         ib_charge                   ib                          ibmh                        ibmm                        ibnh                        ibnm                        ibh                         ib_s                        ib_amp                    ib_amp_lo    ib_amp_hi   ib_noa_lo   ib_noa_hi dis_amp_flt   per      ib_dyn_m                   ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rstate_m                ib_dyn_lstate_m             vb                    dv_dyn_m              e_wrap_m_T             e_wrap_m_tau           e_wrap_m_rate          e_wrap_m_reset          e_wrap_m_state         voc                   voc_soc                e_wrap_m             e_wrap_m_filt     disable_amp_fault ib_amp_lo  ib_noa_lo  e_wrap_m_reset  e_wrap_m_trim        ib_dyn_n                   ib_dyn_T_n     ib_dyn_tau_n           dv_dyn_n               e_wrap_n             e_wrap_n_filt         ib_dyn_n                    ib_dyn                    {reset=} {ib=} {self.ib_past=} {modeling=} {ib_into_ct=} {ib_dyn_init=}    ", end='')
+        # print(f"  i   time     r       rt   rs   it   ct      re   ie  ce    sa      vb                         ib_charge                   ib                          ibmh                        ibmm                        ibnh                        ibnm                        ibh                         ib_s                        ib_amp                    ib_amp_lo    ib_amp_hi   ib_noa_lo   ib_noa_hi dis_amp_flt   per      ib_dyn_m                   ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rstate_m                ib_dyn_lstate_m             vb                    dv_dyn_m              e_wrap_m_T             e_wrap_m_tau           e_wrap_m_rate          e_wrap_m_reset          e_wrap_m_state         voc                   voc_soc                e_wrap_m             e_wrap_m_filt     disable_amp_fault ib_amp_lo  ib_noa_lo  e_wrap_m_reset  e_wrap_m_trim        ib_dyn_n                   ib_dyn_T_n     ib_dyn_tau_n           dv_dyn_n               e_wrap_n             e_wrap_n_filt         ib_dyn_n                    ib_dyn                    {reset=} {ib=} {self.ib_past=} {modeling=} {ib_into_ct=} {ib_dyn_init=}    ", end='')
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(ib_into_ct, ib_dyn_init, self.reset, dt_into_ct,
                                                                self.chem.tau_ct, text=self.name)
         # print(f"{reset=} {ib=} {self.ib=} {self.ib_past=} {self.ChargeTransfer.rstate=}")
@@ -1457,6 +1461,7 @@ class Saved:
         self.Tb_hdwe_filt = []
         self.Tb_hdwe_filt_rate = []
         self.e_wrap_m_reset = []
+        self.reset_kf = []
 
 
 def overall_batt(mv, sv, filename,
