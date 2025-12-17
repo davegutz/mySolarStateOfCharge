@@ -98,7 +98,11 @@ double KalmanFilter::calculate(const boolean reset, const double dt, const doubl
     double out = 0.;
     reset_ = reset;
 
-    if ( reset_ ) kf_init(in);
+    if ( reset_ )
+    {
+        kf_init(in);
+        return ( in );
+    }
 
     predict(dt);
     out = update(in);

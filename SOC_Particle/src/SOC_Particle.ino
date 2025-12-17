@@ -541,7 +541,7 @@ void loop()
   // Initialize complete once sensors and models started and summary written
   if ( read )
   {
-    reset = reset_kf = false;
+    reset = reset_kf = cp.kf_reset_print = false;
     if ( reset_temp ) Serial.printf("*");
   }
   if ( read_temp && elapsed_reset>ap.temp_delay && reset_temp )
@@ -554,7 +554,6 @@ void loop()
   // Soft reset
   if ( read ) cp.soft_sim_hold = false;
   cp.soft_reset_print = cp.soft_reset;
-  cp.kf_reset_print = cp.kf_reset;
   cp.soft_reset_sim_print = cp.soft_reset_sim;
   if ( cp.soft_reset || cp.soft_reset_sim )
   {
@@ -564,6 +563,7 @@ void loop()
   }
   if ( cp.kf_reset )
   {
+    cp.kf_reset_print = true;
     reset_kf = true;
   }
   cp.soft_reset = false;
