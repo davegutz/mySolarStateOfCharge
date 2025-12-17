@@ -45,7 +45,6 @@ if sys.platform == 'darwin':
     matplotlib.use('tkagg')
 plt.rcParams.update({'figure.max_open_warning': 0})
 
-
 def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', label=None, marker=None,
         markersize=None, markevery=None, stairs=False, warn=True):
     if (sx is not None and sy is not None and hasattr(sx, st) and hasattr(sy, yt) and getattr(sy, yt) is not None and
@@ -73,7 +72,6 @@ def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', labe
     else:
         if warn:
             print(f"plq: skipping     {yt}({st})     labeled  '{label}'")
-
 
 def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
              run_str='_run', ver_str='_ver'):
@@ -676,8 +674,8 @@ class DeviceConstants:
 
 
 class SavedData:
-    def __init__(self, battery=None, rap=None, sel=None, ekf=None, temp=None, time_end=None, zero_zero=False,
-                 zero_thr=0.02, sync_cTime=None, init_time_in=None):
+    def __init__(self, battery=None, rap=None, sel=None, ekf=None, temp=None, shunt=None,
+                 time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None, init_time_in=None):
         i_end = 0
         n = None
         ib_lag = None
@@ -818,6 +816,11 @@ class SavedData:
                     self.c_time_s = np.array(sel.c_time) - self.time_run
                     i_end_sel = np.where(self.c_time_s <= time_end)[0][-1] + 1
                     i_end = np.minimum(i_end, i_end_sel)
+                    self.zero_end = np.minimum(self.zero_end, i_end-1)
+                if shunt is not None:
+                    self.c_time_shunt = np.array(shunt.c_time) - self.time_run
+                    i_end_shunt = np.where(self.c_time_shunt <= time_end)[0][-1] + 1
+                    i_end = np.minimum(i_end, i_end_shunt)
                     self.zero_end = np.minimum(self.zero_end, i_end-1)
                 if ekf is not None:
                     self.time_e = np.array(np.atleast_1d(ekf.c_time) - self.time_run)
@@ -1110,6 +1113,26 @@ class SavedData:
             if hasattr(sel, 'vr'):
                 self.vr = np.array(sel.vr[:i_end])
 
+        if shunt is None:
+            unit_shunt = None
+            self.skip_shunt = None
+            self.i = 0
+            self.time = None
+            self.dt = None
+            self.Vca = None
+            self.Voa = None
+            self.VoVca = None
+            self.Vcn = None
+            self.Von = None
+            self.VoVcn = None
+            self.Tbv = None
+            self.Vbv = None
+        else:
+            self.assign_all_from(shunt)
+            # Special handling
+            self.c_time_shunt = np.array(shunt.c_time[:i_end]) - self.time_run
+            self.skip_shunt = np.bool(np.array(shunt.skip[:i_end]))
+
         if ekf is None:
             self.skip_e = None
             self.time_e = None
@@ -1351,6 +1374,32 @@ class SavedData:
                 lag_reset = False
                 T_lag = self.cTime[i] - self.cTime[i-1]
             self.ib_lag[i] = IbLag.calculate_tau(float(self.ib[i]), lag_reset, T_lag, ib_lag)
+
+    def assign_all_from(self, x=None):
+        """
+        Iterates over members of a dataset x, assigns values to numpy.ndarray members
+        """
+        for name in list(x.dtype.names):
+            setattr(self, name, x[name])
+
+    def truncate(self, i_end=None, key_attr='time'):
+        """
+        Iterates over members of an self, assigns values to numpy.ndarray members
+        from rap_self.ib up to i_end.
+        """
+        for attr_name in dir(self):
+            # Filter out built-in attributes and methods
+            if not attr_name.startswith('__') and not callable(getattr(self, attr_name)):
+                member = getattr(self, attr_name)
+                if isinstance(member, np.ndarray):
+                    # Ensure the slice doesn't exceed the bounds of rap_self.ib
+                    end_index = min(i_end, len(getattr(self, key_attr)))
+
+                    # Assign the slice to the numpy.ndarray member
+                    # If the target array has a different shape, direct assignment
+                    # might fail or reshape the array. Using np.array() ensures
+                    # a new array is created with the correct slice.
+                    setattr(self, attr_name, getattr(self, attr_name)[:end_index])
 
     def __str__(self):
         s = "{},".format(self.unit[self.i])

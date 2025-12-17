@@ -113,6 +113,8 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     temp_flt_file = 'flt_compareRunSim.txt'
     hdr_key_temp = "unit_t"
     unit_key_temp = "temp_unit"
+    hdr_key_shunt = "unit_shunt"
+    unit_key_shunt = "shunt_unit"
 
     sync = find_sync(path_to_data)
 
@@ -161,8 +163,18 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         ekf_raw = None
         print(f"load_data: returning ekf_raw=None")
 
-    mon = SavedData(battery=battery_raw, rap=mon_raw, sel=sel_raw, ekf=ekf_raw, temp=temp_raw, time_end=time_end_in,
-                    zero_zero=zero_zero_in, zero_thr=zero_thr_in, sync_cTime=sync)
+    # Load shunt (ref)
+    shunt_file_clean = write_clean_file(path_to_data, type_='_shunt', hdr_key=hdr_key_shunt,
+                                      unit_key=unit_key_shunt, skip=skip)
+    if shunt_file_clean and not v1_only:
+        shunt_raw = np.genfromtxt(shunt_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+    else:
+        shunt_raw = None
+        print(f"load_data: returning shunt_raw=None")
+
+
+    mon = SavedData(battery=battery_raw, rap=mon_raw, sel=sel_raw, ekf=ekf_raw, temp=temp_raw, shunt=shunt_raw,
+                    time_end=time_end_in, zero_zero=zero_zero_in, zero_thr=zero_thr_in, sync_cTime=sync)
     if mon.chm is not None:
         chm = int(mon.chm[-1])
     elif path_to_data.__contains__('bb'):
@@ -209,9 +221,9 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
 
 
 def main():
-    path_to_data = '/home/daveg/google-drive/GitHubArchive/SOC_Particle/dataReduction/g20240331/allInCHG_pro0p_chg.csv'
+    path_to_data = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\kfProto_soc2p2_hi_lo_chg.csv'
     skip = 1
-    unit_key = 'g20240331_pro0p_chg '
+    unit_key='g20250612a_soc2p2_hi_lo_chg'
     zero_zero_in = False
     time_end_in = None
     rated_batt_cap = 108.4

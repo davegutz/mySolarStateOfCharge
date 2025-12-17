@@ -412,6 +412,7 @@ void loop()
     if ( read )
     {
       Log.info("Read shunt");
+      if ( reset_kf ) Serial.printf(" SOC_Particle:  reseting kfs\n");
       Sen->ShuntAmp->sample(reset_kf);
       Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.);
       Sen->ShuntNoAmp->sample(reset_kf);
@@ -540,7 +541,7 @@ void loop()
   // Initialize complete once sensors and models started and summary written
   if ( read )
   {
-    reset = false;
+    reset = reset_kf = false;
     if ( reset_temp ) Serial.printf("*");
   }
   if ( read_temp && elapsed_reset>ap.temp_delay && reset_temp )
@@ -560,6 +561,10 @@ void loop()
     reset = reset_temp = reset_kf = reset_publish = true;
     start_reset = System.millis();
     if ( cp.soft_reset_sim ) cp.cmd_soft_sim_hold();
+  }
+  if ( cp.kf_reset )
+  {
+    reset_kf = true;
   }
   cp.soft_reset = false;
   cp.soft_reset_sim = false;

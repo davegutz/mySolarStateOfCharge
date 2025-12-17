@@ -226,8 +226,8 @@ void load_ib_vb(const boolean reset, const boolean reset_temp, const boolean res
 {
   // Load shunts Ib
   // Outputs:  Sen->Ib_model_in, Sen->Ib_hdwe, Sen->Vb, Sen->Wb
-  Sen->ShuntAmp->convert(sp.mod_ib_amp_dscn(), reset, reset_kf, Sen);
-  Sen->ShuntNoAmp->convert(sp.mod_ib_noa_dscn(), reset, reset_kf, Sen);
+  Sen->ShuntAmp->convert(sp.mod_ib_amp_dscn(), reset_kf, Sen);
+  Sen->ShuntNoAmp->convert(sp.mod_ib_noa_dscn(), reset_kf, Sen);
   Sen->Flt->vc_check(Sen, Mon, VC_MIN, VC_MAX, reset);
   Sen->shunt_select_initial(reset);
   if ( sp.debug()==14 ) Sen->shunt_print();

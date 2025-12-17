@@ -221,9 +221,11 @@ void print_ekf_header(void)
 // Print shunt logic data
 void print_shunt_header(Sensors *Sen)
 {
-  Serial.printf("unit_shunt,c_time,reset,kfreset, kfres,vovcm,vovcn,ibmkf,ibnkf,  ");
+  Serial.printf("unit_shunt,c_time,reset,kfres,vovcm,vovcn,ibmkf,ibnkf,  ");
+
   Sen->ShuntAmp->print_serial_header('m');
   Sen->ShuntNoAmp->print_serial_header('n');
+
   Serial.printf("\n");
 }
 void print_shunt_serial(const boolean reset, Sensors *Sen)
@@ -256,13 +258,13 @@ void KalmanFilter::print_serial_header(const char s)
   Serial.printf("x0%c,x1%c,  Fx00%c,Fx01%c,Fx10%c,Fx11%c,  P00%c,P01%c,P10%c,P11%c,  Q00%c,Q01%c,Q10%c,Q11%c,  ",
     s, s, s, s, s, s, s, s, s, s, s, s, s, s);
 
-  Serial.printf("G0%c,G1%c,  H0%c,H1%c,  K0%c,K1%c,  S%d, u%c, y%c,  ",
+  Serial.printf("G0%c,G1%c,  H0%c,H1%c,  K0%c,K1%c,  S%c, u%c, y%c,  ",
     s, s, s, s, s, s, s, s, s);
 
 }
 void KalmanFilter::print_serial()
 {
-    sprintf(pr.buff, "%8.6f,%8.6f,  %8.6f,%8.6f,%8.6f,%8.6f,  %8.6f,%8.6f,%8.6f,%8.6f,  %8.6f,%8.6f,%8.6f,%8.6f,  ",
+    sprintf(pr.buff, "%8.6f,%8.6f,  %8.6f,%8.6f,%8.6f,%8.6f,  %11.9f,%8.6f,%8.6f,%8.6f,  %11.9f,%11.9f,%11.9f,%11.9f,  ",
         x_[0],x_[1],  Fx_[0][0],Fx_[0][1],Fx_[1][0],Fx_[1][1], P_[0][0],P_[0][1],P_[1][0],P_[1][1],  Q_[0][0],Q_[0][1],Q_[1][0],Q_[1][1]);
     Serial.printf("%s", pr.buff);
 

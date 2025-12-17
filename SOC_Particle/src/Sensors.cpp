@@ -206,7 +206,7 @@ void Shunt::pretty_print()
 }
 
 // Convert sampled shunt data to Ib engineering units
-void Shunt::convert(const boolean disconnect, const boolean reset, const boolean reset_kf, Sensors *Sen)
+void Shunt::convert(const boolean disconnect, const boolean reset, Sensors *Sen)
 {
   #ifdef HDWE_ADS1013_AMP_NOA
     if ( !bare_shunt_ && !dscn_cmd_ )
@@ -267,14 +267,16 @@ void Shunt::sample(const boolean reset_kf)
   sample_Vc();
   sample_combine(reset_kf);
 }
+
 void Shunt::sample_combine(const boolean reset_kf)
 {
   Vo_Vc_ = Vo_ - Vc_;
   Vo_Vc_kf_ = KF_->calculate(reset_kf, dt()/1000., Vo_Vc_);
   #ifndef HDWE_PHOTON
-    if  ( sp.debug()==14 )Serial.printf("ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f Vo_Vc_kf_%7.3f Vc_%7.3f\n", (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, Vo_Vc_kf_, Vc_);
+    if  ( sp.debug()==14 )Serial.printf("reset_kf %d ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f Vo_Vc_kf_%7.3f Vc_%7.3f\n", reset_kf, (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, Vo_Vc_kf_, Vc_);
   #endif
 }
+
 void Shunt::sample_Vc()
 {
   if ( using_opamp_ )
@@ -288,6 +290,7 @@ void Shunt::sample_Vc()
     Vc_ =  float(Vc_raw_)*VC_CONV_GAIN + ap.vc_add;
   }
 }
+
 void Shunt::sample_Vo()
 {
   sample_time_z_ = sample_time_;

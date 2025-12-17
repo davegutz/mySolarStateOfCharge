@@ -128,7 +128,7 @@ public:
   boolean bare_shunt() { return ( bare_shunt_ ); };
   void dscn_cmd(const boolean cmd) { dscn_cmd_ = cmd; };
   unsigned long long dt() { return sample_time_ - sample_time_z_; };
-  void convert(const boolean disconnect, const boolean reset, const boolean reset_kf, Sensors *Sen);
+  void convert(const boolean disconnect, const boolean reset, Sensors *Sen);
   float Ishunt_cal() { return Ishunt_cal_; };
   float ishunt_cal() { return Ishunt_cal_ / sp.nP(); };
   float Ishunt_cal_kf() { return Ishunt_cal_kf_; };

@@ -37,7 +37,7 @@ public:
   double get_u() { return u_; };
   double get_v() { return x_[1]; };
   double get_x() { return x_[0]; };
-  void init(const double in);
+  void kf_init(const double in);
   void predict(const double dt);
   void pretty_print(void);
   void print_serial_header(const char suffix);

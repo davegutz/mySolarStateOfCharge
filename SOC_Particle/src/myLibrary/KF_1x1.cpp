@@ -66,7 +66,7 @@ Args:
         P_[i] = new double[COLS_];
         Q_[i] = new double[COLS_];
     }
-    init(init_pos);
+    kf_init(init_pos);
 }
 
 KalmanFilter::~KalmanFilter()
@@ -98,7 +98,7 @@ double KalmanFilter::calculate(const boolean reset, const double dt, const doubl
     double out = 0.;
     reset_ = reset;
 
-    if ( reset_ ) init(in);
+    if ( reset_ ) kf_init(in);
 
     predict(dt);
     out = update(in);
@@ -106,8 +106,9 @@ double KalmanFilter::calculate(const boolean reset, const double dt, const doubl
     return ( out );
 }
 
-void KalmanFilter::init(const double in)
+void KalmanFilter::kf_init(const double in)
 {
+    Serial.printf("kf_init\n");
     u_ = in;
     Fx_[0][0] = 1.0; Fx_[0][1] = dt_;
     Fx_[1][0] = 0.0; Fx_[1][1] = 1.0;
