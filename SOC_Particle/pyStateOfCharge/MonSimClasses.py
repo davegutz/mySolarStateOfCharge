@@ -319,6 +319,8 @@ class Sensors:
         self.skip_sel = np.bool(np.zeros(len(self.dv_dyn_s)))
         self.skip_rap = np.bool(np.zeros(len(self.dv_dyn_s)))
         self.skip_s = np.bool(np.zeros(len(self.dv_dyn_s)))
+        self.VoVcn_f = 0.
+        self.v_rat = 0.
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -417,7 +419,7 @@ class Sensors:
         self.LoopNoa.update(i)
         self.KfNoa.predict(self.mon_run.dt[i])
         self.KfNoa.update(self.mon_run.vovcn[i])
-        self.vf, self.v_rat = self.KfNoa.get_state()
+        self.VoVcn_f, self.v_rat = self.KfNoa.get_state()
         # self.ib_dyn_init = self.ib_dyn[i]
         # self.ib_dyn_init = self.ib_dyn[i]
         self.ib_in_s_init = self.ib_in_s[i]

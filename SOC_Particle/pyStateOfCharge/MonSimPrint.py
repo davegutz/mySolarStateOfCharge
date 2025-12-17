@@ -85,6 +85,8 @@ def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
                     hdr = print_temp_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf)
                 case 5:
                     hdr = print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
+                case 6:
+                    hdr = print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
         case 'HistSim':
             match OPT.request_history:
                 case 0:
@@ -143,9 +145,30 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
           )
     return hdr
 
+
+#6
+def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
+    global count_since_last_header
+    hdr = "  i   time     r       rt   rk    dt             VoVcnf                 [Fxn                                                                         ]"
+    if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
+        print(hdr)
+        count_since_last_header = 0
+    if G.i > 0:
+        count_since_last_header += 1
+    print("{:4d}".format(G.i), "{:8.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
+          "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf),
+          "{:9.3f}".format(SN.mon_run.dt[G.i]), "{:5.3f}".format(mon.dt),
+          "{:10.5f}".format(SN.mon_run.x0n[G.i]), "{:9.5f}".format(SN.KfNoa.x[0][0]),
+          "{:13.5f}".format(SN.mon_run.Fx00n[G.i]), "{:8.5f}".format(SN.KfNoa.Fx[0][0]),
+          "{:10.5f}".format(SN.mon_run.Fx01n[G.i]), "{:8.5f}".format(SN.KfNoa.Fx[0][1]),
+          "{:10.5f}".format(SN.mon_run.Fx10n[G.i]), "{:8.5f}".format(SN.KfNoa.Fx[1][0]),
+          "{:10.5f}".format(SN.mon_run.Fx11n[G.i]), "{:8.5f}".format(SN.KfNoa.Fx[1][1]),
+          )
+    return hdr
+
 def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header
-    hdr = "  i  time     r       rt   rs   it   ct      re   ie  ce    sa     ib_charge            soc                     dt                G.i * dt * coul_eff    d_delq                           delq                       Tb_f                      Tb_f_rap                    ddq                  delq                       qcrs                   q_cap                  Tb                       Tb_f_rate"
+    hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce    sa     ib_charge            soc                     dt                G.i * dt * coul_eff    d_delq                           delq                       Tb_f                      Tb_f_rap                    ddq                  delq                       qcrs                   q_cap                  Tb                       Tb_f_rate"
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -183,7 +206,7 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
 # 3
 def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
     global count_since_last_header
-    hdr = "  i  time     r       rt   rs   it   ct      re   ie  ce    sa       sa_s     dt                    dt_s                  ib                          ib_in_s                     ib_s                          ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s              ib_charge_s                 ioc_s                     soc                     d_delq                           delq                       i * dt_s * coul_eff     soc_s                    Tb_f_s                      d_delq_s                   delq_s                      qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                 "
+    hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce    sa       sa_s     dt                    dt_s                  ib                          ib_in_s                     ib_s                          ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s              ib_charge_s                 ioc_s                     soc                     d_delq                           delq                       i * dt_s * coul_eff     soc_s                    Tb_f_s                      d_delq_s                   delq_s                      qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                 "
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -243,7 +266,7 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
 #4
 def print_temp_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header
-    hdr = "  i  time     r       rt   rs   it   ct      re   ie  ce     Tt       Tb_hdwe                    Tb                         Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
+    hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce     Tt       Tb_hdwe                    Tb                         Tb_past_  Tb_hdwe_filt     Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -304,7 +327,7 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
 #5
 def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time     r       rt   rs   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim       sa      vb                         ib_charge                   ib                          ibmh                        ibmm                        ibnh                        ibnm                        ibh                         ib_s                        ib_amp                    ib_amp_lo    ib_amp_hi   ib_noa_lo   ib_noa_hi dis_amp_flt   per      ib_dyn_m                   ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rstate_m                ib_dyn_lstate_m             vb                    dv_dyn_m              e_wrap_m_T             e_wrap_m_tau           e_wrap_m_rate          e_wrap_m_reset          e_wrap_m_state         voc                   voc_soc                e_wrap_m             e_wrap_m_filt     disable_amp_fault ib_amp_lo  ib_noa_lo  e_wrap_m_reset  e_wrap_m_trim        ib_dyn_n                   ib_dyn_T_n     ib_dyn_tau_n           dv_dyn_n               e_wrap_n             e_wrap_n_filt         ib_dyn_n                    ib_dyn                     ib_dyn_T_n     ib_dyn_tau_n            ib_dyn_rstate_n                ib_dyn_lstate_n             dv_dyn_n               e_wrap_n_T             e_wrap_n_tau           e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt        ib                          e_wrap               e_wrap_filt           ib_dyn_rstate                ib_dyn_lstate                   ib_dyn                      dv_dyn                 dv_hys                soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_s            voc_stat_f             soc_ekf               y_ekf"
+    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim       sa      vb                         ib_charge                   ib                          ibmh                        ibmm                        ibnh                        ibnm                        ibh                         ib_s                        ib_amp                    ib_amp_lo    ib_amp_hi   ib_noa_lo   ib_noa_hi dis_amp_flt   per      ib_dyn_m                   ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rstate_m                ib_dyn_lstate_m             vb                    dv_dyn_m              e_wrap_m_T             e_wrap_m_tau           e_wrap_m_rate          e_wrap_m_reset          e_wrap_m_state         voc                   voc_soc                e_wrap_m             e_wrap_m_filt     disable_amp_fault ib_amp_lo  ib_noa_lo  e_wrap_m_reset  e_wrap_m_trim        ib_dyn_n                   ib_dyn_T_n     ib_dyn_tau_n           dv_dyn_n               e_wrap_n             e_wrap_n_filt         ib_dyn_n                    ib_dyn                     ib_dyn_T_n     ib_dyn_tau_n            ib_dyn_rstate_n                ib_dyn_lstate_n             dv_dyn_n               e_wrap_n_T             e_wrap_n_tau           e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt        ib                          e_wrap               e_wrap_filt           ib_dyn_rstate                ib_dyn_lstate                   ib_dyn                      dv_dyn                 dv_hys                soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_s            voc_stat_f             soc_ekf               y_ekf"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -397,7 +420,6 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:11.5f}".format(SN.mon_run.y_ekf[G.i]), "{:9.5f}".format(mon.y_ekf),
           )
     return hdr
-
 def save_clean_file(mon_ver, csv_file, unit_key):
     default_header_str = "unit,               hm,                  cTime,        dt,       sat,sel,mod,\
       Tb,Tb_rap,Tb_f,Tb_f_rap,Tb_f_rate,Tb_f_rate_rap, vb,  ib,  ib_dyn, ioc,  voc_soc,    vsat,dv_dyn,voc_stat,voc_stat_f,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,ib_lag,voc_soc_new,"

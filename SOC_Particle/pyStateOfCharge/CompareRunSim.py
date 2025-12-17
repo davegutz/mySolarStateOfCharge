@@ -194,7 +194,7 @@ def main():
     #
     verbose_in = False
     scale_in = 1.0
-    request_hist_in = 5  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
+    request_hist_in = 6  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt 6=kf
 
     # # mon_soc_in = False # old runsim work ******************
     use_mon_soc_ = False
