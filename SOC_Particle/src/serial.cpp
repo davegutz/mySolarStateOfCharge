@@ -236,7 +236,7 @@ void print_shunt_serial(const boolean reset, Sensors *Sen)
   {
     double cTime = double(Sen->now)/1000.;
 
-    sprintf(pr.buff, "shunt_unit,%13.4f, %d, %d,  %8.6f,%8.6f,%8.6f,%8.6f,  ",
+    sprintf(pr.buff, "shunt_unit,%13.4f, %d, %d,  %11.6f,%11.6f,%11.6f,%11.6f,  ",
       cTime, reset, cp.kf_reset_print, Sen->ib_amp_vo_vc(), Sen->ib_noa_vo_vc(), Sen->ib_amp_hdwe_kf(), Sen->ib_noa_hdwe_kf());
     Serial.printf("%s", pr.buff);
 
@@ -266,11 +266,11 @@ void KalmanFilter::print_serial_header(const char s)
 }
 void KalmanFilter::print_serial()
 {
-    sprintf(pr.buff, "%5.3f,  %8.6f,%8.6f,  %4.1f,%5.3g,%4.1f,%4.1f,  %11.9g,%11.9g,%11.9g,%11.9g,  %11.9g,%11.9g,%11.9g,%11.9g,  ",
+    sprintf(pr.buff, "%6.4f,  %10.6f,%10.6f,  %4.1f,%6.4f,%4.1f,%4.1f,  %13.6e,%13.6e,%13.6e,%13.6e,  %13.6e,%13.6e,%13.6e,%13.6e,  ",
         dt_, x_[0],x_[1],  Fx_[0][0],Fx_[0][1],Fx_[1][0],Fx_[1][1], P_[0][0],P_[0][1],P_[1][0],P_[1][1],  Q_[0][0],Q_[0][1],Q_[1][0],Q_[1][1]);
     Serial.printf("%s", pr.buff);
 
-    sprintf(pr.buff, "%8.6f,%8.6f,  %4.1f,%4.1f,  %8.6f,%8.6f,  %8.6f,  %8.6f, %8.6f,  ",
+    sprintf(pr.buff, "%9.6f,%9.6f,  %4.1f,%4.1f,  %9.6f,%9.6f,  %9.6f,  %9.6f, %9.6f,  ",
         G_[0],G_[1],  H_[0],H_[1],  K_[0],K_[1],  S_, u_, y_);
     Serial.printf("%s", pr.buff);
 }

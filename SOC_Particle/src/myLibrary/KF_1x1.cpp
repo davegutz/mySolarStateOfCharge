@@ -112,7 +112,6 @@ double KalmanFilter::calculate(const boolean reset, const double dt, const doubl
 
 void KalmanFilter::kf_init(const double in)
 {
-    Serial.printf("kf_init\n");
     u_ = in;
     Fx_[0][0] = 1.0; Fx_[0][1] = dt_;
     Fx_[1][0] = 0.0; Fx_[1][1] = 1.0;
