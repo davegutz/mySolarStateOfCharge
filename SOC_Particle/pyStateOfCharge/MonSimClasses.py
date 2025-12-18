@@ -320,7 +320,8 @@ class Sensors:
         self.skip_rap = np.bool(np.zeros(len(self.dv_dyn_s)))
         self.skip_s = np.bool(np.zeros(len(self.dv_dyn_s)))
         self.VoVcn_f = 0.
-        self.v_rat = 0.
+        self.vratn = 0.
+        self.iscn = 0.
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -419,9 +420,9 @@ class Sensors:
         self.LoopNoa.update(i)
         self.KfNoa.predict(self.mon_run.dt[i])
         self.KfNoa.update(self.mon_run.vovcn[i])
-        self.VoVcn_f, self.v_rat = self.KfNoa.get_state()
-        # self.ib_dyn_init = self.ib_dyn[i]
-        # self.ib_dyn_init = self.ib_dyn[i]
+        self.VoVcn_f, self.vratn = self.KfNoa.get_state()
+        self.iscn = float((self.VoVcn_f * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)
+        # TODO:  implement iscn filter and scale with CURR_SCALE_DISCH.  Now = 1. everywhere so no worries
         self.ib_in_s_init = self.ib_in_s[i]
         self.ib_dyn_s_init = self.ib_dyn_s[i]
         self.dv_dyn_s_init = self.dv_dyn_s[i]

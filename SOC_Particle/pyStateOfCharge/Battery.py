@@ -123,6 +123,13 @@ class Battery(Coulombs):
     DISAB_LO_RESET = 0.8  # Disable lo=amp wrap fault reset persistence, s (0.8)
     KF_Q_STD = 0.015  # Shunt KF
     KF_R = 0.001  # Shunt KF
+    SHUNT_AMP_GAIN = 1.  # hdwe gain, A/V
+    CURR_BIAS_AMP = 0.  # hdwe bias, A
+    SHUNT_NOA_GAIN = 1.  # hdwe gain, A/V
+    CURR_BIAS_NOA = 0.  # hdwe bias, A
+    NS = 1  # Number serial batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
+    NP = 1  # Number parallel batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
+    CURR_SCALE_DISCH = 1.  # scale factor for strength of discharging compared to baseling charging
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
