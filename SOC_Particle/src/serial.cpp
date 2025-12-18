@@ -128,7 +128,7 @@ void print_battery_header()
 {
   Serial.printf("Battery_hdr, HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI, IB_ABS_MAX_NOA, IB_ABS_MAX_AMP, KF_Q_STD, KF_R,");
 
-  Serial.printf("SHUNT_AMP_GAIN, CURR_BIAS_AMP, SHUNT_NOA_GAIN, CURR_BIAS_NOA, NS, NP, CURR_SCALE_DISCH");
+  Serial.printf("SHUNT_AMP_GAIN, CURR_BIAS_AMP, SHUNT_NOA_GAIN, CURR_BIAS_NOA, NS, NP, CURR_SCALE_DISCH,");
 
   Serial.printf("\n");
 }
@@ -228,7 +228,7 @@ void print_ekf_header(void)
 // Print shunt logic data
 void print_shunt_header(Sensors *Sen)
 {
-  Serial.printf("unit_shunt,c_time,reset,kfres,vovcm,vovcmf,vovcn,vovcnf,isca,ibmkf,iscn,ibnkf,  ");
+  Serial.printf("unit_shunt,c_time,reset,kfres,vovcm,vovcmf,vovcn,vovcnf,iscm,ibmkf,iscn,ibnkf,  ");
 
   Sen->ShuntAmp->print_serial_header('m');
   Sen->ShuntNoAmp->print_serial_header('n');
@@ -242,7 +242,7 @@ void print_shunt_serial(const boolean reset, Sensors *Sen)
     double cTime = double(Sen->now)/1000.;
 
     sprintf(pr.buff, "shunt_unit,%13.4f, %d, %d,  %11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,  ",
-      cTime, reset, cp.kf_reset_print, Sen->ib_amp_vo_vc(), Sen->ib_amp_vo_vc_f(), Sen->ib_noa_vo_vc(), Sen->ib_noa_vo_vc_f(), Sen->ShuntAmp->ishunt_cal(), Sen->ib_amp_hdwe_kf(), Sen->ShuntAmp->ishunt_cal(), Sen->ib_noa_hdwe_kf());
+      cTime, reset, cp.kf_reset_print, Sen->ib_amp_vo_vc(), Sen->ib_amp_vo_vc_f(), Sen->ib_noa_vo_vc(), Sen->ib_noa_vo_vc_f(), Sen->ShuntAmp->ishunt_cal(), Sen->ib_amp_hdwe_kf(), Sen->ShuntNoAmp->ishunt_cal(), Sen->ib_noa_hdwe_kf());
     Serial.printf("%s", pr.buff);
 
     Sen->ShuntAmp->print_serial();

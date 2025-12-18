@@ -149,7 +149,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
 #6
 def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time     r       rt   rk    dt              dtn            VoVcnf               x0                      ib_shunt_noa          [Fxn                                      ]"
+    hdr = "  i   time     r       rt   rk    dt              dtn            VoVcn                VoVcnf               x0                  ib_shunt_noa           [Fxn                                      ]"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -159,6 +159,7 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf),
           "{:9.3f}".format(SN.mon_run.dt[G.i]), "{:5.3f}".format(mon.dt),
           "{:9.3f}".format(SN.mon_run.dtn[G.i]), "{:5.3f}".format(SN.KfNoa.dt),
+          "{:10.5f}".format(SN.mon_run.vovcn[G.i]), "{:9.5f}".format(SN.VoVcn),
           "{:10.5f}".format(SN.mon_run.vovcnf[G.i]), "{:9.5f}".format(SN.VoVcn_f),
           "{:10.5f}".format(SN.mon_run.x0n[G.i]), "{:9.5f}".format(SN.KfNoa.x[0][0]),
           "{:10.5f}".format(SN.mon_run.iscn[G.i]), "{:9.5f}".format(SN.iscn),

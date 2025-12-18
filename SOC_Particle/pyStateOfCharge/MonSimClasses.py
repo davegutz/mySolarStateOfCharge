@@ -319,6 +319,7 @@ class Sensors:
         self.skip_sel = np.bool(np.zeros(len(self.dv_dyn_s)))
         self.skip_rap = np.bool(np.zeros(len(self.dv_dyn_s)))
         self.skip_s = np.bool(np.zeros(len(self.dv_dyn_s)))
+        self.VoVcn = 0.
         self.VoVcn_f = 0.
         self.vratn = 0.
         self.iscn = 0.
@@ -418,9 +419,11 @@ class Sensors:
         self.i = min(max(i, 0), len(self.mon_run.time)-1)
         self.LoopAmp.update(i)
         self.LoopNoa.update(i)
+        self.VoVcn = self.mon_run.vovcn[i]
         self.KfNoa.predict(self.mon_run.dt[i])
-        self.KfNoa.update(self.mon_run.vovcn[i])
+        self.KfNoa.update(self.VoVcn)
         self.VoVcn_f, self.vratn = self.KfNoa.get_state()
+        self.VoVcn_f = float(self.VoVcn_f)
         self.iscn = float((self.VoVcn_f * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)
         # TODO:  implement iscn filter and scale with CURR_SCALE_DISCH.  Now = 1. everywhere so no worries
         self.ib_in_s_init = self.ib_in_s[i]
