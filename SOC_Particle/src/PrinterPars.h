@@ -26,7 +26,7 @@
 
  struct PrinterPars
  {
-  char buff[360];
+  char buff[400];
  };
 
 #endif
