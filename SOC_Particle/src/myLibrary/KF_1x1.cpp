@@ -97,6 +97,7 @@ double KalmanFilter::calculate(const boolean reset, const double dt, const doubl
 {
     double out = 0.;
     reset_ = reset;
+    dt_ = dt;
 
     if ( reset_ )
     {
@@ -104,7 +105,7 @@ double KalmanFilter::calculate(const boolean reset, const double dt, const doubl
         return ( in );
     }
 
-    predict(dt);
+    predict();
     out = update(in);
 
     return ( out );
@@ -128,7 +129,7 @@ void KalmanFilter::kf_init(const double in)
     }
 }
 
-void KalmanFilter::predict(const double dt)
+void KalmanFilter::predict()
 {
 /*
 Performs the prediction step of the Kalman filter.
@@ -141,8 +142,6 @@ Outputs:
     x   2x1 Kalman state variable =
     P   2x2 Kalman probability
 */
-
-    dt_ = dt;
 
     // State transition matrix (constant velocity model)
     Fx_ [0][1] = dt_;

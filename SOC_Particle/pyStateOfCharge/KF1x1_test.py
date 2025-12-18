@@ -649,9 +649,9 @@ class SavedData:
             self.i = 0
             self.time = None
             self.dt = None
-            self.Vca = None
-            self.Voa = None
-            self.VoVca = None
+            self.Vcm = None
+            self.Vom = None
+            self.VoVcm = None
             self.Vcn = None
             self.Von = None
             self.VoVcn = None
@@ -787,11 +787,11 @@ if __name__ == "__main__":
     lpf_tau = 0.008
     R = 0.001  # Standard deviation of voltage measurement noise
 
-    have_Vca = False
-    have_Voa = False
+    have_Vcm = False
+    have_Vom = False
     have_Vcn = False
     have_Von = False
-    have_VoVca = False
+    have_VoVcm = False
     have_VoVcn = False
     have_Tbv = False
     have_Vbv = False

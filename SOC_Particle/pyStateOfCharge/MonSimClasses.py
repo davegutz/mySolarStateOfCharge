@@ -129,6 +129,8 @@ class Sensors:
                                             self.mon_run.e_wrap_m_filt)
             self.LoopNoa = SensorLooparound(self.mon_run.ibnh, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_m_trim * 0.,
                                             self.mon_run.e_wrap_n_filt)
+            self.KfAmp = KF1x1VarDt(initial_position=self.mon_run.vovcm[0], initial_velocity=self.mon_run.x1m[0],
+                                    dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R)
             self.KfNoa = KF1x1VarDt(initial_position=self.mon_run.vovcn[0], initial_velocity=self.mon_run.x1n[0],
                                     dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R)
 
@@ -319,6 +321,12 @@ class Sensors:
         self.skip_sel = np.bool(np.zeros(len(self.dv_dyn_s)))
         self.skip_rap = np.bool(np.zeros(len(self.dv_dyn_s)))
         self.skip_s = np.bool(np.zeros(len(self.dv_dyn_s)))
+
+        self.VoVcm = 0.
+        self.VoVcm_f = 0.
+        self.vratm = 0.
+        self.iscm = 0.
+
         self.VoVcn = 0.
         self.VoVcn_f = 0.
         self.vratn = 0.
@@ -419,6 +427,15 @@ class Sensors:
         self.i = min(max(i, 0), len(self.mon_run.time)-1)
         self.LoopAmp.update(i)
         self.LoopNoa.update(i)
+
+        self.VoVcm = self.mon_run.vovcm[i]
+        self.KfAmp.predict(self.mon_run.dt[i])
+        self.KfAmp.update(self.VoVcm)
+        self.VoVcm_f, self.vratm = self.KfAmp.get_state()
+        self.VoVcm_f = float(self.VoVcm_f)
+        self.iscm = float((self.VoVcm_f * Battery.SHUNT_AMP_GAIN + Battery.CURR_BIAS_AMP) / Battery.NP)
+
+
         self.VoVcn = self.mon_run.vovcn[i]
         self.KfNoa.predict(self.mon_run.dt[i])
         self.KfNoa.update(self.VoVcn)
@@ -426,6 +443,7 @@ class Sensors:
         self.VoVcn_f = float(self.VoVcn_f)
         self.iscn = float((self.VoVcn_f * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)
         # TODO:  implement iscn filter and scale with CURR_SCALE_DISCH.  Now = 1. everywhere so no worries
+
         self.ib_in_s_init = self.ib_in_s[i]
         self.ib_dyn_s_init = self.ib_dyn_s[i]
         self.dv_dyn_s_init = self.dv_dyn_s[i]

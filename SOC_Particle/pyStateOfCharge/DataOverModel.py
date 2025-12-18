@@ -1121,9 +1121,9 @@ class SavedData:
             self.i = 0
             self.time = None
             self.dt = None
-            self.Vca = None
-            self.Voa = None
-            self.VoVca = None
+            self.Vcm = None
+            self.Vom = None
+            self.VoVcm = None
             self.Vcn = None
             self.Von = None
             self.VoVcn = None
