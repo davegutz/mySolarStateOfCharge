@@ -195,8 +195,8 @@ public:
     float s_cap_mon() { return s_cap_mon_z; }
     float s_cap_sim() { return s_cap_sim_z; }
     float ib_bias_all() { return ib_bias_all_z; }
-    float ib_bias_amp() { return ib_bias_amp_z; }
-    float ib_bias_noa() { return ib_bias_noa_z; }
+    float ib_bias_amp() { return ib_bias_amp_z; }  // DA
+    float ib_bias_noa() { return ib_bias_noa_z; }  // DB
     float ib_disch_slr() { return ib_disch_slr_z; }
     float ib_scale_amp() { return ib_scale_amp_z; }
     float ib_scale_noa() { return ib_scale_noa_z; }

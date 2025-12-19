@@ -416,7 +416,6 @@ void loop()
       Sen->ShuntAmp->sample(reset_kf);
       Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.);
       Sen->ShuntNoAmp->sample(reset_kf);
-      print_shunt_serial(reset, Sen);
     }
   #endif
   
@@ -480,6 +479,7 @@ void loop()
 
     // Print
     Log.info("ino:  print_rapid_data");
+    print_shunt_serial(reset, Sen);
     print_rapid_data(reset, Sen, Mon, reset_temp);
 
     Log.info("end read");

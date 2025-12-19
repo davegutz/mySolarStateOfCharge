@@ -129,10 +129,10 @@ class Sensors:
                                             self.mon_run.e_wrap_m_filt)
             self.LoopNoa = SensorLooparound(self.mon_run.ibnh, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_m_trim * 0.,
                                             self.mon_run.e_wrap_n_filt)
-            self.KfAmp = KF1x1VarDt(initial_position=self.mon_run.vovcm[0], initial_velocity=self.mon_run.x1m[0],
-                                    dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R)
-            self.KfNoa = KF1x1VarDt(initial_position=self.mon_run.vovcn[0], initial_velocity=self.mon_run.x1n[0],
-                                    dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R)
+            self.KfShuntAmp = KF1x1VarDt(initial_position=self.mon_run.vovcm[0], initial_velocity=self.mon_run.x1m[0],
+                                         dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R)
+            self.KfShuntNoa = KF1x1VarDt(initial_position=self.mon_run.vovcn[0], initial_velocity=self.mon_run.x1n[0],
+                                         dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R)
 
             self.ib_amp = 0.
             self.ib_noa = 0.
@@ -326,11 +326,13 @@ class Sensors:
         self.VoVcm_f = 0.
         self.vratm = 0.
         self.iscm = 0.
+        self.iscm_f = 0.
 
         self.VoVcn = 0.
         self.VoVcn_f = 0.
         self.vratn = 0.
         self.iscn = 0.
+        self.iscn_f = 0.
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -429,19 +431,21 @@ class Sensors:
         self.LoopNoa.update(i)
 
         self.VoVcm = self.mon_run.vovcm[i]
-        self.KfAmp.predict(self.mon_run.dt[i])
-        self.KfAmp.update(self.VoVcm)
-        self.VoVcm_f, self.vratm = self.KfAmp.get_state()
+        self.KfShuntAmp.predict(self.mon_run.dtm[i])
+        self.KfShuntAmp.update(self.VoVcm)
+        self.VoVcm_f, self.vratm = self.KfShuntAmp.get_state()
         self.VoVcm_f = float(self.VoVcm_f)
-        self.iscm = float((self.VoVcm_f * Battery.SHUNT_AMP_GAIN + Battery.CURR_BIAS_AMP) / Battery.NP)
+        self.iscm = float((self.VoVcm * Battery.SHUNT_AMP_GAIN + Battery.CURR_BIAS_AMP) / Battery.NP)
+        self.iscm_f = float((self.VoVcm_f * Battery.SHUNT_AMP_GAIN + Battery.CURR_BIAS_AMP) / Battery.NP)
 
 
         self.VoVcn = self.mon_run.vovcn[i]
-        self.KfNoa.predict(self.mon_run.dt[i])
-        self.KfNoa.update(self.VoVcn)
-        self.VoVcn_f, self.vratn = self.KfNoa.get_state()
+        self.KfShuntNoa.predict(self.mon_run.dtn[i])
+        self.KfShuntNoa.update(self.VoVcn)
+        self.VoVcn_f, self.vratn = self.KfShuntNoa.get_state()
         self.VoVcn_f = float(self.VoVcn_f)
-        self.iscn = float((self.VoVcn_f * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)
+        self.iscn = float((self.VoVcn * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)
+        self.iscn_f = float((self.VoVcn_f * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)
         # TODO:  implement iscn filter and scale with CURR_SCALE_DISCH.  Now = 1. everywhere so no worries
 
         self.ib_in_s_init = self.ib_in_s[i]

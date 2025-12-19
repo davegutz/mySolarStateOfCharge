@@ -256,7 +256,8 @@ void print_shunt_serial(const boolean reset, Sensors *Sen)
     double cTime = double(Sen->now)/1000.;
 
     sprintf(pr.buff, "shunt_unit,%13.4f, %d, %d,  %11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,  ",
-      cTime, reset, cp.kf_reset_print, Sen->ib_amp_vo_vc(), Sen->ib_amp_vo_vc_f(), Sen->ib_noa_vo_vc(), Sen->ib_noa_vo_vc_f(), Sen->ShuntAmp->ishunt_cal(), Sen->ib_amp_hdwe_kf(), Sen->ShuntNoAmp->ishunt_cal(), Sen->ib_noa_hdwe_kf());
+      cTime, reset, cp.kf_reset_print, Sen->ib_amp_vo_vc(), Sen->ib_amp_vo_vc_f(), Sen->ib_noa_vo_vc(), Sen->ib_noa_vo_vc_f(),
+      Sen->ShuntAmp->ishunt_cal(), Sen->ib_amp_hdwe_kf(), Sen->ShuntNoAmp->ishunt_cal(), Sen->ib_noa_hdwe_kf());
     Serial.printf("%s", pr.buff);
 
     Sen->ShuntAmp->print_serial();

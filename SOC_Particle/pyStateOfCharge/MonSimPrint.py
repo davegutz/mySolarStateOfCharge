@@ -149,7 +149,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
 #6
 def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time     r       rt   rk    dt              dtm             dtn            VoVcn                VoVcnf               x0                  ib_shunt_noa           [Fxn                                      ]"
+    hdr = "  i   time     r       rt   rk   dt               dtm              dtn              VoVcn                VoVcnf               x0                  ib_shunt_noa           [Fxn                                      ]"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -157,17 +157,17 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
         count_since_last_header += 1
     print("{:4d}".format(G.i), "{:8.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf),
-          "{:9.3f}".format(SN.mon_run.dt[G.i]), "{:5.3f}".format(mon.dt),
-          "{:9.3f}".format(SN.mon_run.dtm[G.i]), "{:5.3f}".format(SN.KfAmp.dt),
-          "{:9.3f}".format(SN.mon_run.dtn[G.i]), "{:5.3f}".format(SN.KfNoa.dt),
+          "{:9.4f}".format(SN.mon_run.dt[G.i]), "{:5.4f}".format(mon.dt),
+          "{:9.4f}".format(SN.mon_run.dtm[G.i]), "{:5.4f}".format(SN.KfShuntAmp.dt),
+          "{:9.4f}".format(SN.mon_run.dtn[G.i]), "{:5.4f}".format(SN.KfShuntNoa.dt),
           "{:10.5f}".format(SN.mon_run.vovcn[G.i]), "{:9.5f}".format(SN.VoVcn),
           "{:10.5f}".format(SN.mon_run.vovcnf[G.i]), "{:9.5f}".format(SN.VoVcn_f),
-          "{:10.5f}".format(SN.mon_run.x0n[G.i]), "{:9.5f}".format(SN.KfNoa.x[0][0]),
+          "{:10.5f}".format(SN.mon_run.x0n[G.i]), "{:9.5f}".format(SN.KfShuntNoa.x[0][0]),
           "{:10.5f}".format(SN.mon_run.iscn[G.i]), "{:9.5f}".format(SN.iscn),
-          "{:8.1f}".format(SN.mon_run.Fx00n[G.i]), "{:3.1f}".format(SN.KfNoa.Fx[0][0]),
-          "{:7.3f}".format(SN.mon_run.Fx01n[G.i]), "{:5.3f}".format(SN.KfNoa.Fx[0][1]),
-          "{:5.1f}".format(SN.mon_run.Fx10n[G.i]), "{:3.1f}".format(SN.KfNoa.Fx[1][0]),
-          "{:5.1f}".format(SN.mon_run.Fx11n[G.i]), "{:3.1f}".format(SN.KfNoa.Fx[1][1]),
+          "{:8.1f}".format(SN.mon_run.Fx00n[G.i]), "{:3.1f}".format(SN.KfShuntNoa.Fx[0][0]),
+          "{:7.3f}".format(SN.mon_run.Fx01n[G.i]), "{:5.3f}".format(SN.KfShuntNoa.Fx[0][1]),
+          "{:5.1f}".format(SN.mon_run.Fx10n[G.i]), "{:3.1f}".format(SN.KfShuntNoa.Fx[1][0]),
+          "{:5.1f}".format(SN.mon_run.Fx11n[G.i]), "{:3.1f}".format(SN.KfShuntNoa.Fx[1][1]),
           )
     return hdr
 
@@ -193,7 +193,7 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
           "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
           "{:10.5f}".format(SN.mon_run.ib_charge[G.i]), "{:9.5f}".format(mon.ib_charge),
           "{:11.7f}".format(SN.mon_run.soc[G.i]), "{:8.7f}".format(mon.soc),
-          "{:9.3f}".format(SN.mon_run.dt[G.i]), "{:5.3f}".format(mon.dt),
+          "{:9.4f}".format(SN.mon_run.dt[G.i]), "{:5.4f}".format(mon.dt),
           "{:12.4f}".format(i_dt_old), "{:9.4f}".format(i_dt_new),
           "{:14.7f}".format(SN.mon_run.d_delta_q[G.i]), "{:11.7f}".format(mon.d_delta_q),
           "{:16.6f}".format(SN.mon_run.delta_q[G.i]), "{:13.6f}".format(mon.delta_q),
@@ -227,14 +227,14 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
           "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
           "{:5.0f}".format(SN.sim_run.sat_s[G.i]), "{:2.0f}".format(sim.sat),
-          "{:12.6f}".format(SN.mon_run.dt[G.i]), "{:8.6f}".format(mon.dt),
-          "{:12.6f}".format(SN.sim_run.dt_s[G.i]), "{:8.6f}".format(sim.dt),
+          "{:12.4f}".format(SN.mon_run.dt[G.i]), "{:8.4f}".format(mon.dt),
+          "{:12.4f}".format(SN.sim_run.dt_s[G.i]), "{:8.4f}".format(sim.dt),
           "{:14.5f}".format(SN.mon_run.ib[G.i]), "{:12.5f}".format(mon.ib_in),
           "{:14.5f}".format(SN.sim_run.ib_in_s[G.i]), "{:12.5f}".format(sim.ib_in),
           "{:15.6f}".format(SN.sim_run.ib_s[G.i]), "{:13.6f}".format(sim.ib),
           "{:15.6f}".format(SN.sim_run.ib_dyn_s_rstate[G.i]), "{:13.6f}".format(sim.ChargeTransfer.rstate),
           "{:15.6f}".format(SN.sim_run.ib_dyn_s_lstate[G.i]), "{:13.6f}".format(sim.ChargeTransfer.state),
-          "{:12.6f}".format(SN.sim_run.ib_dyn_s_T[G.i]), "{:8.6f}".format(sim.ChargeTransfer.dt),
+          "{:12.4f}".format(SN.sim_run.ib_dyn_s_T[G.i]), "{:8.4f}".format(sim.ChargeTransfer.dt),
           "{:14.5f}".format(SN.sim_run.ib_dyn_s[G.i]), "{:12.5f}".format(sim.ib_dyn),
           "{:14.5f}".format(SN.mon_run.ib_dyn[G.i]), "{:12.5f}".format(mon.ib_dyn),
           "{:12.5f}".format(SN.sim_run.dv_hys_s[G.i]), "{:9.5f}".format(sim.dv_hys),
@@ -319,7 +319,7 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
           "{:11.5f}".format(SN.mon_run.e_wn_f[G.i]), "{:8.5f}".format(mon.e_wrap_n_filt),
           "{:11.5f}".format(SN.mon_run.e_wrap_f[G.i]), "{:8.5f}".format(mon.e_wrap_filt),
           "{:13.7f}".format(SN.mon_run.soc[G.i]), "{:10.7f}".format(mon.soc),
-          "{:11.3f}".format(SN.mon_run.dt[G.i]), "{:8.3f}".format(mon.dt),
+          "{:11.4f}".format(SN.mon_run.dt[G.i]), "{:8.4f}".format(mon.dt),
           "{:14.7f}".format(SN.mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:11.5f}".format(SN.mon_run.vb_f[G.i]), "{:9.5f}".format(mon.vb),
           "{:11.5f}".format(SN.mon_run.ib_dyn[G.i]), "{:9.5f}".format(mon.ib_dyn),
@@ -366,13 +366,13 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:7d}".format(bool(SN.mon_run.disable_amp_fault[G.i])), "{:2d}".format(bool(mon.disable_amp_fault)),
           "{:4d}".format(bool(SN.mon_run.disable_amp_fault_per[G.i])), "{:2d}".format(bool(mon.disable_amp_fault_per)),
           "{:21.5f}".format(SN.mon_run.ib_dyn_m[G.i]), "{:12.5f}".format(mon.LoopIbAmp.ib_dyn),
-          "{:9.3f}".format(SN.mon_run.ib_dyn_T_m[G.i]), "{:5.3f}".format(mon.LoopIbAmp.ChargeTransfer.dt),
+          "{:9.4f}".format(SN.mon_run.ib_dyn_T_m[G.i]), "{:5.4f}".format(mon.LoopIbAmp.ChargeTransfer.dt),
           "{:12.6f}".format(SN.mon_run.ib_dyn_tau_m[G.i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.tau),
           "{:15.6f}".format(SN.mon_run.ib_dyn_rstate_m[G.i]), "{:13.6f}".format(mon.LoopIbAmp.ChargeTransfer.rstate),
           "{:15.6f}".format(SN.mon_run.ib_dyn_lstate_m[G.i]), "{:13.6f}".format(mon.LoopIbAmp.ChargeTransfer.state),
           "{:11.5f}".format(SN.mon_run.vb[G.i]), "{:9.5f}".format(mon.vb),
           "{:11.5f}".format(SN.mon_run.dv_dyn_m[G.i]), "{:8.5f}".format(mon.LoopIbAmp.dv_dyn),
-          "{:12.6f}".format(SN.mon_run.ib_wrp_T_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.dt),
+          "{:12.4f}".format(SN.mon_run.ib_wrp_T_m[G.i]), "{:9.4f}".format(mon.LoopIbAmp.WrapErrFilt.dt),
           "{:12.6f}".format(SN.mon_run.ib_wrp_tau_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.tau),
           "{:12.6f}".format(SN.mon_run.ib_wrp_rate_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.rate),
           "{:12d}".format(bool(SN.mon_run.ib_wrp_reset_m[G.i])), "{:9d}".format(bool(mon.LoopIbAmp.WrapErrFilt.reset)),
@@ -386,19 +386,19 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           # "{:11.5f}".format(SN.mon_run.e_wrap_m_filt[G.i]), "{:8.5f}".format(mon.e_wrap_m_filt), "{:8.5f}".format(SN.e_wrap_m_filt_init),
           "{:16.5f}".format(SN.mon_run.e_wrap_m_trim[G.i]), "{:8.5f}".format(mon.e_wrap_m_trim),
           "{:14.5f}".format(SN.mon_run.ib_dyn_n[G.i]), "{:12.5f}".format(mon.LoopIbNoa.ib_dyn),
-          "{:9.3f}".format(SN.mon_run.ib_dyn_T_n[G.i]), "{:5.3f}".format(mon.LoopIbNoa.ChargeTransfer.dt),
+          "{:9.4f}".format(SN.mon_run.ib_dyn_T_n[G.i]), "{:5.4f}".format(mon.LoopIbNoa.ChargeTransfer.dt),
           "{:12.6f}".format(SN.mon_run.ib_dyn_tau_n[G.i]), "{:8.6f}".format(mon.LoopIbNoa.ChargeTransfer.tau),
           "{:11.5f}".format(SN.mon_run.dv_dyn_n[G.i]), "{:8.5f}".format(mon.LoopIbNoa.dv_dyn),
           "{:11.5f}".format(SN.mon_run.e_wrap_n[G.i]), "{:8.5f}".format(mon.e_wrap_n),
           "{:11.5f}".format(SN.mon_run.e_wrap_n_filt[G.i]), "{:8.5f}".format(mon.e_wrap_n_filt),
           "{:14.5f}".format(SN.mon_run.ib_dyn_n[G.i]), "{:12.5f}".format(mon.LoopIbNoa.ib_dyn),
           "{:14.5f}".format(SN.mon_run.ib_dyn[G.i]), "{:12.5f}".format(mon.ib_dyn),
-          "{:9.3f}".format(SN.mon_run.ib_dyn_T_n[G.i]), "{:5.3f}".format(mon.LoopIbNoa.ChargeTransfer.dt),
+          "{:9.4f}".format(SN.mon_run.ib_dyn_T_n[G.i]), "{:5.4f}".format(mon.LoopIbNoa.ChargeTransfer.dt),
           "{:12.6f}".format(SN.mon_run.ib_dyn_tau_n[G.i]), "{:8.6f}".format(mon.LoopIbNoa.ChargeTransfer.tau),
           "{:15.6f}".format(SN.mon_run.ib_dyn_rstate_n[G.i]), "{:13.6f}".format(mon.LoopIbNoa.ChargeTransfer.rstate),
           "{:15.6f}".format(SN.mon_run.ib_dyn_lstate_n[G.i]), "{:13.6f}".format(mon.LoopIbNoa.ChargeTransfer.state),
           "{:11.5f}".format(SN.mon_run.dv_dyn_n[G.i]), "{:9.5f}".format(mon.LoopIbNoa.dv_dyn),
-          "{:12.6f}".format(SN.mon_run.ib_wrp_T_n[G.i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.dt),
+          "{:12.4f}".format(SN.mon_run.ib_wrp_T_n[G.i]), "{:9.4f}".format(mon.LoopIbNoa.WrapErrFilt.dt),
           "{:12.6f}".format(SN.mon_run.ib_wrp_tau_n[G.i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.tau),
           "{:12.6f}".format(SN.mon_run.ib_wrp_rate_n[G.i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.rate),
           "{:12.6f}".format(SN.mon_run.ib_wrp_state_n[G.i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.state),
@@ -413,7 +413,7 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:13.5f}".format(SN.mon_run.dv_dyn[G.i]), "{:9.5f}".format(mon.dv_dyn),
           "{:11.5f}".format(SN.mon_run.dv_hys[G.i]), "{:9.5f}".format(mon.dv_hys),
           "{:13.7f}".format(SN.mon_run.soc[G.i]), "{:10.7f}".format(mon.soc),
-          "{:9.3f}".format(SN.mon_run.dt[G.i]), "{:5.3f}".format(mon.dt),
+          "{:9.4f}".format(SN.mon_run.dt[G.i]), "{:5.4f}".format(mon.dt),
           "{:14.7f}".format(SN.mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:14.7f}".format(SN.mon_run.Tb_f_rap[G.i]), "{:10.7f}".format(mon.Tb_f_rap),
           "{:11.5f}".format(SN.mon_run.voc_soc[G.i]), "{:9.5f}".format(mon.voc_soc),
@@ -437,8 +437,8 @@ def save_clean_file(mon_ver, csv_file, unit_key):
             dt_dt = timedelta(seconds=mon_ver.time[i]-mon_ver.time[0])
             time_stamp = date_time_start + dt_dt
             s += time_stamp.strftime("%Y-%m-%dT%H:%M:%S,")
-            s += "{:7.3f},".format(mon_ver.time[i] + mon_ver.time_run)
-            s += "{:7.3f},".format(mon_ver.dt[i])
+            s += "{:7.4f},".format(mon_ver.time[i] + mon_ver.time_run)
+            s += "{:7.4f},".format(mon_ver.dt[i])
             s += "{:1.0f},".format(mon_ver.sat[i])
             s += "{:1.0f},".format(mon_ver.sel[i])
             s += "{:1.0f},".format(mon_ver.mod_data[i])
