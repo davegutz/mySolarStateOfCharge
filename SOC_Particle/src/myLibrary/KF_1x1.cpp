@@ -204,26 +204,26 @@ Outputs:
     u_ = meas;
     // Kalman Gain
     // S = H @ P @ H.T + R
-    S_ = P_[0][0] + R_stdsq_;
+    S_ = P_prior_[0][0] + R_stdsq_;
 
     // K = P @ H.T @ inv(S)
-    K_[0] = P_[0][0] / (P_[0][0] + R_stdsq_);
-    K_[1] = P_[1][0] / (P_[0][0] + R_stdsq_);
+    K_[0] = P_prior_[0][0] / (P_prior_[0][0] + R_stdsq_);
+    K_[1] = P_prior_[1][0] / (P_prior_[0][0] + R_stdsq_);
  
     // Update state estimate
     // y = measurement - (H @ x)  # Innovation
     y_ = u_ - x_[0];
 
     // x = x + (K @ y)
-    x_[0] = x_[0] + y_*K_[0];
-    x_[1] = x_[1] + y_*K_[1];
+    x_[0] = x_prior_[0] + y_*K_[0];
+    x_[1] = x_prior_[1] + y_*K_[1];
 
     // Update covariance matrix
     // P = (np.eye(x.shape[0]) - K @ H) @ P
-    P_[0][0] = (1. - K_[0])*P_[0][0];
-    P_[0][1] = (1. - K_[0])*P_[0][1];
-    P_[0][1] = -K_[1]*P_[0][0] + P_[1][0];
-    P_[1][1] = -K_[1]*P_[0][1] + P_[1][1];
+    P_[0][0] = (1. - K_[0])*P_prior_[0][0];
+    P_[0][1] = (1. - K_[0])*P_prior_[0][1];
+    P_[1][0] = -K_[1]*P_prior_[0][0] + P_prior_[1][0];
+    P_[1][1] = -K_[1]*P_prior_[0][1] + P_prior_[1][1];
 
     return ( x_[0] );
 }

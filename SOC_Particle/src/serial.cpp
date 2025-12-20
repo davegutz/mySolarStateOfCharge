@@ -277,7 +277,7 @@ void Shunt::print_serial()
 // Data stream
 void KalmanFilter::print_serial_header(const char s)
 {
-  Serial.printf("dt%c, x0%c,x1%c,  xp0%c,xp1%c, Fx00%c,Fx01%c,Fx10%c,Fx11%c,  Pp00%c,Pp01%c,Pp10%c,Pp11%c,  P00%c,P01%c,P10%c,P11%c,  Q00%c,Q01%c,Q10%c,Q11%c,  ",
+  Serial.printf("dt%c, xp0%c,xp1%c, x0%c,x1%c,  Fx00%c,Fx01%c,Fx10%c,Fx11%c,  Pp00%c,Pp01%c,Pp10%c,Pp11%c,  P00%c,P01%c,P10%c,P11%c,  Q00%c,Q01%c,Q10%c,Q11%c,  ",
     s, s, s, s, s, s, s, s, s, s, s, s, s, s, s, s, s, s, s, s, s);
 
   Serial.printf("G0%c,G1%c,  H0%c,H1%c,  K0%c,K1%c,  S%c, u%c, y%c,  ",
@@ -286,8 +286,12 @@ void KalmanFilter::print_serial_header(const char s)
 }
 void KalmanFilter::print_serial()
 {
-    sprintf(pr.buff, "%6.4f,  %10.6f,%10.6f,%10.6f,%10.6f,  %4.1f,%6.4f,%4.1f,%4.1f,  %13.6e,%13.6e,%13.6e,%13.6e, %13.6e,%13.6e,%13.6e,%13.6e,    %13.6e,%13.6e,%13.6e,%13.6e,  ",
-        dt_,   x_prior_[0],x_prior_[1], x_[0],x_[1],   Fx_[0][0],Fx_[0][1],Fx_[1][0],Fx_[1][1], P_prior_[0][0],P_prior_[0][1],P_prior_[1][0],P_prior_[1][1], P_[0][0],P_[0][1],P_[1][0],P_[1][1],   Q_[0][0],Q_[0][1],Q_[1][0],Q_[1][1]);
+    sprintf(pr.buff, "%6.4f,  %10.6f,%10.6f,%10.6f,%10.6f,  %4.1f,%6.4f,%4.1f,%4.1f,  %13.6e,%13.6e,%13.6e,%13.6e, %13.6e,%13.6e,%13.6e,%13.6e,  ",
+        dt_,   x_prior_[0],x_prior_[1], x_[0],x_[1],   Fx_[0][0],Fx_[0][1],Fx_[1][0],Fx_[1][1],   P_prior_[0][0],P_prior_[0][1],P_prior_[1][0],P_prior_[1][1],   P_[0][0],P_[0][1],P_[1][0],P_[1][1]);
+    Serial.printf("%s", pr.buff);
+
+    sprintf(pr.buff, "%13.6e,%13.6e,%13.6e,%13.6e,  ",
+        Q_[0][0],Q_[0][1],Q_[1][0],Q_[1][1]);
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%9.6f,%9.6f,  %4.1f,%4.1f,  %10.6f,%10.6f,  %10.6f,  %10.6f, %10.6f,  ",
