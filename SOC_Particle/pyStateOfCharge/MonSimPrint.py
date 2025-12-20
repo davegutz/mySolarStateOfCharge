@@ -149,7 +149,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
 #6
 def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time     r       rt   rk   dt               dtm              dtn              VoVcn                VoVcnf               x0                  ib_shunt_noa           [Fxn                                      ]"
+    hdr = "  i   time     r       rt   rk   dt               dtm              dtn              VoVcn                    VoVcnf                 x0                     ib_shunt_noa            [Fxn                                      ]    [Qn                                                                                                                ]    [Pn                                                                                                                ]"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -160,14 +160,22 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:9.4f}".format(SN.mon_run.dt[G.i]), "{:5.4f}".format(mon.dt),
           "{:9.4f}".format(SN.mon_run.dtm[G.i]), "{:5.4f}".format(SN.KfShuntAmp.dt),
           "{:9.4f}".format(SN.mon_run.dtn[G.i]), "{:5.4f}".format(SN.KfShuntNoa.dt),
-          "{:10.5f}".format(SN.mon_run.vovcn[G.i]), "{:9.5f}".format(SN.VoVcn),
-          "{:10.5f}".format(SN.mon_run.vovcnf[G.i]), "{:9.5f}".format(SN.VoVcn_f),
-          "{:10.5f}".format(SN.mon_run.x0n[G.i]), "{:9.5f}".format(SN.KfShuntNoa.x[0][0]),
-          "{:10.5f}".format(SN.mon_run.iscn[G.i]), "{:9.5f}".format(SN.iscn),
+          "{:12.7f}".format(SN.mon_run.vovcn[G.i]), "{:11.7f}".format(SN.VoVcn),
+          "{:11.6f}".format(SN.mon_run.vovcnf[G.i]), "{:10.6f}".format(SN.VoVcn_f),
+          "{:11.6f}".format(SN.mon_run.x0n[G.i]), "{:10.6f}".format(SN.KfShuntNoa.x[0][0]),
+          "{:11.6f}".format(SN.mon_run.iscn[G.i]), "{:10.6f}".format(SN.iscn),
           "{:8.1f}".format(SN.mon_run.Fx00n[G.i]), "{:3.1f}".format(SN.KfShuntNoa.Fx[0][0]),
           "{:7.3f}".format(SN.mon_run.Fx01n[G.i]), "{:5.3f}".format(SN.KfShuntNoa.Fx[0][1]),
           "{:5.1f}".format(SN.mon_run.Fx10n[G.i]), "{:3.1f}".format(SN.KfShuntNoa.Fx[1][0]),
           "{:5.1f}".format(SN.mon_run.Fx11n[G.i]), "{:3.1f}".format(SN.KfShuntNoa.Fx[1][1]),
+          "{:18.7e}".format(SN.mon_run.Q00n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.Q[0][0]),
+          "{:14.7e}".format(SN.mon_run.Q01n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.Q[0][1]),
+          "{:14.7e}".format(SN.mon_run.Q10n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.Q[1][0]),
+          "{:14.7e}".format(SN.mon_run.Q11n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.Q[1][1]),
+          "{:18.7e}".format(SN.mon_run.P00n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[0][0]),
+          "{:14.7e}".format(SN.mon_run.P01n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[0][1]),
+          "{:14.7e}".format(SN.mon_run.P10n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[1][0]),
+          "{:14.7e}".format(SN.mon_run.P11n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[1][1]),
           )
     return hdr
 

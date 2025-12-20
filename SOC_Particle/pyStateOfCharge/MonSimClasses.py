@@ -430,18 +430,17 @@ class Sensors:
         self.LoopAmp.update(i)
         self.LoopNoa.update(i)
 
+        self.reset_kf = bool(self.mon_run.kfres[i])
+        if self.reset_kf:
+            pass
         self.VoVcm = self.mon_run.vovcm[i]
-        self.KfShuntAmp.predict(self.mon_run.dtm[i])
-        self.KfShuntAmp.update(self.VoVcm)
+        self.KfShuntAmp.calculate(reset=self.reset_kf, dt=self.mon_run.dtm[i], in_=self.VoVcm)
         self.VoVcm_f, self.vratm = self.KfShuntAmp.get_state()
         self.VoVcm_f = float(self.VoVcm_f)
         self.iscm = float((self.VoVcm * Battery.SHUNT_AMP_GAIN + Battery.CURR_BIAS_AMP) / Battery.NP)
         self.iscm_f = float((self.VoVcm_f * Battery.SHUNT_AMP_GAIN + Battery.CURR_BIAS_AMP) / Battery.NP)
-
-
         self.VoVcn = self.mon_run.vovcn[i]
-        self.KfShuntNoa.predict(self.mon_run.dtn[i])
-        self.KfShuntNoa.update(self.VoVcn)
+        self.KfShuntNoa.calculate(reset=self.reset_kf, dt=self.mon_run.dtn[i], in_=self.VoVcn)
         self.VoVcn_f, self.vratn = self.KfShuntNoa.get_state()
         self.VoVcn_f = float(self.VoVcn_f)
         self.iscn = float((self.VoVcn * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)
