@@ -169,13 +169,16 @@ def main():
     scale_in = 1.0
     slr_hys_sim = 1.0
     request_history = 3
-# # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251107pm_soc4p2_hi_lo_bb.csv'  # old runsim work ******************
+
+    # # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251107pm_soc4p2_hi_lo_bb.csv'  # old runsim work ******************
     # # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiFail_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaHiFail_soc2p2_hi_lo_chg.csv'
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\kfProto_soc2p2_hi_lo_chg.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\kfProto_soc2p2_hi_lo_chg.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\kfProtoVv4_soc2p2_hi_lo_chg.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\kkfProtoVv1_soc2p2_hi_lo_chg.csv'
 
     # # gdrive = '/home/daveg/Documents/'
     # # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
@@ -194,14 +197,16 @@ def main():
     #
     verbose_in = False
     scale_in = 1.0
-    request_hist_in = 6  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt 6=kf
+
+    # request_hist_in = 5  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt 6=kf
+    request_hist_in = None
 
     # # mon_soc_in = False # old runsim work ******************
     use_mon_soc_ = False
     # use_mon_soc_ = True
 
-    plots = False
-    # plots = True
+    # plots = False
+    plots = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=use_mon_soc_, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,

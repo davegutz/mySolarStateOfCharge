@@ -797,6 +797,9 @@ class SavedData:
             self.time_day = self.time / 3600. / 24.
 
             # Truncate
+            i_end = None
+            i_end_sel =  None
+            i_end_shunt = None
             if time_end is None:
                 if temp is not None:
                     time_t = np.atleast_1d(np.array(np.array(temp.c_time) - self.time_run))
@@ -1002,6 +1005,9 @@ class SavedData:
             self.vr = None
             self.ib_wrp_rate_n = None
             self.ib_wrp_state_n = None
+            self.ib_wrp_reset_m = None
+            self.ib_wrp_rate_m = None
+            self.ib_wrp_state_m = None
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
@@ -1119,8 +1125,8 @@ class SavedData:
             unit_shunt = None
             self.skip_shunt = None
             self.i = 0
-            self.time = None
-            self.dt = None
+            self.time_shunt = None
+            self.dt_shunt = None
             self.Vcm = None
             self.Vom = None
             self.VoVcm = None

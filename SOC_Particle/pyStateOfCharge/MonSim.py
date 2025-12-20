@@ -247,7 +247,8 @@ def replicate(OPT: UserOptions):
         # Basic reset model verification is to init to the input data
         # Tried hard not to re-implement solvers in the Python verification  tool
         # Also, BTW, did not implement signal selection or tweak logic
-        mon.reset_kf = bool(OPT.mon_run.kfres[G.i])
+        if hasattr(OPT.mon_run, 'kfres'):
+            mon.reset_kf = bool(OPT.mon_run.kfres[G.i])
         reset = None
         if OPT.run_type == 'RunSim':
             reset = bool((t[G.i] <= OPT.init_time) or (t[G.i] < 0. and t[0] > OPT.init_time))

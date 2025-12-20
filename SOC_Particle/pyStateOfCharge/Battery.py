@@ -743,7 +743,10 @@ class BatteryMonitor(Battery, EKF1x1):
             self.x_post = self.x
 
         if hasattr(mr, 'tb_f_for_hx'):
-            self.tb_f_for_hx = mr.tb_f_for_hx[i_ekf]
+            try:
+                self.tb_f_for_hx = mr.tb_f_for_hx[i_ekf]
+            except IndexError:
+                pass
         else:
             self.tb_f_for_hx = self.Tb_f
 
