@@ -52,12 +52,14 @@ private:
   double *H_;     // Jacobian
   double *K_;     // Kalman gain
   double **P_;    // Kalman probability matrix
+  double **P_prior_;  // Intermediate Kalman probability matrix
   double **Q_;    
-  double Qstdsq_; // Standard deviation squared of the process noise
+  double Q_stdsq_; // Standard deviation squared of the process noise
   boolean reset_; // Reset command status
-  double Rsq_;    // Standard deviation squared of the measurement noise
+  double R_stdsq_;    // Standard deviation squared of the measurement noise
   double S_;
   double u_;      // Measurement update for x
   double *x_;
+  double *x_prior_;  // Intermediate calculation
   double y_;
 };

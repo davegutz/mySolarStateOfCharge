@@ -149,7 +149,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
 #6
 def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time     r       rt   rk   dt               dtm              dtn              VoVcn                    VoVcnf                 x0                     ib_shunt_noa            [Fxn                                      ]    [Qn                                                                                                                ]   S     [K                        ] [Pn                                                                                                                ]"
+    hdr = "  i   time     r       rt   rk   dt               dtm              dtn              VoVcn                    VoVcnf                 x0                     ib_shunt_noa            [Fxn                                      ]    [Qn                                                                                                                ]  [Xpn                                      ]     [Ppn                                                                                                               ]   S                         [K                                                           ]    [Pn                                                                                                                ]"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -172,9 +172,15 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:14.7e}".format(SN.mon_run.Q01n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.Q[0][1]),
           "{:14.7e}".format(SN.mon_run.Q10n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.Q[1][0]),
           "{:14.7e}".format(SN.mon_run.Q11n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.Q[1][1]),
-          "{:11.6f}".format(SN.mon_run.Sn[G.i]), "{:10.6f}".format(SN.KfShuntNoa.S),
-          "{:18.7e}".format(SN.mon_run.K0n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.K0),
-          "{:18.7e}".format(SN.mon_run.K1n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.K1),
+          "{:11.6f}".format(SN.mon_run.xp0n[G.i]), "{:10.6f}".format(float(SN.KfShuntNoa.x_prior[0])),
+          "{:11.6f}".format(SN.mon_run.xp1n[G.i]), "{:10.6f}".format(float(SN.KfShuntNoa.x_prior[1])),
+          "{:18.7e}".format(SN.mon_run.Pp00n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P_prior[0][0]),
+          "{:14.7e}".format(SN.mon_run.Pp01n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P_prior[0][1]),
+          "{:14.7e}".format(SN.mon_run.Pp10n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P_prior[1][0]),
+          "{:14.7e}".format(SN.mon_run.Pp11n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P_prior[1][1]),
+          "{:13.8f}".format(SN.mon_run.Sn[G.i]), "{:10.8f}".format(SN.KfShuntNoa.S),
+          "{:18.7e}".format(SN.mon_run.K0n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.K[0,0]),
+          "{:18.7e}".format(SN.mon_run.K1n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.K[1,0]),
           "{:18.7e}".format(SN.mon_run.P00n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[0][0]),
           "{:14.7e}".format(SN.mon_run.P01n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[0][1]),
           "{:14.7e}".format(SN.mon_run.P10n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[1][0]),

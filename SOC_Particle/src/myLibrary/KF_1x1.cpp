@@ -41,7 +41,7 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
     kf_update methods in the parent
 */
 KalmanFilter::KalmanFilter(const double dt, const double init_pos, double Q_std, const double R):
- dt_(dt), Qstdsq_(Q_std*Q_std), Rsq_(R*R), S_(0.)
+ dt_(dt), Q_stdsq_(Q_std*Q_std), R_stdsq_(R*R), S_(0.)
 {
 /*
 Initializes a 1D Kalman filter with a constant velocity model.
@@ -58,11 +58,14 @@ Args:
     Fx_ = new double*[ROWS_];
     K_ = new double[2];
     P_ = new double*[ROWS_];
+    P_prior_ = new double*[ROWS_];
     Q_ = new double*[ROWS_];
+    x_prior_ = new double[ROWS_];
     x_ = new double[ROWS_];
     for (int i=0; i<ROWS_; i++)
     {
         Fx_[i] = new double[COLS_];
+        P_prior_[i] = new double[COLS_];
         P_[i] = new double[COLS_];
         Q_[i] = new double[COLS_];
     }
@@ -74,6 +77,7 @@ KalmanFilter::~KalmanFilter()
     for (int i = 0; i < ROWS_; ++i)
     {
         delete[] Fx_[i];
+        delete[] P_prior_[i];
         delete[] P_[i];
         delete[] Q_[i];
     }
@@ -85,11 +89,15 @@ KalmanFilter::~KalmanFilter()
     H_ = nullptr;
     delete K_;
     K_ = nullptr;
+    delete[] P_prior_;
+    P_prior_ = nullptr;
     delete[] P_;
     P_ = nullptr;
     delete[] Q_;
     Q_ = nullptr;
     delete x_;
+    x_prior_ = nullptr;
+    delete x_prior_;
     x_ = nullptr;
 }
 
@@ -114,15 +122,18 @@ double KalmanFilter::calculate(const boolean reset, const double dt, const doubl
 void KalmanFilter::kf_init(const double in)
 {
     u_ = in;
-    Fx_[0][0] = 1.0; Fx_[0][1] = dt_;
-    Fx_[1][0] = 0.0; Fx_[1][1] = 1.0;
-    H_[0] = 1.0;     H_[1] = 0.;
-    K_[0] = 0.;      K_[1] = 0.;
-    x_[0] = in;      x_[1] = 0.;
+    Fx_[0][0] = 1.0;       Fx_[0][1] = dt_;
+    Fx_[1][0] = 0.0;       Fx_[1][1] = 1.0;
+    H_[0] = 1.0;           H_[1] = 0.;
+    S_ = R_stdsq_;
+    K_[0] = 0.;            K_[1] = 0.;
+    x_prior_[0] = in;      x_prior_[1] = 0.;
+    x_[0] = in;            x_[1] = 0.;
     for (int i=0; i<ROWS_; i++)
     {
         for (int j=0; j<COLS_; j++)
         {
+            P_prior_[i][j] = 0.;
             P_[i][j] = 0.;
             Q_[i][j] = 0.;
         }
@@ -150,7 +161,7 @@ Outputs:
     G_[0] = 0.5*dt_*dt_;    G_[1] = dt_;
 
     // Q = G @ G.T * Q_std**2
-    double Q_fac = dt_*dt_*Qstdsq_;
+    double Q_fac = dt_*dt_*Q_stdsq_;
     Q_[0][0] = dt_*dt_/4.;      Q_[0][1] = dt_/2.;
     Q_[1][0] = dt_/2.;          Q_[1][1] = 1.;
     for ( int i=0; i<2; i++) for ( int j=0; j<2; j++) Q_[i][j] *= Q_fac;
@@ -159,12 +170,14 @@ Outputs:
     // x = Fx @ x
     x_[0] = Fx_[0][0] * x_[0] + Fx_[0][1] * x_[1];
     x_[1] = Fx_[1][0] * x_[0] + Fx_[1][1] * x_[1];
+    for ( int i=0; i<2; i++) x_prior_[i] = x_[i];
 
     // P = Fx @ P @ Fx.T + Q
     P_[0][0] = P_[0][0] + P_[0][1]*dt_ + P_[1][0]*dt_ + P_[1][1]*dt_*dt_ + Q_[0][0];
     P_[0][1] = P_[0][1] + P_[1][1]*dt_ + Q_[0][1];
     P_[1][0] = P_[1][0] + P_[1][1]*dt_ + Q_[1][0];
     P_[1][1] = P_[1][1] + Q_[1][1];
+    for ( int i=0; i<2; i++) for ( int j=0; j<2; j++) P_prior_[i][j] = P_[i][j];
 }
 
 double KalmanFilter::update(const double meas)
@@ -190,11 +203,11 @@ Outputs:
     u_ = meas;
     // Kalman Gain
     // S = H @ P @ H.T + R
-    S_ = P_[0][0] + Rsq_;
+    S_ = P_[0][0] + R_stdsq_;
 
     // K = P @ H.T @ inv(S)
-    K_[0] = P_[0][0] / (P_[0][0] + Rsq_);
-    K_[1] = P_[1][0] / (P_[0][0] + Rsq_);
+    K_[0] = P_[0][0] / (P_[0][0] + R_stdsq_);
+    K_[1] = P_[1][0] / (P_[0][0] + R_stdsq_);
  
     // Update state estimate
     // y = measurement - (H @ x)  # Innovation
@@ -225,14 +238,17 @@ Outputs:
   Serial.printf(" Fx [ %8.4f, %8.4f]\n    [ %8.4f, %8.4f]\n",
      Fx_[0][0], Fx_[0][1], Fx_[1][0], Fx_[1][1]);
   Serial.printf(" G  [ %8.4f, \n      %8.4f]\n", G_[0], G_[1]);
-  Serial.printf(" Rsq%8.4g\n", Rsq_);
-  Serial.printf(" Qstdsq%8.4g\n", Qstdsq_);
+  Serial.printf(" R_stdsq%8.4g\n", R_stdsq_);
+  Serial.printf(" Q_stdsq%8.4g\n", Q_stdsq_);
   Serial.printf(" Q  [%8.4f, %8.4f]\n    [%8.4f, %8.4f]\n",
      Q_[0][0], Q_[0][1], Q_[1][0], Q_[1][1]);
   Serial.printf(" H  [ %8.4f, %8.4f ]\n", H_[0], H_[1]);
   Serial.printf("Out:\n");
+  Serial.printf(" x_prior  [%8.4f, \n     %8.4f]\n", x_prior_[0], x_prior_[1]);
   Serial.printf(" x  [%8.4f, \n     %8.4f]\n", x_[0], x_[1]);
   Serial.printf(" y   %8.4f, units of x\n", y_);
+  Serial.printf(" P_prior  [%8.4f, %8.4f]\n    [%8.4f, %8.4f]\n",
+     P_prior_[0][0], P_prior_[0][1], P_prior_[1][0], P_prior_[1][1]);
   Serial.printf(" P  [%8.4f, %8.4f]\n    [%8.4f, %8.4f]\n",
      P_[0][0], P_[0][1], P_[1][0], P_[1][1]);
   Serial.printf(" K  [%8.4f, \n     %8.4f  ]\n", K_[0], K_[1]);
