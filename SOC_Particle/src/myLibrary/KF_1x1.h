@@ -28,7 +28,7 @@ class BatteryMonitor;
 
 class KalmanFilter {
 public:
-  KalmanFilter(const double dt, const double init_pos, const double Q_std, const double R);
+  KalmanFilter(const double dt, const double init_pos, const double Q_std, const double R_std);
   ~KalmanFilter();
   double calculate(const boolean reset, const double dt, const double in);
   boolean get_reset() { return reset_; };

@@ -40,8 +40,8 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 /*  1x1 General Purpose Extended Kalman Filter.   Inherit from this class and include kf_predict and
     kf_update methods in the parent
 */
-KalmanFilter::KalmanFilter(const double dt, const double init_pos, double Q_std, const double R):
- dt_(dt), Q_stdsq_(Q_std*Q_std), R_stdsq_(R*R), S_(0.)
+KalmanFilter::KalmanFilter(const double dt, const double init_pos, double Q_std, const double R_std):
+ dt_(dt), Q_stdsq_(Q_std*Q_std), R_stdsq_(R_std*R_std), S_(0.)
 {
 /*
 Initializes a 1D Kalman filter with a constant velocity model.
@@ -129,6 +129,7 @@ void KalmanFilter::kf_init(const double in)
     K_[0] = 0.;            K_[1] = 0.;
     x_prior_[0] = in;      x_prior_[1] = 0.;
     x_[0] = in;            x_[1] = 0.;
+    y_ = 0.;
     for (int i=0; i<ROWS_; i++)
     {
         for (int j=0; j<COLS_; j++)
@@ -168,8 +169,8 @@ Outputs:
 
     // Predict state and covariance
     // x = Fx @ x
-    x_[0] = Fx_[0][0] * x_[0] + Fx_[0][1] * x_[1];
-    x_[1] = Fx_[1][0] * x_[0] + Fx_[1][1] * x_[1];
+    x_[0] = Fx_[0][0]*x_[0] + Fx_[0][1]*x_[1];
+    x_[1] = Fx_[1][0]*x_[0] + Fx_[1][1]*x_[1];
     for ( int i=0; i<2; i++) x_prior_[i] = x_[i];
 
     // P = Fx @ P @ Fx.T + Q

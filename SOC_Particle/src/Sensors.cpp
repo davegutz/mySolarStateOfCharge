@@ -174,7 +174,7 @@ Shunt::Shunt(const String name, const uint8_t port, float *sp_ib_scale,  float *
     else Serial.printf("Ib %s sense ADC pins %d and %d started\n", name_.c_str(), vo_pin_, vc_pin_);
   #endif
   Filt_ = new General2_Pole(0.1, F_W_I, F_Z_I, -NOM_UNIT_CAP*sp.nP(), NOM_UNIT_CAP*sp.nP());  // actual update time provided run time
-  KF_ = new KalmanFilter(0.1, 0., KF_Q_STD, KF_R);
+  KF_ = new KalmanFilter(0.1, 0., KF_Q_STD, KF_R_STD);
 }
 Shunt::~Shunt() {}
 // operators
