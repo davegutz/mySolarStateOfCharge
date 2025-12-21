@@ -485,9 +485,12 @@ class BatteryMonitor(Battery, EKF1x1):
                   q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, i=None):
         self.ib_amp_hdwe = SN.mon_run.ibmh[G.i]
         self.ib_amp_model = SN.mon_run.ibmm[G.i]
-        self.ib_noa_hdwe = SN.mon_run.ibmh[G.i]
+        self.ib_noa_hdwe = SN.mon_run.ibnh[G.i]
         self.ib_noa_model = SN.mon_run.ibnm[G.i]
-        if rp.modeling == 0:
+        modeling = not bool(rp.modeling == 0)
+        modeling_vb_not_ib = bool(1 < rp.modeling < 4)
+        modeling_ib = bool(3 < rp.modeling)
+        if not modeling_ib:
             self.ib_amp = self.ib_amp_hdwe
             self.ib_noa = self.ib_noa_hdwe
             self.ib_amp_pst = SN.mon_run.ibmh[max(G.i-1, 0)]
@@ -517,8 +520,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        modeling = not bool(rp.modeling == 0)
-        self.wrap(reset=reset, modeling=modeling, ib_noa_hdwe=self.ib_noa_hdwe, SN=SN, ib_amp=self.ib_amp,
+        self.wrap(reset=reset, modeling=modeling_ib, ib_noa_hdwe=self.ib_noa_hdwe, SN=SN, ib_amp=self.ib_amp,
                   ib_noa=self.ib_noa, ib_amp_pst=self.ib_amp_pst, ib_noa_pst=self.ib_noa_pst)
 
         # Reversionary model
@@ -548,12 +550,14 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_past_past = self.ib
 
         # Dynamic emf
-        if rp.modeling:
+        if modeling_ib:
             ib_dc = self.ib_past
         else:
-            ib_dc = self.ib
+            # ib_dc = self.ib
+            ib_dc = self.ib_past
         self.vb = vb
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(ib_dc, SN.ib_dyn[G.i], reset, dt, self.chemistry.tau_ct)
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(ib_dc, SN.ib_dyn[G.i], reset, self.dt,
+                                                               self.chemistry.tau_ct)
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
         self.ib_dyn_a = self.ChargeTransfer.a
@@ -926,6 +930,8 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_amp_lo = self.ib_amp <= Battery.HDWE_IB_HI_LO_AMP_LO
             self.ib_noa_hi = self.ib_noa >= Battery.HDWE_IB_HI_LO_NOA_HI
             self.ib_noa_lo = self.ib_noa <= Battery.HDWE_IB_HI_LO_NOA_LO
+            if self.ib_noa_lo:
+                pass
             self.disable_amp_fault = (self.ib_amp_hi and self.ib_noa_hi) or (self.ib_amp_lo and self.ib_noa_lo)
             self.disable_amp_fault_per = self.DisabAmpFltPer.calculate(self.disable_amp_fault, Battery.DISAB_LO_SET,
                                                                        Battery.DISAB_LO_RESET, self.dt, reset)
@@ -1305,6 +1311,10 @@ class Looparound:
         if modeling:
             dt_into_ct = self.dt_past
             ib_into_ct = self.ib_past2
+        else:
+            dt_into_ct = self.dt
+            ib_into_ct = self.ib_past2
+
         # print(f"  i   time     r       rt   rk   it   ct      re   ie  ce    sa      vb                         ib_charge                   ib                          ibmh                        ibmm                        ibnh                        ibnm                        ibh                         ib_s                        ib_amp                    ib_amp_lo    ib_amp_hi   ib_noa_lo   ib_noa_hi dis_amp_flt   per      ib_dyn_m                   ib_dyn_T_m     ib_dyn_tau_m            ib_dyn_rstate_m                ib_dyn_lstate_m             vb                    dv_dyn_m              e_wrap_m_T             e_wrap_m_tau           e_wrap_m_rate          e_wrap_m_reset          e_wrap_m_state         voc                   voc_soc                e_wrap_m             e_wrap_m_filt     disable_amp_fault ib_amp_lo  ib_noa_lo  e_wrap_m_reset  e_wrap_m_trim        ib_dyn_n                   ib_dyn_T_n     ib_dyn_tau_n           dv_dyn_n               e_wrap_n             e_wrap_n_filt         ib_dyn_n                    ib_dyn                    {reset=} {ib=} {self.ib_past=} {modeling=} {ib_into_ct=} {ib_dyn_init=}    ", end='')
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(ib_into_ct, ib_dyn_init, self.reset, dt_into_ct,
                                                                self.chem.tau_ct, text=self.name)

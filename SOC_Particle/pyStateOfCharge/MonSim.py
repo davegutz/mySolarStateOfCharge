@@ -310,11 +310,15 @@ def replicate(OPT: UserOptions):
         else:
             _chm_m = OPT.Bmon
 
+        modeling_ib = bool(3 < rp.modeling)
         if OPT.ib_fail_t is not None and t[G.i] > OPT.ib_fail_t:
             ib_ = OPT.ib_fail
         else:
             if OPT.mon_run.ib_sel is not None:
-                ib_ = OPT.mon_run.ib_sel[G.i]
+                if modeling_ib:
+                    ib_ = OPT.mon_run.ib_sel[G.i]
+                else:
+                    ib_ = OPT.mon_run.ib_sel[max(G.i-1, 0)]
             else:
                 ib_ = OPT.mon_run.ib[G.i]
 
