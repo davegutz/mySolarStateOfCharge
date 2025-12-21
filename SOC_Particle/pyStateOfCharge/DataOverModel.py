@@ -645,7 +645,16 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
                         num_lines += 1
                         skipped_last = False
                     else:
-                        print('discarding: ', line)
+                        print(f"discarding: ", line, end='')
+                        print(f"  line.count(',') == num_fields  {line.count(",") == num_fields}   \
+AND line[:-1]) is None {line[:-1] is None}  AND  line.count(';') == 0 {line.count(";") == 0} \
+AND num_text == num_text_run {num_text == num_text_run} \
+AND re.search(r'[^a-zA-Z0-9+-_.:, ]', line[:-1]) is None {re.search(r'[^a-zA-Z0-9+-_.:, ]', line[:-1]) is None} \
+AND num_lines == 0 {num_lines == 0} AND (num_lines_in+1) % skip) == 0  {(num_lines_in+1) % skip == 0} \
+AND line.count(comment_str) == 0 {line.count(comment_str) == 0}")
+                        print(f"{line.count(',')=} {num_fields=}")
+                        print(f"{line[-1]=}")
+                        print(f"{num_text=} {num_text_run=}")
                         num_skips += 1
                         skipped_last = True
                     num_lines_in += 1

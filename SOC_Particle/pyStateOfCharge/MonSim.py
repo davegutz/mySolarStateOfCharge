@@ -170,7 +170,7 @@ def replicate(OPT: UserOptions):
     modeling = get_modeling(OPT.mon_run, OPT.mod_force)
 
     # tweaking
-    tweak_test = rp.tweak_test()
+    tweak_test = rp.tweak_test
 
     SN = Sensors(OPT, run_type=OPT.run_type)
 
@@ -242,7 +242,7 @@ def replicate(OPT: UserOptions):
             mon, sim = SN.calc_temp_pass_1(OPT, mon, sim, i_temp)
 
         # Input
-        rp.modeling = modeling[G.i]
+        rp.modeling = rp.add_modeling(modeling[G.i])
 
         # Basic reset model verification is to init to the input data
         # Tried hard not to re-implement solvers in the Python verification  tool
@@ -310,15 +310,15 @@ def replicate(OPT: UserOptions):
         else:
             _chm_m = OPT.Bmon
 
-        modeling_ib = bool(3 < rp.modeling)
         if OPT.ib_fail_t is not None and t[G.i] > OPT.ib_fail_t:
             ib_ = OPT.ib_fail
         else:
             if OPT.mon_run.ib_sel is not None:
-                if modeling_ib:
+                if rp.modeling_ib:
                     ib_ = OPT.mon_run.ib_sel[G.i]
                 else:
-                    ib_ = OPT.mon_run.ib_sel[max(G.i-1, 0)]
+                    # ib_ = OPT.mon_run.ib_sel[max(G.i-1, 0)]
+                    ib_ = OPT.mon_run.ib_sel[G.i]
             else:
                 ib_ = OPT.mon_run.ib[G.i]
 

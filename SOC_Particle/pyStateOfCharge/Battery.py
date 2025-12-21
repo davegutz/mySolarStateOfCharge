@@ -37,10 +37,20 @@ class Retained:
         self.cutback_gain_scalar = 1.
         self.delta_q = 0.
         self.delta_q_model = 0.
-        self.modeling = 7  # assumed for this 'model'; over-ridden later
+        self.modeling = 0
+        self.modeling_ib = False
+        self.modeling_vb = False
+        self.modeling_Tb = False
+        self.tweak_test = False
 
-    def tweak_test(self):
-        return 0b1000 & int(self.modeling)
+    def add_modeling(self, modeling=None):
+        self.modeling = modeling
+        self.tweak_test = bool(0b1000 & int(self.modeling))
+        self.modeling_ib = bool(0b0100 & int(self.modeling))
+        self.modeling_vb = bool(0b0010 & int(self.modeling))
+        self.modeling_Tb = bool(0b0001 & int(self.modeling))
+        return self.modeling
+
 
 def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=None):
     q_cap = q_cap_rated_scaled * (1. + dqdt * (tb_f - t_rated))
@@ -374,6 +384,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap_rate = 0.
         self.reset_past = True
         self.ib_past = 0.
+        self.dt_past = 0.
         self.ib_amp = 0.
         self.ib_amp_pst = 0.
         self.ib_amp_2pst = 0.
@@ -487,24 +498,22 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_amp_model = SN.mon_run.ibmm[G.i]
         self.ib_noa_hdwe = SN.mon_run.ibnh[G.i]
         self.ib_noa_model = SN.mon_run.ibnm[G.i]
-        modeling = not bool(rp.modeling == 0)
-        modeling_vb_not_ib = bool(1 < rp.modeling < 4)
-        modeling_ib = bool(3 < rp.modeling)
-        if not modeling_ib:
-            self.ib_amp = self.ib_amp_hdwe
-            self.ib_noa = self.ib_noa_hdwe
-            self.ib_amp_pst = SN.mon_run.ibmh[max(G.i-1, 0)]
-            self.ib_noa_pst = SN.mon_run.ibnh[max(G.i-1, 0)]
-            self.ib_amp_2pst = SN.mon_run.ibmh[max(G.i-2, 0)]
-            self.ib_noa_2pst = SN.mon_run.ibnh[max(G.i-2, 0)]
-        else:
+        if rp.modeling_ib:
             self.ib_amp = self.ib_amp_model
             self.ib_noa = self.ib_noa_model
             self.ib_amp_pst = SN.mon_run.ibmm[max(G.i-1, 0)]
             self.ib_noa_pst = SN.mon_run.ibnm[max(G.i-1, 0)]
             self.ib_amp_2pst = SN.mon_run.ibmm[max(G.i-2, 0)]
             self.ib_noa_2pst = SN.mon_run.ibnm[max(G.i-2, 0)]
-        self.ib_hdwe = self.ib_noa_hdwe
+        else:
+            self.ib_amp = self.ib_amp_hdwe
+            self.ib_noa = self.ib_noa_hdwe
+            self.ib_amp_pst = SN.mon_run.ibmh[max(G.i - 1, 0)]
+            self.ib_noa_pst = SN.mon_run.ibnh[max(G.i - 1, 0)]
+            self.ib_amp_2pst = SN.mon_run.ibmh[max(G.i - 2, 0)]
+            self.ib_noa_2pst = SN.mon_run.ibnh[max(G.i - 2, 0)]
+        # self.ib_hdwe = self.ib_noa_hdwe
+        self.ib_hdwe = SN.mon_run.ib_h[G.i]
         self.ib_hdwe_model = self.ib_noa_model
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, unit=self.unit)
@@ -520,8 +529,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        self.wrap(reset=reset, modeling=modeling_ib, ib_noa_hdwe=self.ib_noa_hdwe, SN=SN, ib_amp=self.ib_amp,
-                  ib_noa=self.ib_noa, ib_amp_pst=self.ib_amp_pst, ib_noa_pst=self.ib_noa_pst)
+        self.wrap(reset=reset, modeling_ib=rp.modeling_ib, ib_noa_hdwe=self.ib_noa_hdwe, SN=SN, ib_amp=self.ib_amp,
+                  ib_noa=self.ib_noa, ib_amp_pst=self.ib_amp_pst, ib_noa_pst=self.ib_noa_pst, rp=rp)
 
         # Reversionary model
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
@@ -550,7 +559,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_past_past = self.ib
 
         # Dynamic emf
-        if modeling_ib:
+        if rp.modeling_ib:
             ib_dc = self.ib_past
         else:
             # ib_dc = self.ib
@@ -631,6 +640,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.dv_dyn = self.dv_dyn
         self.voc_ekf = self.hx
         self.ib_past = self.ib
+        self.dt_past = self.dt
 
         return self.vb_model_rev
 
@@ -875,8 +885,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
         self.saved.reset_kf.append(self.reset_kf)
 
-    def wrap(self, reset=True, modeling=None, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
-             ib_amp_pst=None, ib_noa_pst=None, ib_amp_2pst=None, ib_noa_2pst=None):
+    def wrap(self, reset=True, modeling_ib=None, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
+             ib_amp_pst=None, ib_noa_pst=None, ib_amp_2pst=None, ib_noa_2pst=None, rp=None):
         """Wrap logic"""
 
         # e_wrap scalars normally calculated in Sensors
@@ -898,14 +908,14 @@ class BatteryMonitor(Battery, EKF1x1):
 
         # Individual wrap logic
         if ib_noa is not None:
-            if modeling:
+            if rp.modeling_ib:
                 self.ib_noa = ib_noa
                 self.ib_noa_pst = ib_noa_pst
             else:
                 self.ib_noa = ib_noa
                 self.ib_noa_pst = ib_noa_pst
             # print(f"{self.ib_noa=}", end='')
-            self.LoopIbNoa.calculate(reset=reset, modeling=modeling, ib=self.ib_noa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
+            self.LoopIbNoa.calculate(reset=reset, modeling=rp.modeling_ib, ib=self.ib_noa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
                                      dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
                                      ib_init = SN.LoopNoa.ib_init, ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
                                      e_wrap_filt_init = SN.e_wrap_n_filt_init, e_wrap_trim_init = SN.e_wrap_n_trim_init)
@@ -916,7 +926,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ewnhi_thr = self.LoopIbNoa.ewhi_thr
             self.ewnlo_thr = self.LoopIbNoa.ewlo_thr
         if ib_amp is not None:
-            if modeling:
+            if rp.modeling_ib:
                 self.ib_amp = ib_amp
                 self.ib_amp_pst = ib_amp_pst
                 ib_m_init = SN.LoopAmp.ib[max(G.i-2, 0)]
@@ -937,8 +947,12 @@ class BatteryMonitor(Battery, EKF1x1):
                                                                        Battery.DISAB_LO_RESET, self.dt, reset)
             # print(f"ib_amp_hi/lo, ib_noa_hi/lo = {self.ib_amp_hi} {self.ib_amp_lo} {self.ib_noa_hi} {self.ib_noa_lo}")
             self.e_wrap_m_reset = reset or self.disable_amp_fault
-            self.LoopIbAmp.calculate(reset=self.e_wrap_m_reset, modeling=modeling, ib=self.ib_amp,
-                                     loop_gain=Battery.AMP_WRAP_TRIM_GAIN, dt=min(self.dt, Battery.F_MAX_T_WRAP),
+            if rp.modeling_ib:
+                dt_local = self.dt
+            else:
+                dt_local = self.dt_past
+            self.LoopIbAmp.calculate(reset=self.e_wrap_m_reset, modeling=rp.modeling_ib, ib=self.ib_amp,
+                                     loop_gain=Battery.AMP_WRAP_TRIM_GAIN, dt=min(dt_local, Battery.F_MAX_T_WRAP),
                                      ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr, ib_init=ib_m_init,
                                      ib_dyn_init=ib_dyn_m_init, e_wrap_filt_init=SN.e_wrap_m_filt_init,
                                      e_wrap_trim_init=SN.e_wrap_m_trim_init)
@@ -1102,7 +1116,7 @@ class BatterySim(Battery):
         self.vsat = sat_voc(self.Tb_f, self.chemistry.rated_temp, self.chemistry.nom_vsat, self.chemistry.dvoc_dt)
         self.sat_ib_max = (self.sat_ib_null + (1 - self.soc - self.add_s_voc_soc) * self.sat_cutback_gain *
                            rp.cutback_gain_scalar)
-        if rp.tweak_test() or (not rp.modeling):
+        if rp.tweak_test or (not rp.modeling_ib):
             self.sat_ib_max = ib_charge_fut
         self.ib_fut = min(ib_charge_fut, self.sat_ib_max)  # the feedback of self.ib
         # self.ib_charge = ib_charge_fut# same time plane as volt calcs.  (This prevents sat logic from working)
