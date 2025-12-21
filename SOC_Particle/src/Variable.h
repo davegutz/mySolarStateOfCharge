@@ -427,7 +427,7 @@ public:
 
     void print_str()
     {
-        sprintf(pr.buff, " %-20s %9.3f -> %9.3f, %10s (%s%-2s)", description_.c_str(), default_, *val_, units_.c_str(), prefix_.c_str(), code_.c_str());
+        sprintf(pr.buff, " %-20s %9.3g -> %9.3g, %10s (%s%-2s)", description_.c_str(), default_, *val_, units_.c_str(), prefix_.c_str(), code_.c_str());
     }
 
     void print()
@@ -444,7 +444,7 @@ public:
     
     void print_help_str()
     {
-        sprintf(pr.buff, "%s%-2s= %6.3f: (%-6.3g-%6.3g) [%6.3f] %s, %s", prefix_.c_str(), code_.c_str(), *val_, min_, max_, default_, description_.c_str(), units_.c_str());
+        sprintf(pr.buff, "%s%-2s= %6.3g: (%-6.3g-%6.3g) [%6.3g] %s, %s", prefix_.c_str(), code_.c_str(), *val_, min_, max_, default_, description_.c_str(), units_.c_str());
     }
 
     void print_help()

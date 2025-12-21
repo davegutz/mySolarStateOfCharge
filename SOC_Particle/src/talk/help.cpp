@@ -125,6 +125,10 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sp.s_cap_sim_p->print1_help();  //* Sq
   sp.Vb_scale_p->print_help();  //* SV
   sp.Vb_scale_p->print1_help();  //* SV
+  ap.q_std_p->print_help();  // Kq
+  ap.q_std_p->print1_help();  // Kq
+  ap.r_std_p->print_help();  // Kr
+  ap.r_std_p->print1_help();  // Kr
 
   Serial.printf("\nF<?>   Faults\n");
   ap.cc_diff_slr_p->print_help();  // Fc

@@ -113,6 +113,8 @@ public:
     float ekf_conv;             // ekf abs conv, v
     float ekf_x;                // ekf temporary set x, soc
     float ekf_p;                // ekf temporary set P, soc
+    float q_std;                // kf q_std set, v
+    float r_std;                // kf q_std set, v
     unsigned long int wait_inj; // Wait before start injection, ms
     FloatV *cc_diff_slr_p;
     FloatV *cycles_inj_p;
@@ -165,6 +167,8 @@ public:
     FloatV *ekf_conv_p;
     FloatV *ekf_x_p;
     FloatV *ekf_p_p;
+    FloatV *q_std_p;
+    FloatV *r_std_p;
 
 protected:
 };

@@ -154,6 +154,22 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
             }
             break;
 
+        case ( 'K' ):  // Kalman filter stuff
+            switch ( letter_1 )
+            {
+
+                case ( 'q' ):  // Kq
+                if ( ap.q_std_p->success() )
+                {
+                    Sen->ShuntAmp->kf_q_std(ap.q_std);
+                    Sen->ShuntAmp->kf_r_std(ap.r_std);
+                    Sen->ShuntNoAmp->kf_q_std(ap.q_std);
+                    Sen->ShuntNoAmp->kf_r_std(ap.r_std);
+                }
+                break;
+            }
+            break;
+
         case ( 'l' ):
             if ( sp.debug_p->success() )
             switch ( sp.debug() )

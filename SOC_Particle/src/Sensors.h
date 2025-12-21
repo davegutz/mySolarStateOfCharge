@@ -134,6 +134,8 @@ public:
   float Ishunt_cal_kf() { return Ishunt_cal_kf_; };
   float ishunt_cal_kf() { return Ishunt_cal_kf_ / sp.nP(); };
   float Ishunt_cal_filt() { return Ishunt_cal_filt_; };
+  void kf_q_std(const double q) {KF_->q_std(q);};
+  void kf_r_std(const double r) {KF_->r_std(r);};
   void print_serial_header(const char suffix);
   void print_serial();
   void pretty_print();

@@ -42,6 +42,8 @@ public:
   void pretty_print(void);
   void print_serial_header(const char suffix);
   void print_serial();
+  void q_std(const double q) { Q_stdsq_ = max(q * q, 0.); };
+  void r_std(const double r) { R_stdsq_ = max(r * r, 0.); };
   double update(const double meas);
 private:
   double dt_;     // Update time, s
