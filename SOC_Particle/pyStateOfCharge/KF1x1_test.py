@@ -104,7 +104,7 @@ def plot_5(plt=None, mr=None, mv=None, title=None):
     plt.legend(loc=1)
     return plt
 
-def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=None):
+def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=None, data_lag=0.15):
     steady_only = False
     N = len(mr.Von)
     total_time = mr.time[-1]
@@ -114,7 +114,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     nyquist_freq_rps = sample_freq_rps / 2.
     min_possible_lpf_tau = 0.07 / nyquist_freq_rps * 50.
     print(f" nyquist {nyquist_freq_rps} r/s, min possible tau {min_possible_lpf_tau} s")
-    mr_lpf = LagTustin(dt=sample_time, tau=0.128, max_=3.3, min_=-3.3)
+    mr_lpf = LagTustin(dt=sample_time, tau=data_lag, max_=3.3, min_=-3.3)
 
     # Get initial steady offset so can search for start of sweep.  Assume initial 50 seconds are steady.
     vec_initial = np.where(mr.time <= 50.)
@@ -132,26 +132,31 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     mr.Von_lpf = mr.Von_lpf - steady_level_lpf
 
     try:
-        index_start_sweep_lpf = np.array(np.where( abs(mr.Von_lpf) > 4.*std_dev_lpf))[0, 0]
+        index_start_sweep_lpf = np.array(np.where( abs(mr.Von_lpf) > 6.*std_dev_lpf))[0, 0]
         time_start_sweep_lpf = mr.time[index_start_sweep_lpf]
-        print(f"{steady_level_lpf=} {std_dev_lpf=}"
-              f"{index_start_sweep_lpf=} {time_start_sweep_lpf=}")
+        index_end_sweep_lpf = np.where(mr.time < time_start_sweep_lpf + 150.)[0][-1]
+        time_end_sweep_lpf = mr.time[index_end_sweep_lpf]
+        print(f"{steady_level_lpf=} {std_dev_lpf=}")
+        print(f"{index_start_sweep_lpf=} {time_start_sweep_lpf=}")
+        print(f"{index_end_sweep_lpf=} {time_end_sweep_lpf=}")
     except IndexError:
         steady_only = True
 
     # Recenter mr.Von for freq analysis:  assume at least 179 sec fr
-    index_end_sweep_lpf = np.where(mr.time < time_start_sweep_lpf + 179.)[0][-1]
     vec_fr = np.arange(index_start_sweep_lpf, index_end_sweep_lpf)
+    vec_fr_for_avg = np.arange(index_start_sweep_lpf + int(0.5*(index_end_sweep_lpf - index_start_sweep_lpf)),
+                               index_end_sweep_lpf)
+    mr.Von = mr.Von - np.average(mr.Von[vec_fr_for_avg])
     mv.Von = np.array(mv.Von)
-    mv.Von = mv.Von - np.average(mv.Von[vec_fr])
-
-    mr.Von = mr.Von - np.average(mr.Von[vec_fr])
-    mr.Von_lpf = mr.Von_lpf - np.average(mr.Von_lpf[vec_fr])
+    mv.Von = mv.Von - np.average(mv.Von[vec_fr_for_avg])
+    mr.Von_lpf = mr.Von_lpf - np.average(mr.Von_lpf[vec_fr_for_avg])
+    mv.Von_avg = np.full((len(mv.Von),), np.average(mv.Von[vec_fr_for_avg]))
 
     plt.figure()
     plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von')
-    plq(plt, mr, 'time', mr, 'Von_lpf', color='red', linestyle='--', label='Von_lpf')
     plq(plt, mv, 'time', mv, 'Von', color='cyan', linestyle='-.', label='Von_kf')
+    plq(plt, mr, 'time', mr, 'Von_lpf', color='red', linestyle='--', label='Von_lpf')
+    plq(plt, mv, 'time', mv, 'Von_avg', color='orange', linestyle='-', label='Von_avg')
     plt.legend(loc=1)
     plt.show(block=False)
 
@@ -161,20 +166,20 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
 
     if not steady_only:
         # Detect positive zero crossings
-        is_positive = mr.Von_lpf[index_start_sweep_lpf:-1]  > 0
+        is_positive = mr.Von_lpf[index_start_sweep_lpf:index_end_sweep_lpf]  > 0
         positive_crossings = (~is_positive[:-1]) & is_positive[1:]
         mr.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lpf  # Add 1 to account for the shift
         mr.time_zero_crossing = mr.time[mr.crossing_indices]
 
         mv.time = mr.time
-        is_positive = mv.Von[index_start_sweep_lpf:-1]  > 0
+        is_positive = mv.Von[index_start_sweep_lpf:index_end_sweep_lpf]  > 0
         positive_crossings = (~is_positive[:-1]) & is_positive[1:]
         mv.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lpf  # Add 1 to account for the shift
         mv.time_zero_crossing = mv.time[mv.crossing_indices]
 
         # For simplicity assume mv zero crossing is always after mr zero crossing (lags behave like lags)
         # This also implies minimum phase behavior (magnitude decreasing) so normalize to max
-        print("Frequency, Hz  /  Magnitude, dB   /  Phase, deg")
+        print("Time:    Frequency, Hz  /  Magnitude, dB   /  Phase, deg / raw_lag(s) / data_lag_lag(deg) / data_lag_lag(s) / lag(s)")
         transfer_function = []
         mag_normal = 0.
         for j in range(len(mr.time_zero_crossing)-1):
@@ -182,7 +187,11 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
             index = mr.crossing_indices[j]
             period = mr.time_zero_crossing[j+1] - mr.time_zero_crossing[j]
             frequency = 1. / period
-            lag = mv.time_zero_crossing[j] - mr.time_zero_crossing[j]
+            ang_freq = frequency * 2. * np.pi
+            data_lag_lag_deg = np.atan2(data_lag*ang_freq, 1.) * 180./np.pi
+            data_lag_lag = data_lag_lag_deg / 360. * period
+            raw_lag = mv.time_zero_crossing[j] - mr.time_zero_crossing[j]
+            lag = raw_lag + data_lag_lag
             input = mr.Von_lpf[mr.crossing_indices[j]:mr.crossing_indices[j+1]]
             input_magnitude = max(input) - min(input)
             if j >= len(mv.crossing_indices) - 1:
@@ -193,7 +202,8 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
             tf_phase = -360. * lag / period
             if frequency < 2.5:
                 mag_normal = max(mag_normal, tf_magnitude)
-            transfer_function.append([frequency, tf_magnitude, tf_phase, time, index])
+            transfer_function.append([frequency, tf_magnitude, tf_phase, time, raw_lag, data_lag_lag_deg,
+                                      data_lag_lag, lag, index])
             # print(f"{frequency}  /  {tf_magnitude}    / {tf_phase}")
         transfer_function = np.array(transfer_function)
         transfer_function[:, 1] -= mag_normal
@@ -216,9 +226,18 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
             k += 1
         tf_clean = np.array(tf_clean)
         for j in range(len(tf_clean)):
-            print(f"{tf_clean[j][3]}: {tf_clean[j][0]}  /  {tf_clean[j][1]}    / {tf_clean[j][2]}")
+            print("{:8.2f}: ".format(tf_clean[j][3]),
+                  "{:7.1f} Hz / ".format(tf_clean[j][0]),
+                  "{:7.1f} dB / ".format(tf_clean[j][1]),
+                  "{:7.1f} deg / ".format(tf_clean[j][2]),
+                  "{:7.3f} s  / ".format(tf_clean[j][4]),
+                  "{:7.1f} deg  / ".format(tf_clean[j][5]),
+                  "{:7.3f} s  / ".format(tf_clean[j][6]),
+                  "{:7.3f} s  / ".format(tf_clean[j][7]),
+                  )
         mv.time_clean = tf_clean[:, 3]
         mv.f_clean = tf_clean[:, 0]
+        mv.w_clean = mv.f_clean * 2. * np.pi
         mv.mdB_clean = tf_clean[:, 1]
         mv.phs_clean = tf_clean[:, 2]
 
@@ -227,10 +246,11 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     mv.Von_steady = mv.Von[vec_initial]
     mr.Von_steady_lpf = mr.Von_lpf[vec_initial]
     attenuation = (np.max(mv.Von_steady) - np.min(mv.Von_steady)) / (np.max(mr.Von_steady) - np.min(mr.Von_steady))
-    attenuation_lpf = (np.max(mv.Von_steady) - np.min(mv.Von_steady)) / (np.max(mr.Von_steady_lpf) - np.min(mr.Von_steady_lpf))
+    attenuation_lpf = (np.max(mr.Von_steady_lpf) - np.min(mr.Von_steady_lpf)) / (np.max(mr.Von_steady) - np.min(mr.Von_steady))
 
     if not steady_only:
         phase45_tf_index = 0
+        phase90_tf_index = 0
         db3_tf_index = 0
         for j in range(len(tf_clean)-1):
             frequency = tf_clean[j][0]
@@ -241,6 +261,8 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
                 db3_tf_index = j
             if  phase_dg < tf_clean[phase45_tf_index][2] and phase_dg >= -45.:
                 phase45_tf_index =j
+            if phase_dg < tf_clean[phase90_tf_index][2] and phase_dg >= -90.:
+                phase90_tf_index = j
         freq_3db = tf_clean[db3_tf_index][0]
         tau_3db = 1. / (freq_3db * 2. * np.pi)
         mag_3db = tf_clean[db3_tf_index][1]
@@ -249,21 +271,31 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
         tau_45 = 1. / (freq_45 * 2. * np.pi)
         phase_45 = tf_clean[phase45_tf_index][2]
         time_45 = tf_clean[phase45_tf_index][3]
+
+        freq_90 = tf_clean[phase90_tf_index][0]
+        omega_90 = freq_90 * 2. * np.pi
+        tau_90 = 1. / (freq_90 * 2. * np.pi)
+        phase_90 = tf_clean[phase90_tf_index][2]
+        time_90 = tf_clean[phase90_tf_index][3]
+
+
         print(f"{attenuation=} {attenuation_lpf=}")
         print(f"{time_3db=} {freq_3db=} {mag_3db=}")
         print(f"{time_45=}  {freq_45=} {phase_45=}")
+        print(f"{time_90=}  {freq_90=} {phase_90=} {omega_90=}")
     metric_string = "Metrics:\n"
     metric_string += "  Qstd = {:9.6f}\n  R =     {:9.6f}\n  lpf_tau = {:7.4f}\n\n".format(Qstd, R, lpf_tau)
     metric_string += "  Attn = {:5.2f}  Attn_lpf = {:5.2f}\n\n".format(attenuation, attenuation_lpf)
     if not steady_only:
         metric_string += "  -3db @    {:4.2f} Hz,  ({:5.1f} sec)\n".format(freq_3db, time_3db)
         metric_string += "  -45 deg @ {:4.2f} Hz   ({:5.1f} sec)\n\n".format(freq_45, time_45)
-        metric_string += "  tau @ -3db = {:5.3f}\n  tau @ -45 = {:5.3f}\n".format(tau_3db, tau_45)
-        res_title = "Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45,"
-        res = [Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45]
+        metric_string += "  -90 deg @ {:4.2f} Hz   ({:5.1f} sec)\n\n".format(freq_90, time_90)
+        metric_string += "  tau @ -3db = {:5.3f}\n  tau @ -45 = {:5.3f}\n  omega90 = {:5.3f}\n".format(tau_3db, tau_45, omega_90)
+        res_title = "Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45, omega_90,"
+        res = [Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45, omega_90]
     else:
-        res_title = "Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45,"
-        res = [Qstd, R, lpf_tau, attenuation_lpf, 0., 0.]
+        res_title = "Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45, omega_90,"
+        res = [Qstd, R, lpf_tau, attenuation_lpf, 0., 0., 0.]
 
     plt.figure()
     plt.figtext(0.1, 0.3, metric_string, fontsize=10, color='black', horizontalalignment='left',
@@ -283,15 +315,12 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     plt.legend(loc=1)
     left_limit, right_limit = plt.xlim()
     plt.subplot(324)
-    plq(plt, mv, 'time_clean', mv, 'f_clean', color='blue', linestyle='-', label='freq_hz' + ver_str)
-    plq(plt, mv, 'time_clean', mv, 'mdB_clean', color='red', linestyle='--', label='mag_dB' + ver_str)
-    plt.xlim([left_limit,right_limit])
+    plt.semilogx(mv.w_clean, mv.mdB_clean, color='red', linestyle='-', label='mag_dB' + ver_str)
     plt.ylim([-18, 6])
     plt.legend(loc=1)
     plt.subplot(326)
-    plq(plt, mv, 'time_clean', mv, 'phs_clean', color='green', linestyle='-', label='phs_deg' + ver_str)
-    plt.xlim([left_limit,right_limit])
-    plt.ylim([-90, 0])
+    plt.semilogx(mv.w_clean, mv.phs_clean, color='red', linestyle='-', label='phs_deg' + ver_str)
+    plt.ylim([-180, 0])
     plt.legend(loc=1)
 
     return plt, res, res_title

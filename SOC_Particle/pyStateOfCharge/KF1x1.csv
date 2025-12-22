@@ -1,2 +1,2 @@
-Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45,
- 0.015000, 0.001000, 0.100000, 1.022287, 0.194238, 0.409587,
+Qstd, R, lpf_tau, attenuation_lpf, tau_3db, tau_45, omega_90,
+ 0.015000, 0.001000, 0.100000, 0.211277, 0.148451, 0.312081,
