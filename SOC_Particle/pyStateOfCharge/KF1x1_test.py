@@ -104,6 +104,16 @@ def plot_5(plt=None, mr=None, mv=None, title=None):
     plt.legend(loc=1)
     return plt
 
+def plot_6(plt=None, mr=None, mv=None, title=None):
+    plt.figure()
+    plt.subplot(111)
+    plt.title(title)
+    plq(plt, mr, 'time', mr, 'VoVcn', add=-0.0, color='blue', linestyle='-', label='VoVcn' + run_str + '-0.0')
+    plq(plt, mv, 'time', mv, 'VoVcn', add=-0.0, color='red', linestyle='--', label='VoVcn' + ver_str + '-0.0')
+    plq(plt, mv, 'time', mv, 'VofVcfn', add=-0.0, color='cyan', linestyle='-.', label='VofVcfn' + ver_str + '-0.0')
+    plt.legend(loc=1)
+    return plt
+
 def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=None, data_lag=0.15):
     steady_only = False
     N = len(mr.Von)
@@ -838,10 +848,10 @@ if __name__ == "__main__":
     'Cx16000',  wait 60 sec. Turn on generator and press OK on function generator.  When it reaches 0.5 Hz again press
     OK to stop.  Then turn off generator.
     """
-    # data_file = './noise_study/burstForKF_Vo_Vc_Base.csv'  # Cx20000, Base
+    data_file = './noise_study/burstForKF_Vo_Vc_Base.csv'  # Cx20000, Base
     # data_file = './noise_study/burstForKF_Vo_Vc_Gnd.csv'  # Cx20000, Pulldown to function generator ground using CH 2 probe
     # data_file = './noise_study/burstForKF_Vo_Vc_noPS.csv'  # Cx20000, Pulldown to function generator ground using CH 2 probe
-    data_file = './noise_study/burstForKF_Vo_Vc_noBT.csv'  # Cx20000, Pulldown to function generator ground using CH 2 probe
+    # data_file = './noise_study/burstForKF_Vo_Vc_noBT.csv'  # Cx20000, Pulldown to function generator ground using CH 2 probe
 
     mr, data_file_clean = load_data(data_file, time_end)
     title = 'Vo Base kfDemo.py var dt'
@@ -958,11 +968,18 @@ if __name__ == "__main__":
                 vf, v_rat = kfTbv.get_state()
                 mv.Tbv.append(vf[0])
 
+
         plt = plot_1(plt, mr, mv, title+' F1')
         plt = plot_2(plt, mr, mv, title+' F2')
         plt = plot_3(plt, mr, mv, title+' F3')
         plt = plot_4(plt, mr, mv, title+' F4')
         plt = plot_5(plt, mr, mv, title+' F5')
+        mv.VofVcfn = []
+        for i in range(len(mv.time)):
+            mv.VofVcfn.append(float(mv.Von[i] - mv.Vcn[i]))
+        mv.VofVcfn = np.array(mv.VofVcfn)
+        plt = plot_6(plt, mr, mv, title+' F5')
+
 
     doing_doe = False
     if doing_doe:
