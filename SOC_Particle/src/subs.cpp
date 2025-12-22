@@ -41,8 +41,8 @@ void sample_burst(Pins *myPins, Sensors *Sen)
   if ( ap.samp_points>0 )
   {
     // Serial.printf("unit_x, time, Vca, Voa, VoVca, Vcn, Von, VoVcn, Tbv, Vbv,\n");
-    // Serial.printf("unit_x, time, Vcn, Von, VoVcn,\n");
-    Serial.printf("unit_x, time, Von,\n");
+    Serial.printf("unit_x, time, Vcn, Von, VoVcn,\n");
+    // Serial.printf("unit_x, time, Von,\n");
     for (unsigned long int i=0; i<ap.samp_points; i++ ) 
     {
       unsigned long int local_micros = micros();
@@ -57,15 +57,15 @@ void sample_burst(Pins *myPins, Sensors *Sen)
       //   Sen->ShuntNoAmp->Vc(), Sen->ShuntNoAmp->Vo(), Sen->ShuntNoAmp->Vo_Vc(),
       //   Sen->SensorTb->Tb_volt(), Sen->Vb_volt);
 
-      // Sen->ShuntNoAmp->sample();
-      // Sen->ShuntAmp->sample();
-      // Serial.printf("x_unit, %8.6f, %8.6f, %8.6f, %8.6f,\n",
-      //   (local_micros - local_micros_init)*1e-6,
-      //   Sen->ShuntNoAmp->Vc(), Sen->ShuntNoAmp->Vo(), Sen->ShuntNoAmp->Vo_Vc());
-
       Sen->ShuntNoAmp->sample_Vo();
-      Serial.printf("x_unit, %8.6f, %8.6f,\n",
-        (local_micros - local_micros_init)*1e-6, Sen->ShuntNoAmp->Vo());
+      Sen->ShuntNoAmp->sample_Vc();
+      Serial.printf("x_unit, %8.6f, %8.6f, %8.6f, %8.6f,\n",
+        (local_micros - local_micros_init)*1e-6,
+        Sen->ShuntNoAmp->Vc(), Sen->ShuntNoAmp->Vo(), Sen->ShuntNoAmp->Vo()-Sen->ShuntNoAmp->Vc());
+
+      // Sen->ShuntNoAmp->sample_Vo();
+      // Serial.printf("x_unit, %8.6f, %8.6f,\n",
+      //   (local_micros - local_micros_init)*1e-6, Sen->ShuntNoAmp->Vo());
     }
     ap.samp_points = 0;
   }

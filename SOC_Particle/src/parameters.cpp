@@ -157,8 +157,8 @@ void  VolatilePars::initialize()
     V_[n_++] =(ekf_conv_p       = new FloatV("  ", "VC", NULL,"ekf conv abs",         "v",      0,    1,    &ekf_conv,          EKF_CONV));  // V:C
     V_[n_++] =(ekf_x_p          = new FloatV("  ", "Ce", NULL,"ekf x manual set",     "soc",    0,    1,    &ekf_x,             0));  // Ce
     V_[n_++] =(ekf_p_p          = new FloatV("  ", "Cp", NULL,"ekf P manual set",     "?",     -1e12, 1e12, &ekf_p,             0));  // Cp
-    V_[n_++] =(q_std_p          = new FloatV("  ", "Kq", NULL,"kf q_std set",         "v",      0,    1e12, &q_std,             KF_Q_STD));  // Kq
-    V_[n_++] =(r_std_p          = new FloatV("  ", "Kr", NULL,"kf_r_std set",         "v",      0,    1e12, &r_std,             KF_R_STD));  // Kr
+    V_[n_++] =(q_std_p          = new FloatV("  ", "Kq", NULL,"kf q_std process",     "v",      0,    1e12, &q_std,             KF_Q_STD));  // Kq
+    V_[n_++] =(r_std_p          = new FloatV("  ", "Kr", NULL,"kf_r_std state",       "v",      0,    1e12, &r_std,             KF_R_STD));  // Kr
 }
 
 // Print only the volatile paramters (non-eeram)

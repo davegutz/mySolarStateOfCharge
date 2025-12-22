@@ -33,10 +33,10 @@ def plot_1(plt=None, mr=None, mv=None, title=None):
     plq(plt, mv, 'time', mv, 'VoVca', add=0.2, color='red', linestyle='--', label='VoVca' + ver_str + '+0.2')
     plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
     plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
-    plq(plt, mr, 'time', mr, 'Vcn', add=-0.2, color='blue', linestyle='-', label='Vcn' + run_str + '-0.2')
-    plq(plt, mv, 'time', mv, 'Vcn', add=-0.2, color='red', linestyle='--', label='Vcn' + ver_str + '-0.2')
-    plq(plt, mr, 'time', mr, 'VoVcn', add=-0.4, color='blue', linestyle='-', label='VoVcn' + run_str + '-0.4')
-    plq(plt, mv, 'time', mv, 'VoVcn', add=-0.4, color='red', linestyle='--', label='VoVcn' + ver_str + '-0.4')
+    plq(plt, mr, 'time', mr, 'Vcn', add=-0.8, color='blue', linestyle='-', label='Vcn' + run_str + '-0.8')
+    plq(plt, mv, 'time', mv, 'Vcn', add=-0.8, color='red', linestyle='--', label='Vcn' + ver_str + '-0.8')
+    plq(plt, mr, 'time', mr, 'VoVcn', add=-0.0, color='blue', linestyle='-', label='VoVcn' + run_str + '-0.0')
+    plq(plt, mv, 'time', mv, 'VoVcn', add=-0.0, color='red', linestyle='--', label='VoVcn' + ver_str + '-0.0')
     plq(plt, mr, 'time', mr, 'Vbv', add=-0.6, color='blue', linestyle='-', label='Vbv' + run_str + '-0.6')
     plq(plt, mv, 'time', mv, 'Vbv', add=-0.6, color='red', linestyle='--', label='Vbv' + ver_str + '-0.6')
     plq(plt, mr, 'time', mr, 'Tbv', add=-0.8, color='blue', linestyle='-', label='Tbv' + run_str + '-0.8')
@@ -114,11 +114,12 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     nyquist_freq_rps = sample_freq_rps / 2.
     min_possible_lpf_tau = 0.07 / nyquist_freq_rps * 50.
     print(f" nyquist {nyquist_freq_rps} r/s, min possible tau {min_possible_lpf_tau} s")
-    mr_lpf = LagTustin(dt=sample_time, tau=0.008, max_=3.3, min_=-3.3)
+    mr_lpf = LagTustin(dt=sample_time, tau=0.128, max_=3.3, min_=-3.3)
 
     # Get initial steady offset so can search for start of sweep.  Assume initial 50 seconds are steady.
     vec_initial = np.where(mr.time <= 50.)
     mr.Von = mr.Von - np.average(mr.Von[vec_initial])
+    #plt.figure();     plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von')
 
     # Filter signal for cleaner statistical testing
     mr.Von_lpf = []
@@ -126,17 +127,37 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     for i in range(N):
         mr.Von_lpf.append(mr_lpf.calculate(mr.Von[i], reset=i<1, dt=mr.dt[i]))
     mr.Von_lpf = np.array(mr.Von_lpf)
-
-    std_dev_lpf = np.std(mr.Von_lpf[vec_initial])
     steady_level_lpf = np.average(mr.Von_lpf[vec_initial])
+    std_dev_lpf = np.std(mr.Von_lpf[vec_initial])
+    mr.Von_lpf = mr.Von_lpf - steady_level_lpf
+
     try:
         index_start_sweep_lpf = np.array(np.where( abs(mr.Von_lpf) > 4.*std_dev_lpf))[0, 0]
         time_start_sweep_lpf = mr.time[index_start_sweep_lpf]
-        print(f"{steady_level_lpf=} {std_dev_lpf=} {index_start_sweep_lpf=} {time_start_sweep_lpf=}")
+        print(f"{steady_level_lpf=} {std_dev_lpf=}"
+              f"{index_start_sweep_lpf=} {time_start_sweep_lpf=}")
     except IndexError:
         steady_only = True
+
+    # Recenter mr.Von for freq analysis:  assume at least 179 sec fr
+    index_end_sweep_lpf = np.where(mr.time < time_start_sweep_lpf + 179.)[0][-1]
+    vec_fr = np.arange(index_start_sweep_lpf, index_end_sweep_lpf)
     mv.Von = np.array(mv.Von)
-    steady_only = True
+    mv.Von = mv.Von - np.average(mv.Von[vec_fr])
+
+    mr.Von = mr.Von - np.average(mr.Von[vec_fr])
+    mr.Von_lpf = mr.Von_lpf - np.average(mr.Von_lpf[vec_fr])
+
+    plt.figure()
+    plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von')
+    plq(plt, mr, 'time', mr, 'Von_lpf', color='red', linestyle='--', label='Von_lpf')
+    plq(plt, mv, 'time', mv, 'Von', color='cyan', linestyle='-.', label='Von_kf')
+    plt.legend(loc=1)
+    plt.show(block=False)
+
+
+
+    # steady_only = True
 
     if not steady_only:
         # Detect positive zero crossings
@@ -145,7 +166,6 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
         mr.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lpf  # Add 1 to account for the shift
         mr.time_zero_crossing = mr.time[mr.crossing_indices]
 
-        mv.Von = mv.Von - np.average(mv.Von[vec_initial])
         mv.time = mr.time
         is_positive = mv.Von[index_start_sweep_lpf:-1]  > 0
         positive_crossings = (~is_positive[:-1]) & is_positive[1:]
@@ -757,8 +777,9 @@ class Saved:
 # Example Usage:
 if __name__ == "__main__":
     """
-    Test setup:  FY6900 Dominty Function Generator.  FY6900 CH 1 connected across shunt leads.  CH 2 ground connected to
-    board ground.  Top level - Sweep.   - Freq 0.5 - 5.0, Ampl 0.01 - 0.01, Offs -0.01 - -0.01, Duty 50% - 50%,
+    Test setup:  FY6900 Dominty Function Generator.  FY6900 CH 1 connected across shunt leads.
+    (**** not this CH 2 ground connected to board ground.)
+    Top level - Sweep.   - Freq 0.5 - 5.0, Ampl 0.01 - 0.01, Offs -0.01 - -0.01, Duty 50% - 50%,
     Mode Linear.   Direction Forth, Time 120s.  Turn off generator.
     'Cx27000',  wait 60 sec. Turn on generator and press OK on function generator.  When it reaches 0.5 Hz again press
     OK to stop.  Then turn off generator.
@@ -776,10 +797,22 @@ if __name__ == "__main__":
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst100uF_ForKF_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst47uF_ForKF_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst0uF_VoVc_ForKF_soc2p2_hi_lo_chg.csv'
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst100uF_VoVc_ForKF_soc2p2_hi_lo_chg.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\burst100uF_VoVc_ForKF_soc2p2_hi_lo_chg.csv'
+
+
+    """
+    # Reconstruct and look at 2 vs 1 filter in Von
+    Test setup:  FY6900 Dominty Function Generator.  FY6900 CH 1 connected across shunt leads.
+    (**** not this CH 2 ground connected to board ground.)
+    Top level - Sweep.   - Freq 0.5 - 5.0, Ampl 0.01 - 0.01, Offs 0.0 - 0.0 (to center Vo/Vc, Duty 50% - 50%,
+    Mode Linear.   Direction Forth, Time 120s.  Turn off generator with.
+    'Cx16000',  wait 60 sec. Turn on generator and press OK on function generator.  When it reaches 0.5 Hz again press
+    OK to stop.  Then turn off generator.
+    """
+    data_file = './noise_study/burstForKF_Vo_Vc_Base.csv'  # Cx16000, Base
 
     mr, data_file_clean = load_data(data_file, time_end)
-    title = 'Base kfDemo.py var dt'
+    title = 'Vo Base kfDemo.py var dt'
     dt = 0.1  # Time step (seconds) used only on init
 
     # The best design of filter
@@ -899,76 +932,77 @@ if __name__ == "__main__":
         plt = plot_4(plt, mr, mv, title+' F4')
         plt = plot_5(plt, mr, mv, title+' F5')
 
+    doing_doe = True
+    if doing_doe:
+        Res = []
+        # for Qstd, R, lpf_tau in \
+        #         [
+        #             [0.015, 0.001, 0.00001],  [0.03, 0.001, 0.00001],  [0.0075, 0.001, 0.00001],  [0.015, 0.002, 0.00001], [0.015, 0.0005, 0.00001],
+        #             [0.015, 0.0005, 0.00001], [0.03, 0.0005, 0.00001], [0.0075, 0.0005, 0.00001], [0.015, 0.001, 0.00001], [0.015, 0.00025, 0.00001],
+        #             [0.015, 0.001, 0.100],  [0.03, 0.001, 0.100],  [0.0075, 0.001, 0.100],  [0.015, 0.002, 0.100], [0.015, 0.0005, 0.100],
+        #             [0.015, 0.0005, 0.100], [0.03, 0.0005, 0.100], [0.0075, 0.0005, 0.100], [0.015, 0.001, 0.100], [0.015, 0.00025, 0.100],
+        #             [1.5, 0.00001, 0.00001], [1.5, 0.00001, 0.050], [1.5, 0.00001, 0.100], [1.5, 0.00001, 0.150], [1.5, 0.00001, 0.250],
+        #           ]:
+        # for Qstd, R, lpf_tau in [
+        #     [0.015, 0.001, 0.100], [0.015, 0.001, 0.008], [0.015, 0.001, 0.00001],
+        #     [0.150, 0.0001, 0.100], [0.15, 0.0001, 0.008], [0.15, 0.001, 0.00001],
+        #     ]:
+        for Qstd, R, lpf_tau in [ [0.015, 0.001, 0.100] ]:
+            print(f"{Qstd=} {R=} {lpf_tau=}")
+            kfVon = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                               proc_noise_std=Qstd, meas_noise_std=R)
+            kfVonX = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
+                               proc_noise_std=Qstd, meas_noise_std=R)
+            lpfVon = LagExp(dt=dt, tau=lpf_tau, min_=-3.3, max_=3.3)
 
 
-    Res = []
-    for Qstd, R, lpf_tau in \
-            [
-                [0.015, 0.001, 0.00001],  [0.03, 0.001, 0.00001],  [0.0075, 0.001, 0.00001],  [0.015, 0.002, 0.00001], [0.015, 0.0005, 0.00001],
-                [0.015, 0.0005, 0.00001], [0.03, 0.0005, 0.00001], [0.0075, 0.0005, 0.00001], [0.015, 0.001, 0.00001], [0.015, 0.00025, 0.00001],
-                [0.015, 0.001, 0.100],  [0.03, 0.001, 0.100],  [0.0075, 0.001, 0.100],  [0.015, 0.002, 0.100], [0.015, 0.0005, 0.100],
-                [0.015, 0.0005, 0.100], [0.03, 0.0005, 0.100], [0.0075, 0.0005, 0.100], [0.015, 0.001, 0.100], [0.015, 0.00025, 0.100],
-                [1.5, 0.00001, 0.00001], [1.5, 0.00001, 0.050], [1.5, 0.00001, 0.100], [1.5, 0.00001, 0.150], [1.5, 0.00001, 0.250],
-              ]:
-    # for Qstd, R, lpf_tau in [
-    #     [0.015, 0.001, 0.100], [0.015, 0.001, 0.008], [0.015, 0.001, 0.00001],
-    #     [0.150, 0.0001, 0.100], [0.15, 0.0001, 0.008], [0.15, 0.001, 0.00001],
-    #     ]:
-        print(f"{Qstd=} {R=} {lpf_tau=}")
-        kfVon = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                           proc_noise_std=Qstd, meas_noise_std=R)
-        kfVonX = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
-                           proc_noise_std=Qstd, meas_noise_std=R)
-        lpfVon = LagExp(dt=dt, tau=lpf_tau, min_=-3.3, max_=3.3)
+            run_str = '_burst data'
+            ver_str = '_filtered'
 
+            # Data structures
+            mv = Saved()
+            v_rat = None
 
-        run_str = '_burst data'
-        ver_str = '_filtered'
+            for i in range(len(mr.time)):
+                mv.time.append(mr.time[i])
 
-        # Data structures
-        mv = Saved()
-        v_rat = None
+                kfVon.predict(mr.dt[i])
+                # kfVonX.predict(mr.dt[i])
+                kfVon.update(mr.Von[i])
+                # kfVonX.update(mr.Von[i])
+                if i > 3:
+                    pass
+                vf_kf, v_rat = kfVon.get_state()
+                mv.vf_kf.append(vf_kf)
 
-        for i in range(len(mr.time)):
-            mv.time.append(mr.time[i])
+                vf_lpf = lpfVon.calculate_tau(vf_kf[0], i<1, mr.dt[i], lpf_tau)
+                mv.Von.append(vf_lpf)
 
-            kfVon.predict(mr.dt[i])
-            # kfVonX.predict(mr.dt[i])
-            kfVon.update(mr.Von[i])
-            # kfVonX.update(mr.Von[i])
-            if i > 3:
-                pass
-            vf_kf, v_rat = kfVon.get_state()
-            mv.vf_kf.append(vf_kf)
-
-            vf_lpf = lpfVon.calculate_tau(vf_kf[0], i<1, mr.dt[i], lpf_tau)
-            mv.Von.append(vf_lpf)
-
-        # plt.figure()
-        # plt.subplot(111)
-        # plt.title(title)
-        # plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von' + run_str)
-        # plq(plt, mr, 'time', mr, 'Von_lpf', color='cyan', linestyle='-', label='Von_lpf' + run_str)
-        # plq(plt, mv, 'time', mv, 'vf_kf', color='red', linestyle='-.', label='vf_kf' + ver_str)
-        # plq(plt, mv, 'time', mv, 'Von', color='magenta', linestyle=':', label='Von' + ver_str)
-        # plt.legend(loc=1)
-        # plt.show()
-        #
+            # plt.figure()
+            # plt.subplot(111)
+            # plt.title(title)
+            # plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von' + run_str)
+            # plq(plt, mr, 'time', mr, 'Von_lpf', color='cyan', linestyle='-', label='Von_lpf' + run_str)
+            # plq(plt, mv, 'time', mv, 'vf_kf', color='red', linestyle='-.', label='vf_kf' + ver_str)
+            # plq(plt, mv, 'time', mv, 'Von', color='magenta', linestyle=':', label='Von' + ver_str)
+            # plt.legend(loc=1)
+            # plt.show()
+            #
 
         plt, res, res_title = plot_P(plt, mr, mv, title + ' P1', Qstd=Qstd, R=R, lpf_tau=lpf_tau)
         Res.append(res)
 
-    # Summarize
-    print(f"{res_title}")
-    for i in range(len(Res)):
-        print("{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},"\
-              .format(Res[i][0], Res[i][1], Res[i][2], Res[i][3], Res[i][4], Res[i][5]))
-    csv_file = 'KF1x1.csv'
-    with open(csv_file, "w") as output:
-        output.write(res_title + '\n')
+        # Summarize
+        print(f"{res_title}")
         for i in range(len(Res)):
-            output.write("{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},\n" \
-                         .format(Res[i][0], Res[i][1], Res[i][2], Res[i][3], Res[i][4], Res[i][5]))
+            print("{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},"\
+                  .format(Res[i][0], Res[i][1], Res[i][2], Res[i][3], Res[i][4], Res[i][5]))
+        csv_file = 'KF1x1.csv'
+        with open(csv_file, "w") as output:
+            output.write(res_title + '\n')
+            for i in range(len(Res)):
+                output.write("{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},\n" \
+                             .format(Res[i][0], Res[i][1], Res[i][2], Res[i][3], Res[i][4], Res[i][5]))
 
 
 
