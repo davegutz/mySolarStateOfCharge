@@ -189,7 +189,7 @@ def main():
     # # The following are not implemented in GUI
     #
     time_end_in = None
-    # time_end_in = 12.
+    # time_end_in = 2.
     #
     #
     s_hys_sim_in = 1.
@@ -205,8 +205,8 @@ def main():
     use_mon_soc_ = False
     # use_mon_soc_ = True
 
-    plots = False
-    # plots = True
+    # plots = False
+    plots = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=use_mon_soc_, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
