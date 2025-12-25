@@ -15,3 +15,6 @@ SOC_Particle/nul
 /SOC_Particle/pyStateOfChargeNew
 *.log
 *.raw
+*.o
+*.elf
+/ble-uart-peripheral/target
