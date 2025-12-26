@@ -29,8 +29,6 @@
 // Hardware configuration
 #undef HDWE_UNIT
 #undef HDWE_BARE
-#undef HDWE_PHOTON
-#undef HDWE_ARGON
 #undef SOFT_SBAUD
 #undef SOFT_S1BAUD
 #undef HDWE_IB_HI_LO

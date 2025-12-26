@@ -441,9 +441,7 @@ void loop()
     if ( sp.modeling_z && reset && Sen->Sim->q()<=0. ) Sen->Ib = 0.;
 
     // Debug for read
-    #ifndef HDWE_PHOTON
-      if ( sp.debug_z==12 ) debug_12(Mon, Sen);
-    #endif
+    if ( sp.debug_z==12 ) debug_12(Mon, Sen);
 
     // Publish for variable print rate
     if ( cp.publishS )

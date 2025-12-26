@@ -43,76 +43,74 @@ void add_verify(String *src, const String addend)
 }
 
 
-#ifndef HDWE_PHOTON
-  // sp.debug()==12 EKF
-  void debug_12(BatteryMonitor *Mon, Sensors *Sen)
-  {
-    Serial.printf("ib,ib_mod,   vb,vb_mod,  voc,voc_stat_mod,voc_mod,   K, y,    SOC_mod, SOC_ekf, SOC,   %7.3f,%7.3f,   %7.3f,%7.3f,   %7.3f,%7.3f,%7.3f,    %7.3f,%7.3f,   %7.3f,%7.3f,%7.3f,\n",
-    Mon->ib(), Sen->Sim->ib(),
-    Mon->vb(), Sen->Sim->vb(),
-    Mon->voc(), Sen->Sim->voc_stat(), Sen->Sim->voc(),
-    Mon->K_ekf(), Mon->y_ekf(),
-    Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc());
-  }
+// sp.debug()==12 EKF
+void debug_12(BatteryMonitor *Mon, Sensors *Sen)
+{
+  Serial.printf("ib,ib_mod,   vb,vb_mod,  voc,voc_stat_mod,voc_mod,   K, y,    SOC_mod, SOC_ekf, SOC,   %7.3f,%7.3f,   %7.3f,%7.3f,   %7.3f,%7.3f,%7.3f,    %7.3f,%7.3f,   %7.3f,%7.3f,%7.3f,\n",
+  Mon->ib(), Sen->Sim->ib(),
+  Mon->vb(), Sen->Sim->vb(),
+  Mon->voc(), Sen->Sim->voc_stat(), Sen->Sim->voc(),
+  Mon->K_ekf(), Mon->y_ekf(),
+  Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc());
+}
 
 // sp.debug()==-13 ib_dscn for Arduino.
-  // Start Arduino serial plotter.  Toggle v like 'vv0;vv-13;' to produce legend
-  void debug_m13(Sensors *Sen)
-  {
+// Start Arduino serial plotter.  Toggle v like 'vv0;vv-13;' to produce legend
+void debug_m13(Sensors *Sen)
+{
 
-    // Arduinio header
-    static int8_t last_call = 0;
-    if ( sp.debug()!=last_call && sp.debug()==-13 )
-      Serial.printf("ib_sel_st:, ib_amph:, ib_noah:, ib_rate:, ib_quiet:,  dscn_flt:, dscn_fa:\n");
-    last_call = sp.debug();
+  // Arduinio header
+  static int8_t last_call = 0;
+  if ( sp.debug()!=last_call && sp.debug()==-13 )
+    Serial.printf("ib_sel_st:, ib_amph:, ib_noah:, ib_rate:, ib_quiet:,  dscn_flt:, dscn_fa:\n");
+  last_call = sp.debug();
 
-    // Plot
-    if ( sp.debug()!=-13)
-      return;
-    else
-        Serial.printf("%d, %7.3f,%7.3f,  %7.3f,%7.3f,   %d,%d\n",
-    Sen->Flt->ib_sel_stat(),
-    max(min(Sen->Ib_amp_hdwe, 2), -2), max(min(Sen->Ib_noa_hdwe, 2), -2),
-    max(min(Sen->Flt->ib_rate(),2), -2), max(min(Sen->Flt->ib_quiet(), 2), -2),
-    Sen->Flt->ib_dscn_fa(), Sen->Flt->ib_dscn_fa());
-  }
+  // Plot
+  if ( sp.debug()!=-13)
+    return;
+  else
+      Serial.printf("%d, %7.3f,%7.3f,  %7.3f,%7.3f,   %d,%d\n",
+  Sen->Flt->ib_sel_stat(),
+  max(min(Sen->Ib_amp_hdwe, 2), -2), max(min(Sen->Ib_noa_hdwe, 2), -2),
+  max(min(Sen->Flt->ib_rate(),2), -2), max(min(Sen->Flt->ib_quiet(), 2), -2),
+  Sen->Flt->ib_dscn_fa(), Sen->Flt->ib_dscn_fa());
+}
 
-  // sp.debug()==-23 vb for Arduino.
-  // Start Arduino serial plotter.  Toggle v like 'vv0;vv-23;' to produce legend
-  void debug_m23(Sensors *Sen)
-  {
+// sp.debug()==-23 vb for Arduino.
+// Start Arduino serial plotter.  Toggle v like 'vv0;vv-23;' to produce legend
+void debug_m23(Sensors *Sen)
+{
 
-    // Arduinio header
-    static int8_t last_call = 0;
-    if ( sp.debug()!=last_call && sp.debug()==-23 )
-      Serial.printf("Vb_hdwe-Vb_hdwe_f:\n");
-    last_call = sp.debug();
+  // Arduinio header
+  static int8_t last_call = 0;
+  if ( sp.debug()!=last_call && sp.debug()==-23 )
+    Serial.printf("Vb_hdwe-Vb_hdwe_f:\n");
+  last_call = sp.debug();
 
-    // Plot
-    if ( sp.debug()!=-23)
-      return;
-    else
-        Serial.printf("%7.3f\n", Sen->Vb_hdwe - Sen->Vb_hdwe_f);
-  }
+  // Plot
+  if ( sp.debug()!=-23)
+    return;
+  else
+      Serial.printf("%7.3f\n", Sen->Vb_hdwe - Sen->Vb_hdwe_f);
+}
 
-  // sp.debug()==-24 Vb, Ib for Arduino.
-  // Start Arduino serial plotter.  Toggle v like 'vv0;vv-23;' to produce legend
-  void debug_m24(Sensors *Sen)
-  {
+// sp.debug()==-24 Vb, Ib for Arduino.
+// Start Arduino serial plotter.  Toggle v like 'vv0;vv-23;' to produce legend
+void debug_m24(Sensors *Sen)
+{
 
-    // Arduinio header
-    static int8_t last_call = 0;
-    if ( sp.debug()!=last_call && sp.debug()==-23 )
-      Serial.printf("Vb_hdwe-Vb_hdwe_f:, Ib_hdwe:\n");
-    last_call = sp.debug();
+  // Arduinio header
+  static int8_t last_call = 0;
+  if ( sp.debug()!=last_call && sp.debug()==-23 )
+    Serial.printf("Vb_hdwe-Vb_hdwe_f:, Ib_hdwe:\n");
+  last_call = sp.debug();
 
-    // Plot
-    if ( sp.debug()!=-24)
-      return;
-    else
-        Serial.printf("%7.3f, %7.3f\n", Sen->Vb_hdwe - Sen->Vb_hdwe_f, Sen->Ib_hdwe);
-  }
-#endif
+  // Plot
+  if ( sp.debug()!=-24)
+    return;
+  else
+      Serial.printf("%7.3f, %7.3f\n", Sen->Vb_hdwe - Sen->Vb_hdwe_f, Sen->Ib_hdwe);
+}
 
 // Q quick print critical parameters
 void debug_q(BatteryMonitor *Mon, Sensors *Sen)

@@ -206,9 +206,7 @@ void Shunt::sample_combine(const boolean reset_kf)
 {
   Vo_Vc_ = Vo_ - Vc_;
   Vo_Vc_kf_ = KF_->calculate(reset_kf, dt()/1000., Vo_Vc_);
-  #ifndef HDWE_PHOTON
-    if  ( sp.debug()==14 )Serial.printf("reset_kf %d ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f Vo_Vc_kf_%7.3f Vc_%7.3f\n", reset_kf, (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, Vo_Vc_kf_, Vc_);
-  #endif
+  if  ( sp.debug()==14 )Serial.printf("reset_kf %d ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f Vo_Vc_kf_%7.3f Vc_%7.3f\n", reset_kf, (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, Vo_Vc_kf_, Vc_);
 }
 
 void Shunt::sample_Vc()
@@ -467,11 +465,9 @@ void Fault::ib_quiet(const boolean reset, Sensors *Sen)
   // Fault
   faultAssign( ib_is_quiet_, IB_DSCN_FLT );   // initializes false
   failAssign( QuietPer->calculate(dscn_flt(), QUIET_S, QUIET_R, Sen->T, reset_loc), IB_DSCN_FA);
-  #ifndef HDWE_PHOTON
-    if ( sp.debug()==-13 ) debug_m13(Sen);
-    if ( sp.debug()==-23 ) debug_m23(Sen);
-    if ( sp.debug()==-24 ) debug_m24(Sen);
-  #endif
+  if ( sp.debug()==-13 ) debug_m13(Sen);
+  if ( sp.debug()==-23 ) debug_m23(Sen);
+  if ( sp.debug()==-24 ) debug_m24(Sen);
 }
 
 // Range checks latch
@@ -1385,9 +1381,7 @@ void Sensors::select_temp(BatteryMonitor *Mon)
       Tb_f = RATED_TEMP + ap.Tb_bias_model;  // Simplifying assumption that Tb_f perfectly quiet - so don't have to make model of filter
       Tb_f_rate = 0.;
     }
-    #ifndef HDWE_PHOTON
-      if ( sp.debug()==16) Serial.printf("Tb_noise %9.5f Tb%9.5f Tb_f%9.5f Tb_f%9.5f tb_fa %d\n", Tb_noise(), Tb, Tb_f, Tb_f, Flt->tb_fa());
-    #endif
+    if ( sp.debug()==16) Serial.printf("Tb_noise %9.5f Tb%9.5f Tb_f%9.5f Tb_f%9.5f tb_fa %d\n", Tb_noise(), Tb, Tb_f, Tb_f, Flt->tb_fa());
   }
   else
   {

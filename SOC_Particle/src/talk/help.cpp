@@ -35,11 +35,7 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 extern CommandPars cp;  // Various parameters shared at system level
 extern Flt_st mySum[NSUM];  // Summaries for saving charge history
 
-#if defined(HDWE_PHOTON)
-  #define HELPLESS
-#else
-  #undef HELPLESS
-#endif
+#undef HELPLESS
 
 // Talk Help
 void talkH(BatteryMonitor *Mon, Sensors *Sen)
@@ -142,6 +138,12 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.disab_tb_fa_p->print_help();  // FT
   ap.disab_vb_fa_p->print_help();  // FV
 
+  if ( BLE.connected() )
+  {
+    sprintf(pr.buff, "  Hd= ");
+    txCharacteristic.setValue(reinterpret_cast<const uint8_t*>(pr.buff), sizeof(pr.buff));
+  }
+
   Serial.printf("\nH<?>   Manage history\n");
   Serial.printf("  Hd= "); Serial.printf("dump summ log\n");
   Serial.printf("  HR= "); Serial.printf("reset summ log\n");
@@ -205,25 +207,21 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   Serial.printf("  vv3: EKF\n");
   Serial.printf("  vv4: GP, Sim, Sel, & EKF\n");
   Serial.printf("  vv5: OLED display\n");
-  #ifndef HDWE_PHOTON
-    Serial.printf(" vv12: EKF\n");
-    Serial.printf("vv-13: ib_dscn\n");
-  #endif
+  Serial.printf(" vv12: EKF\n");
+  Serial.printf("vv-13: ib_dscn\n");
   Serial.printf(" vv14: vshunt and Ib raw\n");
   Serial.printf(" vv15: vb raw\n");
   Serial.printf(" vv16: Tb\n");
-  #ifndef HDWE_PHOTON
-    Serial.printf("vv-23: Vb_hdwe_ac\n");
-    Serial.printf("vv-24: Vb_hdwe_ac, Ib_hdwe\n");
-    Serial.printf(" vv34: EKF detail\n");
-    Serial.printf(" vv35: ChargeTransfer balance\n");
-    Serial.printf(" vv36: EKF short in EKF\n");
-    Serial.printf(" vv37: EKF short\n");
-    Serial.printf(" vv75: voc_low check mod\n");
-    Serial.printf(" vv76: vb model\n");
-    Serial.printf(" vv78: Batt model sat\n");
-    Serial.printf(" vv79: sat_ib model\n");
-  #endif
+  Serial.printf("vv-23: Vb_hdwe_ac\n");
+  Serial.printf("vv-24: Vb_hdwe_ac, Ib_hdwe\n");
+  Serial.printf(" vv34: EKF detail\n");
+  Serial.printf(" vv35: ChargeTransfer balance\n");
+  Serial.printf(" vv36: EKF short in EKF\n");
+  Serial.printf(" vv37: EKF short\n");
+  Serial.printf(" vv75: voc_low check mod\n");
+  Serial.printf(" vv76: vb model\n");
+  Serial.printf(" vv78: Batt model sat\n");
+  Serial.printf(" vv79: sat_ib model\n");
   Serial.printf(" vv98: shunt filtering check\n");
   Serial.printf(" vv99: calibration\n");
 
