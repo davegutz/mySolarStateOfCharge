@@ -96,6 +96,60 @@ boolean is_finished(const char in_char)
             in_char == ',';    
 }
 
+// BLE receive
+void onBLE_DataReceived(const uint8_t* data, size_t len, const BlePeerDevice& peer, void* context)
+{
+  size_t ii = 0;
+
+  // Validate input
+  Serial.printf("From BLE app::");
+  for (; ii < len; ii++)
+  {
+    Serial.write(data[ii]);
+  }
+
+  // Parse input
+  static String serial_str = "";
+  static boolean serial_ready = false;
+  // Each pass try to complete input from avaiable
+  ii = 0;
+  while ( !serial_ready && ( ii < len ) )
+  {
+    char in_char = (char) data[ii++];  // get the new byte
+
+    // Intake
+    // if the incoming character to finish, add a ';' and set flags so the main loop can do something about it:
+    if ( is_finished(in_char) )
+    {
+        serial_str += ';';
+        serial_ready = true;
+        break;
+    }
+    else if ( in_char == '\r' )
+        Serial.printf("\n");  // scroll user terminal
+    else if ( in_char == '\b' && serial_str.length() )
+    {
+        Serial.printf("\b \b");  // scroll user terminal
+        serial_str.remove(serial_str.length() -1 );  // backspace
+    }
+    else
+        serial_str += in_char;  // process new valid character
+  }
+
+  // Pass info to inp_str
+  if ( serial_ready )
+  {
+    if ( !cp.inp_token )
+    {
+        cp.inp_token = true;
+        add_verify(&cp.inp_str, serial_str);
+        Serial.printf("add_verified %s\n", serial_str.c_str());
+        serial_ready = false;
+        cp.inp_token = false;
+        serial_str = "";
+    }     
+  }
+}
 
 // Print consolidation
 void print_all_header(Sensors *Sen)
@@ -545,7 +599,6 @@ void serialEvent1()
   }
 }
 
-
 // Wait on user input to reset EERAM values
 void wait_on_user_input(Adafruit_SSD1306 *display)
 {
@@ -607,9 +660,7 @@ void wait_on_user_input(Adafruit_SSD1306 *display)
     Serial.printf(" ...yes\n\n"); Serial1.printf(" ...yes\n\n");
     sp.set_nominal();
     sp.pretty_print( true );
-    #ifdef HDWE_PHOTON2
-      System.backupRamSync();
-    #endif
+    System.backupRamSync();
   }
   else if ( answer=='n' || answer=='N' || count==30 )
   {
@@ -673,9 +724,7 @@ void wait_on_user_input()
     Serial.printf("  Y\n\n"); Serial1.printf("  Y\n\n");
     sp.set_nominal();
     sp.pretty_print( true );
-    #ifdef HDWE_PHOTON2
-      System.backupRamSync();
-    #endif
+    System.backupRamSync();
   }
   else if ( answer=='n' || answer=='N' || count==30 )
   {

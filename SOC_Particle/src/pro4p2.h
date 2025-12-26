@@ -7,7 +7,6 @@
 #define HDWE_UNIT               "pro4p2"
 #define SOFT_SBAUD              460800      // Default Serial baud when able (don't think this does anything)
 #define SOFT_S1BAUD             230400      // Default Serial1 baud when able to run AT to set it using AT+BAUD9 (don't think this does anything)
-#define HDWE_PHOTON2
 #define HDWE_BARE
 // #define SOFT_DEBUG_QUEUE
 // #define DEBUG_DETAIL                    // Use this to debug initialization using 'v-1;'

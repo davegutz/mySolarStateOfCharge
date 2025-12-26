@@ -229,9 +229,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
 
   Serial.printf("\nW<?> - iters to wait\n");
 
-  #ifdef HDWE_PHOTON2
-    Serial.printf("\nw - save * confirm adjustments to SRAM\n");
-  #endif
+  Serial.printf("\nw - save * confirm adjustments to SRAM\n");
 
   Serial.printf("\nX<?> - Test Mode.   For example:\n");
   ap.dc_dc_on_p->print_help();  // Xd

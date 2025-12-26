@@ -480,12 +480,10 @@ void describe(BatteryMonitor *Mon, Sensors *Sen)
 
       // Photon 2 O/S waits 10 seconds between backup SRAM saves.  To save time, you can get in the habit of pressing 'w;'
       // This was not done for all passes just to save only when an adjustment change verified by user (* parameters), to avoid SRAM life impact.
-      #ifdef HDWE_PHOTON2
       case ( 'w' ):  // w:  confirm write * adjustments to to SRAM
         System.backupRamSync();
         Serial.printf("SAVED *\n"); Serial1.printf("SAVED *\n");
         break;
-      #endif
 
       case ( 'W' ):  // W<>:  wait.  Skip
         if ( cp.cmd_str.substring(1).length() )

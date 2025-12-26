@@ -63,21 +63,9 @@
 
 #include "constants.h"
 // Prevent mixing up local_config files (still could sneak soc0p through as pro0p)
-#if defined(HDWE_PHOTON)
-  #undef ARDUINO
-  #if (PLATFORM_ID != PLATFORM_PHOTON)
-    #error "copy local_config.xxxx.h to constants.h"
-  #endif
-#elif defined(HDWE_ARGON)
-  #undef ARDUINO
-  #if (PLATFORM_ID != PLATFORM_ARGON)
-    // #error "edit constants.h to select local_config.xxxx.h to match device"
-  #endif
-#elif defined(HDWE_PHOTON2)
-  #undef ARDUINO
-  #if (PLATFORM_ID != PLATFORM_P2)
-    #error "copy local_config.xxxx.h to constants.h"
-  #endif
+#undef ARDUINO
+#if (PLATFORM_ID != PLATFORM_P2)
+  #error "copy local_config.xxxx.h to constants.h"
 #endif
 
 // Dependent includes.   Easier to sp.debug code if remove unused include files
@@ -103,6 +91,8 @@ extern CommandPars cp;            // Various parameters shared at system level
 extern PrinterPars pr;            // Print buffer structure
 extern PublishPars pp;            // For publishing
 extern Flt_st mySum[NSUM];        // Summaries for saving charge history
+extern BleCharacteristic txCharacteristic;  // Transmit to BLE
+extern BleCharacteristic rxCharacteristic;  // Receive from BLE
 
 retained Flt_st saved_hist[NHIS];    // For displaying history
 retained Flt_st saved_faults[NFLT];  // For displaying faults
@@ -113,6 +103,8 @@ PrinterPars pr = PrinterPars();       // Print buffer
 VolatilePars ap = VolatilePars();     // Various adjustment parameters commanding at system level.  Initialized on start up.  Not retained.
 CommandPars cp = CommandPars();       // Various control parameters commanding at system level.  Initialized on start up.  Not retained.
 PublishPars pp = PublishPars();       // Common parameters for publishing.  Future-proof cloud monitoring
+BleCharacteristic txCharacteristic("tx", BleCharacteristicProperty::NOTIFY, txUuid, serviceUuid);
+BleCharacteristic rxCharacteristic("rx", BleCharacteristicProperty::WRITE_WO_RSP, rxUuid, serviceUuid, onBLE_DataReceived, NULL);
 unsigned long long millis_flip = System.millis(); // Timekeeping
 unsigned long long last_sync = System.millis();   // Timekeeping
 
@@ -122,74 +114,6 @@ Pins *myPins;                   // Photon hardware pin mapping used
 #if defined(HDWE_SSD1306_OLED) && !defined(HDWE_2WIRE)
   Adafruit_SSD1306 *display;      // Main OLED display
 #endif
-
-// BLE example
-const size_t UART_TX_BUF_SIZE = 20;
-void onDataReceived(const uint8_t* data, size_t len, const BlePeerDevice& peer, void* context);
-// These UUIDs were defined by Nordic Semiconductor and are now the defacto standard for
-// UART-like services over BLE. Many apps support the UUIDs now, like the Adafruit Bluefruit app.
-const BleUuid serviceUuid("6E400001-B5A3-F393-E0A9-E50E24DCCA9E");
-const BleUuid rxUuid("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
-const BleUuid txUuid("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
-// This connects USB serial to Bluefruit
-BleCharacteristic txCharacteristic("tx", BleCharacteristicProperty::NOTIFY, txUuid, serviceUuid);
-// Echo BLE receptions on local Serial
-// Without this:  UART won't be available on Bluefruit; and Bluefruit transmissions not echoed to USB Serial
-// though still show on Bluefruit due to it's own echo
-BleCharacteristic rxCharacteristic("rx", BleCharacteristicProperty::WRITE_WO_RSP, rxUuid, serviceUuid, onDataReceived, NULL);
-void onDataReceived(const uint8_t* data, size_t len, const BlePeerDevice& peer, void* context)
-{
-  size_t ii = 0;
-
-  // Validate input
-  Serial.printf("From BLE app::");
-  for (; ii < len; ii++)
-  {
-    Serial.write(data[ii]);
-  }
-
-  // Parse input
-  static String serial_str = "";
-  static boolean serial_ready = false;
-  // Each pass try to complete input from avaiable
-  ii = 0;
-  while ( !serial_ready && ( ii < len ) )
-  {
-    char in_char = (char) data[ii++];  // get the new byte
-
-    // Intake
-    // if the incoming character to finish, add a ';' and set flags so the main loop can do something about it:
-    if ( is_finished(in_char) )
-    {
-        serial_str += ';';
-        serial_ready = true;
-        break;
-    }
-    else if ( in_char == '\r' )
-        Serial.printf("\n");  // scroll user terminal
-    else if ( in_char == '\b' && serial_str.length() )
-    {
-        Serial.printf("\b \b");  // scroll user terminal
-        serial_str.remove(serial_str.length() -1 );  // backspace
-    }
-    else
-        serial_str += in_char;  // process new valid character
-  }
-
-  // Pass info to inp_str
-  if ( serial_ready )
-  {
-    if ( !cp.inp_token )
-    {
-        cp.inp_token = true;
-        add_verify(&cp.inp_str, serial_str);
-        Serial.printf("add_verified %s\n", serial_str.c_str());
-        serial_ready = false;
-        cp.inp_token = false;
-        serial_str = "";
-    }     
-  }
-}
 
 // Setup
 void setup()
@@ -239,19 +163,7 @@ void setup()
   // A5 (pin 'D14') - Vr or Vc
 
   Log.info("setup Pins");
-  #ifdef HDWE_PHOTON2
-    #if defined(HDWE_DS2482_1WIRE) | defined(HDWE_BARE)
-      myPins = new Pins(D3, D7, D12, D11, D13, D14);
-    #elif defined(HDWE_2WIRE)
-      myPins = new Pins(D3, D7, D12, D11, D13, D14, D0, true);
-    #else
-      #if !defined(HDWE_BARE)
-        #error "Temperature sensor undefined"
-      #endif
-    #endif
-  #else
-    myPins = new Pins(D6, D7, A1, A2, A3, A4, A5);
-  #endif
+  myPins = new Pins(D3, D7, D12, D11, D13, D14, D0, true);
   pinMode(myPins->status_led, OUTPUT);
   digitalWrite(myPins->status_led, LOW);
 
@@ -272,36 +184,10 @@ void setup()
   #endif
 
   // Display (after start Wire)
-  #if defined(HDWE_SSD1306_OLED) && !defined(HDWE_2WIRE)
-    Log.info("setup display");
-    display = new Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-    Serial.printf("Init DISP\n");
-    if(!display->begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) // Seems to return true even if depowered
-    {
-      Serial.printf("FAIL. Use BT\n");
-      // Can Use Bluetooth as workaround
-    }
-    else
-      Serial.printf("DISP ok\n");
-    #ifndef HDWE_BARE
-      display->clearDisplay();
-    #endif
-    // Minimize power transients
-    #ifdef HDWE_PHOTON2
-      delay(1000);
-    #endif
-  #endif
 
   // 1-Wire chip card for I2C (after start Wire)
-  #ifdef HDWE_DS2482_1WIRE
-    Log.info("setup DS2482 special 1-wire");
-    ds.setup();
-    Ds2482.setup();
-    Serial.printf("DS2482 multi-drop setup complete\n");
-  #elif defined(HDWE_2WIRE)
+  #if defined(HDWE_2WIRE)
     Serial.printf("Using 2Wire Temperature sensor\n");
-  #elif defined(HDWE_DS18B20_SWIRE)
-    Serial.printf("Using 1Wire Temperature sensor\n");
   #elif defined(HDWE_BARE)
     Serial.printf("Going naked\n");
   #else
@@ -342,9 +228,7 @@ void setup()
   }
 
   // Enable and print stored history
-  #if defined(HDWE_PHOTON) || defined(HDWE_PHOTON2)  // TODO: test that ARGON still works with the #if in place
-    System.enableFeature(FEATURE_RETAINED_MEMORY);
-  #endif
+  System.enableFeature(FEATURE_RETAINED_MEMORY);
   if ( sp.debug_z==1 || sp.debug_z==2 || sp.debug_z==3 || sp.debug_z==4 )
   {
     sp.print_history_array();

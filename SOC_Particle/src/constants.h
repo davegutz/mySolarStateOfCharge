@@ -31,7 +31,6 @@
 #undef HDWE_BARE
 #undef HDWE_PHOTON
 #undef HDWE_ARGON
-#undef HDWE_PHOTON2
 #undef SOFT_SBAUD
 #undef SOFT_S1BAUD
 #undef HDWE_IB_HI_LO
@@ -117,39 +116,9 @@ const String unit = version + "_" + HDWE_UNIT;
 // If NSUM too large, will get flashing red with auto reboot on 'Hs' or compile error `.data' will not fit in region `APP_FLASH'
 // For all, there are 40 bytes for each unit of NSUM
 
-#ifdef HDWE_PHOTON  // dec ~134000  units: pro0p, soc0p
-    #ifdef SOFT_DEPLOY_PHOTON
-        #define NFLT   7  // Number of saved SRAM/EERAM fault data slices 10 s intervals.  (7)
-        #define NHIS  49  // Number of saved SRAM history data slices. Sized to approx match  Photon2, If too large, will get compile error BACKUPSRAM   (49)
-        #define NSUM  90  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error APP_FLASH, or GUI FRAG msg  (110)
-    #else
-        #ifdef DEBUG_DETAIL
-            #error("Not possible to deploy Photon with DEBUG_DETAIL")
-        #else
-            #ifdef SOFT_DEBUG_QUEUE
-                #define NFLT  7  // Number of saved SRAM/EERAM fault data slices 10 s intervals.  If too large, will get compile error BACKUPSRAM (7)
-                #define NHIS 36  // Number of saved SRAM history data slices. Sized to approx match Photon2 (36)
-                #define NSUM 16  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error BACKUPSRAM  (16)
-            #else
-                #define NFLT  7  // Number of saved SRAM/EERAM fault data slices 10 s intervals.  If too large, will get compile error BACKUPSRAM (7)
-                #define NHIS 56  // Number of saved SRAM history data slices. Sized to approx match  Photon2  (56)
-                #define NSUM  2  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error BACKUPSRAM  (9)
-            #endif
-        #endif
-    #endif
-#endif
-
-#ifdef HDWE_ARGON  // dec ~222350  units: pro1a, soc1a
-    #define NFLT    7  // Number of saved SRAM/EERAM fault data slices 10 s intervals (7)
-    #define NHIS 1000  // Ignored Argon.  Actual nhis_ is dynamically allocated based on EERAM size, holding NFLT constant. 
-    #define NSUM 1700  // Number of saved summaries. If NFLT + NSUM ttoo large, will get compile error SRAM, BACKUPSRAM, or GUI FRAG msg (170)
-#endif
-
-#ifdef HDWE_PHOTON2  // dec ~ 256268  units: pro2p2, soc3p2
-    #define NFLT    7  // Number of saved SRAM fault data slices 10 s intervals (7)
-    #define NHIS   50  // Number of saved SRAM history data slices. If NFLT + NHIS too large will get compile error BACKUPSRAM (55)
-    #define NSUM 2500  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error BACKUPSRAM, or GUI FRAG msg (2845) or SOS 4 Bus Fault (2500)
-#endif
+#define NFLT    7  // Number of saved SRAM fault data slices 10 s intervals (7)
+#define NHIS   50  // Number of saved SRAM history data slices. If NFLT + NHIS too large will get compile error BACKUPSRAM (55)
+#define NSUM 2400  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error BACKUPSRAM, or GUI FRAG msg (2845) or SOS 4 Bus Fault (2500)
 
 #define HDB_TBATT             0.06      // Half deadband to filter Tb, F (0.06)
 #define HDB_VB                0.05      // Half deadband to filter Vb, V (0.05)
