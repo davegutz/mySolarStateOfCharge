@@ -443,99 +443,106 @@ void print_temp_serial(const boolean reset, Sensors *Sen)
  */
 void serialEvent()
 {
-    static String serial_str = "";
-    static boolean serial_ready = false;
+  static String serial_str = "";
+  static boolean serial_ready = false;
 
-    // Each pass try to complete input from avaiable
-    while ( !serial_ready && Serial.available() )
+   if (BLE.connected())
+  {
+    return;
+  }
+
+  // Each pass try to complete input from avaiable
+  while ( !serial_ready && Serial.available() )
+  {
+    char in_char = (char)Serial.read();  // get the new byte
+
+    // Intake
+    // if the incoming character to finish, add a ';' and set flags so the main loop can do something about it:
+    if ( is_finished(in_char) )
     {
-        char in_char = (char)Serial.read();  // get the new byte
-
-        // Intake
-        // if the incoming character to finish, add a ';' and set flags so the main loop can do something about it:
-        if ( is_finished(in_char) )
-        {
-            serial_str += ';';
-            serial_ready = true;
-            break;
-        }
-
-        else if ( in_char == '\r' )
-            Serial.printf("\n");  // scroll user terminal
-
-        else if ( in_char == '\b' && serial_str.length() )
-        {
-            Serial.printf("\b \b");  // scroll user terminal
-            serial_str.remove(serial_str.length() -1 );  // backspace
-        }
-
-        else
-            serial_str += in_char;  // process new valid character
-
+        serial_str += ';';
+        serial_ready = true;
+        break;
     }
 
-    // Pass info to inp_str
-    if ( serial_ready )
+    else if ( in_char == '\r' )
+        Serial.printf("\n");  // scroll user terminal
+
+    else if ( in_char == '\b' && serial_str.length() )
     {
-        if ( !cp.inp_token )
-        {
-            cp.inp_token = true;
-            add_verify(&cp.inp_str, serial_str);
-            serial_ready = false;
-            cp.inp_token = false;
-            serial_str = "";
-        }
+        Serial.printf("\b \b");  // scroll user terminal
+        serial_str.remove(serial_str.length() -1 );  // backspace
     }
+
+    else
+        serial_str += in_char;  // process new valid character
+  }
+
+  // Pass info to inp_str
+  if ( serial_ready )
+  {
+      if ( !cp.inp_token )
+      {
+          cp.inp_token = true;
+          add_verify(&cp.inp_str, serial_str);
+          serial_ready = false;
+          cp.inp_token = false;
+          serial_str = "";
+      }
+  }
 
 }
 
 
 void serialEvent1()
 {
-    static String serial_str1 = "";
-    static boolean serial_ready1 = false;
+  static String serial_str1 = "";
+  static boolean serial_ready1 = false;
 
-    // Each pass try to complete input from avaiable
-    while ( !serial_ready1 && Serial1.available() )
+  if (BLE.connected())
+  {
+    return;
+  }
+
+  // Each pass try to complete input from avaiable
+  while ( !serial_ready1 && Serial1.available() )
+  {
+    char in_char1 = (char)Serial1.read();  // get the new byte
+
+    // Intake
+    // if the incoming character to finish, add a ';' and set flags so the main loop can do something about it:
+    if ( is_finished(in_char1) )
     {
-        char in_char1 = (char)Serial1.read();  // get the new byte
-
-        // Intake
-        // if the incoming character to finish, add a ';' and set flags so the main loop can do something about it:
-        if ( is_finished(in_char1) )
-        {
-            serial_str1 += ';';
-            serial_ready1 = true;
-            break;
-        }
-
-        else if ( in_char1 == '\r' )
-            Serial1.printf("\n");  // scroll user terminal
-
-        else if ( in_char1 == '\b' && serial_str1.length() )
-        {
-            Serial1.printf("\b \b");  // scroll user terminal
-            serial_str1.remove(serial_str1.length() -1 );  // backspace
-        }
-
-        else
-            serial_str1 += in_char1;  // process new valid character
-
+        serial_str1 += ';';
+        serial_ready1 = true;
+        break;
     }
 
-    // Pass info to inp_str
-    if ( serial_ready1 )
+    else if ( in_char1 == '\r' )
+        Serial1.printf("\n");  // scroll user terminal
+
+    else if ( in_char1 == '\b' && serial_str1.length() )
     {
-        if ( !cp.inp_token )
-        {
-            cp.inp_token = true;
-            cp.inp_str += serial_str1;
-            serial_ready1 = false;
-            cp.inp_token = false;
-            serial_str1 = "";
-        }
+        Serial1.printf("\b \b");  // scroll user terminal
+        serial_str1.remove(serial_str1.length() -1 );  // backspace
     }
 
+    else
+        serial_str1 += in_char1;  // process new valid character
+  }
+
+  // Pass info to inp_str
+  if ( serial_ready1 )
+  {
+      if ( !cp.inp_token )
+      {
+          cp.inp_token = true;
+          cp.inp_str += serial_str1;
+          serial_ready1 = false;
+          cp.inp_token = false;
+          serial_str1 = "";
+      }
+  }
 }
 
 
