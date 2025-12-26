@@ -257,13 +257,6 @@ public:
     boolean mod_vb() { return ( 1<<1 & modeling() || mod_vb_dscn() ); }  // Using Sim as source of vb
     boolean mod_vb_dscn() { return ( 1<<5 & modeling() ); }              // Nothing connected to vb on A1
 
-    #ifdef HDWE_47L16_EERAM
-        void get_fault(const uint8_t i) { fault_[i].get(); }
-        void get_history(const uint8_t i) { history_[i].get(); }
-        uint16_t next() { return next_; }
-        void load_all();
-    #endif
-
     // put
     void put_all_dynamic();
     void put_amp(const float input) { amp_p->check_set_put(input); }
@@ -296,13 +289,8 @@ public:
     void put_Type(const uint8_t input) { Type_p->check_set_put(input); }
     void put_Vb_bias_hdwe(const float input) { Vb_bias_hdwe_p->check_set_put(input); }
     void put_Vb_scale(const float input) { Vb_scale_p->check_set_put(input); }
-    #ifndef HDWE_47L16_EERAM
-        void put_modeling(const uint8_t input) { modeling_p->check_set_put(input); modeling_z = modeling();}
-        void put_fault(const Flt_st input, const uint8_t i) { fault_[i].copy_to_Flt_ram_from(input); }
-    #else
-        void put_modeling(const uint8_t input) { modeling_p->check_set_put(input); }
-        void put_fault(const Flt_st input, const uint8_t i) { fault_[i].put(input); }
-    #endif
+    void put_modeling(const uint8_t input) { modeling_p->check_set_put(input); modeling_z = modeling();}
+    void put_fault(const Flt_st input, const uint8_t i) { fault_[i].copy_to_Flt_ram_from(input); }
     //
     Flt_st put_history(const Flt_st input, const uint8_t i);
     boolean tweak_test() { return ( 1<<3 & modeling() ); } // Driving signal injection completely using software inj_bias 
@@ -371,13 +359,8 @@ public:
 
 protected:
     SerialRAM *rP_;
-    #ifndef HDWE_47L16_EERAM
-        Flt_st *fault_;
-        Flt_st *history_;
-    #else
-        Flt_ram *fault_;
-        Flt_ram *history_;
-    #endif
+    Flt_st *fault_;
+    Flt_st *history_;
     uint16_t next_;
     uint16_t nflt_;         // Length of Flt_ram array for fault snapshot
     uint16_t nhis_;         // Length of Flt_ram array for fault history

@@ -211,78 +211,10 @@ Flt_ram::Flt_ram()
 }
 Flt_ram::~Flt_ram(){}
 
-// Load all
-#ifdef HDWE_47L16_EERAM
-  void Flt_ram::get()
-  {
-    get_t_flt();
-    get_Tb_hdwe_filt();
-    get_vb_hdwe_filt();
-    get_ib_amp_hdwe_filt();
-    get_ib_noa_hdwe();
-    get_tb_f();
-    get_vb_filt();
-    get_ib_filt();
-    get_soc();
-    get_soc_ekf();
-    get_voc_filt();
-    get_voc_stat();
-    get_e_wrap_filt();
-    get_e_wrap_m_filt();
-    get_e_wrap_n_filt();
-    get_fltw();
-    get_falw();
-  }
-
-  // Initialize each structure
-  void Flt_ram::instantiate(SerialRAM *ram, uint16_t *next)
-  {
-    t_flt_eeram_.a16 = *next; *next += sizeof(t_flt);
-    Tb_hdwe_eeram_.a16 = *next; *next += sizeof(Tb_hdwe);
-    vb_hdwe_eeram_.a16 = *next; *next += sizeof(vb_hdwe);
-    ib_amp_hdwe_eeram_.a16 = *next; *next += sizeof(ib_amp_hdwe);
-    ib_noa_hdwe_eeram_.a16 = *next; *next += sizeof(ib_noa_hdwe);
-    Tb_eeram_.a16 = *next; *next += sizeof(Tb_filt);
-    vb_eeram_.a16 = *next; *next += sizeof(vb_filt);
-    ib_eeram_.a16 = *next; *next += sizeof(ib_filt);
-    soc_eeram_.a16 = *next; *next += sizeof(soc);
-    soc_min_eeram_.a16 = *next; *next += sizeof(soc_min);
-    soc_ekf_eeram_.a16 = *next; *next += sizeof(soc_ekf);
-    voc_eeram_.a16 = *next; *next += sizeof(voc_filt);
-    voc_stat_eeram_.a16 = *next; *next += sizeof(voc_stat);
-    e_wrap_filt_eeram_.a16 = *next; *next += sizeof(e_wrap_filt);
-    e_wrap_m_filt_eeram_.a16 = *next; *next += sizeof(e_wrap_m_filt);
-    e_wrap_n_filt_eeram_.a16 = *next; *next += sizeof(e_wrap_n_filt);
-    fltw_eeram_.a16 = *next; *next += sizeof(fltw);
-    falw_eeram_.a16 = *next; *next += sizeof(falw);
-    rP_ = ram;
-    nominal();
-  }
-#endif
-
 // Save all
 void Flt_ram::put(const Flt_st value)
 {
   copy_to_Flt_ram_from(value);
-  #ifdef HDWE_47L16_EERAM
-    put_t_flt();
-    put_Tb_hdwe_filt();
-    put_vb_hdwe_filt();
-    put_ib_amp_hdwe_filt();
-    put_ib_noa_hdwe_filt();
-    put_tb_f();
-    put_vb_f();
-    put_ib_f();
-    put_soc();
-    put_soc_ekf();
-    put_voc_filt();
-    put_voc_stat();
-    put_e_wrap_filt();
-    put_e_wrap_m_filt();
-    put_e_wrap_n_filt();
-    put_fltw();
-    put_falw();
-  #endif
 }
 
 // nominalize

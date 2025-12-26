@@ -49,16 +49,16 @@ void bitMapPrint(char *buf, const int16_t fw, const uint8_t num)
 // class TempSensor
 // constructors
 TempSensor::TempSensor(const uint16_t pin, const bool parasitic, const uint16_t conversion_delay)
-: DS18B20(pin, true, conversion_delay), tb_stale_flt_(true)
+: tb_stale_flt_(true)
 {
    SdTb = new SlidingDeadband(HDB_TBATT);
-   Serial.printf("DS18 1-wire Tb started\n");
+   Serial.printf("Tb started\n");
 }
 TempSensor::TempSensor(const uint16_t pin, const bool parasitic, const uint16_t conversion_delay, const uint16_t VTb_pin)
-: DS18B20(pin, true, conversion_delay), tb_stale_flt_(true), VTb_pin_(VTb_pin)
+: tb_stale_flt_(true), VTb_pin_(VTb_pin)
 {
    SdTb = new SlidingDeadband(HDB_TBATT);
-   Serial.printf("DS18 1-wire Tb started\n");
+   Serial.printf("Tb started\n");
 }
 TempSensor::~TempSensor() {}
 // operators
@@ -70,71 +70,24 @@ float TempSensor::sample(Sensors *Sen)
   // MAXIM conversion 1-wire Tp plenum temperature
   static double Tb_hdwe = 0.;
 
-  #ifdef HDWE_DS18B20_SWIRE
-    uint8_t count = 0;
-    float temp = 0.;
-    // Read hardware and check
-    while ( ++count<MAX_TEMP_READS && temp==0 && !sp.mod_tb_dscn() )
-    {
-        if ( crcCheck() ) temp = getTemperature() + (TBATT_TEMPCAL);
-      delay(1);
-    }
+  Tb_volt_ = float(analogRead(VTb_pin_))*VTB_CONV_GAIN;
+  sample_time_ = System.millis();
 
-    // Check success
-    if ( count<MAX_TEMP_READS && TEMP_RANGE_CHECK<temp && temp<TEMP_RANGE_CHECK_MAX && !ap.fail_tb )
-    {
-      Tb_hdwe = SdTb->update(temp);
-      sample_time_ = System.millis();
-      tb_stale_flt_ = false;
-      if ( sp.debug()==16 ) Serial.printf("I:  t=%9.5f ct=%d, Tb_hdwe=%9.5f,\n", temp, count, Tb_hdwe);
-    }
-    else
-    {
-      Serial.printf("DS18 1-wire Tb, t=%8.1f, ct=%d, sending Tb_hdwe=%8.1f\n", temp, count, Tb_hdwe);
-      tb_stale_flt_ = true;
-      // Using last-good-value:  no assignment
-    }
+  float res = Tb_volt_ * float(HDWE_RS_2WIRE) / (V3V3 - Tb_volt_);
+  #ifdef USE_SH_2WIRE
+    // Steinhart-Hart (see '2-wireRTD.ods')
+    float lnres = log(res);
+    Tb_hdwe = ( 1. / max( HDWE_SHA_2WIRE + (HDWE_SHB_2WIRE + HDWE_SHC_2WIRE *lnres*lnres) * lnres, 0.000001 ) ) - 273.;
 
-  #elif defined(HDWE_DS2482_1WIRE)
-    // Check success
-
-    if ( cp.tb_info.ready && TEMP_RANGE_CHECK<cp.tb_info.t_c && cp.tb_info.t_c<TEMP_RANGE_CHECK_MAX && !ap.fail_tb )
-    {
-      Tb_hdwe = SdTb->update(cp.tb_info.t_c);
-      sample_time_ = System.millis();
-      tb_stale_flt_ = false;
-      if ( sp.debug()==16 ) Serial.printf("I:  t=%9.5f ready=%d, Tb_hdwe=%9.5f,\n", cp.tb_info.t_c, cp.tb_info.ready, Tb_hdwe);
-    }
-    else
-    {
-      if ( sp.debug()>0 )
-        Serial.printf("DS18 1-wire Tb, t=%8.1f, ready=%d, sending Tb_hdwe=%8.1f\n", cp.tb_info.t_c, cp.tb_info.ready, Tb_hdwe);
-      tb_stale_flt_ = true;
-      // Using last-good-value:  no assignment
-    }
-
-  #elif defined(HDWE_2WIRE)
-
-    Tb_volt_ = float(analogRead(VTb_pin_))*VTB_CONV_GAIN;
-    sample_time_ = System.millis();
-
-    float res = Tb_volt_ * float(HDWE_RS_2WIRE) / (V3V3 - Tb_volt_);
-
-    #ifdef USE_SH_2WIRE
-      // Steinhart-Hart (see '2-wireRTD.ods')
-      float lnres = log(res);
-      Tb_hdwe = ( 1. / max( HDWE_SHA_2WIRE + (HDWE_SHB_2WIRE + HDWE_SHC_2WIRE *lnres*lnres) * lnres, 0.000001 ) ) - 273.;
-
-    #else
-      // Data fit (see '2-wireRTD.ods')
-      Tb_hdwe = float(HDWE_M_2WIRE) * log10(res) + float(HDWE_B_2WIRE);
-
-    #endif
-
-    tb_stale_flt_ = false;
-    if ( sp.debug()==16 ) Serial.printf("I 2wire:  volt=%7.3f Tb_hdwe=%9.5f,\n", Tb_volt_, Tb_hdwe);
+  #else
+    // Data fit (see '2-wireRTD.ods')
+    Tb_hdwe = float(HDWE_M_2WIRE) * log10(res) + float(HDWE_B_2WIRE);
 
   #endif
+
+  tb_stale_flt_ = false;
+  if ( sp.debug()==16 ) Serial.printf("I 2wire:  volt=%7.3f Tb_hdwe=%9.5f,\n", Tb_volt_, Tb_hdwe);
+
 
   return ( Tb_hdwe );
 }
@@ -143,36 +96,17 @@ float TempSensor::sample(Sensors *Sen)
 // class Shunt
 // constructors
 Shunt::Shunt()
-: Adafruit_ADS1015(), name_("None"), port_(0x00), bare_shunt_(false){}
+: name_("None"), port_(0x00), bare_shunt_(false){}
 Shunt::Shunt(const String name, const uint8_t port, float *sp_ib_scale,  float *sp_Ib_bias, const float v2a_s,
   const uint8_t vc_pin, const uint8_t vo_pin, const uint8_t vh3v3_pin, const boolean using_opAmp)
-: Adafruit_ADS1015(),
-  name_(name), port_(port), bare_shunt_(false), v2a_s_(v2a_s),
+: name_(name), port_(port), bare_shunt_(false), v2a_s_(v2a_s),
   vshunt_int_(0), vshunt_int_0_(0), vshunt_int_1_(0), vshunt_(0), Ishunt_cal_(0), Ishunt_cal_filt_(0),
   sp_ib_bias_(sp_Ib_bias), sp_ib_scale_(sp_ib_scale), sample_time_(0UL), sample_time_z_(0UL), dscn_cmd_(false),
   vc_pin_(vc_pin), vo_pin_(vo_pin), vr_pin_(vh3v3_pin), Vc_raw_(HALF_V3V3/VH3V3_CONV_GAIN), Vc_(HALF_V3V3),
   Vo_Vc_(0.), using_opamp_(using_opAmp)
 {
-  #ifdef HDWE_ADS1013_AMP_NOA
-    if ( name_=="No Amp")
-      setGain(GAIN_SIXTEEN, GAIN_SIXTEEN); // 16x gain differential and single-ended  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
-    else if ( name_=="Amp")
-      setGain(GAIN_EIGHT, GAIN_TWO); // First argument is differential, second is single-ended.
-    else
-      setGain(GAIN_EIGHT, GAIN_TWO); // First argument is differential, second is single-ended.
-    if (!begin(port_)) {
-      Serial.printf("FAILED init ADS SHUNT MON %s\n", name_.c_str());
-      #ifndef HDWE_BARE
-        bare_shunt_ = true;
-      #else
-        bare_shunt_ = false;
-      #endif
-    }
-    else Serial.printf("SHUNT MON %s started\n", name_.c_str());
-  #else
-    if ( using_opamp_ ) Serial.printf("Ib %s sense ADC pin %d started using OpAmp and 3V3 pin %d\n", name_.c_str(), vo_pin_, vr_pin_);
-    else Serial.printf("Ib %s sense ADC pins %d and %d started\n", name_.c_str(), vo_pin_, vc_pin_);
-  #endif
+  if ( using_opamp_ ) Serial.printf("Ib %s sense ADC pin %d started using OpAmp and 3V3 pin %d\n", name_.c_str(), vo_pin_, vr_pin_);
+  else Serial.printf("Ib %s sense ADC pins %d and %d started\n", name_.c_str(), vo_pin_, vc_pin_);
   Filt_ = new General2_Pole(0.1, F_W_I, F_Z_I, -NOM_UNIT_CAP*sp.nP(), NOM_UNIT_CAP*sp.nP());  // actual update time provided run time
   KF_ = new KalmanFilter(0.1, 0., KF_Q_STD, KF_R_STD);
 }

@@ -215,10 +215,8 @@ SavedPars::SavedPars(Flt_st *hist, const uint16_t nhis, Flt_st *faults, const ui
     nflt_ = nflt;
     nhis_ = nhis;
     nsum_ = 0;
-    #ifndef HDWE_47L16_EERAM
-        history_ = hist;
-        fault_ = faults;
-    #endif
+    history_ = hist;
+    fault_ = faults;
     initialize();
 }
 
@@ -232,28 +230,6 @@ SavedPars::SavedPars(SerialRAM *ram): Parameters()
     // Don't nominalize SavedPars on load.  Defeats the whole purpose of EERAM
     // for ( uint8_t i=0; i<n_; i++ ) if ( !V_[i]->is_eeram() ) V_[i]->set_nominal();  no!!
 
-    #ifdef HDWE_47L16_EERAM
-        for ( int i=0; i<n_; i++ )
-        {
-            next_ = V_[i]->assign_addr(next_);
-        }
-
-        fault_ = new Flt_ram[nflt_];
-        for ( uint16_t i=0; i<nflt_; i++ )
-        {
-            fault_[i].instantiate(rP_, &next_);
-        }
-
-        nhis_ = uint16_t( (MAX_EERAM - next_) / sizeof(Flt_st) ); 
-        history_ = new Flt_ram[nhis_];
-        ihis_p->new_maximum(nhis_+1);
-        ihis_p->new_default(nhis_);
-        ihis_p->set_nominal();
-        for ( uint16_t i=0; i<nhis_; i++ )
-        {
-            history_[i].instantiate(rP_, &next_);
-        }
-    #endif
 }
 
 SavedPars::~SavedPars() {}
@@ -298,17 +274,6 @@ void SavedPars::initialize()
     V_[n_++] =(vsat_add_p       = new FloatV("  ", "DS", NULL,"Bias on nominal vsat", "v",      -2.,  2.,   &vsat_add_z,    0.));  // DS
 }
 
-// Assign all save EERAM to RAM
-#ifdef HDWE_47L16_EERAM
-    void SavedPars::load_all()
-    {
-        for (int i=0; i<n_; i++ ) V_[i]->get();
-        
-        for ( uint16_t i=0; i<nflt_; i++ ) fault_[i].get();
-        for ( uint16_t i=0; i<nhis_; i++ ) history_[i].get();
-    }
-#endif
-
 // Number of differences between nominal EERAM and actual (don't count integator memories because they always change)
 int SavedPars::num_diffs()
 {
@@ -322,11 +287,6 @@ int SavedPars::num_diffs()
 // Print memory map
 void SavedPars::mem_print()
 {
-    #ifdef HDWE_47L16_EERAM
-        Serial.printf("SavedPars::SavedPars - MEMORY MAP 0x%X < 0x%X\n", next_, MAX_EERAM);
-        Serial.printf("Temp mem map print\n");
-        for ( uint16_t i=0x0000; i<MAX_EERAM; i++ ) Serial.printf("0x%X ", rP_->read(i));
-    #endif
 }
 
 // Print
@@ -367,13 +327,6 @@ void SavedPars::pretty_print(const boolean all)
         // Build integrity test
         while ( n_ != NSAV ) { delay(5000); Serial.printf("set NSAV=%d\n", n_); }
     }
-
-    #ifdef HDWE_47L16_EERAM
-        Serial.printf("SavedPars::SavedPars - MEMORY MAP 0x%X < 0x%X\n", next_, MAX_EERAM);
-        Serial.printf("SavedPars::SavedPars - nflt_ %d nhis_ %d nsum_ %d \n", nflt_, nhis_, nsum_);
-        // Serial.printf("Temp mem map print\n");
-        // mem_print();
-    #endif
 }
 
 void SavedPars::pretty_print_modeling()

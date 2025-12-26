@@ -67,114 +67,28 @@ class Flt_ram : public Flt_st
 public:
   Flt_ram();
   ~Flt_ram();
-  #ifdef HDWE_47L16_EERAM
-    void get_t_flt()        { unsigned long value;  rP_->get(t_flt_eeram_.a16, value);        t_flt = value; };
-    void get_Tb_hdwe_filt()      { int16_t value;        rP_->get(Tb_hdwe_eeram_.a16, value);      Tb_hdwe = value; };
-    void get_vb_hdwe_filt()      { int16_t value;        rP_->get(vb_hdwe_eeram_.a16, value);      vb_hdwe = value; };
-    void get_ib_amp_hdwe_filt()  { int16_t value;        rP_->get(ib_amp_hdwe_eeram_.a16, value);  ib_amp_hdwe = value; };
-    void get_ib_noa_hdwe()  { int16_t value;        rP_->get(ib_noa_hdwe_eeram_.a16, value);  ib_noa_hdwe = value; };
-    void get_tb_f()           { int16_t value;        rP_->get(Tb_eeram_.a16, value);           Tb = value; };
-    void get_vb_filt()           { int16_t value;        rP_->get(vb_eeram_.a16, value);           vb = value; };
-    void get_ib_filt()           { int16_t value;        rP_->get(ib_eeram_.a16, value);           ib = value; };
-    void get_soc()          { int16_t value;        rP_->get(soc_eeram_.a16, value);          soc = value; };
-    void get_soc_min()      { int16_t value;        rP_->get(soc_min_eeram_.a16, value);      soc_min = value; };
-    void get_soc_ekf()      { int16_t value;        rP_->get(soc_ekf_eeram_.a16, value);      soc_ekf = value; };
-    void get_voc_filt()          { int16_t value;        rP_->get(voc_eeram_.a16, value);          voc_filt = value; };
-    void get_voc_stat()     { int16_t value;        rP_->get(voc_stat_eeram_.a16, value);     voc_stat = value; };
-    void get_e_wrap_filt()  { int16_t value;        rP_->get(e_wrap_filt_eeram_.a16, value);  e_wrap_filt = value; };
-    void get_e_wrap_m_filt(){ int16_t value;        rP_->get(e_wrap_m_filt_eeram_.a16, value);  e_wrap_m_filt = value; };
-    void get_e_wrap_m_trim(){ int16_t value;        rP_->get(e_wrap_m_trim_eeram_.a16, value);  e_wrap_m_trim = value; };
-    void get_e_wrap_n_filt(){ int16_t value;        rP_->get(e_wrap_n_filt_eeram_.a16, value);  e_wrap_n_filt = value; };
-    void get_fltw()         { uint32_t value;       rP_->get(fltw_eeram_.a16, value);         fltw = value; };
-    void get_falw()         { uint32_t value;       rP_->get(falw_eeram_.a16, value);         falw = value; };
-    void instantiate(SerialRAM *ram, uint16_t *next);
-  #endif
-
   void get();
   void put(const Flt_st input);
   void put_nominal();
 
-  #ifndef HDWE_47L16_EERAM
-    void put_t_flt(const unsigned long value)     { t_flt = value; };
-    void put_Tb_hdwe_filt(const int16_t value)         { Tb_hdwe_filt = value; };
-    void put_vb_hdwe_filt(const int16_t value)         { vb_hdwe_filt = value; };
-    void put_ib_amp_hdwe_filt(const int16_t value)     { ib_amp_hdwe_filt = value; };
-    void put_ib_noa_hdwe_filt(const int16_t value)     { ib_noa_hdwe_filt = value; };
-    void put_Tb_filt(const int16_t value)              { Tb_filt = value; };
-    void put_vb_filt(const int16_t value)              { vb_filt = value; };
-    void put_ib_filt(const int16_t value)              { ib_filt = value; };
-    void put_soc(const int16_t value)             { soc = value; };
-    void put_soc_min(const int16_t value)         { soc_min = value; };
-    void put_soc_ekf(const int16_t value)         { soc_ekf = value; };
-    void put_voc_filt(const int16_t value)             { voc_filt = value; };
-    void put_voc_stat_filt(const int16_t value)        { voc_stat_filt = value; };
-    void put_e_wrap_filt(const int16_t value)     { e_wrap_filt = value; };
-    void put_fltw(const uint32_t value)           { fltw = value; };
-    void put_falw(const uint32_t value)           { falw = value; };
-#else
-    void put_t_flt()        { rP_->put(t_flt_eeram_.a16, t_flt); };
-    void put_Tb_hdwe_filt()      { rP_->put(Tb_hdwe_eeram_.a16, Tb_hdwe_filt); };
-    void put_vb_hdwe_filt()      { rP_->put(vb_hdwe_eeram_.a16, vb_hdwe_filt); };
-    void put_ib_amp_hdwe()  { rP_->put(ib_amp_hdwe_eeram_.a16, ib_amp_hdwe_filt); };
-    void put_ib_noa_hdwe()  { rP_->put(ib_noa_hdwe_eeram_.a16, ib_noa_hdwe_filt); };
-    void put_tb_f()           { rP_->put(Tb_eeram_.a16, Tb_filt); };
-    void put_vb_filt()           { rP_->put(vb_eeram_.a16, vb_filt); };
-    void put_ib_filt()           { rP_->put(ib_eeram_.a16, ib_filt); };
-    void put_soc()          { rP_->put(soc_eeram_.a16, soc); };
-    void put_soc_min()      { rP_->put(soc_min_eeram_.a16, soc_min); };
-    void put_soc_ekf()      { rP_->put(soc_ekf_eeram_.a16, soc_ekf); };
-    void put_voc_filt()     { rP_->put(voc_eeram_.a16, voc); };
-    void put_voc_stat_filt()     { rP_->put(voc_stat_eeram_.a16, voc_stat_filt); };
-    void put_e_wrap_filt()  { rP_->put(e_wrap_filt_eeram_.a16, e_wrap_filt); };
-    void put_e_wrap_m_filt(){ rP_->put(e_wrap_m_filt_eeram_.a16, e_wrap_m_filt); };
-    void put_e_wrap_m_trim(){ rP_->put(e_wrap_m_trim_eeram_.a16, e_wrap_m_trim); };
-    void put_e_wrap_n_filt(){ rP_->put(e_wrap_n_filt_eeram_.a16, e_wrap_n_filt); };
-    void put_fltw()         { rP_->put(fltw_eeram_.a16, fltw); };
-    void put_falw()         { rP_->put(falw_eeram_.a16, falw); };
-    void put_t_flt(const unsigned long value)     { rP_->put(t_flt_eeram_.a16, value);        t_flt = value; };
-    void put_Tb_hdwe_filt(const int16_t value)         { rP_->put(Tb_hdwe_eeram_.a16, value);      Tb_hdwe_filt = value; };
-    void put_vb_hdwe_filt(const int16_t value)         { rP_->put(vb_hdwe_eeram_.a16, value);      vb_hdwe_filt = value; };
-    void put_ib_amp_hdwe_filt(const int16_t value)     { rP_->put(ib_amp_hdwe_eeram_.a16, value);  ib_amp_hdwe_filt = value; };
-    void put_ib_noa_hdwe_filt(const int16_t value)     { rP_->put(ib_noa_hdwe_eeram_.a16, value);  ib_noa_hdwe_filt = value; };
-    void put_Tb_filt(const int16_t value)              { rP_->put(Tb_eeram_.a16, value);           Tb_filt = value; };
-    void put_vb_filt(const int16_t value)              { rP_->put(vb_eeram_.a16, value);           vb_filt = value; };
-    void put_ib_filt(const int16_t value)              { rP_->put(ib_eeram_.a16, value);           ib_filt = value; };
-    void put_soc(const int16_t value)             { rP_->put(soc_eeram_.a16, value);          soc = value; };
-    void put_soc_min(const int16_t value)         { rP_->put(soc_min_eeram_.a16, value);      soc_min = value; };
-    void put_soc_ekf(const int16_t value)         { rP_->put(soc_ekf_eeram_.a16, value);      soc_ekf = value; };
-    void put_voc_filt(const int16_t value)             { rP_->put(voc_eeram_.a16, value);          voc_filt = value; };
-    void put_voc_stat_filt(const int16_t value)        { rP_->put(voc_stat_eeram_.a16, value);     voc_stat_filt = value; };
-    void put_e_wrap_filt(const int16_t value)     { rP_->put(e_wrap_filt_eeram_.a16, value);  e_wrap_filt = value; };
-    void put_e_wrap_m_filt(const int16_t value)   { rP_->put(e_wrap_m_filt_eeram_.a16, value);e_wrap_m_filt = value; };
-    void put_e_wrap_m_trim(const int16_t value)   { rP_->put(e_wrap_m_trim_eeram_.a16, value);e_wrap_m_trim = value; };
-    void put_e_wrap_n_filt(const int16_t value)   { rP_->put(e_wrap_n_filt_eeram_.a16, value);e_wrap_n_filt = value; };
-    void put_fltw(const uint32_t value)           { rP_->put(fltw_eeram_.a16, value);         fltw = value; };
-    void put_falw(const uint32_t value)           { rP_->put(falw_eeram_.a16, value);         falw = value; };
-  #endif
-
+  void put_t_flt(const unsigned long value)     { t_flt = value; };
+  void put_Tb_hdwe_filt(const int16_t value)         { Tb_hdwe_filt = value; };
+  void put_vb_hdwe_filt(const int16_t value)         { vb_hdwe_filt = value; };
+  void put_ib_amp_hdwe_filt(const int16_t value)     { ib_amp_hdwe_filt = value; };
+  void put_ib_noa_hdwe_filt(const int16_t value)     { ib_noa_hdwe_filt = value; };
+  void put_Tb_filt(const int16_t value)              { Tb_filt = value; };
+  void put_vb_filt(const int16_t value)              { vb_filt = value; };
+  void put_ib_filt(const int16_t value)              { ib_filt = value; };
+  void put_soc(const int16_t value)             { soc = value; };
+  void put_soc_min(const int16_t value)         { soc_min = value; };
+  void put_soc_ekf(const int16_t value)         { soc_ekf = value; };
+  void put_voc_filt(const int16_t value)             { voc_filt = value; };
+  void put_voc_stat_filt(const int16_t value)        { voc_stat_filt = value; };
+  void put_e_wrap_filt(const int16_t value)     { e_wrap_filt = value; };
+  void put_fltw(const uint32_t value)           { fltw = value; };
+  void put_falw(const uint32_t value)           { falw = value; };
 protected:
   SerialRAM *rP_;
-  #ifdef HDWE_47L16_EERAM
-    address16b t_flt_eeram_;
-    address16b Tb_hdwe_eeram_;
-    address16b vb_hdwe_eeram_;
-    address16b ib_amp_hdwe_eeram_;
-    address16b ib_noa_hdwe_eeram_;
-    address16b Tb_eeram_;
-    address16b vb_eeram_;
-    address16b ib_eeram_;
-    address16b soc_eeram_;
-    address16b soc_min_eeram_;
-    address16b soc_ekf_eeram_;
-    address16b voc_eeram_;
-    address16b voc_stat_eeram_;
-    address16b e_wrap_filt_eeram_;
-    address16b e_wrap_m_filt_eeram_;
-    address16b e_wrap_m_trim_eeram_;
-    address16b e_wrap_n_filt_eeram_;
-    address16b fltw_eeram_;
-    address16b falw_eeram_;
-  #endif
 };
 
 #endif

@@ -34,13 +34,7 @@
 #include "parameters.h"
 #include "myLibrary/KF_1x1.h"
 
-// Temp sensor
-#include <OneWire.h>
-#include <DS18B20.h>
-
 // AD
-#include "Adafruit/Adafruit_ADS1X15.h"
-
 extern PublishPars pp;  // For publishing
 extern CommandPars cp;  // Various parameters to be static at system level
 extern SavedPars sp;    // Various parameters to be static at system level and saved through power cycle
@@ -92,7 +86,7 @@ struct ScaleBrk
 };
 
 // DS18-based temp sensor
-class TempSensor: public DS18B20
+class TempSensor
 {
 public:
   TempSensor();
@@ -115,8 +109,8 @@ protected:
 };
 
 
-// ADS1015-based shunt
-class Shunt: public Adafruit_ADS1015
+// Current reading class
+class Shunt
 {
 public:
   Shunt();
@@ -229,8 +223,8 @@ protected:
 
 #define faultSet(bit) (bitSet(fltw_, bit) )
 #define failSet(bit) (bitSet(falw_, bit) )
-#define faultRead(bit) (bitRead(fltw_, bit) )
-#define failRead(bit) (bitRead(falw_, bit) )
+#define faultRead(bit) ( (fltw_ >> bit) & 1 )  // old bitRead(int value, int bit) with value=falw_
+#define failRead(bit) ( (fltw_ >> bit) & 1 )  // old bitRead(int value, int bit) with value=falw_
 #define faultAssign(bval, bit) if (bval) bitSet(fltw_, bit); else bitClear(fltw_, bit)
 #define failAssign(bval, bit) if (bval) bitSet(falw_, bit); else bitClear(falw_, bit)
 
