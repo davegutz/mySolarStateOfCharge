@@ -18,3 +18,4 @@ SOC_Particle/nul
 *.o
 *.elf
 /ble-uart-peripheral/target
+ble-uart-peripheral/nul
