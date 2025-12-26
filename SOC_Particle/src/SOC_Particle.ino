@@ -90,7 +90,6 @@
 #include "serial.h"
 
 //#define BOOT_CLEAN      // Use this to clear 'lockup' problems introduced during testing using Talk
-// SYSTEM_THREAD(ENABLED);   // Make sure code always run regardless of network status  
 
 // Turn on Log
 #ifdef LOGHANDLE
@@ -140,11 +139,56 @@ BleCharacteristic txCharacteristic("tx", BleCharacteristicProperty::NOTIFY, txUu
 BleCharacteristic rxCharacteristic("rx", BleCharacteristicProperty::WRITE_WO_RSP, rxUuid, serviceUuid, onDataReceived, NULL);
 void onDataReceived(const uint8_t* data, size_t len, const BlePeerDevice& peer, void* context)
 {
-    Serial.printf("From BLE app::");
-    for (size_t ii = 0; ii < len; ii++)
+  size_t ii = 0;
+
+  // Validate input
+  Serial.printf("From BLE app::");
+  for (; ii < len; ii++)
+  {
+    Serial.write(data[ii]);
+  }
+
+  // Parse input
+  static String serial_str = "";
+  static boolean serial_ready = false;
+  // Each pass try to complete input from avaiable
+  ii = 0;
+  while ( !serial_ready && ( ii < len ) )
+  {
+    char in_char = (char) data[ii++];  // get the new byte
+
+    // Intake
+    // if the incoming character to finish, add a ';' and set flags so the main loop can do something about it:
+    if ( is_finished(in_char) )
     {
-        Serial.write(data[ii]);
+        serial_str += ';';
+        serial_ready = true;
+        break;
     }
+    else if ( in_char == '\r' )
+        Serial.printf("\n");  // scroll user terminal
+    else if ( in_char == '\b' && serial_str.length() )
+    {
+        Serial.printf("\b \b");  // scroll user terminal
+        serial_str.remove(serial_str.length() -1 );  // backspace
+    }
+    else
+        serial_str += in_char;  // process new valid character
+  }
+
+  // Pass info to inp_str
+  if ( serial_ready )
+  {
+    if ( !cp.inp_token )
+    {
+        cp.inp_token = true;
+        add_verify(&cp.inp_str, serial_str);
+        Serial.printf("add_verified %s\n", serial_str.c_str());
+        serial_ready = false;
+        cp.inp_token = false;
+        serial_str = "";
+    }     
+  }
 }
 
 // Setup
@@ -367,65 +411,52 @@ void loop()
 
   ///////////////////////////////////////////////////////////// Top of loop////////////////////////////////////////
 
-  if (BLE.connected())
-  {
-    uint8_t txBuf[UART_TX_BUF_SIZE];
-    size_t txLen = 0;
-    static String serial_str = "";
-    static boolean serial_ready = false;
+  // if (BLE.connected())
+  // {
+  //   uint8_t txBuf[UART_TX_BUF_SIZE];
+  //   size_t txLen = 0;
+  //   static String serial_str = "";
+  //   static boolean serial_ready = false;
 
-    // while ( !serial_ready && Serial.available() )
-    // {
-    //   txBuf[txLen++] = Serial.read();
-    // }
-    // if (txLen > 0)
-    // {
-    //       txCharacteristic.setValue(txBuf, txLen);
-    // }
+  //   // Each pass try to complete input from avaiable
+  //   while ( !serial_ready && Serial.available() )
+  //   {
+  //     char in_char = (char) Serial.read();  // get the new byte
+  //     txBuf[txLen++] = in_char;
 
-    // Each pass try to complete input from avaiable
-    while ( !serial_ready && Serial.available() )
-    {
-      char in_char = (char)Serial.read();  // get the new byte
-      txBuf[txLen++] = in_char;
+  //     // Intake
+  //     // if the incoming character to finish, add a ';' and set flags so the main loop can do something about it:
+  //     if ( is_finished(in_char) )
+  //     {
+  //         serial_str += ';';
+  //         serial_ready = true;
+  //         break;
+  //     }
+  //     else if ( in_char == '\r' )
+  //         Serial.printf("\n");  // scroll user terminal
+  //     else if ( in_char == '\b' && serial_str.length() )
+  //     {
+  //         Serial.printf("\b \b");  // scroll user terminal
+  //         serial_str.remove(serial_str.length() -1 );  // backspace
+  //     }
+  //     else
+  //         serial_str += in_char;  // process new valid character
+  //   }
 
-      // Intake
-      // if the incoming character to finish, add a ';' and set flags so the main loop can do something about it:
-      if ( is_finished(in_char) )
-      {
-          serial_str += ';';
-          serial_ready = true;
-          break;
-      }
-
-      else if ( in_char == '\r' )
-          Serial.printf("\n");  // scroll user terminal
-
-      else if ( in_char == '\b' && serial_str.length() )
-      {
-          Serial.printf("\b \b");  // scroll user terminal
-          serial_str.remove(serial_str.length() -1 );  // backspace
-      }
-
-      else
-          serial_str += in_char;  // process new valid character
-    }
-
-    // Pass info to inp_str
-    if ( serial_ready )
-    {
-      if ( !cp.inp_token )
-      {
-          cp.inp_token = true;
-          add_verify(&cp.inp_str, serial_str);
-          serial_ready = false;
-          cp.inp_token = false;
-          serial_str = "";
-      }
-        
-      if ( txLen > 0 )  txCharacteristic.setValue(txBuf, txLen);
-    }
-  }
+  //   // Pass info to inp_str
+  //   if ( serial_ready )
+  //   {
+  //     if ( !cp.inp_token )
+  //     {
+  //         cp.inp_token = true;
+  //         add_verify(&cp.inp_str, serial_str);
+  //         Serial.printf("add_verified %s\n", serial_str.c_str());
+  //         serial_ready = false;
+  //         cp.inp_token = false;
+  //         serial_str = "";
+  //     }     
+  //   }
+  // }
 
   // Synchronize
   #ifdef HDWE_DS2482_1WIRE
