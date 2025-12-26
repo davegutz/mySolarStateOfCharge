@@ -35,16 +35,18 @@ void setup() {
     BLE.advertise(&data);
 }
 
-void loop() {
-    if (BLE.connected()) {
-    	uint8_t txBuf[UART_TX_BUF_SIZE];
-    	size_t txLen = 0;
-
+void loop()
+{
+  	size_t txLen = 0;
+    uint8_t txBuf[UART_TX_BUF_SIZE];
+    if (BLE.connected())
+    {
     	while(Serial.available() && txLen < UART_TX_BUF_SIZE) {
             txBuf[txLen++] = Serial.read();
         }
-        if (txLen > 0) {
-            txCharacteristic.setValue(txBuf, txLen);
-        }
+    }
+    if (txLen > 0)
+    {
+        txCharacteristic.setValue(txBuf, txLen);
     }
 }
