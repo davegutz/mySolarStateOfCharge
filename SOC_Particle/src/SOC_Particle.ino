@@ -27,7 +27,7 @@
   * 01-Dec-2023   g20231111 Photon 2, DS2482
   * 01-Apr-2024   g20230331 ib_charge = ib_ / sp.nS() while Randles uses ib_.  Tune Tb initialization
   * 17-Apr-2024   Undo previous ib_/sp.nS() change
-  * 
+  *
 //
 // MIT License
 //
@@ -90,23 +90,11 @@
 #include "serial.h"
 
 //#define BOOT_CLEAN      // Use this to clear 'lockup' problems introduced during testing using Talk
-SYSTEM_THREAD(ENABLED);   // Make sure code always run regardless of network status
+// SYSTEM_THREAD(ENABLED);   // Make sure code always run regardless of network status  
 
 // Turn on Log
 #ifdef LOGHANDLE
   SerialLogHandler logHandler;
-#endif
-
-#ifdef HDWE_DS2482_1WIRE
-  #include "myDS2482.h"
-  MyDs2482_Class Ds2482(0);
-  DS2482 ds(Wire, 0);
-  DS2482DeviceListStatic<10> deviceList;
-#endif
-
-#ifdef HDWE_47L16_EERAM
-  #include "hardware/SerialRAM.h"
-  SerialRAM ram;
 #endif
 
 // Globals
@@ -117,13 +105,9 @@ extern PrinterPars pr;            // Print buffer structure
 extern PublishPars pp;            // For publishing
 extern Flt_st mySum[NSUM];        // Summaries for saving charge history
 
-#ifdef HDWE_47L16_EERAM
-  retained SavedPars sp = SavedPars(&ram);  // Various parameters to be common at system level
-#else
-  retained Flt_st saved_hist[NHIS];    // For displaying history
-  retained Flt_st saved_faults[NFLT];  // For displaying faults
-  retained SavedPars sp = SavedPars(saved_hist, uint16_t(NHIS), saved_faults, uint16_t(NFLT));  // Various parameters to be common at system level
-#endif
+retained Flt_st saved_hist[NHIS];    // For displaying history
+retained Flt_st saved_faults[NFLT];  // For displaying faults
+retained SavedPars sp = SavedPars(saved_hist, uint16_t(NHIS), saved_faults, uint16_t(NFLT));  // Various parameters to be common at system level
 
 Flt_st mySum[NSUM];                   // Summaries
 PrinterPars pr = PrinterPars();       // Print buffer
@@ -140,6 +124,29 @@ Pins *myPins;                   // Photon hardware pin mapping used
   Adafruit_SSD1306 *display;      // Main OLED display
 #endif
 
+// BLE example
+const size_t UART_TX_BUF_SIZE = 20;
+void onDataReceived(const uint8_t* data, size_t len, const BlePeerDevice& peer, void* context);
+// These UUIDs were defined by Nordic Semiconductor and are now the defacto standard for
+// UART-like services over BLE. Many apps support the UUIDs now, like the Adafruit Bluefruit app.
+const BleUuid serviceUuid("6E400001-B5A3-F393-E0A9-E50E24DCCA9E");
+const BleUuid rxUuid("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
+const BleUuid txUuid("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
+// This connects USB serial to Bluefruit
+BleCharacteristic txCharacteristic("tx", BleCharacteristicProperty::NOTIFY, txUuid, serviceUuid);
+// Echo BLE receptions on local Serial
+// Without this:  UART won't be available on Bluefruit; and Bluefruit transmissions not echoed to USB Serial
+// though still show on Bluefruit due to it's own echo
+BleCharacteristic rxCharacteristic("rx", BleCharacteristicProperty::WRITE_WO_RSP, rxUuid, serviceUuid, onDataReceived, NULL);
+void onDataReceived(const uint8_t* data, size_t len, const BlePeerDevice& peer, void* context)
+{
+    Serial.printf("From BLE app::");
+    for (size_t ii = 0; ii < len; ii++)
+    {
+        Serial.write(data[ii]);
+    }
+}
+
 // Setup
 void setup()
 {
@@ -151,22 +158,21 @@ void setup()
   delay(1000);          // Ensures a clean display
   Serial.printf("Hi!\n");
 
+  // BLE
+	BLE.on();
+  BLE.addCharacteristic(txCharacteristic);
+  BLE.addCharacteristic(rxCharacteristic);
+  BleAdvertisingData data;
+  data.appendServiceUUID(serviceUuid);
+  BLE.advertise(&data);
+
   // EERAM and Bluetooth Serial1.  Use BT-AT project in this GitHub repository to change.
-  // TX of HC-06 
+  // TX of HC-06
   // Compile and flash onto the SOC_Photon target temporarily to set baud rate.  Directions
   // for HC-06 inside SOC_Photon.ino of ../../BT-AT/src.   AT+BAUD8; to set 115200.
   // Serial1.blockOnOverrun(false); doesn't work:  it's a mess; partial lines galore
   Serial1.begin(SOFT_S1BAUD);
   Serial1.flush();
-
-  // EERAM chip card for I2C
-  #if defined(HDWE_47L16_EERAM) && !defined(HDWE_2WIRE)
-    Log.info("setup EERAM");
-    ram.begin(0, 0);
-    ram.setAutoStore(true);
-    delay(1000);
-    sp.load_all();
-  #endif
   sp.put_Time_now(max(sp.Time_now_z, (unsigned long)Time.now()));  // Synch with web when possible
   Time.setTime( (time_t) (sp.Time_now_z) );
 
@@ -185,9 +191,9 @@ void setup()
   // A1 (pin 'D12') - Vb
   // A2 (pin 'D13') - Backup Ib amp (called by old ADS name Non Amplified, noa)
   // A3 (pin 'D0') - alternate to SDA.  Sometimes used for 2wire temperature
-  // A4 (pin 'D1') - alternate to SCL.  
+  // A4 (pin 'D1') - alternate to SCL.
   // A5 (pin 'D14') - Vr or Vc
-  
+
   Log.info("setup Pins");
   #ifdef HDWE_PHOTON2
     #if defined(HDWE_DS2482_1WIRE) | defined(HDWE_BARE)
@@ -271,7 +277,7 @@ void setup()
   // the SRAM is not explicitly initialized.   This is by design, as SRAM must be remembered between boots
   // Time is never changed by this operation.  It could be corrupt.  Change using "UT" talk feature.
   Serial.printf("Check corruption......");
-  if ( sp.is_corrupt() ) 
+  if ( sp.is_corrupt() )
   {
     Serial.printf("\n\n");
     sp.pretty_print( false );
@@ -361,11 +367,25 @@ void loop()
 
   ///////////////////////////////////////////////////////////// Top of loop////////////////////////////////////////
 
+  if (BLE.connected())
+  {
+    uint8_t txBuf[UART_TX_BUF_SIZE];
+    size_t txLen = 0;
+    while(Serial.available() && txLen < UART_TX_BUF_SIZE)
+    {
+      txBuf[txLen++] = Serial.read();
+    }
+    if (txLen > 0)
+    {
+          txCharacteristic.setValue(txBuf, txLen);
+    }
+  }
+
   // Synchronize
   #ifdef HDWE_DS2482_1WIRE
     Ds2482.loop();
   #endif
-  if ( now - last_sync > ONE_DAY_MILLIS || reset )  sync_time(now, &last_sync, &millis_flip); 
+  if ( now - last_sync > ONE_DAY_MILLIS || reset )  sync_time(now, &last_sync, &millis_flip);
   Sen->control_time = double(Sen->now/1000);
   char buffer[32];
   time_long_2_str(time_now, buffer);
@@ -418,13 +438,13 @@ void loop()
       Sen->ShuntNoAmp->sample(reset_kf);
     }
   #endif
-  
+
   // Input all other sensors and do high rate calculations
   if ( read )
   {
     Log.info("ino:  read");
     Sen->reset = reset;
-    
+
     // Check for really slow data capture and run EKF each read frame
     // ap.eframe_mult = max(int(float(READ_DELAY)*float(EKF_EFRAME_MULT)/float(ReadSensors->delay())+0.9999), 1);
 
@@ -463,7 +483,7 @@ void loop()
     #ifndef HDWE_PHOTON
       if ( sp.debug_z==12 ) debug_12(Mon, Sen);
     #endif
-    
+
     // Publish for variable print rate
     if ( cp.publishS )
     {
@@ -489,18 +509,8 @@ void loop()
   if ( display_and_remember )
   {
     Log.info("display and remember");
-    #if defined(HDWE_SSD1306_OLED) && !defined(HDWE_2WIRE)
-      oled_display(display, Sen, Mon);
-    #else
-      oled_display(Sen, Mon);
-    #endif
-
-    #if defined(HDWE_47L16_EERAM) && !defined(HDWE_2WIRE)
-      // Save EERAM dynamic parameters.  Saves critical few state parameters
-      sp.put_all_dynamic();
-    #else
-      sp.put_Time_now(max( sp.Time_now_z, (unsigned long)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
-    #endif
+    oled_display(Sen, Mon);
+    sp.put_Time_now(max( sp.Time_now_z, (unsigned long)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
   }
 
   // Discuss things with the user
@@ -572,3 +582,4 @@ void loop()
   Log.info("ino:  end loop\n\n\n");
 
 } // loop
+
