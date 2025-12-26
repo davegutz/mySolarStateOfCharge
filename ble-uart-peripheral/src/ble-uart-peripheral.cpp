@@ -14,12 +14,18 @@ const BleUuid serviceUuid("6E400001-B5A3-F393-E0A9-E50E24DCCA9E");
 const BleUuid rxUuid("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
 const BleUuid txUuid("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
 
+// This connects USB serial to Bluefruit
 BleCharacteristic txCharacteristic("tx", BleCharacteristicProperty::NOTIFY, txUuid, serviceUuid);
-BleCharacteristic rxCharacteristic("rx", BleCharacteristicProperty::WRITE_WO_RSP, rxUuid, serviceUuid, onDataReceived, NULL);
 
+// Echo BLE receptions on local Serial
+// Without this:  UART won't be available on Bluefruit; and Bluefruit transmissions not echoed to USB Serial
+// though still show on Bluefruit due to it's own echo
+BleCharacteristic rxCharacteristic("rx", BleCharacteristicProperty::WRITE_WO_RSP, rxUuid, serviceUuid, onDataReceived, NULL);
 void onDataReceived(const uint8_t* data, size_t len, const BlePeerDevice& peer, void* context)
 {
-    for (size_t ii = 0; ii < len; ii++) {
+    Serial.printf("From BLE app::");
+    for (size_t ii = 0; ii < len; ii++)
+    {
         Serial.write(data[ii]);
     }
 }
@@ -29,7 +35,7 @@ void setup() {
 
 	BLE.on();
     BLE.addCharacteristic(txCharacteristic);
-    BLE.addCharacteristic(rxCharacteristic);
+    BLE.addCharacteristic(rxCharacteristic);  // Without this no UART on Bluefruit app
     BleAdvertisingData data;
     data.appendServiceUUID(serviceUuid);
     BLE.advertise(&data);
