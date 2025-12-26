@@ -371,13 +371,59 @@ void loop()
   {
     uint8_t txBuf[UART_TX_BUF_SIZE];
     size_t txLen = 0;
-    while(Serial.available() && txLen < UART_TX_BUF_SIZE)
+    static String serial_str = "";
+    static boolean serial_ready = false;
+
+    // while ( !serial_ready && Serial.available() )
+    // {
+    //   txBuf[txLen++] = Serial.read();
+    // }
+    // if (txLen > 0)
+    // {
+    //       txCharacteristic.setValue(txBuf, txLen);
+    // }
+
+    // Each pass try to complete input from avaiable
+    while ( !serial_ready && Serial.available() )
     {
-      txBuf[txLen++] = Serial.read();
+      char in_char = (char)Serial.read();  // get the new byte
+      txBuf[txLen++] = in_char;
+
+      // Intake
+      // if the incoming character to finish, add a ';' and set flags so the main loop can do something about it:
+      if ( is_finished(in_char) )
+      {
+          serial_str += ';';
+          serial_ready = true;
+          break;
+      }
+
+      else if ( in_char == '\r' )
+          Serial.printf("\n");  // scroll user terminal
+
+      else if ( in_char == '\b' && serial_str.length() )
+      {
+          Serial.printf("\b \b");  // scroll user terminal
+          serial_str.remove(serial_str.length() -1 );  // backspace
+      }
+
+      else
+          serial_str += in_char;  // process new valid character
     }
-    if (txLen > 0)
+
+    // Pass info to inp_str
+    if ( serial_ready )
     {
-          txCharacteristic.setValue(txBuf, txLen);
+      if ( !cp.inp_token )
+      {
+          cp.inp_token = true;
+          add_verify(&cp.inp_str, serial_str);
+          serial_ready = false;
+          cp.inp_token = false;
+          serial_str = "";
+      }
+        
+      if ( txLen > 0 )  txCharacteristic.setValue(txBuf, txLen);
     }
   }
 
