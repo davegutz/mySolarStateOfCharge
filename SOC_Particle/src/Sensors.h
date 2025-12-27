@@ -229,7 +229,7 @@ protected:
 #define faultAssign(bval, bit) if (bval) bitSet(fltw_, bit); else bitClear(fltw_, bit)
 #define failAssign(bval, bit) if (bval) bitSet(falw_, bit); else bitClear(falw_, bit)
 
-void bitMapPrint(char *buf, const int16_t fw, const uint8_t num);
+String bitMapPrint(char *buf, const int16_t fw, const uint8_t num);
 
 
 // Model-based fault detector

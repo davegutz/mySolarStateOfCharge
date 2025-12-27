@@ -35,7 +35,7 @@ extern PublishPars pp;  // For publishing
 extern SavedPars sp;    // Various parameters to be static at system level and saved through power cycle
 
 // Print bitmap utility
-void bitMapPrint(char *buf, const int16_t fw, const uint8_t num)
+String bitMapPrint(char *buf, const int16_t fw, const uint8_t num)
 {
   for ( int i=0; i<num; i++ )
   {
@@ -43,6 +43,7 @@ void bitMapPrint(char *buf, const int16_t fw, const uint8_t num)
     else  buf[num-i-1] = '0';
   }
   buf[num] = '\0';
+  return ( String(buf) );
 }
 
 
@@ -635,45 +636,53 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
     String::format(" wrap_hi_or_lo_fa %d wrap_hi_and_lo_fa %d\n\n", wrap_hi_or_lo_fa(), wrap_hi_and_lo_fa());
   sendTxBuf(txBuf, true, true, true);
 
-
+txBuf = String::format("") +
   #ifdef HDWE_IB_HI_LO
-    Serial.printf("HDWE_IB_HI_LO Decisions\n");
-    Serial1.printf("HDWE_IB_HI_LO Decisions\n");
+    String::format("HDWE_IB_HI_LO Decisions\n") +
   #else
-    Serial.printf("Active/Standby Decisions\n");
-    Serial1.printf("Active/Standby Decisions\n");
+    String::format(("Active/Standby Decisions\n") +
   #endif
-  Serial.printf(" wml     %d  %d 'Fo ^'\n", wrap_lo_m_flt(), wrap_lo_m_fa());
-  Serial.printf(" wmh     %d  %d 'Fi ^'\n", wrap_hi_m_flt(), wrap_hi_m_fa());
-  Serial.printf(" wnl     %d  %d 'Fo ^'\n", wrap_lo_n_flt(), wrap_lo_n_fa());
-  Serial.printf(" wnh     %d  %d 'Fi ^'\n", wrap_hi_n_flt(), wrap_hi_n_fa());
-  Serial.printf(" vc      %d  %d 'FI 1'\n", vc_flt(), vc_fa());
-  Serial.printf(" bare n  %d  x \n", ib_noa_bare());
-  Serial.printf(" bare m  %d  x \n", ib_amp_bare());
-  Serial.printf(" ib_dsc  %d  %d 'Fq v'\n", ib_dscn_flt(), ib_dscn_fa());
-  Serial.printf(" ibd_lo  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_lo_flt(), ib_diff_lo_fa());
-  Serial.printf(" ibd_hi  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_hi_flt(), ib_diff_hi_fa());
-  Serial.printf(" red wv  %d  %d   'Fd, Fi/Fo ^'\n",  red_loss(), wrap_vb_fa());
-  Serial.printf(" wl      %d  %d 'Fo ^'\n", wrap_lo_flt(), wrap_lo_fa());
-  Serial.printf(" wh      %d  %d 'Fi ^'\n", wrap_hi_flt(), wrap_hi_fa());
-  Serial.printf(" vc | cc_dif %d  %d 'x Fc ^'\n", vc_fa(), cc_diff_fa());
-  Serial.printf(" ib n    %d  %d 'FI 1'\n", ib_noa_flt(), ib_noa_fa());
-  Serial.printf(" ib m    %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa());
-  Serial.printf(" vb      %d  %d 'Fv 1  *SV, *Dc/*Dv'.", vb_flt(), vb_fa());
-  Serial.printf(" vb_functional_fa %d\n", vb_functional_fa_);
-  Serial.printf(" tb      %d  %d 'Ft 1'\n  ", tb_flt(), tb_fa());
-  bitMapPrint(pr.buff, fltw_, NUM_FLT);
-  Serial.print(pr.buff);
-  Serial.printf("   ");
-  bitMapPrint(pr.buff, falw_, NUM_FA);
-  Serial.printf("%s\n", pr.buff);
-  Serial.printf("  10FEDCBA9876543210   10FExxBA9876543210\n");
-  Serial.printf("  fltw=%ld     falw=%ld\n", fltw_, falw_);
+    String::format(" wml     %d  %d 'Fo ^'\n", wrap_lo_m_flt(), wrap_lo_m_fa()) +
+    String::format(" wmh     %d  %d 'Fi ^'\n", wrap_hi_m_flt(), wrap_hi_m_fa()) +
+    String::format(" wnl     %d  %d 'Fo ^'\n", wrap_lo_n_flt(), wrap_lo_n_fa()) +
+    String::format(" wnh     %d  %d 'Fi ^'\n", wrap_hi_n_flt(), wrap_hi_n_fa()) +
+    String::format(" vc      %d  %d 'FI 1'\n", vc_flt(), vc_fa()) +
+    String::format(" bare n  %d  x \n", ib_noa_bare()) +
+    String::format(" bare m  %d  x \n", ib_amp_bare()) +
+    String::format(" ib_dsc  %d  %d 'Fq v'\n", ib_dscn_flt(), ib_dscn_fa()) +
+    String::format(" ibd_lo  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_lo_flt(), ib_diff_lo_fa()) +
+    String::format(" ibd_hi  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_hi_flt(), ib_diff_hi_fa()) +
+    String::format(" red wv  %d  %d   'Fd, Fi/Fo ^'\n",  red_loss(), wrap_vb_fa()) +
+    String::format(" wl      %d  %d 'Fo ^'\n", wrap_lo_flt(), wrap_lo_fa()) +
+    String::format(" wh      %d  %d 'Fi ^'\n", wrap_hi_flt(), wrap_hi_fa()) +
+    String::format(" vc | cc_dif %d  %d 'x Fc ^'\n", vc_fa(), cc_diff_fa()) +
+    String::format(" ib n    %d  %d 'FI 1'\n", ib_noa_flt(), ib_noa_fa()) +
+    String::format(" ib m    %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa()) +
+    String::format(" vb      %d  %d 'Fv 1  *SV, *Dc/*Dv'.", vb_flt(), vb_fa()) +
+    String::format(" vb_functional_fa %d\n", vb_functional_fa_) +
+    String::format(" tb      %d  %d 'Ft 1'\n  ", tb_flt(), tb_fa());
+  sendTxBuf(txBuf, true, true, true);
+
+  txBuf = bitMapPrint(pr.buff, fltw_, NUM_FLT) +
+    String::format(pr.buff) +
+    String::format("   ") +
+    bitMapPrint(pr.buff, falw_, NUM_FA) +
+    String::format("%s\n", pr.buff) +
+    String::format("  10FEDCBA9876543210   10FExxBA9876543210\n") +
+    String::format("  fltw=%ld     falw=%ld\n", fltw_, falw_);
+  sendTxBuf(txBuf, true, true, true);
+
   if ( ap.fake_faults )
-    Serial.printf("fake_faults=>redl\n");
+  {
+    txBuf = String::format("fake_faults=>redl\n");
+    sendTxBuf(txBuf, true, true, true);
+  }
 
   if ( Sen->now < 1746684850783ULL )
-    Serial.printf("\n\n////////////////// WARN set UT (h;)\n\n");
+  {
+    txBuf = String::format("\n\n////////////////// WARN set UT (h;)\n\n");
+    sendTxBuf(txBuf, true, true, true);
+  }
 }
 
 void Fault::pretty_print1(Sensors *Sen, BatteryMonitor *Mon)
