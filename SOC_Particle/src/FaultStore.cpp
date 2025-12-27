@@ -134,20 +134,25 @@ void Flt_st::pretty_print(const String code)
 
 void SavedPars::print_fault_header(Publish *pubList)
 {
-    Serial.printf("Config:  %s \n", pubList->unit.c_str());
-    Serial1.printf("Config:  %s \n", pubList->unit.c_str());
-    Serial.printf ("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, ibmh_f, ibnh_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_w_f, e_wm_f, e_wm_t, e_wn_f, fltw, falw,\n");
-    Serial1.printf ("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, ibmh_f, ibnh_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_w_f, e_wm_f, e_wm_t, e_wn_f, fltw, falw,\n");
+    String txBuf;
+
+    txBuf = String::format("Config:  %s \n", pubList->unit.c_str());
+    sendTxBuf(txBuf, true, false, true);
+
+    txBuf = String::format("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, ibmh_f, ibnh_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_w_f, e_wm_f, e_wm_t, e_wn_f, fltw, falw,\n");
+    sendTxBuf(txBuf, true, false, true);
 }
 
 void Flt_st::print_flt(const String code)
 {
   char buffer[32];
   strcpy(buffer, "---");
+  String txBuf;
+
   if ( this->t_flt > 1UL )
   {
     time_long_2_str(this->t_flt, buffer);
-    Serial.printf("%s, %s, %ld, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.4f, %7.4f, %7.4f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %ld, %ld,\n",
+    txBuf = String::format("%s, %s, %ld, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.4f, %7.4f, %7.4f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %ld, %ld,\n",
       code.c_str(), buffer, this->t_flt,
       float(this->Tb_hdwe_filt)/SCL_600,
       float(this->vb_hdwe_filt)/sp.vb_hist_slr(),
@@ -167,26 +172,7 @@ void Flt_st::print_flt(const String code)
       float(this->e_wrap_n_filt)/sp.vb_hist_slr(),
       this->fltw,
       this->falw);
-    Serial1.printf("%s, %s, %ld, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.4f, %7.4f, %7.4f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %ld, %ld,\n",
-      code.c_str(), buffer, this->t_flt,
-      float(this->Tb_hdwe_filt)/SCL_600,
-      float(this->vb_hdwe_filt)/sp.vb_hist_slr(),
-      float(this->ib_amp_hdwe_filt)/sp.ib_hist_m_slr(),
-      float(this->ib_noa_hdwe_filt)/sp.ib_hist_n_slr(),
-      float(this->Tb_filt)/SCL_600,
-      float(this->vb_filt)/sp.vb_hist_slr(),
-      float(this->ib_filt)/sp.ib_hist_n_slr(),
-      float(this->soc)/SCL_16000,
-      float(this->soc_min)/SCL_16000,
-      float(this->soc_ekf)/SCL_16000,
-      float(this->voc_filt)/sp.vb_hist_slr(),
-      float(this->voc_stat_filt)/sp.vb_hist_slr(),
-      float(this->e_wrap_filt)/sp.vb_hist_slr(),
-      float(this->e_wrap_m_filt)/sp.vb_hist_slr(),
-      float(this->e_wrap_m_trim)/sp.vb_hist_slr(),
-      float(this->e_wrap_n_filt)/sp.vb_hist_slr(),
-      this->fltw,
-      this->falw);
+    sendTxBuf(txBuf, true, false, true);
   }
 }
 

@@ -266,7 +266,7 @@ public:
   float ib_wrp_tau() { return WrapErrFilt_->tau(); };
   uint8_t lo_fail() { return lo_fail_; };
   uint8_t lo_fault() { return lo_fault_; };
-  void pretty_print();
+  String pretty_print();
 protected:
   Chemistry *chem_;         // Chemistry
   LagExp *ChargeTransfer_;  // ChargeTransfer model {ib, vb} --> {voc}, ioc=ib for Battery version

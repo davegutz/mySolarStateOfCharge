@@ -302,21 +302,23 @@ void Looparound::calculate(const boolean reset, const float ib, Sensors *Sen)
   ib_past_ = ib_;
 }
 
-void Looparound::pretty_print()
+String Looparound::pretty_print()
 {
-  Serial.printf(" reset %d\n", reset_);
-  Serial.printf(" ib%7.3f A\n", ib_);
-  Serial.printf(" ib_dyn%7.3f A\n", ib_dyn_);
-  Serial.printf(" dv_dyn%7.3f V\n", dv_dyn_);
-  Serial.printf(" voc%7.3f V\n", voc_);
-  Serial.printf(" e_wrap%7.3f V\n", e_wrap_);
-  Serial.printf(" e_wrap_f%7.3f V\n", e_wrap_filt_);
-  Serial.printf(" e_wrap_trim%7.3f V\n", e_wrap_trim_);
-  Serial.printf(" e_wrap_trimmed%7.3f V\n", e_wrap_trimmed_);
-  Serial.printf(" wrap_trim_gain%7.3f r/s\n", wrap_trim_gain_);
-  Serial.printf(" hi_fault/fail %d/%d\n", hi_fault_, hi_fail_);
-  Serial.printf(" lo_fault/fail %d/%d\n", lo_fault_, lo_fail_);
-  Serial.printf(" ewlo_thr/ewhi_thr%7.3f/%7.3f V\n", ewlo_thr_, ewhi_thr_);
+  String txBuf;
+  txBuf = String::format(" reset %d\n", reset_) + 
+    String::format(" ib%7.3f A\n", ib_) +
+    String::format(" ib_dyn%7.3f A\n", ib_dyn_) +
+    String::format(" dv_dyn%7.3f V\n", dv_dyn_) +
+    String::format(" voc%7.3f V\n", voc_) +
+    String::format(" e_wrap%7.3f V\n", e_wrap_) +
+    String::format(" e_wrap_f%7.3f V\n", e_wrap_filt_) +
+    String::format(" e_wrap_trim%7.3f V\n", e_wrap_trim_) +
+    String::format(" e_wrap_trimmed%7.3f V\n", e_wrap_trimmed_) +
+    String::format(" wrap_trim_gain%7.3f r/s\n", wrap_trim_gain_) +
+    String::format(" hi_fault/fail %d/%d\n", hi_fault_, hi_fail_) +
+    String::format(" lo_fault/fail %d/%d\n", lo_fault_, lo_fail_) +
+    String::format(" ewlo_thr/ewhi_thr%7.3f/%7.3f V\n", ewlo_thr_, ewhi_thr_);
+    return ( txBuf );
 }
 
 
@@ -585,10 +587,17 @@ void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
 
 void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
 {
-  Serial.printf("\nLooparound Amp:\n");
-  LoopIbAmp->pretty_print();
-  Serial.printf("\nLooparound Noa:\n");
-  LoopIbNoa->pretty_print();
+  String txBuf;
+
+  txBuf = String::format("\nLooparound Amp:\n");
+  sendTxBuf(txBuf, true, true, true);
+  txBuf = LoopIbAmp->pretty_print();
+  sendTxBuf(txBuf, true, true, true);
+
+  txBuf = String::format("\nLooparound Noa:\n");
+  sendTxBuf(txBuf, true, true, true);
+  txBuf = LoopIbNoa->pretty_print();
+  sendTxBuf(txBuf, true, true, true);
 
   Serial.printf("\nFault:\n");
   Serial.printf(" cc_diff%9.6f  thr%9.6f Fc^\n", cc_diff_, cc_diff_thr_);

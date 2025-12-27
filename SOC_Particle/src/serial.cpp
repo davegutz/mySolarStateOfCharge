@@ -457,11 +457,6 @@ void serialEvent()
   static String serial_str = "";
   static boolean serial_ready = false;
 
-   if (BLE.connected())
-  {
-    return;
-  }
-
   // Each pass try to complete input from avaiable
   while ( !serial_ready && Serial.available() )
   {
@@ -509,11 +504,6 @@ void serialEvent1()
 {
   static String serial_str1 = "";
   static boolean serial_ready1 = false;
-
-  if (BLE.connected())
-  {
-    return;
-  }
 
   // Each pass try to complete input from avaiable
   while ( !serial_ready1 && Serial1.available() )

@@ -38,6 +38,7 @@ extern Flt_st mySum[NSUM];  // Summaries for saving charge history
 boolean recall_P(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
 {
     boolean found = true;
+    String txBuf;
     switch ( letter_1 )
     {
         case ( 'a' ):  // Pa:  Print all
@@ -55,13 +56,11 @@ boolean recall_P(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             break;
 
         case ( 'f' ):  // Pf:  Print faults
-            // sp.print_history_array();
-            // sp.print_fault_header(&pp.pubList);
             sp.print_fault_array();
             sp.print_fault_header(&pp.pubList);
-            Serial.printf ("\nSen::\n");
+            txBuf = String::format("\nSen::\n");
+            sendTxBuf(txBuf, true, true, true);
             Sen->Flt->pretty_print (Sen, Mon);
-            Serial1.printf("\nSen::\n");
             Sen->Flt->pretty_print1(Sen, Mon);
             break;
 
