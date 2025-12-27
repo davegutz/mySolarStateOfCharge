@@ -28,6 +28,7 @@
 #include "ble.h"
 
 extern CommandPars cp;  // Various parameters shared at system level
+extern BleCharacteristic txCharacteristic;
 
 // Strip cmd string from front of source string
 String chat_cmd_from(String *source)
@@ -426,6 +427,19 @@ void print_temp_serial(const boolean reset, Sensors *Sen)
       Sen->Tb_f_rate);
     Log.info("    print_temp_serial cTime,%9.3f,", cTime);
   }
+}
+
+// General purpose transmitter
+void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendSerial1, const boolean sendBLE)
+{
+    // USB serial
+    if ( sendSerial ) Serial.print(txBuf);
+
+    // UART BT serial
+    if ( sendSerial1 ) Serial1.print(txBuf);
+
+    // BLE notify (chunked)
+    if ( sendBLE ) bleSendChunked(txCharacteristic, reinterpret_cast<const uint8_t*>(txBuf.c_str()), txBuf.length());
 }
 
 /*

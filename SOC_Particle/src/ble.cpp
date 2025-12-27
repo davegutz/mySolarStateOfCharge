@@ -26,8 +26,8 @@
 #include "ble.h"
 #include "command.h"
 #include "debug.h"
-extern CommandPars cp;  // Various parameters to be static at system level
 
+extern CommandPars cp;  // Various parameters to be static at system level
 extern BleCharacteristic txCharacteristic;
 
 // Blocking BLE write
@@ -95,17 +95,4 @@ void onBLE_DataReceived(const uint8_t* data, size_t len, const BlePeerDevice& pe
         serial_str = "";
     }     
   }
-}
-
-// General purpose transmitter
-void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendSerial1, const boolean sendBLE)
-{
-    // USB serial
-    if ( sendSerial ) Serial.print(txBuf);
-
-    // UART BT serial
-    if ( sendSerial1 ) Serial1.print(txBuf);
-
-    // BLE notify (chunked)
-    if ( sendBLE ) bleSendChunked(txCharacteristic, reinterpret_cast<const uint8_t*>(txBuf.c_str()), txBuf.length());
 }

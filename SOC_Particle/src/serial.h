@@ -68,6 +68,7 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
 void print_signal_sel_header(void);
 void print_ekf_header(void);
 void rapid_print(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
+void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendSerial1, const boolean sendBLE);
 void wait_on_user_input(Adafruit_SSD1306 *display);
 void wait_on_user_input();
 

@@ -41,4 +41,3 @@ constexpr size_t BLE_CHUNK_SIZE = 20;  // safe default
 void bleSendChunked(BleCharacteristic& chr, const uint8_t* data, size_t length);
 boolean is_finished(const char in_char);
 void onBLE_DataReceived(const uint8_t* data, size_t len, const BlePeerDevice& peer, void* context);
-void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendSerial1, const boolean sendBLE);

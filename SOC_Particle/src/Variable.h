@@ -28,6 +28,8 @@
 #include "PrinterPars.h"
 #include "ble.h"
 
+void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendSerial1, const boolean sendBLE);
+
 extern PrinterPars pr;  // Print buffer
 
 #undef max
