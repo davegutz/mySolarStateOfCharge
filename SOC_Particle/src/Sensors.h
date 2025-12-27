@@ -79,9 +79,10 @@ struct ScaleBrk
     n_d = n_hi - n_lo;
     p_d = p_hi - p_lo;
   }
-  void pretty_print()
+  String pretty_print()
   {
-    Serial.printf("ScaleBrk  [%7.3f %7.3f  %7.3f %7.3f]\n", n_lo, n_hi, p_lo, p_hi);
+    String txBuf = String::format("ScaleBrk  [%7.3f %7.3f  %7.3f %7.3f]\n", n_lo, n_hi, p_lo, p_hi);
+    return ( txBuf );
   }
 };
 

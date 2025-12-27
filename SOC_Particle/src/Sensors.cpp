@@ -599,36 +599,42 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
   txBuf = LoopIbNoa->pretty_print();
   sendTxBuf(txBuf, true, true, true);
 
-  Serial.printf("\nFault:\n");
-  Serial.printf(" cc_diff%9.6f  thr%9.6f Fc^\n", cc_diff_, cc_diff_thr_);
-  Serial.printf(" ib_lo_active %d\n", ib_lo_active_);
-  Serial.printf(" ib_diff%7.3f thr%7.3f Fd^\n", ib_diff_f_, ib_diff_thr_);
-  Serial.printf(" e_wrap_filt%7.3f thr%7.3f Fo^%7.3f Fi^\n", e_wrap_filt_, ewlo_thr_, ewhi_thr_);
-  Serial.printf(" ib_quiet%7.3f thr%7.3f Fq v\n", ib_quiet_, ib_quiet_thr_);
-  Serial.printf(" sel_brk_hdwe:     ");
-  Sen->sel_brk_hdwe->pretty_print();
-  Serial.printf("\n");
+  txBuf = String::format("\nFault:\n") +
+    String::format(" cc_diff%9.6f  thr%9.6f Fc^\n", cc_diff_, cc_diff_thr_) +
+    String::format(" ib_lo_active %d\n", ib_lo_active_) +
+    String::format(" ib_diff%7.3f thr%7.3f Fd^\n", ib_diff_f_, ib_diff_thr_) +
+    String::format(" e_wrap_filt%7.3f thr%7.3f Fo^%7.3f Fi^\n", e_wrap_filt_, ewlo_thr_, ewhi_thr_) +
+    String::format(" ib_quiet%7.3f thr%7.3f Fq v\n", ib_quiet_, ib_quiet_thr_) +
+    String::format(" sel_brk_hdwe:     ");
+  sendTxBuf(txBuf, true, true, true);
 
-  Serial.printf(" soc%7.3f soc_inf%7.3f voc%7.3f  voc_soc%7.3f\n", Mon->soc(), Mon->soc_inf(), Mon->voc(), Mon->voc_soc());
-  Serial.printf(" dis_tb_fa %d  dis_vb_fa %d  dis_ib_fa %d\n", ap.disab_tb_fa, ap.disab_vb_fa, ap.disab_ib_fa);
-  Serial.printf(" bms_off  %d\n\n", Mon->bms_off());
+  txBuf = Sen->sel_brk_hdwe->pretty_print() +
+    String::format("\n");
+  sendTxBuf(txBuf, true, true, true);
 
-  Serial.printf(" Tbh%9.5f Tbm=%9.5f sel%9.5f\n", Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb);
-  Serial.printf(" Vbh%7.3f Vbm %7.3f sel%7.3f\n", Sen->Vb_hdwe, Sen->Vb_model, Sen->Vb);
-  Serial.printf(" V3v3%7.3f\n", Sen->ShuntAmp->Vc()*2.);
-  Serial.printf(" Imh%7.3f Imm %7.3f Ib%7.3f\n", Sen->Ib_amp_hdwe, Sen->Ib_amp_model, Sen->Ib);
-  Serial.printf(" Inh%7.3f Inm %7.3f Ib%7.3f\n", Sen->Ib_noa_hdwe, Sen->Ib_noa_model, Sen->Ib);
-  Serial.printf(" Ibh%7.3f Ibh %7.3f Ib%7.3f\n\n", Sen->Ib_hdwe, Sen->Ib_hdwe_model, Sen->Ib);
+  txBuf = String::format(" soc%7.3f soc_inf%7.3f voc%7.3f  voc_soc%7.3f\n", Mon->soc(), Mon->soc_inf(), Mon->voc(), Mon->voc_soc()) +
+    String::format(" dis_tb_fa %d  dis_vb_fa %d  dis_ib_fa %d\n", ap.disab_tb_fa, ap.disab_vb_fa, ap.disab_ib_fa) +
+    String::format(" bms_off  %d\n\n", Mon->bms_off()) +
 
-  Serial.printf(" mod_tb %d mod_vb %d mod_ib  %d\n", sp.mod_tb(), sp.mod_vb(), sp.mod_ib());
-  Serial.printf(" mod_tb_dscn %d mod_vb_dscn %d mod_ib_amp_dscn %d mod_ib_noa_dscn %d\n", sp.mod_tb_dscn(), sp.mod_vb_dscn(), sp.mod_ib_amp_dscn(), sp.mod_ib_noa_dscn());
+    String::format(" Tbh%9.5f Tbm=%9.5f sel%9.5f\n", Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb) +
+    String::format(" Vbh%7.3f Vbm %7.3f sel%7.3f\n", Sen->Vb_hdwe, Sen->Vb_model, Sen->Vb) +
+    String::format(" V3v3%7.3f\n", Sen->ShuntAmp->Vc()*2.) +
+    String::format(" Imh%7.3f Imm %7.3f Ib%7.3f\n", Sen->Ib_amp_hdwe, Sen->Ib_amp_model, Sen->Ib) +
+    String::format(" Inh%7.3f Inm %7.3f Ib%7.3f\n", Sen->Ib_noa_hdwe, Sen->Ib_noa_model, Sen->Ib) +
+    String::format(" Ibh%7.3f Ibh %7.3f Ib%7.3f\n\n", Sen->Ib_hdwe, Sen->Ib_hdwe_model, Sen->Ib);
+  sendTxBuf(txBuf, true, true, true);
+
+  txBuf = String::format(" mod_tb %d mod_vb %d mod_ib  %d\n", sp.mod_tb(), sp.mod_vb(), sp.mod_ib()) +
+    String::format(" mod_tb_dscn %d mod_vb_dscn %d mod_ib_amp_dscn %d mod_ib_noa_dscn %d\n", sp.mod_tb_dscn(), sp.mod_vb_dscn(), sp.mod_ib_amp_dscn(), sp.mod_ib_noa_dscn()) +
   #ifdef HDWE_IB_HI_LO
-    Serial.printf(" tb_s_st %d  vb_s_st %d  ib_choice %d ib_decision_ %d ib_s_st %d\n", tb_sel_stat_, vb_sel_stat_, ib_choice_, ib_decision_, ib_sel_stat_);
+    String::format(" tb_s_st %d  vb_s_st %d  ib_choice %d ib_decision_ %d ib_s_st %d\n", tb_sel_stat_, vb_sel_stat_, ib_choice_, ib_decision_, ib_sel_stat_) +
   #else
-    Serial.printf(" tb_s_st %d  vb_s_st %d  ib_s_st %d ib_decision_ %d\n", tb_sel_stat_, vb_sel_stat_, ib_sel_stat_, ib_decision_);
+    String::format(" tb_s_st %d  vb_s_st %d  ib_s_st %d ib_decision_ %d\n", tb_sel_stat_, vb_sel_stat_, ib_sel_stat_, ib_decision_) +
   #endif
-  Serial.printf(" fake_faults %d latched_fail %d latched_fail_fake %d preserving %d\n\n", ap.fake_faults, latched_fail_, latched_fail_fake_, *sp_preserving_);
-  Serial.printf(" wrap_hi_or_lo_fa %d wrap_hi_and_lo_fa %d\n\n", wrap_hi_or_lo_fa(), wrap_hi_and_lo_fa());
+    String::format(" fake_faults %d latched_fail %d latched_fail_fake %d preserving %d\n\n", ap.fake_faults, latched_fail_, latched_fail_fake_, *sp_preserving_) +
+    String::format(" wrap_hi_or_lo_fa %d wrap_hi_and_lo_fa %d\n\n", wrap_hi_or_lo_fa(), wrap_hi_and_lo_fa());
+  sendTxBuf(txBuf, true, true, true);
+
 
   #ifdef HDWE_IB_HI_LO
     Serial.printf("HDWE_IB_HI_LO Decisions\n");
@@ -669,6 +675,7 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
   if ( Sen->now < 1746684850783ULL )
     Serial.printf("\n\n////////////////// WARN set UT (h;)\n\n");
 }
+
 void Fault::pretty_print1(Sensors *Sen, BatteryMonitor *Mon)
 {
   Serial1.printf("Fault:\n");
