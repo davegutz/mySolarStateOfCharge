@@ -32,7 +32,7 @@ def plot_1(plt=None, mr=None, mv=None, title=None):
     plq(plt, mr, 'time', mr, 'VoVca', add=0.2, color='blue', linestyle='-', label='VoVca' + run_str + '+0.2')
     plq(plt, mv, 'time', mv, 'VoVca', add=0.2, color='red', linestyle='--', label='VoVca' + ver_str + '+0.2')
     plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
-    plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Von_kf', add=0.0, color='red', linestyle='--', label='Von_kf' + ver_str + '+0.0')
     plq(plt, mr, 'time', mr, 'Vcn', add=-0.8, color='blue', linestyle='-', label='Vcn' + run_str + '-0.8')
     plq(plt, mv, 'time', mv, 'Vcn', add=-0.8, color='red', linestyle='--', label='Vcn' + ver_str + '-0.8')
     plq(plt, mr, 'time', mr, 'VoVcn', add=-0.0, color='blue', linestyle='-', label='VoVcn' + run_str + '-0.0')
@@ -71,7 +71,7 @@ def plot_4(plt=None, mr=None, mv=None, title=None):
     plt.subplot(231)
     plt.title(title)
     plq(plt, mr, 'time', mr, 'Von', add=0.0, color='blue', linestyle='-', label='Von' + run_str + '+0.0')
-    plq(plt, mv, 'time', mv, 'Von', add=0.0, color='red', linestyle='--', label='Von' + ver_str + '+0.0')
+    plq(plt, mv, 'time', mv, 'Von_kf', add=0.0, color='red', linestyle='--', label='Von_kf' + ver_str + '+0.0')
     plt.legend(loc=1)
     plt.subplot(234)
     plq(plt, mr, 'time', mr, 'Voa', add=0.0, color='blue', linestyle='-', label='Voa' + run_str + '+0.0')
@@ -127,7 +127,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     mr_lpf = LagTustin(dt=sample_time, tau=data_lag, max_=3.3, min_=-3.3)
 
     # Get initial steady offset so can search for start of sweep.  Assume initial 50 seconds are steady.
-    vec_initial = np.where(mr.time <= 50.)
+    vec_initial = np.where( (mr.time <= 50.) & (mr.time >= 10.) )
     mr.Von = mr.Von - np.average(mr.Von[vec_initial])
     #plt.figure();     plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von')
 
@@ -157,16 +157,23 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     vec_fr_for_avg = np.arange(index_start_sweep_lpf + int(0.5*(index_end_sweep_lpf - index_start_sweep_lpf)),
                                index_end_sweep_lpf)
     mr.Von = mr.Von - np.average(mr.Von[vec_fr_for_avg])
-    mv.Von = np.array(mv.Von)
-    mv.Von = mv.Von - np.average(mv.Von[vec_fr_for_avg])
+    mv.Von_kf = np.array(mv.Von_kf)
+    mv.Von_kf = mv.Von_kf - np.average(mv.Von_kf[vec_fr_for_avg])
     mr.Von_lpf = mr.Von_lpf - np.average(mr.Von_lpf[vec_fr_for_avg])
-    mv.Von_avg = np.full((len(mv.Von),), np.average(mv.Von[vec_fr_for_avg]))
+    mv.Von_kf_avg = np.full((len(mv.Von_kf),), np.average(mv.Von_kf[vec_fr_for_avg]))
 
     plt.figure()
     plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von')
-    plq(plt, mv, 'time', mv, 'Von', color='cyan', linestyle='-.', label='Von_kf')
     plq(plt, mr, 'time', mr, 'Von_lpf', color='red', linestyle='--', label='Von_lpf')
-    plq(plt, mv, 'time', mv, 'Von_avg', color='orange', linestyle='-', label='Von_avg')
+    plq(plt, mv, 'time', mv, 'Von_kf', color='cyan', linestyle='-.', label='Von_kf')
+    plq(plt, mv, 'time', mv, 'Von_kf_avg', color='orange', linestyle='-', label='Von_kf_avg')
+    plt.text(0.5, 0.2, f"{Qstd=}   {R=} {lpf_tau=}",
+             horizontalalignment='center',
+             verticalalignment='center',
+             transform=plt.gca().transAxes,
+             fontsize=12,
+             color='blue',
+             bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
     plt.legend(loc=1)
     plt.show(block=False)
 
@@ -182,7 +189,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
         mr.time_zero_crossing = mr.time[mr.crossing_indices]
 
         mv.time = mr.time
-        is_positive = mv.Von[index_start_sweep_lpf:index_end_sweep_lpf]  > 0
+        is_positive = mv.Von_kf[index_start_sweep_lpf:index_end_sweep_lpf]  > 0
         positive_crossings = (~is_positive[:-1]) & is_positive[1:]
         mv.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lpf  # Add 1 to account for the shift
         mv.time_zero_crossing = mv.time[mv.crossing_indices]
@@ -206,8 +213,8 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
             input_magnitude = max(input) - min(input)
             if j >= len(mv.crossing_indices) - 1:
                 break
-            response = mv.Von[mv.crossing_indices[j]:mv.crossing_indices[j+1]]
-            response_magnitude = max(response) - min(response)
+            response = mv.Von_kf[mv.crossing_indices[j]:mv.crossing_indices[j+1]]
+            response_magnitude = (max(response)[0] - min(response)[0])
             tf_magnitude = 20.*np.log10(response_magnitude/input_magnitude)
             tf_phase = -360. * lag / period
             if frequency < 2.5:
@@ -253,9 +260,12 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
 
     # Metrics
     mr.Von_steady = mr.Von[vec_initial]
-    mv.Von_steady = mv.Von[vec_initial]
+    mv.Von_kf_steady = mv.Von_kf[vec_initial]
     mr.Von_steady_lpf = mr.Von_lpf[vec_initial]
-    attenuation = (np.max(mv.Von_steady) - np.min(mv.Von_steady)) / (np.max(mr.Von_steady) - np.min(mr.Von_steady))
+    mr.amp_Von_steady = np.max(mr.Von_steady) - np.min(mr.Von_steady)
+    mv.amp_Von_kf_steady = np.max(mv.Von_kf_steady) - np.min(mv.Von_kf_steady)
+    print(f" amp Von_kf_steady  {mv.amp_Von_kf_steady}   amp Von_steady {mr.amp_Von_steady}" )
+    attenuation = mv.amp_Von_kf_steady / mr.amp_Von_steady
     attenuation_lpf = (np.max(mr.Von_steady_lpf) - np.min(mr.Von_steady_lpf)) / (np.max(mr.Von_steady) - np.min(mr.Von_steady))
 
     if not steady_only:
@@ -301,11 +311,11 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
         metric_string += "  -45 deg @ {:4.2f} Hz   ({:5.1f} sec)\n\n".format(freq_45, time_45)
         metric_string += "  -90 deg @ {:4.2f} Hz   ({:5.1f} sec)\n\n".format(freq_90, time_90)
         metric_string += "  tau @ -3db = {:5.3f}\n  tau @ -45 = {:5.3f}\n  omega90 = {:5.3f}\n".format(tau_3db, tau_45, omega_90)
-        res_title = "Qstd, R, lpf_tau, attenuation_lpf, attenuation, tau_3db, tau_45, omega_90,"
-        res = [Qstd, R, lpf_tau, attenuation_lpf, attenuation, tau_3db, tau_45, omega_90]
+        res_title = "Qstd, R, lpf_tau, attenuation_lpf, amp_steady_kf, amp_steady, attenuation, tau_3db, tau_45, omega_90,"
+        res = [Qstd, R, lpf_tau, attenuation_lpf, mv.amp_Von_kf_steady, mr.amp_Von_steady, attenuation, tau_3db, tau_45, omega_90]
     else:
-        res_title = "Qstd, R, lpf_tau, attenuation_lpf, attenuation, tau_3db, tau_45, omega_90,"
-        res = [Qstd, R, lpf_tau, attenuation_lpf, 0., 0., 0., 0.]
+        res_title = "Qstd, R, lpf_tau, attenuation_lpf,  amp_steady_kf, amp_steady, attenuation, tau_3db, tau_45, omega_90,"
+        res = [Qstd, R, lpf_tau, attenuation_lpf, mv.amp_Von_kf_steady, mr.amp_Von_steady, attenuation,  0., 0., 0.]
 
     plt.figure()
     plt.figtext(0.1, 0.3, metric_string, fontsize=10, color='black', horizontalalignment='left',
@@ -314,7 +324,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
     plt.title(title)
     plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von' + run_str)
     plq(plt, mr, 'time', mr, 'Von_lpf', color='cyan', linestyle='--', label='Von_lpf' + run_str)
-    plq(plt, mv, 'time', mv, 'Von', color='red', linestyle='--', label='Von' + ver_str)
+    plq(plt, mv, 'time', mv, 'Von_kf', color='red', linestyle='--', label='Von_kf' + ver_str)
     plt.text(0.5, 0.2, f"{Qstd=}   {R=} {lpf_tau=}",
              horizontalalignment='center',
              verticalalignment='center',
@@ -810,7 +820,7 @@ class Saved:
         self.VoVcnA = []
         self.Tbv = []
         self.Vbv = []
-        self.vf_kf = []
+        self.Von_kf = []
 
 
 # Example Usage:
@@ -981,7 +991,7 @@ if __name__ == "__main__":
         plt = plot_6(plt, mr, mv, title+' F5')
 
 
-    doing_doe = False
+    doing_doe = True
     if doing_doe:
         Res = []
         # for Qstd, R, lpf_tau in \
@@ -994,9 +1004,11 @@ if __name__ == "__main__":
         #           ]:
         for Qstd, R, lpf_tau in \
             [
-                [0.015, 0.001, 0.00001],  [0.03, 0.001, 0.00001],  [0.0015, 0.001, 0.00001],  [0.015, 0.002, 0.00001], [0.015, 0.0001, 0.00001],
-                [0.015, 0.0001, 0.00001], [0.03, 0.0001, 0.00001], [0.0015, 0.0001, 0.00001], [0.0015, 0.001, 0.00001], [0.0015, 0.002, 0.00001],
-                [0.0015, 0.0001, 0.00001],[1.5, 0.00001, 0.00001],
+                [0.015,  0.001,   0.00001], [0.03,   0.001,   0.00001], [0.0015, 0.001,   0.00001],  [0.015, 0.002, 0.00001],
+                [0.015,  0.0001,  0.00001], [0.03,   0.0001,  0.00001], [0.0015, 0.0001,  0.00001],
+                [0.015,  0.00001, 0.00001], [0.03,   0.00001, 0.00001], [0.0015, 0.00001, 0.00001],
+                [0.0015, 0.001,   0.00001], [0.0015, 0.002,   0.00001], [0.0015, 0.0001,  0.00001],
+                [1.5, 0.00001, 0.00001],
               ]:
         # for Qstd, R, lpf_tau in [
         #     [0.015, 0.001, 0.100], [0.015, 0.001, 0.008], [0.015, 0.001, 0.00001],
@@ -1027,10 +1039,10 @@ if __name__ == "__main__":
                 # kfVonX.update(mr.Von[i])
                 if i > 3:
                     pass
-                vf_kf, v_rat = kfVon.get_state()
-                mv.vf_kf.append(vf_kf)
+                Von_kf, v_rat = kfVon.get_state()
+                mv.Von_kf.append(Von_kf)
 
-                vf_lpf = lpfVon.calculate_tau(vf_kf[0], i<1, mr.dt[i], lpf_tau)
+                vf_lpf = lpfVon.calculate_tau(Von_kf[0], i<1, mr.dt[i], lpf_tau)
                 mv.Von.append(vf_lpf)
 
             # plt.figure()
@@ -1038,7 +1050,7 @@ if __name__ == "__main__":
             # plt.title(title)
             # plq(plt, mr, 'time', mr, 'Von', color='blue', linestyle='-', label='Von' + run_str)
             # plq(plt, mr, 'time', mr, 'Von_lpf', color='cyan', linestyle='-', label='Von_lpf' + run_str)
-            # plq(plt, mv, 'time', mv, 'vf_kf', color='red', linestyle='-.', label='vf_kf' + ver_str)
+            # plq(plt, mv, 'time', mv, 'Von_kf', color='red', linestyle='-.', label='Von_kf' + ver_str)
             # plq(plt, mv, 'time', mv, 'Von', color='magenta', linestyle=':', label='Von' + ver_str)
             # plt.legend(loc=1)
             # plt.show()
@@ -1050,14 +1062,14 @@ if __name__ == "__main__":
         # Summarize
         print(f"{res_title}")
         for i in range(len(Res)):
-            print("{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},"\
-                  .format(Res[i][0], Res[i][1], Res[i][2], Res[i][3], Res[i][4], Res[i][5], Res[i][6], Res[i][7]))
+            print("{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},"\
+                  .format(Res[i][0], Res[i][1], Res[i][2], Res[i][3], Res[i][4], Res[i][5], Res[i][6], Res[i][7], Res[i][8], Res[i][9]))
         csv_file = 'KF1x1.csv'
         with open(csv_file, "w") as output:
             output.write(res_title + '\n')
             for i in range(len(Res)):
-                output.write("{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},\n" \
-                             .format(Res[i][0], Res[i][1], Res[i][2], Res[i][3], Res[i][4], Res[i][5], Res[i][6], Res[i][7]))
+                output.write("{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},{:9.6f},\n" \
+                             .format(Res[i][0], Res[i][1], Res[i][2], Res[i][3], Res[i][4], Res[i][5], Res[i][6], Res[i][7], Res[i][8], Res[i][9]))
 
 
 

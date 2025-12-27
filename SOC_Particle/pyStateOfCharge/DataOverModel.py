@@ -913,6 +913,9 @@ class SavedData:
             self.ibnkf = None
             self.ib_noa_lo = None
             self.ib_noa_hi = None
+            self.ib_noa_f = None
+            self.ib_noa_kf = None
+            self.ib_noa_kf = None
             self.ib_amp_lo = None
             self.ib_amp_hi = None
             self.ib_diff = None
@@ -1032,6 +1035,8 @@ class SavedData:
             self.ibm = np.array(sel.ibm[:i_end])
             self.ibmkf = np.array(sel.ibmkf[:i_end])
             self.ibnkf = np.array(sel.ibnkf[:i_end])
+            self.ib_noa_f = np.array(sel.ib_noa_f[:i_end])
+            self.ib_noa_kf = np.array(sel.ib_noa_kf[:i_end])
             self.ib_noa_lo = np.array(sel.ib_noa_lo[:i_end])
             self.ib_noa_hi = np.array(sel.ib_noa_hi[:i_end])
             self.ib_amp_lo = np.array(sel.ib_amp_lo[:i_end])

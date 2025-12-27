@@ -124,6 +124,7 @@ void Shunt::pretty_print()
   Serial.printf(" bare_shunt %d dscn_cmd %d\n", bare_shunt_, dscn_cmd_);
   Serial.printf(" Ishunt_cal%7.3f; A\n", Ishunt_cal_);
   Serial.printf(" Ishunt_cal_filt%7.3f; A\n", Ishunt_cal_filt_);
+  Serial.printf(" Ishunt_cal_kf%7.3f; A\n", Ishunt_cal_kf_);
   Serial.printf(" port 0x%X;\n", port_);
   Serial.printf(" v2a_s%7.2f; A/V\n", v2a_s_);
   Serial.printf(" Vc%10.6f; V\n", Vc_);
@@ -168,7 +169,6 @@ void Shunt::convert(const boolean disconnect, const boolean reset, Sensors *Sen)
     if ( !bare_shunt_ && !dscn_cmd_ )
     {
       vshunt_ = Vo_Vc_;
-      vshunt_kf_ = Vo_Vc_kf_;
       vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0;
     }
     else
@@ -206,8 +206,8 @@ void Shunt::sample(const boolean reset_kf)
 void Shunt::sample_combine(const boolean reset_kf)
 {
   Vo_Vc_ = Vo_ - Vc_;
-  Vo_Vc_kf_ = KF_->calculate(reset_kf, dt()/1000., Vo_Vc_);
-  if  ( sp.debug()==14 )Serial.printf("reset_kf %d ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f Vo_Vc_kf_%7.3f Vc_%7.3f\n", reset_kf, (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, Vo_Vc_kf_, Vc_);
+  vshunt_kf_ = KF_->calculate(reset_kf, dt()/1000., Vo_Vc_);
+  if  ( sp.debug()==14 )Serial.printf("reset_kf %d ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f vshunt_kf_%7.3f Vc_%7.3f\n", reset_kf, (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, vshunt_kf_, Vc_);
 }
 
 void Shunt::sample_Vc()

@@ -129,6 +129,7 @@ public:
   float Ishunt_cal_kf() { return Ishunt_cal_kf_; };
   float ishunt_cal_kf() { return Ishunt_cal_kf_ / sp.nP(); };
   float Ishunt_cal_filt() { return Ishunt_cal_filt_; };
+  float ishunt_cal_filt() { return Ishunt_cal_filt_ / sp.nP(); };
   void kf_q_std(const double q) {KF_->q_std(q);};
   void kf_r_std(const double r) {KF_->r_std(r);};
   void print_serial_header(const char suffix);
@@ -148,7 +149,7 @@ public:
   float Vc() { return Vc_; };
   float Vo() { return Vo_; };
   float Vo_Vc() { return Vo_Vc_; };
-  float Vo_Vc_kf() { return Vo_Vc_kf_; };
+  float Vo_Vc_kf() { return vshunt_kf_; };
 protected:
   String name_;         // For print statements, multiple instances
   uint8_t port_;        // Octal I2C port used by Acafruit_ADS1015
@@ -176,7 +177,6 @@ protected:
   int Vo_raw_;          // Raw analog read, integer       
   float Vo_;            // Sensed Vo, output of op amp, V
   float Vo_Vc_;         // Sensed Vo-Vc, difference in output of op amps, V
-  float Vo_Vc_kf_;      // Kalman filter output on Vo-Vc, V
   boolean using_opamp_; // Using differential hardware amp
   General2_Pole *Filt_; // Linear filter to test for direction
   KalmanFilter *KF_;    // Noise filter
@@ -580,6 +580,7 @@ public:
   float ib() { return Ib / sp.nP(); };                            // Battery unit current, A
   float ib_amp() { return Ib_amp / sp.nP(); };                    // Battery amp unit current, A
   float ib_amp_hdwe() { return Ib_amp_hdwe / sp.nP(); };          // Battery amp unit current, A
+  float ib_amp_hdwe_f() { return Ib_amp_hdwe_f / sp.nP(); };      // Battery amp 2-pole filtered unit current, A
   float ib_amp_hdwe_kf() { return Ib_amp_hdwe_kf / sp.nP(); };    // Battery amp kalman filtered unit current, A
   float ib_amp_model() { return Ib_amp_model / sp.nP(); };        // Battery amp model unit current, A
   float ib_amp_vo_vc() { return ShuntAmp->Vo_Vc(); };             // Battery amp kalman filter input, V
