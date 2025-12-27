@@ -113,6 +113,9 @@ const String unit = version + "_" + HDWE_UNIT;
 
 // If NSUM too large, will get flashing red with auto reboot on 'Hs' or compile error `.data' will not fit in region `APP_FLASH'
 // For all, there are 40 bytes for each unit of NSUM
+// Baseline compile information 20251227
+//   text    data     bss     dec     hex filename
+// 292998  119852   10306  423168   67500 c:/Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/target/6.2.1/p2/SOC_Particle.elf
 
 #define NFLT    7  // Number of saved SRAM fault data slices 10 s intervals (7)
 #define NHIS   50  // Number of saved SRAM history data slices. If NFLT + NHIS too large will get compile error BACKUPSRAM (55)

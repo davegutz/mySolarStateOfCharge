@@ -28,34 +28,19 @@
 
 extern CommandPars cp;  // Various parameters shared at system level
 
-// Non-blocking delay
-void delay_no_block(const unsigned long long interval)
+constexpr size_t BLE_CHUNK_SIZE = 20;  // safe default
+
+// Blocking BLE write
+void bleSendChunked(BleCharacteristic& chr, const uint8_t* data, size_t length)
 {
-  unsigned long long previousMillis = System.millis();
-  unsigned long long currentMillis = previousMillis;
-  while( currentMillis - previousMillis < interval )
-  {
-    currentMillis = System.millis();
+  size_t offset = 0;
+  while (offset < length) {
+      size_t chunkLen = min(BLE_CHUNK_SIZE, length - offset);
+      chr.setValue(data + offset, chunkLen);
+      offset += chunkLen;
+      delay(5);  // allow notify queue to drain
   }
 }
-
-
-// Cleanup string for final processing by chitchat
-String finish_request(const String in_str)
-{
-  String out_str = in_str;
-  // Remove whitespace
-  out_str.trim();
-  out_str.replace("\n","");
-  out_str.replace("\0","");
-  out_str.replace("","");
-  out_str.replace(",","");
-  out_str.replace(" ","");
-  out_str.replace("=","");
-  out_str.replace(";","");
-  return out_str;
-}
-
 
 // Strip cmd string from front of source string
 String chat_cmd_from(String *source)
@@ -86,6 +71,32 @@ String chat_cmd_from(String *source)
   return out_str;
 }
 
+// Non-blocking delay
+void delay_no_block(const unsigned long long interval)
+{
+  unsigned long long previousMillis = System.millis();
+  unsigned long long currentMillis = previousMillis;
+  while( currentMillis - previousMillis < interval )
+  {
+    currentMillis = System.millis();
+  }
+}
+
+// Cleanup string for final processing by chitchat
+String finish_request(const String in_str)
+{
+  String out_str = in_str;
+  // Remove whitespace
+  out_str.trim();
+  out_str.replace("\n","");
+  out_str.replace("\0","");
+  out_str.replace("","");
+  out_str.replace(",","");
+  out_str.replace(" ","");
+  out_str.replace("=","");
+  out_str.replace(";","");
+  return out_str;
+}
 
 // Test for string completion character
 boolean is_finished(const char in_char)
@@ -483,6 +494,19 @@ void print_temp_serial(const boolean reset, Sensors *Sen)
       Sen->Tb_f_rate);
     Log.info("    print_temp_serial cTime,%9.3f,", cTime);
   }
+}
+
+// Send buffer
+void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendSerial1, const boolean sendBLE)
+{
+    // USB serial
+    if ( sendSerial ) Serial.print(txBuf);
+
+    // UART BT serial
+    if ( sendSerial1 ) Serial1.print(txBuf);
+
+    // BLE notify (chunked)
+    if ( sendBLE ) bleSendChunked(txCharacteristic, reinterpret_cast<const uint8_t*>(txBuf.c_str()), txBuf.length());
 }
 
 /*

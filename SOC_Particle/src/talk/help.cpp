@@ -138,12 +138,6 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.disab_tb_fa_p->print_help();  // FT
   ap.disab_vb_fa_p->print_help();  // FV
 
-  if ( BLE.connected() )
-  {
-    sprintf(pr.buff, "  Hd= ");
-    txCharacteristic.setValue(reinterpret_cast<const uint8_t*>(pr.buff), sizeof(pr.buff));
-  }
-
   Serial.printf("\nH<?>   Manage history\n");
   Serial.printf("  Hd= "); Serial.printf("dump summ log\n");
   Serial.printf("  HR= "); Serial.printf("reset summ log\n");

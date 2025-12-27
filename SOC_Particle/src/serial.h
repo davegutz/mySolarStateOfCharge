@@ -55,13 +55,14 @@ extern CommandPars cp;  // Various parameters to be static at system level
 extern BleCharacteristic txCharacteristic;
 
 // Headers
+void bleSendChunked(BleCharacteristic& chr, const uint8_t* data, size_t length);
+String chat_cmd_from(String *source);
+void delay_no_block(const unsigned long long int interval);
+String finish_request(const String in_str);
+boolean is_finished(const char in_char);
 void print_battery_header();
 void print_battery_serial();
 void print_rapid_create_string(Publish *pubList, Sensors *Sen, BatteryMonitor *Mon);
-void delay_no_block(const unsigned long long int interval);
-String finish_request(const String in_str);
-String chat_cmd_from(String *source);
-boolean is_finished(const char in_char);
 void print_all_header(Sensors *Sen);
 void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp);
 void print_rapid_header(void);
@@ -76,6 +77,7 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
 void print_signal_sel_header(void);
 void print_ekf_header(void);
 void rapid_print(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
+void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendSerial1, const boolean sendBLE);
 void wait_on_user_input(Adafruit_SSD1306 *display);
 void wait_on_user_input();
 
