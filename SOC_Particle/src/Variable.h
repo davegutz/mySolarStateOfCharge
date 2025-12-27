@@ -26,6 +26,7 @@
 
 #include "hardware/SerialRAM.h"
 #include "PrinterPars.h"
+#include "ble.h"
 
 extern PrinterPars pr;  // Print buffer
 
@@ -171,9 +172,11 @@ public:
     }
     
     void print1()
-    {
+    {   
         print_str();
-        Serial1.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
+        // Serial1.printf("%s\n", pr.buff);
     }
 
     void print_help_str()

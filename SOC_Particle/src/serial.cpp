@@ -25,22 +25,9 @@
 #include "command.h"
 #include "constants.h"
 #include "debug.h"
+#include "ble.h"
 
 extern CommandPars cp;  // Various parameters shared at system level
-
-constexpr size_t BLE_CHUNK_SIZE = 20;  // safe default
-
-// Blocking BLE write
-void bleSendChunked(BleCharacteristic& chr, const uint8_t* data, size_t length)
-{
-  size_t offset = 0;
-  while (offset < length) {
-      size_t chunkLen = min(BLE_CHUNK_SIZE, length - offset);
-      chr.setValue(data + offset, chunkLen);
-      offset += chunkLen;
-      delay(5);  // allow notify queue to drain
-  }
-}
 
 // Strip cmd string from front of source string
 String chat_cmd_from(String *source)
@@ -105,61 +92,6 @@ boolean is_finished(const char in_char)
             in_char == '\0' ||
             in_char == ';'  ||
             in_char == ',';    
-}
-
-// BLE receive
-void onBLE_DataReceived(const uint8_t* data, size_t len, const BlePeerDevice& peer, void* context)
-{
-  size_t ii = 0;
-
-  // Validate input
-  Serial.printf("From BLE app::");
-  for (; ii < len; ii++)
-  {
-    Serial.write(data[ii]);
-  }
-
-  // Parse input
-  static String serial_str = "";
-  static boolean serial_ready = false;
-  // Each pass try to complete input from avaiable
-  ii = 0;
-  while ( !serial_ready && ( ii < len ) )
-  {
-    char in_char = (char) data[ii++];  // get the new byte
-
-    // Intake
-    // if the incoming character to finish, add a ';' and set flags so the main loop can do something about it:
-    if ( is_finished(in_char) )
-    {
-        serial_str += ';';
-        serial_ready = true;
-        break;
-    }
-    else if ( in_char == '\r' )
-        Serial.printf("\n");  // scroll user terminal
-    else if ( in_char == '\b' && serial_str.length() )
-    {
-        Serial.printf("\b \b");  // scroll user terminal
-        serial_str.remove(serial_str.length() -1 );  // backspace
-    }
-    else
-        serial_str += in_char;  // process new valid character
-  }
-
-  // Pass info to inp_str
-  if ( serial_ready )
-  {
-    if ( !cp.inp_token )
-    {
-        cp.inp_token = true;
-        add_verify(&cp.inp_str, serial_str);
-        Serial.printf("add_verified %s\n", serial_str.c_str());
-        serial_ready = false;
-        cp.inp_token = false;
-        serial_str = "";
-    }     
-  }
 }
 
 // Print consolidation
@@ -494,19 +426,6 @@ void print_temp_serial(const boolean reset, Sensors *Sen)
       Sen->Tb_f_rate);
     Log.info("    print_temp_serial cTime,%9.3f,", cTime);
   }
-}
-
-// Send buffer
-void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendSerial1, const boolean sendBLE)
-{
-    // USB serial
-    if ( sendSerial ) Serial.print(txBuf);
-
-    // UART BT serial
-    if ( sendSerial1 ) Serial1.print(txBuf);
-
-    // BLE notify (chunked)
-    if ( sendBLE ) bleSendChunked(txCharacteristic, reinterpret_cast<const uint8_t*>(txBuf.c_str()), txBuf.length());
 }
 
 /*

@@ -115,45 +115,37 @@ void debug_m24(Sensors *Sen)
 // Q quick print critical parameters
 void debug_q(BatteryMonitor *Mon, Sensors *Sen)
 {
-  Serial.printf("ib_amp_fail %d\nib_noa_fail %d\nvb_fail %d\nTb%7.3f\nvb%7.3f\nvoc%7.3f\nvoc_filt%7.3f\nvoc_stat%7.3f\nvoc_stat_f%7.3f\nvoc_soc%7.3f\nvsat%7.3f\nib%7.3f\nsoc_m%8.4f\n\
+  String txBuf;
+  txBuf = String::format("ib_amp_fail %d\nib_noa_fail %d\nvb_fail %d\nTb%7.3f\nvb%7.3f\nvoc%7.3f\nvoc_filt%7.3f\nvoc_stat%7.3f\nvoc_stat_f%7.3f\nvoc_soc%7.3f\nvsat%7.3f\nib%7.3f\nsoc_m%8.4f\n\
 soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
     Sen->Flt->ib_amp_fa(), Sen->Flt->ib_noa_fa(), Sen->Flt->vb_fail(),
     Sen->Tb_f, Mon->vb(), Mon->voc(), Mon->voc_dead(), Mon->voc_stat(), Mon->voc_stat_f(), Mon->voc_soc(), Mon->vsat(), Mon->ib(), Sen->Sim->soc(), Mon->soc_ekf(),
     Mon->soc(), Mon->soc_min(), Mon->soc_inf(), sp.modeling());
+  sendTxBuf(txBuf, true, true, true);
 
-  Serial.printf("dq_inf/dq_abs%10.1f/%10.1f %8.4f coul_eff*=%9.6f, DAB+=%9.6f\nDQn%10.1f Tn%10.1f DQp%10.1f Tp%10.1f\n",
+  txBuf = String::format("dq_inf/dq_abs%10.1f/%10.1f %8.4f coul_eff*=%9.6f, DAB+=%9.6f\nDQn%10.1f Tn%10.1f DQp%10.1f Tp%10.1f\n",
     Mon->delta_q_inf(), Mon->delta_q_abs(), Mon->delta_q_inf()/Mon->delta_q_abs(),
     -Mon->delta_q_neg()/Mon->delta_q_pos(),
     -(Mon->delta_q_neg() + Mon->delta_q_pos()) / nice_zero(Mon->time_neg() + Mon->time_pos(), 1e-6),
     Mon->delta_q_neg(), Mon->time_neg(), Mon->delta_q_pos(), Mon->time_pos());
-
-  Serial1.printf("ib_amp_fail %d\nib_noa_fail %d\nvb_fail %d\nTb%7.3f\nvb%7.3f\nvoc%7.3f\nvoc_filt%7.3f\nvoc_stat%7.3f\nvoc_stat_f%7.3f\nvoc_soc%7.3f\nvsat%7.3f\nib%7.3f\nsoc_m%8.4f\n\
-soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
-    Sen->Flt->ib_amp_fa(), Sen->Flt->ib_noa_fa(), Sen->Flt->vb_fail(),
-    Sen->Tb_f, Mon->vb(), Mon->voc(), Mon->voc_dead(), Mon->voc_stat(), Mon->voc_stat_f(), Mon->voc_soc(), Mon->vsat(), Mon->ib(), Sen->Sim->soc(), Mon->soc_ekf(),
-    Mon->soc(), Mon->soc_min(), Mon->soc_inf(), sp.modeling());
-
-  Serial1.printf("dq_inf/dq_abs%10.1f/%10.1f = %8.4f coul_eff*=%9.6f DAB+=%9.6f\nDQn%10.1f Tn%10.1f DQp%10.1f Tp%10.1f\n",
-    Mon->delta_q_inf(), Mon->delta_q_abs(), Mon->delta_q_inf()/Mon->delta_q_abs(),
-    -Mon->delta_q_neg()/Mon->delta_q_pos(),
-    -(Mon->delta_q_neg() + Mon->delta_q_pos()) / nice_zero(Mon->time_neg() + Mon->time_pos(), 1e-6),
-    Mon->delta_q_neg(), Mon->time_neg(), Mon->delta_q_pos(), Mon->time_pos());
+  sendTxBuf(txBuf, true, true, true);
 
   if ( Sen->Flt->falw() || Sen->Flt->fltw() ) chit("Pf;", SOON);
   time_long_2_str((time_t)sp.Time_now_z, pr.buff);
-  Serial.printf(" time %ld hms:  %s\n", sp.Time_now_z, pr.buff);
-  Serial1.printf(" time %ld hms:  %s\n", sp.Time_now_z, pr.buff);
-
+  txBuf = String::format(" time %ld hms:  %s\n", sp.Time_now_z, pr.buff);
+  sendTxBuf(txBuf, true, true, true);
 }
 
 // Calibration
 void debug_98(BatteryMonitor *Mon, Sensors *Sen)
 {
-  Serial.printf("imh imhkf imfh inh inkfh infh: %6.2fA %6.2fA,%6.2fA  %6.2fA,%6.2fA %6.2fA,\n",
-  Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->ShuntAmp->Ishunt_cal_filt(), Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->ShuntNoAmp->Ishunt_cal_filt());
-  
-  Serial1.printf("imh imhkf imfh inh inkfh infh: %6.2fA %6.2fA,%6.2fA  %6.2fA,%6.2fA %6.2fA,\n",
-  Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->ShuntAmp->Ishunt_cal_filt(), Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->ShuntNoAmp->Ishunt_cal_filt());
+  String txBuf;
+
+  txBuf = String::format("imh imhkf imfh inh inkfh infh: %6.2fA %6.2fA,%6.2fA  %6.2fA,%6.2fA %6.2fA,\n",
+    Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->ShuntAmp->Ishunt_cal_filt(), Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf,
+    Sen->ShuntNoAmp->Ishunt_cal_filt());
+
+  sendTxBuf(txBuf, true, true, true);
 }
 void debug_99(BatteryMonitor *Mon, Sensors *Sen)
 {

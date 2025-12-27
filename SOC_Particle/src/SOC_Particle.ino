@@ -76,6 +76,7 @@
 #include "debug.h"
 #include "parameters.h"
 #include "serial.h"
+#include "ble.h"
 
 //#define BOOT_CLEAN      // Use this to clear 'lockup' problems introduced during testing using Talk
 
@@ -103,8 +104,8 @@ PrinterPars pr = PrinterPars();       // Print buffer
 VolatilePars ap = VolatilePars();     // Various adjustment parameters commanding at system level.  Initialized on start up.  Not retained.
 CommandPars cp = CommandPars();       // Various control parameters commanding at system level.  Initialized on start up.  Not retained.
 PublishPars pp = PublishPars();       // Common parameters for publishing.  Future-proof cloud monitoring
-BleCharacteristic txCharacteristic("tx", BleCharacteristicProperty::NOTIFY, txUuid, serviceUuid);
 BleCharacteristic rxCharacteristic("rx", BleCharacteristicProperty::WRITE_WO_RSP, rxUuid, serviceUuid, onBLE_DataReceived, NULL);
+BleCharacteristic txCharacteristic("tx", BleCharacteristicProperty::NOTIFY, txUuid, serviceUuid);
 unsigned long long millis_flip = System.millis(); // Timekeeping
 unsigned long long last_sync = System.millis();   // Timekeeping
 
@@ -295,52 +296,6 @@ void loop()
 
   ///////////////////////////////////////////////////////////// Top of loop////////////////////////////////////////
 
-  // if (BLE.connected())
-  // {
-  //   uint8_t txBuf[UART_TX_BUF_SIZE];
-  //   size_t txLen = 0;
-  //   static String serial_str = "";
-  //   static boolean serial_ready = false;
-
-  //   // Each pass try to complete input from avaiable
-  //   while ( !serial_ready && Serial.available() )
-  //   {
-  //     char in_char = (char) Serial.read();  // get the new byte
-  //     txBuf[txLen++] = in_char;
-
-  //     // Intake
-  //     // if the incoming character to finish, add a ';' and set flags so the main loop can do something about it:
-  //     if ( is_finished(in_char) )
-  //     {
-  //         serial_str += ';';
-  //         serial_ready = true;
-  //         break;
-  //     }
-  //     else if ( in_char == '\r' )
-  //         Serial.printf("\n");  // scroll user terminal
-  //     else if ( in_char == '\b' && serial_str.length() )
-  //     {
-  //         Serial.printf("\b \b");  // scroll user terminal
-  //         serial_str.remove(serial_str.length() -1 );  // backspace
-  //     }
-  //     else
-  //         serial_str += in_char;  // process new valid character
-  //   }
-
-  //   // Pass info to inp_str
-  //   if ( serial_ready )
-  //   {
-  //     if ( !cp.inp_token )
-  //     {
-  //         cp.inp_token = true;
-  //         add_verify(&cp.inp_str, serial_str);
-  //         Serial.printf("add_verified %s\n", serial_str.c_str());
-  //         serial_ready = false;
-  //         cp.inp_token = false;
-  //         serial_str = "";
-  //     }     
-  //   }
-  // }
 
   // Synchronize
   #ifdef HDWE_DS2482_1WIRE

@@ -41,21 +41,12 @@
 #include "Adafruit/Adafruit_SSD1306.h"
 
 const size_t UART_TX_BUF_SIZE = 20;
-// These UUIDs were defined by Nordic Semiconductor and are now the defacto standard for
-// UART-like services over BLE. Many apps support the UUIDs now, like the Adafruit Bluefruit app.
-const BleUuid serviceUuid("6E400001-B5A3-F393-E0A9-E50E24DCCA9E");
-const BleUuid rxUuid("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
-const BleUuid txUuid("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
-// This connects USB serial to Bluefruit
-void onBLE_DataReceived(const uint8_t* data, size_t len, const BlePeerDevice& peer, void* context);
 
 extern SavedPars sp;    // Various parameters to be static at system level and saved through power cycle
 extern PublishPars pp;  // For publishing
 extern CommandPars cp;  // Various parameters to be static at system level
-extern BleCharacteristic txCharacteristic;
 
 // Headers
-void bleSendChunked(BleCharacteristic& chr, const uint8_t* data, size_t length);
 String chat_cmd_from(String *source);
 void delay_no_block(const unsigned long long int interval);
 String finish_request(const String in_str);
@@ -77,7 +68,6 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
 void print_signal_sel_header(void);
 void print_ekf_header(void);
 void rapid_print(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
-void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendSerial1, const boolean sendBLE);
 void wait_on_user_input(Adafruit_SSD1306 *display);
 void wait_on_user_input();
 

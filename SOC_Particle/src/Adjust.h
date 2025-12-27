@@ -107,7 +107,7 @@ public:
     void print1()
     {
         print_str();
-        Serial1.printf("%s\n", pr.buff);
+        sendTxBuf(pr.buff, false, true, true);
     }
 
     void print_adj_print(const T input)
@@ -128,7 +128,7 @@ public:
     void print1_help()
     {
         print_help_str();
-        Serial1.printf("%s\n", pr.buff);
+        sendTxBuf(pr.buff, false, true, true);
     }
 
     T value() { return *val_ptr_; }

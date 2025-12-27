@@ -28,12 +28,14 @@
 #include "debug.h"
 #include "Summary.h"
 #include "talk/chitchat.h"
+#include "ble.h"
 
 extern SavedPars sp;    // Various parameters to be static at system level and saved through power cycle
 extern VolatilePars ap; // Various adjustment parameters shared at system level
 extern CommandPars cp;  // Various parameters shared at system level
 extern PrinterPars pr;  // Print buffer
 extern PublishPars pp;  // For publishing
+extern BleCharacteristic txCharacteristic;
 
 void sample_burst(Pins *myPins, Sensors *Sen)
 {
