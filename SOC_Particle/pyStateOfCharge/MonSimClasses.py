@@ -131,9 +131,14 @@ class Sensors:
                                             self.mon_run.e_wrap_n_filt)
             if hasattr(self.mon_run, 'vovcm'):
                 self.KfShuntAmp = KF1x1VarDt(initial_position=self.mon_run.vovcm[0], initial_velocity=self.mon_run.x1m[0],
-                                             dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R)
+                                             dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R_STD)
+            if hasattr(self.mon_run, 'vovcn'):
+                print(f"input:   KF_Q_STD {Battery.KF_Q_STD}  KF_R_STD {Battery.KF_R_STD}")
+                Battery.KF_Q_STD /= 10.
+                Battery.KF_R_STD /= 10.
+                print(f"using:   KF_Q_STD {Battery.KF_Q_STD}  KF_R_STD {Battery.KF_R_STD}")
                 self.KfShuntNoa = KF1x1VarDt(initial_position=self.mon_run.vovcn[0], initial_velocity=self.mon_run.x1n[0],
-                                             dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R)
+                                             dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R_STD)
 
             self.ib_amp = 0.
             self.ib_noa = 0.
@@ -334,6 +339,7 @@ class Sensors:
         self.vratn = 0.
         self.iscn = 0.
         self.iscn_f = 0.
+        self.reset_k = False
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -433,21 +439,20 @@ class Sensors:
 
         if hasattr(self.mon_run, 'kfres'):
             self.reset_kf = bool(self.mon_run.kfres[i])
-            if self.reset_kf:
-                pass
-            self.VoVcm = self.mon_run.vovcm[i]
-            self.KfShuntAmp.calculate(reset=self.reset_kf, dt=self.mon_run.ib_dyn_T_m[i], in_=self.VoVcm)
-            self.VoVcm_f, self.vratm = self.KfShuntAmp.get_state()
-            self.VoVcm_f = float(self.VoVcm_f)
-            self.iscm = float((self.VoVcm * Battery.SHUNT_AMP_GAIN + Battery.CURR_BIAS_AMP) / Battery.NP)
-            self.iscm_f = float((self.VoVcm_f * Battery.SHUNT_AMP_GAIN + Battery.CURR_BIAS_AMP) / Battery.NP)
+            if hasattr(self.mon_run, 'vovcm'):
+                self.VoVcm = self.mon_run.vovcm[i]
+                self.KfShuntAmp.calculate(reset=self.reset_kf, dt=self.mon_run.ib_dyn_T_m[i], in_=self.VoVcm)
+                self.VoVcm_f, self.vratm = self.KfShuntAmp.get_state()
+                self.VoVcm_f = float(self.VoVcm_f)
+                self.iscm = float((self.VoVcm * Battery.SHUNT_AMP_GAIN + Battery.CURR_BIAS_AMP) / Battery.NP)
+                self.iscm_f = float((self.VoVcm_f * Battery.SHUNT_AMP_GAIN + Battery.CURR_BIAS_AMP) / Battery.NP)
             self.VoVcn = self.mon_run.vovcn[i]
             self.KfShuntNoa.calculate(reset=self.reset_kf, dt=self.mon_run.ib_dyn_T_n[i], in_=self.VoVcn)
             self.VoVcn_f, self.vratn = self.KfShuntNoa.get_state()
             self.VoVcn_f = float(self.VoVcn_f)
             self.iscn = float((self.VoVcn * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)
             self.iscn_f = float((self.VoVcn_f * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)
-            # TODO:  implement iscn filter and scale with CURR_SCALE_DISCH.  Now = 1. everywhere so no worries
+            # TODO:  implement iscn filter and scale with CURR_SCALE_DISCH (= 1. now everywhere so no worries at present)
 
         self.ib_in_s_init = self.ib_in_s[i]
         self.ib_dyn_s_init = self.ib_dyn_s[i]

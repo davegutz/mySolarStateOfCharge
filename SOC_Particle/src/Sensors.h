@@ -124,6 +124,7 @@ public:
   void dscn_cmd(const boolean cmd) { dscn_cmd_ = cmd; };
   unsigned long long dt() { return sample_time_ - sample_time_z_; };
   void convert(const boolean disconnect, const boolean reset, Sensors *Sen);
+  float get_v() { return KF_->get_v(); };
   float Ishunt_cal() { return Ishunt_cal_; };
   float ishunt_cal() { return Ishunt_cal_ / sp.nP(); };
   float Ishunt_cal_kf() { return Ishunt_cal_kf_; };

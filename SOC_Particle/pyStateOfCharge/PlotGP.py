@@ -40,7 +40,7 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 
 def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
-            run_str='_run', ver_str='_ver'):
+            run_str='_run', ver_str='_ver', Battery=None):
     print('gp_plot', end=':  ')
     fig_list.append(plt.figure())  # GP 1
     plt.subplot(221)
@@ -259,10 +259,18 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plq(plt, mr, 'time', mr, 'ibnm', linestyle=':', color='magenta', label='ib_noa_model' + run_str)
     plq(plt, mr, 'time', mr, 'ib_noa_f', linestyle='--', color='cyan', label='ib_noa_f' + run_str)
     plq(plt, mr, 'time', mr, 'ib_noa_kf', linestyle='--', color='black', label='ib_noa_kf' + run_str)
+    plq(plt, mv, 'time', mv, 'iscn_f', linestyle='-.', color='red', label='ib_noa_kf' + ver_str)
     plq(plt, mr, 'time', mr, 'ib_sel', add=-5, linestyle='-', color='blue', label='ib_sel-5' + run_str)
     plq(plt, sr, 'time', sr, 'ib_in_s', add=-5, linestyle='--', color='black', label='ib_in_s-5' + run_str)
     plq(plt, smv, 'time', smv, 'ib_in_s', add=-5, linestyle=':', color='red', label='ib_in_s-5' + ver_str)
     plt.xlabel('sec')
+    plt.text(0.5, 0.2, f"{Battery.KF_Q_STD=}   {Battery.KF_R_STD=}",
+             horizontalalignment='center',
+             verticalalignment='center',
+             transform=plt.gca().transAxes,
+             fontsize=12,
+             color='blue',
+             bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
     plt.legend(loc=3)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)

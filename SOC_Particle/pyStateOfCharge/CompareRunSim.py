@@ -46,7 +46,7 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
 def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=False,
-                    verbose=True, scale_in=1., slr_hys_sim=1., request_history=5):
+                    verbose=True, scale_in=1., slr_hys_sim=1., request_history=5, Battery=None):
 
     if data_file.count('soc4p2_hi_lo'):
        IB_CHARGE_NOA = True
@@ -106,7 +106,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
                                    add_s_voc_soc=add_s_voc_soc_in, verbose=verbose, scale_in=scale_in,
                                    slr_hys_sim=s_hys_sim_in, request_history=request_history,
                                    IB_CHARGE_NOA=IB_CHARGE_NOA)
-    mon_ver, sim_ver, sim_s_ver, mon, sim = replicate(replicateOptions)
+    mon_ver, sim_ver, sim_s_ver, mon, sim, Battery = replicate(replicateOptions)
     pass
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
 
@@ -130,9 +130,9 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
         fig_list, fig_files = sim_s_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                          plot_title=plot_title, fig_list=fig_list, run_str='',
                                          ver_str='_ver')
-        fig_list, fig_files = gp_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
+        fig_list, fig_files = gp_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files=fig_files,
                                       plot_title=plot_title, fig_list=fig_list, run_str='',
-                                      ver_str='_ver')
+                                      ver_str='_ver', Battery=Battery)
         fig_list, fig_files = off_on_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                           plot_title=plot_title, fig_list=fig_list, run_str='',
                                           ver_str='_ver')

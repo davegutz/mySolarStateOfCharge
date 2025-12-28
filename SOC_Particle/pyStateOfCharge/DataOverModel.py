@@ -578,6 +578,7 @@ def count_text_fields(line):
         try:
             float(token)
         except ValueError:
+            # print(f"bad {token}")
             count += 1
     return count
 
@@ -647,11 +648,10 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
                     else:
                         print(f"discarding: ", line, end='')
                         print(f"  line.count(',') == num_fields  {line.count(",") == num_fields}   \
-AND line[:-1]) is None {line[:-1] is None}  AND  line.count(';') == 0 {line.count(";") == 0} \
-AND num_text == num_text_run {num_text == num_text_run} \
-AND re.search(r'[^a-zA-Z0-9+-_.:, ]', line[:-1]) is None {re.search(r'[^a-zA-Z0-9+-_.:, ]', line[:-1]) is None} \
-AND num_lines == 0 {num_lines == 0} AND (num_lines_in+1) % skip) == 0  {(num_lines_in+1) % skip == 0} \
-AND line.count(comment_str) == 0 {line.count(comment_str) == 0}")
+\nAND num_text == num_text_run {num_text == num_text_run} \
+\nAND re.search(r'[^a-zA-Z0-9+-_.:, ]', line[:-1]) is None {re.search(r'[^a-zA-Z0-9+-_.:, ]', line[:-1]) is None} \
+\nAND (num_lines == 0 or ((num_lines_in+1) % skip) == 0) {(num_lines == 0 or ((num_lines_in+1) % skip) == 0)} \
+\nAND line.count(comment_str) == 0 {line.count(comment_str) == 0}")
                         print(f"{line.count(',')=} {num_fields=}")
                         print(f"{line[-1]=}")
                         print(f"{num_text=} {num_text_run=}")
@@ -911,11 +911,13 @@ class SavedData:
             self.ibm = None
             self.ibmkf = None
             self.ibnkf = None
+            self.vovcn = None
             self.ib_noa_lo = None
             self.ib_noa_hi = None
             self.ib_noa_f = None
             self.ib_noa_kf = None
-            self.ib_noa_kf = None
+            self.kfres = None
+            self.x1n = None
             self.ib_amp_lo = None
             self.ib_amp_hi = None
             self.ib_diff = None
@@ -1035,8 +1037,11 @@ class SavedData:
             self.ibm = np.array(sel.ibm[:i_end])
             self.ibmkf = np.array(sel.ibmkf[:i_end])
             self.ibnkf = np.array(sel.ibnkf[:i_end])
+            self.vovcn = np.array(sel.vovcn[:i_end])
             self.ib_noa_f = np.array(sel.ib_noa_f[:i_end])
             self.ib_noa_kf = np.array(sel.ib_noa_kf[:i_end])
+            self.kfres = np.array(sel.kfres[:i_end])
+            self.x1n = np.array(sel.x1n[:i_end])
             self.ib_noa_lo = np.array(sel.ib_noa_lo[:i_end])
             self.ib_noa_hi = np.array(sel.ib_noa_hi[:i_end])
             self.ib_amp_lo = np.array(sel.ib_amp_lo[:i_end])

@@ -427,6 +427,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.sel_brk_hdwe = ScaleSelector(Battery.HDWE_IB_HI_LO_NOA_LO, Battery.HDWE_IB_HI_LO_AMP_LO,
                                           Battery.HDWE_IB_HI_LO_AMP_HI, Battery.HDWE_IB_HI_LO_NOA_HI)
         self.reset_kf = False
+        self.iscn_f = 0.
         if SN is not None:
             self.Tb_hdwe = SN.Tb_hdwe_init
             self.Tb_hdwe_filt =SN.Tb_hdwe_filt_init
@@ -547,7 +548,7 @@ class BatteryMonitor(Battery, EKF1x1):
         if reset and SN.mon_run.bms_off[0] is not None:
             self.bms_off = SN.mon_run.bms_off[0]
         else:
-            self.bms_off = (self.Tb_f <= self.chemistry.low_t) or (voltage_low and not rp.tweak_test())  # KISS
+            self.bms_off = (self.Tb_f <= self.chemistry.low_t) or (voltage_low and not rp.tweak_test)  # KISS
         self.ib_charge = self.ib
         if self.bms_off and not bms_charging:
             self.ib_charge = 0.
@@ -775,7 +776,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.apply_soc(self.soc_ekf, tb_f)
             print("confirmed ", self.soc)
 
-    def save(self, time, dt, soc_run, voc_run):  # BatteryMonitor
+    def save(self, time, dt, soc_run, voc_run, iscn_f):  # BatteryMonitor
         self.saved.time.append(time)
         self.saved.time_min.append(time / 60.)
         self.saved.time_day.append(time / 3600. / 24.)
@@ -884,6 +885,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
         self.saved.reset_kf.append(self.reset_kf)
+        self.saved.iscn_f.append(iscn_f)
 
     def wrap(self, reset=True, modeling_ib=None, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
              ib_amp_pst=None, ib_noa_pst=None, ib_amp_2pst=None, ib_noa_2pst=None, rp=None):
@@ -1489,6 +1491,7 @@ class Saved:
         self.Tb_hdwe_filt_rate = []
         self.e_wrap_m_reset = []
         self.reset_kf = []
+        self.iscn_f = []
 
 
 def overall_batt(mv, sv, filename,

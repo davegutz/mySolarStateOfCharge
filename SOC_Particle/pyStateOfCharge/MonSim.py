@@ -368,7 +368,7 @@ def replicate(OPT: UserOptions):
             break
 
         # Save plot info
-        mon.save(t[G.i], T, mon.soc, sim.voc)
+        mon.save(t[G.i], T, mon.soc, sim.voc, SN.iscn_f)
         sim.save(t[G.i], T)
         sim.save_s(t[G.i])
 
@@ -413,7 +413,7 @@ def replicate(OPT: UserOptions):
         print('mon:  ', str(mon))
         print('sim:  ', str(sim))
 
-    return mon.saved, sim.saved, sim.saved_s, mon, sim
+    return mon.saved, sim.saved, sim.saved_s, mon, sim, Battery
 
 
 if __name__ == '__main__':
