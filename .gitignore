@@ -19,3 +19,5 @@ SOC_Particle/nul
 *.elf
 /ble-uart-peripheral/target
 ble-uart-peripheral/nul
+*.csv#
+*.csv#
