@@ -135,8 +135,8 @@ class Sensors:
                                              dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R_STD)
             if hasattr(self.mon_run, 'vovcn'):
                 print(f"input:   KF_Q_STD {self.Battery.KF_Q_STD}  KF_R_STD {self.Battery.KF_R_STD}")
-                self.Battery.KF_Q_STD /= 10.
-                self.Battery.KF_R_STD /= 10.
+                self.Battery.KF_Q_STD /= 1.
+                self.Battery.KF_R_STD /= 1.
                 print(f"using:   KF_Q_STD {self.Battery.KF_Q_STD}  KF_R_STD {self.Battery.KF_R_STD}")
                 self.KfShuntNoa = KF1x1VarDt(initial_position=self.mon_run.vovcn[0], initial_velocity=self.mon_run.x1n[0],
                                              dt=0.1, proc_noise_std=self.Battery.KF_Q_STD, meas_noise_std=self.Battery.KF_R_STD)

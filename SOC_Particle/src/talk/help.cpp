@@ -197,7 +197,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
     Serial.printf("  v-1: Debug\n");
   #endif
   Serial.printf("  vv1: GP\n");
-  Serial.printf("  vv2: GP, Sim & Sel\n");
+  Serial.printf("  vv2: GP, Sim, Sel, & Shunt\n");
   Serial.printf("  vv3: EKF\n");
   Serial.printf("  vv4: GP, Sim, Sel, & EKF\n");
   Serial.printf("  vv5: OLED display\n");

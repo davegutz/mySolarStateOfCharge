@@ -297,10 +297,10 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
     #define SHUNT_GAIN            1333. // Shunt V2A gain (scale with * 'SA' and 'SB'), A/V (1333 is 100A/0.075V)
 #endif
 #if !defined(KF_Q_STD)
-    #define KF_Q_STD        0.0015 // Shunt KF process uncertainty this combo gives 10:1 attenuation
+    #define KF_Q_STD        0.0003 // Shunt KF process uncertainty this combo gives 10:1 attenuation  tune 2025128 like ishunt_cal_filt F_W_I=0.5, F_Z_I=0.8
 #endif
 #if !defined(KF_R_STD)
-    #define KF_R_STD        0.001 // Shunt KF state uncertainty
+    #define KF_R_STD        0.1000 // Shunt KF state uncertainty  tune 2025128 like ishunt_cal_filt F_W_I=0.5, F_Z_I=0.8
 #endif
 // Conversion gains
 // Voltage measurement gains

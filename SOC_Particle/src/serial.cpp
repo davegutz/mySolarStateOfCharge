@@ -249,7 +249,7 @@ void print_shunt_header(Sensors *Sen)
 }
 void print_shunt_serial(const boolean reset, Sensors *Sen)
 {
-  if ( ( sp.debug()==2 ) && cp.publishS )
+  if ( ( sp.debug()==2  ) && cp.publishS )
   {
     double cTime = double(Sen->now)/1000.;
 
@@ -316,7 +316,7 @@ void print_signal_sel_header(void)
 }
 void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, BatterySim *Sim)
 {
-  if ( (sp.debug()==2 || sp.debug()==4 || sp.debug()==61 || sp.debug()==4 )  && cp.publishS )
+  if ( (sp.debug()==2 || sp.debug()==4 || sp.debug()==61 )  && cp.publishS )
   {
       double cTime = double(Sen->now)/1000.;
 
