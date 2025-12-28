@@ -154,8 +154,11 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
 
     # Recenter mr.Von for freq analysis:  assume at least 179 sec fr
     # vec_fr = np.arange(index_start_sweep_lpf, index_end_sweep_lpf)
-    vec_fr_for_avg = np.arange(index_start_sweep_lpf + int(0.5*(index_end_sweep_lpf - index_start_sweep_lpf)),
-                               index_end_sweep_lpf)
+    if not steady_only:
+        vec_fr_for_avg = np.arange(index_start_sweep_lpf + int(0.5*(index_end_sweep_lpf - index_start_sweep_lpf)),
+                                   index_end_sweep_lpf)
+    else:
+        vec_fr_for_avg = vec_initial
     mr.Von = mr.Von - np.average(mr.Von[vec_fr_for_avg])
     mv.Von_kf = np.array(mv.Von_kf)
     mv.Von_kf = mv.Von_kf - np.average(mv.Von_kf[vec_fr_for_avg])
@@ -334,14 +337,15 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, R=None, lpf_tau=No
              bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
     plt.legend(loc=1)
     left_limit, right_limit = plt.xlim()
-    plt.subplot(324)
-    plt.semilogx(mv.w_clean, mv.mdB_clean, color='red', linestyle='-', label='mag_dB' + ver_str)
-    plt.ylim([-18, 6])
-    plt.legend(loc=1)
-    plt.subplot(326)
-    plt.semilogx(mv.w_clean, mv.phs_clean, color='red', linestyle='-', label='phs_deg' + ver_str)
-    plt.ylim([-180, 0])
-    plt.legend(loc=1)
+    if not steady_only:
+        plt.subplot(324)
+        plt.semilogx(mv.w_clean, mv.mdB_clean, color='red', linestyle='-', label='mag_dB' + ver_str)
+        plt.ylim([-18, 6])
+        plt.legend(loc=1)
+        plt.subplot(326)
+        plt.semilogx(mv.w_clean, mv.phs_clean, color='red', linestyle='-', label='phs_deg' + ver_str)
+        plt.ylim([-180, 0])
+        plt.legend(loc=1)
 
     return plt, res, res_title
 
@@ -732,7 +736,10 @@ class SavedData:
             # Special handling
             self.skip_x = np.bool(np.array(x.skip))
             self.i = 0
-            self.time = np.array(x.time)
+            try:
+                self.time = np.array(x.time)
+            except AttributeError:
+                self.time = np.array(x.c_time) - x.c_time[0]
             self.dt = []
             for i in range(len(self.time)):
                 if i == 0:
@@ -785,21 +792,21 @@ class SavedData:
 
 
 # Load from files
-def load_data(path_to_data, time_end_in):
+def load_data_KF1x1_test(path_to_data, time_end_in):
 
-    print(f"load_data: \n{path_to_data=}\n{time_end_in=}\n")
+    print(f"load_data_KF1x1_test: \n{path_to_data=}\n{time_end_in=}\n")
 
-    hdr_key_x = "unit_x,"  # Find one self of title
-    unit_key_x = "x_unit"
+    hdr_key_x = "unit_shunt,"  # Find one self of title
+    unit_key_x = "shunt_unit"
 
-    data_file_clean = write_clean_file(path_to_data, type_='_x', hdr_key=hdr_key_x, unit_key=unit_key_x)
+    data_file_clean = write_clean_file(path_to_data, type_='_shunt', hdr_key=hdr_key_x, unit_key=unit_key_x)
     if data_file_clean is None:
         return None, None, None, None, None, None
     if data_file_clean is not None:
         mon_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
     else:
         mon_raw = None
-        print(f"load_data: returning mon=None")
+        print(f"load_data_KF1x1_test: returning mon=None")
 
     mon = SavedData(x=mon_raw, time_end=time_end_in)
 
@@ -858,12 +865,13 @@ if __name__ == "__main__":
     'Cx16000',  wait 60 sec. Turn on generator and press OK on function generator.  When it reaches 0.5 Hz again press
     OK to stop.  Then turn off generator.
     """
-    data_file = './noise_study/burstForKF_Vo_Vc_Base.csv'  # Cx20000, Base
+    # data_file = './noise_study/burstForKF_Vo_Vc_Base.csv'  # Cx20000, Base
     # data_file = './noise_study/burstForKF_Vo_Vc_Gnd.csv'  # Cx20000, Pulldown to function generator ground using CH 2 probe
     # data_file = './noise_study/burstForKF_Vo_Vc_noPS.csv'  # Cx20000, Pulldown to function generator ground using CH 2 probe
     # data_file = './noise_study/burstForKF_Vo_Vc_noBT.csv'  # Cx20000, Pulldown to function generator ground using CH 2 probe
+    data_file = './noise_study/ssnoise_soc2p2_hi_lo_chg_shunt.csv'  # Cx20000, Base
 
-    mr, data_file_clean = load_data(data_file, time_end)
+    mr, data_file_clean = load_data_KF1x1_test(data_file, time_end)
     title = 'Vo Base kfDemo.py var dt'
     dt = 0.1  # Time step (seconds) used only on init
 
@@ -1002,19 +1010,30 @@ if __name__ == "__main__":
         #             [0.015, 0.0005, 0.100], [0.03, 0.0005, 0.100], [0.0075, 0.0005, 0.100], [0.015, 0.001, 0.100], [0.015, 0.00025, 0.100],
         #             [1.5, 0.00001, 0.00001], [1.5, 0.00001, 0.050], [1.5, 0.00001, 0.100], [1.5, 0.00001, 0.150], [1.5, 0.00001, 0.250],
         #           ]:
-        for Qstd, R, lpf_tau in \
-            [
-                [0.015,  0.001,   0.00001], [0.03,   0.001,   0.00001], [0.0015, 0.001,   0.00001],  [0.015, 0.002, 0.00001],
-                [0.015,  0.0001,  0.00001], [0.03,   0.0001,  0.00001], [0.0015, 0.0001,  0.00001],
-                [0.015,  0.00001, 0.00001], [0.03,   0.00001, 0.00001], [0.0015, 0.00001, 0.00001],
-                [0.0015, 0.001,   0.00001], [0.0015, 0.002,   0.00001], [0.0015, 0.0001,  0.00001],
-                [1.5, 0.00001, 0.00001],
-              ]:
+        # for Qstd, R, lpf_tau in \
+        #     [
+        #         [0.015,  0.001,   0.00001], [0.03,   0.001,   0.00001], [0.0015, 0.001,   0.00001],  [0.015, 0.002, 0.00001],
+        #         [0.015,  0.0001,  0.00001], [0.03,   0.0001,  0.00001], [0.0015, 0.0001,  0.00001],
+        #         [0.015,  0.00001, 0.00001], [0.03,   0.00001, 0.00001], [0.0015, 0.00001, 0.00001],
+        #         [0.0015, 0.001,   0.00001], [0.0015, 0.002,   0.00001], [0.0015, 0.0001,  0.00001],
+        #         [0.015,  0.001,   0.00001], [1.5, 0.00001, 0.00001],
+        #       ]:
         # for Qstd, R, lpf_tau in [
         #     [0.015, 0.001, 0.100], [0.015, 0.001, 0.008], [0.015, 0.001, 0.00001],
         #     [0.150, 0.0001, 0.100], [0.15, 0.0001, 0.008], [0.15, 0.001, 0.00001],
         #     ]:
-        # for Qstd, R, lpf_tau in [ [0.015, 0.001, 0.100] ]:
+        for Qstd, R, lpf_tau in [[0.0003, 0.1000, 0.00001]]:
+        # for Qstd, R, lpf_tau in \
+        #         [
+        #             [0.0003,  0.1000, 0.00001],
+        #             [0.0006,  0.1000, 0.00001], [0.00015, 0.1000, 0.00001],
+        #             [0.0003,  0.2000, 0.00001], [0.0003,  0.0500, 0.00001],
+        #             [0.0006,  0.0001, 0.00001], [0.00015, 0.0001, 0.00001],
+        #             [0.0003,  0.0100, 0.00001], [0.00006, 0.0100, 0.00001],
+        #             [0.00003, 0.0100, 0.00001], [0.00003, 0.1000, 0.00001],
+        #             [0.00003, 0.2000, 0.00001], [0.00003, 0.0100, 0.00001],
+        #             [0.0003,  0.1000, 0.00001], [1.5,     0.00001,0.00001],
+        #         ]:
             print(f"{Qstd=} {R=} {lpf_tau=}")
             kfVon = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
                                proc_noise_std=Qstd, meas_noise_std=R)
@@ -1035,8 +1054,13 @@ if __name__ == "__main__":
 
                 kfVon.predict(mr.dt[i])
                 # kfVonX.predict(mr.dt[i])
-                kfVon.update(mr.Von[i])
-                # kfVonX.update(mr.Von[i])
+                try:
+                    kfVon.update(mr.Von[i])
+                    # kfVonX.update(mr.Von[i])
+                except AttributeError:
+                    mr.Von = mr.un
+                    kfVon.update(mr.Von[i])
+                    # kfVonX.update(mr.Von[i])
                 if i > 3:
                     pass
                 Von_kf, v_rat = kfVon.get_state()
