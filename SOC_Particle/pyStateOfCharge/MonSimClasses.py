@@ -129,16 +129,17 @@ class Sensors:
                                             self.mon_run.e_wrap_m_filt)
             self.LoopNoa = SensorLooparound(self.mon_run.ibnh, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_m_trim * 0.,
                                             self.mon_run.e_wrap_n_filt)
+            self.Battery = Battery
             if hasattr(self.mon_run, 'vovcm'):
                 self.KfShuntAmp = KF1x1VarDt(initial_position=self.mon_run.vovcm[0], initial_velocity=self.mon_run.x1m[0],
                                              dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R_STD)
             if hasattr(self.mon_run, 'vovcn'):
-                print(f"input:   KF_Q_STD {Battery.KF_Q_STD}  KF_R_STD {Battery.KF_R_STD}")
-                Battery.KF_Q_STD /= 10.
-                Battery.KF_R_STD /= 10.
-                print(f"using:   KF_Q_STD {Battery.KF_Q_STD}  KF_R_STD {Battery.KF_R_STD}")
+                print(f"input:   KF_Q_STD {self.Battery.KF_Q_STD}  KF_R_STD {self.Battery.KF_R_STD}")
+                self.Battery.KF_Q_STD /= 10.
+                self.Battery.KF_R_STD /= 10.
+                print(f"using:   KF_Q_STD {self.Battery.KF_Q_STD}  KF_R_STD {self.Battery.KF_R_STD}")
                 self.KfShuntNoa = KF1x1VarDt(initial_position=self.mon_run.vovcn[0], initial_velocity=self.mon_run.x1n[0],
-                                             dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R_STD)
+                                             dt=0.1, proc_noise_std=self.Battery.KF_Q_STD, meas_noise_std=self.Battery.KF_R_STD)
 
             self.ib_amp = 0.
             self.ib_noa = 0.

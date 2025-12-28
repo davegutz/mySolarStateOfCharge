@@ -172,11 +172,6 @@ def replicate(OPT: UserOptions):
     # tweaking
     tweak_test = rp.tweak_test
 
-    SN = Sensors(OPT, run_type=OPT.run_type)
-
-    # Battery sizing
-    scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_in, Battery.NOM_UNIT_CAP)
-
     # Translate the off-nominal values imported from data stream
     if hasattr(OPT.mon_run, 'Battery_off_dict'):
         print("Over-writing pre-existing off-nominal values into Battery class structure")
@@ -186,6 +181,12 @@ def replicate(OPT: UserOptions):
                     print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
                     setattr(Battery, key, OPT.mon_run.Battery_off_dict[key])
                     print(f" {getattr(Battery, key)}")
+
+    # Instantiate sensors after above translation / over-write
+    SN = Sensors(OPT, run_type=OPT.run_type)
+
+    # Battery sizing
+    scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_in, Battery.NOM_UNIT_CAP)
 
     # Make batteries from modified class constants
     sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test)
@@ -413,7 +414,7 @@ def replicate(OPT: UserOptions):
         print('mon:  ', str(mon))
         print('sim:  ', str(sim))
 
-    return mon.saved, sim.saved, sim.saved_s, mon, sim, Battery
+    return mon.saved, sim.saved, sim.saved_s, mon, sim, SN.Battery
 
 
 if __name__ == '__main__':

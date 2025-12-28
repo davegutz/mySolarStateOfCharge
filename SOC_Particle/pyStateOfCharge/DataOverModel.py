@@ -694,10 +694,12 @@ class SavedData:
             # Scroll through all off-nominals make dictionary
             self.Battery_off_dict = {}
             for field_name in battery.dtype.names:
+                print(f"field_name {field_name}", end='')
                 try:
                     self.Battery_off_dict[field_name] = battery[field_name][-1]
                 except IndexError:
                     self.Battery_off_dict[field_name] = battery[field_name]
+                    print(f"Battery_off field_name {field_name}   valeu {battery[field_name]}")
             # print(self.Battery_off_dict)
             # Print affected values
             print(f"dictionary to apply to Battery class")

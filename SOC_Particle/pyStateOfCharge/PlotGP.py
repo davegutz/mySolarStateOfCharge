@@ -264,7 +264,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plq(plt, sr, 'time', sr, 'ib_in_s', add=-5, linestyle='--', color='black', label='ib_in_s-5' + run_str)
     plq(plt, smv, 'time', smv, 'ib_in_s', add=-5, linestyle=':', color='red', label='ib_in_s-5' + ver_str)
     plt.xlabel('sec')
-    plt.text(0.5, 0.2, f"{Battery.KF_Q_STD=}   {Battery.KF_R_STD=}",
+    plt.text(0.5, 0.2, "KF_Q_STD= " + "{:10.6f}".format(Battery.KF_Q_STD) + "{:10.6f}".format(Battery.KF_R_STD),
              horizontalalignment='center',
              verticalalignment='center',
              transform=plt.gca().transAxes,

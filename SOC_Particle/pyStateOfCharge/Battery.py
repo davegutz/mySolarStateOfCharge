@@ -131,8 +131,6 @@ class Battery(Coulombs):
     T_RLIM = 0.00085  # Temperature sensor rate limit to minimize jumps in Coulomb counting, deg C/s (0.00085 allows 0.05 deg for 1 minute)
     DISAB_LO_SET = 0.4  # Disable lo=amp wrap fault set persistence, s (0.4)
     DISAB_LO_RESET = 0.8  # Disable lo=amp wrap fault reset persistence, s (0.8)
-    KF_Q_STD = 0.015  # Shunt KF process uncertainty
-    KF_R_STD = 0.001  # Shunt KF state uncertainty
     SHUNT_AMP_GAIN = 1.  # hdwe gain, A/V
     CURR_BIAS_AMP = 0.  # hdwe bias, A
     SHUNT_NOA_GAIN = 1.  # hdwe gain, A/V
@@ -140,6 +138,10 @@ class Battery(Coulombs):
     NS = 1  # Number serial batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
     NP = 1  # Number parallel batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
     CURR_SCALE_DISCH = 1.  # scale factor for strength of discharging compared to baseling charging
+    # KF_Q_STD = 0.015  # Shunt KF process uncertainty
+    # KF_R_STD = 0.001  # Shunt KF state uncertainty
+    KF_Q_STD = None  # Shunt KF process uncertainty
+    KF_R_STD = None  # Shunt KF state uncertainty
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
