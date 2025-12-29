@@ -27,6 +27,7 @@ def plot_1(plt=None, mr=None, mv=None, title=None):
     plt.title(title)
     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_kf', color='black', linestyle='--', label='VoVcn_kf' + run_str)
+    plq(plt, mr, 'time', mr, 'VoVcn_lag', color='cyan', linestyle='-.', label='VoVcn_lag' + run_str)
     plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='--', label='VoVcn_kf' + ver_str)
     plt.legend(loc=1)
     return plt
@@ -95,7 +96,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     plt.title(title+'1')
     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn burst_data centered')
     plq(plt, mr, 'time', mr, 'VoVcn_kf', color='black', linestyle='--', label='VoVcn_kf burst_data centered')
-    plq(plt, mr, 'time', mr, 'VoVcn_lpf', color='cyan', linestyle='--', label='VoVcn_lag burst_data')
+    plq(plt, mr, 'time', mr, 'VoVcn_lag', color='cyan', linestyle='--', label='VoVcn_lag burst_data')
     plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='-.', label='VoVcn_kf calc')
     plq(plt, mv, 'time', mv, 'VoVcn_kf_avg', color='orange', linestyle='-', label='VoVcn_kf calc avg')
     plt.text(0.5, 0.2, f"{Qstd=} Rstd={Rstd} {lpf_lag=}",
@@ -253,7 +254,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     plt.title(title+'2')
     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_kf', color='black', linestyle='-', label='VoVcn_kf' + run_str)
-    plq(plt, mr, 'time', mr, 'VoVcn_lpf', color='cyan', linestyle='--', label='VoVcn_lpf' + run_str)
+    plq(plt, mr, 'time', mr, 'VoVcn_lag', color='cyan', linestyle='--', label='VoVcn_lag' + run_str)
     plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='-.', label='VoVcn_kf' + ver_str)
     plt.text(0.5, 0.2, f"{Qstd=} Rstd={Rstd} {lpf_lag=}",
              horizontalalignment='center',
@@ -495,17 +496,17 @@ if __name__ == "__main__":
     if doing_doe:
         ii = 0
         Res = []
-        # for Qstd, Rstd in [ [0.0003, 0.1000] ]:
-        for Qstd, Rstd in \
-                [
-                    [0.0003,  0.1000],
-                    [0.0006,  0.1000], [0.00015, 0.1000],
-                    [0.0003,  0.2000], [0.0003,  0.0500],
-                    [0.0006,  0.0100], [0.00015, 0.0100],
-                    [0.0003,  0.0100], [0.0006, 0.0100],  [0.00015, 0.0100],
-                    [0.00003, 0.0100], [0.00003, 0.0200], [0.00003, 0.0050],
-                    [1.5,    0.00001], [0.0003,  0.1000],
-                ]:
+        for Qstd, Rstd in [ [0.0003, 0.1000] ]:
+        # for Qstd, Rstd in \
+        #         [
+        #             [0.0003,  0.1000],
+        #             [0.0006,  0.1000], [0.00015, 0.1000],
+        #             [0.0003,  0.2000], [0.0003,  0.0500],
+        #             [0.0006,  0.0100], [0.00015, 0.0100],
+        #             [0.0003,  0.0100], [0.0006, 0.0100],  [0.00015, 0.0100],
+        #             [0.00003, 0.0100], [0.00003, 0.0200], [0.00003, 0.0050],
+        #             [1.5,    0.00001], [0.0003,  0.1000],
+        #         ]:
             ii += 1
 
             print(f"{Qstd=} {Rstd=}")
