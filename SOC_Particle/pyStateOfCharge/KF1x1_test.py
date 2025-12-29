@@ -45,8 +45,9 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
 
     # Get initial steady offset so can search for start of sweep.  Assume initial 50 seconds are steady.
     vec_initial = np.where( (mr.time <= 50.) & (mr.time >= 10.) )
-    mr.VoVcn = mr.VoVcn - np.average(mr.VoVcn[vec_initial])
-    #plt.figure();     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn')
+    mr.VoVcn_avg = np.average(mr.VoVcn[vec_initial])
+    mr.VoVcn = mr.VoVcn - mr.VoVcn_avg
+    mr.VoVcn_kf = mr.VoVcn_kf - mr.VoVcn_avg
 
     # Filter signal for cleaner statistical testing
     mr.VoVcn_lag = []
@@ -81,20 +82,22 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     mr.VoVcn_avg = np.average(mr.VoVcn[vec_fr_for_avg])
     mr.VoVcn = mr.VoVcn - mr.VoVcn_avg
     mr.VoVcn_kf = np.array(mr.VoVcn_kf - mr.VoVcn_avg)
+    mr.VoVcn_lag = mr.VoVcn_lag - mr.VoVcn_avg
+
     mv.VoVcn_kf = np.array(mv.VoVcn_kf)
     mv.VoVcn_kf_avg = np.average(mv.VoVcn_kf[vec_fr_for_avg])
     mv.VoVcn_kf = mv.VoVcn_kf - mv.VoVcn_kf_avg
     mv.VoVcn_kf_avg = np.average(mv.VoVcn_kf[vec_fr_for_avg])  # recalculate
-    mr.VoVcn_lag = mr.VoVcn_lag - mr.VoVcn_avg
+
     mv.VoVcn_kf_avg = np.full((len(mv.VoVcn_kf),), mv.VoVcn_kf_avg)
 
     plt.figure()
     plt.title(title+'1')
     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn burst_data centered')
-    plq(plt, mr, 'time', mr, 'VoVcn_kf', color='black', linestyle='--', label='VoVcn_kf burst_data')
+    plq(plt, mr, 'time', mr, 'VoVcn_kf', color='black', linestyle='--', label='VoVcn_kf burst_data centered')
     plq(plt, mr, 'time', mr, 'VoVcn_lpf', color='cyan', linestyle='--', label='VoVcn_lag burst_data')
-    plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='-.', label='VoVcn_kf filtered')
-    plq(plt, mv, 'time', mv, 'VoVcn_kf_avg', color='orange', linestyle='-', label='VoVcn_kf filtered avg')
+    plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='-.', label='VoVcn_kf calc')
+    plq(plt, mv, 'time', mv, 'VoVcn_kf_avg', color='orange', linestyle='-', label='VoVcn_kf calc avg')
     plt.text(0.5, 0.2, f"{Qstd=} Rstd={Rstd} {lpf_lag=}",
              horizontalalignment='center',
              verticalalignment='center',
@@ -472,7 +475,7 @@ if __name__ == "__main__":
                          meas_noise_std=Rstd*2.)
 
     run_str = ' burst data'
-    ver_str = ' filtered'
+    ver_str = ' calc'
 
     mv = Saved()
     v_rat = None
@@ -514,7 +517,7 @@ if __name__ == "__main__":
 
 
             run_str = '_burst data'
-            ver_str = '_filtered'
+            ver_str = '_calc'
 
             # Data structures
             mv = Saved()
