@@ -394,6 +394,7 @@ class LagExp(DiscreteFilter):
         self.calc_states(in_, rmax, rmin)
 
     def calculate(self, in_, reset, dt):
+        self.reset = reset
         self.in_ = in_
         if reset:
             self.state = self.in_

@@ -34,48 +34,32 @@ def plot_1(plt=None, mr=None, mv=None, title=None):
 
 def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag=None, data_lag=0.15):
     steady_only = False
-    N = len(mr.VoVcn)
-    total_time = mr.time[-1]
-    sample_freq_hz = float(N) / total_time
-    sample_time = 1. / sample_freq_hz
-    sample_freq_rps = sample_freq_hz * 2. * np.pi
-    nyquist_freq_rps = sample_freq_rps / 2.
-    min_possible_lpf_lag = 0.07 / nyquist_freq_rps * 50.
-    print(f" nyquist {nyquist_freq_rps} r/s, min possible tau {min_possible_lpf_lag} s")
-    mr_lag = LagTustin(dt=sample_time, tau=data_lag, max_=3.3, min_=-3.3)
+    mv.dt = mr.dt
 
     # Get initial steady offset so can search for start of sweep.  Assume initial 50 seconds are steady.
     vec_initial = np.where( (mr.time <= 50.) & (mr.time >= 10.) )
     mr.VoVcn_avg = np.average(mr.VoVcn[vec_initial])
     mr.VoVcn = mr.VoVcn - mr.VoVcn_avg
     mr.VoVcn_kf = mr.VoVcn_kf - mr.VoVcn_avg
-
-    # Filter signal for cleaner statistical testing
-    mr.VoVcn_lag = []
-    mv.dt = mr.dt
-    for i in range(N):
-        mr.VoVcn_lag.append(mr_lag.calculate(mr.VoVcn[i], reset=i<1, dt=mr.dt[i]))
-    mr.VoVcn_lag = np.array(mr.VoVcn_lag)
-    steady_level_lpf = np.average(mr.VoVcn_lag[vec_initial])
-    std_dev_lpf = np.std(mr.VoVcn_lag[vec_initial])
-    mr.VoVcn_lag = mr.VoVcn_lag - steady_level_lpf
+    mr.VoVcn_lag = mr.VoVcn_lag - mr.VoVcn_avg
+    std_dev_lag = np.std(mr.VoVcn_lag[vec_initial])
 
     try:
-        index_start_sweep_lpf = np.array(np.where( abs(mr.VoVcn_lag) > 6.*std_dev_lpf))[0, 0]
-        time_start_sweep_lpf = mr.time[index_start_sweep_lpf]
-        index_end_sweep_lpf = np.where(mr.time < time_start_sweep_lpf + 150.)[0][-1]
-        time_end_sweep_lpf = mr.time[index_end_sweep_lpf]
-        print(f"{steady_level_lpf=} {std_dev_lpf=}")
-        print(f"{index_start_sweep_lpf=} {time_start_sweep_lpf=}")
-        print(f"{index_end_sweep_lpf=} {time_end_sweep_lpf=}")
+        index_start_sweep_lag = np.array(np.where( abs(mr.VoVcn_lag) > 6.*std_dev_lag))[0, 0]
+        time_start_sweep_lag = mr.time[index_start_sweep_lag]
+        index_end_sweep_lag = np.where(mr.time < time_start_sweep_lag + 150.)[0][-1]
+        time_end_sweep_lag = mr.time[index_end_sweep_lag]
+        print(f"{steady_level_lag=} {std_dev_lag=}")
+        print(f"{index_start_sweep_lag=} {time_start_sweep_lag=}")
+        print(f"{index_end_sweep_lag=} {time_end_sweep_lag=}")
     except IndexError:
         steady_only = True
 
     # Recenter mr.VoVcn for freq analysis:  assume at least 179 sec fr
-    # vec_fr = np.arange(index_start_sweep_lpf, index_end_sweep_lpf)
+    # vec_fr = np.arange(index_start_sweep_lag, index_end_sweep_lag)
     if not steady_only:
-        vec_fr_for_avg = np.arange(index_start_sweep_lpf + int(0.5*(index_end_sweep_lpf - index_start_sweep_lpf)),
-                                   index_end_sweep_lpf)
+        vec_fr_for_avg = np.arange(index_start_sweep_lag + int(0.5*(index_end_sweep_lag - index_start_sweep_lag)),
+                                   index_end_sweep_lag)
     else:
         vec_fr_for_avg = vec_initial
 
@@ -83,7 +67,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     mr.VoVcn_avg = np.average(mr.VoVcn[vec_fr_for_avg])
     mr.VoVcn = mr.VoVcn - mr.VoVcn_avg
     mr.VoVcn_kf = np.array(mr.VoVcn_kf - mr.VoVcn_avg)
-    mr.VoVcn_lag = mr.VoVcn_lag - mr.VoVcn_avg
+    mr.VoVcn_lag = np.array(mr.VoVcn_lag - mr.VoVcn_avg)
 
     mv.VoVcn_kf = np.array(mv.VoVcn_kf)
     mv.VoVcn_kf_avg = np.average(mv.VoVcn_kf[vec_fr_for_avg])
@@ -99,7 +83,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     plq(plt, mr, 'time', mr, 'VoVcn_lag', color='cyan', linestyle='--', label='VoVcn_lag burst_data')
     plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='-.', label='VoVcn_kf calc')
     plq(plt, mv, 'time', mv, 'VoVcn_kf_avg', color='orange', linestyle='-', label='VoVcn_kf calc avg')
-    plt.text(0.5, 0.2, f"{Qstd=} Rstd={Rstd} {lpf_lag=}",
+    plt.text(0.5, 0.2, f"{Qstd=} Rstd={Rstd}",
              horizontalalignment='center',
              verticalalignment='center',
              transform=plt.gca().transAxes,
@@ -112,15 +96,15 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     # steady_only = True
     if not steady_only:
         # Detect positive zero crossings
-        is_positive = mr.VoVcn_lag[index_start_sweep_lpf:index_end_sweep_lpf]  > 0
+        is_positive = mr.VoVcn_lag[index_start_sweep_lag:index_end_sweep_lag]  > 0
         positive_crossings = (~is_positive[:-1]) & is_positive[1:]
-        mr.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lpf  # Add 1 to account for the shift
+        mr.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lag  # Add 1 to account for the shift
         mr.time_zero_crossing = mr.time[mr.crossing_indices]
 
         mv.time = mr.time
-        is_positive = mv.VoVcn_kf[index_start_sweep_lpf:index_end_sweep_lpf]  > 0
+        is_positive = mv.VoVcn_kf[index_start_sweep_lag:index_end_sweep_lag]  > 0
         positive_crossings = (~is_positive[:-1]) & is_positive[1:]
-        mv.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lpf  # Add 1 to account for the shift
+        mv.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lag  # Add 1 to account for the shift
         mv.time_zero_crossing = mv.time[mv.crossing_indices]
 
         # For simplicity assume mv zero crossing is always after mr zero crossing (lags behave like lags)
@@ -256,7 +240,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     plq(plt, mr, 'time', mr, 'VoVcn_kf', color='black', linestyle='-', label='VoVcn_kf' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_lag', color='cyan', linestyle='--', label='VoVcn_lag' + run_str)
     plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='-.', label='VoVcn_kf' + ver_str)
-    plt.text(0.5, 0.2, f"{Qstd=} Rstd={Rstd} {lpf_lag=}",
+    plt.text(0.5, 0.2, f"{Qstd=} Rstd={Rstd}",
              horizontalalignment='center',
              verticalalignment='center',
              transform=plt.gca().transAxes,
@@ -470,13 +454,33 @@ if __name__ == "__main__":
     Rstd = 0.1000  # Standard deviation of voltage measurement noise
 
     # Utility measurement lag for finding zero crossings quietly
-    lpf_lag = 0.008
+    lpf_lag = 0.15
+
+    # Filter signal for cleaner statistical testing
+    N = len(mr.VoVcn)
+    total_time = mr.time[-1]
+    sample_freq_hz = float(N) / total_time
+    sample_time = 1. / sample_freq_hz
+    sample_freq_rps = sample_freq_hz * 2. * np.pi
+    nyquist_freq_rps = sample_freq_rps / 2.
+    min_possible_lpf_lag = 0.07 / nyquist_freq_rps * 50.
+    vec_initial = np.where( (mr.time <= 50.) & (mr.time >= 10.) )
+    lpf_lag = min_possible_lpf_lag * 2.
+    print(f" nyquist {nyquist_freq_rps} r/s, min possible tau {min_possible_lpf_lag} s, lpf_lag {lpf_lag}, s")
+    mr_lag = LagExp(dt=sample_time, tau=lpf_lag, max_=3.3, min_=-3.3)
+    mr.VoVcn_lag = []
+    for i in range(N):
+        lagged_val = mr_lag.calculate(mr.VoVcn[i], reset=i<1, dt=mr.dt[i])
+        mr.VoVcn_lag.append(lagged_val)
+    mr.VoVcn_lag = np.array(mr.VoVcn_lag)
+    steady_level_lag = np.average(mr.VoVcn_lag[vec_initial])
+    mr.VoVcn_lag = np.array(mr.VoVcn_lag)
 
     # Local kf
     kfVoVcn = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt, proc_noise_std=Qstd*2.,
                          meas_noise_std=Rstd*2.)
 
-    run_str = ' burst data'
+    run_str = ' chirp data'
     ver_str = ' calc'
 
     mv = Saved()
@@ -496,7 +500,7 @@ if __name__ == "__main__":
     if doing_doe:
         ii = 0
         Res = []
-        for Qstd, Rstd in [ [0.0003, 0.1000] ]:
+        for Qstd, Rstd in [ [0.0003, 0.1000], [0.00003, 0.0100] ]:
         # for Qstd, Rstd in \
         #         [
         #             [0.0003,  0.1000],
@@ -517,7 +521,7 @@ if __name__ == "__main__":
             lagVoVcn = LagExp(dt=dt, tau=lpf_lag, min_=-3.3, max_=3.3)
 
 
-            run_str = '_burst data'
+            run_str = '_chirp_data'
             ver_str = '_calc'
 
             # Data structures
