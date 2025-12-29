@@ -39,7 +39,7 @@ def plot_1(plt=None, mr=None, mv=None, title=None):
     plt.ylim(top_limit, bottom_limit)
     return plt
 
-def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag=None, data_lag=0.15):
+def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, data_lag=None):
     steady_only = False
     mv.dt = mr.dt
 
@@ -239,18 +239,18 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
         print(f"{time_45=}  {freq_45=} {phase_45=}")
         print(f"{time_90=}  {freq_90=} {phase_90=} {omega_90=}")
     metric_string = "Metrics:\n"
-    metric_string += "  Qstd = {:9.6f}\n  Rstd =     {:9.6f}\n  lpf_lag = {:7.4f}\n\n".format(Qstd, Rstd, lpf_lag)
+    metric_string += "  Qstd = {:9.6f}\n  Rstd =     {:9.6f}\n  data_lag = {:7.4f}\n\n".format(Qstd, Rstd, data_lag)
     metric_string += "  Attn = {:5.2f}  Attn_lag = {:5.2f}\n\n".format(attenuation, attenuation_lag)
     if not steady_only:
         metric_string += "  -3db @    {:4.2f} Hz,  ({:5.1f} sec)\n".format(freq_3db, time_3db)
         metric_string += "  -45 deg @ {:4.2f} Hz   ({:5.1f} sec)\n\n".format(freq_45, time_45)
         metric_string += "  -90 deg @ {:4.2f} Hz   ({:5.1f} sec)\n\n".format(freq_90, time_90)
         metric_string += "  tau @ -3db = {:5.3f}\n  tau @ -45 = {:5.3f}\n  omega90 = {:5.3f}\n".format(tau_3db, tau_45, omega_90)
-        res_title = "Qstd, Rstd, lpf_lag, attenuation_lag, amp_steady_kf, amp_steady, attenuation, tau_3db, tau_45, omega_90,"
-        res = [Qstd, Rstd, lpf_lag, attenuation_lag, mv.amp_VoVcn_kf_steady, mr.amp_VoVcn_steady, attenuation, tau_3db, tau_45, omega_90]
+        res_title = "Qstd, Rstd, data_lag, attenuation_lag, amp_steady_kf, amp_steady, attenuation, tau_3db, tau_45, omega_90,"
+        res = [Qstd, Rstd, data_lag, attenuation_lag, mv.amp_VoVcn_kf_steady, mr.amp_VoVcn_steady, attenuation, tau_3db, tau_45, omega_90]
     else:
-        res_title = "Qstd, Rstd, lpf_lag, attenuation_lag,  amp_steady_kf, amp_steady, attenuation, tau_3db, tau_45, omega_90,"
-        res = [Qstd, Rstd, lpf_lag, attenuation_lag, mv.amp_VoVcn_kf_steady, mr.amp_VoVcn_steady, attenuation,  0., 0., 0.]
+        res_title = "Qstd, Rstd, data_lag, attenuation_lag,  amp_steady_kf, amp_steady, attenuation, tau_3db, tau_45, omega_90,"
+        res = [Qstd, Rstd, data_lag, attenuation_lag, mv.amp_VoVcn_kf_steady, mr.amp_VoVcn_steady, attenuation,  0., 0., 0.]
 
     plt.figure()
     print("plot_P1:", end='')
@@ -480,7 +480,7 @@ if __name__ == "__main__":
     Rstd = 0.1000  # Standard deviation of voltage measurement noise
 
     # Utility measurement lag for finding zero crossings quietly
-    lpf_lag = 0.15
+    data_lag = None
 
     # Filter signal for cleaner statistical testing
     N = len(mr.VoVcn)
@@ -489,11 +489,11 @@ if __name__ == "__main__":
     sample_time = 1. / sample_freq_hz
     sample_freq_rps = sample_freq_hz * 2. * np.pi
     nyquist_freq_rps = sample_freq_rps / 2.
-    min_possible_lpf_lag = 0.07 / nyquist_freq_rps * 50.
+    min_possible_data_lag = 0.07 / nyquist_freq_rps * 50.
     vec_initial = np.where( (mr.time <= 50.) & (mr.time >= 10.) )
-    lpf_lag = min_possible_lpf_lag * 2.
-    print(f" nyquist {nyquist_freq_rps} r/s, min possible tau {min_possible_lpf_lag} s, lpf_lag {lpf_lag}, s")
-    mr_lag = LagExp(dt=sample_time, tau=lpf_lag, max_=3.3, min_=-3.3)
+    data_lag = min_possible_data_lag * 2.
+    print(f" nyquist {nyquist_freq_rps} r/s, min possible tau {min_possible_data_lag} s, data_lag {data_lag}, s")
+    mr_lag = LagExp(dt=sample_time, tau=data_lag, max_=3.3, min_=-3.3)
     mr.VoVcn_lag = []
     for i in range(N):
         lagged_val = mr_lag.calculate(mr.VoVcn[i], reset=i<1, dt=mr.dt[i])
@@ -537,7 +537,7 @@ if __name__ == "__main__":
     if doing_doe:
         ii = 0
         Res = []
-        for Qstd, Rstd in [ [0.0003, 0.1000], [0.00003, 0.0100] ]:
+        for Qstd, Rstd in [ [0.0003, 0.1000], [0.003, 0.0010] ]:
         # for Qstd, Rstd in \
         #         [
         #             [0.0003,  0.1000],
@@ -555,7 +555,7 @@ if __name__ == "__main__":
                                  proc_noise_std=Qstd, meas_noise_std=Rstd)
             kfVoVcnX = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt,
                                   proc_noise_std=Qstd, meas_noise_std=Rstd)
-            lagVoVcn = LagExp(dt=dt, tau=lpf_lag, min_=-3.3, max_=3.3)
+            lagVoVcn = LagExp(dt=dt, tau=data_lag, min_=-3.3, max_=3.3)
 
 
             run_str = '_chirp_data'
@@ -577,13 +577,13 @@ if __name__ == "__main__":
                 VoVcn_kf, v_rat = kfVoVcn.get_state()
                 mv.VoVcn_kf.append(VoVcn_kf)
 
-                if mr.dt[i] < lpf_lag/2.:
-                    vf_lag = lagVoVcn.calculate_tau(mr.VoVcn[0], i<1, mr.dt[i], lpf_lag)
+                if mr.dt[i] < data_lag/2.:
+                    vf_lag = lagVoVcn.calculate_tau(mr.VoVcn[0], i<1, mr.dt[i], data_lag)
                 else:
                     vf_lag = mr.VoVcn[0]
                 mv.VoVcn.append(vf_lag)
 
-            plt, res, res_title = plot_P(plt, mr, mv, title + ' FP' + str(ii), Qstd=Qstd, Rstd=Rstd, lpf_lag=lpf_lag)
+            plt, res, res_title = plot_P(plt, mr, mv, title + ' FP' + str(ii), Qstd=Qstd, Rstd=Rstd, data_lag=data_lag)
             Res.append(res)
 
         # Summarize
