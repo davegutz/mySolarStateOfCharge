@@ -170,16 +170,8 @@ def main():
     slr_hys_sim = 1.0
     request_history = 3
 
-    # # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251107pm_soc4p2_hi_lo_bb.csv'  # old runsim work ******************
-    # # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiFail_soc2p2_hi_lo_chg.csv'
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_chg.csv'
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_chg.csv'
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_chg.csv'
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaHiFail_soc2p2_hi_lo_chg.csv'
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\kfProto_soc2p2_hi_lo_chg.csv'
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\kfProtoVv4_soc2p2_hi_lo_chg.csv'
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\kkfProtoVv1_soc2p2_hi_lo_chg.csv'
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoise_soc2p2_hi_lo_chg.csv'
+    unit_key = 'g20250612a_soc2p2_hi_lo_chg'
 
     # # gdrive = '/home/daveg/Documents/'
     # # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'

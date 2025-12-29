@@ -23,7 +23,7 @@ import Battery
 from Battery import Battery, calculate_capacity
 from myFilters import LagExp
 from pyDAGx import myTables
-from KF1x1 import KF1x1VarDt
+from KF1x1 import KF1x1VarDtxx
 
 class MutableInt:
     def __init__(self, value):
@@ -131,14 +131,14 @@ class Sensors:
                                             self.mon_run.e_wrap_n_filt)
             self.Battery = Battery
             if hasattr(self.mon_run, 'vovcm'):
-                self.KfShuntAmp = KF1x1VarDt(initial_position=self.mon_run.vovcm[0], initial_velocity=self.mon_run.x1m[0],
+                self.KfShuntAmp = KF1x1VarDtxx(initial_position=self.mon_run.vovcm[0], initial_velocity=self.mon_run.x1m[0],
                                              dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R_STD)
             if hasattr(self.mon_run, 'vovcn'):
                 print(f"input:   KF_Q_STD {self.Battery.KF_Q_STD}  KF_R_STD {self.Battery.KF_R_STD}")
                 self.Battery.KF_Q_STD /= 1.
                 self.Battery.KF_R_STD /= 1.
                 print(f"using:   KF_Q_STD {self.Battery.KF_Q_STD}  KF_R_STD {self.Battery.KF_R_STD}")
-                self.KfShuntNoa = KF1x1VarDt(initial_position=self.mon_run.vovcn[0], initial_velocity=self.mon_run.x1n[0],
+                self.KfShuntNoa = KF1x1VarDtxx(initial_position=self.mon_run.vovcn[0], initial_velocity=self.mon_run.x1n[0],
                                              dt=0.1, proc_noise_std=self.Battery.KF_Q_STD, meas_noise_std=self.Battery.KF_R_STD)
 
             self.ib_amp = 0.

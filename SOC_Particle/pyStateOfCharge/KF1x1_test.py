@@ -53,9 +53,9 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, data_la
     std_dev_lag = np.std(mr.VoVcn_lag[vec_initial])
 
     try:
-        index_start_sweep_lag = np.array(np.where( abs(mr.VoVcn_lag) > 6.*std_dev_lag))[0, 0]
+        index_start_sweep_lag = np.array(np.where( mr.VoVcn_lag < -10.*std_dev_lag))[0, 0]
         time_start_sweep_lag = mr.time[index_start_sweep_lag]
-        index_end_sweep_lag = np.where(mr.time < time_start_sweep_lag + 150.)[0][-1]
+        index_end_sweep_lag = np.where(mr.time < time_start_sweep_lag + 650.)[0][-1]
         time_end_sweep_lag = mr.time[index_end_sweep_lag]
         print(f"{steady_level_lag=} {std_dev_lag=}")
         print(f"{index_start_sweep_lag=} {time_start_sweep_lag=}")
@@ -453,6 +453,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from DataOverModel import plq
     plt.rcParams['axes.grid'] = True
+    import scipy.fft as fft
 
     time_end = None
 
@@ -492,7 +493,7 @@ if __name__ == "__main__":
     nyquist_freq_rps = sample_freq_rps / 2.
     min_possible_data_lag = 0.07 / nyquist_freq_rps * 50.
     vec_initial = np.where( (mr.time <= 50.) & (mr.time >= 10.) )
-    data_lag = min_possible_data_lag * 2.
+    data_lag = min_possible_data_lag * 5.
     print(f" nyquist {nyquist_freq_rps} r/s, min possible tau {min_possible_data_lag} s, data_lag {data_lag}, s")
     mr_lag = LagExp(dt=sample_time, tau=data_lag, max_=3.3, min_=-3.3)
     mr.VoVcn_lag = []
@@ -534,21 +535,43 @@ if __name__ == "__main__":
 
     plt = plot_1(plt, mr, mv, title + ' F1')
 
+    # Using fft for a try
+    # Assuming x_t, y_t are your time-series arrays and fs is your sampling rate
+    if False:
+        Nfft = len(mr.VoVcn)
+        Nfft=3700
+        X_f = fft.fft(mr.VoVcn, Nfft)
+        Y_f = fft.fft(mv.VoVcn_kf, Nfft)
+        # Calculate corresponding frequencies
+        freqs = fft.fftfreq(Nfft, 1./sample_freq_hz)
+        H_f = Y_f / X_f
+        magnitude = np.abs(H_f)
+        phase = np.angle(H_f, deg=True)  # Phase in degrees
+        plt.figure()
+        plt.semilogx(freqs, magnitude, color='red', linestyle='-', label='mag')
+        # plt.ylim([-18, 6])
+        plt.legend(loc=1)
+        plt.figure()
+        plt.semilogx(freqs, phase, color='red', linestyle='-', label='phs_dg')
+        # plt.ylim([-18, 6])
+        plt.legend(loc=1)
+        plt.show(block=False)
+
     doing_doe = True
     if doing_doe:
         ii = 0
         Res = []
-        for Qstd, Rstd in [ [0.0003, 0.1000], [0.003, 0.0010] ]:
-        # for Qstd, Rstd in \
-        #         [
-        #             [0.0003,  0.1000],
-        #             [0.0006,  0.1000], [0.00015, 0.1000],
-        #             [0.0003,  0.2000], [0.0003,  0.0500],
-        #             [0.0006,  0.0100], [0.00015, 0.0100],
-        #             [0.0003,  0.0100], [0.0006, 0.0100],  [0.00015, 0.0100],
-        #             [0.00003, 0.0100], [0.00003, 0.0200], [0.00003, 0.0050],
-        #             [1.5,    0.00001], [0.0003,  0.1000],
-        #         ]:
+        # for Qstd, Rstd in [ [0.0003, 0.1000], [0.003, 0.0010] ]:
+        for Qstd, Rstd in \
+                [
+                    [0.0003,  0.0100], [0.0003, 0.1000],
+                    [0.0006,  0.1000], [0.00015, 0.1000],
+                    [0.0003,  0.2000], [0.0003,  0.0500],
+                    [0.0006,  0.0100], [0.00015, 0.0100],
+                    [0.0003,  0.0100], [0.0006, 0.0100],  [0.00015, 0.0100],
+                    [0.00003, 0.0100], [0.00003, 0.0200], [0.00003, 0.0050],
+                    [1.5,    0.00001], [0.0003,  0.1000],
+                ]:
             ii += 1
 
             print(f"{Qstd=} {Rstd=}")

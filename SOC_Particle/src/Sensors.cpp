@@ -99,16 +99,15 @@ float TempSensor::sample(Sensors *Sen)
 Shunt::Shunt()
 : name_("None"), port_(0x00), bare_shunt_(false){}
 Shunt::Shunt(const String name, const uint8_t port, float *sp_ib_scale,  float *sp_Ib_bias, const float v2a_s,
-  const uint8_t vc_pin, const uint8_t vo_pin, const uint8_t vh3v3_pin, const boolean using_opAmp)
+  const uint8_t vc_pin, const uint8_t vo_pin, const uint8_t vh3v3_pin, const boolean using_opAmp, const boolean using_kf)
 : name_(name), port_(port), bare_shunt_(false), v2a_s_(v2a_s),
   vshunt_int_(0), vshunt_int_0_(0), vshunt_int_1_(0), vshunt_(0), Ishunt_cal_(0),
   sp_ib_bias_(sp_Ib_bias), sp_ib_scale_(sp_ib_scale), sample_time_(0UL), sample_time_z_(0UL), dscn_cmd_(false),
   vc_pin_(vc_pin), vo_pin_(vo_pin), vr_pin_(vh3v3_pin), Vc_raw_(HALF_V3V3/VH3V3_CONV_GAIN), Vc_(HALF_V3V3),
-  Vo_Vc_(0.), using_opamp_(using_opAmp)
+  Vo_Vc_(0.), using_opamp_(using_opAmp), using_kf_(using_kf)
 {
   if ( using_opamp_ ) Serial.printf("Ib %s sense ADC pin %d started using OpAmp and 3V3 pin %d\n", name_.c_str(), vo_pin_, vr_pin_);
   else Serial.printf("Ib %s sense ADC pins %d and %d started\n", name_.c_str(), vo_pin_, vc_pin_);
-  Filt_ = new General2_Pole(0.1, F_W_I, F_Z_I, -V3V3, V3V3);  // actual update time provided run time
   KF_ = new KalmanFilter(0.1, 0., KF_Q_STD, KF_R_STD);
 }
 Shunt::~Shunt() {}
@@ -125,16 +124,23 @@ void Shunt::pretty_print()
   Serial.printf(" Ishunt_cal%7.3f; A\n", Ishunt_cal_);
   Serial.printf(" Ishunt_cal_kf%7.3f; A\n", Ishunt_cal_kf_);
   Serial.printf(" port 0x%X;\n", port_);
+  Serial.printf(" using_kf%d;", using_kf_);
   Serial.printf(" v2a_s%7.2f; A/V\n", v2a_s_);
   Serial.printf(" Vc%10.6f; V\n", Vc_);
   Serial.printf(" Vc_raw %d;\n", Vc_raw_);
   Serial.printf(" Vo%10.6f; V\n", Vo_);
   Serial.printf(" Vo-Vc%10.6f; V\n", Vo_Vc());
+  Serial.printf(" Vo-Vc_kf%10.6f; V\n", Vo_Vc_kf());
   Serial.printf(" Vo_raw %d;\n", Vo_raw_);
   Serial.printf(" vshunt_int %d; count\n", vshunt_int_);
   Serial.printf("Shunt(%s)::\n", name_.c_str());
-  Serial.printf(" KF\n");
-  KF_->pretty_print();
+  if ( using_kf_ )
+  {
+    Serial.printf(" KF\n");
+    KF_->pretty_print();
+  }
+  else
+    Serial.printf(" not using KF\n");
 #else
      Serial.printf("Shunt: silent DEPLOY\n");
 #endif
@@ -212,7 +218,11 @@ void Shunt::sample_combine()
 // Apply Kalman filter to Vo-Vc
 void Shunt::sample_filter_kf(const boolean reset_kf)
 {
-  vshunt_kf_ = KF_->calculate(reset_kf, dt()/1000., Vo_Vc_);
+  if ( using_kf_ )
+    vshunt_kf_ = KF_->calculate(reset_kf, dt()/1000., Vo_Vc_);
+  else
+    vshunt_kf_ = Vo_Vc_;
+
 }
 
 // Sample Vc = Vr centering signal for amplifier
@@ -1253,11 +1263,11 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   this->T_filt = T;
   this->T_temp = T_temp;
   #if defined(HDWE_IB_HI_LO) || defined(HDWE_BARE)
-    this->ShuntAmp = new Shunt("Amp", 0x49, &sp.ib_scale_amp_z, &sp.ib_bias_amp_z, SHUNT_AMP_GAIN, pins->Vcm_pin, pins->Vom_pin, pins->Vh3v3_pin, true);
-    this->ShuntNoAmp = new Shunt("No Amp", 0x48, &sp.ib_scale_noa_z, &sp.ib_bias_noa_z, SHUNT_NOA_GAIN, pins->Vcn_pin, pins->Von_pin, pins->Vh3v3_pin, true);
+    this->ShuntAmp = new Shunt("Amp", 0x49, &sp.ib_scale_amp_z, &sp.ib_bias_amp_z, SHUNT_AMP_GAIN, pins->Vcm_pin, pins->Vom_pin, pins->Vh3v3_pin, true, KF_USE_AMP);
+    this->ShuntNoAmp = new Shunt("No Amp", 0x48, &sp.ib_scale_noa_z, &sp.ib_bias_noa_z, SHUNT_NOA_GAIN, pins->Vcn_pin, pins->Von_pin, pins->Vh3v3_pin, true, KF_USE_NOA);
   #else
-    this->ShuntAmp = new Shunt("Amp", 0x49, &sp.ib_scale_amp_z, &sp.ib_bias_amp_z, SHUNT_AMP_GAIN, pins->Vcm_pin, pins->Vom_pin, pins->Vh3v3_pin, false);
-    this->ShuntNoAmp = new Shunt("No Amp", 0x48, &sp.ib_scale_noa_z, &sp.ib_bias_noa_z, SHUNT_NOA_GAIN, pins->Vcn_pin, pins->Von_pin, pins->Vh3v3_pin, false);
+    this->ShuntAmp = new Shunt("Amp", 0x49, &sp.ib_scale_amp_z, &sp.ib_bias_amp_z, SHUNT_AMP_GAIN, pins->Vcm_pin, pins->Vom_pin, pins->Vh3v3_pin, false, KF_USE_AMP);
+    this->ShuntNoAmp = new Shunt("No Amp", 0x48, &sp.ib_scale_noa_z, &sp.ib_bias_noa_z, SHUNT_NOA_GAIN, pins->Vcn_pin, pins->Von_pin, pins->Vh3v3_pin, false, KF_USE_NOA);
   #endif
   #if !defined(HDWE_2WIRE) & !defined(HDWE_BARE)
     this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY_DS18);
