@@ -192,9 +192,10 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     mr.VoVcn_steady_lag = mr.VoVcn_lag[vec_initial]
     mr.amp_VoVcn_steady = np.max(mr.VoVcn_steady) - np.min(mr.VoVcn_steady)
     mv.amp_VoVcn_kf_steady = np.max(mv.VoVcn_kf_steady) - np.min(mv.VoVcn_kf_steady)
+    mr.amp_VoVcn_steady_lag = np.max(mr.VoVcn_steady_lag) - np.min(mr.VoVcn_steady_lag)
     print(f" amp VoVcn_kf_steady  {mv.amp_VoVcn_kf_steady}   amp VoVcn_steady {mr.amp_VoVcn_steady}" )
     attenuation = mv.amp_VoVcn_kf_steady / mr.amp_VoVcn_steady
-    attenuation_lag = (np.max(mr.VoVcn_steady_lag) - np.min(mr.VoVcn_steady_lag)) / (np.max(mr.VoVcn_steady) - np.min(mr.VoVcn_steady))
+    attenuation_lag = mr.amp_VoVcn_steady_lag / mr.amp_VoVcn_steady
 
     if not steady_only:
         phase45_tf_index = 0
@@ -233,7 +234,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
         print(f"{time_90=}  {freq_90=} {phase_90=} {omega_90=}")
     metric_string = "Metrics:\n"
     metric_string += "  Qstd = {:9.6f}\n  Rstd =     {:9.6f}\n  lpf_lag = {:7.4f}\n\n".format(Qstd, Rstd, lpf_lag)
-    metric_string += "  Attn = {:5.2f}  Attn_lpf = {:5.2f}\n\n".format(attenuation, attenuation_lag)
+    metric_string += "  Attn = {:5.2f}  Attn_lag = {:5.2f}\n\n".format(attenuation, attenuation_lag)
     if not steady_only:
         metric_string += "  -3db @    {:4.2f} Hz,  ({:5.1f} sec)\n".format(freq_3db, time_3db)
         metric_string += "  -45 deg @ {:4.2f} Hz   ({:5.1f} sec)\n\n".format(freq_45, time_45)
@@ -494,18 +495,17 @@ if __name__ == "__main__":
     if doing_doe:
         ii = 0
         Res = []
-        for Qstd, Rstd in [ [0.0003, 0.1000] ]:
-        # for Qstd, Rstd in \
-        #         [
-        #             [0.0003,  0.1000],
-        #             [0.0006,  0.1000], [0.00015, 0.1000],
-        #             [0.0003,  0.2000], [0.0003,  0.0500],
-        #             [0.0006,  0.0001], [0.00015, 0.0001],
-        #             [0.0003,  0.0100], [0.00006, 0.0100],
-        #             [0.00003, 0.0100], [0.00003, 0.1000],
-        #             [0.00003, 0.2000], [0.00003, 0.0100],
-        #             [0.0003,  0.1000], [1.5,     0.00001],
-        #         ]:
+        # for Qstd, Rstd in [ [0.0003, 0.1000] ]:
+        for Qstd, Rstd in \
+                [
+                    [0.0003,  0.1000],
+                    [0.0006,  0.1000], [0.00015, 0.1000],
+                    [0.0003,  0.2000], [0.0003,  0.0500],
+                    [0.0006,  0.0100], [0.00015, 0.0100],
+                    [0.0003,  0.0100], [0.0006, 0.0100],  [0.00015, 0.0100],
+                    [0.00003, 0.0100], [0.00003, 0.0200], [0.00003, 0.0050],
+                    [1.5,    0.00001], [0.0003,  0.1000],
+                ]:
             ii += 1
 
             print(f"{Qstd=} {Rstd=}")
