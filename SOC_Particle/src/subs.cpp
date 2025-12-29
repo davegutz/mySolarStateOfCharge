@@ -50,8 +50,8 @@ void sample_burst(Pins *myPins, Sensors *Sen)
       Sen->ShuntNoAmp->sample_Vo();
       Sen->ShuntNoAmp->sample_Vc();
       Sen->ShuntNoAmp->sample_combine();
-      Sen->ShuntNoAmp->sample_filter_kf(i==0);
-      Serial.printf("shunt_unit, %8.6f, %8.6f, %8.6f, %8.6f,\n",
+      Sen->ShuntNoAmp->sample_filter_kf(false);
+      Serial.printf("shunt_unit, %8.6f, %8.6f, %8.6f,\n",
         (local_micros - local_micros_init)*1e-6, Sen->ShuntNoAmp->Vo_Vc(), Sen->ShuntNoAmp->Vo_Vc_kf());
     }
     ap.samp_points = 0;

@@ -18,19 +18,26 @@ kf_update methods in the parent."""
 
 global mon_run
 from load_data import write_clean_file
-from myFilters import LagTustin, LagExp
+from myFilters import General2Pole, LagExp
 from KF1x1 import KF1x1VarDt
 
 def plot_1(plt=None, mr=None, mv=None, title=None):
     plt.figure()
-    plt.subplot(111)
+    plt.subplot(211)
     plt.title(title)
     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn' + run_str)
-    plq(plt, mr, 'time', mr, 'VoVcn_kf', color='black', linestyle='--', label='VoVcn_kf' + run_str)
-    plq(plt, mr, 'time', mr, 'VoVcn_filt', color='orange', linestyle='--', label='VoVcn_filt' + run_str)
+    plq(plt, mr, 'time', mr, 'VoVcn_kf', color='red', linestyle='-', label='VoVcn_kf' + run_str)
+    plq(plt, mr, 'time', mr, 'VoVcn_filt', color='black', linestyle='-', label='VoVcn_filt' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_lag', color='cyan', linestyle='-.', label='VoVcn_lag' + run_str)
-    plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='--', label='VoVcn_kf' + ver_str)
+    plq(plt, mv, 'time', mv, 'VoVcn_kf', color='pink', linestyle='-.', label='VoVcn_kf' + ver_str)
+    top_limit, bottom_limit = plt.ylim()
     plt.legend(loc=1)
+    plt.subplot(212)
+    plq(plt, mr, 'time', mr, 'VoVcn_kf', color='red', linestyle='-', label='VoVcn_kf' + run_str)
+    plq(plt, mr, 'time', mr, 'VoVcn_filt', color='black', linestyle='-', label='VoVcn_filt' + run_str)
+    plq(plt, mv, 'time', mv, 'VoVcn_kf', color='pink', linestyle='-.', label='VoVcn_kf' + ver_str)
+    plt.legend(loc=1)
+    plt.ylim(top_limit, bottom_limit)
     return plt
 
 def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag=None, data_lag=0.15):
@@ -80,12 +87,13 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     mv.VoVcn_kf_avg = np.full((len(mv.VoVcn_kf),), mv.VoVcn_kf_avg)
 
     plt.figure()
+    plt.subplot(211)
     plt.title(title+'1')
     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn burst_data centered')
-    plq(plt, mr, 'time', mr, 'VoVcn_kf', color='black', linestyle='--', label='VoVcn_kf burst_data centered')
-    plq(plt, mr, 'time', mr, 'VoVcn_filt', color='orange', linestyle='--', label='VoVcn_filt burst_data centered')
+    plq(plt, mr, 'time', mr, 'VoVcn_kf', color='red', linestyle='-', label='VoVcn_kf burst_data centered')
+    plq(plt, mr, 'time', mr, 'VoVcn_filt', color='black', linestyle='-', label='VoVcn_filt burst_data centered')
     plq(plt, mr, 'time', mr, 'VoVcn_lag', color='cyan', linestyle='--', label='VoVcn_lag burst_data')
-    plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='-.', label='VoVcn_kf calc')
+    plq(plt, mv, 'time', mv, 'VoVcn_kf', color='pink', linestyle='-.', label='VoVcn_kf calc')
     plq(plt, mv, 'time', mv, 'VoVcn_kf_avg', color='orange', linestyle='-', label='VoVcn_kf calc avg')
     plt.text(0.5, 0.2, f"{Qstd=} Rstd={Rstd}",
              horizontalalignment='center',
@@ -94,7 +102,16 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
              fontsize=12,
              color='blue',
              bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
+    top_limit, bottom_limit = plt.ylim()
     plt.legend(loc=1)
+    plt.subplot(212)
+    plq(plt, mr, 'time', mr, 'VoVcn_kf', color='red', linestyle='-', label='VoVcn_kf burst_data centered')
+    plq(plt, mr, 'time', mr, 'VoVcn_filt', color='black', linestyle='-', label='VoVcn_filt burst_data centered')
+    plq(plt, mv, 'time', mv, 'VoVcn_kf', color='pink', linestyle='-.', label='VoVcn_kf calc')
+    plq(plt, mv, 'time', mv, 'VoVcn_kf_avg', color='orange', linestyle='-', label='VoVcn_kf calc avg')
+    plt.ylim(top_limit, bottom_limit)
+    plt.legend(loc=1)
+
     plt.show(block=False)
 
     # steady_only = True
@@ -241,10 +258,10 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     plt.subplot(311)
     plt.title(title+'2')
     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn' + run_str)
-    plq(plt, mr, 'time', mr, 'VoVcn_kf', color='black', linestyle='-', label='VoVcn_kf' + run_str)
-    plq(plt, mr, 'time', mr, 'VoVcn_filt', color='orange', linestyle='-', label='VoVcn_filt' + run_str)
+    plq(plt, mr, 'time', mr, 'VoVcn_kf', color='red', linestyle='-', label='VoVcn_kf' + run_str)
+    plq(plt, mr, 'time', mr, 'VoVcn_filt', color='black', linestyle='-', label='VoVcn_filt' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_lag', color='cyan', linestyle='--', label='VoVcn_lag' + run_str)
-    plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='-.', label='VoVcn_kf' + ver_str)
+    plq(plt, mv, 'time', mv, 'VoVcn_kf', color='pink', linestyle='-.', label='VoVcn_kf' + ver_str)
     plt.text(0.5, 0.2, f"{Qstd=} Rstd={Rstd}",
              horizontalalignment='center',
              verticalalignment='center',
@@ -455,7 +472,6 @@ if __name__ == "__main__":
     dt = 0.1  # Time step (seconds) used only on init
     mr.VoVcn = mr.vovcn
     mr.VoVcn_kf = mr.vovcnkf
-    mr.VoVcn_filt = mr.vovcnf
 
     # The best design of filter
     Qstd = 0.0003  # Standard deviation of acceleration noise
@@ -483,6 +499,17 @@ if __name__ == "__main__":
     mr.VoVcn_lag = np.array(mr.VoVcn_lag)
     steady_level_lag = np.average(mr.VoVcn_lag[vec_initial])
     mr.VoVcn_lag = np.array(mr.VoVcn_lag)
+
+    # Old 2-pole for reference
+    VoVcnFilt = General2Pole(0.1, 0.5, 0.8, -3., 3.)
+    mr.VoVcn_filt = []
+    for i in range(N):
+        if i==0:
+            lagged_val2 = VoVcnFilt.calculate(mr.VoVcn_kf[i], reset=True, dt=mr.dt[i])
+        else:
+            lagged_val2 = VoVcnFilt.calculate(mr.VoVcn[i], reset=False, dt=mr.dt[i])
+        mr.VoVcn_filt.append(lagged_val2)
+    mr.VoVcn_filt = np.array(mr.VoVcn_filt)
 
     # Local kf
     kfVoVcn = KF1x1VarDt(initial_position=0.0, initial_velocity=0.0, dt=dt, proc_noise_std=Qstd*2.,
