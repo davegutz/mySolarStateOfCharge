@@ -442,10 +442,11 @@ if __name__ == "__main__":
     """
     Test setup:  FY6900 Dominty Function Generator.  FY6900 CH 1 connected across shunt leads.
     (**** not this CH 2 ground connected to board ground.)
-    Top level - Sweep.   - Freq 0.5 - 5.0, Ampl 0.01 - 0.01, Offs -0.01 - -0.01, Duty 50% - 50%,
-    Mode Linear.   Direction Forth, Time 120s.  Turn off generator.
-    'Cx27000',  wait 60 sec. Turn on generator and press OK on function generator.  When it reaches 0.5 Hz again press
-    OK to stop.  Then turn off generator.
+    VCO level Ampl .001 - 0, Offs 0-0, Freq 0-0, Duty 50-50
+    Top level - Sweep.   - Freq 0 - 5.0, Ampl 0.01 - 0.01, Offs 0.0 - 0.0, Duty 50% - 50%,
+                    Mode Log.   Direction Forth, Time 360s.  OK - OK quickly to freeze it at 0 Hz then quickly VCO - OK
+    'clear' in GUI then 'Cx45000' on tty,  wait 60 sec. Turn on generator and press OK on function generator.  When it reaches 5.0 Hz again press
+    OK to stop.  Then press VCO - OK quickly
     """
 
     import numpy as np
