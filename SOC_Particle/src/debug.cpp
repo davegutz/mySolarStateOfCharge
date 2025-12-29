@@ -141,9 +141,8 @@ void debug_98(BatteryMonitor *Mon, Sensors *Sen)
 {
   String txBuf;
 
-  txBuf = String::format("imh imhkf imfh inh inkfh infh: %6.2fA %6.2fA,%6.2fA  %6.2fA,%6.2fA %6.2fA,\n",
-    Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->ShuntAmp->Ishunt_cal_filt(), Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf,
-    Sen->ShuntNoAmp->Ishunt_cal_filt());
+  txBuf = String::format("imh imhkf inh inkfh: %6.2fA %6.2fA,  %6.2fA,%6.2fA\n",
+    Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf);
 
   sendTxBuf(txBuf, true, true, true);
 }

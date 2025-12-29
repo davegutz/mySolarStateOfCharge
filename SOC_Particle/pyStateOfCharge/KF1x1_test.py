@@ -27,6 +27,7 @@ def plot_1(plt=None, mr=None, mv=None, title=None):
     plt.title(title)
     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_kf', color='black', linestyle='--', label='VoVcn_kf' + run_str)
+    plq(plt, mr, 'time', mr, 'VoVcn_filt', color='orange', linestyle='--', label='VoVcn_filt' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_lag', color='cyan', linestyle='-.', label='VoVcn_lag' + run_str)
     plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='--', label='VoVcn_kf' + ver_str)
     plt.legend(loc=1)
@@ -41,6 +42,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     mr.VoVcn_avg = np.average(mr.VoVcn[vec_initial])
     mr.VoVcn = mr.VoVcn - mr.VoVcn_avg
     mr.VoVcn_kf = mr.VoVcn_kf - mr.VoVcn_avg
+    mr.VoVcn_filt = mr.VoVcn_filt - mr.VoVcn_avg
     mr.VoVcn_lag = mr.VoVcn_lag - mr.VoVcn_avg
     std_dev_lag = np.std(mr.VoVcn_lag[vec_initial])
 
@@ -67,6 +69,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     mr.VoVcn_avg = np.average(mr.VoVcn[vec_fr_for_avg])
     mr.VoVcn = mr.VoVcn - mr.VoVcn_avg
     mr.VoVcn_kf = np.array(mr.VoVcn_kf - mr.VoVcn_avg)
+    mr.VoVcn_filt = np.array(mr.VoVcn_filt - mr.VoVcn_avg)
     mr.VoVcn_lag = np.array(mr.VoVcn_lag - mr.VoVcn_avg)
 
     mv.VoVcn_kf = np.array(mv.VoVcn_kf)
@@ -80,6 +83,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     plt.title(title+'1')
     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn burst_data centered')
     plq(plt, mr, 'time', mr, 'VoVcn_kf', color='black', linestyle='--', label='VoVcn_kf burst_data centered')
+    plq(plt, mr, 'time', mr, 'VoVcn_filt', color='orange', linestyle='--', label='VoVcn_filt burst_data centered')
     plq(plt, mr, 'time', mr, 'VoVcn_lag', color='cyan', linestyle='--', label='VoVcn_lag burst_data')
     plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='-.', label='VoVcn_kf calc')
     plq(plt, mv, 'time', mv, 'VoVcn_kf_avg', color='orange', linestyle='-', label='VoVcn_kf calc avg')
@@ -238,6 +242,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     plt.title(title+'2')
     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_kf', color='black', linestyle='-', label='VoVcn_kf' + run_str)
+    plq(plt, mr, 'time', mr, 'VoVcn_filt', color='orange', linestyle='-', label='VoVcn_filt' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_lag', color='cyan', linestyle='--', label='VoVcn_lag' + run_str)
     plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='-.', label='VoVcn_kf' + ver_str)
     plt.text(0.5, 0.2, f"{Qstd=} Rstd={Rstd}",
@@ -411,6 +416,7 @@ class Saved:
         self.dt = []
         self.VoVcn = []
         self.VoVcn_kf = []
+        self.VoVcn_filt = []
 
 
 # Example Usage:
@@ -441,13 +447,15 @@ if __name__ == "__main__":
     OK to stop.  Then turn off generator.
     """
 
-    data_file = './noise_study/ssnoise_soc2p2_hi_lo_chg_shunt.csv'  # Cx20000, Base
+    # data_file = './noise_study/ssnoise_soc2p2_hi_lo_chg_shunt.csv'  # Cx20000, Base
+    data_file = './noise_study/sschirp_soc2p2_hi_lo_chg.csv'  # Cx4800, Base
 
     mr, data_file_clean = load_data_KF1x1_test(data_file, time_end)
     title = 'VoVc Base KF1x1_test.py var dt'
     dt = 0.1  # Time step (seconds) used only on init
     mr.VoVcn = mr.vovcn
-    mr.VoVcn_kf = mr.vovcnf
+    mr.VoVcn_kf = mr.vovcnkf
+    mr.VoVcn_filt = mr.vovcnf
 
     # The best design of filter
     Qstd = 0.0003  # Standard deviation of acceleration noise

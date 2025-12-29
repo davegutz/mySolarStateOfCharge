@@ -129,15 +129,14 @@ public:
   float ishunt_cal() { return Ishunt_cal_ / sp.nP(); };
   float Ishunt_cal_kf() { return Ishunt_cal_kf_; };
   float ishunt_cal_kf() { return Ishunt_cal_kf_ / sp.nP(); };
-  float Ishunt_cal_filt() { return Ishunt_cal_filt_; };
-  float ishunt_cal_filt() { return Ishunt_cal_filt_ / sp.nP(); };
   void kf_q_std(const double q) {KF_->q_std(q);};
   void kf_r_std(const double r) {KF_->r_std(r);};
   void print_serial_header(const char suffix);
   void print_serial();
   void pretty_print();
   void sample(const boolean reset_kf);
-  void sample_combine(const boolean reset_kf);
+  void sample_combine();
+  void sample_filter_kf(const boolean reset_kf);
   void sample_Vc();
   void sample_Vo();
   float scale() { return ( *sp_ib_scale_ ); };
@@ -163,7 +162,6 @@ protected:
   float vshunt_kf_;     // Sensed kalman filtered shunt voltage, V
   float Ishunt_cal_;    // Sensed bank current, calibrated ADC, A
   float Ishunt_cal_kf_; // Sensed kalman filtered bank current, calibrated ADC, A
-  float Ishunt_cal_filt_; // Filtered bank current, calibrated ADC, A
   float *sp_ib_bias_;   // Global bias, A
   float *sp_ib_scale_;  // Global scale, A
   boolean reset_;       // Status of reset command input

@@ -101,14 +101,14 @@ Shunt::Shunt()
 Shunt::Shunt(const String name, const uint8_t port, float *sp_ib_scale,  float *sp_Ib_bias, const float v2a_s,
   const uint8_t vc_pin, const uint8_t vo_pin, const uint8_t vh3v3_pin, const boolean using_opAmp)
 : name_(name), port_(port), bare_shunt_(false), v2a_s_(v2a_s),
-  vshunt_int_(0), vshunt_int_0_(0), vshunt_int_1_(0), vshunt_(0), Ishunt_cal_(0), Ishunt_cal_filt_(0),
+  vshunt_int_(0), vshunt_int_0_(0), vshunt_int_1_(0), vshunt_(0), Ishunt_cal_(0),
   sp_ib_bias_(sp_Ib_bias), sp_ib_scale_(sp_ib_scale), sample_time_(0UL), sample_time_z_(0UL), dscn_cmd_(false),
   vc_pin_(vc_pin), vo_pin_(vo_pin), vr_pin_(vh3v3_pin), Vc_raw_(HALF_V3V3/VH3V3_CONV_GAIN), Vc_(HALF_V3V3),
   Vo_Vc_(0.), using_opamp_(using_opAmp)
 {
   if ( using_opamp_ ) Serial.printf("Ib %s sense ADC pin %d started using OpAmp and 3V3 pin %d\n", name_.c_str(), vo_pin_, vr_pin_);
   else Serial.printf("Ib %s sense ADC pins %d and %d started\n", name_.c_str(), vo_pin_, vc_pin_);
-  Filt_ = new General2_Pole(0.1, F_W_I, F_Z_I, -NOM_UNIT_CAP*sp.nP(), NOM_UNIT_CAP*sp.nP());  // actual update time provided run time
+  Filt_ = new General2_Pole(0.1, F_W_I, F_Z_I, -V3V3, V3V3);  // actual update time provided run time
   KF_ = new KalmanFilter(0.1, 0., KF_Q_STD, KF_R_STD);
 }
 Shunt::~Shunt() {}
@@ -123,7 +123,6 @@ void Shunt::pretty_print()
   Serial.printf(" *sp_ib_scale%7.3f; A\n", *sp_ib_scale_);
   Serial.printf(" bare_shunt %d dscn_cmd %d\n", bare_shunt_, dscn_cmd_);
   Serial.printf(" Ishunt_cal%7.3f; A\n", Ishunt_cal_);
-  Serial.printf(" Ishunt_cal_filt%7.3f; A\n", Ishunt_cal_filt_);
   Serial.printf(" Ishunt_cal_kf%7.3f; A\n", Ishunt_cal_kf_);
   Serial.printf(" port 0x%X;\n", port_);
   Serial.printf(" v2a_s%7.2f; A/V\n", v2a_s_);
@@ -189,27 +188,34 @@ void Shunt::convert(const boolean disconnect, const boolean reset, Sensors *Sen)
     Ishunt_cal_kf_ = vshunt_kf_*v2a_s_*(*sp_ib_scale_) + *sp_ib_bias_;
   }
 
-      // 2-pole filter
-  Ishunt_cal_filt_ = Filt_->calculate(Ishunt_cal_, disconnect || reset, min(Sen->T, MAX_T_Q_FILT));
-  if ( Ishunt_cal_filt_ < 0. ) Ishunt_cal_ *= sp.ib_disch_slr();
+  // One-sided scale factor if needed
+  if ( Ishunt_cal_kf_ < 0. ) Ishunt_cal_ *= sp.ib_disch_slr();
 
 }
 
-// Sample amplifier Vo-Vc
+// Sample and filter amplifier Vo-Vc
 void Shunt::sample(const boolean reset_kf)
 {
   sample_Vo();
   sample_Vc();
-  sample_combine(reset_kf);
+  sample_combine();
+  sample_filter_kf(reset_kf);
+  if  ( sp.debug()==14 )Serial.printf("reset_kf %d ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f vshunt_kf_%7.3f  Vc_%7.3f\n", reset_kf, (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, vshunt_kf_, Vc_);
 }
 
-void Shunt::sample_combine(const boolean reset_kf)
+// Basic arithmetic
+void Shunt::sample_combine()
 {
   Vo_Vc_ = Vo_ - Vc_;
-  vshunt_kf_ = KF_->calculate(reset_kf, dt()/1000., Vo_Vc_);
-  if  ( sp.debug()==14 )Serial.printf("reset_kf %d ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f vshunt_kf_%7.3f Vc_%7.3f\n", reset_kf, (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, vshunt_kf_, Vc_);
 }
 
+// Apply Kalman filter to Vo-Vc
+void Shunt::sample_filter_kf(const boolean reset_kf)
+{
+  vshunt_kf_ = KF_->calculate(reset_kf, dt()/1000., Vo_Vc_);
+}
+
+// Sample Vc = Vr centering signal for amplifier
 void Shunt::sample_Vc()
 {
   if ( using_opamp_ )
@@ -224,6 +230,7 @@ void Shunt::sample_Vc()
   }
 }
 
+// Sample Vo output voltage of amplifier
 void Shunt::sample_Vo()
 {
   sample_time_z_ = sample_time_;
