@@ -465,7 +465,8 @@ if __name__ == "__main__":
     """
 
     # data_file = './noise_study/ssnoise_soc2p2_hi_lo_chg_shunt.csv'  # Cx20000, Base
-    data_file = './noise_study/sschirp_soc2p2_hi_lo_chg.csv'  # Cx4800, Base
+    # data_file = './noise_study/sschirp_soc2p2_hi_lo_chg.csv'  # Cx4800, Base
+    data_file = './noise_study/sweepchirp_soc2p2_hi_lo_chg.csv'  # Cx25000, Base
 
     mr, data_file_clean = load_data_KF1x1_test(data_file, time_end)
     title = 'VoVc Base KF1x1_test.py var dt'
