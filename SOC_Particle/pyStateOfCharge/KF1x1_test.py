@@ -23,19 +23,18 @@ from KF1x1 import KF1x1VarDt
 
 def plot_1(plt=None, mr=None, mv=None, title=None):
     plt.figure()
+    print("plot_11:", end='')
     plt.subplot(211)
     plt.title(title)
     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_kf', color='red', linestyle='-', label='VoVcn_kf' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_filt', color='black', linestyle='-', label='VoVcn_filt' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_lag', color='cyan', linestyle='-.', label='VoVcn_lag' + run_str)
-    plq(plt, mv, 'time', mv, 'VoVcn_kf', color='pink', linestyle='-.', label='VoVcn_kf' + ver_str)
     top_limit, bottom_limit = plt.ylim()
     plt.legend(loc=1)
     plt.subplot(212)
     plq(plt, mr, 'time', mr, 'VoVcn_kf', color='red', linestyle='-', label='VoVcn_kf' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_filt', color='black', linestyle='-', label='VoVcn_filt' + run_str)
-    plq(plt, mv, 'time', mv, 'VoVcn_kf', color='pink', linestyle='-.', label='VoVcn_kf' + ver_str)
     plt.legend(loc=1)
     plt.ylim(top_limit, bottom_limit)
     return plt
@@ -87,6 +86,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     mv.VoVcn_kf_avg = np.full((len(mv.VoVcn_kf),), mv.VoVcn_kf_avg)
 
     plt.figure()
+    print("plot_12:", end='')
     plt.subplot(211)
     plt.title(title+'1')
     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn burst_data centered')
@@ -253,6 +253,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
         res = [Qstd, Rstd, lpf_lag, attenuation_lag, mv.amp_VoVcn_kf_steady, mr.amp_VoVcn_steady, attenuation,  0., 0., 0.]
 
     plt.figure()
+    print("plot_P1:", end='')
     plt.figtext(0.1, 0.3, metric_string, fontsize=10, color='black', horizontalalignment='left',
                 verticalalignment='center', bbox=dict(facecolor='orange', alpha=0.5, pad=5))
     plt.subplot(311)
