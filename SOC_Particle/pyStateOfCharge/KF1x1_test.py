@@ -19,7 +19,7 @@ kf_update methods in the parent."""
 global mon_run
 from load_data import write_clean_file
 from myFilters import LagTustin, LagExp
-from KF1x1 import KF1x1VarDt, KF1x1VarDt
+from KF1x1 import KF1x1VarDt
 
 def plot_1(plt=None, mr=None, mv=None, title=None):
     plt.figure()
@@ -80,7 +80,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     # Center
     mr.VoVcn_avg = np.average(mr.VoVcn[vec_fr_for_avg])
     mr.VoVcn = mr.VoVcn - mr.VoVcn_avg
-    mr.VoVcn_kf = mr.VoVcn_kf - mr.VoVcn_avg
+    mr.VoVcn_kf = np.array(mr.VoVcn_kf - mr.VoVcn_avg)
     mv.VoVcn_kf = np.array(mv.VoVcn_kf)
     mv.VoVcn_kf_avg = np.average(mv.VoVcn_kf[vec_fr_for_avg])
     mv.VoVcn_kf = mv.VoVcn_kf - mv.VoVcn_kf_avg
@@ -248,6 +248,7 @@ def plot_P(plt=None, mr=None, mv=None, title=None, Qstd=None, Rstd=None, lpf_lag
     plt.subplot(311)
     plt.title(title+'2')
     plq(plt, mr, 'time', mr, 'VoVcn', color='blue', linestyle='-', label='VoVcn' + run_str)
+    plq(plt, mr, 'time', mr, 'VoVcn_kf', color='black', linestyle='-', label='VoVcn_kf' + run_str)
     plq(plt, mr, 'time', mr, 'VoVcn_lpf', color='cyan', linestyle='--', label='VoVcn_lpf' + run_str)
     plq(plt, mv, 'time', mv, 'VoVcn_kf', color='red', linestyle='-.', label='VoVcn_kf' + ver_str)
     plt.text(0.5, 0.2, f"{Qstd=} Rstd={Rstd} {lpf_lag=}",

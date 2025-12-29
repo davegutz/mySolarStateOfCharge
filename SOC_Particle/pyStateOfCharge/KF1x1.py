@@ -18,7 +18,7 @@ import numpy as np
 kf_update methods in the parent."""
 
 
-class KF1x1VarDt:
+class KF1x1VarDt_xx:
     """Explicit 1x1 General Purpose Extended Kalman Filter.   Inherit from this class and include kf_predict and
     kf_update methods in the parent."""
 
