@@ -1,2 +1,2 @@
-Qstd, R, lpf_tau, attenuation_lpf,  amp_steady_kf, amp_steady, attenuation, tau_3db, tau_45, omega_90,
- 0.000300, 0.100000, 0.000010, 1.537348, 0.013342, 0.052369, 0.254769, 0.000000, 0.000000, 0.000000,
+Qstd, Rstd, lpf_lag, attenuation_lag,  amp_steady_kf, amp_steady, attenuation, tau_3db, tau_45, omega_90,
+ 0.000300, 0.100000, 0.008000, 1.537348, 0.013342, 0.052369, 0.254769, 0.000000, 0.000000, 0.000000,
