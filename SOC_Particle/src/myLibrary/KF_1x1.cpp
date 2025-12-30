@@ -232,29 +232,31 @@ Outputs:
  void KalmanFilter::pretty_print(void)
  {
 #ifndef SOFT_DEPLOY_PHOTON
-  Serial.printf("KF:\n");
-  Serial.printf("In:\n");
-  Serial.printf(" u   %8.4f, V\n", u_);
-  Serial.printf(" dt_ %8.4f, s\n", dt_);
-  Serial.printf(" Fx [ %8.4f, %8.4f]\n    [ %8.4f, %8.4f]\n",
-     Fx_[0][0], Fx_[0][1], Fx_[1][0], Fx_[1][1]);
-  Serial.printf(" G  [ %8.4f, \n      %8.4f]\n", G_[0], G_[1]);
-  Serial.printf(" R_stdsq%8.4g\n", R_stdsq_);
-  Serial.printf(" Q_stdsq%8.4g\n", Q_stdsq_);
-  Serial.printf(" Q  [%8.4f, %8.4f]\n    [%8.4f, %8.4f]\n",
-     Q_[0][0], Q_[0][1], Q_[1][0], Q_[1][1]);
-  Serial.printf(" H  [ %8.4f, %8.4f ]\n", H_[0], H_[1]);
-  Serial.printf("Out:\n");
-  Serial.printf(" x_prior  [%8.4f, \n     %8.4f]\n", x_prior_[0], x_prior_[1]);
-  Serial.printf(" x  [%8.4f, \n     %8.4f]\n", x_[0], x_[1]);
-  Serial.printf(" y   %8.4f, units of x\n", y_);
-  Serial.printf(" P_prior  [%8.4f, %8.4f]\n    [%8.4f, %8.4f]\n",
-     P_prior_[0][0], P_prior_[0][1], P_prior_[1][0], P_prior_[1][1]);
-  Serial.printf(" P  [%8.4f, %8.4f]\n    [%8.4f, %8.4f]\n",
-     P_[0][0], P_[0][1], P_[1][0], P_[1][1]);
-  Serial.printf(" K  [%8.4f, \n     %8.4f  ]\n", K_[0], K_[1]);
-  Serial.printf(" S   %8.4f\n", S_);
+    sendTxBuf(
+        String::format("KF:\n") +
+        String::format("In:\n") +
+        String::format(" u   %8.4f, V\n", u_) +
+        String::format(" dt_ %8.4f, s\n", dt_) +
+        String::format(" Fx [ %8.4f, %8.4f]\n    [ %8.4f, %8.4f]\n",
+                        Fx_[0][0], Fx_[0][1], Fx_[1][0], Fx_[1][1]) +
+        String::format(" G  [ %8.4f, \n      %8.4f]\n", G_[0], G_[1]) +
+        String::format(" R_stdsq%8.4g\n", R_stdsq_) +
+        String::format(" Q_stdsq%8.4g\n", Q_stdsq_) +
+        String::format(" Q  [%8.4f, %8.4f]\n    [%8.4f, %8.4f]\n",
+                        Q_[0][0], Q_[0][1], Q_[1][0], Q_[1][1]) +
+        String::format(" H  [ %8.4f, %8.4f ]\n", H_[0], H_[1]) +
+        String::format("Out:\n") +
+        String::format(" x_prior  [%8.4f, \n     %8.4f]\n", x_prior_[0], x_prior_[1]) +
+        String::format(" x  [%8.4f, \n     %8.4f]\n", x_[0], x_[1]) +
+        String::format(" y   %8.4f, units of x\n", y_) +
+        String::format(" P_prior  [%8.4f, %8.4f]\n    [%8.4f, %8.4f]\n",
+                        P_prior_[0][0], P_prior_[0][1], P_prior_[1][0], P_prior_[1][1]) +
+        String::format(" P  [%8.4f, %8.4f]\n    [%8.4f, %8.4f]\n",
+                        P_[0][0], P_[0][1], P_[1][0], P_[1][1]) +
+        String::format(" K  [%8.4f, \n     %8.4f  ]\n", K_[0], K_[1]) +
+        String::format(" S   %8.4f\n", S_) +
+        "", true, true, true);
 #else
-     Serial.printf("EKF_1x1: silent DEPLOY\n");
+     sendTxBuf("EKF_1x1: silent DEPLOY\n", true, true, true);
 #endif
  }

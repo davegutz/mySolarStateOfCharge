@@ -9,6 +9,7 @@
  ****************************************************/
 #include "iterate.h"
 #include "math.h"
+#include "serial.h"
 
 // class Iterator
 // constructors
@@ -43,7 +44,7 @@ double Iterator::iterate(const boolean verbose, const uint16_t success_count, co
     dx_   = x_ - xp_;
     if ( verbose )
     {
-        // Serial.printf("%s(%d): xmin%12.8f x%12.8f xmax%12.8f e%12.8f  des%12.8f dx%12.8f de%12.8f\n", desc_.c_str(), count_, xmin_, x_, xmax_, e_, des_, dx_, de_);
+        // sendTxBuf(String::format("%s(%d): xmin%12.8f x%12.8f xmax%12.8f e%12.8f  des%12.8f dx%12.8f de%12.8f\n", desc_.c_str(), count_, xmin_, x_, xmax_, e_, des_, dx_, de_), true, true, true);
     }
 
     // Check min max sign change
@@ -58,7 +59,7 @@ double Iterator::iterate(const boolean verbose, const uint16_t success_count, co
             ep_  = e_;
             limited_ = false;
             if ( verbose )
-                Serial.printf("%s:No soln\n", desc_.c_str());  // Leaving x at most likely limit value and recalculating...
+                sendTxBuf(String::format("%s:No soln\n", desc_.c_str()), true, true, true);  // Leaving x at most likely limit value and recalculating...
             return ( e_ );
         }
         else
