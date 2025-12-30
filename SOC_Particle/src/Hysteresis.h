@@ -21,9 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-#ifndef HYSTERESIS_H
-#define HYSTERESIS_H
+#pragma once
 
 #include "Chemistry_BMS.h"
 
@@ -64,5 +62,3 @@ protected:
 
 
 // Methods
-
-#endif
