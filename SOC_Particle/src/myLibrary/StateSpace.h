@@ -21,9 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-#ifndef STATESPACE_H_
-#define STATESPACE_H_
+#pragma once
 
 // Lightweight general purpose state space for embedded application
 class StateSpace
@@ -66,5 +64,3 @@ protected:
 };
 
 // Methods
-
-#endif

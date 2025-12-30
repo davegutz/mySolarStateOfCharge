@@ -93,18 +93,18 @@ void StateSpace::init_state_space(double *u)
 // Pretty print matrix
 void StateSpace::pretty_print_mat(const String name, const uint8_t n, const uint8_t m, double *A)
 {
-  Serial.printf("   %s =  [", name.c_str());
+  sendTxBuf(String::format("   %s =  [", name.c_str()), true, true, true);
   for ( int i=0; i<n; i++ )
   {
     for ( int j=0; j<m; j++)
     {
-      Serial.printf("%10.6f", A[i*n+j]);
+      sendTxBuf(String::format("%10.6f", A[i*n+j]), true, true, true);
       if ( j==m-1 )
       {
-        if ( i==n-1 ) Serial.printf("];\n");
-        else Serial.printf(",\n         ");
+        if ( i==n-1 ) sendTxBuf(String::format("];\n"), true, true, true);
+        else sendTxBuf(String::format(",\n         "), true, true, true);
       }
-      else Serial.printf(",");
+      else sendTxBuf(String::format(","), true, true, true);
     }
   }
 }
@@ -112,12 +112,12 @@ void StateSpace::pretty_print_mat(const String name, const uint8_t n, const uint
 // Pretty print vector
 void StateSpace::pretty_print_vec(const String name, const uint8_t n, double *x)
 {
-  Serial.printf("   %s =  [", name.c_str());
+  sendTxBuf(String::format("   %s =  [", name.c_str()), true, true, true);
   for ( int i=0; i<n; i++ )
   {
-    Serial.printf("%10.6f", x[i]);
-    if ( i==n-1 ) Serial.printf("];\n");
-    else Serial.printf(",");
+    sendTxBuf(String::format("%10.6f", x[i]), true, true, true);
+    if ( i==n-1 ) sendTxBuf(String::format("];\n"), true, true, true);
+    else sendTxBuf(String::format(","), true, true, true);
   }
 }
 
@@ -125,8 +125,8 @@ void StateSpace::pretty_print_vec(const String name, const uint8_t n, double *x)
 void StateSpace::pretty_print(void)
 {
 #ifndef SOFT_DEPLOY_PHOTON
-  Serial.printf("StateSpace:\n");
-  Serial.printf("  dt %9.6f\n", dt_);
+  sendTxBuf(String::format("StateSpace:\n"), true, true, true);
+  sendTxBuf(String::format("  dt %9.6f\n", dt_), true, true, true);
   pretty_print_mat("A ", n_, n_, A_);
   pretty_print_vec("x ", n_, x_);
   pretty_print_mat("B ", n_, p_, B_);
@@ -140,7 +140,7 @@ void StateSpace::pretty_print(void)
     pretty_print_mat("AinvB", n_, n_, AinvB_);
   }
 #else
-     Serial.printf("StateSpace: silent DEPLOY\n");
+     sendTxBuf(String::format("StateSpace: silent DEPLOY\n");
 #endif
 
 }

@@ -628,8 +628,8 @@ double LagExp::calculate(double in, int RESET, const double tau, const double T)
   }
   assignCoeff(tau, T);
   LagExp::rateState(in);
-  if ( sp.debug()==17 ) Serial.printf("LagExp::calculate:  rate, T, rstate, lstate, tau, a, b, c %11.8f %11.8f %11.8f %11.8f %11.8f %11.8f %11.8f %11.8f\n",
-        rate_, T_, rstate_, lstate_, tau_, a_, b_, c_);
+  if ( sp.debug()==17 ) sendTxBuf(String::format("LagExp::calculate:  rate, T, rstate, lstate, tau, a, b, c %11.8f %11.8f %11.8f %11.8f %11.8f %11.8f %11.8f %11.8f\n",
+        rate_, T_, rstate_, lstate_, tau_, a_, b_, c_), true, true, true);
   return (lstate_);
 }
 double LagExp::calculate(double in, int RESET, const double tau, const double T, const double max_rate, const double  min_rate)
@@ -641,8 +641,6 @@ double LagExp::calculate(double in, int RESET, const double tau, const double T,
   }
   assignCoeff(tau, T);
   LagExp::rateStateLim(in, RESET, max_rate, min_rate);
-  if ( sp.debug()==16 ) Serial.printf("LagExp::calculate:  in, RESET, rate, max_rate, min_rate, T, rstate, lstate %11.8f %d %11.8f %11.8f %11.8f %11.8f %11.8f %11.8f\n",
-        in, RESET, max_rate, min_rate, rate_, T_, rstate_, lstate_);
   return (lstate_);
 }
 void LagExp::rateState(double in)
@@ -665,8 +663,6 @@ void LagExp::rateStateLim(double in, int RESET, double max_rate, double min_rate
     rstate_ = in;
     lstate_ = fmax(fmin(lstate_ + T_ * rate_, max_), min_);
   }
-  if ( sp.debug()==16 ) Serial.printf("LagExp::rateStateLim:  rate, max_rate, min_rate, T, rstate, lstate %11.8f %11.8f %11.8f %11.8f %11.8f %11.8f\n",
-        max_rate, min_rate, rate_, T_, rstate_, lstate_);
 }
 
 
