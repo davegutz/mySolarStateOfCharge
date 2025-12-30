@@ -641,7 +641,9 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const boo
     }
     else if ( fails_repeated < 4 )
     {
-      Serial.printf("preserving fault buffer\n");
+      String txBuf;
+      txBuf = String::format("preserving fault buffer\n");
+      sendTxBuf(txBuf, true, true, true);
       Sen->Flt->preserving(true);
     }
     if ( instant_of_failure ) last_snap = now;

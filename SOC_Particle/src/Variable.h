@@ -82,8 +82,8 @@ public:
     boolean print_nominalize()
     {
         set_nominal();
-        Serial.printf(" Nominalizing:  ");
-        Serial1.printf(" Nominalizing:  ");
+        String txBuf = String::format(" Nominalizing:  ", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
         return ( true );
     }
     virtual void set_nominal(){};
@@ -170,17 +170,10 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
-    }
-    
-    void print1()
-    {   
-        print_str();
         String txBuf = String::format("%s\n", pr.buff);
         sendTxBuf(txBuf, true, true, true);
-        // Serial1.printf("%s\n", pr.buff);
     }
-
+    
     void print_help_str()
     {
         sprintf(pr.buff, "%s%-2s= %6d: (%-6d-%6d) [%6d] %s, %s", prefix_.c_str(), code_.c_str(), *val_, min_, max_, default_, description_.c_str(), units_.c_str());
@@ -189,33 +182,24 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
-    }
-
-    void print1_help()
-    {
-        print_help_str();
-        Serial1.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
 
     virtual boolean print_adjust(const String &str)
     {
         print();
-        print1();
         if ( str == "" ) success_ = print_nominalize();
         else success_ = check_set_put(str.toInt());
         print();
-        print1();
         return success_;
     }
 
     boolean print_adj_print(const boolean input)
     {
         print();
-        print1();
         success_ = check_set_put(input);
         print();
-        print1();
         return success_;
     }
    
@@ -305,13 +289,8 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
-    }
-
-    void print1()
-    {
-        print_str();
-        Serial1.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
 
     void print_help_str()
@@ -322,33 +301,24 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
-    }
-
-    void print1_help()
-    {
-        print_help_str();
-        Serial1.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
 
     virtual boolean print_adjust(const String &str)
     {
         print();
-        print1();
         if ( str == "" ) success_ = print_nominalize();
         else success_ = check_set_put(str.toFloat());
         print();
-        print1();
         return success_;
     }
 
     boolean print_adj_print(const double input)
     {
         print();
-        print1();
         success_ = check_set_put(input);
         print();
-        print1();
         return success_;
     }
 
@@ -438,15 +408,10 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
 
-    void print1()
-    {
-        print_str();
-        Serial1.printf("%s\n", pr.buff);
-    }
-    
     void print_help_str()
     {
         sprintf(pr.buff, "%s%-2s= %6.3g: (%-6.3g-%6.3g) [%6.3g] %s, %s", prefix_.c_str(), code_.c_str(), *val_, min_, max_, default_, description_.c_str(), units_.c_str());
@@ -455,33 +420,24 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
-    }
-
-    void print1_help()
-    {
-        print_help_str();
-        Serial1.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
 
     virtual boolean print_adjust(const String &str)
     {
         print();
-        print1();
         if ( str == "" ) success_ = print_nominalize();
         else success_ = check_set_put(str.toFloat());
         print();
-        print1();
         return success_;
     }
 
     boolean print_adj_print(const float input)
     {
         print();
-        print1();
         success_ = check_set_put(input);
         print();
-        print1();
         return success_;
     }
 
@@ -570,15 +526,10 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
     
-    void print1()
-    {
-        print_str();
-        Serial1.printf("%s\n", pr.buff);
-    }
-
     void print_help_str()
     {
       sprintf(pr.buff, "%s%-2s= %6d: (%-6d-%6d) [%6d] %s, %s", prefix_.c_str(), code_.c_str(), *val_, min_, max_, default_, description_.c_str(), units_.c_str());
@@ -587,33 +538,24 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
-    
-    void print1_help()
-    {
-        print_help_str();
-        Serial1.printf("%s\n", pr.buff);
-    }
-    
+       
     virtual boolean print_adjust(const String &str)
     {
         print();
-        print1();
         if ( str == "" ) success_ = print_nominalize();
         else success_ = check_set_put(str.toInt());
         print();
-        print1();
         return success_;
     }
 
     boolean print_adj_print(const int input)
     {
         print();
-        print1();
         success_ = check_set_put(input);
         print();
-        print1();
         return success_;
     }
 
@@ -703,15 +645,10 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
     
-    void print1()
-    {
-        print_str();
-        Serial1.printf("%s\n", pr.buff);
-    }
-
     void print_help_str()
     {
       sprintf(pr.buff, "%s%-2s= %6d: (%-6d-%6d) [%6d] %s, %s", prefix_.c_str(), code_.c_str(), *val_, min_, max_, default_, description_.c_str(), units_.c_str());
@@ -720,33 +657,24 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
-    }
-    
-    void print1_help()
-    {
-        print_help_str();
-        Serial1.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
     
     virtual boolean print_adjust(const String &str)
     {
         print();
-        print1();
         if ( str == "" ) success_ = print_nominalize();
         else success_ = check_set_put(str.toInt());
         print();
-        print1();
         return success_;
     }
 
     boolean print_adj_print(const int8_t input)
     {
         print();
-        print1();
         success_ = check_set_put(input);
         print();
-        print1();
         return success_;
     }
 
@@ -836,15 +764,10 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
     
-    void print1()
-    {
-        print_str();
-        Serial1.printf("%s\n", pr.buff);
-    }
-
     void print_help_str()
     {
         sprintf(pr.buff, "%s%-2s= %6d: (%-6d-%6d) [%6d] %s, %s", prefix_.c_str(), code_.c_str(), *val_, min_, max_, default_, description_.c_str(), units_.c_str());
@@ -853,33 +776,24 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
-    }
-
-    void print1_help()
-    {
-        print_help_str();
-        Serial1.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
 
     virtual boolean print_adjust(const String &str)
     {
         print();
-        print1();
         if ( str == "" ) success_ = print_nominalize();
         else success_ = check_set_put(str.toInt());
         print();
-        print1();
         return success_;
     }
 
     boolean print_adj_print(const uint16_t input)
     {
         print();
-        print1();
         success_ = check_set_put(input);
         print();
-        print1();
         return success_;
     }
    
@@ -965,15 +879,10 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
     
-    void print1()
-    {
-        print_str();
-        Serial1.printf("%s\n", pr.buff);
-    }
-
     void print_help_str()
     {
         sprintf(pr.buff, "%s%-2s= %6d: (%-6d-%6d) [%6d] %s, %s", prefix_.c_str(), code_.c_str(), *val_, min_, max_, default_, description_.c_str(), units_.c_str());
@@ -982,33 +891,24 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
-    }
-
-    void print1_help()
-    {
-        print_help_str();
-        Serial1.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
 
     virtual boolean print_adjust(const String &str)
     {
         print();
-        print1();
         if ( str == "" ) success_ = print_nominalize();
         else success_ = check_set_put(str.toInt());
         print();
-        print1();
         return success_;
     }
 
     boolean print_adj_print(const uint8_t input)
     {
         print();
-        print1();
         success_ = check_set_put(input);
         print();
-        print1();
         return success_;
     }
    
@@ -1098,15 +998,10 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
     
-    void print1()
-    {
-        print_str();
-        Serial1.printf("%s\n", pr.buff);
-    }
-
     void print_help_str()
     {
         sprintf(pr.buff, "%s%-2s= %6d: (%-6d-%6d) [%6d] %s, %s", prefix_.c_str(), code_.c_str(), (int)*val_, (int)min_, (int)max_, (int)default_, description_.c_str(), units_.c_str());
@@ -1115,33 +1010,24 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
-    }
-
-    void print1_help()
-    {
-        print_help_str();
-        Serial1.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
 
     virtual boolean print_adjust(const String &str)
     {
         print();
-        print1();
         if ( str == "" ) success_ = print_nominalize();
         else success_ = check_set_put((unsigned long) str.toInt());
         print();
-        print1();
         return success_;
     }
 
     boolean print_adj_print(const unsigned long input)
     {
         print();
-        print1();
         success_ = check_set_put(input);
         print();
-        print1();
         return success_;
     }
    

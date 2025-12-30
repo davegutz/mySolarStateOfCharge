@@ -92,7 +92,8 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
     
     void print_off()
@@ -100,35 +101,23 @@ public:
         if ( *val_ptr_ != default_ )
         {
             print_str();
-            Serial.printf("%s\n", pr.buff);
+            String txBuf = String::format("%s\n", pr.buff);
+            sendTxBuf(txBuf, true, true, true);
         }
     }
     
-    void print1()
-    {
-        print_str();
-        sendTxBuf(pr.buff, false, true, true);
-    }
-
     void print_adj_print(const T input)
     {
         print();
-        print1();
         set_push(input);
         print();
-        print1();
     }
 
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
-    }
-
-    void print1_help()
-    {
-        print_help_str();
-        sendTxBuf(pr.buff, false, true, true);
+        String txBuf = String::format("%s\n", pr.buff);
+        sendTxBuf(txBuf, true, true, true);
     }
 
     T value() { return *val_ptr_; }
@@ -186,7 +175,7 @@ public:
     virtual boolean is_corrupt()
     {
         boolean corrupt = *val_ptr_ > max_ || *val_ptr_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true, true);
         return corrupt;
     }
 

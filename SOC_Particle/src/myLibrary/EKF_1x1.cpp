@@ -105,10 +105,10 @@ void EKF_1x1::update_ekf(const double z, double x_min, double x_max)
   P_post_ = P_;
   if ( sp.debug()==35 )
   {
-    Serial.printf("EKF_1x1::update_ekf, u_,freeze_,z_,hx_,x_Prior_,x_,P_prior_,P_,H_,S_,K_,y_,  %7.4f, %d, %7.4f, %7.4f,%13.10f,%13.10f,%13.10f, %13.10f, %7.4f, %7.4f,%10.7f, %7.4f,\n",
+    String txBuf;
+    txBuf = String::format("EKF_1x1::update_ekf, u_,freeze_,z_,hx_,x_Prior_,x_,P_prior_,P_,H_,S_,K_,y_,  %7.4f, %d, %7.4f, %7.4f,%13.10f,%13.10f,%13.10f, %13.10f, %7.4f, %7.4f,%10.7f, %7.4f,\n",
       u_, freeze_, z_, hx_, x_prior_, x_, P_, P_prior_, H_, S_, K_, y_);
-    Serial1.printf("EKF_1x1::update_ekf, u_,freeze_,z_,hx_,x_Prior,ior_,x_,P_prior_,P_,H_,S_,K_,y_,  %7.4f, %d, %7.4f, %7.4f,%13.10f,%13.10f,%13.10f, %13.10f, %7.4f, %7.4f,%10.7f, %7.4f,\n",
-      u_, freeze_, z_, hx_, x_prior_, x_, P_, P_prior_, H_, S_, K_, y_);
+    sendTxBuf(txBuf, true, false, true);
   }
 }
 

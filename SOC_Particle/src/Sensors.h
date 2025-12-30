@@ -389,7 +389,6 @@ public:
   void preserving(const boolean cmd) {  sp.put_Preserving(cmd); }; // TODO:  Parameter class with = operator --> put. Then *sp_preserving = cmd
   boolean preserving() { return *sp_preserving_; };
   void pretty_print(Sensors *Sen, BatteryMonitor *Mon);
-  void pretty_print1(Sensors *Sen, BatteryMonitor *Mon);
   boolean record() { if ( ap.fake_faults ) return no_fails_fake(); else return no_fails(); };
   boolean red_loss() { return faultRead(RED_LOSS); };
   void reset_all_faults(const boolean cmd) { reset_all_faults_ = cmd; };

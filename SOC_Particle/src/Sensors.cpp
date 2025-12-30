@@ -702,66 +702,6 @@ txBuf = String::format("") +
   }
 }
 
-void Fault::pretty_print1(Sensors *Sen, BatteryMonitor *Mon)
-{
-  Serial1.printf("Fault:\n");
-  Serial1.printf(" cc_diff  %9.6f  thr=%9.6f Fc^\n", cc_diff_, cc_diff_thr_);
-  Serial1.printf(" ib_diff  %7.3f  thr=%7.3f Fd^\n", ib_diff_f_, ib_diff_thr_);
-  Serial1.printf(" e_wrap   %7.3f  thr=%7.3f Fo^%7.3f Fi^\n", e_wrap_filt_, ewlo_thr_, ewhi_thr_);
-  Serial1.printf(" ib_quiet %7.3f  thr=%7.3f Fq v\n\n", ib_quiet_, ib_quiet_thr_);
-
-  Serial1.printf(" soc  %7.3f  soc_inf %7.3f voc %7.3f  voc_soc %7.3f\n", Mon->soc(), Mon->soc_inf(), Mon->voc(), Mon->voc_soc());
-  Serial1.printf(" dis_tb_fa %d  dis_vb_fa %d  dis_ib_fa %d\n", ap.disab_tb_fa, ap.disab_vb_fa, ap.disab_ib_fa);
-  Serial1.printf(" bms_off   %d\n\n", Mon->bms_off());
-
-  Serial1.printf(" Tbh=%9.5f  Tbm=%9.5f\n", Sen->Tb_hdwe, Sen->Tb_model);
-  Serial1.printf(" Vbh %7.3f  Vbm %7.3f\n", Sen->Vb_hdwe, Sen->Vb_model);
-  Serial1.printf(" V3v3 %7.3f \n", Sen->ShuntAmp->Vc()*2.);
-  Serial1.printf(" Imh %7.3f  Imm %7.3f\n", Sen->Ib_amp_hdwe, Sen->Ib_amp_model);
-  Serial1.printf(" Inh %7.3f  Inm %7.3f\n", Sen->Ib_noa_hdwe, Sen->Ib_noa_model);
-  Serial1.printf(" Ibh %7.3f  Ibm %7.3f Ib %7.3f\n\n", Sen->Ib_hdwe, Sen->Ib_hdwe_model, Sen->Ib);
-
-  Serial1.printf(" mod_tb  %d  mod_vb  %d  mod_ib  %d\n", sp.mod_tb(), sp.mod_vb(), sp.mod_ib());
-  #ifdef HDWE_IB_HI_LO
-    Serial1.printf(" tb_s_st %d  vb_s_st %d  ib_choice %d ib_decision %d\n", tb_sel_stat_, vb_sel_stat_, ib_choice_, ib_decision_);
-  #else
-    Serial1.printf(" tb_s_st %d  vb_s_st %d  ib_s_st %d ib_decision %d\n", tb_sel_stat_, vb_sel_stat_, ib_sel_stat_, ib_decision_);
-  #endif
-  Serial1.printf(" fake_faults %d latched_fail %d latched_fail_fake %d preserving %d\n\n", ap.fake_faults, latched_fail_, latched_fail_fake_, *sp_preserving_);
-
-  Serial1.printf(" wml     %d  %d 'Fo ^'\n", wrap_lo_m_flt(), wrap_lo_m_fa());
-  Serial1.printf(" wmh     %d  %d 'Fi ^'\n", wrap_hi_m_flt(), wrap_hi_m_fa());
-  Serial1.printf(" wnl     %d  %d 'Fo ^'\n", wrap_lo_n_flt(), wrap_lo_n_fa());
-  Serial1.printf(" wnh     %d  %d 'Fi ^'\n", wrap_hi_n_flt(), wrap_hi_n_fa());
-  Serial1.printf(" vc      %d  %d 'FI 1'\n", vc_flt(), vc_fa());
-  Serial1.printf(" bare n  %d  x \n", Sen->ShuntNoAmp->bare_shunt());
-  Serial1.printf(" bare m  %d  x \n", Sen->ShuntAmp->bare_shunt());
-  Serial1.printf(" ib_dsc  %d  %d 'Fq v'\n", ib_dscn_flt(), ib_dscn_fa());
-  Serial1.printf(" ibd_lo  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_lo_flt(), ib_diff_lo_fa());
-  Serial1.printf(" ibd_hi  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_hi_flt(), ib_diff_hi_fa());
-  Serial1.printf(" red wv  %d  %d   'Fd  Fi/Fo ^'\n",  red_loss(), wrap_vb_fa());
-  Serial1.printf(" wl      %d  %d 'Fo ^'\n", wrap_lo_flt(), wrap_lo_fa());
-  Serial1.printf(" wh      %d  %d 'Fi ^'\n", wrap_hi_flt(), wrap_hi_fa());
-  Serial1.printf(" cc_dif      %d 'Fc ^'\n", cc_diff_fa());
-  Serial1.printf(" ibm     %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa());
-  Serial1.printf(" ibn     %d  %d 'FI 1'\n", ib_noa_flt(), ib_noa_fa());
-  Serial1.printf(" vb      %d  %d 'Fv 1  *SV, *Dc/*Dv'.", vb_flt(), vb_fa());
-  Serial1.printf(" vb_functional_fa %d\n", vb_functional_fa_);
-  Serial1.printf(" tb      %d  %d 'Ft 1'\n  ", tb_flt(), tb_fa());
-  bitMapPrint(pr.buff, fltw_, NUM_FLT);
-  Serial1.print(pr.buff);
-  Serial1.printf("   ");
-  bitMapPrint(pr.buff, falw_, NUM_FA);
-  Serial1.printf("%s\n", pr.buff);
-  Serial1.printf("  10FEDCBA9876543210   10FExxBA9876543210\n");
-  Serial1.printf("  fltw=%ld     falw=%ld\n", fltw_, falw_);
-  if ( ap.fake_faults )
-    Serial1.printf("fake_faults=>redl\n");
-  Serial1.printf("vv0; to return\n");
-  if ( Sen->now < 1746684850783ULL )
-    Serial1.printf("\n\n////////////////// WARN set UT (h;)\n\n");
-}
-
 // Calculate selection for ib_decision_
 // Use model instead of sensors when running tests as user
 // Equivalent to using voc(soc) as voter between two hardware currrents

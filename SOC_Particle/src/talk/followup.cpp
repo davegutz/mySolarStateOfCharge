@@ -123,7 +123,7 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
 
                 case ( 'v' ):  //     Dv<>:  voltage signal adder for faults
                     if ( ap.vb_add_p->success() )
-                        ap.vb_add_p->print1();
+                        ap.vb_add_p->print();
                     break;
 
                 case ( 'w' ):  //   Dw<>:  Battery Monitor dz_voc bias
@@ -247,9 +247,6 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
             {
 
                 case ( 'T' ):  //*  UT<>:  Unix time since epoch
-                //   time_long_2_str((time_t)sp.Time_now_z, buffer);
-                //   Serial.printf(" time %ld hms:  %s -> ", sp.Time_now_z, buffer);
-                //   Serial1.printf(" time %ld hms:  %s -> ", sp.Time_now_z, buffer);
                   Time.setTime( (time_t) (sp.Time_now_z) );
                   time_long_2_str((time_t)sp.Time_now_z, buffer);
                   Serial.printf(" time %ld hms:  %s\n", sp.Time_now_z, buffer);
@@ -277,7 +274,9 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
 
                 case ( 'a' ): // Xa<>:  injection amplitude
                     if ( sp.amp_p->success() )
+                    {
                         Serial.printf("Inj amp, %s, %s set%7.3f & inj_bias set%7.3f\n", sp.amp_p->units(), sp.amp_p->description(), sp.Amp(), sp.inj_bias());
+                    }
                     break;
 
                 case ( 'f' ): //*  Xf<>:  injection frequency

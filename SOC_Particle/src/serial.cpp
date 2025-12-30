@@ -395,22 +395,22 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
 
         sprintf(pr.buff, "unit_sim, %13.4f, %8.4f, %d, %9.2f, %d, %11.8f, %7.6f,%7.6f, ",
             cTime, Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->tb_f(), Sim->vsat(), Sim->voc_stat());
-        Serial.printf("%s", pr.buff);
+        sendTxBuf(String::format("%s", pr.buff), true, false, false);
 
         sprintf(pr.buff, "%7.6f,%8.6f, %7.6f,%7.6f,%7.6f,%7.6f,%7.6f,%7.6f, ",
             Sim->dv_dyn(), Sim->vb(), Sim->ib_s(), Sim->ib_dyn(), Sim->dv_hys(), Sim->ib_in(), Sim->ib_charge(), Sim->ioc());
-        Serial.printf("%s", pr.buff);
+        sendTxBuf(String::format("%s", pr.buff), true, false, false);
 
         sprintf(pr.buff, " %d,  %9.4f, %9.4f,  %10.7f, %d, %7.6f,",
             Sim->saturated(), Sim->delta_q(), Sim->q_capacity(), Sim->soc(), reset_temp, Sim->d_delta_q_s());
-        Serial.printf("%s", pr.buff);
+        sendTxBuf(String::format("%s", pr.buff), true, false, false);
 
         sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,%9.6f,",
             Sim->chargeTransfer_T(), Sim->chargeTransfer_tau(),
             Sim->chargeTransfer_rstate(), Sim->chargeTransfer_lstate());
-        Serial.printf("%s", pr.buff);
+        sendTxBuf(String::format("%s", pr.buff), true, false, false);
 
-        Serial.printf("\n");
+        sendTxBuf("\n", true, false, false);
     }
   }
 
@@ -671,14 +671,15 @@ void wait_on_user_input()
   // Wrap it up
   if ( answer=='Y' || answer=='y' )
   {
-    Serial.printf("  Y\n\n"); Serial1.printf("  Y\n\n");
+    sendTxBuf("  Y\n\n", true, true, true);
     sp.set_nominal();
     sp.pretty_print( true );
     System.backupRamSync();
   }
   else if ( answer=='n' || answer=='N' || count==30 )
   {
-    Serial.printf(" N.  moving on...\n\n"); Serial1.printf(" N.  moving on...\n\n");
+    String txBuf = String::format(" N.  moving on...\n\n");
+    sendTxBuf(txBuf, true, true, true);
   }
 
 }
