@@ -345,7 +345,7 @@ void Chemistry::pretty_print()
     sendTxBuf("  r_min(soc):\n", true, true, true);
     hys_Tn_->pretty_print();
 #else
-     sendTxBuf("Chemistry: silent DEPLOY\n"), true, true, true);
+     sendTxBuf("Chemistry: silent DEPLOY\n", true, true, true);
 #endif
 }
 

@@ -140,7 +140,7 @@ void StateSpace::pretty_print(void)
     pretty_print_mat("AinvB", n_, n_, AinvB_);
   }
 #else
-     sendTxBuf(String::format("StateSpace: silent DEPLOY\n");
+     sendTxBuf("StateSpace: silent DEPLOY\n", true, true, true);
 #endif
 
 }

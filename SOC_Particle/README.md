@@ -822,7 +822,7 @@ Amazon:  5 Pieces I2C Display Module 0.91 Inch I2C OLED Display Module Blue I2C 
 
 ### SOS 4 Flashing lights on Photon 2 (Bus Fault)
 
-This is caused by using too much memory.  Reduce NSUM.  I've had issues once this SOS begins I have back way off on configuration to get a good build again.  Clean?  Not sure.  Trial and error and it works again.
+This is caused by using too much memory.  Reduce NSUM.  I've had issues once this SOS begins I have back way off on configuration to get a good build again.  Clean?  Didn't help.  Trial and error and it works again.  Setting extreme SOFT_DEPLOY_PHOTON to see if that helps.  No.  Now trying power reset then reflash.  No help.  Try factory reset (from TERMINAL:  'particle flash --usb tinker' with yellow blink lights).
 
 ### DS2482SearchBusCommand status=-7 in serial monitor
 

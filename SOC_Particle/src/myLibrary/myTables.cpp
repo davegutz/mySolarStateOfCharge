@@ -230,7 +230,7 @@ void TableInterp::pretty_print(void)
   }
   sendTxBuf(String::format("};\n"), true, true, true);
 #else
-     sendTxBuf(String::format("TableInterp: silent DEPLOY\n");
+     sendTxBuf("TableInterp: silent DEPLOY\n", true, true, true);
 #endif
 }
 
@@ -358,6 +358,6 @@ void TableInterp2D::pretty_print()
   }
   sendTxBuf(String::format("      };\n"), true, true, true);
 #else
-     sendTxBuf(String::format("TableInterp2D: silent DEPLOY\n");
+     sendTxBuf("TableInterp2D: silent DEPLOY\n", true, true, true);
 #endif
 }

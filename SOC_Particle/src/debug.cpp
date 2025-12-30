@@ -46,90 +46,107 @@ void add_verify(String *src, const String addend)
 // sp.debug()==12 EKF
 void debug_12(BatteryMonitor *Mon, Sensors *Sen)
 {
-  sendTxBuf(String::format("ib,ib_mod,   vb,vb_mod,  voc,voc_stat_mod,voc_mod,   K, y,    SOC_mod, SOC_ekf, SOC,   %7.3f,%7.3f,   %7.3f,%7.3f,   %7.3f,%7.3f,%7.3f,    %7.3f,%7.3f,   %7.3f,%7.3f,%7.3f,\n",
-  Mon->ib(), Sen->Sim->ib(),
-  Mon->vb(), Sen->Sim->vb(),
-  Mon->voc(), Sen->Sim->voc_stat(), Sen->Sim->voc(),
-  Mon->K_ekf(), Mon->y_ekf(),
-  Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc()), true, true, true);
+  #ifndef SOFT_DEPLOY_PHOTON
+    sendTxBuf(String::format("ib,ib_mod,   vb,vb_mod,  voc,voc_stat_mod,voc_mod,   K, y,    SOC_mod, SOC_ekf, SOC,   %7.3f,%7.3f,   %7.3f,%7.3f,   %7.3f,%7.3f,%7.3f,    %7.3f,%7.3f,   %7.3f,%7.3f,%7.3f,\n",
+    Mon->ib(), Sen->Sim->ib(),
+    Mon->vb(), Sen->Sim->vb(),
+    Mon->voc(), Sen->Sim->voc_stat(), Sen->Sim->voc(),
+    Mon->K_ekf(), Mon->y_ekf(),
+    Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc()), true, true, true);
+  #else
+      sendTxBuf("debug_12: silent DEPLOY", true, true, true);
+  #endif
 }
 
 // sp.debug()==-13 ib_dscn for Arduino.
 // Start Arduino serial plotter.  Toggle v like 'vv0;vv-13;' to produce legend
 void debug_m13(Sensors *Sen)
 {
+  #ifndef SOFT_DEPLOY_PHOTON
+    // Arduinio header
+    static int8_t last_call = 0;
+    if ( sp.debug()!=last_call && sp.debug()==-13 )
+      sendTxBuf(String::format("ib_sel_st:, ib_amph:, ib_noah:, ib_rate:, ib_quiet:,  dscn_flt:, dscn_fa:\n"), true, true, true);
+    last_call = sp.debug();
 
-  // Arduinio header
-  static int8_t last_call = 0;
-  if ( sp.debug()!=last_call && sp.debug()==-13 )
-    sendTxBuf(String::format("ib_sel_st:, ib_amph:, ib_noah:, ib_rate:, ib_quiet:,  dscn_flt:, dscn_fa:\n"), true, true, true);
-  last_call = sp.debug();
-
-  // Plot
-  if ( sp.debug()!=-13)
-    return;
-  else
-    sendTxBuf(String::format("%d, %7.3f,%7.3f,  %7.3f,%7.3f,   %d,%d\n",
-      Sen->Flt->ib_sel_stat(),
-      max(min(Sen->Ib_amp_hdwe, 2), -2), max(min(Sen->Ib_noa_hdwe, 2), -2),
-      max(min(Sen->Flt->ib_rate(),2), -2), max(min(Sen->Flt->ib_quiet(), 2), -2),
-      Sen->Flt->ib_dscn_fa(), Sen->Flt->ib_dscn_fa()), true, true, true);
+    // Plot
+    if ( sp.debug()!=-13)
+      return;
+    else
+      sendTxBuf(String::format("%d, %7.3f,%7.3f,  %7.3f,%7.3f,   %d,%d\n",
+        Sen->Flt->ib_sel_stat(),
+        max(min(Sen->Ib_amp_hdwe, 2), -2), max(min(Sen->Ib_noa_hdwe, 2), -2),
+        max(min(Sen->Flt->ib_rate(),2), -2), max(min(Sen->Flt->ib_quiet(), 2), -2),
+        Sen->Flt->ib_dscn_fa(), Sen->Flt->ib_dscn_fa()), true, true, true);
+  #else
+      sendTxBuf("debug_m13: silent DEPLOY", true, true, true);
+  #endif
 }
 
 // sp.debug()==-23 vb for Arduino.
 // Start Arduino serial plotter.  Toggle v like 'vv0;vv-23;' to produce legend
 void debug_m23(Sensors *Sen)
 {
+  #ifndef SOFT_DEPLOY_PHOTON
+    // Arduinio header
+    static int8_t last_call = 0;
+    if ( sp.debug()!=last_call && sp.debug()==-23 )
+      sendTxBuf(String::format("Vb_hdwe-Vb_hdwe_f:\n"), true, true, true);
+    last_call = sp.debug();
 
-  // Arduinio header
-  static int8_t last_call = 0;
-  if ( sp.debug()!=last_call && sp.debug()==-23 )
-    sendTxBuf(String::format("Vb_hdwe-Vb_hdwe_f:\n"), true, true, true);
-  last_call = sp.debug();
-
-  // Plot
-  if ( sp.debug()!=-23)
-    return;
-  else
-      sendTxBuf(String::format("%7.3f\n", Sen->Vb_hdwe - Sen->Vb_hdwe_f), true, true, true);
+    // Plot
+    if ( sp.debug()!=-23)
+      return;
+    else
+        sendTxBuf(String::format("%7.3f\n", Sen->Vb_hdwe - Sen->Vb_hdwe_f), true, true, true);
+  #else
+      sendTxBuf("debug_m23: silent DEPLOY", true, true, true);
+  #endif
 }
 
 // sp.debug()==-24 Vb, Ib for Arduino.
 // Start Arduino serial plotter.  Toggle v like 'vv0;vv-23;' to produce legend
 void debug_m24(Sensors *Sen)
 {
+  #ifndef SOFT_DEPLOY_PHOTON
+    // Arduinio header
+    static int8_t last_call = 0;
+    if ( sp.debug()!=last_call && sp.debug()==-23 )
+      sendTxBuf(String::format("Vb_hdwe-Vb_hdwe_f:, Ib_hdwe:\n"), true, true, true);
+    last_call = sp.debug();
 
-  // Arduinio header
-  static int8_t last_call = 0;
-  if ( sp.debug()!=last_call && sp.debug()==-23 )
-    sendTxBuf(String::format("Vb_hdwe-Vb_hdwe_f:, Ib_hdwe:\n"), true, true, true);
-  last_call = sp.debug();
-
-  // Plot
-  if ( sp.debug()!=-24)
-    return;
-  else
-      sendTxBuf(String::format("%7.3f, %7.3f\n", Sen->Vb_hdwe - Sen->Vb_hdwe_f, Sen->Ib_hdwe), true, true, true);
+    // Plot
+    if ( sp.debug()!=-24)
+      return;
+    else
+        sendTxBuf(String::format("%7.3f, %7.3f\n", Sen->Vb_hdwe - Sen->Vb_hdwe_f, Sen->Ib_hdwe), true, true, true);
+  #else
+      sendTxBuf("debug_m24: silent DEPLOY", true, true, true);
+  #endif
 }
 
 // Q quick print critical parameters
 void debug_q(BatteryMonitor *Mon, Sensors *Sen)
 {
-  sendTxBuf(String::format("ib_amp_fail %d\nib_noa_fail %d\nvb_fail %d\nTb%7.3f\nvb%7.3f\nvoc%7.3f\nvoc_filt%7.3f\nvoc_stat%7.3f\nvoc_stat_f%7.3f\nvoc_soc%7.3f\nvsat%7.3f\nib%7.3f\nsoc_m%8.4f\n\
-soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
-    Sen->Flt->ib_amp_fa(), Sen->Flt->ib_noa_fa(), Sen->Flt->vb_fail(),
-    Sen->Tb_f, Mon->vb(), Mon->voc(), Mon->voc_dead(), Mon->voc_stat(), Mon->voc_stat_f(), Mon->voc_soc(), Mon->vsat(), Mon->ib(), Sen->Sim->soc(), Mon->soc_ekf(),
-    Mon->soc(), Mon->soc_min(), Mon->soc_inf(), sp.modeling()), true, true, true);
+  #ifndef SOFT_DEPLOY_PHOTON
+    sendTxBuf(String::format("ib_amp_fail %d\nib_noa_fail %d\nvb_fail %d\nTb%7.3f\nvb%7.3f\nvoc%7.3f\nvoc_filt%7.3f\nvoc_stat%7.3f\nvoc_stat_f%7.3f\nvoc_soc%7.3f\nvsat%7.3f\nib%7.3f\nsoc_m%8.4f\n\
+  soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
+      Sen->Flt->ib_amp_fa(), Sen->Flt->ib_noa_fa(), Sen->Flt->vb_fail(),
+      Sen->Tb_f, Mon->vb(), Mon->voc(), Mon->voc_dead(), Mon->voc_stat(), Mon->voc_stat_f(), Mon->voc_soc(), Mon->vsat(), Mon->ib(), Sen->Sim->soc(), Mon->soc_ekf(),
+      Mon->soc(), Mon->soc_min(), Mon->soc_inf(), sp.modeling()), true, true, true);
 
-  sendTxBuf(String::format("dq_inf/dq_abs%10.1f/%10.1f %8.4f coul_eff*=%9.6f, DAB+=%9.6f\nDQn%10.1f Tn%10.1f DQp%10.1f Tp%10.1f\n",
-    Mon->delta_q_inf(), Mon->delta_q_abs(), Mon->delta_q_inf()/Mon->delta_q_abs(),
-    -Mon->delta_q_neg()/Mon->delta_q_pos(),
-    -(Mon->delta_q_neg() + Mon->delta_q_pos()) / nice_zero(Mon->time_neg() + Mon->time_pos(), 1e-6),
-    Mon->delta_q_neg(), Mon->time_neg(), Mon->delta_q_pos(), Mon->time_pos()), true, true, true);
+    sendTxBuf(String::format("dq_inf/dq_abs%10.1f/%10.1f %8.4f coul_eff*=%9.6f, DAB+=%9.6f\nDQn%10.1f Tn%10.1f DQp%10.1f Tp%10.1f\n",
+      Mon->delta_q_inf(), Mon->delta_q_abs(), Mon->delta_q_inf()/Mon->delta_q_abs(),
+      -Mon->delta_q_neg()/Mon->delta_q_pos(),
+      -(Mon->delta_q_neg() + Mon->delta_q_pos()) / nice_zero(Mon->time_neg() + Mon->time_pos(), 1e-6),
+      Mon->delta_q_neg(), Mon->time_neg(), Mon->delta_q_pos(), Mon->time_pos()), true, true, true);
 
-  if ( Sen->Flt->falw() || Sen->Flt->fltw() ) chit("Pf;", SOON);
-  time_long_2_str((time_t)sp.Time_now_z, pr.buff);
-  sendTxBuf(String::format(" time %ld hms:  %s\n", sp.Time_now_z, pr.buff), true, true, true);
+    if ( Sen->Flt->falw() || Sen->Flt->fltw() ) chit("Pf;", SOON);
+    time_long_2_str((time_t)sp.Time_now_z, pr.buff);
+    sendTxBuf(String::format(" time %ld hms:  %s\n", sp.Time_now_z, pr.buff), true, true, true);
+  #else
+      sendTxBuf("debug_q: silent DEPLOY", true, true, true);
+  #endif
 }
 
 // Calibration

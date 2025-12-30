@@ -138,13 +138,13 @@ void Shunt::pretty_print()
     "", true, true, true);
   if ( using_kf_ )
   {
-    sendTxBuf(String::format(" KF\n"), true, true, true);
+    sendTxBuf(" KF\n", true, true, true);
     KF_->pretty_print();
   }
   else
-    sendTxBuf(String::format(" not using KF\n"), true, true, true);
+    sendTxBuf(" not using KF\n", true, true, true);
 #else
-     sendTxBuf(String::format("Shunt: silent DEPLOY\n"), true, true, true);
+     sendTxBuf("Shunt: silent DEPLOY\n", true, true, true);
 #endif
 }
 
@@ -208,7 +208,11 @@ void Shunt::sample(const boolean reset_kf)
   sample_Vc();
   sample_combine();
   sample_filter_kf(reset_kf);
+#ifndef SOFT_DEPLOY_PHOTON
   if  ( sp.debug()==14 )sendTxBuf(String::format("reset_kf %d ADCref %7.3f samp_t %lld vo_pin_%d V0_raw_%d Vo_%7.3f Vo_Vc_%7.3f vshunt_kf_%7.3f  Vc_%7.3f\n", reset_kf, (float)analogGetReference(), sample_time_, vo_pin_, Vo_raw_, Vo_, Vo_Vc_, vshunt_kf_, Vc_), true, true, true);
+#else
+  sendTxBuf("debug 14: silent DEPLOY\n", true, true, true);
+#endif
 }
 
 // Basic arithmetic
@@ -317,28 +321,38 @@ void Looparound::calculate(const boolean reset, const float ib, Sensors *Sen)
   lo_fault_ = e_wrap_filt_ <= ewlo_thr_;
   lo_fail_ = WrapLo_->calculate(lo_fault_, WRAP_LO_S, WRAP_LO_R, Sen_->T, reset_) && !Sen_->Flt->vb_fa();  // not latched
 
-  if ( sp.debug()==71 ) sendTxBuf(String::format("ib%7.3f reset%d ewlo_thr/e_wrap_filt/ewhi_thr  %7.3f/%7.3f/%7.3f trim%7.3f vb_fa %d lo_fault/fail %d/%d hi_fault/fail %d/%d\n",
-   ib_, reset_, ewlo_thr_, e_wrap_filt_, ewhi_thr_, e_wrap_trim_, Sen_->Flt->vb_fa(), lo_fault_, lo_fail_, hi_fault_, hi_fail_), true, true, true);
+  #ifndef SOFT_DEPLOY_PHOTON
+    if ( sp.debug()==71 ) sendTxBuf(String::format("ib%7.3f reset%d ewlo_thr/e_wrap_filt/ewhi_thr  %7.3f/%7.3f/%7.3f trim%7.3f vb_fa %d lo_fault/fail %d/%d hi_fault/fail %d/%d\n",
+    ib_, reset_, ewlo_thr_, e_wrap_filt_, ewhi_thr_, e_wrap_trim_, Sen_->Flt->vb_fa(), lo_fault_, lo_fail_, hi_fault_, hi_fail_), true, true, true);
+  #else
+      sendTxBuf("debug_m24: silent DEPLOY", true, true, true);
+  #endif
+  
   ib_past_ = ib_;
 }
 
 String Looparound::pretty_print()
 {
-  String txBuf;
-  txBuf = String::format(" reset %d\n", reset_) + 
-    String::format(" ib%7.3f A\n", ib_) +
-    String::format(" ib_dyn%7.3f A\n", ib_dyn_) +
-    String::format(" dv_dyn%7.3f V\n", dv_dyn_) +
-    String::format(" voc%7.3f V\n", voc_) +
-    String::format(" e_wrap%7.3f V\n", e_wrap_) +
-    String::format(" e_wrap_f%7.3f V\n", e_wrap_filt_) +
-    String::format(" e_wrap_trim%7.3f V\n", e_wrap_trim_) +
-    String::format(" e_wrap_trimmed%7.3f V\n", e_wrap_trimmed_) +
-    String::format(" wrap_trim_gain%7.3f r/s\n", wrap_trim_gain_) +
-    String::format(" hi_fault/fail %d/%d\n", hi_fault_, hi_fail_) +
-    String::format(" lo_fault/fail %d/%d\n", lo_fault_, lo_fail_) +
-    String::format(" ewlo_thr/ewhi_thr%7.3f/%7.3f V\n", ewlo_thr_, ewhi_thr_);
-  return ( txBuf );
+  #ifndef SOFT_DEPLOY_PHOTON
+    String txBuf;
+    txBuf = String::format(" reset %d\n", reset_) + 
+      String::format(" ib%7.3f A\n", ib_) +
+      String::format(" ib_dyn%7.3f A\n", ib_dyn_) +
+      String::format(" dv_dyn%7.3f V\n", dv_dyn_) +
+      String::format(" voc%7.3f V\n", voc_) +
+      String::format(" e_wrap%7.3f V\n", e_wrap_) +
+      String::format(" e_wrap_f%7.3f V\n", e_wrap_filt_) +
+      String::format(" e_wrap_trim%7.3f V\n", e_wrap_trim_) +
+      String::format(" e_wrap_trimmed%7.3f V\n", e_wrap_trimmed_) +
+      String::format(" wrap_trim_gain%7.3f r/s\n", wrap_trim_gain_) +
+      String::format(" hi_fault/fail %d/%d\n", hi_fault_, hi_fail_) +
+      String::format(" lo_fault/fail %d/%d\n", lo_fault_, lo_fail_) +
+      String::format(" ewlo_thr/ewhi_thr%7.3f/%7.3f V\n", ewlo_thr_, ewhi_thr_);
+    return ( txBuf );
+  #else
+      sendTxBuf("Looparound: silent DEPLOY", true, true, true);
+      return ( "" );
+  #endif
 }
 
 

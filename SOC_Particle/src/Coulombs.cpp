@@ -238,16 +238,18 @@ float Coulombs::count_coulombs(Sensors *Sen, const boolean reset_temp, const flo
 
     // Save and return
     
-    if ( sp.debug()==36 )
-    {
-      sendTxBuf(String::format("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
-        charge_curr, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_, *sp_delta_q_, q_), true, true, true);
-    }
-    if ( sp.debug()==-99 )
-    {
-      sendTxBuf(String::format("sat, dt_, tb_f_, charge_curr, dq, dqt+, ddq, q, soc_min soc, %d, %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%12.1f,%10.7f,%10.7f,\n",
-        sat, dt_, tb_f_, charge_curr, charge_curr * dt_, chem_.dqdt*q_capacity_*tb_f_rate_*dt_, d_delta_q_, q_, soc_min_, soc_), true, true, true);
-    }
+    #ifndef SOFT_DEPLOY_PHOTON
+      if ( sp.debug()==36 )
+      {
+        sendTxBuf(String::format("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
+          charge_curr, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_, *sp_delta_q_, q_), true, true, true);
+      }
+      if ( sp.debug()==-99 )
+      {
+        sendTxBuf(String::format("sat, dt_, tb_f_, charge_curr, dq, dqt+, ddq, q, soc_min soc, %d, %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%12.1f,%10.7f,%10.7f,\n",
+          sat, dt_, tb_f_, charge_curr, charge_curr * dt_, chem_.dqdt*q_capacity_*tb_f_rate_*dt_, d_delta_q_, q_, soc_min_, soc_), true, true, true);
+      }
+    #endif
 
     return ( soc_ );
 }

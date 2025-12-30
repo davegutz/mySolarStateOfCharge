@@ -133,7 +133,7 @@ void Battery::pretty_print(void)
         String::format("  vsat%7.3f, V\n", vsat_) +
         "", true, false, true);
 #else
-     sendTxBuf(String::format("Battery: silent DEPLOY\n"), true, true, true);
+     sendTxBuf("Battery: silent DEPLOY\n", true, true, true);
 #endif
 }
 
@@ -304,12 +304,14 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         // second order filter of the signal.   Anything more is 'gilding the lily'
         boolean conv = abs(y_filt_)<ap.ekf_conv && !cp.soft_reset;  // Initialize false
         EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_ekf_, EKF_T_RESET), cp.soft_reset);
-        if ( sp.debug()==37 )
-        {
-            sendTxBuf(String::format("BatteryMonitor, ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,P_,soc,soc_ekf,y_ekf_f,conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%11.8f,%7.4f,%7.4f,%7.4f,  %d,\n",
-                ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, P_, soc_, soc_ekf_, y_filt_, converged_ekf()), true, false, true);
-        }
-        if ( sp.debug()==3 || sp.debug()==4 ) EKF_1x1::print_ekf_serial(this);  // print EKF in Read frame
+        #ifndef KILLTEXT
+            if ( sp.debug()==37 )
+            {
+                sendTxBuf(String::format("BatteryMonitor, ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,P_,soc,soc_ekf,y_ekf_f,conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%11.8f,%7.4f,%7.4f,%7.4f,  %d,\n",
+                    ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, P_, soc_, soc_ekf_, y_filt_, converged_ekf()), true, false, true);
+            }
+            if ( sp.debug()==3 || sp.debug()==4 ) EKF_1x1::print_ekf_serial(this);  // print EKF in Read frame
+        #endif
     }
     eframe_++;
     if ( reset_temp || cp.soft_reset || eframe_ >= ap.eframe_mult ) eframe_ = 0;  // '>=' allows changing ap.eframe_mult on the fly
@@ -321,11 +323,13 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     //     sendTxBuf(String::format("bms_off,soc,ib,vb,voc,voc_stat_f,voc_soc,dv_hys,dv_dyn,%d,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,\n",
     //     bms_off_, soc_, ib_, vb_, voc_, voc_stat_f_, voc_soc_, dv_hys_, dv_dyn_), true, false, true);
 
-    if ( sp.debug()==34 )
-        sendTxBuf(String::format("BatteryMonitor:dt,ib,voc_stat_tab,voc_stat_f,voc,voc_dead,dv_dyn,vb,   u,Fx,Bu,P,   z_,S_,K_,y_,soc_ekf, y_ekf_f, soc, conv,  %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,     %7.3f,%7.3f,%7.4f,%7.4f,       %7.3f,%7.4f,%10.7f,%7.4f,%7.4f,%7.4f, %7.4f,  %d,\n",
-            dt_, ib_, voc_soc_, voc_stat_f_, voc_, voc_dead_, dv_dyn_, vb_,     u_, Fx_, Bu_, P_,    z_, S_, K_, y_, soc_ekf_, y_filt_, soc_, converged_ekf()), true, false, true);
-    if ( sp.debug()==-24 ) sendTxBuf(String::format("Mon:  ib%7.3f soc%8.4f reset_temp%d tau_ct%9.5f r_ct%7.3f r_0%7.3f dv_dyn%7.3f dv_hys%7.3f voc_soc%7.3f  voc_stat_f%7.3f voc%7.3f vb%7.3f ib _charge%7.3f ",
-        ib_, soc_, reset_temp, chem_.tau_ct, chem_.r_ct, chem_.r_0, dv_dyn_, dv_hys_, voc_soc_, voc_stat_f_, voc_, vb_, ib_charge_), true, false, true);
+    #ifndef KILLTEXT
+        if ( sp.debug()==34 )
+            sendTxBuf(String::format("BatteryMonitor:dt,ib,voc_stat_tab,voc_stat_f,voc,voc_dead,dv_dyn,vb,   u,Fx,Bu,P,   z_,S_,K_,y_,soc_ekf, y_ekf_f, soc, conv,  %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,     %7.3f,%7.3f,%7.4f,%7.4f,       %7.3f,%7.4f,%10.7f,%7.4f,%7.4f,%7.4f, %7.4f,  %d,\n",
+                dt_, ib_, voc_soc_, voc_stat_f_, voc_, voc_dead_, dv_dyn_, vb_,     u_, Fx_, Bu_, P_,    z_, S_, K_, y_, soc_ekf_, y_filt_, soc_, converged_ekf()), true, false, true);
+        if ( sp.debug()==-24 ) sendTxBuf(String::format("Mon:  ib%7.3f soc%8.4f reset_temp%d tau_ct%9.5f r_ct%7.3f r_0%7.3f dv_dyn%7.3f dv_hys%7.3f voc_soc%7.3f  voc_stat_f%7.3f voc%7.3f vb%7.3f ib _charge%7.3f ",
+            ib_, soc_, reset_temp, chem_.tau_ct, chem_.r_ct, chem_.r_0, dv_dyn_, dv_hys_, voc_soc_, voc_stat_f_, voc_, vb_, ib_charge_), true, false, true);
+    #endif
 
     // Charge time if used ekf 
     if ( ib_charge_ekf > 0.1 )
@@ -501,11 +505,15 @@ void BatteryMonitor::regauge(const double tb_f)
 {
     if ( converged_ekf() && abs(soc_ekf_-soc_)>DF2 )
     {
-        sendTxBuf(String::format("CC Mon from%7.3f to EKF%7.3f...", soc_, soc_ekf_), true, true, true);
+        #ifndef KILLTEXT
+            sendTxBuf(String::format("CC Mon from%7.3f to EKF%7.3f...", soc_, soc_ekf_), true, true, true);
+        #endif
 
         apply_soc(soc_ekf_, tb_f);
         
-        sendTxBuf(String::format("conf %7.3f\n", soc_, soc_ekf_), true, true, true);
+        #ifndef KILLTEXT
+            sendTxBuf(String::format("conf %7.3f\n", soc_, soc_ekf_), true, true, true);
+        #endif
     }
 }
 
@@ -712,17 +720,20 @@ float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean 
     model_saturated_ = model_cutback_ && (ib_charge_ < ib_sat_);
     Coulombs::sat_ = model_saturated_;
     
-    if ( sp.debug()==75 ) sendTxBuf(String::format("BatterySim::calculate: tb_f_ soc_ voc_stat_ low_voc =  %7.3f %10.6f %9.5f %7.3f\n",
-        tb_f_, soc_, voc_stat_, chem_.low_voc), true, true, true);
+    #ifndef SOFT_DEPLOY_PHOTON
+        if ( sp.debug()==75 ) sendTxBuf(String::format("BatterySim::calculate: tb_f_ soc_ voc_stat_ low_voc =  %7.3f %10.6f %9.5f %7.3f\n",
+            tb_f_, soc_, voc_stat_, chem_.low_voc), true, true, true);
 
-    if ( sp.debug()==76 ) sendTxBuf(String::format("BatterySim::calculate:,  soc=%8.4f, tb_f_=%7.3f, ib_in%7.3f ib%7.3f voc_stat%7.3f voc%7.3f vsat%7.3f model_saturated%d bms_off%d dc_dc_on%d VB_DC_DC%7.3f vb%7.3f\n",
-        soc_, tb_f_, ib_in_, ib_, voc_stat_, voc_, vsat_, model_saturated_, bms_off_, dc_dc_on, VB_DC_DC, vb_), true, true, true);
+        if ( sp.debug()==76 ) sendTxBuf(String::format("BatterySim::calculate:,  soc=%8.4f, tb_f_=%7.3f, ib_in%7.3f ib%7.3f voc_stat%7.3f voc%7.3f vsat%7.3f model_saturated%d bms_off%d dc_dc_on%d VB_DC_DC%7.3f vb%7.3f\n",
+            soc_, tb_f_, ib_in_, ib_, voc_stat_, voc_, vsat_, model_saturated_, bms_off_, dc_dc_on, VB_DC_DC, vb_), true, true, true);
 
-    if ( sp.debug()==78 ) sendTxBuf(String::format("BatterySim::calculate:,  dt_,tb_f,curr,soc_,voc,dv_dyn,vb,%7.3f,%7.3f,%7.3f,%8.4f,%7.3f,%7.3f,%7.3f,\n",
-    dt_,tb_f_, ib_, soc_, voc_, dv_dyn_, vb_), true, true, true);
+        if ( sp.debug()==78 ) sendTxBuf(String::format("BatterySim::calculate:,  dt_,tb_f,curr,soc_,voc,dv_dyn,vb,%7.3f,%7.3f,%7.3f,%8.4f,%7.3f,%7.3f,%7.3f,\n",
+        dt_,tb_f_, ib_, soc_, voc_, dv_dyn_, vb_), true, true, true);
 
-    if ( sp.debug()==79 ) sendTxBuf(String::format("reset, mod_ib, tb_f_, dvoc_dt, dqdt, vsat_, voc, qcrs, q_capacity, sat_ib_max, ib_fut, ib,=%d,%d,%9.8f,%7.4f,%7.4f,%7.3f,%7.3f, %12.3f,%12.3f, %7.3f, %7.3f, %7.3f,\n",
-        reset, sp.mod_ib(), tb_f_, chem_.dvoc_dt, chem_.dqdt, vsat_, voc_, q_cap_rated_scaled_, q_capacity_, sat_ib_max_, ib_fut_, ib_), true, true, true);
+        if ( sp.debug()==79 ) sendTxBuf(String::format("reset, mod_ib, tb_f_, dvoc_dt, dqdt, vsat_, voc, qcrs, q_capacity, sat_ib_max, ib_fut, ib,=%d,%d,%9.8f,%7.4f,%7.4f,%7.3f,%7.3f, %12.3f,%12.3f, %7.3f, %7.3f, %7.3f,\n",
+            reset, sp.mod_ib(), tb_f_, chem_.dvoc_dt, chem_.dqdt, vsat_, voc_, q_cap_rated_scaled_, q_capacity_, sat_ib_max_, ib_fut_, ib_), true, true, true);
+    #endif
+
     return ( vb_ );
 }
 
@@ -854,11 +865,13 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
     soc_min_ = chem_.soc_min_T_->interp(tb_f_);
     q_min_ = soc_min_ * q_capacity_;
 
-    if ( sp.debug()==36 )
-    {
-        sendTxBuf(String::format("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
-            ib_charge_, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_s_, *sp_delta_q_, q_), true, false, true);
-    }
+    #ifndef SOFT_DEPLOY_PHOTON
+        if ( sp.debug()==36 )
+        {
+            sendTxBuf(String::format("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
+                ib_charge_, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_s_, *sp_delta_q_, q_), true, false, true);
+        }
+    #endif
 
     // print_sim_serial
     print_sim_serial(initializing_all, reset_temp, Sen, this);

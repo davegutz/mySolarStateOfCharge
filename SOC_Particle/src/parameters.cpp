@@ -164,7 +164,7 @@ void  VolatilePars::initialize()
 // Print only the volatile paramters (non-eeram)
 void VolatilePars::pretty_print(const boolean all)
 {
-    #ifndef SOFT_DEPLOY_PHOTON
+    // #ifndef SOFT_DEPLOY_PHOTON
         if ( all )
         {
             sendTxBuf(String::format("volatile all:\n"), true, true, true);
@@ -176,7 +176,7 @@ void VolatilePars::pretty_print(const boolean all)
                 }
             }
         }
-    #endif
+    // #endif
     if ( !all )
     {
         sendTxBuf(String::format("volatile off:\n"), true, true, true);
@@ -305,10 +305,10 @@ void SavedPars::pretty_print(const boolean all)
         // sendTxBuf(String::format("fault array (%d):\n", nflt_), true, true, true);
         // print_fault_array();
         // print_fault_header();
-        #ifndef SOFT_DEPLOY_PHOTON
+        // #ifndef SOFT_DEPLOY_PHOTON
             sendTxBuf(String::format("Xm:\n"), true, true, true);
             pretty_print_modeling();
-        #endif
+        // #endif
     }
     else
     {
@@ -331,7 +331,8 @@ void SavedPars::pretty_print(const boolean all)
 
 void SavedPars::pretty_print_modeling()
 {
-  char buffer[32];
+#ifndef SOFT_DEPLOY_PHOTON
+    char buffer[32];
   bitMapPrint(buffer, sp.modeling(), 8);
   sendTxBuf(
     String::format(" 0x%s\n", buffer) +
@@ -347,6 +348,9 @@ void SavedPars::pretty_print_modeling()
   
   time_long_2_str((time_t)Time_now_z, buffer);
   sendTxBuf(String::format(" time %ld hms:  %s\n", Time_now_z, buffer), true, true, true);
+#else
+  sendTxBuf("pretty_print_modeling: silent DEPLOY", true, true, true);
+#endif
 }
 
 // Print faults

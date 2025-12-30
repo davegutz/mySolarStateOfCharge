@@ -87,3 +87,7 @@
 
 // Frame time for ADC read of thermistor is fast
 #define TEMP_INIT_DELAY 1     // It takes 10 seconds first read of DS18 (10000).  But we're using a thermistor with adc here
+
+// Kill some output to get this new beast to run
+#define SOFT_DEPLOY_PHOTON
+#define KILL_TEXT
