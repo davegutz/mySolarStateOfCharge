@@ -1,7 +1,32 @@
-#ifndef soc4p2_h
-#define soc4p2_h
+/*  Low-energy Bluetooth low-level utilities
+
+27-Dec-2025 	DA Gutz 	Created
+// Copyright (C) 2025 - Dave Gutz
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+*/
+#pragma once
+
 // 0a10aced202194944a04c040  old device
 // 0a10aced202194944a04c094 new one
+
 #include "version.h"
 // deviceOS@5.6.0
 
@@ -78,5 +103,3 @@
 
 // Frame time for ADC read of thermistor is fast
 #define TEMP_INIT_DELAY 1     // It takes 10 seconds first read of DS18 (10000).  But we're using a thermistor with adc here
-
-#endif
