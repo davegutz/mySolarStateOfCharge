@@ -93,22 +93,24 @@ void Hysteresis::pretty_print(const float dx, const float dy, const float dz)
 {
 #ifndef SOFT_DEPLOY_PHOTON
     float res = look_hys(0., 0.8);
-    Serial.printf("Hysteresis:\n");
-    Serial.printf("  cap%10.1f, F\n", chem_->hys_cap);
-    Serial.printf("  disab %d\n", disabled_);
-    Serial.printf("  dv_dot%7.3f, V/s\n", dv_dot_);
-    Serial.printf("  dv_hys%7.3f, V, SH\n", dv_hys_);
-    Serial.printf("  ib%7.3f, A\n", ib_);
-    Serial.printf("  ibs%7.3f, A\n", ibs_);
-    Serial.printf("  ioc%7.3f, A\n", ioc_);
-    Serial.printf("  res%6.4f, null Ohm\n", res_);
-    Serial.printf("  res%7.3f, ohm\n", res_);
-    Serial.printf("  slr%7.3f,\n", slr_);
-    Serial.printf("  soc%8.4f\n", soc_);
-    Serial.printf("  tau%10.1f, null, s\n", res*chem_->hys_cap);
+    sendTxBuf(
+        String::format("Hysteresis:\n") +
+        String::format("  cap%10.1f, F\n", chem_->hys_cap) +
+        String::format("  disab %d\n", disabled_) +
+        String::format("  dv_dot%7.3f, V/s\n", dv_dot_) +
+        String::format("  dv_hys%7.3f, V, SH\n", dv_hys_) +
+        String::format("  ib%7.3f, A\n", ib_) +
+        String::format("  ibs%7.3f, A\n", ibs_) +
+        String::format("  ioc%7.3f, A\n", ioc_) +
+        String::format("  res%6.4f, null Ohm\n", res_) +
+        String::format("  res%7.3f, ohm\n", res_) +
+        String::format("  slr%7.3f,\n", slr_) +
+        String::format("  soc%8.4f\n", soc_) +
+        String::format("  tau%10.1f, null, s\n", res*chem_->hys_cap) +
+        "", true, true, true);
     chem_->pretty_print();
 #else
-     Serial.printf("Hysteresis: silent DEPLOY\n");
+     sendTxBuf(String::format("Hysteresis: silent DEPLOY\n"), true, true, true);
 #endif
 }
 
@@ -140,7 +142,7 @@ float Hysteresis::update(const double dt, const boolean init_high, const boolean
         slr_ = look_slr(dv_hys_, soc_);
         ioc_ = ib_ * slr_;
         #ifdef DEBUG_DETAIL
-            if ( sp.debug()==-1 ) Serial.printf("ib%7.3f ibs%7.3f ioc%7.3f dv%9.6f res%7.3f slr%7.3f\n", ib_, ibs_, ioc_, dv_hys_, res_, slr_);
+            if ( sp.debug()==-1 ) sendTxBuf(String::format("ib%7.3f ibs%7.3f ioc%7.3f dv%9.6f res%7.3f slr%7.3f\n", ib_, ibs_, ioc_, dv_hys_, res_, slr_), true, true, true);
         #endif
     }
 

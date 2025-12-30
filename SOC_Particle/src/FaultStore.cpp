@@ -108,39 +108,37 @@ void Flt_st::pretty_print(const String code)
   strcpy(buffer, "---");
   if ( this->t_flt > 1UL )
   {
-    Serial.printf("code %s\n", code.c_str());
+    sendTxBuf(String::format("code %s\n", code.c_str()), true, true, true);
     time_long_2_str((time_t)this->t_flt, buffer);
-    Serial.printf("buffer %s\n", buffer);
-    Serial.printf("t %ld\n", this->t_flt);
-    Serial.printf("Tb_hdwe_filt %7.3f\n", float(this->Tb_hdwe_filt)/SCL_600);
-    Serial.printf("vb_hdwe_filt %7.3f\n", float(this->vb_hdwe_filt)/sp.vb_hist_slr());
-    Serial.printf("ib_amp_hdwe_filt %7.3f\n", float(this->ib_amp_hdwe_filt)/sp.ib_hist_m_slr());
-    Serial.printf("ib_noa_hdwe_filt %7.3f\n", float(this->ib_noa_hdwe_filt)/sp.ib_hist_n_slr());
-    Serial.printf("Tb_filt %7.3f\n", float(this->Tb_filt)/SCL_600);
-    Serial.printf("vb_filt %7.3f\n", float(this->vb_filt)/sp.vb_hist_slr());
-    Serial.printf("ib_filt %7.3f\n", float(this->ib_filt)/sp.ib_hist_n_slr());
-    Serial.printf("soc %7.4f\n", float(this->soc)/SCL_16000);
-    Serial.printf("soc_min %7.4f\n", float(this->soc_min)/SCL_16000);
-    Serial.printf("soc_ekf %7.4f\n", float(this->soc_ekf)/SCL_16000);
-    Serial.printf("voc_filt %7.3f\n", float(this->voc_filt)/sp.vb_hist_slr());
-    Serial.printf("voc_stat_filt %7.3f\n", float(this->voc_stat_filt)/sp.vb_hist_slr());
-    Serial.printf("e_wrap_filt %7.3f\n", float(this->e_wrap_filt)/sp.vb_hist_slr());
-    Serial.printf("e_wrap_m_filt %7.3f\n", float(this->e_wrap_m_filt)/sp.vb_hist_slr());
-    Serial.printf("e_wrap_m_trim %7.3f\n", float(this->e_wrap_m_trim)/sp.vb_hist_slr());
-    Serial.printf("e_wrap_n_filt %7.3f\n", float(this->e_wrap_n_filt)/sp.vb_hist_slr());
-    Serial.printf("fltw %ld falw %ld\n", this->fltw, this->falw);
+    sendTxBuf(
+      String::format("buffer %s\n", buffer) +
+      String::format("t %ld\n", this->t_flt) +
+      String::format("Tb_hdwe_filt %7.3f\n", float(this->Tb_hdwe_filt)/SCL_600) +
+      String::format("vb_hdwe_filt %7.3f\n", float(this->vb_hdwe_filt)/sp.vb_hist_slr()) +
+      String::format("ib_amp_hdwe_filt %7.3f\n", float(this->ib_amp_hdwe_filt)/sp.ib_hist_m_slr()) +
+      String::format("ib_noa_hdwe_filt %7.3f\n", float(this->ib_noa_hdwe_filt)/sp.ib_hist_n_slr()) +
+      String::format("Tb_filt %7.3f\n", float(this->Tb_filt)/SCL_600) +
+      String::format("vb_filt %7.3f\n", float(this->vb_filt)/sp.vb_hist_slr()) +
+      String::format("ib_filt %7.3f\n", float(this->ib_filt)/sp.ib_hist_n_slr()) +
+      String::format("soc %7.4f\n", float(this->soc)/SCL_16000) +
+      String::format("soc_min %7.4f\n", float(this->soc_min)/SCL_16000) +
+      String::format("soc_ekf %7.4f\n", float(this->soc_ekf)/SCL_16000) +
+      String::format("voc_filt %7.3f\n", float(this->voc_filt)/sp.vb_hist_slr()) +
+      String::format("voc_stat_filt %7.3f\n", float(this->voc_stat_filt)/sp.vb_hist_slr()) +
+      String::format("e_wrap_filt %7.3f\n", float(this->e_wrap_filt)/sp.vb_hist_slr()) +
+      String::format("e_wrap_m_filt %7.3f\n", float(this->e_wrap_m_filt)/sp.vb_hist_slr()) +
+      String::format("e_wrap_m_trim %7.3f\n", float(this->e_wrap_m_trim)/sp.vb_hist_slr()) +
+      String::format("e_wrap_n_filt %7.3f\n", float(this->e_wrap_n_filt)/sp.vb_hist_slr()) +
+      String::format("fltw %ld falw %ld\n", this->fltw, this->falw) +
+      "", true, true, true);
   }
 }
 
 void SavedPars::print_fault_header(Publish *pubList)
 {
-    String txBuf;
-
-    txBuf = String::format("Config:  %s \n", pubList->unit.c_str());
-    sendTxBuf(txBuf, true, false, true);
-
-    txBuf = String::format("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, ibmh_f, ibnh_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_w_f, e_wm_f, e_wm_t, e_wn_f, fltw, falw,\n");
-    sendTxBuf(txBuf, true, false, true);
+    sendTxBuf(String::format("Config:  %s \n", pubList->unit.c_str()), true, false, true);
+    sendTxBuf(String::format("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, ibmh_f, ibnh_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_w_f, e_wm_f, e_wm_t, e_wn_f, fltw, falw,\n"),
+      true, false, true);
 }
 
 void Flt_st::print_flt(const String code)

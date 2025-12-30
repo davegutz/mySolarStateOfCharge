@@ -46,7 +46,7 @@ boolean Parameters::find_adjust(const String &str)
     value_str_ = str.substring(2);
     if ( substr.length()<2 )
     {
-        Serial.printf("%s substr of %s too short\n", substr.c_str(), str.c_str());
+        sendTxBuf(String::format("%s substr of %s too short\n", substr.c_str(), str.c_str()), true, true, true);
         return false;
     }
     for ( uint8_t i=0; i<n_; i++ )
@@ -55,7 +55,7 @@ boolean Parameters::find_adjust(const String &str)
         {
             found = true;
             if ( !count ) success = V_[i]->print_adjust(value_str_);  // prints own error messages
-            else Serial.printf("RPT: %d %s success=%d\n", i, V_[i]->code().c_str(), success);
+            else sendTxBuf(String::format("RPT: %d %s success=%d\n", i, V_[i]->code().c_str(), success), true, true, true);
             count++;
         }
     }
@@ -63,13 +63,13 @@ boolean Parameters::find_adjust(const String &str)
     {
         if ( count > 1 )
         {
-            Serial.printf("RPT: %s decoded -> code %s and val %s\n", str.c_str(), substr.c_str(), value_str_.c_str());
+            sendTxBuf(String::format("RPT: %s decoded -> code %s and val %s\n", str.c_str(), substr.c_str(), value_str_.c_str()), true, true, true);
         }
         return true;
     }
     else
     {
-        // Serial.printf("Problem: %s was decoded into code %s and value %s\n", str.c_str(), substr.c_str(), value_str.c_str());
+        // sendTxBuf(String::format("Problem: %s was decoded into code %s and value %s\n", str.c_str(), substr.c_str(), value_str.c_str()), true, true, true);
         return false;
     }
 
@@ -81,7 +81,7 @@ boolean Parameters::is_corrupt()
     for ( int i=0; i<n_; i++ ) corruption |= V_[i]->is_corrupt();
     if ( corruption )
     {
-        Serial.printf("\ncorrupt****\n");
+        sendTxBuf(String::format("\ncorrupt****\n"), true, true, true);
         pretty_print(false);
     }
     return corruption;
@@ -167,7 +167,7 @@ void VolatilePars::pretty_print(const boolean all)
     #ifndef SOFT_DEPLOY_PHOTON
         if ( all )
         {
-            Serial.printf("volatile all:\n");
+            sendTxBuf(String::format("volatile all:\n"), true, true, true);
             for (uint8_t i=0; i<n_; i++ )
             {
                 if ( !(V_[i]->is_eeram()) )
@@ -179,7 +179,7 @@ void VolatilePars::pretty_print(const boolean all)
     #endif
     if ( !all )
     {
-        Serial.printf("volatile off:\n");
+        sendTxBuf(String::format("volatile off:\n"), true, true, true);
         uint8_t count = 0;
         for (uint8_t i=0; i<n_; i++ )
         {
@@ -192,9 +192,9 @@ void VolatilePars::pretty_print(const boolean all)
                 }
             }
         }
-        if ( count==0 ) Serial.printf("**none**\n\n");
+        if ( count==0 ) sendTxBuf(String::format("**none**\n\n"), true, true, true);
     }
-    while ( n_ != NVOL ) { delay(5000); Serial.printf("set NVOL=%d\n", n_); }
+    while ( n_ != NVOL ) { delay(5000); sendTxBuf(String::format("set NVOL=%d\n", n_), true, true, true); }
 }
 
 
@@ -294,25 +294,25 @@ void SavedPars::pretty_print(const boolean all)
 {
     if ( all )
     {
-        Serial.printf("saved (sp) all\n");
+        sendTxBuf(String::format("saved (sp) all\n"), true, true, true);
         for (int i=0; i<n_; i++ )
         {
             V_[i]->print();
         }
-        // Serial.printf("history array (%d):\n", nhis_);
+        // sendTxBuf(String::format("history array (%d):\n", nhis_), true, true, true);
         // print_history_array();
         // print_fault_header();
-        // Serial.printf("fault array (%d):\n", nflt_);
+        // sendTxBuf(String::format("fault array (%d):\n", nflt_), true, true, true);
         // print_fault_array();
         // print_fault_header();
         #ifndef SOFT_DEPLOY_PHOTON
-            Serial.printf("Xm:\n");
+            sendTxBuf(String::format("Xm:\n"), true, true, true);
             pretty_print_modeling();
         #endif
     }
     else
     {
-        Serial.printf("saved (sp) diffs\n");
+        sendTxBuf(String::format("saved (sp) diffs\n"), true, true, true);
         uint8_t count = 0;
         for (int i=0; i<n_; i++ )
         {
@@ -322,10 +322,10 @@ void SavedPars::pretty_print(const boolean all)
                 V_[i]->print();
             }
         }
-        if ( count==0 ) Serial.printf("**none**\n\n");
+        if ( count==0 ) sendTxBuf(String::format("**none**\n\n"), true, true, true);
 
         // Build integrity test
-        while ( n_ != NSAV ) { delay(5000); Serial.printf("set NSAV=%d\n", n_); }
+        while ( n_ != NSAV ) { delay(5000); sendTxBuf(String::format("set NSAV=%d\n", n_), true, true, true); }
     }
 }
 
@@ -333,19 +333,20 @@ void SavedPars::pretty_print_modeling()
 {
   char buffer[32];
   bitMapPrint(buffer, sp.modeling(), 8);
-  Serial.printf(" 0x%s\n", buffer);
-  Serial.printf(" 0x128 ib_noa_dscn %d\n", mod_ib_noa_dscn());
-  Serial.printf(" 0x64  ib_amp_dscn %d\n", mod_ib_amp_dscn());
-  Serial.printf(" 0x32  vb_dscn %d\n", mod_vb_dscn());
-  Serial.printf(" 0x16  temp_dscn %d\n", mod_tb_dscn());
-  Serial.printf(" 0x8   tweak_test %d\n", tweak_test());
-  Serial.printf(" 0x4   current %d\n", mod_ib());
-  Serial.printf(" 0x2   voltage %d\n", mod_vb());
-  Serial.printf(" 0x1   temp %d\n", mod_tb());
-
+  sendTxBuf(
+    String::format(" 0x%s\n", buffer) +
+    String::format(" 0x128 ib_noa_dscn %d\n", mod_ib_noa_dscn()) +
+    String::format(" 0x64  ib_amp_dscn %d\n", mod_ib_amp_dscn()) +
+    String::format(" 0x32  vb_dscn %d\n", mod_vb_dscn()) +
+    String::format(" 0x16  temp_dscn %d\n", mod_tb_dscn()) +
+    String::format(" 0x8   tweak_test %d\n", tweak_test()) +
+    String::format(" 0x4   current %d\n", mod_ib()) +
+    String::format(" 0x2   voltage %d\n", mod_vb()) +
+    String::format(" 0x1   temp %d\n", mod_tb()) +
+    "", true, true, true);
   
   time_long_2_str((time_t)Time_now_z, buffer);
-  Serial.printf(" time %ld hms:  %s\n", Time_now_z, buffer);
+  sendTxBuf(String::format(" time %ld hms:  %s\n", Time_now_z, buffer), true, true, true);
 }
 
 // Print faults
