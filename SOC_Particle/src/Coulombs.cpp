@@ -57,32 +57,34 @@ Coulombs::~Coulombs() {}
 void Coulombs::pretty_print()
 {
 #ifndef SOFT_DEPLOY_PHOTON
-  Serial.printf("Coulombs:\n");
-  Serial.printf(" coul_eff%9.5f\n", coul_eff_);
-  Serial.printf(" d_delta_q%9.1f, C\n", d_delta_q_);
-  Serial.printf(" delta_q%9.1f, C\n", *sp_delta_q_);
-  Serial.printf(" delta_q_inf/delta_q_abs%9.1f / %9.1f %8.4f C\n", delta_q_inf_, delta_q_abs(), delta_q_inf_/delta_q_abs());
-  Serial.printf(" delta_q_neg%9.1f C, time_neg%9.1f s\n", delta_q_neg_, time_neg_);
-  Serial.printf(" delta_q_pos%9.1f C, time_pos%9.1f s\n", delta_q_pos_, time_pos_);
-  Serial.printf(" dt%9.6f, s\n", dt_);
-  Serial.printf(" mod_code %d\n", mod_code());
-  Serial.printf(" mod %s\n", chem_.decode(mod_code()).c_str());
-  Serial.printf(" q%9.1f, C\n", q_);
-  Serial.printf(" q_cap%9.1f, C\n", q_capacity_);
-  Serial.printf(" q_cap_rat%9.1f, C\n", q_cap_rated_);
-  Serial.printf(" q_cap_rat_scl%9.1f, C\n", q_cap_rated_scaled_);
-  Serial.printf(" q_min%9.1f, C\n", q_min_);
-  Serial.printf(" resetting %d\n", resetting_);
-  Serial.printf(" sat %d\n", sat_);
-  Serial.printf(" soc%8.4f\n", soc_);
-  Serial.printf(" soc_inf%8.4f\n", soc_inf_);
-  Serial.printf(" soc_min%8.4f\n", soc_min_);
-  Serial.printf(" tb_f_%5.1f dg C\n", tb_f_);
-  Serial.printf(" rated_t%5.1f dg C\n", chem_.rated_temp);
-  Serial.printf(" tb_f_rate%9.5f dg C / s\n", tb_f_rate_);
-  Serial.printf("Coulombs (mod_code=%d) ", mod_code());
-  Serial.printf("Coulombs: silent DEPLOY\n");
-  Serial.printf(" Chemistry::\n");
+  sendTxBuf(
+    String::format("Coulombs:\n") +
+    String::format(" coul_eff%9.5f\n", coul_eff_) +
+    String::format(" d_delta_q%9.1f, C\n", d_delta_q_) +
+    String::format(" delta_q%9.1f, C\n", *sp_delta_q_) +
+    String::format(" delta_q_inf/delta_q_abs%9.1f / %9.1f %8.4f C\n", delta_q_inf_, delta_q_abs(), delta_q_inf_/delta_q_abs()) +
+    String::format(" delta_q_neg%9.1f C, time_neg%9.1f s\n", delta_q_neg_, time_neg_) +
+    String::format(" delta_q_pos%9.1f C, time_pos%9.1f s\n", delta_q_pos_, time_pos_) +
+    String::format(" dt%9.6f, s\n", dt_) +
+    String::format(" mod_code %d\n", mod_code()) +
+    String::format(" mod %s\n", chem_.decode(mod_code()).c_str()) +
+    String::format(" q%9.1f, C\n", q_) +
+    String::format(" q_cap%9.1f, C\n", q_capacity_) +
+    String::format(" q_cap_rat%9.1f, C\n", q_cap_rated_) +
+    String::format(" q_cap_rat_scl%9.1f, C\n", q_cap_rated_scaled_) +
+    String::format(" q_min%9.1f, C\n", q_min_) +
+    String::format(" resetting %d\n", resetting_) +
+    String::format(" sat %d\n", sat_) +
+    String::format(" soc%8.4f\n", soc_) +
+    String::format(" soc_inf%8.4f\n", soc_inf_) +
+    String::format(" soc_min%8.4f\n", soc_min_) +
+    String::format(" tb_f_%5.1f dg C\n", tb_f_) +
+    String::format(" rated_t%5.1f dg C\n", chem_.rated_temp) +
+    String::format(" tb_f_rate%9.5f dg C / s\n", tb_f_rate_) +
+    String::format("Coulombs (mod_code=%d) ", mod_code()) +
+    String::format("Coulombs: silent DEPLOY\n") +
+    String::format(" Chemistry::\n") +
+    "", true, true, true);
   chem_pretty_print();
 #endif
 }
@@ -224,7 +226,7 @@ float Coulombs::count_coulombs(Sensors *Sen, const boolean reset_temp, const flo
       time_neg_ = 0.;
       time_pos_ = 0.;
     }
-    // if ( sp.debug()==-24 )Serial.printf("Mon:  charge_curr%7.3f d_delta_q%10.6f delta_q%10.1f\n", charge_curr, d_delta_q);
+    // if ( sp.debug()==-24 )sendTxBuf(String::format("Mon:  charge_curr%7.3f d_delta_q%10.6f delta_q%10.1f\n", charge_curr, d_delta_q), true, true, true);
     q_ = q_capacity_ + *sp_delta_q_;
     q_inf_ = q_capacity_ + delta_q_inf_;
 
@@ -238,17 +240,13 @@ float Coulombs::count_coulombs(Sensors *Sen, const boolean reset_temp, const flo
     
     if ( sp.debug()==36 )
     {
-      String txBuf;
-      txBuf = String::format("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
-            charge_curr, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_, *sp_delta_q_, q_);
-      sendTxBuf(txBuf, true, true, true);
+      sendTxBuf(String::format("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
+        charge_curr, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_, *sp_delta_q_, q_), true, true, true);
     }
     if ( sp.debug()==-99 )
     {
-      String txBuf;
-      txBuf = String::format("sat, dt_, tb_f_, charge_curr, dq, dqt+, ddq, q, soc_min soc, %d, %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%12.1f,%10.7f,%10.7f,\n",
-       sat, dt_, tb_f_, charge_curr, charge_curr * dt_, chem_.dqdt*q_capacity_*tb_f_rate_*dt_, d_delta_q_, q_, soc_min_, soc_);
-      sendTxBuf(txBuf, true, true, true);
+      sendTxBuf(String::format("sat, dt_, tb_f_, charge_curr, dq, dqt+, ddq, q, soc_min soc, %d, %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%12.1f,%10.7f,%10.7f,\n",
+        sat, dt_, tb_f_, charge_curr, charge_curr * dt_, chem_.dqdt*q_capacity_*tb_f_rate_*dt_, d_delta_q_, q_, soc_min_, soc_), true, true, true);
     }
 
     return ( soc_ );

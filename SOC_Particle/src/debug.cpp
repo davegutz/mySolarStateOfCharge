@@ -38,7 +38,7 @@ void add_verify(String *src, const String addend)
   *src += addend;
   if ( src->length() != (src_len + addend.length()) )
   {
-    Serial.printf("\n\n\n\n**FRAG**\n\n\n\n");
+    sendTxBuf(String::format("\n\n\n\n**FRAG**\n\n\n\n"), true, true, true);
   }
 }
 
@@ -46,12 +46,12 @@ void add_verify(String *src, const String addend)
 // sp.debug()==12 EKF
 void debug_12(BatteryMonitor *Mon, Sensors *Sen)
 {
-  Serial.printf("ib,ib_mod,   vb,vb_mod,  voc,voc_stat_mod,voc_mod,   K, y,    SOC_mod, SOC_ekf, SOC,   %7.3f,%7.3f,   %7.3f,%7.3f,   %7.3f,%7.3f,%7.3f,    %7.3f,%7.3f,   %7.3f,%7.3f,%7.3f,\n",
+  sendTxBuf(String::format("ib,ib_mod,   vb,vb_mod,  voc,voc_stat_mod,voc_mod,   K, y,    SOC_mod, SOC_ekf, SOC,   %7.3f,%7.3f,   %7.3f,%7.3f,   %7.3f,%7.3f,%7.3f,    %7.3f,%7.3f,   %7.3f,%7.3f,%7.3f,\n",
   Mon->ib(), Sen->Sim->ib(),
   Mon->vb(), Sen->Sim->vb(),
   Mon->voc(), Sen->Sim->voc_stat(), Sen->Sim->voc(),
   Mon->K_ekf(), Mon->y_ekf(),
-  Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc());
+  Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc()), true, true, true);
 }
 
 // sp.debug()==-13 ib_dscn for Arduino.
@@ -62,18 +62,18 @@ void debug_m13(Sensors *Sen)
   // Arduinio header
   static int8_t last_call = 0;
   if ( sp.debug()!=last_call && sp.debug()==-13 )
-    Serial.printf("ib_sel_st:, ib_amph:, ib_noah:, ib_rate:, ib_quiet:,  dscn_flt:, dscn_fa:\n");
+    sendTxBuf(String::format("ib_sel_st:, ib_amph:, ib_noah:, ib_rate:, ib_quiet:,  dscn_flt:, dscn_fa:\n"), true, true, true);
   last_call = sp.debug();
 
   // Plot
   if ( sp.debug()!=-13)
     return;
   else
-      Serial.printf("%d, %7.3f,%7.3f,  %7.3f,%7.3f,   %d,%d\n",
-  Sen->Flt->ib_sel_stat(),
-  max(min(Sen->Ib_amp_hdwe, 2), -2), max(min(Sen->Ib_noa_hdwe, 2), -2),
-  max(min(Sen->Flt->ib_rate(),2), -2), max(min(Sen->Flt->ib_quiet(), 2), -2),
-  Sen->Flt->ib_dscn_fa(), Sen->Flt->ib_dscn_fa());
+    sendTxBuf(String::format("%d, %7.3f,%7.3f,  %7.3f,%7.3f,   %d,%d\n",
+      Sen->Flt->ib_sel_stat(),
+      max(min(Sen->Ib_amp_hdwe, 2), -2), max(min(Sen->Ib_noa_hdwe, 2), -2),
+      max(min(Sen->Flt->ib_rate(),2), -2), max(min(Sen->Flt->ib_quiet(), 2), -2),
+      Sen->Flt->ib_dscn_fa(), Sen->Flt->ib_dscn_fa()), true, true, true);
 }
 
 // sp.debug()==-23 vb for Arduino.
@@ -84,14 +84,14 @@ void debug_m23(Sensors *Sen)
   // Arduinio header
   static int8_t last_call = 0;
   if ( sp.debug()!=last_call && sp.debug()==-23 )
-    Serial.printf("Vb_hdwe-Vb_hdwe_f:\n");
+    sendTxBuf(String::format("Vb_hdwe-Vb_hdwe_f:\n"), true, true, true);
   last_call = sp.debug();
 
   // Plot
   if ( sp.debug()!=-23)
     return;
   else
-      Serial.printf("%7.3f\n", Sen->Vb_hdwe - Sen->Vb_hdwe_f);
+      sendTxBuf(String::format("%7.3f\n", Sen->Vb_hdwe - Sen->Vb_hdwe_f), true, true, true);
 }
 
 // sp.debug()==-24 Vb, Ib for Arduino.
@@ -102,65 +102,55 @@ void debug_m24(Sensors *Sen)
   // Arduinio header
   static int8_t last_call = 0;
   if ( sp.debug()!=last_call && sp.debug()==-23 )
-    Serial.printf("Vb_hdwe-Vb_hdwe_f:, Ib_hdwe:\n");
+    sendTxBuf(String::format("Vb_hdwe-Vb_hdwe_f:, Ib_hdwe:\n"), true, true, true);
   last_call = sp.debug();
 
   // Plot
   if ( sp.debug()!=-24)
     return;
   else
-      Serial.printf("%7.3f, %7.3f\n", Sen->Vb_hdwe - Sen->Vb_hdwe_f, Sen->Ib_hdwe);
+      sendTxBuf(String::format("%7.3f, %7.3f\n", Sen->Vb_hdwe - Sen->Vb_hdwe_f, Sen->Ib_hdwe), true, true, true);
 }
 
 // Q quick print critical parameters
 void debug_q(BatteryMonitor *Mon, Sensors *Sen)
 {
-  String txBuf;
-  txBuf = String::format("ib_amp_fail %d\nib_noa_fail %d\nvb_fail %d\nTb%7.3f\nvb%7.3f\nvoc%7.3f\nvoc_filt%7.3f\nvoc_stat%7.3f\nvoc_stat_f%7.3f\nvoc_soc%7.3f\nvsat%7.3f\nib%7.3f\nsoc_m%8.4f\n\
+  sendTxBuf(String::format("ib_amp_fail %d\nib_noa_fail %d\nvb_fail %d\nTb%7.3f\nvb%7.3f\nvoc%7.3f\nvoc_filt%7.3f\nvoc_stat%7.3f\nvoc_stat_f%7.3f\nvoc_soc%7.3f\nvsat%7.3f\nib%7.3f\nsoc_m%8.4f\n\
 soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
     Sen->Flt->ib_amp_fa(), Sen->Flt->ib_noa_fa(), Sen->Flt->vb_fail(),
     Sen->Tb_f, Mon->vb(), Mon->voc(), Mon->voc_dead(), Mon->voc_stat(), Mon->voc_stat_f(), Mon->voc_soc(), Mon->vsat(), Mon->ib(), Sen->Sim->soc(), Mon->soc_ekf(),
-    Mon->soc(), Mon->soc_min(), Mon->soc_inf(), sp.modeling());
-  sendTxBuf(txBuf, true, true, true);
+    Mon->soc(), Mon->soc_min(), Mon->soc_inf(), sp.modeling()), true, true, true);
 
-  txBuf = String::format("dq_inf/dq_abs%10.1f/%10.1f %8.4f coul_eff*=%9.6f, DAB+=%9.6f\nDQn%10.1f Tn%10.1f DQp%10.1f Tp%10.1f\n",
+  sendTxBuf(String::format("dq_inf/dq_abs%10.1f/%10.1f %8.4f coul_eff*=%9.6f, DAB+=%9.6f\nDQn%10.1f Tn%10.1f DQp%10.1f Tp%10.1f\n",
     Mon->delta_q_inf(), Mon->delta_q_abs(), Mon->delta_q_inf()/Mon->delta_q_abs(),
     -Mon->delta_q_neg()/Mon->delta_q_pos(),
     -(Mon->delta_q_neg() + Mon->delta_q_pos()) / nice_zero(Mon->time_neg() + Mon->time_pos(), 1e-6),
-    Mon->delta_q_neg(), Mon->time_neg(), Mon->delta_q_pos(), Mon->time_pos());
-  sendTxBuf(txBuf, true, true, true);
+    Mon->delta_q_neg(), Mon->time_neg(), Mon->delta_q_pos(), Mon->time_pos()), true, true, true);
 
   if ( Sen->Flt->falw() || Sen->Flt->fltw() ) chit("Pf;", SOON);
   time_long_2_str((time_t)sp.Time_now_z, pr.buff);
-  txBuf = String::format(" time %ld hms:  %s\n", sp.Time_now_z, pr.buff);
-  sendTxBuf(txBuf, true, true, true);
+  sendTxBuf(String::format(" time %ld hms:  %s\n", sp.Time_now_z, pr.buff), true, true, true);
 }
 
 // Calibration
 void debug_98(BatteryMonitor *Mon, Sensors *Sen)
 {
-  String txBuf;
-
-  txBuf = String::format("imh imhkf inh inkfh: %6.2fA %6.2fA,  %6.2fA,%6.2fA\n",
-    Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf);
-
-  sendTxBuf(txBuf, true, true, true);
+  sendTxBuf(String::format("imh imhkf inh inkfh: %6.2fA %6.2fA,  %6.2fA,%6.2fA\n",
+    Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf), true, true, true);
 }
 void debug_99(BatteryMonitor *Mon, Sensors *Sen)
 {
-  String txBuf = String::format("Tb Vb Vr imh imhkf inh inhkf ibsel voc voc_soc |*SV,*Dc |*SA,*DA|*SB,*DB| *SD| *Dw| *Sr: %6.2fC %7.3fv %6.3fv %6.2fA %6.2fA %6.2fA %6.2fA %6.2fA %6.2fv %6.2fv |%6.3f %6.3fv  |%6.3f %6.3fA | %6.3f %6.3fA |%6.3f|%6.3fv|%6.3f,\n",
+  sendTxBuf(String::format("Tb Vb Vr imh imhkf inh inhkf ibsel voc voc_soc |*SV,*Dc |*SA,*DA|*SB,*DB| *SD| *Dw| *Sr: %6.2fC %7.3fv %6.3fv %6.2fA %6.2fA %6.2fA %6.2fA %6.2fA %6.2fv %6.2fv |%6.3f %6.3fv  |%6.3f %6.3fA | %6.3f %6.3fA |%6.3f|%6.3fv|%6.3f,\n",
     Sen->Tb_hdwe_filt, Sen->Vb_hdwe_f, Sen->ShuntAmp->Vc(), Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->Ib_hdwe_f_cal,
     Mon->voc(), Mon->voc_soc(), sp.Vb_scale(), sp.Vb_bias_hdwe(), sp.ib_scale_amp(), sp.ib_bias_amp(), sp.ib_scale_noa(),
-    sp.ib_bias_noa(), sp.ib_disch_slr(), sp.Dw(), ap.slr_res);
-
-  sendTxBuf(txBuf, true, true, true);
+    sp.ib_bias_noa(), sp.ib_disch_slr(), sp.Dw(), ap.slr_res), true, true, true);
 }
 
 #ifdef DEBUG_DETAIL
   // Various parameters to debug initialization stuff as needed
   void debug_m1(BatteryMonitor *Mon, Sensors *Sen)
   {
-    Serial.printf("mod %d fake_f %d reset_temp %d Tb%7.3f Tb_f%7.3f Vb%7.3f Ib%7.3f\nib_s%7.3f soc_s%8.4f dq_s%10.1f\nib%7.3f soc  %8.4f dq  %10.1f soc_ekf%8.4f dq_ekf%10.1f\nvoc_filt %7.3f vsat %7.3f sat %d dq_z%10.1f lf %d llf %d\n",
+    sendTxBuf(String::format("mod %d fake_f %d reset_temp %d Tb%7.3f Tb_f%7.3f Vb%7.3f Ib%7.3f\nib_s%7.3f soc_s%8.4f dq_s%10.1f\nib%7.3f soc  %8.4f dq  %10.1f soc_ekf%8.4f dq_ekf%10.1f\nvoc_filt %7.3f vsat %7.3f sat %d dq_z%10.1f lf %d llf %d\n",
         sp.modeling(), ap.fake_faults, Sen->reset_temp(), Sen->Tb, Sen->Tb_f, Sen->Vb, Sen->Ib,
         Sen->Sim->ib(), Sen->Sim->soc(), Sen->Sim->delta_q(),
         Mon->ib(), Mon->soc(), Mon->delta_q(), Mon->soc_ekf(), Mon->delta_q_ekf(),
@@ -172,7 +162,7 @@ void debug_99(BatteryMonitor *Mon, Sensors *Sen)
 void debug_queue(const String who)
 {
   if ( cp.inp_str.length() || cp.ctl_str.length() || cp.asap_str.length() || cp.soon_str.length() || cp.queue_str.length() || cp.last_str.length() )
-    Serial.printf("%s:  chitchat %d freeze %d inp_token %d CONTROL[%s] ASAP[%s] SOON[%s] QUEUE[%s] LAST[%s] CMD[%s]\n",
-      who.c_str(), cp.chitchat, cp.freeze, cp.inp_token, cp.ctl_str.c_str(), cp.asap_str.c_str(), cp.soon_str.c_str(), cp.queue_str.c_str(), cp.last_str.c_str(), cp.cmd_str.c_str());
+    sendTxBuf(String::format("%s:  chitchat %d freeze %d inp_token %d CONTROL[%s] ASAP[%s] SOON[%s] QUEUE[%s] LAST[%s] CMD[%s]\n",
+      who.c_str(), cp.chitchat, cp.freeze, cp.inp_token, cp.ctl_str.c_str(), cp.asap_str.c_str(), cp.soon_str.c_str(), cp.queue_str.c_str(), cp.last_str.c_str(), cp.cmd_str.c_str()), true, true, true);
 }
 #endif

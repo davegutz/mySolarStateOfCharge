@@ -67,8 +67,8 @@ public:
             prefix_ = "* ";
         }
         no_check_ = no_check;
-        // Serial.printf("Adjust::Adjust cpt store 0x%Adjust ", store);
-        // Serial.printf("val_ptr_ 0x%Adjust\n", val_ptr_);
+        // sendTxBuf(String::format("Adjust::Adjust cpt store 0x%Adjust ", store), true, true, true);
+        // sendTxBuf(String::format("val_ptr_ 0x%Adjust\n", val_ptr_), true, true, true);
     }
 
     ~Adjust(){}
@@ -84,7 +84,7 @@ public:
 
     boolean off_nominal()
     {
-        // Serial.printf("val_ptr_ 0x%Adjust\n", val_ptr_);
+        // sendTxBuf(String::format("val_ptr_ 0x%Adjust\n", val_ptr_), true, true, true);
         return *val_ptr_ != default_;
         // return false;
     }
@@ -92,8 +92,7 @@ public:
     void print()
     {
         print_str();
-        String txBuf = String::format("%s\n", pr.buff);
-        sendTxBuf(txBuf, true, true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true, true);
     }
     
     void print_off()
@@ -101,8 +100,7 @@ public:
         if ( *val_ptr_ != default_ )
         {
             print_str();
-            String txBuf = String::format("%s\n", pr.buff);
-            sendTxBuf(txBuf, true, true, true);
+            sendTxBuf(String::format("%s\n", pr.buff), true, true, true);
         }
     }
     
@@ -116,8 +114,7 @@ public:
     void print_help()
     {
         print_help_str();
-        String txBuf = String::format("%s\n", pr.buff);
-        sendTxBuf(txBuf, true, true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true, true);
     }
 
     T value() { return *val_ptr_; }
@@ -200,7 +197,7 @@ public:
 
     virtual void set_push(const boolean val)
     {
-        if ( val>max_ || val<min_ ) Serial.printf("%s %s set_push:: out range %d (%d, %d)\n", code_.c_str(), description_.c_str(), val, min_, max_);
+        if ( val>max_ || val<min_ ) sendTxBuf(String::format("%s %s set_push:: out range %d (%d, %d)\n", code_.c_str(), description_.c_str(), val, min_, max_), true, true, true);
         else
         {
             *val_ptr_ = val;
@@ -240,7 +237,7 @@ public:
     virtual boolean is_corrupt()
     {
         boolean corrupt = *val_ptr_ > max_ || *val_ptr_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true, true);
         return corrupt;
     }
 
@@ -265,7 +262,7 @@ public:
 
     virtual void set_push(double val)
     {
-        if ( val>max_ || val<min_ ) Serial.printf("%s %s set_push:: out range %7.3f (%7.3f, %7.3f)\n", code_.c_str(), description_.c_str(), val, min_, max_);
+        if ( val>max_ || val<min_ ) sendTxBuf(String::format("%s %s set_push:: out range %7.3f (%7.3f, %7.3f)\n", code_.c_str(), description_.c_str(), val, min_, max_), true, true, true);
         else
         {
             *val_ptr_ = val;

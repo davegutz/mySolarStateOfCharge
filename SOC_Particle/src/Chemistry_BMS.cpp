@@ -55,7 +55,7 @@ void Chemistry::assign_all_chm()
         assign_CH();
     }
     else
-        Serial.printf("assign_all_mod:  unknown mod %d.  Type 'h' (Xm)\n", CHEM);
+        sendTxBuf(String::format("assign_all_mod:  unknown mod %d.  Type 'h' (Xm)\n", CHEM), true, true, true);
     r_ss = r_0 + r_ct;
 
 }
@@ -233,7 +233,7 @@ void Chemistry::assign_CH()
     dvoc = -0.14;      // Baked-in table bias
     dvoc_dt = 0.01;   // Change of VOC with operating temperature in range 0 - 50 C V/deg C (-0.01)
     hys_cap = 1.e4;    // Capacitance of hysteresis, Farads.  tau_null = 1 / 0.001 / 1.8e4 = 0.056 s (1e4)
-    Serial.printf("CH dv_min_abs=%7.3f, cap=%7.1f\n", dv_min_abs, hys_cap);
+    sendTxBuf(String::format("CH dv_min_abs=%7.3f, cap=%7.1f\n", dv_min_abs, hys_cap), true, true, true);
     low_voc = 9.;         // Voltage threshold for BMS to turn off battery (9.)
     low_t = 0;            // Minimum temperature for valid saturation check, because BMS shuts off battery low. Heater should keep >4, too. deg C (0.)
     r_0 = 0.0046 * 3.;    // ChargeTransfer R0, ohms (0.0046*3)
@@ -293,7 +293,7 @@ String Chemistry::decode(const uint8_t mod)
     else
     {
         result = "unknown";
-        Serial.printf("C::decode:  unknown mod %d. 'h' (Xm)\n", mod);
+        sendTxBuf(String::format("C::decode:  unknown mod %d. 'h' (Xm)\n", mod), true, true, true);
     }
     return (result);
 }
@@ -308,42 +308,44 @@ float Chemistry::lookup_voc(const float soc, const double tb_f)
 void Chemistry::pretty_print()
 {
 #ifndef SOFT_DEPLOY_PHOTON
-    Serial.printf("Chemistry:\n");
-    Serial.printf("  dqdt%7.3f, frac/dg C\n", dqdt);
-    Serial.printf("  dv_min_abs%7.3f, V\n", dv_min_abs);
-    Serial.printf("  dvoc%7.3f, V\n", dvoc);
-    Serial.printf("  dvoc_dt%7.3f, V/dg C\n", dvoc_dt);
-    Serial.printf("  hys_cap%7.0f, F\n", hys_cap);
-    Serial.printf("  low_t%7.3f, V\n", low_t);
-    Serial.printf("  low_voc%7.3f, V\n", low_voc);
-    Serial.printf("  v_sat%7.3f, V\n", v_sat);
-    Serial.printf("  vb_down%7.3f, shutoff, V\n", vb_down);
-    Serial.printf("  vb_down_sim%7.3f, shutoff, V\n", vb_down_sim);
-    Serial.printf("  vb_off%7.3f, shutoff, V (unused)\n", vb_off);
-    Serial.printf("  vb_rising%7.3f, turnon, V\n", vb_rising);
-    Serial.printf("  vb_rising_sim%7.3f, turnon, V\n", vb_rising_sim);
-    Serial.printf("  ChargeTransfer:\n");
-    Serial.printf("  c_sd%9.3g; EKF, farad\n", c_sd);
-    Serial.printf("  r_0%9.6f, ohm\n", r_0);
-    Serial.printf("  r_ct%9.6f, ohm\n", r_ct);
-    Serial.printf("  r_sd%7.0f, EKF, ohm\n", r_sd);
-    Serial.printf("  r_ss%9.6f, SS init, ohm\n", r_ss);
-    Serial.printf("  tau_ct%7.3f, s\n", tau_ct);
-    Serial.printf("  tau_sd%9.3g; EKF, s\n", tau_sd);
-    Serial.printf("  voc(t, soc):\n");
+    sendTxBuf(
+        String::format("Chemistry:\n") +
+        String::format("  dqdt%7.3f, frac/dg C\n", dqdt) +
+        String::format("  dv_min_abs%7.3f, V\n", dv_min_abs) +
+        String::format("  dvoc%7.3f, V\n", dvoc) +
+        String::format("  dvoc_dt%7.3f, V/dg C\n", dvoc_dt) +
+        String::format("  hys_cap%7.0f, F\n", hys_cap) +
+        String::format("  low_t%7.3f, V\n", low_t) +
+        String::format("  low_voc%7.3f, V\n", low_voc) +
+        String::format("  v_sat%7.3f, V\n", v_sat) +
+        String::format("  vb_down%7.3f, shutoff, V\n", vb_down) +
+        String::format("  vb_down_sim%7.3f, shutoff, V\n", vb_down_sim) +
+        String::format("  vb_off%7.3f, shutoff, V (unused)\n", vb_off) +
+        String::format("  vb_rising%7.3f, turnon, V\n", vb_rising) +
+        String::format("  vb_rising_sim%7.3f, turnon, V\n", vb_rising_sim) +
+        String::format("  ChargeTransfer:\n") +
+        String::format("  c_sd%9.3g + EKF, farad\n", c_sd) +
+        String::format("  r_0%9.6f, ohm\n", r_0) +
+        String::format("  r_ct%9.6f, ohm\n", r_ct) +
+        String::format("  r_sd%7.0f, EKF, ohm\n", r_sd) +
+        String::format("  r_ss%9.6f, SS init, ohm\n", r_ss) +
+        String::format("  tau_ct%7.3f, s\n", tau_ct) +
+        String::format("  tau_sd%9.3g, EKF, s\n", tau_sd) +
+        String::format("  voc(t, soc):\n") +
+        "", true, true, true);
     voc_T_->pretty_print();
-    Serial.printf("  soc_min(tb_f):\n");
+    sendTxBuf("  soc_min(tb_f):\n", true, true, true);
     soc_min_T_->pretty_print();
-    Serial.printf("  r(soc, dv):\n");
+    sendTxBuf("  r(soc, dv):\n", true, true, true);
     hys_T_->pretty_print();
-    Serial.printf("  s(soc, dv):\n");
+    sendTxBuf("  s(soc, dv):\n", true, true, true);
     hys_Ts_->pretty_print();
-    Serial.printf("  r_max(soc):\n");
+    sendTxBuf("  r_max(soc):\n", true, true, true);
     hys_Tx_->pretty_print();
-    Serial.printf("  r_min(soc):\n");
+    sendTxBuf("  r_min(soc):\n", true, true, true);
     hys_Tn_->pretty_print();
 #else
-     Serial.printf("Chemistry: silent DEPLOY\n");
+     sendTxBuf("Chemistry: silent DEPLOY\n"), true, true, true);
 #endif
 }
 
