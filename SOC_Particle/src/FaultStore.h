@@ -20,9 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-#ifndef _FAULT_H
-#define _FAULT_H
+#pragma once
 
 #include "Battery.h"
 #include "./hardware/SerialRAM.h"
@@ -90,5 +88,3 @@ public:
 protected:
   SerialRAM *rP_;
 };
-
-#endif

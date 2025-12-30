@@ -21,8 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _PARAMETERS_H
-#define _PARAMETERS_H
+#pragma once
 
 #include "constants.h"
 #include "Battery.h"
@@ -366,6 +365,3 @@ protected:
     uint16_t nhis_;         // Length of Flt_ram array for fault history
     uint16_t nsum_;         // Length of Sum array for history
 };
-
-
-#endif
