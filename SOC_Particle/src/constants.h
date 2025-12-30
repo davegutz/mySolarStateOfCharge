@@ -1,4 +1,4 @@
-/*  Heart rate and pulseox calculation Constants
+/*  Constants
 
 18-Dec-2020 	DA Gutz 	Created from MAXIM code.
 // Copyright (C) 2023 - Dave Gutz
@@ -23,8 +23,7 @@
 
 */
 
-#ifndef CONSTANTS_H_
-#define CONSTANTS_H_
+#pragma once
 
 // Hardware configuration
 #undef HDWE_UNIT
@@ -118,8 +117,8 @@ const String unit = version + "_" + HDWE_UNIT;
 // 292998  119852   10306  423168   67500 c:/Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/target/6.2.1/p2/SOC_Particle.elf
 
 #define NFLT    7  // Number of saved SRAM fault data slices 10 s intervals (7)
-#define NHIS   50  // Number of saved SRAM history data slices. If NFLT + NHIS too large will get compile error BACKUPSRAM (55)
-#define NSUM 2400  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error BACKUPSRAM, or GUI FRAG msg (2845) or SOS 4 Bus Fault (2500)
+#define NHIS   50  // Number of saved SRAM history data slices. If NFLT + NHIS too large will get compile error BACKUPSRAM (50)
+#define NSUM 500  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error BACKUPSRAM, or GUI FRAG msg (2845) or SOS 4 Bus Fault (2500)
 
 #define HDB_TBATT             0.06      // Half deadband to filter Tb, F (0.06)
 #define HDB_VB                0.05      // Half deadband to filter Vb, V (0.05)
@@ -333,5 +332,3 @@ const float VO_CONV_GAIN = float(PHOTON_ADC_VOLT) / float(PHOTON_ADC_COUNT) * fl
 
 const float VH3V3_CONV_GAIN = float(PHOTON_ADC_VOLT) / float(PHOTON_ADC_COUNT);
 const float VTB_CONV_GAIN = float(PHOTON_ADC_VOLT) / float(PHOTON_ADC_COUNT) * float(VTB_S);
-
-#endif // CONSTANTS_H_
