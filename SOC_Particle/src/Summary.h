@@ -21,9 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-#ifndef _MY_SUMMARY_H
-#define _MY_SUMMARY_H
+#pragma once
 
 #include "Sensors.h"
 #include "command.h"
@@ -32,5 +30,3 @@
 // Function prototypes
 void print_all_fault_buffer(const String code, struct Flt_st *sum, const uint16_t iflt, const uint16_t nflt);
 void reset_all_fault_buffer(const String code, struct Flt_st *sum, const uint16_t iflt, const uint16_t nflt);
-
-#endif

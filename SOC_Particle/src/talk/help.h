@@ -21,10 +21,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _HELP
-#define _HELP
+#pragma once
+
 #include "../Battery.h"
 
 void talkH(BatteryMonitor *Mon, Sensors *Sen);
-
-#endif

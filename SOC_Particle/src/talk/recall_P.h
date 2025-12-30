@@ -21,10 +21,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _RECALL_P
-#define _RECALL_P
+#pragma once
+
 #include "../Battery.h"
 
 boolean recall_P(const char letter_1, BatteryMonitor *Mon, Sensors *Sen);
-
-#endif

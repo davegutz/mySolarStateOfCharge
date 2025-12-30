@@ -21,8 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _MY_SUBS_H
-#define _MY_SUBS_H
+#pragma once
 
 #include "myLibrary/myFilters.h"
 #include "Battery.h"
@@ -124,5 +123,3 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const boo
   const unsigned long long elapsed, Pins *myPins, BatteryMonitor *Mon, Sensors *Sen);
 void sync_time(unsigned long long now, unsigned long long *last_sync, unsigned long long *millis_flip);
 String time_long_2_str(const time_t current_time, char *tempStr);
-
-#endif

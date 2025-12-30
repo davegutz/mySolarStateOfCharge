@@ -128,7 +128,8 @@ public:
     {
         if ( val>max_ || val<min_ )
         {
-            Serial.printf("%s %s set:: out range %d (%d, %d)\n", code_.c_str(), description_.c_str(), val, min_, max_);
+            sendTxBuf(String::format("%s %s set:: out range %d (%d, %d)\n", code_.c_str(), description_.c_str(), val, min_, max_),
+                true, true, true);
             return false;
         }
         else
@@ -147,7 +148,7 @@ public:
     virtual boolean is_corrupt()
     {
         boolean corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true, true);
         return corrupt;
     }
 
@@ -244,7 +245,8 @@ public:
     {
         if ( val>max_ || val<min_ )
         {
-            if ( val>max_ || val<min_ ) Serial.printf("%s %s set:: out range %7.3f (%7.3f, %7.3f)\n", code_.c_str(), description_.c_str(), val, min_, max_);
+            if ( val>max_ || val<min_ ) sendTxBuf(String::format("%s %s set:: out range %7.3f (%7.3f, %7.3f)\n", code_.c_str(),
+                description_.c_str(), val, min_, max_), true, true, true);
             return false;
         }
         else
@@ -266,7 +268,7 @@ public:
     virtual boolean is_corrupt()
     {
         boolean corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true, true);
         return corrupt;
     }
 
@@ -363,7 +365,8 @@ public:
     {
         if ( val>max_ || val<min_ )
         {
-            if ( val>max_ || val<min_ ) Serial.printf("%s %s set:: out range %7.3f (%7.3f, %7.3f)\n", code_.c_str(), description_.c_str(), val, min_, max_);
+            if ( val>max_ || val<min_ ) sendTxBuf(String::format("%s %s set:: out range %7.3f (%7.3f, %7.3f)\n", code_.c_str(),
+                description_.c_str(), val, min_, max_), true, true, true);
             return false;
         }
         else
@@ -385,7 +388,7 @@ public:
     virtual boolean is_corrupt()
     {
         boolean corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true, true);
         return corrupt;
     }
 
@@ -482,7 +485,8 @@ public:
     {
         if ( val>max_ || val<min_ )
         {
-            if ( val>max_ || val<min_ ) Serial.printf("%s %s set:: out range %d (%d, %d)\n", code_.c_str(), description_.c_str(), val, min_, max_);
+            if ( val>max_ || val<min_ ) sendTxBuf(String::format("%s %s set:: out range %d (%d, %d)\n", code_.c_str(),
+                description_.c_str(), val, min_, max_), true, true, true);
             return false;
         }
         else
@@ -504,7 +508,7 @@ public:
     virtual boolean is_corrupt()
     {
         boolean corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true, true);
         return corrupt;
     }
 
@@ -600,7 +604,8 @@ public:
     {
         if ( val>max_ || val<min_ )
         {
-            if ( val>max_ || val<min_ ) Serial.printf("%s %s set:: out range %d (%d, %d)\n", code_.c_str(), description_.c_str(), val, min_, max_);
+            if ( val>max_ || val<min_ ) sendTxBuf(String::format("%s %s set:: out range %d (%d, %d)\n", code_.c_str(),
+                description_.c_str(), val, min_, max_), true, true, true);
             return false;
         }
         else
@@ -622,7 +627,7 @@ public:
     virtual boolean is_corrupt()
     {
         boolean corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true, true);
         return corrupt;
     }
 
@@ -719,7 +724,8 @@ public:
     {
         if ( val>max_ || val<min_ )
         {
-            if ( val>max_ || val<min_ ) Serial.printf("%s %s set:: out range %d (%d, %d)\n", code_.c_str(), description_.c_str(), val, min_, max_);
+            if ( val>max_ || val<min_ ) sendTxBuf(String::format("%s %s set:: out range %d (%d, %d)\n", code_.c_str(),
+                description_.c_str(), val, min_, max_), true, true, true);
             return false;
         }
         else
@@ -738,7 +744,7 @@ public:
     virtual boolean is_corrupt()
     {
         boolean corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true, true);
         return corrupt;
     }
 
@@ -837,7 +843,8 @@ public:
     {
         if ( val>max_ || val<min_ )
         {
-            if ( val>max_ || val<min_ ) Serial.printf("%s %s set:: out range %d (%d, %d)\n", code_.c_str(), description_.c_str(), val, min_, max_);
+            if ( val>max_ || val<min_ ) sendTxBuf(String::format("%s %s set:: out range %d (%d, %d)\n", code_.c_str(),
+                description_.c_str(), val, min_, max_), true, true, true);
             return false;
         }
         else
@@ -856,7 +863,7 @@ public:
     virtual boolean is_corrupt()
     {
         boolean corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true, true);
         return corrupt;
     }
 
@@ -953,7 +960,8 @@ public:
     {
         if ( val>max_ || val<min_ )
         {
-            if ( val>max_ || val<min_ ) Serial.printf("%s %s set:: out range %ld (%ld, %ld)\n", code_.c_str(), description_.c_str(), val, min_, max_);
+            if ( val>max_ || val<min_ ) sendTxBuf(String::format("%s %s set:: out range %ld (%ld, %ld)\n", code_.c_str(),
+                description_.c_str(), val, min_, max_), true, true, true);
             return false;
         }
         else
@@ -975,7 +983,7 @@ public:
     virtual boolean is_corrupt()
     {
         boolean corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true, true);
         return corrupt;
     }
 
