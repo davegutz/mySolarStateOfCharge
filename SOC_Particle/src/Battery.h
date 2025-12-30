@@ -21,9 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-#ifndef BATTERY_H_
-#define BATTERY_H_
+#pragma once
 
 #include "myLibrary/myTables.h"
 #include "myLibrary/EKF_1x1.h"
@@ -285,5 +283,3 @@ protected:
 
 
 // Methods
-
-#endif

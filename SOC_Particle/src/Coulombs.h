@@ -20,9 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-#ifndef COULOMBS_H_
-#define COULOMBS_H_
+#pragma once
 
 #include "Battery.h"
 #include "Chemistry_BMS.h"
@@ -107,5 +105,3 @@ protected:
   double time_pos_;   // Time spent accumulating delta_q_pos_, s
   Chemistry chem_;    // Chemistry
 };
-
-#endif

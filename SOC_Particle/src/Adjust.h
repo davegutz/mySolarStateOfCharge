@@ -21,8 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ADJUST_H_
-#define ADJUST_H_
+#pragma once
 
 #include "hardware/SerialRAM.h"
 #include "PrinterPars.h"
@@ -272,5 +271,3 @@ public:
 
 protected:
 };
-
-#endif

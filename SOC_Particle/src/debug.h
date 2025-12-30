@@ -23,8 +23,8 @@
 
 */
 
-#ifndef DEBUG_H_
-#define DEBUG_H_
+#pragma once
+
 #include "subs.h"
 
 void add_verify(String *src, const String addend);
@@ -48,5 +48,3 @@ void debug_q(BatteryMonitor *Mon, Sensors *Sen);
 #ifdef SOFT_DEBUG_QUEUE
     void debug_queue(const String who);
 #endif
-
-#endif  // DEBUG_H

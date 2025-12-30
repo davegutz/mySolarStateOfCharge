@@ -20,10 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-#ifndef CHEMISTRY_BMS_H_
-#define CHEMISTRY_BMS_H_
-
+#pragma once
 
 // Battery Management System - built into battery
 struct BMS
@@ -89,6 +86,3 @@ public:
   void put_dz_voc(const float dz_voc) { voc_T_->put_dz(dz_voc); }
 
 };
-
-
-#endif
