@@ -22,7 +22,8 @@
 //
 // 17-Feb-2021  Dave Gutz   Create
 
-#pragma once
+#ifndef _SYNC_H
+#define _SYNC_H
 
 // Duct Sim Class
 class Sync
@@ -54,3 +55,5 @@ private:
   double updateTime_;
   double updateTimeInput_;
 };
+
+#endif

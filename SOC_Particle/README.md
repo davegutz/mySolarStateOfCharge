@@ -822,7 +822,7 @@ Amazon:  5 Pieces I2C Display Module 0.91 Inch I2C OLED Display Module Blue I2C 
 
 ### SOS 4 Flashing lights on Photon 2 (Bus Fault)
 
-This is caused by using too much memory.  Reduce NSUM.
+This is caused by using too much memory.  Reduce NSUM.  I've had issues once this SOS begins I have back way off on configuration to get a good build again.  Clean?  Not sure.  Trial and error and it works again.
 
 ### DS2482SearchBusCommand status=-7 in serial monitor
 

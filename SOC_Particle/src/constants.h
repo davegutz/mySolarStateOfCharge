@@ -111,14 +111,17 @@ const String unit = version + "_" + HDWE_UNIT;
 #define SCL_30000             30000.    // Data storage integer scaling
 
 // If NSUM too large, will get flashing red with auto reboot on 'Hs' or compile error `.data' will not fit in region `APP_FLASH'
-// For all, there are 40 bytes for each unit of NSUM
+// For all, there are 47 bytes for each unit of NSUM.
+//   For example, if know max possible is ~423168 and NSUM is presently 500 and total with that is 333800 then can add
+//     ( 423168 - 333800 ) / 47  = 1900.  In theory could add 1900 for NSUM=2400.
+// 
 // Baseline compile information 20251227
 //   text    data     bss     dec     hex filename
 // 292998  119852   10306  423168   67500 c:/Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/target/6.2.1/p2/SOC_Particle.elf
 
 #define NFLT    7  // Number of saved SRAM fault data slices 10 s intervals (7)
 #define NHIS   50  // Number of saved SRAM history data slices. If NFLT + NHIS too large will get compile error BACKUPSRAM (50)
-#define NSUM 500  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error BACKUPSRAM, or GUI FRAG msg (2845) or SOS 4 Bus Fault (2500)
+#define NSUM 500  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error BACKUPSRAM, or GUI FRAG msg (2845) or SOS 4 Bus Fault (2400)
 
 #define HDB_TBATT             0.06      // Half deadband to filter Tb, F (0.06)
 #define HDB_VB                0.05      // Half deadband to filter Vb, V (0.05)
