@@ -665,7 +665,7 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const boo
       Sen->end_inj += Sen->now - Sen->start_inj;
       Sen->stop_inj += Sen->now - Sen->start_inj;
       Sen->start_inj = Sen->now;
-      Serial.printf("SYNC,%7.3f\n", double(Sen->now)/1000.);
+      sendTxBuf(String::format("SYNC,%7.3f\n", double(Sen->now)/1000.), true, true, true);
     }
 
     Sen->elapsed_inj = Sen->now - Sen->start_inj + 1UL; // Shift by 1 because using ==0 as reset button
@@ -680,7 +680,7 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const boo
 
   else if ( Sen->elapsed_inj && sp.tweak_test() )  // Done.  elapsed_inj set to 0 is the reset button
   {
-    Serial.printf("STOP echo\n");
+    sendTxBuf("STOP echo\n", true, true, true);
     Sen->elapsed_inj = 0ULL;
     chit("vv0;", ASAP);    // Turn off echo
     chit("Xp0;", SOON);    // Reset
@@ -725,8 +725,6 @@ void sync_time(unsigned long long now, unsigned long long *last_sync, unsigned l
 // For summary prints
 String time_long_2_str(const time_t time, char *tempStr)
 {
-    // Serial.printf("Time.year:  time_t %d ul %d as-is %d\n", 
-    //   Time.year((time_t) 1703267248), Time.year((unsigned long )1703267248), Time.year(time));
     uint32_t year = Time.year(time);
     uint8_t month = Time.month(time);
     uint8_t day = Time.day(time);
@@ -734,7 +732,5 @@ String time_long_2_str(const time_t time, char *tempStr)
     uint8_t minutes   = Time.minute(time);
     uint8_t seconds   = Time.second(time);
     sprintf(tempStr, "%4u-%02u-%02uT%02u:%02u:%02u", int(year), month, day, hours, minutes, seconds);
-    // Serial.printf("time_long_2_str: %lld %ld %d %d %d %d %d\n", time, year, month, day, hours, minutes, seconds);
-    // sprintf(tempStr, "time_long_2_str");
     return ( String(tempStr) );
 }

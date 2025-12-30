@@ -124,7 +124,7 @@ void setup()
   Serial.begin(SOFT_SBAUD);
   Serial.flush();
   delay(1000);          // Ensures a clean display
-  Serial.printf("Hi!\n");
+  sendTxBuf("Hi!\n", true, true, true);
 
   // BLE
 	BLE.on();

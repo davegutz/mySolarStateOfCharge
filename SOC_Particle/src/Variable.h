@@ -21,8 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef VARIABLE_H_
-#define VARIABLE_H_
+#pragma once
 
 #include "hardware/SerialRAM.h"
 #include "PrinterPars.h"
@@ -1043,5 +1042,3 @@ protected:
     unsigned long max_;
     unsigned long default_;
 };
-
-#endif
