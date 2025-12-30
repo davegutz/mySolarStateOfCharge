@@ -123,27 +123,29 @@ void EKF_1x1::init_ekf(double soc, double Pinit)
  void EKF_1x1::pretty_print(void)
  {
 #ifndef SOFT_DEPLOY_PHOTON
-  Serial.printf("EKF_1x1:\n");
-  Serial.printf("In:\n");
-  Serial.printf("  u  %8.4f, A\n", u_);
-  Serial.printf("  frz %d, T=frz\n", freeze_);
-  Serial.printf("  dt_ekf %8.4f, s\n", dt_ekf_);
-  Serial.printf("  z  %8.4f, V\n", z_);
-  Serial.printf("  R%13.10f\n", R_);
-  Serial.printf("  Q%13.10f\n", Q_);
-  Serial.printf("  H   %7.3f\n", H_);
-  Serial.printf("Out:\n");
-  Serial.printf("  xp %13.10f, Vsoc (0-1 fraction)\n", x_prior_);
-  Serial.printf("  x  %13.10f, Vsoc (0-1 fraction)\n", x_);
-  Serial.printf("  Fx %13.10f\n", Fx_);
-  Serial.printf("  Bu %13.10f\n", Bu_);
-  Serial.printf("  hx %8.4f\n", hx_);
-  Serial.printf("  y   %8.4f, V\n", y_);
-  Serial.printf("  Pp%13.10f\n", P_prior_);
-  Serial.printf("  P%13.10f\n", P_);
-  Serial.printf("  K%13.10f\n", K_);
-  Serial.printf("  S%13.10f\n", S_);
+  sendTxBuf(
+    String::format("EKF_1x1:\n") +
+    String::format("In:\n") +
+    String::format("  u  %8.4f, A\n", u_) +
+    String::format("  frz %d, T=frz\n", freeze_) +
+    String::format("  dt_ekf %8.4f, s\n", dt_ekf_) +
+    String::format("  z  %8.4f, V\n", z_) +
+    String::format("  R%13.10f\n", R_) +
+    String::format("  Q%13.10f\n", Q_) +
+    String::format("  H   %7.3f\n", H_) +
+    String::format("Out:\n") +
+    String::format("  xp %13.10f, Vsoc (0-1 fraction)\n", x_prior_) +
+    String::format("  x  %13.10f, Vsoc (0-1 fraction)\n", x_) +
+    String::format("  Fx %13.10f\n", Fx_) +
+    String::format("  Bu %13.10f\n", Bu_) +
+    String::format("  hx %8.4f\n", hx_) +
+    String::format("  y   %8.4f, V\n", y_) +
+    String::format("  Pp%13.10f\n", P_prior_) +
+    String::format("  P%13.10f\n", P_) +
+    String::format("  K%13.10f\n", K_) +
+    String::format("  S%13.10f\n", S_) +
+    "", true, true, true);
 #else
-     Serial.printf("EKF_1x1: silent DEPLOY\n");
+     sendTxBuf("EKF_1x1: silent DEPLOY\n", true, true, true);
 #endif
  }
