@@ -21,8 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _CHITCHAT
-#define _CHITCHAT
+#pragma once
 
 enum urgency {INCOMING, CONTROL, ASAP, SOON, QUEUE, NEW, LAST};
 typedef enum urgency urgency;
@@ -40,5 +39,3 @@ String chit_nibble_inp();
 void cmd_echo(urgency request);
 urgency chit_classify_nibble(String *nibble);
 void describe(BatteryMonitor *Mon, Sensors *Sen);
-
-#endif
