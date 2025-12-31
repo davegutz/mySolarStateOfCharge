@@ -361,15 +361,9 @@ void clear_queues()
 void cmd_echo(urgency request)
 {
   if ( request==0 )
-  {
-    Serial.printf ("cmd: %s\n", cp.cmd_str.c_str());
-    Serial1.printf ("cmd: %s\n", cp.cmd_str.c_str());
-  }
+    sendTxBuf(String::format("cmd: %s\n", cp.cmd_str.c_str()), true, true, true);
   else
-  {
-    Serial.printf ("echo: %s, %d\n", cp.cmd_str.c_str(), request);
-    Serial1.printf("echo: %s, %d\n", cp.cmd_str.c_str(), request);
-  }
+    sendTxBuf(String::format("echo: %s, %d\n", cp.cmd_str.c_str(), request), true, true, true);
 }
 
 
