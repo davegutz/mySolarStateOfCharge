@@ -94,6 +94,7 @@ extern PublishPars pp;            // For publishing
 extern Flt_st mySum[NSUM];        // Summaries for saving charge history
 extern BleCharacteristic txCharacteristic;  // Transmit to BLE
 extern BleCharacteristic rxCharacteristic;  // Receive from BLE
+extern uint8_t ble_first_char;    // BLE status
 
 retained Flt_st saved_hist[NHIS];    // For displaying history
 retained Flt_st saved_faults[NFLT];  // For displaying faults
@@ -108,6 +109,7 @@ BleCharacteristic rxCharacteristic("rx", BleCharacteristicProperty::WRITE_WO_RSP
 BleCharacteristic txCharacteristic("tx", BleCharacteristicProperty::NOTIFY, txUuid, serviceUuid);
 unsigned long long millis_flip = System.millis(); // Timekeeping
 unsigned long long last_sync = System.millis();   // Timekeeping
+uint8_t ble_first_char = '\0';        // Serial coordination
 
 int num_timeouts = 0;           // Number of Particle.connect() needed to unfreeze
 String hm_string = "00:00";     // time, hh:mm

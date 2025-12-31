@@ -29,6 +29,7 @@
 
 extern CommandPars cp;  // Various parameters shared at system level
 extern BleCharacteristic txCharacteristic;
+extern uint8_t ble_first_char;    // BLE status
 
 // Strip cmd string from front of source string
 String chat_cmd_from(String *source)
@@ -500,123 +501,7 @@ void serialEvent()
 }
 
 
-void serialEvent1()
-{
-  static String serial_str1 = "";
-  static boolean serial_ready1 = false;
-
-  // Each pass try to complete input from avaiable
-  while ( !serial_ready1 && Serial1.available() )
-  {
-    char in_char1 = (char)Serial1.read();  // get the new byte
-
-    // Intake
-    // if the incoming character to finish, add a ';' and set flags so the main loop can do something about it:
-    if ( is_finished(in_char1) )
-    {
-        serial_str1 += ';';
-        serial_ready1 = true;
-        break;
-    }
-
-    else if ( in_char1 == '\r' )
-        Serial1.printf("\n");  // scroll user terminal
-
-    else if ( in_char1 == '\b' && serial_str1.length() )
-    {
-        Serial1.printf("\b \b");  // scroll user terminal
-        serial_str1.remove(serial_str1.length() -1 );  // backspace
-    }
-
-    else
-        serial_str1 += in_char1;  // process new valid character
-  }
-
-  // Pass info to inp_str
-  if ( serial_ready1 )
-  {
-      if ( !cp.inp_token )
-      {
-          cp.inp_token = true;
-          cp.inp_str += serial_str1;
-          serial_ready1 = false;
-          cp.inp_token = false;
-          serial_str1 = "";
-      }
-  }
-}
-
 // Wait on user input to reset EERAM values
-void wait_on_user_input(Adafruit_SSD1306 *display)
-{
-  display->clearDisplay();
-  display->setTextSize(1);              // Normal 1:1 pixel scale
-  display->setTextColor(SSD1306_WHITE); // Draw white text
-  display->setCursor(0,0);              // Start at top-left corner    sp.print_versus_local_config();
-  display->println("Waiting for USB/BT talk\n\nignores after 120s");
-  display->display();
-  uint8_t count = 0;
-  uint16_t answer = '\r';
-  // Get user input but timeout at 120 seconds if no response
-  while ( count<30 && answer!='Y' && answer!='y' && answer!='n' && answer!='N' )
-  {
-    if ( answer=='\r')
-    {
-      count++;
-      if ( count>1 ) delay(4000);
-    }
-    else delay(100);
-
-    if ( Serial.available() )
-      answer=Serial.read();
-    else if ( Serial1.available() )
-      answer=Serial1.read();
-    else
-      Serial.printf("unavail\n");
-
-    if ( answer=='\r')
-    {
-      Serial.printf("\n\n");
-      sp.pretty_print( false );
-      Serial.printf("Reset to defaults? [y/n]:"); Serial1.printf("Reset to defaults? [y/n]:");
-    }
-    else  // User is typing.  Ignore him until they answer 'Y', 'y', 'N', or 'n'.  But timeout seconds if they don't and assume 'N'
-    {
-      while ( answer!='Y' &&  answer!='y' && answer!='N' && answer!='n' && count<30 )
-      {
-        if ( Serial.available() )
-          answer=Serial.read();
-
-        else if ( Serial1.available() )
-          answer=Serial1.read();
-
-        else
-        {
-          Serial.printf("?");
-          count++;
-          delay(1000);
-        }
-      }
-    }
-
-  }
-
-  // Wrap it up
-  if ( answer=='Y' || answer=='y' )
-  {
-    Serial.printf(" ...yes\n\n"); Serial1.printf(" ...yes\n\n");
-    sp.set_nominal();
-    sp.pretty_print( true );
-    System.backupRamSync();
-  }
-  else if ( answer=='n' || answer=='N' || count==30 )
-  {
-    Serial.printf(" N.  moving on...\n\n"); Serial1.printf(" N.  moving on...\n\n");
-  }
-
-}
-
-
 void wait_on_user_input()
 {
   uint8_t count = 0;
@@ -633,33 +518,41 @@ void wait_on_user_input()
 
     if ( Serial.available() )
       answer=Serial.read();
-    else if ( Serial1.available() )
-      answer=Serial1.read();
+
+    else if ( ble_first_char!='\0' )
+    {
+      answer = ble_first_char;
+      ble_first_char = '\0';
+    }
+
     else
       Serial.printf("unavail\n");
 
     if ( answer=='\r')
     {
-      Serial.printf("\n\n");
+      sendTxBuf("\n\n", true, true);
       sp.pretty_print( false );
-      Serial.printf("Reset to defaults? [y/n]:"); Serial1.printf("Reset to defaults? [y/n]:");
+      sendTxBuf("Reset to defaults? [y/n]:", true, true);
     }
     else  // User is typing.  Ignore him until they answer 'Y', 'N', or 'n'.  But timeout at 30 seconds if they don't
     {
       while ( answer!='Y' && answer!='y' && answer!='N' && answer!='n' && count<30 )
       {
         if ( Serial.available() )
-          answer=Serial.read();
+          answer = Serial.read();
 
-        else if ( Serial1.available() )
-          answer=Serial1.read();
+        else if ( ble_first_char!='\0' )
+        {
+          answer = ble_first_char;
+          ble_first_char = '\0';
+        }
 
         else
-        {
-          Serial.printf("?");
-          count++;
-          delay(1000);
-        }
+          {
+            Serial.printf("?");
+            count++;
+            delay(1000);
+          }
       }
     }
 
