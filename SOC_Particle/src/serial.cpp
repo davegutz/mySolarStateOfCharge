@@ -560,7 +560,7 @@ void wait_on_user_input()
   // Wrap it up
   if ( answer=='Y' || answer=='y' )
   {
-    sendTxBuf("  Y\n\n", true, true);
+    sendTxBuf("  Y reset\n\n", true, true);
     sp.set_nominal();
     sp.pretty_print( true );
     System.backupRamSync();
