@@ -357,7 +357,7 @@ void clear_queues()
 }
 
 
-// Limited echoing of Serial1 commands available
+// Limited echoing of BLE commands available
 void cmd_echo(urgency request)
 {
   if ( request==0 )
@@ -476,7 +476,7 @@ void describe(BatteryMonitor *Mon, Sensors *Sen)
       // This was not done for all passes just to save only when an adjustment change verified by user (* parameters), to avoid SRAM life impact.
       case ( 'w' ):  // w:  confirm write * adjustments to to SRAM
         System.backupRamSync();
-        Serial.printf("SAVED *\n"); Serial1.printf("SAVED *\n");
+        sendTxBuf("SAVED *\n", true, true);
         break;
 
       case ( 'W' ):  // W<>:  wait.  Skip

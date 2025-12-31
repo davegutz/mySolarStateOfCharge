@@ -51,8 +51,7 @@ boolean recall_P(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             break;
 
         case ( 'e' ):  // Pe:  Print EKF
-            Serial.printf ("\nMon::"); Mon->EKF_1x1::pretty_print();
-            Serial1.printf("\nMon::"); Mon->EKF_1x1::pretty_print();
+            sendTxBuf("\nMon::", true, true); Mon->EKF_1x1::pretty_print();
             break;
 
         case ( 'f' ):  // Pf:  Print faults

@@ -450,7 +450,7 @@ void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean send
   Particle documentation says not to use something like the cp.inp_token in the while loop statement.
   They suggest handling all the data in one call.   But this works, so far.
 
-  serialEvent handles Serial.  serialEvent1 handles Serial1.
+  serialEvent handles Serial
  */
 void serialEvent()
 {
