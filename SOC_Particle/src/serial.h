@@ -69,6 +69,7 @@ void print_signal_sel_header(void);
 void print_ekf_header(void);
 void rapid_print(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
 void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendBLE);
+void sendTxBuf(const char* txBuf, const boolean sendSerial, const boolean sendBLE);
 void wait_on_user_input();
 
 #endif

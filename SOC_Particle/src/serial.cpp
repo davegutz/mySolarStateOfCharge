@@ -441,7 +441,22 @@ void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean send
     // BLE notify (chunked)
     if ( sendBLE ) bleSendChunked(txCharacteristic, reinterpret_cast<const uint8_t*>(txBuf.c_str()), txBuf.length());
 }
+void sendTxBuf(const char* txBuf, const boolean sendSerial, const boolean sendBLE)
+{
+  // Calculate the length of the char array
+  size_t bufLength = strlen(txBuf);
 
+  // USB serial
+  if ( sendSerial ) {
+    Serial.print(txBuf);
+  }
+
+  // BLE notify (chunked)
+  if ( sendBLE ) {
+    // The char* is already compatible with const uint8_t* for this use case
+    bleSendChunked(txCharacteristic, reinterpret_cast<const uint8_t*>(txBuf), bufLength);
+  }
+}
 /*
   Special handler for UART usb that uses built-in callback. SerialEvent occurs whenever a new data comes in the
   hardware serial RX.  This routine is run between each time loop() runs, so using delay inside loop can delay

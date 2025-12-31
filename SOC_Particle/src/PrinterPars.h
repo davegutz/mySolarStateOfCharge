@@ -21,12 +21,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef pr_par_
-#define pr_par_
+#pragma once
 
  struct PrinterPars
  {
   char buff[220];
  };
-
-#endif
