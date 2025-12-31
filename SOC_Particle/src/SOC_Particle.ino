@@ -125,7 +125,7 @@ void setup()
   Serial.begin(SOFT_SBAUD);
   Serial.flush();
   delay(1000);          // Ensures a clean display
-  Serial.printf("Hi!\n");
+  sendTxBuf("Hi!\n", true, true);
 
   // BLE
 	BLE.on();
@@ -169,10 +169,10 @@ void setup()
     Log.info("setup I2C Wire");
     #ifdef HDWE_ADS1013_AMP_NOA
       Wire.setSpeed(CLOCK_SPEED_100KHZ);
-      Serial.printf("Nominal Wire setup for ADS1013\n");
+      sendTxBuf("Nominal Wire setup for ADS1013\n", true, true;
     #else
       Wire.setSpeed(CLOCK_SPEED_100KHZ);
-      Serial.printf("Wire started\n");
+      sendTxBuf("Wire started\n", true, true);
     #endif
     Wire.begin();
     delay(1000);
@@ -182,9 +182,9 @@ void setup()
 
   // 1-Wire chip card for I2C (after start Wire)
   #if defined(HDWE_2WIRE)
-    Serial.printf("Using 2Wire Temperature sensor\n");
+    sendTxBuf("Using 2Wire Temperature sensor\n", true, true);
   #elif defined(HDWE_BARE)
-    Serial.printf("Going naked\n");
+    sendTxBuf("Going naked\n", true, true);
   #else
     #error "Temperature sensor undefined"
   #endif
@@ -195,23 +195,23 @@ void setup()
   delay(2000);
   WiFi.off();
   delay(1000);
-  Serial.printf("Done WiFi\n");
-  Serial.printf("done CLOUD\n");
+  sendTxBuf("Done WiFi\n", true, true);
+  sendTxBuf("done CLOUD\n", true, true);
 
   // Clean boot logic.  This occurs only when doing a structural rebuild clean make on initial flash, because
   // the SRAM is not explicitly initialized.   This is by design, as SRAM must be remembered between boots
   // Time is never changed by this operation.  It could be corrupt.  Change using "UT" talk feature.
-  Serial.printf("Check corruption......");
+  sendTxBuf("Check corruption......", true, true);
   if ( sp.is_corrupt() )
   {
-    Serial.printf("\n\n");
+    sendTxBuf("\n\n", true, true);
     sp.pretty_print( false );
-    Serial.printf("\n\n");
+    sendTxBuf("\n\n", true, true);
     sp.set_nominal();
-    Serial.printf("Fixed corruption\n");
+    sendTxBuf("Fixed corruption\n", true, true);
     sp.pretty_print(true);
   }
-  else Serial.printf("clean\n");
+  else sendTxBuf("clean\n", true, true);
 
   // Determine System.millis() at turn of Time.now   Used to improve accuracy of timing.
   long time_begin = Time.now();
@@ -246,7 +246,7 @@ void setup()
   }
 
   Log.info("setup end");
-  Serial.printf("End setup()\n\n");
+  sendTxBuf("End setup()\n\n", true, true);
 } // setup
 
 
@@ -324,15 +324,18 @@ void loop()
     if ( reset_temp )
     {
       Sen->Tb_model = Sen->Tb_model_filt = RATED_TEMP + ap.Tb_bias_model;
-  if ( sp.debug()==16 ) Serial.printf("SOC_Particle.ino ln 396 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt, %11.8f %11.8f\n",
-        Sen->Tb_model, Sen->Tb_model_filt);
+    
+      if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 396 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt, %11.8f %11.8f\n",
+        Sen->Tb_model, Sen->Tb_model_filt), true, true);
     }
     Log.info("ino:  temp_load_and_filter");
+    
     Sen->temp_load_and_filter(Sen, reset_temp);
     Sen->select_temp(Mon);
     Sen->Tb_model = Sen->Tb_model_filt = Sen->Sim->tb_f();
-  if ( sp.debug()==16 ) Serial.printf("SOC_Particle.ino ln 403 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
-        reset_temp, Sen->Sim->tb_f(), Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate);
+
+    if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 403 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
+        reset_temp, Sen->Sim->tb_f(), Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate), true, true);
     Log.info("ino:  print_temp_serial");
     print_temp_serial(reset_temp, Sen);
   }
@@ -342,7 +345,7 @@ void loop()
     if ( read )
     {
       Log.info("Read shunt");
-      if ( reset_kf ) Serial.printf(" SOC_Particle:  reseting kfs\n");
+      if ( reset_kf )sendTxBuf(" SOC_Particle:  reseting kfs\n", true, true);
       Sen->ShuntAmp->sample(reset_kf);
       Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.);
       Sen->ShuntNoAmp->sample(reset_kf);
@@ -449,7 +452,7 @@ void loop()
     sp.put_Isum(sp.isum_z + 1);
     if ( sp.isum_z > (uint16_t)(sp.nsum()-1) ) sp.put_Isum(0);  // wrap buffer
     mySum[sp.isum_z].copy_to_Flt_ram_from(hist_bounced);
-    Serial.printf("Summ...\n");
+    sendTxBuf("Summ...\n", true, true);
     cp.write_summary = false;
   }
 
@@ -460,11 +463,11 @@ void loop()
   if ( read )
   {
     reset = reset_kf = cp.kf_reset_print = false;
-    if ( reset_temp ) Serial.printf("*");
+    if ( reset_temp ) sendTxBuf("*", true, true);
   }
   if ( read_temp && elapsed_reset>ap.temp_delay && reset_temp )
   {
-    Serial.printf("...temp init complete\n");
+    sendTxBuf("...temp init complete\n", true, true);
     reset_temp = false;
   }
   if ( cp.publishS ) reset_publish = false;
