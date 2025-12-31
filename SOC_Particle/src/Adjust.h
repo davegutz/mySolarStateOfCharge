@@ -104,31 +104,17 @@ public:
         }
     }
     
-    void print1()
-    {
-        print_str();
-        sendTxBuf(pr.buff, false, true, true);
-    }
-
     void print_adj_print(const T input)
     {
         print();
-        print1();
         set_push(input);
         print();
-        print1();
     }
 
     void print_help()
     {
         print_help_str();
         Serial.printf("%s\n", pr.buff);
-    }
-
-    void print1_help()
-    {
-        print_help_str();
-        sendTxBuf(pr.buff, false, true, true);
     }
 
     T value() { return *val_ptr_; }

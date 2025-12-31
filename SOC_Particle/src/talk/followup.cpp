@@ -123,7 +123,7 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
 
                 case ( 'v' ):  //     Dv<>:  voltage signal adder for faults
                     if ( ap.vb_add_p->success() )
-                        ap.vb_add_p->print1();
+                        ap.vb_add_p->print();
                     break;
 
                 case ( 'w' ):  //   Dw<>:  Battery Monitor dz_voc bias

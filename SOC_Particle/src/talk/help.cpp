@@ -65,21 +65,15 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.init_all_soc_p->print_help();  // Ca
   Serial.printf("  Cm=  model (& ekf if mod)- '(0-1.1)'\n"); 
   ap.ekf_x_p->print_help();  // Ce
-  ap.ekf_x_p->print1_help();  // Ce
   ap.ekf_p_p->print_help();  // Cp
-  ap.ekf_p_p->print1_help();  // Cp
 
   Serial.printf("\nD/S<?> Adj e.g.:\n");
   sp.ib_bias_amp_p->print_help();  //* DA
-  sp.ib_bias_amp_p->print1_help();  //* DA
   sp.ib_bias_noa_p->print_help();  //* DB
-  sp.ib_bias_noa_p->print1_help();  //* DB
   sp.Vb_bias_hdwe_p->print_help();  //* Dc
-  sp.Vb_bias_hdwe_p->print1_help();  //* Dc
   ap.sum_delay_p->print_help();  //  Dh
   Serial.printf("    set 'Dh0;' for nominal\n");
   sp.ib_bias_all_p->print_help();  //* DI
-  sp.ib_bias_all_p->print1_help();  //* DI
   sp.ib_bias_amp_p->print_help();  //  Dm
   ap.eframe_mult_p->print_help();  //  ED
   ap.ib_max_amp_p->print_help();  // Mm
@@ -97,40 +91,28 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.ds_voc_soc_p->print_help();  //  Ds
   sp.vsat_add_p->print_help();  //  DS
   sp.Tb_bias_hdwe_p->print_help();  //* Dt
-  sp.Tb_bias_hdwe_p->print1_help();  //* Dt
   ap.Tb_noise_amp_p->print_help();  // DT
   ap.vb_add_p->print_help();  // Dv
   ap.Vb_noise_amp_p->print_help();  // DV
   sp.Dw_p->print_help();  //* Dw
-  sp.Dw_p->print1_help();  //* Dw
   ap.dv_voc_soc_p->print_help();  //  Dy
   ap.Tb_bias_model_p->print_help();  // D^
   ap.talk_delay_p->print_help();  //  D>
   sp.ib_scale_amp_p->print_help();  //* SA
-  sp.ib_scale_amp_p->print1_help();  //* SA
   sp.ib_scale_noa_p->print_help();  //* SB
-  sp.ib_scale_noa_p->print1_help();  //* SB
   sp.ib_disch_slr_p->print_help();  //* SD
-  sp.ib_disch_slr_p->print1_help();  //* SD
   ap.hys_scale_p->print_help();  //  Sh
   ap.hys_state_p->print_help();  //  SH
   sp.cutback_gain_slr_p->print_help();  //* Sk
   sp.s_cap_mon_p->print_help();  //* SQ
-  sp.s_cap_mon_p->print1_help();  //* SQ
   sp.s_cap_sim_p->print_help();  //* Sq
-  sp.s_cap_sim_p->print1_help();  //* Sq
   sp.Vb_scale_p->print_help();  //* SV
-  sp.Vb_scale_p->print1_help();  //* SV
   ap.q_std_p->print_help();  // Kq
-  ap.q_std_p->print1_help();  // Kq
   ap.r_std_p->print_help();  // Kr
-  ap.r_std_p->print1_help();  // Kr
 
   Serial.printf("\nF<?>   Faults\n");
   ap.cc_diff_slr_p->print_help();  // Fc
-  ap.ib_diff_slr_p->print1_help();  // Fd
   ap.fake_faults_p->print_help();  // Ff
-  ap.fake_faults_p->print1_help();  // Ff
   ap.ewhi_slr_p->print_help();  // Fi
   ap.ewlo_slr_p->print_help();  // Fo
   ap.ib_quiet_slr_p->print_help();  // Fq
@@ -175,21 +157,14 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
 
   sp.ib_force_p->print_help();  //* si
   sp.Time_now_p->print_help();  //* UT
-  sp.Time_now_p->print1_help();  //* UT
   time_long_2_str((time_t)sp.Time_now_z, buffer);
   Serial.printf(" time %ld hms:  %s\n", sp.Time_now_z, buffer);
   ap.ekf_conv_p->print_help();  // VC
-  ap.ekf_conv_p->print1_help();  // VC
   ap.ekf_q_p->print_help();  // VQ
-  ap.ekf_q_p->print1_help();  // VQ
   ap.ekf_r_p->print_help();  // VR
-  ap.ekf_r_p->print1_help();  // VR
   ap.voc_stat_filt_p->print_help();  // VS
-  ap.voc_stat_filt_p->print1_help();  // VS
   ap.tb_filt_p->print_help();  // VT
-  ap.tb_filt_p->print1_help();  // VT
   sp.debug_p->print_help();  // vv
-  sp.debug_p->print1_help();  // vv
 
   Serial.printf("  -<>: Negative - Arduino plot compatible\n");
   Serial.printf(" vv-2: ADS counts for throughput meas\n");
