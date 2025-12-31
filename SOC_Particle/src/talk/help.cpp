@@ -41,38 +41,38 @@ extern Flt_st mySum[NSUM];  // Summaries for saving charge history
 void talkH(BatteryMonitor *Mon, Sensors *Sen)
 {
   char buffer[32];
-  Serial.printf("No help photon for test. Look at code.\n");
-  Serial.printf("\n\nHelp menu.  Omit '=' and end entry with ';'\n");
+  sendTxBuf("No help photon for test. Look at code.\n", true, true);
+  sendTxBuf("\n\nHelp menu.  Omit '=' and end entry with ';'\n", true, true);
 
   #ifndef HELPLESS
-  Serial.printf("\nb<?>   Manage fault buffer\n");
-  Serial.printf("  bd= "); Serial.printf("dump fault buffer\n");
-  Serial.printf("  bh= "); Serial.printf("reset history buffer\n");
-  Serial.printf("  br= "); Serial.printf("reset fault buffer\n");
-  Serial.printf("  bR= "); Serial.printf("reset all buffers\n");
+  sendTxBuf("\nb<?>   Manage fault buffer\n", true, true);
+  sendTxBuf("  bd= ", true, true); sendTxBuf("dump fault buffer\n", true, true);
+  sendTxBuf("  bh= ", true, true); sendTxBuf("reset history buffer\n", true, true);
+  sendTxBuf("  br= ", true, true); sendTxBuf("reset fault buffer\n", true, true);
+  sendTxBuf("  bR= ", true, true); sendTxBuf("reset all buffers\n", true, true);
 
-  Serial.printf("\nB<?> Battery e.g.:\n");
+  sendTxBuf("\nB<?> Battery e.g.:\n", true, true);
   sp.nP_p->print_help();  //* BP
   sp.nS_p->print_help();  //* BS
 
-  Serial.printf("\nBZ Benignly zero test settings\n");
+  sendTxBuf("\nBZ Benignly zero test settings\n", true, true);
   
-  Serial.printf("\ncc  clear talk queues end XQ\n");
-  Serial.printf("\ncf  freeze talk queues\n");
-  Serial.printf("\ncu  unfreeze talk queues\n");
+  sendTxBuf("\ncc  clear talk queues end XQ\n", true, true);
+  sendTxBuf("\ncf  freeze talk queues\n", true, true);
+  sendTxBuf("\ncu  unfreeze talk queues\n", true, true);
 
-  Serial.printf("\nC<?> Chg SOC e.g.:\n");
+  sendTxBuf("\nC<?> Chg SOC e.g.:\n", true, true);
   ap.init_all_soc_p->print_help();  // Ca
-  Serial.printf("  Cm=  model (& ekf if mod)- '(0-1.1)'\n"); 
+  sendTxBuf("  Cm=  model (& ekf if mod)- '(0-1.1)'\n", true, true); 
   ap.ekf_x_p->print_help();  // Ce
   ap.ekf_p_p->print_help();  // Cp
 
-  Serial.printf("\nD/S<?> Adj e.g.:\n");
+  sendTxBuf("\nD/S<?> Adj e.g.:\n", true, true);
   sp.ib_bias_amp_p->print_help();  //* DA
   sp.ib_bias_noa_p->print_help();  //* DB
   sp.Vb_bias_hdwe_p->print_help();  //* Dc
   ap.sum_delay_p->print_help();  //  Dh
-  Serial.printf("    set 'Dh0;' for nominal\n");
+  sendTxBuf("    set 'Dh0;' for nominal\n", true, true);
   sp.ib_bias_all_p->print_help();  //* DI
   sp.ib_bias_amp_p->print_help();  //  Dm
   ap.eframe_mult_p->print_help();  //  ED
@@ -110,7 +110,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.q_std_p->print_help();  // Kq
   ap.r_std_p->print_help();  // Kr
 
-  Serial.printf("\nF<?>   Faults\n");
+  sendTxBuf("\nF<?>   Faults\n", true, true);
   ap.cc_diff_slr_p->print_help();  // Fc
   ap.fake_faults_p->print_help();  // Ff
   ap.ewhi_slr_p->print_help();  // Fi
@@ -120,45 +120,45 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.disab_tb_fa_p->print_help();  // FT
   ap.disab_vb_fa_p->print_help();  // FV
 
-  Serial.printf("\nH<?>   Manage history\n");
-  Serial.printf("  Hd= "); Serial.printf("dump summ log\n");
-  Serial.printf("  HR= "); Serial.printf("reset summ log\n");
-  Serial.printf("  Hs= "); Serial.printf("save and print log\n");
+  sendTxBuf("\nH<?>   Manage history\n", true, true);
+  sendTxBuf("  Hd= ", true, true); sendTxBuf("dump summ log\n", true, true);
+  sendTxBuf("  HR= ", true, true); sendTxBuf("reset summ log\n", true, true);
+  sendTxBuf("  Hs= ", true, true); sendTxBuf("save and print log\n", true, true);
 
-  Serial.printf("\nP<?>   Print values\n");
-  Serial.printf("  Pa= "); Serial.printf("all\n");
-  Serial.printf("  Pb= "); Serial.printf("vb details\n");
-  Serial.printf("  Pe= "); Serial.printf("ekf\n");
-  Serial.printf("  Pf= "); Serial.printf("faults\n");
-  Serial.printf("  Pm= "); Serial.printf("Mon\n");
-  Serial.printf("  PM= "); Serial.printf("amp shunt\n");
-  Serial.printf("  PN= "); Serial.printf("noa shunt\n");
-  Serial.printf("  PR= "); Serial.printf("all retained adj\n");
-  Serial.printf("  Pr= "); Serial.printf("off-nom ret adj\n");
-  Serial.printf("  PS= "); Serial.printf("Sensors\n");
-  Serial.printf("  Ps= "); Serial.printf("Sim\n");
-  Serial.printf("  PV= "); Serial.printf("all vol adj\n");
-  Serial.printf("  Pv= "); Serial.printf("off-nom vol adj\n");
-  Serial.printf("  Px= "); Serial.printf("ib select\n");
+  sendTxBuf("\nP<?>   Print values\n", true, true);
+  sendTxBuf("  Pa= ", true, true); sendTxBuf("all\n", true, true);
+  sendTxBuf("  Pb= ", true, true); sendTxBuf("vb details\n", true, true);
+  sendTxBuf("  Pe= ", true, true); sendTxBuf("ekf\n", true, true);
+  sendTxBuf("  Pf= ", true, true); sendTxBuf("faults\n", true, true);
+  sendTxBuf("  Pm= ", true, true); sendTxBuf("Mon\n", true, true);
+  sendTxBuf("  PM= ", true, true); sendTxBuf("amp shunt\n", true, true);
+  sendTxBuf("  PN= ", true, true); sendTxBuf("noa shunt\n", true, true);
+  sendTxBuf("  PR= ", true, true); sendTxBuf("all retained adj\n", true, true);
+  sendTxBuf("  Pr= ", true, true); sendTxBuf("off-nom ret adj\n", true, true);
+  sendTxBuf("  PS= ", true, true); sendTxBuf("Sensors\n", true, true);
+  sendTxBuf("  Ps= ", true, true); sendTxBuf("Sim\n", true, true);
+  sendTxBuf("  PV= ", true, true); sendTxBuf("all vol adj\n", true, true);
+  sendTxBuf("  Pv= ", true, true); sendTxBuf("off-nom vol adj\n", true, true);
+  sendTxBuf("  Px= ", true, true); sendTxBuf("ib select\n", true, true);
 
-  Serial.printf("\nQ      vital stats\n");
+  sendTxBuf("\nQ      vital stats\n", true, true);
 
-  Serial.printf("\nR<?>   Reset\n");
-  Serial.printf("  Ca=<val> "); Serial.printf("initialize_all to present inputs\n");
-  Serial.printf("  Rb= "); Serial.printf("batteries to present inputs\n");
-  Serial.printf("  Rf= "); Serial.printf("fault logic latches\n");
-  Serial.printf("  Ri= "); Serial.printf("infinite counter\n");
-  Serial.printf("  Rk= "); Serial.printf("kalman filters in shunt\n");
-  Serial.printf("  Rr= "); Serial.printf("saturate Mon and equalize Sim & Mon\n");
-  Serial.printf("  RR= "); Serial.printf("DEPLOY\n");
-  Serial.printf("  Rs= "); Serial.printf("small.  Reinitialize filters\n");
-  Serial.printf("  RS= "); Serial.printf("SavedPars: Renominalize saved\n");
-  Serial.printf("  RV= "); Serial.printf("Renominalize volatile\n");
+  sendTxBuf("\nR<?>   Reset\n", true, true);
+  sendTxBuf("  Ca=<val> ", true, true); sendTxBuf("initialize_all to present inputs\n", true, true);
+  sendTxBuf("  Rb= ", true, true); sendTxBuf("batteries to present inputs\n", true, true);
+  sendTxBuf("  Rf= ", true, true); sendTxBuf("fault logic latches\n", true, true);
+  sendTxBuf("  Ri= ", true, true); sendTxBuf("infinite counter\n", true, true);
+  sendTxBuf("  Rk= ", true, true); sendTxBuf("kalman filters in shunt\n", true, true);
+  sendTxBuf("  Rr= ", true, true); sendTxBuf("saturate Mon and equalize Sim & Mon\n", true, true);
+  sendTxBuf("  RR= ", true, true); sendTxBuf("DEPLOY\n", true, true);
+  sendTxBuf("  Rs= ", true, true); sendTxBuf("small.  Reinitialize filters\n", true, true);
+  sendTxBuf("  RS= ", true, true); sendTxBuf("SavedPars: Renominalize saved\n", true, true);
+  sendTxBuf("  RV= ", true, true); sendTxBuf("Renominalize volatile\n", true, true);
 
   sp.ib_force_p->print_help();  //* si
   sp.Time_now_p->print_help();  //* UT
   time_long_2_str((time_t)sp.Time_now_z, buffer);
-  Serial.printf(" time %ld hms:  %s\n", sp.Time_now_z, buffer);
+  sendTxBuf(String::format(" time %ld hms:  %s\n", sp.Time_now_z, buffer), true, true);
   ap.ekf_conv_p->print_help();  // VC
   ap.ekf_q_p->print_help();  // VQ
   ap.ekf_r_p->print_help();  // VR
@@ -166,39 +166,39 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.tb_filt_p->print_help();  // VT
   sp.debug_p->print_help();  // vv
 
-  Serial.printf("  -<>: Negative - Arduino plot compatible\n");
-  Serial.printf(" vv-2: ADS counts for throughput meas\n");
+  sendTxBuf("  -<>: Negative - Arduino plot compatible\n", true, true);
+  sendTxBuf(" vv-2: ADS counts for throughput meas\n", true, true);
   #ifdef DEBUG_DETAIL
-    Serial.printf("  v-1: Debug\n");
+    sendTxBuf("  v-1: Debug\n", true, true);
   #endif
-  Serial.printf("  vv1: GP\n");
-  Serial.printf("  vv2: GP, Sim, Sel, & Shunt\n");
-  Serial.printf("  vv3: EKF\n");
-  Serial.printf("  vv4: GP, Sim, Sel, & EKF\n");
-  Serial.printf("  vv5: OLED display\n");
-  Serial.printf(" vv12: EKF\n");
-  Serial.printf("vv-13: ib_dscn\n");
-  Serial.printf(" vv14: vshunt and Ib raw\n");
-  Serial.printf(" vv15: vb raw\n");
-  Serial.printf(" vv16: Tb\n");
-  Serial.printf("vv-23: Vb_hdwe_ac\n");
-  Serial.printf("vv-24: Vb_hdwe_ac, Ib_hdwe\n");
-  Serial.printf(" vv34: EKF detail\n");
-  Serial.printf(" vv35: ChargeTransfer balance\n");
-  Serial.printf(" vv36: EKF short in EKF\n");
-  Serial.printf(" vv37: EKF short\n");
-  Serial.printf(" vv75: voc_low check mod\n");
-  Serial.printf(" vv76: vb model\n");
-  Serial.printf(" vv78: Batt model sat\n");
-  Serial.printf(" vv79: sat_ib model\n");
-  Serial.printf(" vv98: shunt filtering check\n");
-  Serial.printf(" vv99: calibration\n");
+  sendTxBuf("  vv1: GP\n", true, true);
+  sendTxBuf("  vv2: GP, Sim, Sel, & Shunt\n", true, true);
+  sendTxBuf("  vv3: EKF\n", true, true);
+  sendTxBuf("  vv4: GP, Sim, Sel, & EKF\n", true, true);
+  sendTxBuf("  vv5: OLED display\n", true, true);
+  sendTxBuf(" vv12: EKF\n", true, true);
+  sendTxBuf("vv-13: ib_dscn\n", true, true);
+  sendTxBuf(" vv14: vshunt and Ib raw\n", true, true);
+  sendTxBuf(" vv15: vb raw\n", true, true);
+  sendTxBuf(" vv16: Tb\n", true, true);
+  sendTxBuf("vv-23: Vb_hdwe_ac\n", true, true);
+  sendTxBuf("vv-24: Vb_hdwe_ac, Ib_hdwe\n", true, true);
+  sendTxBuf(" vv34: EKF detail\n", true, true);
+  sendTxBuf(" vv35: ChargeTransfer balance\n", true, true);
+  sendTxBuf(" vv36: EKF short in EKF\n", true, true);
+  sendTxBuf(" vv37: EKF short\n", true, true);
+  sendTxBuf(" vv75: voc_low check mod\n", true, true);
+  sendTxBuf(" vv76: vb model\n", true, true);
+  sendTxBuf(" vv78: Batt model sat\n", true, true);
+  sendTxBuf(" vv79: sat_ib model\n", true, true);
+  sendTxBuf(" vv98: shunt filtering check\n", true, true);
+  sendTxBuf(" vv99: calibration\n", true, true);
 
-  Serial.printf("\nW<?> - iters to wait\n");
+  sendTxBuf("\nW<?> - iters to wait\n", true, true);
 
-  Serial.printf("\nw - save * confirm adjustments to SRAM\n");
+  sendTxBuf("\nw - save * confirm adjustments to SRAM\n", true, true);
 
-  Serial.printf("\nX<?> - Test Mode.   For example:\n");
+  sendTxBuf("\nX<?> - Test Mode.   For example:\n", true, true);
   ap.dc_dc_on_p->print_help();  // Xd
   ap.until_q_p->print_help();  // XQ
   sp.modeling_p->print_help();  //* Xm
@@ -211,20 +211,20 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sp.Type_p->print_help();  //* Xt
 
   #ifndef HELPLESS
-  Serial.printf(" Xp= <?>, scripted tests...\n"); 
-  Serial.printf("  Xp0: reset tests\n");
-  Serial.printf("  Xp6: +/-500 A pulse EKF\n");
-  Serial.printf("  Xp7: +/-500 A sw pulse SS\n");
-  Serial.printf("  Xp8: +/-500 A hw pulse SS\n");
-  Serial.printf("  Xp10:tweak sin\n");
-  Serial.printf("  Xp11:slow sin\n");
-  Serial.printf("  Xp12:slow half sin\n");
-  Serial.printf("  Xp13:tweak tri\n");
-  Serial.printf("  Xp20:collect fast\n");
-  Serial.printf("  Xp21:collect slow\n");
+  sendTxBuf(" Xp= <?>, scripted tests...\n", true, true); 
+  sendTxBuf("  Xp0: reset tests\n", true, true);
+  sendTxBuf("  Xp6: +/-500 A pulse EKF\n", true, true);
+  sendTxBuf("  Xp7: +/-500 A sw pulse SS\n", true, true);
+  sendTxBuf("  Xp8: +/-500 A hw pulse SS\n", true, true);
+  sendTxBuf("  Xp10:tweak sin\n", true, true);
+  sendTxBuf("  Xp11:slow sin\n", true, true);
+  sendTxBuf("  Xp12:slow half sin\n", true, true);
+  sendTxBuf("  Xp13:tweak tri\n", true, true);
+  sendTxBuf("  Xp20:collect fast\n", true, true);
+  sendTxBuf("  Xp21:collect slow\n", true, true);
   ap.cycles_inj_p->print_help();  // XC
-  Serial.printf(" XR  "); Serial.printf("RUN inj\n");
-  Serial.printf(" XS  "); Serial.printf("STOP inj\n");
+  sendTxBuf(" XR  ", true, true); sendTxBuf("RUN inj\n", true, true);
+  sendTxBuf(" XS  ", true, true); sendTxBuf("STOP inj\n", true, true);
   ap.s_t_sat_p->print_help();  // Xs
   ap.tail_inj_p->print_help();  // XT
   ap.wait_inj_p->print_help();  // XW
@@ -233,6 +233,6 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   // sp.testB_p->print_help();  // XB
   // sp.testD_p->print_help();  // XD
   // sp.testY_p->print_help();  // XY
-  Serial.printf("\nurgency of cmds: -=ASAP,*=SOON, '' or +=QUEUE, <=LAST\n");
+  sendTxBuf("\nurgency of cmds: -=ASAP,*=SOON, '' or +=QUEUE, <=LAST\n", true, true);
   #endif
 }
