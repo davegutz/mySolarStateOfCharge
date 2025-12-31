@@ -169,7 +169,7 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
     
     void print_help_str()
@@ -180,7 +180,7 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
     virtual boolean print_adjust(const String &str)
@@ -286,7 +286,7 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
     void print_help_str()
@@ -297,7 +297,7 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
     virtual boolean print_adjust(const String &str)
@@ -403,7 +403,7 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
     void print_help_str()
@@ -414,7 +414,7 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
     virtual boolean print_adjust(const String &str)
@@ -519,7 +519,7 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
     
     void print_help_str()
@@ -530,7 +530,7 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
     
     virtual boolean print_adjust(const String &str)
@@ -636,7 +636,7 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
     
     void print_help_str()
@@ -647,7 +647,7 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
     
     virtual boolean print_adjust(const String &str)
@@ -753,7 +753,7 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
     
     void print_help_str()
@@ -764,7 +764,7 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
     virtual boolean print_adjust(const String &str)
@@ -866,7 +866,7 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
     
     void print_help_str()
@@ -877,7 +877,7 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
     virtual boolean print_adjust(const String &str)
@@ -983,7 +983,7 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
     
     void print_help_str()
@@ -994,7 +994,7 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
     virtual boolean print_adjust(const String &str)

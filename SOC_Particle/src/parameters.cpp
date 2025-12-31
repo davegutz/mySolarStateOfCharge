@@ -167,7 +167,7 @@ void VolatilePars::pretty_print(const boolean all)
     #ifndef SOFT_DEPLOY_PHOTON
         if ( all )
         {
-            Serial.printf("volatile all:\n");
+            sendTxBuf("volatile all:\n", true, true);
             for (uint8_t i=0; i<n_; i++ )
             {
                 if ( !(V_[i]->is_eeram()) )
@@ -179,7 +179,7 @@ void VolatilePars::pretty_print(const boolean all)
     #endif
     if ( !all )
     {
-        Serial.printf("volatile off:\n");
+        sendTxBuf("volatile off:\n", true, true);
         uint8_t count = 0;
         for (uint8_t i=0; i<n_; i++ )
         {
@@ -192,9 +192,9 @@ void VolatilePars::pretty_print(const boolean all)
                 }
             }
         }
-        if ( count==0 ) Serial.printf("**none**\n\n");
+        if ( count==0 ) sendTxBuf("**none**\n\n", true, true);
     }
-    while ( n_ != NVOL ) { delay(5000); Serial.printf("set NVOL=%d\n", n_); }
+    while ( n_ != NVOL ) { delay(5000); sendTxBuf(String::format("set NVOL=%d\n", n_), true, true); }
 }
 
 
@@ -294,19 +294,13 @@ void SavedPars::pretty_print(const boolean all)
 {
     if ( all )
     {
-        Serial.printf("saved (sp) all\n");
+        sendTxBuf("saved (sp) all\n", true, true);
         for (int i=0; i<n_; i++ )
         {
             V_[i]->print();
         }
-        // Serial.printf("history array (%d):\n", nhis_);
-        // print_history_array();
-        // print_fault_header();
-        // Serial.printf("fault array (%d):\n", nflt_);
-        // print_fault_array();
-        // print_fault_header();
         #ifndef SOFT_DEPLOY_PHOTON
-            Serial.printf("Xm:\n");
+            sendTxBuf("Xm:\n", true, true);
             pretty_print_modeling();
         #endif
     }
@@ -322,10 +316,10 @@ void SavedPars::pretty_print(const boolean all)
                 V_[i]->print();
             }
         }
-        if ( count==0 ) Serial.printf("**none**\n\n");
+        if ( count==0 ) sendTxBuf("**none**\n\n", true, true);
 
         // Build integrity test
-        while ( n_ != NSAV ) { delay(5000); Serial.printf("set NSAV=%d\n", n_); }
+        while ( n_ != NSAV ) { delay(5000); sendTxBuf(String::format("set NSAV=%d\n", n_), true, true); }
     }
 }
 
@@ -345,7 +339,7 @@ void SavedPars::pretty_print_modeling()
 
   
   time_long_2_str((time_t)Time_now_z, buffer);
-  Serial.printf(" time %ld hms:  %s\n", Time_now_z, buffer);
+  sendTxBuf(String::format(" time %ld hms:  %s\n", Time_now_z, buffer), true, true);
 }
 
 // Print faults

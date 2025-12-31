@@ -92,7 +92,7 @@ public:
     void print()
     {
         print_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
     
     void print_off()
@@ -100,7 +100,7 @@ public:
         if ( *val_ptr_ != default_ )
         {
             print_str();
-            Serial.printf("%s\n", pr.buff);
+            sendTxBuf(String::format(Serial.printf("%s\n", pr.buff), true, true);
         }
     }
     
@@ -114,7 +114,7 @@ public:
     void print_help()
     {
         print_help_str();
-        Serial.printf("%s\n", pr.buff);
+        sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
     T value() { return *val_ptr_; }
