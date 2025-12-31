@@ -453,8 +453,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from DataOverModel import plq
     plt.rcParams['axes.grid'] = True
-    import scipy.fft as fft
-
+    from butterHighPassDemo import butter_highpass_filter
     time_end = None
 
     """
@@ -469,23 +468,41 @@ if __name__ == "__main__":
 
     # data_file = './noise_study/ssnoise_soc2p2_hi_lo_chg_shunt.csv'  # Cx20000, Base
     # data_file = './noise_study/sschirp_soc2p2_hi_lo_chg.csv'  # Cx4800, Base
-    data_file = './noise_study/sweepchirp_soc2p2_hi_lo_chg.csv'  # Cx25000, Base
+    # data_file = './noise_study/sweepchirp_soc2p2_hi_lo_chg.csv'  # Cx46000, Base
 
+
+    """
+    # Reconstruct and look at 2 vs 1 filter in VoVcn
+    0.  Test setup:  FY6900 Dominty Function Generator.  FY6900 CH 1 connected across shunt leads.
+    (**** not this CH 2 ground connected to board ground.)
+    Top level - Sweep.   - Freq 0.0 - 5.0, Ampl 0.015 - 0.05, Offs 0.0 - 0.0 (to center Vo/Vc, Duty 50% - 50%,
+    Mode Linear.   Direction Forth, Time 720s.  
+    1.  Prep:  VCO OK to turn off generator with.  Run a few Cx1000 runs to make sure vonkf is steady.  Clear on GUI
+    2.  Press Cx16000 to collect ss data for 60s
+    3.  After 60 s press Sweep then OK.  When it reaches 5.0 Hz again press OK to stop then VCO OK to go back steady
+    """
+    data_file = './noise_study/sweepchirp1_soc2p2_hi_lo_chg.csv'  # Cx46000, new base 20251231
+    doing_doe = True  # Toggle this to see various kf implemented in python
+    cutoff_freq_hz = 0.05  # hpf
+
+    # data_file = './noise_study/sweepchirp2_soc2p2_hi_lo_chg.csv'  # Cx46000, new base 20251231
+    # doing_doe = True  # Toggle this to see various kf implemented in python
+    # cutoff_freq_hz = 0.05  # hpf
+
+
+
+############################################################33
     mr, data_file_clean = load_data_KF1x1_test(data_file, time_end)
     title = 'VoVc Base KF1x1_test.py var dt'
     dt = 0.1  # Time step (seconds) used only on init
-    mr.VoVcn = mr.vovcn
-    mr.VoVcn_kf = mr.vovcnkf
 
-    # The best design of filter
-    Qstd = 0.0003  # Standard deviation of acceleration noise
-    Rstd = 0.1000  # Standard deviation of voltage measurement noise
-
+    # Some initializations
     # Utility measurement lag for finding zero crossings quietly
     data_lag = None
 
+    # High pass on data
     # Filter signal for cleaner statistical testing
-    N = len(mr.VoVcn)
+    N = len(mr.time)
     total_time = mr.time[-1]
     sample_freq_hz = float(N) / total_time
     sample_time = 1. / sample_freq_hz
@@ -495,6 +512,13 @@ if __name__ == "__main__":
     vec_initial = np.where( (mr.time <= 50.) & (mr.time >= 10.) )
     data_lag = min_possible_data_lag * 5.
     print(f" nyquist {nyquist_freq_rps} r/s, min possible tau {min_possible_data_lag} s, data_lag {data_lag}, s")
+    mr.VoVcn = butter_highpass_filter(mr.vovcn, cutoff_freq_hz, sample_freq_hz, 2)
+    mr.VoVcn_kf = butter_highpass_filter(mr.vovcnkf, cutoff_freq_hz, sample_freq_hz, 2)
+
+    # The best design of filter
+    Qstd = 0.0003  # Standard deviation of acceleration noise
+    Rstd = 0.1000  # Standard deviation of voltage measurement noise
+
     mr_lag = LagExp(dt=sample_time, tau=data_lag, max_=3.3, min_=-3.3)
     mr.VoVcn_lag = []
     for i in range(N):
@@ -535,43 +559,20 @@ if __name__ == "__main__":
 
     plt = plot_1(plt, mr, mv, title + ' F1')
 
-    # Using fft for a try
-    # Assuming x_t, y_t are your time-series arrays and fs is your sampling rate
-    if False:
-        Nfft = len(mr.VoVcn)
-        Nfft=3700
-        X_f = fft.fft(mr.VoVcn, Nfft)
-        Y_f = fft.fft(mv.VoVcn_kf, Nfft)
-        # Calculate corresponding frequencies
-        freqs = fft.fftfreq(Nfft, 1./sample_freq_hz)
-        H_f = Y_f / X_f
-        magnitude = np.abs(H_f)
-        phase = np.angle(H_f, deg=True)  # Phase in degrees
-        plt.figure()
-        plt.semilogx(freqs, magnitude, color='red', linestyle='-', label='mag')
-        # plt.ylim([-18, 6])
-        plt.legend(loc=1)
-        plt.figure()
-        plt.semilogx(freqs, phase, color='red', linestyle='-', label='phs_dg')
-        # plt.ylim([-18, 6])
-        plt.legend(loc=1)
-        plt.show(block=False)
-
-    doing_doe = True
     if doing_doe:
         ii = 0
         Res = []
-        # for Qstd, Rstd in [ [0.0003, 0.1000], [0.003, 0.0010] ]:
-        for Qstd, Rstd in \
-                [
-                    [0.0003,  0.0100], [0.0003, 0.1000],
-                    [0.0006,  0.1000], [0.00015, 0.1000],
-                    [0.0003,  0.2000], [0.0003,  0.0500],
-                    [0.0006,  0.0100], [0.00015, 0.0100],
-                    [0.0003,  0.0100], [0.0006, 0.0100],  [0.00015, 0.0100],
-                    [0.00003, 0.0100], [0.00003, 0.0200], [0.00003, 0.0050],
-                    [1.5,    0.00001], [0.0003,  0.1000],
-                ]:
+        for Qstd, Rstd in [ [0.0003, 0.1000], [0.003, 0.0010] ]:
+        # for Qstd, Rstd in \
+        #         [
+        #             [0.0003,  0.0100], [0.0003, 0.1000],
+        #             [0.0006,  0.1000], [0.00015, 0.1000],
+        #             [0.0003,  0.2000], [0.0003,  0.0500],
+        #             [0.0006,  0.0100], [0.00015, 0.0100],
+        #             [0.0003,  0.0100], [0.0006, 0.0100],  [0.00015, 0.0100],
+        #             [0.00003, 0.0100], [0.00003, 0.0200], [0.00003, 0.0050],
+        #             [1.5,    0.00001], [0.0003,  0.1000],
+        #         ]:
             ii += 1
 
             print(f"{Qstd=} {Rstd=}")
