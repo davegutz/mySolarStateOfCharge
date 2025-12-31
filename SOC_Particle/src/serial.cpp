@@ -29,7 +29,6 @@
 
 extern CommandPars cp;  // Various parameters shared at system level
 extern BleCharacteristic txCharacteristic;
-extern uint8_t ble_first_char;    // BLE status
 
 // Strip cmd string from front of source string
 String chat_cmd_from(String *source)
@@ -519,10 +518,10 @@ void wait_on_user_input()
     if ( Serial.available() )
       answer=Serial.read();
 
-    else if ( ble_first_char!='\0' )
+    else if ( cp.ble_first_char!='\0' )
     {
-      answer = ble_first_char;
-      ble_first_char = '\0';
+      answer = cp.ble_first_char;
+      cp.ble_first_char = '\0';
     }
 
     else
@@ -541,10 +540,10 @@ void wait_on_user_input()
         if ( Serial.available() )
           answer = Serial.read();
 
-        else if ( ble_first_char!='\0' )
+        else if ( cp.ble_first_char!='\0' )
         {
-          answer = ble_first_char;
-          ble_first_char = '\0';
+          answer = cp.ble_first_char;
+          cp.ble_first_char = '\0';
         }
 
         else
@@ -561,14 +560,14 @@ void wait_on_user_input()
   // Wrap it up
   if ( answer=='Y' || answer=='y' )
   {
-    Serial.printf("  Y\n\n"); Serial1.printf("  Y\n\n");
+    sendTxBuf("  Y\n\n", true, true);
     sp.set_nominal();
     sp.pretty_print( true );
     System.backupRamSync();
   }
   else if ( answer=='n' || answer=='N' || count==30 )
   {
-    Serial.printf(" N.  moving on...\n\n"); Serial1.printf(" N.  moving on...\n\n");
+    sendTxBuf(" N.  moving on...\n\n", true, true);
   }
 
 }

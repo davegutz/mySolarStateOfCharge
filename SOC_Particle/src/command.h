@@ -77,6 +77,7 @@ public:
   boolean write_summary;    // Use talk to issue a write command to summary
   boolean kf_reset;         // Reset kalman filters
   boolean kf_reset_print;   // Reset kalman filters status saved for printing
+  uint8_t ble_first_char;   // Control boot communication, psuedo token
 
   CommandPars()
   {
@@ -105,6 +106,7 @@ public:
     asap_str = "";
     kf_reset = false;
     kf_reset_print = false;
+    ble_first_char = '\0';
   }
 
   void cmd_reset(void) { soft_reset = true; kf_reset = true; }

@@ -29,7 +29,6 @@
 
 extern CommandPars cp;  // Various parameters to be static at system level
 extern BleCharacteristic txCharacteristic;
-extern uint8_t ble_first_char;  // BLE status
 
 // Blocking BLE write
 void bleSendChunked(BleCharacteristic& chr, const uint8_t* data, size_t length)
@@ -51,10 +50,10 @@ void onBLE_DataReceived(const uint8_t* data, size_t len, const BlePeerDevice& pe
   // Logic for bootup:  solitary character treated as possible boot command (e.g. y/n)
   if ( len==1 )
   {
-    ble_first_char = data[0];
+    cp.ble_first_char = data[0];
   }
   else
-    ble_first_char = '\0';
+    cp.ble_first_char = '\0';
 
 
   // Validate input to Serial only
