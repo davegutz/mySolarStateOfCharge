@@ -135,13 +135,7 @@ void setup()
   data.appendServiceUUID(serviceUuid);
   BLE.advertise(&data);
 
-  // EERAM and Bluetooth Serial1.  Use BT-AT project in this GitHub repository to change.
-  // TX of HC-06
-  // Compile and flash onto the SOC_Photon target temporarily to set baud rate.  Directions
-  // for HC-06 inside SOC_Photon.ino of ../../BT-AT/src.   AT+BAUD8; to set 115200.
-  // Serial1.blockOnOverrun(false); doesn't work:  it's a mess; partial lines galore
-  Serial1.begin(SOFT_S1BAUD);
-  Serial1.flush();
+  // Time
   sp.put_Time_now(max(sp.Time_now_z, (unsigned long)Time.now()));  // Synch with web when possible
   Time.setTime( (time_t) (sp.Time_now_z) );
 

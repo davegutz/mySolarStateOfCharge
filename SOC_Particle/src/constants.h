@@ -30,7 +30,6 @@
 #undef HDWE_UNIT
 #undef HDWE_BARE
 #undef SOFT_SBAUD
-#undef SOFT_S1BAUD
 #undef HDWE_IB_HI_LO
 #undef HDWE_2WIRE
 #undef HDWE_IB_HI_LO_NOA_LO

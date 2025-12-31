@@ -28,7 +28,7 @@
 #include "PrinterPars.h"
 #include "ble.h"
 
-void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendSerial1, const boolean sendBLE);
+void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendBLE);
 
 extern PrinterPars pr;  // Print buffer
 
@@ -177,7 +177,7 @@ public:
     {   
         print_str();
         String txBuf = String::format("%s\n", pr.buff);
-        sendTxBuf(txBuf, true, true, true);
+        sendTxBuf(txBuf, true, true);
         // Serial1.printf("%s\n", pr.buff);
     }
 

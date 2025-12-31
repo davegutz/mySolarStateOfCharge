@@ -302,14 +302,12 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         // second order filter of the signal.   Anything more is 'gilding the lily'
         boolean conv = abs(y_filt_)<ap.ekf_conv && !cp.soft_reset;  // Initialize false
         EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_ekf_, EKF_T_RESET), cp.soft_reset);
+
         if ( sp.debug()==37 )
-        {
-            Serial.printf("BatteryMonitor, ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,P_,soc,soc_ekf,y_ekf_f,conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%11.8f,%7.4f,%7.4f,%7.4f,  %d,\n",
-                ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, P_, soc_, soc_ekf_, y_filt_, converged_ekf());
-            Serial1.printf("BatteryMonitor, ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,P_,soc,soc_ekf,y_ekf_f,conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%11.8f,%7.4f,%7.4f,%7.4f,  %d,\n",
-                ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, P_, soc_, soc_ekf_, y_filt_, converged_ekf());
-        }
-        if ( sp.debug()==3 || sp.debug()==4 ) EKF_1x1::print_ekf_serial(this);  // print EKF in Read frame
+            sendTxBuf(String::format("BatteryMonitor, ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,P_,soc,soc_ekf,y_ekf_f,conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%11.8f,%7.4f,%7.4f,%7.4f,  %d,\n",
+                ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, P_, soc_, soc_ekf_, y_filt_, converged_ekf()), true, true);
+
+    if ( sp.debug()==3 || sp.debug()==4 ) EKF_1x1::print_ekf_serial(this);  // print EKF in Read frame
     }
     eframe_++;
     if ( reset_temp || cp.soft_reset || eframe_ >= ap.eframe_mult ) eframe_ = 0;  // '>=' allows changing ap.eframe_mult on the fly
@@ -853,12 +851,8 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
     q_min_ = soc_min_ * q_capacity_;
 
     if ( sp.debug()==36 )
-    {
-        Serial.printf("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
-            ib_charge_, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_s_, *sp_delta_q_, q_);
-        Serial1.printf("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
-            ib_charge_, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_s_, *sp_delta_q_, q_);
-    }
+        sendTxBuf(String::format("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
+            ib_charge_, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_s_, *sp_delta_q_, q_), true, true);
 
     // print_sim_serial
     print_sim_serial(initializing_all, reset_temp, Sen, this);

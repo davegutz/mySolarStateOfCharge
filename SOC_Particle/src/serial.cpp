@@ -433,13 +433,10 @@ void print_temp_serial(const boolean reset, Sensors *Sen)
 }
 
 // General purpose transmitter
-void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendSerial1, const boolean sendBLE)
+void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendBLE)
 {
     // USB serial
     if ( sendSerial ) Serial.print(txBuf);
-
-    // UART BT serial
-    if ( sendSerial1 ) Serial1.print(txBuf);
 
     // BLE notify (chunked)
     if ( sendBLE ) bleSendChunked(txCharacteristic, reinterpret_cast<const uint8_t*>(txBuf.c_str()), txBuf.length());

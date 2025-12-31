@@ -121,19 +121,19 @@ soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
     Sen->Flt->ib_amp_fa(), Sen->Flt->ib_noa_fa(), Sen->Flt->vb_fail(),
     Sen->Tb_f, Mon->vb(), Mon->voc(), Mon->voc_dead(), Mon->voc_stat(), Mon->voc_stat_f(), Mon->voc_soc(), Mon->vsat(), Mon->ib(), Sen->Sim->soc(), Mon->soc_ekf(),
     Mon->soc(), Mon->soc_min(), Mon->soc_inf(), sp.modeling());
-  sendTxBuf(txBuf, true, true, true);
+  sendTxBuf(txBuf, true, true);
 
   txBuf = String::format("dq_inf/dq_abs%10.1f/%10.1f %8.4f coul_eff*=%9.6f, DAB+=%9.6f\nDQn%10.1f Tn%10.1f DQp%10.1f Tp%10.1f\n",
     Mon->delta_q_inf(), Mon->delta_q_abs(), Mon->delta_q_inf()/Mon->delta_q_abs(),
     -Mon->delta_q_neg()/Mon->delta_q_pos(),
     -(Mon->delta_q_neg() + Mon->delta_q_pos()) / nice_zero(Mon->time_neg() + Mon->time_pos(), 1e-6),
     Mon->delta_q_neg(), Mon->time_neg(), Mon->delta_q_pos(), Mon->time_pos());
-  sendTxBuf(txBuf, true, true, true);
+  sendTxBuf(txBuf, true, true);
 
   if ( Sen->Flt->falw() || Sen->Flt->fltw() ) chit("Pf;", SOON);
   time_long_2_str((time_t)sp.Time_now_z, pr.buff);
   txBuf = String::format(" time %ld hms:  %s\n", sp.Time_now_z, pr.buff);
-  sendTxBuf(txBuf, true, true, true);
+  sendTxBuf(txBuf, true, true);
 }
 
 // Calibration
@@ -144,7 +144,7 @@ void debug_98(BatteryMonitor *Mon, Sensors *Sen)
   txBuf = String::format("imh imhkf inh inkfh: %6.2fA %6.2fA,  %6.2fA,%6.2fA\n",
     Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf);
 
-  sendTxBuf(txBuf, true, true, true);
+  sendTxBuf(txBuf, true, true);
 }
 void debug_99(BatteryMonitor *Mon, Sensors *Sen)
 {
@@ -153,7 +153,7 @@ void debug_99(BatteryMonitor *Mon, Sensors *Sen)
     Mon->voc(), Mon->voc_soc(), sp.Vb_scale(), sp.Vb_bias_hdwe(), sp.ib_scale_amp(), sp.ib_bias_amp(), sp.ib_scale_noa(),
     sp.ib_bias_noa(), sp.ib_disch_slr(), sp.Dw(), ap.slr_res);
 
-  sendTxBuf(txBuf, true, true, true);
+  sendTxBuf(txBuf, true, true);
 }
 
 #ifdef DEBUG_DETAIL

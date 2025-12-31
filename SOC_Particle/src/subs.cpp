@@ -381,7 +381,7 @@ void oled_display(Adafruit_SSD1306 *display, Sensors *Sen, BatteryMonitor *Mon)
       String txBuf;
       txBuf = String::format("%s   Tb,C  VOC,V  Ib,A \n%s   EKF,Ah  chg,hrs  CC, Ah\nPf; for fails.  prints=%ld\n\n",
         disp_Tbop.c_str(), dispBot.c_str(), cp.num_v_print);
-      sendTxBuf(txBuf, true, true, true);
+      sendTxBuf(txBuf, true, true);
     }
   }
 
@@ -535,7 +535,7 @@ void oled_display(Sensors *Sen, BatteryMonitor *Mon)
     String txBuf;
     txBuf = String::format("%s   Tb,C  VOC,V  Ib,A \n%s   EKF,Ah  chg,hrs  CC, Ah\nPf; for fails.  prints=%ld\n\n",
         disp_Tbop.c_str(), dispBot.c_str(), cp.num_v_print);
-    sendTxBuf(txBuf, true, true, true);
+    sendTxBuf(txBuf, true, true);
   }
 
   blink += 1;

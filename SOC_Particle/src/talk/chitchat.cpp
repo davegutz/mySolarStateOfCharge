@@ -361,9 +361,9 @@ void clear_queues()
 void cmd_echo(urgency request)
 {
   if ( request==0 )
-    sendTxBuf(String::format("cmd: %s\n", cp.cmd_str.c_str()), true, true, true);
+    sendTxBuf(String::format("cmd: %s\n", cp.cmd_str.c_str()), true, true);
   else
-    sendTxBuf(String::format("echo: %s, %d\n", cp.cmd_str.c_str(), request), true, true, true);
+    sendTxBuf(String::format("echo: %s, %d\n", cp.cmd_str.c_str(), request), true, true);
 }
 
 
