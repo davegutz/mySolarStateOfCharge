@@ -142,5 +142,5 @@ elif sys.platform == 'win32':
           f"browse to executable in 'dist/GUI_TestSOC' and double-click.  Create shortcut first time and move Desktop\n"
           f"double-click on  'GUI_TestSOC.exe - Shortcut', set paths on buttons, pin to taskbar\n"
           f"in shortcut properties, make sure 'Start in:' is this folder where this script resides\n"
-          "you shouldn't have to remake shortcuts",
+          f"After the first time you do this on a particular Windows install you shouldn't have to remake shortcuts\n",
           Colors.reset)
