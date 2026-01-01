@@ -139,8 +139,10 @@ elif sys.platform == 'darwin':
           Colors.reset)
 elif sys.platform == 'win32':
     print(Colors.fg.green,
-          f"browse to executable in 'dist/GUI_TestSOC' and double-click.  Create shortcut first time and move Desktop\n"
-          f"double-click on  'GUI_TestSOC.exe - Shortcut', set paths on buttons, pin to taskbar\n"
-          f"in shortcut properties, make sure 'Start in:' is this folder where this script resides\n"
-          f"After the first time you do this on a particular Windows install you shouldn't have to remake shortcuts\n",
+          f"Browse to executable in 'dist/GUI_TestSOC' and double-click\n"
+          f" Create shortcut first time and move Desktop\n"
+          f" double-click on  'GUI_TestSOC.exe - Shortcut', set paths on buttons, pin to taskbar.")
+    print(Colors.fg.red,
+          f"In shortcut properties, make sure 'Start in:' is this folder where this script resides\n"
+          f" After the first time you do this on a particular Windows install you shouldn't have to remake shortcuts\n",
           Colors.reset)
