@@ -87,6 +87,8 @@ def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
                     hdr = print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
                 case 6:
                     hdr = print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
+                case 7:
+                    hdr = print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
         case 'HistSim':
             match OPT.request_history:
                 case 0:
@@ -145,6 +147,58 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
           )
     return hdr
 
+#7
+def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
+    global count_since_last_header
+    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                           ibmh                        ibmm                  ib_amp_lo    ib_amp_hi   dis_amp_flt   per    dt                    ib_amp                    ib_dyn_T_m     ib_dyn_tau_m              ib_dyn_rstate_m                ib_dyn_lstate_m                      ib_dyn_m                 vb                    dv_dyn_m              e_wrap_m_T             e_wrap_m_tau           e_wrap_m_rate          e_wrap_m_reset         e_wrap_m_state        voc                   voc_soc                e_wrap_m             e_wrap_m_filt     disable_amp_fault ib_amp_lo      e_wrap_m_reset  e_wrap_m_trim        "
+    if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
+        print(hdr)
+        count_since_last_header = 0
+    if G.i > 0:
+        count_since_last_header += 1
+    print("{:4d}".format(G.i), "{:8.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
+          "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
+          "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
+          "{:7d}".format(bool(SN.mon_run.reset[G.i])),
+          "{:7d}".format(bool(SN.mon_run.reset_temp[G.i])),
+          "{:14d}".format(bool(SN.mon_run.reset_all_faults[G.i])),
+          "{:15d}".format(bool(SN.mon_run.soft_reset[G.i])),
+          "{:15d}".format(bool(SN.mon_run.soft_reset_sim[G.i])),
+          "{:15d}".format(bool(SN.mon_run.init_mon[G.i])),
+          "{:15d}".format(bool(SN.mon_run.init_sim[G.i])),
+          "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
+          "{:9.4f}".format(SN.mon_run.dt[G.i]), "{:7.4f}".format(mon.dt),
+          "{:13.7f}".format(SN.mon_run.vb[G.i]), "{:11.7f}".format(mon.vb),
+          "{:14.5f}".format(SN.mon_run.ibmh[G.i]), "{:12.5f}".format(mon.ib_amp_hdwe),
+          "{:14.5f}".format(SN.mon_run.ibmm[G.i]), "{:12.5f}".format(mon.ib_amp_model),
+          "{:7d}".format(bool(SN.mon_run.ib_amp_lo[G.i])), "{:2d}".format(bool(mon.ib_amp_lo)),
+          "{:7d}".format(bool(SN.mon_run.ib_amp_hi[G.i])), "{:2d}".format(bool(mon.ib_amp_hi)),
+          "{:7d}".format(bool(SN.mon_run.disable_amp_fault[G.i])), "{:2d}".format(bool(mon.disable_amp_fault)),
+          "{:4d}".format(bool(SN.mon_run.disable_amp_fault_per[G.i])), "{:2d}".format(bool(mon.disable_amp_fault_per)),
+          "{:11.4f}".format(SN.mon_run.dt[G.i]), "{:7.4f}".format(mon.dt),
+          "{:14.5f}".format(SN.mon_run.ib_amp[G.i]), "{:12.5f}".format(mon.ib_amp),
+          "{:9.4f}".format(SN.mon_run.ib_dyn_T_m[G.i]), "{:5.4f}".format(mon.LoopIbAmp.ChargeTransfer.dt),
+          "{:12.6f}".format(SN.mon_run.ib_dyn_tau_m[G.i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.tau),
+          "{:15.6f}".format(SN.mon_run.ib_dyn_rstate_m[G.i]), "{:13.6f}".format(mon.LoopIbAmp.ChargeTransfer.rstate),
+          "{:15.6f}".format(SN.mon_run.ib_dyn_lstate_m[G.i]), "{:13.6f}".format(mon.LoopIbAmp.ChargeTransfer.state),
+          "{:21.5f}".format(SN.mon_run.ib_dyn_m[G.i]), "{:12.5f}".format(mon.LoopIbAmp.ib_dyn),
+          "{:11.5f}".format(SN.mon_run.vb[G.i]), "{:9.5f}".format(mon.vb),
+          "{:11.5f}".format(SN.mon_run.dv_dyn_m[G.i]), "{:8.5f}".format(mon.LoopIbAmp.dv_dyn),
+          "{:12.4f}".format(SN.mon_run.ib_wrp_T_m[G.i]), "{:9.4f}".format(mon.LoopIbAmp.WrapErrFilt.dt),
+          "{:12.6f}".format(SN.mon_run.ib_wrp_tau_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.tau),
+          "{:12.6f}".format(SN.mon_run.ib_wrp_rate_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.rate),
+          "{:12d}".format(bool(SN.mon_run.ib_wrp_reset_m[G.i])), "{:9d}".format(bool(mon.LoopIbAmp.WrapErrFilt.reset)),
+          "{:12.6f}".format(SN.mon_run.ib_wrp_state_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.state),
+          "{:11.5f}".format(SN.mon_run.voc[G.i]), "{:9.5f}".format(mon.voc),
+          "{:11.5f}".format(SN.mon_run.voc_soc[G.i]), "{:9.5f}".format(mon.voc_soc),
+          "{:11.5f}".format(SN.mon_run.e_wrap_m[G.i]), "{:8.5f}".format(mon.e_wrap_m),
+          "{:11.5f}".format(SN.mon_run.e_wrap_m_filt[G.i]), "{:8.5f}".format(mon.e_wrap_m_filt),
+          "{:5.0f}".format(SN.mon_run.disable_amp_fault[G.i]),  "{:2.0f}".format(mon.disable_amp_fault),  "{:2.0f}".format(mon.ib_amp_lo),
+          "{:26.0f}".format(SN.mon_run.e_wrap_m_reset[G.i]), "{:2d}".format(mon.e_wrap_m_reset),
+          # "{:11.5f}".format(SN.mon_run.e_wrap_m_filt[G.i]), "{:8.5f}".format(mon.e_wrap_m_filt), "{:8.5f}".format(SN.e_wrap_m_filt_init),
+          "{:16.5f}".format(SN.mon_run.e_wrap_m_trim[G.i]), "{:8.5f}".format(mon.e_wrap_m_trim),
+          )
+    return hdr
 
 #6
 def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
