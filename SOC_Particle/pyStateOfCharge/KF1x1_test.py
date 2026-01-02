@@ -485,9 +485,40 @@ if __name__ == "__main__":
     doing_doe = True  # Toggle this to see various kf implemented in python
     cutoff_freq_hz = 0.05  # hpf
 
-    # data_file = './noise_study/sweepchirp2_soc2p2_hi_lo_chg.csv'  # Cx46000, new base 20251231
-    # doing_doe = True  # Toggle this to see various kf implemented in python
-    # cutoff_freq_hz = 0.05  # hpf
+
+    """
+    # Reconstruct and look at 2 vs 1 filter in VoVcn
+    0.  Test setup:  FY6900 Dominty Function Generator.  FY6900 CH 1 connected across shunt leads.
+    (**** not this CH 2 ground connected to board ground.)
+    Top level - Sweep.   - Freq 0.0 - 5.0, Ampl 0.1 - 1., Offs 0.0 - 0.0 (to center Vo/Vc, Duty 50% - 50%,
+    Mode Linear.   Direction Forth, Time 720s.  
+    1.  Prep:  VCO OK to turn off generator with.  Run a few Cx1000 runs to make sure vonkf is steady.  Clear on GUI
+    2.  Press Cx16000 to collect ss data for 60s
+    3.  After 60 s press Sweep then OK.  When it reaches 5.0 Hz again press OK to stop then VCO OK to go back steady
+    """
+    data_file = './noise_study/sweepchirp3_soc2p2_hi_lo_chg.csv'  # Cx46000, new base 20251231
+    doing_doe = True  # Toggle this to see various kf implemented in python
+    cutoff_freq_hz = 0.05  # hpf
+    Qstd = 0.0003  # Standard deviation of acceleration noise
+    Rstd = 0.1000  # Standard deviation of voltage measurement noise
+
+
+    """
+    # Reconstruct and look at 2 vs 1 filter in VoVcn
+    0.  Test setup:  FY6900 Dominty Function Generator.  FY6900 CH 1 connected across shunt leads.
+    (**** not this CH 2 ground connected to board ground.)
+    Top level - Sweep.   - Freq 0.0 - 5.0, Ampl 0.1 - 1., Offs 0.0 - 0.0 (to center Vo/Vc, Duty 50% - 50%,
+    Mode Linear.   Direction Forth, Time 720s.  
+    1.  Prep:  VCO OK to turn off generator with.  Run a few Cx1000 runs to make sure vonkf is steady.  Clear on GUI
+    2.  Press Cx16000 to collect ss data for 60s
+    3.  After 60 s press Sweep then OK.  When it reaches 5.0 Hz again press OK to stop then VCO OK to go back steady
+    """
+    data_file = './noise_study/sweepchirp4_soc2p2_hi_lo_chg.csv'  # Cx46000, new base 20251231
+    doing_doe = True  # Toggle this to see various kf implemented in python
+    cutoff_freq_hz = 0.05  # hpf
+    # The best design of filter
+    Qstd = 0.0003  # Standard deviation of acceleration noise
+    Rstd = 0.0100  # Standard deviation of voltage measurement noise
 
 
 
@@ -514,10 +545,6 @@ if __name__ == "__main__":
     print(f" nyquist {nyquist_freq_rps} r/s, min possible tau {min_possible_data_lag} s, data_lag {data_lag}, s")
     mr.VoVcn = butter_highpass_filter(mr.vovcn, cutoff_freq_hz, sample_freq_hz, 2)
     mr.VoVcn_kf = butter_highpass_filter(mr.vovcnkf, cutoff_freq_hz, sample_freq_hz, 2)
-
-    # The best design of filter
-    Qstd = 0.0003  # Standard deviation of acceleration noise
-    Rstd = 0.1000  # Standard deviation of voltage measurement noise
 
     mr_lag = LagExp(dt=sample_time, tau=data_lag, max_=3.3, min_=-3.3)
     mr.VoVcn_lag = []
@@ -562,7 +589,7 @@ if __name__ == "__main__":
     if doing_doe:
         ii = 0
         Res = []
-        for Qstd, Rstd in [ [0.0003, 0.1000], [0.003, 0.0010] ]:
+        for Qstd, Rstd in [ [0.0003, 0.100], [0.0003, 0.010], [0.003, 0.001] ]:
         # for Qstd, Rstd in \
         #         [
         #             [0.0003,  0.0100], [0.0003, 0.1000],
