@@ -46,12 +46,9 @@ class SavedData:
                 self.time = np.array(x.time)
             except AttributeError:
                 self.time = np.array(x.c_time) - x.c_time[0]
-            self.dt = []
-            for i in range(len(self.time)):
-                if i == 0:
-                    self.dt.append(self.time[1] - self.time[0])
-                else:
-                    self.dt.append(self.time[i] - self.time[i-1])
+
+            self.dt = [b - a for a, b in pairwise(self.time)]
+            self.dt.insert(0, self.dt[0])
 
             # Truncate
             if time_end is not None:

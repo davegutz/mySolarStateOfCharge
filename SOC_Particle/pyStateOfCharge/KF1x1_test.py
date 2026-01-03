@@ -20,6 +20,7 @@ global mon_run
 from load_data import write_clean_file
 from myFilters import General2Pole, LagExp
 from KF1x1 import KF1x1VarDt
+from itertools import pairwise
 
 def plot_1(plt=None, mr=None, mv=None, title=None):
     plt.figure()
@@ -354,12 +355,9 @@ class SavedData:
                 self.time = np.array(x.time)
             except AttributeError:
                 self.time = np.array(x.c_time) - x.c_time[0]
-            self.dt = []
-            for i in range(len(self.time)):
-                if i == 0:
-                    self.dt.append(self.time[1] - self.time[0])
-                else:
-                    self.dt.append(self.time[i] - self.time[i-1])
+
+            self.dt = [b - a for a, b in pairwise(self.time)]
+            self.dt.insert(0, self.dt[0])
 
             # Truncate
             if time_end is not None:
@@ -416,6 +414,7 @@ def load_data_KF1x1_test(path_to_data, time_end_in):
     data_file_clean = write_clean_file(path_to_data, type_='_shunt', hdr_key=hdr_key_x, unit_key=unit_key_x)
     if data_file_clean is None:
         return None, None, None, None, None, None
+    import numpy as np
     if data_file_clean is not None:
         mon_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
     else:
@@ -545,12 +544,12 @@ if __name__ == "__main__":
     print(f" nyquist {nyquist_freq_rps} r/s, min possible tau {min_possible_data_lag} s, data_lag {data_lag}, s")
     mr.VoVcn = butter_highpass_filter(mr.vovcn, cutoff_freq_hz, sample_freq_hz, 2)
     mr.VoVcn_kf = butter_highpass_filter(mr.vovcnkf, cutoff_freq_hz, sample_freq_hz, 2)
-
     mr_lag = LagExp(dt=sample_time, tau=data_lag, max_=3.3, min_=-3.3)
     mr.VoVcn_lag = []
-    for i in range(N):
-        lagged_val = mr_lag.calculate(mr.VoVcn[i], reset=i<1, dt=mr.dt[i])
-        mr.VoVcn_lag.append(lagged_val)
+
+    mr.VoVcn_lag = [mr_lag.calculate(mr.VoVcn[i], reset=i<1, dt=mr.dt[i]) for i in range(N)]
+
+
     mr.VoVcn_lag = np.array(mr.VoVcn_lag)
     steady_level_lag = np.average(mr.VoVcn_lag[vec_initial])
     mr.VoVcn_lag = np.array(mr.VoVcn_lag)
