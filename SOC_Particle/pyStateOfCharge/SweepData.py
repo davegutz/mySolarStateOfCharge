@@ -195,13 +195,36 @@ class Wave:
         self.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lag  # Add 1 to account for the shift
         self.time_zero_crossing = self.t[self.crossing_indices]
 
+        self.dtime_zero_crossing = [b - a for a, b in pairwise(self.time_zero_crossing)]
+        self.dtime_zero_crossing.insert(0, self.dtime_zero_crossing[0])
+        self.sampling_hz = [1./self.dtime_zero_crossing[i] for i in range(len(self.dtime_zero_crossing))]
+
+        # Detect the excitation frequency as a function of time
+
         plt.figure()
         print("plot_1:", end='')
         plt.subplot(211)
         plt.title('SweepDataWave' + '1')
+        plq(plt, self, 'time_zero_crossing', self, 'dtime_zero_crossing', color='blue', linestyle='-', label='dtime_zero_crossing')
+        plt.text(0.5, 0.2, f"tool_lag={self.data_lag} ",
+                 horizontalalignment='center',
+                 verticalalignment='center',
+                 transform=plt.gca().transAxes,
+                 fontsize=12,
+                 color='blue',
+                 bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
+        plt.legend(loc=1)
+        plt.subplot(212)
+        plq(plt, self, 'time_zero_crossing', self, 'sampling_hz', color='red', linestyle='-', label='sampling_hz')
+        plt.legend(loc=1)
+
+        plt.figure()
+        print("plot_2:", end='')
+        plt.subplot(211)
+        plt.title('SweepDataWave' + '2')
         plq(plt, self, 't', self, 'x', color='blue', linestyle='-', label='x')
         plq(plt, self, 't', self, 'x_lag', color='red', linestyle='--', label='x_lag')
-        plt.text(0.5, 0.2, f"{tool_lag=} ",
+        plt.text(0.5, 0.2, f"tool_lag={self.data_lag} ",
                  horizontalalignment='center',
                  verticalalignment='center',
                  transform=plt.gca().transAxes,
@@ -212,6 +235,7 @@ class Wave:
         plt.subplot(212)
         plq(plt, self, 't', self, 'x_lag_rate', color='red', linestyle='-', label='x_lag_rate')
         plt.legend(loc=1)
+
         plt.show()
 
     def lag(self):
