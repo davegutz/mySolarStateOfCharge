@@ -183,6 +183,18 @@ class Wave:
         self.x_lag_rate = np.gradient(self.x_lag, self.t)
         imax = [i+1 for i, _ in enumerate(find_peaks(self.x_lag_rate)[0])]
 
+        # Detect positive zero crossings
+        self.x_lag = np.array(self.x_lag)
+        std_dev_lag = np.std(self.x_lag[self.vec_initial])
+        index_start_sweep_lag = np.array(np.where(self.x_lag < -10.*std_dev_lag))[0, 0]
+        time_start_sweep_lag = self.t[index_start_sweep_lag]
+        index_end_sweep_lag = np.where(self.t < time_start_sweep_lag + 650.)[0][-1]
+        time_end_sweep_lag = self.t[index_end_sweep_lag]
+        is_positive = self.x_lag[index_start_sweep_lag:index_end_sweep_lag]  > 0
+        positive_crossings = (~is_positive[:-1]) & is_positive[1:]
+        self.crossing_indices = np.where(positive_crossings)[0] + 1 + index_start_sweep_lag  # Add 1 to account for the shift
+        self.time_zero_crossing = self.t[self.crossing_indices]
+
         plt.figure()
         print("plot_1:", end='')
         plt.subplot(211)
