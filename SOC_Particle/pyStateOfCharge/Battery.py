@@ -1325,7 +1325,7 @@ class Looparound:
             ib_into_ct = self.ib_past2
         else:
             dt_into_ct = self.dt
-            ib_into_ct = self.ib_past2
+            ib_into_ct = self.ib_past
 
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(ib_into_ct, ib_dyn_init, self.reset, dt_into_ct,
                                                                self.chem.tau_ct, text=self.name)

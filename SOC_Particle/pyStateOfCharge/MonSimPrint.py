@@ -150,7 +150,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
 #7
 def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                           ibmh                        ibmm                  ib_amp_lo    ib_amp_hi   dis_amp_flt   per    dt                    ib_amp                    ib_dyn_T_m     ib_dyn_tau_m              ib_dyn_rstate_m                ib_dyn_lstate_m                      ib_dyn_m                 vb                    dv_dyn_m              e_wrap_m_T             e_wrap_m_tau           e_wrap_m_rate          e_wrap_m_reset         e_wrap_m_state        voc                   voc_soc                e_wrap_m             e_wrap_m_filt     disable_amp_fault ib_amp_lo      e_wrap_m_reset  e_wrap_m_trim        "
+    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                           ibmh                        ibmm                  ib_amp_lo    ib_amp_hi   dis_amp_flt   per    dt                    ib_amp                    ib_dyn_T_m       ib_dyn_tau_m              ib_dyn_rstate_m                ib_dyn_lstate_m                      ib_dyn_m                 vb                    dv_dyn_m              e_wrap_m_T             e_wrap_m_tau           e_wrap_m_rate          e_wrap_m_reset         e_wrap_m_state        voc                   voc_soc                e_wrap_m             e_wrap_m_filt     disable_amp_fault ib_amp_lo      e_wrap_m_reset  e_wrap_m_trim        "
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -176,7 +176,7 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:7d}".format(bool(SN.mon_run.disable_amp_fault[G.i])), "{:2d}".format(bool(mon.disable_amp_fault)),
           "{:4d}".format(bool(SN.mon_run.disable_amp_fault_per[G.i])), "{:2d}".format(bool(mon.disable_amp_fault_per)),
           "{:11.4f}".format(SN.mon_run.dt[G.i]), "{:7.4f}".format(mon.dt),
-          "{:14.5f}".format(SN.mon_run.ib_amp[G.i]), "{:12.5f}".format(mon.ib_amp),
+          "{:15.6f}".format(SN.mon_run.ib_amp[G.i]), "{:13.6f}".format(mon.ib_amp),
           "{:9.4f}".format(SN.mon_run.ib_dyn_T_m[G.i]), "{:5.4f}".format(mon.LoopIbAmp.ChargeTransfer.dt),
           "{:12.6f}".format(SN.mon_run.ib_dyn_tau_m[G.i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.tau),
           "{:15.6f}".format(SN.mon_run.ib_dyn_rstate_m[G.i]), "{:13.6f}".format(mon.LoopIbAmp.ChargeTransfer.rstate),
