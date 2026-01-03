@@ -916,7 +916,6 @@ class SavedData:
             self.vovcn = None
             self.ib_noa_lo = None
             self.ib_noa_hi = None
-            self.ib_noa_f = None
             self.ib_noa_kf = None
             self.kfres = None
             self.x1n = None
@@ -1040,7 +1039,6 @@ class SavedData:
             self.ibmkf = np.array(sel.ibmkf[:i_end])
             self.ibnkf = np.array(sel.ibnkf[:i_end])
             self.vovcn = np.array(sel.vovcn[:i_end])
-            self.ib_noa_f = np.array(sel.ib_noa_f[:i_end])
             self.ib_noa_kf = np.array(sel.ib_noa_kf[:i_end])
             self.kfres = np.array(sel.kfres[:i_end])
             self.x1n = np.array(sel.x1n[:i_end])

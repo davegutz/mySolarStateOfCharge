@@ -26,6 +26,14 @@
 #define CURR_BIAS_NOA         0.15  // Calibration of non-amplified shunt sensor (* 'DB'), A
 #define CURR_SCALE_NOA         1.0  // Hardware to match data (* 'SB')
 #define CURR_SCALE_DISCH       1.0  // Scale discharge to account for asymetric inverter action only on discharge (* 'SD'), slr
+#define CURR_BIAS_ALL           0.0 // Bias on all shunt sensors (* 'DI'), A
+#define VOLT_BIAS             -0.10 // Bias on Vb sensor (* 'Dc'), V
+#define TEMP_BIAS               0.0 // Bias on Tb sensor (* 'Dt'), deg C
+#define VB_SCALE                1.0 // Scale Vb sensor (* 'SV')
+#define VTAB_BIAS               0.0 // Bias on voc_soc table (* 'Dw'), V  (0.0)
+//#define IB_FORCE                 -1 // Force ib signal selection, -1 = noamp, 0 =
+
+// Ib hardware
 #define SHUNT_GAIN            1333. // Shunt V2A gain (scale with * 'SA' and 'SB'), A/V (1333 is 100A/0.075V)
 #define SHUNT_AMP_R1          1500. // Internal amp resistance 196x, ohms (5100)
 #define SHUNT_AMP_R2        332000. // Internal amp resistance 196x, ohms (1000000)
@@ -37,14 +45,10 @@
 #define HDWE_IB_HI_LO_AMP_LO   -10. // Fully AMP bank discharge transition, A (-10)  
 #define HDWE_IB_HI_LO_AMP_HI    10. // Fully AMP bank charge transition, A (10)
 #define HDWE_IB_HI_LO_NOA_HI    11. // Fully NOA bank charge transition, A (11)
-#define CURR_BIAS_ALL           0.0 // Bias on all shunt sensors (* 'DI'), A
-#define VOLT_BIAS             -0.10 // Bias on Vb sensor (* 'Dc'), V
-#define TEMP_BIAS               0.0 // Bias on Tb sensor (* 'Dt'), deg C
+
+// Vb hardware
 #define VB_SENSE_R_LO          4700 // Vb low sense resistor, ohm (4700)
 #define VB_SENSE_R_HI         22000 // Vb high sense resistor, ohm (22000)
-#define VB_SCALE                1.0 // Scale Vb sensor (* 'SV')
-#define VTAB_BIAS               0.0 // Bias on voc_soc table (* 'Dw'), V  (0.0)
-//#define IB_FORCE                 -1 // Force ib signal selection, -1 = noamp, 0 =
 
 // Battery.  One 12 V 100 Ah battery bank would have NOM_UNIT_CAP 100, NS 1, and NP 1
 // Two 12 V 100 Ah series battery bank would have NOM_UNIT_CAP 100, NS 2, and NP 1

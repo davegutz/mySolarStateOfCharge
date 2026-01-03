@@ -257,7 +257,6 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plq(plt, mr, 'time', mr, 'ibmkf', linestyle='--', color='black', label='ib_amp_hdwe_kf' + run_str)
     plq(plt, mr, 'time', mr, 'ibnh', linestyle='-.', color='blue', label='ib_noa_hdwe' + run_str)
     plq(plt, mr, 'time', mr, 'ibnm', linestyle=':', color='magenta', label='ib_noa_model' + run_str)
-    plq(plt, mr, 'time', mr, 'ib_noa_f', linestyle='--', color='cyan', label='ib_noa_f' + run_str)
     plq(plt, mr, 'time', mr, 'ib_noa_kf', linestyle='--', color='black', label='ib_noa_kf' + run_str)
     plq(plt, mv, 'time', mv, 'iscn_f', linestyle='-.', color='red', label='ib_noa_kf' + ver_str)
     plq(plt, mr, 'time', mr, 'ib_sel', add=-5, linestyle='-', color='blue', label='ib_sel-5' + run_str)
