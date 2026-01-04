@@ -269,7 +269,9 @@ void Looparound::calculate(const boolean reset, const float ib, Sensors *Sen)
 {
   reset_ = reset || Sen_->Flt->reset_all_faults();
   ib_ = ib;
-
+  vb_ = Mon_->vb();
+  voc_soc_ = Mon_->voc_soc();
+  
   // Dynamic emf. vb_ is stale when running with model
   float ib_into_ct = ib_;
   if (sp.mod_vb()) 
@@ -278,8 +280,8 @@ void Looparound::calculate(const boolean reset, const float ib, Sensors *Sen)
   }
   ib_dyn_ = ChargeTransfer_->calculate(ib_into_ct, reset_, chem_->tau_ct, Sen_->T);
   dv_dyn_ = ib_dyn_*chem_->r_ct*ap.slr_res + ib_into_ct*chem_->r_0*ap.slr_res;
-  voc_ = Mon_->vb() - dv_dyn_;
-  e_wrap_ = Mon_->voc_soc() - voc_;
+  voc_ = vb_ - dv_dyn_;
+  e_wrap_ = voc_soc_ - voc_;
 
   // Trimmer using past values
   float trim_init = 0.;
@@ -642,17 +644,9 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
     String::format(" Ibh%7.3f Ibh %7.3f Ib%7.3f\n\n", Sen->Ib_hdwe, Sen->Ib_hdwe_model, Sen->Ib);
   sendTxBuf(txBuf, true, true);
 
-  txBuf = String::format(" mod_tb %d mod_vb %d mod_ib  %d\n", sp.mod_tb(), sp.mod_vb(), sp.mod_ib()) +
-    String::format(" mod_tb_dscn %d mod_vb_dscn %d mod_ib_amp_dscn %d mod_ib_noa_dscn %d\n", sp.mod_tb_dscn(), sp.mod_vb_dscn(), sp.mod_ib_amp_dscn(), sp.mod_ib_noa_dscn()) +
-  #ifdef HDWE_IB_HI_LO
-    String::format(" tb_s_st %d  vb_s_st %d  ib_choice %d ib_decision_ %d ib_s_st %d\n", tb_sel_stat_, vb_sel_stat_, ib_choice_, ib_decision_, ib_sel_stat_) +
-  #else
-    String::format(" tb_s_st %d  vb_s_st %d  ib_s_st %d ib_decision_ %d\n", tb_sel_stat_, vb_sel_stat_, ib_sel_stat_, ib_decision_) +
-  #endif
-    String::format(" fake_faults %d latched_fail %d latched_fail_fake %d preserving %d\n\n", ap.fake_faults, latched_fail_, latched_fail_fake_, *sp_preserving_) +
-    String::format(" wrap_hi_or_lo_fa %d wrap_hi_and_lo_fa %d\n\n", wrap_hi_or_lo_fa(), wrap_hi_and_lo_fa());
-  sendTxBuf(txBuf, true, true);
-
+  if ( ib_choice_ != ib_choice_last_ || vb_sel_stat_ != vb_sel_stat_last_ || tb_sel_stat_ != tb_sel_stat_last_ )
+    debug_qf(Mon, Sen);
+  
 txBuf = String::format("") +
   #ifdef HDWE_IB_HI_LO
     String::format("HDWE_IB_HI_LO Decisions\n") +
@@ -786,25 +780,10 @@ void Fault::select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const boolean re
     tb_sel_stat_ = 1;
 
   // Print
-  #ifdef HDWE_IB_HI_LO
-    if ( ib_choice_ != ib_choice_last_ || vb_sel_stat_ != vb_sel_stat_last_ || tb_sel_stat_ != tb_sel_stat_last_ )
-    {
-      Serial.printf("Sel chg:  Amp->bare %d NoAmp->bare %d ib_diff_fa %d wh_fa %d wl_fa %d wv_fa %d cc_diff_fa_ %d\n sp.ib_force() %d ib_choice %d vb_sel_stat %d tb_sel_stat %d vb_fail %d Tb_fail %d\n",
-        Sen->ShuntAmp->bare_shunt(), Sen->ShuntNoAmp->bare_shunt(), ib_diff_fa(), wrap_hi_fa(), wrap_lo_fa(), wrap_vb_fa(), cc_diff_fa(), sp.ib_force(), ib_choice_, vb_sel_stat_, tb_sel_stat_, vb_fa(), tb_fa());
-      Serial.printf("  fake %d ibchc %d ibchcl %d ib_dec %d vbss %d vbssl %d tbss %d  tbssl %d latched_fail %d latched_fail_fake %d\n",
-        ap.fake_faults, ib_choice_, ib_choice_last_, ib_decision_, vb_sel_stat_, vb_sel_stat_last_, tb_sel_stat_, tb_sel_stat_last_, latched_fail_, latched_fail_fake_);
-      Serial.printf("  preserving %d\n", *sp_preserving_);
-    }
-  #else
+   if ( ib_choice_ != ib_choice_last_ || vb_sel_stat_ != vb_sel_stat_last_ || tb_sel_stat_ != tb_sel_stat_last_ )
+    debug_qf(Mon, Sen);
+  #ifndef HDWE_IB_HI_LO
     if ( ib_sel_stat_ != ib_sel_stat_last_ || vb_sel_stat_ != vb_sel_stat_last_ || tb_sel_stat_ != tb_sel_stat_last_ )
-    {
-      Serial.printf("Sel chg:  Amp->bare %d NoAmp->bare %d ib_diff_fa %d wh_fa %d wl_fa %d wv_fa %d cc_diff_fa_ %d\n sp.ib_force() %d ib_sel_stat %d vb_sel_stat %d tb_sel_stat %d vb_fail %d Tb_fail %d\n",
-        Sen->ShuntAmp->bare_shunt(), Sen->ShuntNoAmp->bare_shunt(), ib_diff_fa(), wrap_hi_fa(), wrap_lo_fa(), wrap_vb_fa(), cc_diff_fa(), sp.ib_force(), ib_sel_stat_, vb_sel_stat_, tb_sel_stat_, vb_fa(), tb_fa());
-      Serial.printf("  fake %d ibss %d ibssl %d vbss %d vbssl %d tbss %d  tbssl %d latched_fail %d latched_fail_fake %d\n",
-        ap.fake_faults, ib_sel_stat_, ib_sel_stat_last_, vb_sel_stat_, vb_sel_stat_last_, tb_sel_stat_, tb_sel_stat_last_, latched_fail_, latched_fail_fake_);
-      Serial.printf("  preserving %d\n", *sp_preserving_);
-    }
-    if ( ib_sel_stat_ != ib_sel_stat_last_ )
     {
       Serial.printf("Small reset\n");
       cp.cmd_reset();   

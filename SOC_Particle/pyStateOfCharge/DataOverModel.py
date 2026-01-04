@@ -936,11 +936,13 @@ class SavedData:
             self.e_wrap_m = None
             self.e_wrap_m_filt = None
             self.e_wrap_m_trim = None
+            self.e_wrap_m_trimmed = None
             self.e_wrap_m_reset = None
             self.ib_amp = None
             self.e_wrap_n = None
             self.e_wrap_n_filt = None
             self.e_wrap_n_trim = None
+            self.e_wrap_n_trimmed = None
             self.wh_flt = None
             self.wh_m_flt = None
             self.wh_n_flt = None
@@ -1070,6 +1072,10 @@ class SavedData:
                 self.e_wrap_n_filt = np.array(sel.e_wn_f[:i_end])
             if hasattr(sel, 'e_wm_t'):
                 self.e_wrap_m_trim = np.array(sel.e_wm_t[:i_end])
+            self.e_wrap_m_trimmed = np.array(sel.ib_wrp_tr_m[:i_end])
+            self.vb_m = np.array(sel.vb_m[:i_end])
+            self.voc_m = np.array(sel.voc_m[:i_end])
+            self.voc_soc_m = np.array(sel.voc_soc_m[:i_end])
             if hasattr(sel, 'ib_amp'):
                 self.ib_amp = np.array(sel.ib_amp[:i_end])
             self.wh_flt = np.bool_(np.array(fltw) & 2**5)

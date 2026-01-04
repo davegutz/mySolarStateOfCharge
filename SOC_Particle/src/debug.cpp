@@ -145,17 +145,22 @@ void debug_qf(BatteryMonitor *Mon, Sensors *Sen)
 {
   String txBuf;
 
-  txBuf = String::format(" mod_tb %d mod_vb %d mod_ib  %d\n", sp.mod_tb(), sp.mod_vb(), sp.mod_ib()) +
-    String::format(" mod_tb_dscn %d\nmod_vb_dscn %d\nmod_ib_amp_dscn %d\nmod_ib_noa_dscn %d\n", sp.mod_tb_dscn(), sp.mod_vb_dscn(), sp.mod_ib_amp_dscn(), sp.mod_ib_noa_dscn()) +
-  #ifdef HDWE_IB_HI_LO
-    String::format(" tb_s_st %d\nvb_s_st %d\nib_choice %d\nib_decision_ %d\nib_s_st %d\n",
-      Sen->Flt->tb_sel_status(), Sen->Flt->vb_sel_stat(), Sen->Flt->ib_choice(), Sen->Flt->ib_decision(), Sen->Flt->ib_sel_stat()) +
-  #else
-    String::format(" tb_s_st %d\nvb_s_st %d\nib_s_st %d\nib_decision_ %d\n", tb_sel_stat_, vb_sel_stat_, ib_sel_stat_, ib_decision_) +
-  #endif
-    String::format(" fake_faults %d\nlatched_fail %d\nlatched_fail_fake %d\npreserving %d\n\n",
+  txBuf = String::format(" mod_tb %d mod_vb %d mod_ib  %d\n mod_tb_dscn %d mod_vb_dscn %d mod_ib_amp_dscn %d mod_ib_noa_dscn %d\n tb_s_st %d vb_s_st %d ib_choice %d ib_decision_ %d ib_s_st %d\n",
+      sp.mod_tb(), sp.mod_vb(), sp.mod_ib(),
+      sp.mod_tb_dscn(), sp.mod_vb_dscn(), sp.mod_ib_amp_dscn(), sp.mod_ib_noa_dscn(),
+      Sen->Flt->tb_sel_status(), Sen->Flt->vb_sel_stat(), Sen->Flt->ib_choice(), Sen->Flt->ib_decision(), Sen->Flt->ib_sel_stat());
+  sendTxBuf(txBuf, true, true);
+
+  txBuf = String::format(" fake_faults %d\n latched_fail %d\n latched_fail_fake %d\n preserving %d\n\n",
       ap.fake_faults, Sen->Flt->latched_fail(), Sen->Flt->latched_fail_fake(), Sen->Flt->preserving()) +
     String::format(" wrap_hi_or_lo_fa %d wrap_hi_and_lo_fa %d\n\n", Sen->Flt->wrap_hi_or_lo_fa(), Sen->Flt->wrap_hi_and_lo_fa());
+  sendTxBuf(txBuf, true, true);
+
+  txBuf = String::format("Sel chg:\n  Amp->bare %d\n  NoAmp->bare %d\n  ib_diff_fa %d\n  wh_fa %d\n  wl_fa %d\n  wv_fa %d\n  cc_diff_fa_ %d\n  sp.ib_force() %d\n  ib_choice %d\n  vb_sel_stat %d\n  tb_sel_stat %d\n  vb_fail %d\n  Tb_fail %d\n" +
+    Sen->ShuntAmp->bare_shunt(), Sen->ShuntNoAmp->bare_shunt(), Sen->Flt->ib_diff_fa(), Sen->Flt->wrap_hi_fa(), Sen->Flt->wrap_lo_fa(), Sen->Flt->wrap_vb_fa(), Sen->Flt->cc_diff_fa(), sp.ib_force(), Sen->Flt->ib_choice(), Sen->Flt->vb_sel_stat(), Sen->Flt->tb_sel_status(), Sen->Flt->vb_fa(), Sen->Flt->tb_fa());
+    String::format("  fake %d\n  ibchc %d\n  ibchcl %d\n  ib_dec %d\n  vbss %d\n  vbssl %d\n  tbss %d\n   tbssl %d\n  latched_fail %d\n   latched_fail_fake %d\n",
+    ap.fake_faults, Sen->Flt->ib_choice(), Sen->Flt->ib_choice_past(), Sen->Flt->ib_decision(), Sen->Flt->vb_sel_stat(), Sen->Flt->vb_sel_stat_past(), Sen->Flt->tb_sel_status(), Sen->Flt->tb_sel_stat_past(), Sen->Flt->latched_fail(), Sen->Flt->latched_fail_fake()) +
+    String::format("  preserving %d\n", Sen->Flt->preserving());
   sendTxBuf(txBuf, true, true);
 
 }

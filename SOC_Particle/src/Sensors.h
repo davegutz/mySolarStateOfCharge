@@ -248,6 +248,7 @@ public:
   float e_wrap_rate() { return e_wrap_rate_; };
   boolean reset() { return reset_; };
   float e_wrap_trim() { return e_wrap_trim_; };
+  float e_wrap_trimmed() { return e_wrap_trimmed_; };
   uint8_t hi_fail() { return hi_fail_; };
   uint8_t hi_fault() { return hi_fault_; };
   float ib_dyn() { return ib_dyn_; };
@@ -267,6 +268,9 @@ public:
   uint8_t lo_fail() { return lo_fail_; };
   uint8_t lo_fault() { return lo_fault_; };
   String pretty_print();
+  float vb() { return vb_; };
+  float voc() { return voc_; };
+  float voc_soc() { return voc_soc_; };
 protected:
   Chemistry *chem_;         // Chemistry
   LagExp *ChargeTransfer_;  // ChargeTransfer model {ib, vb} --> {voc}, ioc=ib for Battery version
@@ -291,7 +295,9 @@ protected:
   boolean reset_;           // If resetting or not
   Sensors *Sen_;            // Sensors ptr
   TustinIntegrator *Trim_;  // Trim integrator
-  float voc_;               // Open circuit unit voltage, V 
+  float vb_;                // Looparound version of vb, V
+  float voc_;               // Looparound version of voc, V 
+  float voc_soc_;           // Looparound version of voc_soc, V 
   LagTustin *WrapErrFilt_;  // Noise filter for voltage wrap
   TFDelay *WrapHi_;         // Wrap test persistence
   TFDelay *WrapLo_;         // Wrap test persistence
@@ -401,6 +407,7 @@ public:
   void tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, const boolean reset);  // Range check Tb
   boolean tb_fa() { return failRead(TB_FA); };
   boolean tb_flt() { return faultRead(TB_FLT); };
+  int8_t tb_sel_stat_past() { return tb_sel_stat_last_; };
   int8_t tb_sel_status() { return tb_sel_stat_; };
   void tb_stale(const boolean reset, Sensors *Sen);
   void vb_check(Sensors *Sen, BatteryMonitor *Mon, const float _vb_min, const float _vb_max, const boolean reset);  // Range check Vb
@@ -412,6 +419,7 @@ public:
   boolean vb_flt() { return faultRead(VB_FLT); };
   boolean vb_functional_fa() { return vb_functional_fa_; };
   boolean vb_functional_flt() { return vb_functional_flt_; };
+  int8_t vb_sel_stat_past() { return vb_sel_stat_last_; };
   boolean vc_fa() { return failRead(VC_FA); };
   boolean vc_flt() { return faultRead(VC_FLT); };
   boolean wrap_m_and_n_fa() { return ( (failRead(WRAP_LO_M_FA) && failRead(WRAP_LO_N_FA)) ||
