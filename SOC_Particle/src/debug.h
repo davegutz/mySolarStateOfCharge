@@ -44,6 +44,7 @@ void debug_m24(Sensors *Sen);
 void debug_98(BatteryMonitor *Mon, Sensors *Sen);
 void debug_99(BatteryMonitor *Mon, Sensors *Sen);
 void debug_q(BatteryMonitor *Mon, Sensors *Sen);
+void debug_qf(BatteryMonitor *Mon, Sensors *Sen);
 
 #ifdef SOFT_DEBUG_QUEUE
     void debug_queue(const String who);

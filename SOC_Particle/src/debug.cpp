@@ -116,6 +116,9 @@ void debug_m24(Sensors *Sen)
 void debug_q(BatteryMonitor *Mon, Sensors *Sen)
 {
   String txBuf;
+
+  debug_qf(Mon, Sen);
+
   txBuf = String::format("ib_amp_fail %d\nib_noa_fail %d\nvb_fail %d\nTb%7.3f\nvb%7.3f\nvoc%7.3f\nvoc_filt%7.3f\nvoc_stat%7.3f\nvoc_stat_f%7.3f\nvoc_soc%7.3f\nvsat%7.3f\nib%7.3f\nsoc_m%8.4f\n\
 soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
     Sen->Flt->ib_amp_fa(), Sen->Flt->ib_noa_fa(), Sen->Flt->vb_fail(),
@@ -130,10 +133,31 @@ soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
     Mon->delta_q_neg(), Mon->time_neg(), Mon->delta_q_pos(), Mon->time_pos());
   sendTxBuf(txBuf, true, true);
 
-  if ( Sen->Flt->falw() || Sen->Flt->fltw() ) chit("Pf;", SOON);
-  time_long_2_str((time_t)sp.Time_now_z, pr.buff);
-  txBuf = String::format(" time %ld hms:  %s\n", sp.Time_now_z, pr.buff);
+  // if ( Sen->Flt->falw() || Sen->Flt->fltw() ) chit("Pf;", SOON);
+  // time_long_2_str((time_t)sp.Time_now_z, pr.buff);
+  // txBuf = String::format(" time %ld hms:  %s\n", sp.Time_now_z, pr.buff);
+  // sendTxBuf(txBuf, true, true);
+   if ( Sen->Flt->falw() || Sen->Flt->fltw() )  sendTxBuf("There are faults\n", true, true);
+  }
+
+  // Quick print critical selection parameters
+void debug_qf(BatteryMonitor *Mon, Sensors *Sen)
+{
+  String txBuf;
+
+  txBuf = String::format(" mod_tb %d mod_vb %d mod_ib  %d\n", sp.mod_tb(), sp.mod_vb(), sp.mod_ib()) +
+    String::format(" mod_tb_dscn %d\nmod_vb_dscn %d\nmod_ib_amp_dscn %d\nmod_ib_noa_dscn %d\n", sp.mod_tb_dscn(), sp.mod_vb_dscn(), sp.mod_ib_amp_dscn(), sp.mod_ib_noa_dscn()) +
+  #ifdef HDWE_IB_HI_LO
+    String::format(" tb_s_st %d\nvb_s_st %d\nib_choice %d\nib_decision_ %d\nib_s_st %d\n",
+      Sen->Flt->tb_sel_status(), Sen->Flt->vb_sel_stat(), Sen->Flt->ib_choice(), Sen->Flt->ib_decision(), Sen->Flt->ib_sel_stat()) +
+  #else
+    String::format(" tb_s_st %d\nvb_s_st %d\nib_s_st %d\nib_decision_ %d\n", tb_sel_stat_, vb_sel_stat_, ib_sel_stat_, ib_decision_) +
+  #endif
+    String::format(" fake_faults %d\nlatched_fail %d\nlatched_fail_fake %d\npreserving %d\n\n",
+      ap.fake_faults, Sen->Flt->latched_fail(), Sen->Flt->latched_fail_fake(), Sen->Flt->preserving()) +
+    String::format(" wrap_hi_or_lo_fa %d wrap_hi_and_lo_fa %d\n\n", Sen->Flt->wrap_hi_or_lo_fa(), Sen->Flt->wrap_hi_and_lo_fa());
   sendTxBuf(txBuf, true, true);
+
 }
 
 // Calibration

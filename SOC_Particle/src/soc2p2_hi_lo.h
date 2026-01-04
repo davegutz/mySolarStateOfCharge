@@ -9,7 +9,7 @@
 #define HDWE_IB_HI_LO
 #define HDWE_2WIRE
 // #define SOFT_DEBUG_QUEUE
-#define DEBUG_DETAIL                    // Use this to debug initialization using 'v-1;'
+#define DEBUG_DETAIL                    // Use this to debug initialization using 'vv-1;'
 // #define LOGHANDLE
 
 // * = SRAM EEPROM adjustments, retained on power reset
@@ -19,9 +19,9 @@
 #define MODELING              0   // Nominal modeling bitmap (* 'Xm'), 0=all hdwe, 1+=Tb, 2+=Vb, 4+=Ib, 7=all model.  +240 for discn
 
 // Sensor biases
-#define CURR_BIAS_AMP        -0.60  // Calibration of amplified shunt sensor (* 'DA'), A, from 0.15 on 20250608
+#define CURR_BIAS_AMP         0.00  // Calibration of amplified shunt sensor (* 'DA'), A, from 0.15 on 20250608
 #define CURR_SCALE_AMP         1.0  // Hardware to match data (* 'SA')
-#define CURR_BIAS_NOA        -0.55  // Calibration of non-amplified shunt sensor (* 'DB'), A
+#define CURR_BIAS_NOA         0.00  // Calibration of non-amplified shunt sensor (* 'DB'), A
 #define CURR_SCALE_NOA         1.0  // Hardware to match data (* 'SB')
 #define CURR_SCALE_DISCH       1.0  // Scale discharge to account for asymetric inverter action only on discharge (* 'SD'), slr
 #define CURR_BIAS_ALL           0.0 // Bias on all shunt sensors (* 'DI'), A
@@ -77,7 +77,7 @@
 #define EKF_CONV        0.025    // EKF tracking error indicating convergence, V (.005)
 #define WRAP_SOC_HI_OFF     0.94        // Disable e_wrap_hi when saturated (0.94)
 
-// Frame time for ADC read of thermistor is fast
-#define TEMP_INIT_DELAY 1     // It takes 10 seconds first read of DS18 (10000).  But we're using a thermistor with adc here
+// Frame time for ADC read of thermistor
+#define TEMP_INIT_DELAY 1
 
 #endif

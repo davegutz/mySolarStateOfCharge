@@ -9,7 +9,7 @@
 #define HDWE_IB_HI_LO
 #define HDWE_DS2482_1WIRE
 // #define SOFT_DEBUG_QUEUE
-// #define DEBUG_DETAIL                    // Use this to debug initialization using 'v-1;'
+// #define DEBUG_DETAIL                    // Use this to debug initialization using 'vv-1;'
 // #define LOGHANDLE
 
 // * = SRAM EEPROM adjustments, retained on power reset
@@ -59,7 +59,6 @@
 #define FAKE_FAULTS           true    // What to do with faults, T=detect and display them but don't change signals
 #define CC_DIFF_SOC_DIS_THRESH  0.5   // Signal selection threshold for Coulomb counter EKF disagree test (0.2, 0.1 too small on truck)
 
-// Frame time for ADC read of thermistor is fast
-#define TEMP_INIT_DELAY 1     // It takes 10 seconds first read of DS18 (10000).  But we're using a thermistor with adc here
-
+// Frame time for ADC read of thermistor
+#define TEMP_INIT_DELAY 1
 #endif

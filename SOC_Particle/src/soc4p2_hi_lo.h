@@ -11,7 +11,7 @@
 #define HDWE_IB_HI_LO
 #define HDWE_2WIRE
 // #define SOFT_DEBUG_QUEUE
-#define DEBUG_DETAIL                    // Use this to debug initialization using 'v-1;'
+#define DEBUG_DETAIL                    // Use this to debug initialization using 'vv-1;'
 // #define LOGHANDLE
 
 // * = SRAM EEPROM adjustments, retained on power reset
@@ -79,7 +79,7 @@
 #define EKF_CONV        0.025    // EKF tracking error indicating convergence, V (.005)
 #define WRAP_SOC_HI_OFF     0.94        // Disable e_wrap_hi when saturated (0.94)
 
-// Frame time for ADC read of thermistor is fast
-#define TEMP_INIT_DELAY 1     // It takes 10 seconds first read of DS18 (10000).  But we're using a thermistor with adc here
+// Frame time for ADC read of thermistor
+#define TEMP_INIT_DELAY 1
 
 #endif
