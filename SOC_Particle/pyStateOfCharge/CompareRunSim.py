@@ -173,7 +173,9 @@ def main():
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoise_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewamps_soc2p2_hi_lo_bb.csv' # problems with Vb=0 icharge=0
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsXm2_soc2p2_hi_lo_bb.csv'  # problems with sat
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsXm2Cap5_soc2p2_hi_lo_bb.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsXm2Cap5_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsDc13Cap5_soc2p2_hi_lo_bb.csv'
+
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 
     # # gdrive = '/home/daveg/Documents/'
@@ -195,8 +197,8 @@ def main():
     scale_in = 1.0
 
     # RunSim plot selection
-    # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf 7=dyn_m
-    request_hist_in = 2
+    # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m
+    request_hist_in = 3
     # request_hist_in = None
 
     # # mon_soc_in = False # old runsim work ******************

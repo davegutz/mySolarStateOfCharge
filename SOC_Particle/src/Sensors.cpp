@@ -645,7 +645,7 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
   sendTxBuf(txBuf, true, true);
 
   if ( ib_choice_ != ib_choice_last_ || vb_sel_stat_ != vb_sel_stat_last_ || tb_sel_stat_ != tb_sel_stat_last_ )
-    debug_qf(Mon, Sen);
+    debug_qs(Mon, Sen);
   
 txBuf = String::format("") +
   #ifdef HDWE_IB_HI_LO
@@ -781,7 +781,7 @@ void Fault::select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const boolean re
 
   // Print
    if ( ib_choice_ != ib_choice_last_ || vb_sel_stat_ != vb_sel_stat_last_ || tb_sel_stat_ != tb_sel_stat_last_ )
-    debug_qf(Mon, Sen);
+    debug_qs(Mon, Sen);
   #ifndef HDWE_IB_HI_LO
     if ( ib_sel_stat_ != ib_sel_stat_last_ || vb_sel_stat_ != vb_sel_stat_last_ || tb_sel_stat_ != tb_sel_stat_last_ )
     {

@@ -1303,7 +1303,9 @@ class Looparound:
         self.ib_past = 0.
         self.ib_past2 = 0.
         self.Trim = TustinIntegrator(dt=2., min_=-max_err*10., max_=max_err*10.)
+        self.vb = 0.
         self.voc = 0.
+        self.voc_soc = 0.
         self.WrapErrFilt = LagTustin(dt=2., min_=-max_err, max_=max_err, tau=Battery.WRAP_ERR_FILT)
         self.WrapHi = TFDelay(dt=2., in_=False, t_true=Battery.WRAP_HI_S, t_false=Battery.WRAP_HI_R)
         self.WrapLo = TFDelay(dt=2., in_=False, t_true=Battery.WRAP_LO_S, t_false=Battery.WRAP_LO_R)
@@ -1320,6 +1322,8 @@ class Looparound:
         self.reset = reset
         self.dt = dt
         self.ib = ib
+        self.vb = self.Mon.vb
+        self.voc_soc = self.Mon.voc_soc
         if modeling:
             dt_into_ct = self.dt_past
             ib_into_ct = self.ib_past2
@@ -1331,8 +1335,8 @@ class Looparound:
                                                                self.chem.tau_ct, text=self.name)
         # print(f"{reset=} {ib=} {self.ib=} {self.ib_past=} {self.ChargeTransfer.rstate=}")
         self.dv_dyn = (self.ib_dyn* self.chem.r_ct + ib_into_ct * self.chem.r_0)
-        self.voc = self.Mon.vb - self.dv_dyn
-        self.e_wrap = self.Mon.voc_soc - self.voc
+        self.voc = self.vb - self.dv_dyn
+        self.e_wrap = self.voc_soc - self.voc
 
         # Trimmer using past values
         trim_rate_lim = max(min(self.e_wrap_filt * loop_gain, Battery.MAX_TRIM_RATE), -Battery.MAX_TRIM_RATE)
