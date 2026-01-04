@@ -20,6 +20,7 @@ Coulomb Counter built in."""
 
 from datetime import datetime, timedelta
 import Globals as G
+from Colors import Colors
 count_since_last_header = 0
 HDR_SPREAD = 10
 
@@ -114,6 +115,8 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
         count_since_last_header = 0
     if G.i > 0:
         count_since_last_header += 1
+    if mon.reset:
+        print(Colors.fg.red, end='')
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
           "{:4d}".format(i_ekf), "{:4d}".format(mon.reset_ekf), "{:4d}".format(calc_ekf),
           "{:9.3f}".format(SN.mon_run.dt_ekf[i_ekf]), "{:5.3f}".format(mon.dt_eframe),
@@ -145,6 +148,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
           "{:12.6f}".format(SN.mon_run.voc_stat_f_tau[i_ekf]), "{:9.6f}".format(mon.voc_stat_f_tau),
           "{:12.6f}".format(SN.mon_run.voc_stat_f_T[i_ekf]), "{:9.6f}".format(mon.voc_stat_f_T),
           )
+    print(Colors.reset, end='')
     return hdr
 
 #7
@@ -156,6 +160,10 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
         count_since_last_header = 0
     if G.i > 0:
         count_since_last_header += 1
+    if mon.reset:
+        print(Colors.fg.red, end='')
+    elif mon.reset_temp:
+        print(Colors.fg.orange, end='')
     print("{:4d}".format(G.i), "{:8.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
@@ -201,6 +209,7 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:26.0f}".format(SN.mon_run.e_wrap_m_reset[G.i]), "{:2d}".format(mon.e_wrap_m_reset),
           # "{:11.5f}".format(SN.mon_run.e_wrap_m_filt[G.i]), "{:8.5f}".format(mon.e_wrap_m_filt), "{:8.5f}".format(SN.e_wrap_m_filt_init),
           )
+    print(Colors.reset, end='')
     return hdr
 
 #6
@@ -212,6 +221,8 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
         count_since_last_header = 0
     if G.i > 0:
         count_since_last_header += 1
+    if mon.reset:
+        print(Colors.fg.red)
     print("{:4d}".format(G.i), "{:8.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf),
           "{:9.4f}".format(SN.mon_run.dt[G.i]), "{:5.4f}".format(mon.dt),
@@ -246,6 +257,7 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:14.7e}".format(SN.mon_run.P10n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[1][0]),
           "{:14.7e}".format(SN.mon_run.P11n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[1][1]),
           )
+    print(Colors.reset, end='')
     return hdr
 
 def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
@@ -264,6 +276,8 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
     if mon.ib_charge > 0:
         i_dt_old *= mon.chemistry.coul_eff
         i_dt_new *= mon.chemistry.coul_eff
+    if mon.reset:
+        print(Colors.fg.red)
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
@@ -283,6 +297,7 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
           "{:14.7f}".format(SN.mon_run.Tb[i_temp]), "{:10.7f}".format(mon.Tb),
           "{:12.7f}".format(SN.mon_run.Tb_f_rate[i_temp]), "{:10.7f}".format(mon.Tb_f_rate),
          )
+    print(Colors.reset, end='')
     return hdr
 
 # 3
@@ -299,6 +314,8 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
     if sim.ib_charge > 0:
         i_dt_old *= sim.chemistry.coul_eff
         i_dt_new *= sim.chemistry.coul_eff
+    if mon.reset:
+        print(Colors.fg.red)
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
@@ -343,6 +360,7 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
           )
     if G.i == 2:
         pass
+    print(Colors.reset, end='')
     return hdr
 
 #4
@@ -354,6 +372,8 @@ def print_temp_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
         count_since_last_header = 0
     if G.i > 0:
         count_since_last_header += 1
+    if mon.reset:
+        print(Colors.fg.red)
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
@@ -369,6 +389,7 @@ def print_temp_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
           "{:14.7f}".format(SN.mon_run.Tb_f_rate_rap[G.i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
           "{:14.7f}".format(SN.mon_run.tb_f_for_hx[i_ekf]), "{:10.7f}".format(mon.tb_f_for_hx),
           )
+    print(Colors.reset, end='')
     return hdr
 
 def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
@@ -379,6 +400,8 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
         count_since_last_header = 0
     if G.i > 0:
         count_since_last_header += 1
+    if mon.reset:
+        print(Colors.fg.red)
     print("{:4d}".format(G.i), "{:4.0f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:4d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:4d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
@@ -404,6 +427,7 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
           "{:11.7f}".format(SN.mon_run.z[i_ekf]), "{:10.7f}".format(mon.voc_stat_f),
           "{:11.5f}".format(SN.mon_run.soc_ekf[G.i]), "{:9.5f}".format(mon.soc_ekf),
           )
+    print(Colors.reset, end='')
     return hdr
 
 #5
@@ -415,6 +439,8 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
         count_since_last_header = 0
     if G.i > 0:
         count_since_last_header += 1
+    if mon.reset:
+        print(Colors.fg.red)
     print("{:4d}".format(G.i), "{:8.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
@@ -504,6 +530,7 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:11.5f}".format(SN.mon_run.soc_ekf[G.i]), "{:9.5f}".format(mon.soc_ekf),
           "{:11.5f}".format(SN.mon_run.y_ekf[G.i]), "{:9.5f}".format(mon.y_ekf),
           )
+    print(Colors.reset, end='')
     return hdr
 def save_clean_file(mon_ver, csv_file, unit_key):
     default_header_str = "unit,               hm,                  cTime,        dt,       sat,sel,mod,\

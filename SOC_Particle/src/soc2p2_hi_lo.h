@@ -65,10 +65,6 @@
 #define CC_DIFF_SOC_DIS_THRESH  0.5   // Signal selection threshold for Coulomb counter EKF disagree test (0.2, 0.1 too small on truck)
 #define DISAB_TB_FA true
 
-// For shifty amp hardware using 1% resistors
-#define IB_CHARGE_NOA  // Use NOA for charge calculation, otherwise selected ib. TODO:  better resistors for hi gain amp sensor
-// TODO:  when isolate failure to noa, use amp for charge calculation
-
 // ekf tune
 #define EKF_Q_SD_NORM   0.0015  // Standard deviation of normal EKF process uncertainty, V (0.0015)
 #define EKF_R_SD_NORM   0.5     // Standard deviation of normal EKF state uncertainty, fraction (0-1) (0.5)
