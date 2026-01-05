@@ -244,18 +244,18 @@ public:
     float vb_hist_slr() { if ( abs(amp_z) > SCL_40 ) return SCL_1500/abs(amp_z); else return SCL_1200; }
     boolean mod_all_dscn() { return ( 111<modeling() ); }                // Bare all
     boolean mod_any() { return ( mod_ib() || mod_tb() || mod_vb() ); }  // Modeling any
+    boolean mod_none_dscn() { return ( 16>modeling() ); }                // Bare nothing
     boolean mod_any_dscn() { return ( 15<modeling() ); }                 // Bare any
-    boolean mod_ib() { return ( 1<<2 & modeling() || mod_ib_all_dscn() ); }  // Using Sim as source of ib
     boolean mod_ib_all_dscn() { return ( 191<modeling() ); }             // Nothing connected to ib sensors in I2C on SDA/SCL
-    boolean mod_ib_amp_dscn() { return ( 1<<6 & modeling() ); }          // Nothing connected to amp ib sensors in I2C on SDA/SCL
     boolean mod_ib_any_dscn() { return ( mod_ib_amp_dscn() || mod_ib_noa_dscn() ); }  // Nothing connected to ib sensors in I2C on SDA/SCL
     boolean mod_ib_noa_dscn() { return ( 1<<7 & modeling() ); }          // Nothing connected to noa ib sensors in I2C on SDA/SCL
-    boolean mod_none() { return ( 0==modeling() ); }                     // Using all
-    boolean mod_none_dscn() { return ( 16>modeling() ); }                // Bare nothing
-    boolean mod_tb() { return ( 1<<0 & modeling() || mod_tb_dscn() ); }  // Using Sim as source of tb
-    boolean mod_tb_dscn() { return ( 1<<4 & modeling() ); }              // Nothing connected to one-wire Tb sensor on D6
-    boolean mod_vb() { return ( 1<<1 & modeling() || mod_vb_dscn() ); }  // Using Sim as source of vb
+    boolean mod_ib_amp_dscn() { return ( 1<<6 & modeling() ); }          // Nothing connected to amp ib sensors in I2C on SDA/SCL
     boolean mod_vb_dscn() { return ( 1<<5 & modeling() ); }              // Nothing connected to vb on A1
+    boolean mod_tb_dscn() { return ( 1<<4 & modeling() ); }              // Nothing connected to one-wire Tb sensor on D6
+    boolean mod_ib() { return ( 1<<2 & modeling() || mod_ib_all_dscn() ); }  // Using Sim as source of ib
+    boolean mod_vb() { return ( 1<<1 & modeling() || mod_vb_dscn() ); }  // Using Sim as source of vb
+    boolean mod_tb() { return ( 1<<0 & modeling() || mod_tb_dscn() ); }  // Using Sim as source of tb
+    boolean mod_none() { return ( 0==modeling() ); }                     // Using all
 
     // put
     void put_all_dynamic();

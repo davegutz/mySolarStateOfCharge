@@ -58,7 +58,7 @@ def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, 
         plt.subplot(322)
         plt.plot(sr.time, sr.dv_hys_s, linestyle='-', color='black', label='dv_hys_s' + run_str)
         plq(plt, sv, 'time', sv, 'dv_hys', linestyle='--', color='orange', label='dv_hys' + ver_str)
-        plq(plt, sv, 'time', sv, 'dv_hys_s', linestyle='--', color='orange', label='dv_hys_s' + ver_str)
+        plq(plt, smv, 'time', smv, 'dv_hys_s', linestyle='-.', color='cyan', label='dv_hys_s' + ver_str)
         plt.legend(loc=1)
         plt.subplot(323)
         plt.plot(sr.time, sr.soc_s, linestyle='-', color='black', label='soc_s' + run_str)

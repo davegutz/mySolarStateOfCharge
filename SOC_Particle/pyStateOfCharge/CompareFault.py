@@ -203,7 +203,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
         if reset and bms_off_init is not None:
             bms_off = bms_off_init
         else:
-            bms_off = (tb_f_ <= mon.chemistry.low_t) or (voltage_low and not rp.tweak_test())  # KISS
+            bms_off = (tb_f_ <= mon.chemistry.low_t) or (voltage_low and not rp.tweak_test)  # KISS
         ib_charge_f_ = ib_f_
         if bms_off and not bms_charging:
             ib_charge_f_ = 0.

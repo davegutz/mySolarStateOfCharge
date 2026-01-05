@@ -145,6 +145,9 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   {
     Sen->Sim->apply_soc(Sen->Sim->soc(), Sen->Tb_f);
   }
+  #ifdef DEBUG_DETAIL
+    if ( sp.debug()==-1 ){ Serial.printf("S.a_b: !sp.mod_vb() %d", !sp.mod_vb()); debug_m1(Mon, Sen);}
+  #endif
   // Call calculate twice because sat_ is a used-before-calculated (UBC)
   // Simple 'call twice' method because sat_ is discrete no analog which would require iteration
   Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on, true) * sp.nS();

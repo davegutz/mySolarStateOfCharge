@@ -84,6 +84,7 @@ class Battery(Coulombs):
     HYS_SOC_MAX = 0.99  # Detect high endpoint condition for reset of hysteresis
     HYS_E_WRAP_THR = 0.1  # Detect e_wrap going the other way; need to reset dv_hys at endpoints
     HYS_IB_THR = 1.  # Ignore reset if opposite situation exists
+    HYS_SCALE = 1.  # Used to disable hysteresis from sim on the app
     IB_MIN_UP = 0.2  # Min up charge current for come alive, BMS logic, and fault
     cp_eframe_mult = 20  # Run EKF 20 times slower than Coulomb Counter
     READ_DELAY = 100  # nominal read time, ms
@@ -996,7 +997,7 @@ class BatterySim(Battery):
         self.s_cap = scale  # Rated capacity scalar
         if scale is not None:
             self.apply_cap_scale(scale)
-        self.hys = Hysteresis(scale=OPT.slr_hys_sim, dv_hys=OPT.mon_run.dv_hys[0], scale_cap=OPT.slr_hys_cap_sim, slr_cap_chg=OPT.slr_cap_chg,
+        self.hys = Hysteresis(scale=OPT.slr_hys_sim*Battery.HYS_SCALE, dv_hys=OPT.mon_run.dv_hys[0], scale_cap=OPT.slr_hys_cap_sim, slr_cap_chg=OPT.slr_cap_chg,
                               slr_cap_dis=OPT.slr_cap_dis, slr_hys_chg=OPT.slr_hys_chg, slr_hys_dis=OPT.slr_hys_dis, chem=self.chem,
                               chemistry=self.chemistry)  # Battery hysteresis model - drift of voc
         self.tweak_test = tweak_test
@@ -1093,7 +1094,7 @@ class BatterySim(Battery):
         else:
             voltage_low = self.voc_stat < self.chemistry.vb_rising_sim
         bms_charging = self.ib_in > Battery.IB_MIN_UP
-        self.bms_off = (self.Tb_f < self.chemistry.low_t) or (voltage_low and not rp.tweak_test())
+        self.bms_off = (self.Tb_f < self.chemistry.low_t) or (voltage_low and not rp.tweak_test)
         ib_charge_fut = self.ib_in
         if self.bms_off and self.mod and not bms_charging:
             ib_charge_fut = 0.
@@ -1112,8 +1113,8 @@ class BatterySim(Battery):
         self.vb = self.voc + self.ib_dyn*self.chemistry.r_ct + self.ib*self.chemistry.r_0
         if self.bms_off:
             self.vb = self.voc
-        if self.bms_off and dc_dc_on:
-            self.vb = Battery.VB_DC_DC
+        # if self.bms_off and dc_dc_on:
+        #     self.vb = Battery.VB_DC_DC
         self.dv_dyn = self.vb - self.voc
 
         # Saturation logic, both full and empty
@@ -1241,7 +1242,6 @@ class BatterySim(Battery):
         self.saved_s.ib_dyn_s.append(self.ib_dyn)
         self.saved_s.ib_dyn_rstate_s.append(self.ib_dyn_rstate)
         self.saved_s.ib_dyn_lstate_s.append(self.ib_dyn_lstate)
-        self.saved_s.dv_hys_s.append(self.dv_hys)
         self.saved_s.tau_hys_s.append(self.tau_hys)
         self.saved_s.vb_s.append(self.vb)
         self.saved_s.ib_s.append(self.ib)
