@@ -222,7 +222,7 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     if G.i > 0:
         count_since_last_header += 1
     if mon.reset:
-        print(Colors.fg.red)
+        print(Colors.fg.red, end='')
     print("{:4d}".format(G.i), "{:8.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf),
           "{:9.4f}".format(SN.mon_run.dt[G.i]), "{:5.4f}".format(mon.dt),
@@ -277,7 +277,7 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
         i_dt_old *= mon.chemistry.coul_eff
         i_dt_new *= mon.chemistry.coul_eff
     if mon.reset:
-        print(Colors.fg.red)
+        print(Colors.fg.red, end='')
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
@@ -315,7 +315,7 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
         i_dt_old *= sim.chemistry.coul_eff
         i_dt_new *= sim.chemistry.coul_eff
     if mon.reset:
-        print(Colors.fg.red)
+        print(Colors.fg.red, end='')
     elif mon.reset_temp:
         print(Colors.fg.orange, end='')
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
@@ -375,7 +375,7 @@ def print_temp_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
     if G.i > 0:
         count_since_last_header += 1
     if mon.reset:
-        print(Colors.fg.red)
+        print(Colors.fg.red, end='')
     elif mon.reset_temp:
         print(Colors.fg.orange, end='')
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
@@ -405,7 +405,7 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
     if G.i > 0:
         count_since_last_header += 1
     if mon.reset:
-        print(Colors.fg.red)
+        print(Colors.fg.red, end='')
     print("{:4d}".format(G.i), "{:4.0f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:4d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:4d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
@@ -444,7 +444,7 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     if G.i > 0:
         count_since_last_header += 1
     if mon.reset:
-        print(Colors.fg.red)
+        print(Colors.fg.red, end='')
     print("{:4d}".format(G.i), "{:8.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
