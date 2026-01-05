@@ -170,7 +170,6 @@ def main():
     slr_hys_sim = 1.0
     request_history = 3
 
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoise_soc2p2_hi_lo_chg.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewamps_soc2p2_hi_lo_bb.csv' # problems with Vb=0 icharge=0
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsXm2_soc2p2_hi_lo_bb.csv'  # problems with sat
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsXm2Cap5_soc2p2_hi_lo_bb.csv'
@@ -180,7 +179,9 @@ def main():
     # Rf, vv4,
     # Rk,
     # vv0,
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsDc13Cap5_soc2p2_hi_lo_bb.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsDc13Cap5_soc2p2_hi_lo_bb.csv'
+
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_bb.csv'
 
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 

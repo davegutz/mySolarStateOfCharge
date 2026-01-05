@@ -83,7 +83,9 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
     {
       Serial.printf("\n\n");
       sp.pretty_print(true);
-      Serial.printf("falw %ld tb_fa %d\n", Sen->Flt->falw(), Sen->Flt->tb_fa());
+      cp.pretty_print();
+      Serial.printf("Entering initialize_all: use_soc_in %d soc_in %5.3f, falw %ld tb_fa %d\n", use_soc_in, soc_in, Sen->Flt->falw(), Sen->Flt->tb_fa());
+      debug_m1(Mon, Sen);
     }
   #endif
 
@@ -109,7 +111,10 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
     Sen->Tb_f_rate = Sen->Tb_hdwe_filt_rate;
   }
   if ( use_soc_in )
+  {
     Mon->apply_soc(soc_in, Sen->Tb_f);  // saves sp.delta_q and sp.T_state
+    Sen->Sim->apply_soc(soc_in, Sen->Tb_f);  // saves sp.delta_q and sp.T_state
+  }
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 )
     { 
