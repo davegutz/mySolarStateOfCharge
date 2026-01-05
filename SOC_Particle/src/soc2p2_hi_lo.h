@@ -56,7 +56,7 @@
 #define CHEM                    0   // Chemistry monitor code integer, 0=Battleborn, 1=CHINS-guest room, 2=CHINS-garage
 #define NOM_UNIT_CAP        108.4   // Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah logic, 1 = amp
 #define CHEM_NOM_VSAT       13.85   // Nominal saturation voltage at 25C, V (13.35)
-#define HYS_SCALE             0.0   // Scalar on hysteresis (1.0)
+#define HYS_SCALE             1.0   // Scalar on hysteresis (1.0)
 #define NS                    1.0   // Number of series batteries in bank.  Fractions scale and remember NOM_UNIT_CAP (* 'BS')
 #define NP                    1.0   // Number of parallel batteries in bank.  Fractions scale and remember NOM_UNIT_CAP (* 'BP')
 
