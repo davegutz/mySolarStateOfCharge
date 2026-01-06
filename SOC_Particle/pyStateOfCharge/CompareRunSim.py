@@ -159,7 +159,7 @@ def main():
     else:
         gdrive = 'G:/My Drive/'
 
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_chg.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\offSitHysBmsBB_soc2p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc2p2_hi_lo_chg'
     time_end_in = None
     data_only = False
@@ -181,7 +181,7 @@ def main():
     # vv0,
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsDc13Cap5_soc2p2_hi_lo_bb.csv'
 
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\offSitHysBmsBB_soc2p2_hi_lo_bb.csv'
 
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 
@@ -193,8 +193,8 @@ def main():
     #
     # # The following are not implemented in GUI
     #
-    time_end_in = None
-    # time_end_in = 4.
+    # time_end_in = None
+    time_end_in = 64.
     #
     #
     s_hys_sim_in = 1.
@@ -205,15 +205,15 @@ def main():
 
     # RunSim plot selection
     # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m
-    request_hist_in = 7
+    request_hist_in = 3
     # request_hist_in = None
 
     # # mon_soc_in = False # old runsim work ******************
     use_mon_soc_ = False
     # use_mon_soc_ = True
 
-    plots = False
-    # plots = True
+    # plots = False
+    plots = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=use_mon_soc_, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
