@@ -1496,6 +1496,8 @@ class SavedDataSim:
             self.ib_dyn_s_tau = None
             self.ib_dyn_s_rstate = None
             self.ib_dyn_s_lstate = None
+            self.bms_off_s = False
+            self.voltage_low_s = False
         else:
             self.i = 0
             self.cTime = np.array(data.c_time)
@@ -1515,7 +1517,6 @@ class SavedDataSim:
             self.chm_s = data.chm_s[:i_end]
             if hasattr(data, 'qcrs_s'):
                 self.qcrs_s = data.qcrs_s[:i_end]
-            self.bms_off_s = data.bmso_s[:i_end]
             if hasattr(data, 'nS_s'):
                 self.nS_s = np.array(data.nS_s[:i_end])
             else:
@@ -1542,6 +1543,8 @@ class SavedDataSim:
             self.ib_dyn_s_tau = data.ib_dyn_s_tau[:i_end]
             self.ib_dyn_s_rstate = data.ib_dyn_s_rstate[:i_end]
             self.ib_dyn_s_lstate = data.ib_dyn_s_lstate[:i_end]
+            self.bms_off_s = np.bool(np.array(data.bmso_s[:i_end]))
+            self.voltage_low_s = np.bool(np.array(data.vlow_s[:i_end]))
 
         if fake:
             self.ib_in_s = np.copy(mon_for_fake.ib)

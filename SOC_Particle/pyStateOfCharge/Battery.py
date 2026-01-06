@@ -1010,6 +1010,7 @@ class BatterySim(Battery):
         self.ib_fut = 0.  # Future value of limited current, A
         self.reset_temp_past = self.sat
         self.dt_past = 0.
+        self.voltage_low = False
         if SN is not None:
             self.Tb = SN.Tb0
             self.dv_dyn = SN.dv_dyn_s_init
@@ -1090,15 +1091,15 @@ class BatterySim(Battery):
         # Using voc_ is not better because change in dv_hys_ causes the same effect.   So using nice quiet
         # voc_stat_ for ease of simulation, not accuracy.
         if not self.bms_off:
-            voltage_low = self.voc_stat < self.chemistry.vb_down_sim
+            self.voltage_low = self.voc_stat < self.chemistry.vb_down_sim
         else:
-            voltage_low = self.voc_stat < self.chemistry.vb_rising_sim
+            self.voltage_low = self.voc_stat < self.chemistry.vb_rising_sim
         bms_charging = self.ib_in > Battery.IB_MIN_UP
-        self.bms_off = (self.Tb_f < self.chemistry.low_t) or (voltage_low and not rp.tweak_test)
+        self.bms_off = (self.Tb_f < self.chemistry.low_t) or (self.voltage_low and not rp.tweak_test)
         ib_charge_fut = self.ib_in
         if self.bms_off and self.mod and not bms_charging:
             ib_charge_fut = 0.
-        if self.bms_off and voltage_low:
+        if self.bms_off and self.voltage_low:
             self.ib = 0.
         self.ib_lag = self.IbLag.calculate_tau(self.ib, self.reset, self.dt, self.chemistry.ib_lag_tau)
 
@@ -1231,7 +1232,7 @@ class BatterySim(Battery):
         self.saved_s.chm_s.append(self.chm)
         self.saved_s.qcrs_s.append(self.q_cap_rated_scaled)
         self.saved_s.qcap_s.append(self.q_capacity)
-        self.saved_s.bmso_s.append(self.bms_off)
+        self.saved_s.bms_off_s.append(self.bms_off)
         self.saved_s.Tb_s.append(self.Tb)
         self.saved_s.Tb_f_s.append(self.Tb_f)
         self.saved_s.vsat_s.append(self.vsat)
@@ -1878,7 +1879,7 @@ class SavedS:
         self.chm_s = []
         self.qcrs_s = []
         self.qcap_s = []
-        self.bmso_s = []
+        self.bms_off_s = []
         self.Tb_s = []
         self.Tb_f_s = []
         self.vsat_s = []

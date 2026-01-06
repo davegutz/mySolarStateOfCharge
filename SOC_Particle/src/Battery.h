@@ -132,6 +132,7 @@ public:
   float voc_soc() { return voc_soc_; };
   float voc_stat() { return voc_stat_; };
   float voc_soc_tab(const float soc, const double tb_f);
+  boolean voltage_low() { return voltage_low_; };
   float vsat() { return vsat_; };
 protected:
   boolean bms_charging_; // Indicator that battery is charging, T = charging, changing soc and voltage

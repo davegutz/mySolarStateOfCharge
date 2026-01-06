@@ -1064,7 +1064,7 @@ class SavedDataSim20241006:
             self.cTime = None  # Control time, s
             self.chm_s = None
             self.qcrs_s = None  # Unit capacity rated scaled, Coulombs
-            self.bms_off_s = None
+            self.bms_off_s = False
             self.nS_s = None
             self.Tb_s = None
             self.Tbl_s = None

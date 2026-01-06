@@ -112,12 +112,12 @@ macro_sel_list = [
 
 # Macro
 satInit = 'Dh;*W;*vv0;*XS;*Ca1;BZ;Ff0;DP1;HR;Rf;XD;'
-modMidInit = 'vv-1;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
-modMidInitNoCc = 'vv-1;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
-modLowInitBB = 'vv-1;Xm247;Ca0.050;BZ;Ff0;DP1;HR;Rf;XD;'
-modLowInitCH = 'vv-1;Xm247;Ca0.103;BZ;Ff0;DP1;HR;Rf;XD;'
-modLowInitCHG = 'vv-1;Xm247;Ca-0.004;BZ;Ff0;DP1;HR;Rf;XD;'
-modLowInitGen = 'vv-1;Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;XD;'
+modMidInit = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
+modMidInitNoCc = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
+modLowInitBB = 'vv0;Xm247;Ca0.050;BZ;Ff0;DP1;HR;Rf;XD;'
+modLowInitCH = 'vv0;Xm247;Ca0.103;BZ;Ff0;DP1;HR;Rf;XD;'
+modLowInitCHG = 'vv0;Xm247;Ca-0.004;BZ;Ff0;DP1;HR;Rf;XD;'
+modLowInitGen = 'vv0;Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;XD;'
 noisePackage = 'DT.05;DV0.3;DM.75;DN6;'
 silentPackage = 'DT0;DV0;DM0;DN0;'
 synced_slow = 'Dr400;D>400;Dq400;ED1;DP1;'
@@ -220,7 +220,7 @@ lookup = {
         'rapidTweakRegression': (205, slow + 'Rs;W4;Xp10;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'allProto': (552, modMidInit + tranPrep + c50 + 'XQ25000;' + c00 + tempCleanup + '  Rs;W4;Xp10;  Rs;W4;Xp13;  ' + modMidInitNoCc + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ('Proto multi', "Must have same 'vv*' throughout", "No 'HR' either")),
         # 'pulseSS': (20, synced_slow + 'XS;Dm0;Dn0;Xm255;Ca.5;Rs;W20;vv4;W20;' + 'Rs;W4;Xp7;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
-        'pulseSS': (31, synced_slow + 'XS;Dm0;Dn0;vv-1;Xm255;Ca.5;Pm;W2;Rs;W10;vv4;W2;' + 'Rs;W4;Xp7;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
+        'pulseSS': (31, synced_slow + 'XS;Dm0;Dn0;vv0;Xm255;Ca.5;Pm;W2;Rs;W10;vv4;W2;' + 'Rs;W4;Xp7;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
         'rapidTweakRegressionH0': (205, 'Sh0;' + slow + 'Rs;W4;Xp10;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'No hysteresis. Best test for seeing time skews and checking fault logic for false trips', 'Tease out cause of e_wrap faults.  e_wrap MUST be flat!', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'offLowSoc': (85, modLowInitGen + tranPrep  + vm12 + 'XQ55000;' + v00 + quiet + cleanup, ('Test for clean faults on shutoff.',)),
         'offSitHysBmsBB': (800, modLowInitBB + slowTwitchDef + 'Xa-162;' + tranPrep + twitch + 'XQ568000;' + 'Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),

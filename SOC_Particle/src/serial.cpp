@@ -388,7 +388,8 @@ void print_sim_header(void)
   Serial.printf("unit_m,  c_time,      dt_s, chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, ");
   Serial.printf("dv_dyn_s, vb_s, ib_s, ib_dyn_s, dv_hys_s, ib_in_s, ib_charge_s, ioc_s, ");
   Serial.printf("sat_s, dq_s, q_cap_s, soc_s, reset_s, ddq_s, ");
-  Serial.printf("ib_dyn_s_T, ib_dyn_s_tau, ib_dyn_s_rstate, ib_dyn_s_lstate,");
+  Serial.printf("ib_dyn_s_T, ib_dyn_s_tau, ib_dyn_s_rstate, ib_dyn_s_lstate, ");
+  Serial.printf("bmso_s, vlow_s, ");
   Serial.printf("\n");
 }
 void print_sim_serial(const boolean initializing_all, const boolean reset_temp, Sensors *Sen, BatterySim *Sim)
@@ -413,6 +414,10 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
         sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,%9.6f,",
             Sim->chargeTransfer_T(), Sim->chargeTransfer_tau(),
             Sim->chargeTransfer_rstate(), Sim->chargeTransfer_lstate());
+        Serial.printf("%s", pr.buff);
+
+        sprintf(pr.buff, "%d, %d,",
+            Sim->bms_off(), Sim->voltage_low());
         Serial.printf("%s", pr.buff);
 
         Serial.printf("\n");
