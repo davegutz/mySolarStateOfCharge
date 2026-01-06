@@ -151,11 +151,23 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   // Call calculate twice because sat_ is a used-before-calculated (UBC)
   // Simple 'call twice' method because sat_ is discrete no analog which would require iteration
   Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on, true) * sp.nS();
+  #ifdef DEBUG_DETAIL
+    if ( sp.debug()==-1 ){ Serial.printf("S.a_b1:"); debug_m1(Mon, Sen);}
+  #endif
   Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on, true) * sp.nS();  // Call again because sat is a UBC
+  #ifdef DEBUG_DETAIL
+    if ( sp.debug()==-1 ){ Serial.printf("S.a_b2:"); debug_m1(Mon, Sen);}
+  #endif
   Sen->Ib_model = Sen->Sim->ib_fut() * sp.nP();
+  #ifdef DEBUG_DETAIL
+    if ( sp.debug()==-1 ){ Serial.printf("S.a_b3:"); debug_m1(Mon, Sen);}
+  #endif
 
   // Call to count_coulombs not strictly needed for init.  Calculates some things not otherwise calculated for 'all'
   Sen->Sim->count_coulombs(Sen, true, Mon, true);
+  #ifdef DEBUG_DETAIL
+    if ( sp.debug()==-1 ){ Serial.printf("S.a_b4:"); debug_m1(Mon, Sen);}
+  #endif
 
   // Signal preparations
   if ( sp.mod_vb() )

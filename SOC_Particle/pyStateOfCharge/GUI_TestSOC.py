@@ -113,11 +113,11 @@ macro_sel_list = [
 # Macro
 satInit = 'Dh;*W;*vv0;*XS;*Ca1;BZ;Ff0;DP1;HR;Rf;XD;'
 modMidInit = 'vv-1;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
-modMidInitNoCc = 'Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
-modLowInitBB = 'Xm247;Ca0.050;BZ;Ff0;DP1;HR;Rf;XD;'
-modLowInitCH = 'Xm247;Ca0.103;BZ;Ff0;DP1;HR;Rf;XD;'
-modLowInitCHG = 'Xm247;Ca-0.004;BZ;Ff0;DP1;HR;Rf;XD;'
-modLowInitGen = 'Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;XD;'
+modMidInitNoCc = 'vv-1;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
+modLowInitBB = 'vv-1;Xm247;Ca0.050;BZ;Ff0;DP1;HR;Rf;XD;'
+modLowInitCH = 'vv-1;Xm247;Ca0.103;BZ;Ff0;DP1;HR;Rf;XD;'
+modLowInitCHG = 'vv-1;Xm247;Ca-0.004;BZ;Ff0;DP1;HR;Rf;XD;'
+modLowInitGen = 'vv-1;Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;XD;'
 noisePackage = 'DT.05;DV0.3;DM.75;DN6;'
 silentPackage = 'DT0;DV0;DM0;DN0;'
 synced_slow = 'Dr400;D>400;Dq400;ED1;DP1;'
@@ -130,7 +130,7 @@ tempCleanup = 'Rf;XD; '
 time_stamp = 'XY;'
 tranPrep = 'HR;Dh1000;W2;Rs;W34;vv4;W17;'
 slowTranPrep = 'HR;vv4;W2;Rs;' + slow + 'W5;'
-slowTwitchDef = 'Rb;Rf;Xts;Xf0.004;Mm1000;Mn-1000;Nm1000;Nn-1000;XW10000;XT10;XC2;'
+slowTwitchDef = 'Rb;Rf;Sh0;Xts;Xf0.004;Mm1000;Mn-1000;Nm1000;Nn-1000;XW10000;XT10;XC2;'
 fastTwitchDef = 'Rb;Rf;Xts;Xf0.002;XW10000;XT10;XC1;'
 c18 = time_stamp + 'Dm18;Dn0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
 d18 = time_stamp + 'Dn18;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
@@ -223,9 +223,9 @@ lookup = {
         'pulseSS': (31, synced_slow + 'XS;Dm0;Dn0;vv-1;Xm255;Ca.5;Pm;W2;Rs;W10;vv4;W2;' + 'Rs;W4;Xp7;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
         'rapidTweakRegressionH0': (205, 'Sh0;' + slow + 'Rs;W4;Xp10;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'No hysteresis. Best test for seeing time skews and checking fault logic for false trips', 'Tease out cause of e_wrap faults.  e_wrap MUST be flat!', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'offLowSoc': (85, modLowInitGen + tranPrep  + vm12 + 'XQ55000;' + v00 + quiet + cleanup, ('Test for clean faults on shutoff.',)),
-        'offSitHysBmsBB': (625, modLowInitBB + slowTwitchDef + 'Xa-162;' + tranPrep + twitch + 'XQ568000;' + 'Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
-        'offSitHysBmsCH': (625, modLowInitCH + slowTwitchDef + 'Xa-324;' + tranPrep + twitch + 'XQ568000;' + 'Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
-        'offSitHysBmsCHG': (625, modLowInitCHG + slowTwitchDef + 'Xa-324;' + tranPrep + twitch + 'XQ568000;' + 'Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
+        'offSitHysBmsBB': (800, modLowInitBB + slowTwitchDef + 'Xa-162;' + tranPrep + twitch + 'XQ568000;' + 'Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
+        'offSitHysBmsCH': (800, modLowInitCH + slowTwitchDef + 'Xa-324;' + tranPrep + twitch + 'XQ568000;' + 'Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
+        'offSitHysBmsCHG': (800, modLowInitCHG + slowTwitchDef + 'Xa-324;' + tranPrep + twitch + 'XQ568000;' + 'Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
         'triTweakDisch': (205, slow + 'Rs;W4;Xp13;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'ampHiFailFf': (92, modMidInit + tranPrep + 'Ff1;' + c50 + 'XQ40000;' + c00 + quiet + cleanup, ("Should detect but not switch amp current failure. (See 'diff' and current!=0 on OLED).", "Run about 60s. Start by looking at 'Ult 1' fig 4. No fault record (keeps recording).  Verify that on Fig 3 the e_wrap goes through a threshold ~0.4 without change of 'ib_sel_stat'", "This show when deploy with Fake Faults (Ff) don't throw false trips (it happened)", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
         'ampLoFail': (110, modMidInit + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Should detect and switch amp current failure.", "Start looking at 'Ult 1' fig 4. Fault record (frozen). Will see 'diff' flashing on OLED even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
