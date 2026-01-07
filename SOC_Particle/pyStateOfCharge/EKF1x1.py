@@ -24,8 +24,6 @@ class EKF1x1:
     ekf_update methods in the parent."""
 
     def __init__(self):
-        """
-        """
         self.Fx = 0.  # State transition
         self.Bu = 0.  # Control transition
         self.Q = 0.  # Process uncertainty
@@ -46,11 +44,15 @@ class EKF1x1:
         self.P_post = self.P
         self.tb_f_for_hx = 25.
         self.x_for_hx = 1.
+        self.freeze = False
+        self.reset = False
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
         s = prefix + "EKF1x1:\n"
         s += "  Inputs:\n"
+        s += "  reset = {:2d}\n".format(self.reset)
+        s += "  freeze = {:2d}\n".format(self.freeze)
         s += "  z = {:10.6g}\n".format(self.z_ekf)
         s += "  Fx = {:13.10g}\n".format(self.Fx)
         s += "  Bu = {:13.10g}\n".format(self.Bu)
@@ -77,7 +79,7 @@ class EKF1x1:
         self.x = soc
         self.P = p_init
 
-    def predict_ekf(self, u, reset=False):
+    def predict_ekf(self, u, reset=False, freeze=False):
         """1x1 Extended Kalman Filter predict
         Inputs:
             u   1x1 input, =ib, A
@@ -88,14 +90,17 @@ class EKF1x1:
             P   1x1 Kalman probability
         """
         self.u_ekf = u
+        self.reset = reset
+        self.freeze = freeze
         self.Fx, self.Bu = self.ekf_predict()
-        if not reset:
-            self.x = self.Fx*self.x + self.Bu*self.u_ekf
+        if not self.reset:
+            if not self.freeze:
+                self.x = self.Fx*self.x + self.Bu*self.u_ekf
             self.P = self.Fx * self.P * self.Fx + self.Q
             self.x_prior = self.x
             self.P_prior = self.P
 
-    def update_ekf(self, z, x_min, x_max, reset=False):
+    def update_ekf(self, z, x_min, x_max):
         """ 1x1 Extended Kalman Filter update
             Inputs:
                 z   1x1 input, =voc, dynamic predicted by other model, V
@@ -111,20 +116,23 @@ class EKF1x1:
                 S   1x1 system uncertainty
                 SI  1x1 system uncertainty inverse
         """
-        if not reset:
+        if not self.reset:
             self.hx, self.H, self.tb_f_for_hx, self.x_for_hx = self.ekf_update()
         self.z_ekf = z
-        if not reset:
+        if not self.reset:
             pht = self.P * self.H
             self.S = self.H * pht + self.R
             if abs(self.S) > 1e-12:
                 self.K = pht / self.S  # using last-good-value if S=0
             self.y_ekf = self.z_ekf - self.hx
+        if not self.reset and not self.freeze:
             self.x = max(min(self.x + self.K*self.y_ekf, x_max), x_min)
-            i_kh = 1 - self.K*self.H
-            self.P = i_kh*self.P
-            self.x_post = self.x
-            self.P_post = self.P
+        i_kh = 1 - self.K*self.H
+        if self.freeze:
+            i_kh = 1.
+        self.P *= i_kh
+        self.x_post = self.x
+        self.P_post = self.P
 
     def h_jacobian(self, x):
         # implemented by child

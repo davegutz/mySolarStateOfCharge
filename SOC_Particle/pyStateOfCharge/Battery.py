@@ -460,6 +460,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib = SN.ib_init
             self.ib_dyn = SN.ib_dyn[0]
             self.ib_charge = SN.ib_charge_init
+            self.ib_charge_ekf = self.ib_charge
             self.vb = SN.vb_init
             self.soc = SN.soc_init
             self.reset = True
@@ -554,6 +555,7 @@ class BatteryMonitor(Battery, EKF1x1):
         else:
             self.bms_off = (self.Tb_f <= self.chemistry.low_t) or (voltage_low and not rp.tweak_test)  # KISS
         self.ib_charge = self.ib
+        self.ib_charge_ekf = self.ib_charge
         if self.bms_off and not bms_charging:
             self.ib_charge = 0.
         if self.bms_off and voltage_low:
@@ -593,10 +595,12 @@ class BatteryMonitor(Battery, EKF1x1):
         # EKF 1x1
         self.reset_ekf = reset_ekf
         if calc_ekf:
+            if not self.reset_ekf:
+                pass
             # print(f"{reset_ekf=} {self.soc_ekf} {self.x_ekf=} {self.voc_stat_ekf=}")
             self.voc_stat_ekf = self.voc_stat
             self.dt_eframe = dt_ekf
-            ddq_dt = self.ib_charge
+            ddq_dt = self.ib_charge_ekf
             if ddq_dt > 0. and not self.tweak_test:
                 ddq_dt *= self.chemistry.coul_eff
             # ddq_dt -= self.chemistry.dqdt*self.q_capacity*temp_rate  7/29/2025 to agree with c++ (noisy)
@@ -612,8 +616,8 @@ class BatteryMonitor(Battery, EKF1x1):
             self.voc_stat_f_c = self.voc_stat_filt.c
             self.voc_stat_f_tau = self.voc_stat_filt.tau
             self.voc_stat_f_T = self.voc_stat_filt.dt
-            self.predict_ekf(u=ddq_dt, reset=self.reset_ekf)  # u = d(q)/dt
-            self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1., reset=self.reset_ekf)  # z = voc, voc_filtered = hx
+            self.predict_ekf(u=ddq_dt, reset=self.reset_ekf, freeze=self.bms_off)  # u = d(q)/dt
+            self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1.)  # z = voc, voc_filtered = hx
             self.soc_ekf = self.x  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
             self.q_ekf = self.soc_ekf * self.q_capacity
             self.y_filt = self.y_filt_lag.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.EKF_T_RESET),
@@ -1114,9 +1118,10 @@ class BatterySim(Battery):
         self.ib_dyn_c = self.ChargeTransfer.c
         self.vb = self.voc + self.ib_dyn*self.chemistry.r_ct + self.ib*self.chemistry.r_0
         if self.bms_off:
-            self.vb = self.voc
-        if self.bms_off and Battery.dc_dc_on:
-            self.vb = Battery.VB_DC_DC
+            if Battery.dc_dc_on:
+                self.vb = Battery.VB_DC_DC
+            else:
+                self.vb = 0.
         self.dv_dyn = self.vb - self.voc
 
         # Saturation logic, both full and empty

@@ -144,25 +144,14 @@ class Sensors:
             self.ib_amp = 0.
             self.ib_noa = 0.
             self.ib_dyn = ProArray(self.mon_run.ib_dyn, mutable=True)
-            # self.ib_dyn_init = self.ib_dyn[0]
             self.z = self.mon_run.z
-            # self.z_init = self.z[0]
             self.ib_in_s = self.sim_run.ib_in_s
             self.ib_in_s_init = self.ib_in_s[0]
             self.ib_dyn_s = self.sim_run.ib_dyn_s
-            # self.soc_s_init = self.mon_run.soc_s[0]
-            # self.ib_dyn_s_init = self.ib_dyn_s[0]
             self.dv_dyn_s = self.sim_run.dv_dyn_s
             self.dt_s = self.sim_run.dt_s
             self.dv_dyn_s_init = self.dv_dyn_s[0]
             self.d_delta_q_s_init = 0.
-            # self.ib_s_init = self.ib_in_s_init
-            # self.ib_fut_s_init = self.ib_in_s_init
-            # self.ib_charge_s_init = self.ib_in_s_init
-            # self.ioc_s_init = self.ib_in_s_init
-            # self.vb_s_init = self.mon_run.vb[0]
-            # self.voc_stat_init = self.mon_run.voc_stat[0]
-            # self.voc_s_init = self.sim_run.voc_stat_s[0]  # is this right?
             self.Tb_hdwe_init = self.mon_run.Tb_hdwe[0]
             self.Tb_hdwe_filt_init = self.mon_run.Tb_hdwe_filt[0]
             self.Tb_hdwe_filt_rate_init = self.mon_run.Tb_hdwe_filt_rate[0]
@@ -176,7 +165,6 @@ class Sensors:
             self.e_wrap_n_trim_init = 0.
             self.voc_soc_init = self.mon_run.voc_soc[0]
             self.vb_s_init = self.mon_run.vb[0]
-            # self.Tb_init = self.mon_run.Tb[0]
             self.Tb_f_init = self.mon_run.Tb_f[0]
             self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
             self.lut_dTb = None
@@ -193,18 +181,7 @@ class Sensors:
             self.ib_init = self.mon_run.ib[0]
             self.ib_charge_init = self.mon_run.ib_charge[0]
             self.vb_init = self.mon_run.vb[0]
-            # self.soc_init = self.mon_run.soc[0]
-            # self.reset_init = True
-            # self.sat_init = self.mon_run.sat[0]
-            # self.reset_ekf_init = True
-            # self.voc_ekf_init = self.mon_run.hx[0]
             self.voc_stat_init = self.mon_run.voc_stat[0]
-            # self.x_init = self.mon_run.x[0]
-            # self.x_prior_init = self.mon_run.x_prior[0]
-            # self.hx_init = self.mon_run.hx[0]
-            # self.soc_ekf_init = self.mon_run.soc_ekf[0]
-            # self.z_ekf_init = self.mon_run.z[0]
-            # self.z_init = self.mon_run.z[0]
 
         elif run_type == 'HistSim':
 

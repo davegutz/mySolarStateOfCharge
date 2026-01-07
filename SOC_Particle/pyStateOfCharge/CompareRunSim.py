@@ -193,8 +193,8 @@ def main():
     #
     # # The following are not implemented in GUI
     #
-    # time_end_in = None
-    time_end_in = 64.
+    time_end_in = None
+    # time_end_in = 64.
     #
     #
     s_hys_sim_in = 1.
@@ -205,7 +205,7 @@ def main():
 
     # RunSim plot selection
     # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m
-    request_hist_in = 3
+    request_hist_in = 1
     # request_hist_in = None
 
     # # mon_soc_in = False # old runsim work ******************

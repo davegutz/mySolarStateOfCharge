@@ -283,7 +283,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
     {
         static unsigned long long ekf_now_past = Sen->now;
         float ddq_dt = ib_charge_ekf;
-        boolean freeze = Sen->Flt->vb_fa() || Sen->Flt->vb_functional_flt();  // Freeze EKF with voltage fault
+        boolean freeze = Sen->Flt->vb_fa() || Sen->Flt->vb_functional_flt();  // Freeze EKF with voltage fault or bms_off
 
         now_ekf_ = Sen->now;
         dt_ekf_ = float(now_ekf_ - ekf_now_past) / 1e3;
@@ -687,11 +687,10 @@ float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean 
     // Special cases override
     if ( bms_off_ )
     {
-        vb_ = 0;
-    }
-    if ( bms_off_ && dc_dc_on )
-    {
-        vb_ = VB_DC_DC;
+        if ( dc_dc_on )
+            vb_ = VB_DC_DC;
+        else
+            vb_ = 0;
     }
     dv_dyn_ = vb_ - voc_;
 

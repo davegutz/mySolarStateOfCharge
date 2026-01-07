@@ -106,51 +106,6 @@ def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
                     hdr = print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf)
     return hdr
 
-def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
-    global count_since_last_header
-    hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa      ib_charge             soc                    soc_ekf                 y_ekf                voc_ekf                Tb_f                    x_prior             fr     Tb_f_rap                x                       tb_f_for_hx             x_for_hx                  hx                       voc_stat_f            z                   z_ekf       P                              P_post                       P_prior                       H                      R                     S                    K                          x_post                 f_rstate             f_lstate              f_tau                     f_T"
-    i_ekf = max(i_ekf, 0)
-    if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
-        print(hdr)
-        count_since_last_header = 0
-    if G.i > 0:
-        count_since_last_header += 1
-    if mon.reset:
-        print(Colors.fg.red, end='')
-    print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
-          "{:4d}".format(i_ekf), "{:4d}".format(mon.reset_ekf), "{:4d}".format(calc_ekf),
-          "{:9.3f}".format(SN.mon_run.dt_ekf[i_ekf]), "{:5.3f}".format(mon.dt_eframe),
-          "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
-          "{:10.5f}".format(SN.mon_run.ib_charge[G.i]), "{:9.5f}".format(mon.ib_charge),
-          "{:13.7f}".format(SN.mon_run.soc[G.i]), "{:10.7f}".format(mon.soc),
-          "{:11.7f}".format(SN.mon_run.soc_ekf[G.i]), "{:9.7f}".format(mon.soc_ekf),
-          "{:11.5f}".format(SN.mon_run.y_ekf[G.i]), "{:9.5f}".format(mon.y_ekf),
-          "{:11.5f}".format(SN.mon_run.voc_ekf[G.i]), "{:9.5f}".format(mon.voc_ekf),
-          "{:14.7f}".format(SN.mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
-          "{:11.7f}".format(SN.mon_run.x_prior[i_ekf]), "{:9.7f}".format(mon.x_prior), "{:2.0f}".format(SN.mon_run.frz[i_ekf]),
-          "{:14.7f}".format(SN.mon_run.Tb_f_rap[G.i]), "{:10.7f}".format(mon.Tb_f_rap),
-          "{:11.7f}".format(SN.mon_run.x[i_ekf]), "{:9.7f}".format(mon.x),
-          "{:14.7f}".format(SN.mon_run.tb_f_for_hx[i_ekf]), "{:10.7f}".format(mon.tb_f_for_hx),
-          "{:11.7f}".format(SN.mon_run.x_for_hx[i_ekf]), "{:9.7f}".format(mon.x_for_hx),
-          "{:14.5f}".format(SN.mon_run.hx[i_ekf]), "{:9.5f}".format(mon.hx),
-          "{:14.5f}".format(SN.mon_run.z[i_ekf]), "{:9.5f}".format(mon.voc_stat_f),
-          "{:11.5f}".format(SN.mon_run.z[i_ekf]), "{:9.5f}".format(mon.z), "{:9.5f}".format(mon.z_ekf),
-          "{:16.11f}".format(SN.mon_run.P[i_ekf]), "{:12.11f}".format(mon.P),
-          "{:16.11f}".format(SN.mon_run.P_post[i_ekf]), "{:12.11f}".format(mon.P_post),
-          "{:14.11f}".format(SN.mon_run.P_prior[i_ekf]), "{:12.11f}".format(mon.P_prior),
-          "{:11.7f}".format(SN.mon_run.H[i_ekf]), "{:9.7f}".format(mon.H),
-          "{:11.6f}".format(SN.mon_run.R[i_ekf]), "{:9.6f}".format(mon.R),
-          "{:11.6f}".format(SN.mon_run.S[i_ekf]), "{:9.6f}".format(mon.S),
-          "{:13.9f}".format(SN.mon_run.K[i_ekf]), "{:10.9f}".format(mon.K),
-          "{:12.7f}".format(SN.mon_run.x_post[i_ekf]), "{:9.7f}".format(mon.x_post),
-          "{:11.5f}".format(SN.mon_run.voc_stat_f_rstate[i_ekf]), "{:8.5f}".format(mon.voc_stat_f_rstate),
-          "{:11.5f}".format(SN.mon_run.voc_stat_f_lstate[i_ekf]), "{:8.5f}".format(mon.voc_stat_f_lstate),
-          "{:12.6f}".format(SN.mon_run.voc_stat_f_tau[i_ekf]), "{:9.6f}".format(mon.voc_stat_f_tau),
-          "{:12.6f}".format(SN.mon_run.voc_stat_f_T[i_ekf]), "{:9.6f}".format(mon.voc_stat_f_T),
-          )
-    print(Colors.reset, end='')
-    return hdr
-
 #7
 def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header
@@ -208,6 +163,56 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:5.0f}".format(SN.mon_run.disable_amp_fault[G.i]),  "{:2.0f}".format(mon.disable_amp_fault),  "{:2.0f}".format(mon.ib_amp_lo),
           "{:26.0f}".format(SN.mon_run.e_wrap_m_reset[G.i]), "{:2d}".format(mon.e_wrap_m_reset),
           # "{:11.5f}".format(SN.mon_run.e_wrap_m_filt[G.i]), "{:8.5f}".format(mon.e_wrap_m_filt), "{:8.5f}".format(SN.e_wrap_m_filt_init),
+          )
+    print(Colors.reset, end='')
+    return hdr
+
+def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
+    global count_since_last_header
+    hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa      ib_charge             soc                    soc_ekf                 y_ekf                voc_ekf                Tb_f                    x_prior             fr     Tb_f_rap                x                       tb_f_for_hx             x_for_hx                  hx                       u_ekf                    voc_stat_f            z                   z_ekf       P                              P_post                       P_prior                       H                      R                     S                    K                          x_post                 f_rstate             f_lstate              f_tau                     f_T"
+    i_ekf = max(i_ekf, 0)
+    if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
+        print(hdr)
+        count_since_last_header = 0
+    if G.i > 0:
+        count_since_last_header += 1
+    if mon.reset:
+        print(Colors.fg.red, end='')
+    elif mon.reset_temp:
+        print(Colors.fg.orange, end='')
+    elif mon.reset_ekf:
+        print(Colors.fg.lightblue, end='')
+    print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
+          "{:4d}".format(i_ekf), "{:4d}".format(mon.reset_ekf), "{:4d}".format(calc_ekf),
+          "{:9.3f}".format(SN.mon_run.dt_ekf[i_ekf]), "{:5.3f}".format(mon.dt_eframe),
+          "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
+          "{:10.5f}".format(SN.mon_run.ib_charge[G.i]), "{:9.5f}".format(mon.ib_charge),
+          "{:13.7f}".format(SN.mon_run.soc[G.i]), "{:10.7f}".format(mon.soc),
+          "{:11.7f}".format(SN.mon_run.soc_ekf[G.i]), "{:9.7f}".format(mon.soc_ekf),
+          "{:11.5f}".format(SN.mon_run.y_ekf[G.i]), "{:9.5f}".format(mon.y_ekf),
+          "{:11.5f}".format(SN.mon_run.voc_ekf[G.i]), "{:9.5f}".format(mon.voc_ekf),
+          "{:14.7f}".format(SN.mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
+          "{:11.7f}".format(SN.mon_run.x_prior[i_ekf]), "{:9.7f}".format(mon.x_prior), "{:2.0f}".format(SN.mon_run.frz[i_ekf]),
+          "{:14.7f}".format(SN.mon_run.Tb_f_rap[G.i]), "{:10.7f}".format(mon.Tb_f_rap),
+          "{:11.7f}".format(SN.mon_run.x[i_ekf]), "{:9.7f}".format(mon.x),
+          "{:14.7f}".format(SN.mon_run.tb_f_for_hx[i_ekf]), "{:10.7f}".format(mon.tb_f_for_hx),
+          "{:11.7f}".format(SN.mon_run.x_for_hx[i_ekf]), "{:9.7f}".format(mon.x_for_hx),
+          "{:14.5f}".format(SN.mon_run.hx[i_ekf]), "{:9.5f}".format(mon.hx),
+          "{:14.5f}".format(SN.mon_run.u[i_ekf]), "{:9.5f}".format(mon.u_ekf),
+          "{:14.5f}".format(SN.mon_run.z[i_ekf]), "{:9.5f}".format(mon.voc_stat_f),
+          "{:11.5f}".format(SN.mon_run.z[i_ekf]), "{:9.5f}".format(mon.z), "{:9.5f}".format(mon.z_ekf),
+          "{:16.11f}".format(SN.mon_run.P[i_ekf]), "{:12.11f}".format(mon.P),
+          "{:16.11f}".format(SN.mon_run.P_post[i_ekf]), "{:12.11f}".format(mon.P_post),
+          "{:14.11f}".format(SN.mon_run.P_prior[i_ekf]), "{:12.11f}".format(mon.P_prior),
+          "{:11.7f}".format(SN.mon_run.H[i_ekf]), "{:9.7f}".format(mon.H),
+          "{:11.6f}".format(SN.mon_run.R[i_ekf]), "{:9.6f}".format(mon.R),
+          "{:11.6f}".format(SN.mon_run.S[i_ekf]), "{:9.6f}".format(mon.S),
+          "{:13.9f}".format(SN.mon_run.K[i_ekf]), "{:10.9f}".format(mon.K),
+          "{:12.7f}".format(SN.mon_run.x_post[i_ekf]), "{:9.7f}".format(mon.x_post),
+          "{:11.5f}".format(SN.mon_run.voc_stat_f_rstate[i_ekf]), "{:8.5f}".format(mon.voc_stat_f_rstate),
+          "{:11.5f}".format(SN.mon_run.voc_stat_f_lstate[i_ekf]), "{:8.5f}".format(mon.voc_stat_f_lstate),
+          "{:12.6f}".format(SN.mon_run.voc_stat_f_tau[i_ekf]), "{:9.6f}".format(mon.voc_stat_f_tau),
+          "{:12.6f}".format(SN.mon_run.voc_stat_f_T[i_ekf]), "{:9.6f}".format(mon.voc_stat_f_T),
           )
     print(Colors.reset, end='')
     return hdr
