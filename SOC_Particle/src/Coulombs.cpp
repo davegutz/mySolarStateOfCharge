@@ -123,6 +123,7 @@ void Coulombs::apply_delta_q_t(const boolean reset)
 }
 void Coulombs::apply_delta_q_t(const double delta_q, const double tb_f)
 {
+  tb_f_ = tb_f;
   *sp_delta_q_ = delta_q;
   apply_delta_q_t(true);
 }

@@ -143,6 +143,7 @@ class Battery(Coulombs):
     # KF_R_STD = 0.001  # Shunt KF state uncertainty
     KF_Q_STD = None  # Shunt KF process uncertainty
     KF_R_STD = None  # Shunt KF state uncertainty
+    dc_dc_on = False  # Truck charging
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
@@ -1114,8 +1115,8 @@ class BatterySim(Battery):
         self.vb = self.voc + self.ib_dyn*self.chemistry.r_ct + self.ib*self.chemistry.r_0
         if self.bms_off:
             self.vb = self.voc
-        # if self.bms_off and dc_dc_on:
-        #     self.vb = Battery.VB_DC_DC
+        if self.bms_off and Battery.dc_dc_on:
+            self.vb = Battery.VB_DC_DC
         self.dv_dyn = self.vb - self.voc
 
         # Saturation logic, both full and empty

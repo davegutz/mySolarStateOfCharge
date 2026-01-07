@@ -711,7 +711,7 @@ float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean 
     if ( sp.debug()==75 ) Serial.printf("BatterySim::calculate: tb_f_ soc_ voc_stat_ low_voc =  %7.3f %10.6f %9.5f %7.3f\n",
         tb_f_, soc_, voc_stat_, chem_.low_voc);
 
-    if ( sp.debug()==76 ) Serial.printf("BatterySim::calculate:,  soc=%8.4f, tb_f_=%7.3f, ib_in%7.3f ib%7.3f voc_stat%7.3f voc%7.3f vsat%7.3f model_saturated%d bms_off%d dc_dc_on%d VB_DC_DC%7.3f vb%7.3f\n",
+    if ( sp.debug()==76 || sp.debug()==-1 ) Serial.printf("BatterySim::calculate:,  soc=%8.4f, tb_f_=%7.3f, ib_in%7.3f ib%7.3f voc_stat%7.3f voc%7.3f vsat%7.3f model_saturated%d bms_off%d dc_dc_on%d VB_DC_DC%7.3f vb%7.3f\n",
         soc_, tb_f_, ib_in_, ib_, voc_stat_, voc_, vsat_, model_saturated_, bms_off_, dc_dc_on, VB_DC_DC, vb_);
 
     if ( sp.debug()==78 ) Serial.printf("BatterySim::calculate:,  dt_,tb_f,curr,soc_,voc,dv_dyn,vb,%7.3f,%7.3f,%7.3f,%8.4f,%7.3f,%7.3f,%7.3f,\n",
@@ -851,9 +851,9 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
     soc_min_ = chem_.soc_min_T_->interp(tb_f_);
     q_min_ = soc_min_ * q_capacity_;
 
-    if ( sp.debug()==36 )
-        sendTxBuf(String::format("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
-            ib_charge_, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_s_, *sp_delta_q_, q_), true, true);
+    if ( sp.debug()==36 || sp.debug()==-1 )
+        sendTxBuf(String::format("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q %9.2f sp_delta_q %9.2f q %9.2f mod_vb %d, model_saturated_%d, reset_temp_past %d,\n",
+            ib_charge_, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_s_, *sp_delta_q_, q_, sp.mod_vb(), model_saturated_, reset_temp_past), true, true);
 
     // print_sim_serial
     print_sim_serial(initializing_all, reset_temp, Sen, this);

@@ -126,7 +126,7 @@ void print_battery_header()
 {
   Serial.printf("Battery_hdr, HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI, IB_ABS_MAX_NOA, IB_ABS_MAX_AMP, KF_Q_STD, KF_R_STD,");
 
-  Serial.printf("SHUNT_AMP_GAIN, CURR_BIAS_AMP, SHUNT_NOA_GAIN, CURR_BIAS_NOA, NS, NP, CURR_SCALE_DISCH, HYS_SCALE,");
+  Serial.printf("SHUNT_AMP_GAIN, CURR_BIAS_AMP, SHUNT_NOA_GAIN, CURR_BIAS_NOA, NS, NP, CURR_SCALE_DISCH, HYS_SCALE, dc_dc_on,");
 
   Serial.printf("\n");
 }
@@ -136,8 +136,8 @@ void print_battery_serial()
   Serial.printf("Battery_val,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
     HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI, IB_ABS_MAX_NOA, IB_ABS_MAX_AMP, KF_Q_STD, KF_R_STD);
 
-  Serial.printf("%10.7f,%10.7f,%10.7f,%10.7f,%4.2f,%4.2f,%10.7f,%10.7f,",
-     SHUNT_AMP_GAIN, sp.ib_bias_amp_z, SHUNT_NOA_GAIN, sp.ib_bias_noa_z, NS, NP, sp.ib_disch_slr_z, ap.hys_scale);
+  Serial.printf("%10.7f,%10.7f,%10.7f,%10.7f,%4.2f,%4.2f,%10.7f,%10.7f,%d,",
+     SHUNT_AMP_GAIN, sp.ib_bias_amp_z, SHUNT_NOA_GAIN, sp.ib_bias_noa_z, NS, NP, sp.ib_disch_slr_z, ap.hys_scale, ap.dc_dc_on);
   
   Serial.printf("\n");
 }

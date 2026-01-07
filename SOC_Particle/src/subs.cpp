@@ -118,13 +118,13 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 )
     { 
-      Serial.printf("before harvest_temp, falw %ld tb_fa %d:", Sen->Flt->falw(), Sen->Flt->tb_fa()); debug_m1(Mon, Sen);
+      Serial.printf("before harvest_temp, use_soc_in %d falw %ld tb_fa %d:  ", use_soc_in, Sen->Flt->falw(), Sen->Flt->tb_fa()); debug_m1(Mon, Sen);
     }
   #endif
   if ( !Sen->Flt->tb_fa() ) harvest_temp_change(Sen->Tb_f, Mon, Sen->Sim, Sen->Tb_f_rate, 0.);
   
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ){ Serial.printf("after harvest_temp:"); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ){ Serial.printf("after harvest_temp:  cp.soft_sim_hold %d:  ", cp.soft_sim_hold); debug_m1(Mon, Sen);}
   #endif
 
   if ( cp.soft_sim_hold )  
@@ -133,7 +133,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
     Sen->Sim->apply_delta_q_t(Mon->delta_q(), Mon->tb_f());  // applies sp.delta_q and sp.T_state
 
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ){ Serial.printf("S.a_d_q_t:"); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ){ Serial.printf("S.a_d_q_t: cp.soft_sim_hold %d:  ", cp.soft_sim_hold); debug_m1(Mon, Sen);}
   #endif
 
   // Make Sim accurate even if not used
@@ -146,27 +146,28 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
     Sen->Sim->apply_soc(Sen->Sim->soc(), Sen->Tb_f);
   }
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ){ Serial.printf("S.a_b: !sp.mod_vb() %d", !sp.mod_vb()); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ){ Serial.printf("S.a_b: sp.mod_vb() %d:  ", sp.mod_vb()); debug_m1(Mon, Sen);}
   #endif
   // Call calculate twice because sat_ is a used-before-calculated (UBC)
   // Simple 'call twice' method because sat_ is discrete no analog which would require iteration
   Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on, true) * sp.nS();
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ){ Serial.printf("S.a_b1:"); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ){ Serial.printf("S.a_b1:  "); debug_m1(Mon, Sen);}
   #endif
   Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on, true) * sp.nS();  // Call again because sat is a UBC
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ){ Serial.printf("S.a_b2:"); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ){ Serial.printf("S.a_b2:  "); debug_m1(Mon, Sen);}
   #endif
   Sen->Ib_model = Sen->Sim->ib_fut() * sp.nP();
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ){ Serial.printf("S.a_b3:"); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ){ Serial.printf("S.a_b3:  "); debug_m1(Mon, Sen);}
   #endif
 
   // Call to count_coulombs not strictly needed for init.  Calculates some things not otherwise calculated for 'all'
+  // Need sat initialized before here
   Sen->Sim->count_coulombs(Sen, true, Mon, true);
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ){ Serial.printf("S.a_b4:"); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ){ Serial.printf("S.a_b4:  "); debug_m1(Mon, Sen);}
   #endif
 
   // Signal preparations
@@ -187,7 +188,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
     Sen->Ib = Sen->Ib_hdwe;
   }
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ){ Serial.printf("SENIB:"); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ){ Serial.printf("SENIB:  "); debug_m1(Mon, Sen);}
   #endif
   if ( sp.mod_vb() && !cp.soft_sim_hold )
   {
@@ -195,32 +196,32 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   }
   Mon->init_battery_mon(true, Sen);
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ) { Serial.printf("M.i_b:"); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ) { Serial.printf("M.i_b:  "); debug_m1(Mon, Sen);}
   #endif
 
   // Call calculate/count_coulombs twice because sat_ is a used-before-calculated (UBC)
   // Simple 'call twice' method because sat_ is discrete not analog which would require iteration
   Mon->calculate(Sen, true);
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ){ Serial.printf("M.calc1:"); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ){ Serial.printf("M.calc1:  "); debug_m1(Mon, Sen);}
   #endif
   Mon->count_coulombs(Sen, true, 0., Mon->is_sat(true), 0.);
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ){ Serial.printf("M.c_c1:"); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ){ Serial.printf("M.c_c1:  "); debug_m1(Mon, Sen);}
   #endif
   Mon->calculate(Sen, true);  // Call again because sat is a UBC
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ){ Serial.printf("M.calc2:"); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ){ Serial.printf("M.calc2:  "); debug_m1(Mon, Sen);}
   #endif
   Mon->count_coulombs(Sen, true, 0., Mon->is_sat(true), 0.);
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ){ Serial.printf("M.c_c2:"); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ){ Serial.printf("M.c_c2:  "); debug_m1(Mon, Sen);}
   #endif
   
   // Solve EKF
   Mon->solve_ekf(true, true, Sen);
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==-1 ){ Serial.printf("end:"); debug_m1(Mon, Sen);}
+    if ( sp.debug()==-1 ){ Serial.printf("end:  "); debug_m1(Mon, Sen);}
   #endif
 
   // Finally....clear all faults
