@@ -233,6 +233,7 @@ class Battery(Coulombs):
         self.Tb_hdwe_filt = None
         self.Tb_hdwe_filt_rate = None
         self.reset = True
+        self.voltage_low = False
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -546,19 +547,19 @@ class BatteryMonitor(Battery, EKF1x1):
 
         # Battery management system model (uses past value bms_off and voc_stat)
         if not self.bms_off:
-            voltage_low = self.voc_stat < self.chemistry.vb_down
+            self.voltage_low = self.voc_stat < self.chemistry.vb_down
         else:
-            voltage_low = self.voc_stat < self.chemistry.vb_rising
+            self.voltage_low = self.voc_stat < self.chemistry.vb_rising
         bms_charging = self.ib > Battery.IB_MIN_UP
         if reset and SN.mon_run.bms_off[0] is not None:
             self.bms_off = SN.mon_run.bms_off[0]
         else:
-            self.bms_off = (self.Tb_f <= self.chemistry.low_t) or (voltage_low and not rp.tweak_test)  # KISS
+            self.bms_off = (self.Tb_f <= self.chemistry.low_t) or (self.voltage_low and not rp.tweak_test)  # KISS
         self.ib_charge = self.ib
         self.ib_charge_ekf = self.ib_charge
         if self.bms_off and not bms_charging:
             self.ib_charge = 0.
-        if self.bms_off and voltage_low:
+        if self.bms_off and self.voltage_low:
             self.ib = 0.
         self.ib_lag = self.IbLag.calculate_tau(self.ib, reset, self.dt, self.chemistry.ib_lag_tau)
         if reset:
@@ -580,7 +581,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_dyn_b = self.ChargeTransfer.b
         self.ib_dyn_c = self.ChargeTransfer.c
         self.voc = self.vb - (self.ib_dyn*self.chemistry.r_ct + ib_dc*self.chemistry.r_0)
-        if self.bms_off and voltage_low:
+        if self.bms_off and self.voltage_low:
             self.voc_stat = self.vb
             self.voc = self.vb
         self.dv_dyn = self.vb - self.voc
@@ -1015,7 +1016,6 @@ class BatterySim(Battery):
         self.ib_fut = 0.  # Future value of limited current, A
         self.reset_temp_past = self.sat
         self.dt_past = 0.
-        self.voltage_low = False
         if SN is not None:
             self.Tb = SN.Tb0
             self.dv_dyn = SN.dv_dyn_s_init

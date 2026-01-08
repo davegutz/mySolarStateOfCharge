@@ -383,6 +383,7 @@ public:
   void ib_sel_stat(const int sel_stat) { ib_sel_stat_ = sel_stat; };
   void ib_quiet(const boolean reset, Sensors *Sen);
   float ib_quiet() { return ib_quiet_; };
+  boolean ib_really_quiet() { return ib_really_quiet_; };
   float ib_rate() { return ib_rate_; };
   void ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
   int8_t latched_fail() { return latched_fail_; };
@@ -495,6 +496,7 @@ protected:
   boolean ib_noa_invalid_;  // Battery noa is invalid (hard failed)
   boolean ib_noa_lo_;       // ib noa below amp low limit, T=below hi
   float ib_quiet_;          // ib hardware noise, A/s
+  boolean ib_really_quiet_;   // ib hardware noise and low abs level
   float ib_rate_;           // ib rate, A/s
   int8_t ib_sel_stat_;      // Memory of Ib signal selection, -1=noa, 0=none, 1=a
   int8_t ib_sel_stat_last_; // past value

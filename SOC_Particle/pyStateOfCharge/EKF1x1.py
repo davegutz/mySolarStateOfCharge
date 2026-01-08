@@ -52,7 +52,7 @@ class EKF1x1:
         s = prefix + "EKF1x1:\n"
         s += "  Inputs:\n"
         s += "  reset = {:2d}\n".format(self.reset)
-        s += "  freeze = {:2d}\n".format(self.freeze)
+        s += "  freeze = {:7.3f}\n".format(self.freeze)
         s += "  z = {:10.6g}\n".format(self.z_ekf)
         s += "  Fx = {:13.10g}\n".format(self.Fx)
         s += "  Bu = {:13.10g}\n".format(self.Bu)

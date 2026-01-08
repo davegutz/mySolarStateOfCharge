@@ -896,6 +896,7 @@ class SavedData20241006:
             self.vb_sel = None
             self.ib_rate = None
             self.ib_quiet = None
+            self.ib_really_quiet = None
             self.dscn_flt = None
             self.dscn_fa = None
             self.vb_flt = None
@@ -976,6 +977,7 @@ class SavedData20241006:
             self.vb_sel = np.array(sel.vb_sel[:i_end])
             self.ib_rate = np.array(sel.ib_rate[:i_end])
             self.ib_quiet = np.array(sel.ib_quiet[:i_end])
+            self.ib_really_quiet = np.array(sel.ib_really_quiet[:i_end])
             self.dscn_flt = np.bool_(np.array(fltw) & 2**10)
             self.dscn_fa = np.bool_(np.array(falw) & 2**10)
             self.vb_flt = np.bool_(np.array(fltw) & 2**1)

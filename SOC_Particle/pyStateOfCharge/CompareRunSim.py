@@ -179,9 +179,7 @@ def main():
     # Rf, vv4,
     # Rk,
     # vv0,
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsDc13Cap5_soc2p2_hi_lo_bb.csv'
-
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\offSitHysBmsBB_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_bb.csv'
 
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 
@@ -194,7 +192,7 @@ def main():
     # # The following are not implemented in GUI
     #
     time_end_in = None
-    # time_end_in = 64.
+    # time_end_in = 78.
     #
     #
     s_hys_sim_in = 1.

@@ -550,7 +550,7 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
 #8
 def print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                           ib_amp                      vb_m                      voc_m                   voc_soc_m                 voc_soc                   e_wrap_m                  e_wrap_trim          e_wrap_trimmed         e_wrap_m_filt         vb_functional_flt    vb_functional_fa   wrap_m_and_n_fa    ib_is_functional   wv_fa"
+    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      bms_off     voltage_low   bms_off_s   voltage_low_s  dt                vb                           ib_amp                      vb_m                      voc_m                   voc_soc_m                 voc_soc                   e_wrap_m                  e_wrap_trim          e_wrap_trimmed         e_wrap_m_filt      ib_diff    wrap_m_and_n_fa    wrap_lo_m_fa       wrap_lo_n_fa       wrap_lo_fa         wrap_hi_m_fa       wrap_hi_n_fa       wrap_hi_fa         vb_functional_flt  vb_functional_fa   ib_is_functional   wrap_vb_faj        ib_quiet          ib_really_quiet"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -572,6 +572,10 @@ def print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:15d}".format(bool(SN.mon_run.init_mon[G.i])),
           "{:15d}".format(bool(SN.mon_run.init_sim[G.i])),
           "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
+          "{:7d}".format(bool(SN.mon_run.bms_off[G.i])), "{:4d}".format(bool(mon.bms_off)),
+          "{:7d}".format(bool(SN.mon_run.voltage_low[G.i])), "{:4d}".format(bool(mon.voltage_low)),
+          "{:7d}".format(bool(SN.sim_run.bms_off_s[G.i])), "{:4d}".format(bool(sim.bms_off)),
+          "{:7d}".format(bool(SN.sim_run.voltage_low_s[G.i])), "{:4d}".format(bool(sim.voltage_low)),
           "{:9.4f}".format(SN.mon_run.dt[G.i]), "{:7.4f}".format(mon.dt),
           "{:13.7f}".format(SN.mon_run.vb[G.i]), "{:11.7f}".format(mon.vb),
           "{:15.6f}".format(SN.mon_run.ib_amp[G.i]), "{:13.6f}".format(mon.ib_amp),
@@ -583,11 +587,20 @@ def print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:16.5f}".format(SN.mon_run.e_wrap_m_trim[G.i]), "{:8.5f}".format(mon.e_wrap_m_trim),
           "{:12.6f}".format(SN.mon_run.e_wrap_m_trimmed[G.i]), "{:9.6f}".format(mon.LoopIbAmp.e_wrap_trimmed),
           "{:11.5f}".format(SN.mon_run.e_wrap_m_filt[G.i]), "{:8.5f}".format(mon.e_wrap_m_filt),
-          "{:8d}".format(SN.mon_run.vb_functional_flt[G.i]),
+          "{:4d}".format(SN.mon_run.ib_diff_fa[G.i]),
+          "{:10d}".format(SN.mon_run.wrap_m_and_n_fa[G.i]),
+          "{:18d}".format(SN.mon_run.wrap_lo_m_fa[G.i]),
+          "{:18d}".format(SN.mon_run.wrap_lo_n_fa[G.i]),
+          "{:18d}".format(SN.mon_run.wrap_lo_fa[G.i]),
+          "{:18d}".format(SN.mon_run.wrap_hi_m_fa[G.i]),
+          "{:18d}".format(SN.mon_run.wrap_hi_n_fa[G.i]),
+          "{:18d}".format(SN.mon_run.wrap_hi_fa[G.i]),
+          "{:18d}".format(SN.mon_run.vb_functional_flt[G.i]),
           "{:18d}".format(SN.mon_run.vb_functional_fa[G.i]),
-          "{:18d}".format(SN.mon_run.wrap_m_and_n_fa[G.i]),
           "{:18d}".format(SN.mon_run.ib_is_functional[G.i]),
           "{:18d}".format(SN.mon_run.wv_fa[G.i]),
+          "{:18d}".format(bool(SN.mon_run.ib_quiet[G.i])),
+          "{:18d}".format(bool(SN.mon_run.ib_really_quiet[G.i])),
           )
     print(Colors.reset, end='')
     return hdr

@@ -306,13 +306,13 @@ void print_signal_sel_header(void)
   Serial.printf("unit_s,c_time,reset,resaf,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,  kfres,vovcm,vovcn,ibmkf,ibnkf,  ib_diff, ib_diff_f,");
   Serial.printf("  vr,voc_soc,e_w,e_w_f,ib_dm,dv_dm,e_wm,e_wm_r,e_wm_f,ib_dn,dv_dn,e_wn,e_wn_f,e_wm_t,");
   Serial.printf("  ib_sel_stat,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_h,vb_s,mvb,vb,  mtb,Tb_fa, ");
-  Serial.printf("  fltw, falw, ib_rate, ib_quiet, tb_sel, ccd_thr, ewh_thr, ewl_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,");
+  Serial.printf("  fltw, falw, ib_rate, ib_quiet, ib_really_quiet, tb_sel, ccd_thr, ewh_thr, ewl_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,");
   Serial.printf("  ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rstate_m, ib_dyn_lstate_m,");
   Serial.printf("  ib_dyn_T_n, ib_dyn_tau_n, ib_dyn_rstate_n, ib_dyn_lstate_n,");
   Serial.printf("  ib_wrp_T_n, ib_wrp_tau_n, ib_wrp_rate_n, ib_wrp_state_n, disable_amp_fault, disable_amp_fault_per,");
   Serial.printf("  ib_wrp_reset_m, ib_wrp_T_m, ib_wrp_tau_m, ib_wrp_rate_m, ib_wrp_state_m,ib_amp,");
   Serial.printf("  ib_amp_lo, ib_amp_hi, ib_noa_lo, ib_noa_hi, ib_noa_kf, kfres, x1n, ib_wrp_tr_m, ib_wrp_tr_n,");
-  Serial.printf("  vb_m, voc_m, voc_soc_m, vb_functional_flt, vb_functional_fa, wrap_m_and_n_fa, ib_is_functional,");
+  Serial.printf("  vb_m, voc_m, voc_soc_m, vb_functional_flt, vb_functional_fa, wrap_m_and_n_fa, ib_is_functional,v_low,");
   Serial.printf("\n");
 }
 void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, BatterySim *Sim)
@@ -341,8 +341,8 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
             sp.mod_tb(), Sen->Flt->tb_fa());
       Serial.printf("%s", pr.buff);
 
-      sprintf(pr.buff, "%ld, %ld, %7.3f, %7.3f, %d, %9.6f,%7.3f,%7.3f,%7.3f,%7.3f,%d,%d,%7.3f,%d,",
-          Sen->Flt->fltw(), Sen->Flt->falw(), Sen->Flt->ib_rate(), Sen->Flt->ib_quiet(), Sen->Flt->tb_sel_status(),
+      sprintf(pr.buff, "%ld, %ld, %7.3f, %7.3f, %d, %d, %9.6f,%7.3f,%7.3f,%7.3f,%7.3f,%d,%d,%7.3f,%d,",
+          Sen->Flt->fltw(), Sen->Flt->falw(), Sen->Flt->ib_rate(), Sen->Flt->ib_quiet(),  Sen->Flt->ib_really_quiet(), Sen->Flt->tb_sel_status(),
           Sen->Flt->cc_diff_thr(), Sen->Flt->ewhi_thr(), Sen->Flt->ewlo_thr(), Sen->Flt->ib_diff_thr(), Sen->Flt->ib_quiet_thr(), Sen->Flt->preserving(), ap.fake_faults,
           Mon->y_ekf_filt(), Sen->Flt->ib_decision());
       Serial.printf("%s", pr.buff);
@@ -374,9 +374,10 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
           Sen->ShuntNoAmp->get_v(),  Sen->Flt->LoopIbAmp->e_wrap_trimmed(),  Sen->Flt->LoopIbNoa->e_wrap_trimmed());
       Serial.printf("%s", pr.buff);
 
-      sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,%d,%d,%d,%d,",
+      sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,%d,%d,%d,%d,%d,",
         Sen->Flt->LoopIbAmp->vb(), Sen->Flt->LoopIbAmp->voc(), Sen->Flt->LoopIbAmp->voc_soc(),
-        Sen->Flt->vb_functional_fa(), Sen->Flt->vb_functional_flt(), Sen->Flt->wrap_m_and_n_fa(), Sen->Flt->ib_is_functional());
+        Sen->Flt->vb_functional_fa(), Sen->Flt->vb_functional_flt(), Sen->Flt->wrap_m_and_n_fa(), Sen->Flt->ib_is_functional(),
+        Mon->voltage_low());
       Serial.printf("%s", pr.buff);
 
       Serial.printf("\n");
@@ -390,7 +391,7 @@ void print_sim_header(void)
   Serial.printf("dv_dyn_s, vb_s, ib_s, ib_dyn_s, dv_hys_s, ib_in_s, ib_charge_s, ioc_s, ");
   Serial.printf("sat_s, dq_s, q_cap_s, soc_s, reset_s, ddq_s, ");
   Serial.printf("ib_dyn_s_T, ib_dyn_s_tau, ib_dyn_s_rstate, ib_dyn_s_lstate, ");
-  Serial.printf("bmso_s, vlow_s, ");
+  Serial.printf("bmso_s, vlow_s,");
   Serial.printf("\n");
 }
 void print_sim_serial(const boolean initializing_all, const boolean reset_temp, Sensors *Sen, BatterySim *Sim)

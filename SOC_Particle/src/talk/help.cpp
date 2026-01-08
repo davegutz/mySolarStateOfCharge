@@ -181,6 +181,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sendTxBuf(" vv14: vshunt and Ib raw\n", true, true);
   sendTxBuf(" vv15: vb raw\n", true, true);
   sendTxBuf(" vv16: Tb\n", true, true);
+  sendTxBuf(" vv21: ib_quiet\n", true, true);
   sendTxBuf("vv-23: Vb_hdwe_ac\n", true, true);
   sendTxBuf("vv-24: Vb_hdwe_ac, Ib_hdwe\n", true, true);
   sendTxBuf(" vv34: EKF detail\n", true, true);

@@ -351,7 +351,8 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
   ib_noa_hi_(false), ib_noa_invalid_(false), ib_noa_lo_(false), ib_quiet_(0), ib_rate_(0),
   ib_sel_stat_(IB_SEL_STAT_DEF), ib_sel_stat_last_(IB_SEL_STAT_DEF), latched_fail_(false),
   latched_fail_fake_(false), reset_all_faults_(false), sp_preserving_(preserving), tb_sel_stat_(TB_SEL_STAT_DEF),
-  tb_sel_stat_last_(TB_SEL_STAT_DEF), vb_sel_stat_(VB_SEL_STAT_DEF), vb_sel_stat_last_(VB_SEL_STAT_DEF)
+  tb_sel_stat_last_(TB_SEL_STAT_DEF), vb_functional_fa_(false), vb_sel_stat_(VB_SEL_STAT_DEF),
+  vb_sel_stat_last_(VB_SEL_STAT_DEF)
 {
   IbNoaRate = new RateLagExp(T, WRAP_ERR_FILT/4., -MAX_ERR_FILT, MAX_ERR_FILT);
   IbErrFilt = new LagTustin(T, TAU_ERR_FILT, -IBATT_DISAGREE_THRESH*1.5, IBATT_DISAGREE_THRESH*1.5);  // actual update time provided run time
@@ -369,7 +370,10 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
   VbHardFail  = new TFDelay(false, VB_HARD_SET, VB_HARD_RESET, T);
   VcHardFail  = new TFDelay(false, VC_HARD_SET, VC_HARD_RESET, T);
   QuietPer  = new TFDelay(false, QUIET_S, QUIET_R, T);
-  QuietPerFunc  = new TFDelay(false, QUIET_S, QUIET_R, T);
+  if ( !sp.mod_ib() )
+    QuietPerFunc  = new TFDelay(false, QUIET_S, QUIET_R, T);
+  else
+    QuietPerFunc  = new TFDelay(true, QUIET_S, QUIET_R, T);
   WrapErrFilt = new LagTustin(T, WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
   WrapHi = new TFDelay(false, WRAP_HI_S, WRAP_HI_R, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
   WrapLo = new TFDelay(false, WRAP_LO_S, WRAP_LO_R, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
@@ -476,15 +480,34 @@ void Fault::ib_quiet(const boolean reset, Sensors *Sen)
   boolean reset_loc = reset | reset_all_faults_;
 
   // Rate (has some filtering)
-  ib_rate_ = QuietRate->calculate(Sen->Ib_amp_hdwe + Sen->Ib_noa_hdwe, reset, min(Sen->T, MAX_T_Q_FILT));
+  if ( !sp.mod_ib() )
+  {
+    ib_rate_ = QuietRate->calculate(Sen->Ib_amp_hdwe + Sen->Ib_noa_hdwe, reset, min(Sen->T, MAX_T_Q_FILT));
+    // 2-pole filter
+    ib_quiet_ = QuietFilt->calculate(ib_rate_, reset_loc, min(Sen->T, MAX_T_Q_FILT));
+    ib_quiet_thr_ = QUIET_A * ap.ib_quiet_slr;
+    ib_is_quiet_ = abs(ib_quiet_)<=ib_quiet_thr_ && !reset_loc;
+    ib_is_functional_ = QuietPerFunc->calculate(!ib_is_quiet_, QUIET_S, QUIET_R, Sen->T, reset_loc);
+    // Really Quiet logic added for robust (no faults) during BMS shutoff
+    ib_really_quiet_ = ib_is_quiet_ && ( abs(Sen->Ib_amp_hdwe+Sen->Ib_noa_hdwe) < LOW_A );
+  }
+  else
+  {
+    ib_rate_ = QuietRate->calculate(Sen->Ib_amp_model + Sen->Ib_noa_model, reset, min(Sen->T, MAX_T_Q_FILT));
+    // 2-pole filter
+    ib_quiet_ = QuietFilt->calculate(ib_rate_, reset_loc, min(Sen->T, MAX_T_Q_FILT));
+    ib_quiet_thr_ = QUIET_A * ap.ib_quiet_slr;
+    ib_is_quiet_ = abs(ib_quiet_)<=ib_quiet_thr_ && !reset_loc;
+    ib_is_functional_ = QuietPerFunc->calculate(!ib_is_quiet_, QUIET_S, QUIET_R, Sen->T, reset_loc);
+    // Really Quiet logic added for robust (no faults) during BMS shutoff
+    ib_really_quiet_ = ib_is_quiet_ && ( abs(Sen->Ib_amp_model+Sen->Ib_noa_model) < LOW_A );
+  }
 
-  // 2-pole filter
-  ib_quiet_ = QuietFilt->calculate(ib_rate_, reset_loc, min(Sen->T, MAX_T_Q_FILT));
-  ib_quiet_thr_ = QUIET_A * ap.ib_quiet_slr;
-  ib_is_quiet_ = !sp.mod_ib() && abs(ib_quiet_)<=ib_quiet_thr_ && !reset_loc;
-  ib_is_functional_ = QuietPerFunc->calculate(!ib_is_quiet_, QUIET_S, QUIET_R, Sen->T, reset_loc);
+  if ( sp.debug()==21 )
+    sendTxBuf(String::format("Isum %8.3f ib_quiet %8.3f ib_quiet_thr %8.3f ib_is_quiet %d ib_is_func %d ib_really_quiet %d\n",
+      Sen->Ib_amp_hdwe + Sen->Ib_noa_hdwe, ib_quiet_, ib_quiet_thr_, ib_is_quiet_, ib_is_functional_, ib_really_quiet_), true, true);
 
-  // Fault
+      // Fault
   faultAssign( ib_is_quiet_, IB_DSCN_FLT );   // initializes false
   failAssign( QuietPer->calculate(dscn_flt(), QUIET_S, QUIET_R, Sen->T, reset_loc), IB_DSCN_FA);
   if ( sp.debug()==-13 ) debug_m13(Sen);
@@ -597,11 +620,11 @@ void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
     failAssign( (WrapHi->calculate(wrap_hi_flt(), WRAP_HI_S, WRAP_HI_R, Sen->T, reset_loc) && !vb_fa()), WRAP_HI_FA );  // not latched
     failAssign( (WrapLo->calculate(wrap_lo_flt(), WRAP_LO_S, WRAP_LO_R, Sen->T, reset_loc) && !vb_fa()), WRAP_LO_FA );  // not latched
   #endif
-  vb_functional_flt_ = ( ib_is_functional_ && Mon->bms_off() );
+  vb_functional_flt_ = ( ib_is_functional_ && Mon->bms_off()  && !ib_really_quiet());
   vb_functional_fa_ = ( (vb_functional_fa_ || vb_functional_flt_) && !reset_all_faults_ );
-  failAssign( (wrap_vb_fa() && !reset_loc) ||
-              (!ib_diff_fa() && wrap_m_and_n_fa()) ||
-              (vb_functional_fa_),  // A soft Vb drift low confirmed by active Ib
+  failAssign( ( wrap_vb_fa() && !reset_loc ) ||
+              ( !ib_diff_fa() && wrap_m_and_n_fa() && ib_really_quiet() ) ||
+              ( vb_functional_fa_ ),  // A soft Vb drift low confirmed by active Ib
                WRAP_VB_FA);    // WRAP_VB_FA latches latches because vb is single sensor
 }
 
@@ -635,7 +658,9 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
   txBuf = String::format(" soc%7.3f soc_inf%7.3f voc%7.3f  voc_soc%7.3f\n", Mon->soc(), Mon->soc_inf(), Mon->voc(), Mon->voc_soc()) +
     String::format(" dis_tb_fa %d  dis_vb_fa %d  dis_ib_fa %d\n", ap.disab_tb_fa, ap.disab_vb_fa, ap.disab_ib_fa) +
     String::format(" bms_off  %d\n\n", Mon->bms_off()) +
-
+    String::format(" vb_functional flt/fa %d/%d\n", vb_functional_flt_, vb_functional_fa_) +
+    String::format(" wrap_m_and_n_fa %d\n", Sen->Flt->wrap_m_and_n_fa()) +
+    String::format(" ib_is_quiet %d ib_really_quiet %d\n", ib_is_quiet_, ib_really_quiet_) +
     String::format(" Tbh%9.5f Tbm=%9.5f sel%9.5f\n", Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb) +
     String::format(" Vbh%7.3f Vbm %7.3f sel%7.3f\n", Sen->Vb_hdwe, Sen->Vb_model, Sen->Vb) +
     String::format(" V3v3%7.3f\n", Sen->ShuntAmp->Vc()*2.) +

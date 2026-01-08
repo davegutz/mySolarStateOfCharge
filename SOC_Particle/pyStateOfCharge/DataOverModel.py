@@ -973,6 +973,7 @@ class SavedData:
             self.vb_sel = None
             self.ib_rate = None
             self.ib_quiet = None
+            self.ib_really_quiet = None
             self.dscn_flt = None
             self.dscn_fa = None
             self.vb_flt = None
@@ -1029,6 +1030,7 @@ class SavedData:
             self.vb_functional_fa = None
             self.wrap_m_and_n_fa = None
             self.ib_is_functional = None
+            self.voltage_low = None
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
@@ -1088,6 +1090,7 @@ class SavedData:
             self.wrap_lo_m_flt = np.bool_(np.array(fltw) & 2**15)
             self.wrap_hi_n_flt = np.bool_(np.array(fltw) & 2**16)
             self.wrap_lo_n_flt = np.bool_(np.array(fltw) & 2**17)
+            self.wrap_m_and_n_flt = (self.wrap_lo_n_flt & self.wrap_lo_m_flt) | (self.wrap_hi_n_flt & self.wrap_hi_m_flt)
             self.red_loss = np.bool_(np.array(fltw) & 2**7)
             self.wrap_hi_fa = np.bool_(np.array(falw) & 2**5)
             self.wrap_lo_fa = np.bool_(np.array(falw) & 2**6)
@@ -1096,6 +1099,7 @@ class SavedData:
             self.wrap_lo_m_fa = np.bool_(np.array(falw) & 2**15)
             self.wrap_hi_n_fa = np.bool_(np.array(falw) & 2**16)
             self.wrap_lo_n_fa = np.bool_(np.array(falw) & 2**17)
+            self.wrap_m_and_n_fa = (self.wrap_lo_n_fa & self.wrap_lo_m_fa) | (self.wrap_hi_n_fa & self.wrap_hi_m_fa)
             self.ib_sel_stat = np.array(sel.ib_sel_stat[:i_end])
             self.ib_h = np.array(sel.ib_h[:i_end])
             self.ib_s = np.array(sel.ib_s[:i_end])
@@ -1110,6 +1114,7 @@ class SavedData:
             self.vb_sel = np.array(sel.vb_sel[:i_end])
             self.ib_rate = np.array(sel.ib_rate[:i_end])
             self.ib_quiet = np.array(sel.ib_quiet[:i_end])
+            self.ib_really_quiet = np.array(sel.ib_really_quiet[:i_end])
             self.dscn_flt = np.bool_(np.array(fltw) & 2**10)
             self.dscn_fa = np.bool_(np.array(falw) & 2**10)
             self.vb_flt = np.bool_(np.array(fltw) & 2**1)
@@ -1154,6 +1159,7 @@ class SavedData:
             self.vb_functional_fa = np.bool_(np.array(sel.vb_functional_fa[:i_end]))
             self.wrap_m_and_n_fa = np.bool_(np.array(sel.wrap_m_and_n_fa[:i_end]))
             self.ib_is_functional = np.bool_(np.array(sel.ib_is_functional[:i_end]))
+            self.voltage_low = np.bool_(np.array(sel.v_low[:i_end]))
         if shunt is None:
             unit_shunt = None
             self.skip_shunt = None
