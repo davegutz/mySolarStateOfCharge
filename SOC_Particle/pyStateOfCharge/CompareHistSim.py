@@ -192,8 +192,8 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.subplot(338)
         plt.plot(hi.time, hi.e_wrap, marker='o', markersize='3', linestyle='-', color='black', label='e_wrap')
         plt.plot(hi.time, hi.wv_fa, marker=0, markersize='4', linestyle=':', color='red', label='wrap_vb_fa')
-        plt.plot(hi.time, hi.wl_fa-1, marker=2, markersize='4', linestyle=':', color='orange', label='wrap_lo_fa-1')
-        plt.plot(hi.time, hi.wh_fa+1, marker=3, markersize='4', linestyle=':', color='green', label='wrap_hi_fa+1')
+        plt.plot(hi.time, hi.wrap_lo_fa-1, marker=2, markersize='4', linestyle=':', color='orange', label='wrap_lo_fa-1')
+        plt.plot(hi.time, hi.wrap_hi_fa+1, marker=3, markersize='4', linestyle=':', color='green', label='wrap_hi_fa+1')
         plt.xlabel(time_units)
         plt.legend(loc=1)
         plt.subplot(339)
@@ -235,17 +235,17 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
                  label='ib_diff_fa+16')
         plt.plot(hi.time, hi.wv_fa + 14, marker='s', markersize='3', linestyle='-', color='cyan',
                  label='wrap_vb_fa+14')
-        plt.plot(hi.time, hi.wl_fa + 12, marker='p', markersize='3', linestyle='-', color='blue',
+        plt.plot(hi.time, hi.wrap_lo_fa + 12, marker='p', markersize='3', linestyle='-', color='blue',
                  label='wrap_lo_fa+12')
-        plt.plot(hi.time, hi.wl_m_flt + 12, marker='p', markersize='3', linestyle='--', color='red',
+        plt.plot(hi.time, hi.wrap_lo_m_flt + 12, marker='p', markersize='3', linestyle='--', color='red',
                  label='wrap_lo_m_fa+12')
-        plt.plot(hi.time, hi.wl_n_flt + 12, marker='p', markersize='3', linestyle='-.', color='orange',
+        plt.plot(hi.time, hi.wrap_lo_n_flt + 12, marker='p', markersize='3', linestyle='-.', color='orange',
                  label='wrap_lo_n_fa+12')
-        plt.plot(hi.time, hi.wh_fa + 10, marker='h', markersize='3', linestyle='-', color='blue',
+        plt.plot(hi.time, hi.wrap_hi_fa + 10, marker='h', markersize='3', linestyle='-', color='blue',
                  label='wrap_hi_fa+10')
-        plt.plot(hi.time, hi.wh_m_fa + 10, marker='h', markersize='3', linestyle='--', color='red',
+        plt.plot(hi.time, hi.wrap_hi_m_fa + 10, marker='h', markersize='3', linestyle='--', color='red',
                  label='wrap_hi_m_fa+10')
-        plt.plot(hi.time, hi.wh_n_fa + 10, marker='h', markersize='3', linestyle='-.', color='orange',
+        plt.plot(hi.time, hi.wrap_hi_n_fa + 10, marker='h', markersize='3', linestyle='-.', color='orange',
                  label='wrap_hi_n_fa+10')
         plt.plot(hi.time, hi.ccd_fa + 8, marker='H', markersize='3', linestyle='-', color='blue',
                  label='cc_diff_fa+8')
@@ -337,14 +337,14 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plt.ylim(-1, 1)
     plt.legend(loc=1)
     plt.subplot(336)
-    plt.plot(hi.time, hi.wh_flt + 8, color='black', linestyle='-', label='wrap_hi_flt+8')
-    plt.plot(hi.time, hi.wl_flt + 8, color='magenta', linestyle='--', label='wrap_lo_flt+8')
-    plt.plot(hi.time, hi.wh_fa + 6, color='blue', linestyle='-', label='wrap_hi_fa+6')
-    plt.plot(hi.time, hi.wh_m_fa + 6, color='red', linestyle='-', label='wrap_hi_m_fa+6')
-    plt.plot(hi.time, hi.wh_n_fa + 6, color='orange', linestyle='-', label='wrap_hi_n_fa+6')
-    plt.plot(hi.time, hi.wl_fa + 4, color='blue', linestyle='--', label='wrap_lo_fa+4')
-    plt.plot(hi.time, hi.wl_m_fa + 4, color='red', linestyle='--', label='wrap_lo_m_fa+4')
-    plt.plot(hi.time, hi.wl_n_fa + 4, color='orange', linestyle='--', label='wrap_lo_n_fa+4')
+    plt.plot(hi.time, hi.wrap_hi_flt + 8, color='black', linestyle='-', label='wrap_hi_flt+8')
+    plt.plot(hi.time, hi.wrap_lo_flt + 8, color='magenta', linestyle='--', label='wrap_lo_flt+8')
+    plt.plot(hi.time, hi.wrap_hi_fa + 6, color='blue', linestyle='-', label='wrap_hi_fa+6')
+    plt.plot(hi.time, hi.wrap_hi_m_fa + 6, color='red', linestyle='-', label='wrap_hi_m_fa+6')
+    plt.plot(hi.time, hi.wrap_hi_n_fa + 6, color='orange', linestyle='-', label='wrap_hi_n_fa+6')
+    plt.plot(hi.time, hi.wrap_lo_fa + 4, color='blue', linestyle='--', label='wrap_lo_fa+4')
+    plt.plot(hi.time, hi.wrap_lo_m_fa + 4, color='red', linestyle='--', label='wrap_lo_m_fa+4')
+    plt.plot(hi.time, hi.wrap_lo_n_fa + 4, color='orange', linestyle='--', label='wrap_lo_n_fa+4')
     plt.plot(hi.time, hi.wv_fa + 2, color='orange', linestyle='-.', label='wrap_vb_fa+2')
     plt.plot(hi.time, hi.ccd_fa, color='green', linestyle='-', label='cc_diff_fa')
     plt.plot(hi.time, hi.red_loss, color='blue', linestyle='--', label='red_loss')
@@ -532,12 +532,12 @@ def calc_fault(d_ra, d_mod):
     dscn_fa = np.bool_(falw & 2 ** 10)
     ib_diff_fa = np.bool_((falw & 2 ** 8) | (falw & 2 ** 9))
     wv_fa = np.bool_(falw & 2 ** 7)
-    wl_fa = np.bool_(falw & 2 ** 6)
-    wh_fa = np.bool_(falw & 2 ** 5)
-    wh_m_fa = np.bool_(falw & 2 ** 14)
-    wl_m_fa = np.bool_(falw & 2 ** 15)
-    wh_n_fa = np.bool_(falw & 2 ** 16)
-    wl_n_fa = np.bool_(falw & 2 ** 17)
+    wrap_lo_fa = np.bool_(falw & 2 ** 6)
+    wrap_hi_fa = np.bool_(falw & 2 ** 5)
+    wrap_hi_m_fa = np.bool_(falw & 2 ** 14)
+    wrap_lo_m_fa = np.bool_(falw & 2 ** 15)
+    wrap_hi_n_fa = np.bool_(falw & 2 ** 16)
+    wrap_lo_n_fa = np.bool_(falw & 2 ** 17)
     ccd_fa = np.bool_(falw & 2 ** 4)
     ib_noa_fa = np.bool_(falw & 2 ** 3)
     ib_amp_fa = np.bool_(falw & 2 ** 2)
@@ -548,12 +548,12 @@ def calc_fault(d_ra, d_mod):
     d_mod = rf.rec_append_fields(d_mod, 'dscn_fa', np.array(dscn_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_diff_fa', np.array(ib_diff_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'wv_fa', np.array(wv_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'wl_fa', np.array(wl_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'wl_m_fa', np.array(wl_m_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'wl_n_fa', np.array(wl_n_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'wh_fa', np.array(wh_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'wh_m_fa', np.array(wh_m_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'wh_n_fa', np.array(wh_n_fa, dtype=float))
+    d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_fa', np.array(wrap_lo_fa, dtype=float))
+    d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_m_fa', np.array(wrap_lo_m_fa, dtype=float))
+    d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_n_fa', np.array(wrap_lo_n_fa, dtype=float))
+    d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_fa', np.array(wrap_hi_fa, dtype=float))
+    d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_m_fa', np.array(wrap_hi_m_fa, dtype=float))
+    d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_n_fa', np.array(wrap_hi_n_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ccd_fa', np.array(ccd_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_noa_fa', np.array(ib_noa_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_amp_fa', np.array(ib_amp_fa, dtype=float))
@@ -562,23 +562,23 @@ def calc_fault(d_ra, d_mod):
 
     try:
         ib_diff_flt = np.bool_(fltw & 2 ** 8) | (fltw & 2 ** 9)
-        wh_flt = np.bool_(fltw & 2 ** 5)
-        wl_flt = np.bool_(fltw & 2 ** 6)
-        wh_m_flt = np.bool_(fltw & 2 ** 14)
-        wl_m_flt = np.bool_(fltw & 2 ** 15)
-        wh_n_flt = np.bool_(fltw & 2 ** 16)
-        wl_n_flt = np.bool_(fltw & 2 ** 17)
+        wrap_hi_flt = np.bool_(fltw & 2 ** 5)
+        wrap_lo_flt = np.bool_(fltw & 2 ** 6)
+        wrap_hi_m_flt = np.bool_(fltw & 2 ** 14)
+        wrap_lo_m_flt = np.bool_(fltw & 2 ** 15)
+        wrap_hi_n_flt = np.bool_(fltw & 2 ** 16)
+        wrap_lo_n_flt = np.bool_(fltw & 2 ** 17)
         red_loss = np.bool_(fltw & 2 ** 7)
         dscn_flt = np.bool_(fltw & 2 ** 10)
         vb_flt = np.bool_(fltw & 2 ** 1)
         tb_flt = np.bool_(fltw & 2 ** 0)
         d_mod = rf.rec_append_fields(d_mod, 'ib_diff_flt', np.array(ib_diff_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'wh_flt', np.array(wh_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'wh_m_flt', np.array(wh_m_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'wh_n_flt', np.array(wh_n_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'wl_flt', np.array(wl_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'wl_m_flt', np.array(wl_m_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'wl_n_flt', np.array(wl_n_flt, dtype=float))
+        d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_flt', np.array(wrap_hi_flt, dtype=float))
+        d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_m_flt', np.array(wrap_hi_m_flt, dtype=float))
+        d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_n_flt', np.array(wrap_hi_n_flt, dtype=float))
+        d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_flt', np.array(wrap_lo_flt, dtype=float))
+        d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_m_flt', np.array(wrap_lo_m_flt, dtype=float))
+        d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_n_flt', np.array(wrap_lo_n_flt, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'red_loss', np.array(red_loss, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'dscn_flt', np.array(dscn_flt, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'vb_flt', np.array(vb_flt, dtype=float))
@@ -1015,9 +1015,9 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
             print("\nresampling ...", end='')
             h_20C_resamp = resample(data=hist_20C, dt_resamp=dt_resample, time_var='time',
                                 specials=[
-                                    ('falw', 0), ('dscn_fa', 0), ('ib_diff_fa', 0), ('wv_fa', 0), ('wl_fa', 0),
-                                    ('wh_fa', 0), ('ccd_fa', 0), ('ib_noa_fa', 0), ('ib_amp_fa', 0), ('vb_fa', 0),
-                                    ('tb_fa', 0), ('wl_m_fa', 0), ('wh_m_fa', 0), ('wl_n_fa', 0), ('wh_n_fa', 0),
+                                    ('falw', 0), ('dscn_fa', 0), ('ib_diff_fa', 0), ('wv_fa', 0), ('wrap_lo_fa', 0),
+                                    ('wrap_hi_fa', 0), ('ccd_fa', 0), ('ib_noa_fa', 0), ('ib_amp_fa', 0), ('vb_fa', 0),
+                                    ('tb_fa', 0), ('wrap_lo_m_fa', 0), ('wrap_hi_m_fa', 0), ('wrap_lo_n_fa', 0), ('wrap_hi_n_fa', 0),
                                     ])
             h_20C_resamp.dt = h_20C_resamp.time.copy()
             for i in range(len(h_20C_resamp.time)):
