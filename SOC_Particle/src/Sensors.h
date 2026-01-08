@@ -369,6 +369,7 @@ public:
   boolean ib_dscn_flt() { return faultRead(IB_DSCN_FLT); };
   float ib_dyn_m() { return LoopIbAmp->ib_dyn(); };
   float ib_dyn_n() { return LoopIbNoa->ib_dyn(); };
+  boolean ib_is_functional() { return ib_is_functional_; };
   void ib_logic(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
   boolean ib_noa_bare() { return faultRead(IB_NOA_BARE); };
   boolean ib_noa_fa() { return failRead(IB_NOA_FA); };

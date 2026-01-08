@@ -1025,6 +1025,10 @@ class SavedData:
             self.ib_wrp_reset_m = None
             self.ib_wrp_rate_m = None
             self.ib_wrp_state_m = None
+            self.vb_functional_flt = None
+            self.vb_functional_fa = None
+            self.wrap_m_and_n_fa = None
+            self.ib_is_functional = None
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
@@ -1146,6 +1150,10 @@ class SavedData:
             self.disable_amp_fault_per = np.array(sel.disable_amp_fault_per[:i_end])
             if hasattr(sel, 'vr'):
                 self.vr = np.array(sel.vr[:i_end])
+            self.vb_functional_flt = np.bool_(np.array(sel.vb_functional_flt[:i_end]))
+            self.vb_functional_fa = np.bool_(np.array(sel.vb_functional_fa[:i_end]))
+            self.wrap_m_and_n_fa = np.bool_(np.array(sel.wrap_m_and_n_fa[:i_end]))
+            self.ib_is_functional = np.bool_(np.array(sel.ib_is_functional[:i_end]))
         if shunt is None:
             unit_shunt = None
             self.skip_shunt = None

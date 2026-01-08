@@ -90,6 +90,8 @@ def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
                     hdr = print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
                 case 7:
                     hdr = print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
+                case 8:
+                    hdr = print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
         case 'HistSim':
             match OPT.request_history:
                 case 0:
@@ -544,6 +546,53 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           )
     print(Colors.reset, end='')
     return hdr
+
+#8
+def print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
+    global count_since_last_header
+    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                           ib_amp                      vb_m                      voc_m                   voc_soc_m                 voc_soc                   e_wrap_m                  e_wrap_trim          e_wrap_trimmed         e_wrap_m_filt         vb_functional_flt    vb_functional_fa   wrap_m_and_n_fa    ib_is_functional   wv_fa"
+    if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
+        print(hdr)
+        count_since_last_header = 0
+    if G.i > 0:
+        count_since_last_header += 1
+    if mon.reset:
+        print(Colors.fg.red, end='')
+    elif mon.reset_temp:
+        print(Colors.fg.orange, end='')
+    print("{:4d}".format(G.i), "{:8.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
+          "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp),
+          "{:4d}".format(calc_temp),
+          "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
+          "{:7d}".format(bool(SN.mon_run.reset[G.i])),
+          "{:7d}".format(bool(SN.mon_run.reset_temp[G.i])),
+          "{:14d}".format(bool(SN.mon_run.reset_all_faults[G.i])),
+          "{:15d}".format(bool(SN.mon_run.soft_reset[G.i])),
+          "{:15d}".format(bool(SN.mon_run.soft_reset_sim[G.i])),
+          "{:15d}".format(bool(SN.mon_run.init_mon[G.i])),
+          "{:15d}".format(bool(SN.mon_run.init_sim[G.i])),
+          "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
+          "{:9.4f}".format(SN.mon_run.dt[G.i]), "{:7.4f}".format(mon.dt),
+          "{:13.7f}".format(SN.mon_run.vb[G.i]), "{:11.7f}".format(mon.vb),
+          "{:15.6f}".format(SN.mon_run.ib_amp[G.i]), "{:13.6f}".format(mon.ib_amp),
+          "{:13.6f}".format(SN.mon_run.vb_m[G.i]), "{:11.6f}".format(mon.LoopIbAmp.vb),
+          "{:13.6f}".format(SN.mon_run.voc_m[G.i]), "{:11.6f}".format(mon.LoopIbAmp.voc),
+          "{:11.6f}".format(SN.mon_run.voc_soc_m[G.i]), "{:11.6f}".format(mon.LoopIbAmp.voc_soc),
+          "{:13.6f}".format(SN.mon_run.voc_soc[G.i]), "{:9.6f}".format(mon.voc_soc),
+          "{:13.5f}".format(SN.mon_run.e_wrap_m[G.i]), "{:8.5f}".format(mon.e_wrap_m),
+          "{:16.5f}".format(SN.mon_run.e_wrap_m_trim[G.i]), "{:8.5f}".format(mon.e_wrap_m_trim),
+          "{:12.6f}".format(SN.mon_run.e_wrap_m_trimmed[G.i]), "{:9.6f}".format(mon.LoopIbAmp.e_wrap_trimmed),
+          "{:11.5f}".format(SN.mon_run.e_wrap_m_filt[G.i]), "{:8.5f}".format(mon.e_wrap_m_filt),
+          "{:8d}".format(SN.mon_run.vb_functional_flt[G.i]),
+          "{:18d}".format(SN.mon_run.vb_functional_fa[G.i]),
+          "{:18d}".format(SN.mon_run.wrap_m_and_n_fa[G.i]),
+          "{:18d}".format(SN.mon_run.ib_is_functional[G.i]),
+          "{:18d}".format(SN.mon_run.wv_fa[G.i]),
+          )
+    print(Colors.reset, end='')
+    return hdr
+
+
 def save_clean_file(mon_ver, csv_file, unit_key):
     default_header_str = "unit,               hm,                  cTime,        dt,       sat,sel,mod,\
       Tb,Tb_rap,Tb_f,Tb_f_rap,Tb_f_rate,Tb_f_rate_rap, vb,  ib,  ib_dyn, ioc,  voc_soc,    vsat,dv_dyn,voc_stat,voc_stat_f,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,ib_lag,voc_soc_new,"

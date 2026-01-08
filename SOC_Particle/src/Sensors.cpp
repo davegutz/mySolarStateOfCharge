@@ -600,7 +600,7 @@ void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
   vb_functional_flt_ = ( ib_is_functional_ && Mon->bms_off() );
   vb_functional_fa_ = ( (vb_functional_fa_ || vb_functional_flt_) && !reset_all_faults_ );
   failAssign( (wrap_vb_fa() && !reset_loc) ||
-              (!ib_diff_fa() && wrap_m_and_n_fa())  ||
+              (!ib_diff_fa() && wrap_m_and_n_fa()) ||
               (vb_functional_fa_),  // A soft Vb drift low confirmed by active Ib
                WRAP_VB_FA);    // WRAP_VB_FA latches latches because vb is single sensor
 }
