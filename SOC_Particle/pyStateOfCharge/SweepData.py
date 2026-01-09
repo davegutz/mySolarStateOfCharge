@@ -19,7 +19,7 @@ from scipy.signal import find_peaks
 from itertools import pairwise
 from DataOverModel import write_clean_file, plq
 
-class SavedData:
+class SavedDataSweep:
     def __init__(self, x=None, time_end=None):
 
         if x is None:
@@ -112,7 +112,7 @@ def load_data(path_to_data, time_end_in):
         mon_raw = None
         print(f"load_data_KF1x1_test: returning mon=None")
 
-    mon = SavedData(x=mon_raw, time_end=time_end_in)
+    mon = SavedDataSweep(x=mon_raw, time_end=time_end_in)
 
     return mon, data_file_clean
 
