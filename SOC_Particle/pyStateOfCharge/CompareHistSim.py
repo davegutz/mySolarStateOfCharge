@@ -1167,18 +1167,7 @@ def main():
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251107pm_soc4p2_hi_lo_bb.csv'
-    # plots=True
-    # # plots = False
-    # unit_key = 'g20250612a_soc4p2_hi_lo_bb'
-    # # dt_resample = 900
-    # dt_resample = 1
-    # Tb_force = None
-    # # Do this when running compare_hist_sim on run that schedule extracted assuming constant Tb
-    # # Tb_force = 35
-    # request_history = 5  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
-
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/soc4p2_reflash20260109_soc4p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/soc4p2dec-jan_soc4p2_hi_lo_bb.csv'
     data_only = False
     mon_t = False
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
