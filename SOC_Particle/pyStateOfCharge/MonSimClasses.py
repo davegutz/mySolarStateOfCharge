@@ -200,6 +200,15 @@ class Sensors:
             if not hasattr(self.mon_run, 'ib_dyn_n'):
                self.mon_run.ib_dyn_n = np.copy(self.mon_run.ibnh_f)
 
+            self.dt_s = self.sim_run.dt_s
+            if not hasattr(self.mon_run, 'ibmm'):
+               self.mon_run.ibmm = np.copy(self.mon_run.ibmh_f)
+            if not hasattr(self.mon_run, 'ibnm'):
+               self.mon_run.ibnm = np.copy(self.mon_run.ibnh_f)
+            if not hasattr(self.mon_run, 'ib_h'):
+               self.mon_run.ib_h = np.copy(self.mon_run.ib_f)
+            self.Battery = Battery
+
             self.Tb_hdwe_init = self.mon_run.Tb_h_f[0]
             self.Tb_hdwe_filt_init = self.mon_run.Tb_h_f[0]
             self.Tb_hdwe_filt_rate_init = 0.

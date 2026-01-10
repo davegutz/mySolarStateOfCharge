@@ -99,8 +99,8 @@ def load_data(path_to_data, time_end_in):
 
     print(f"load_data_KF1x1_test: \n{path_to_data=}\n{time_end_in=}\n")
 
-    hdr_key_x = "unit_shunt,"  # Find one self of title
-    unit_key_x = "shunt_unit"
+    hdr_key_x = "u_cx,"  # Find one self of title
+    unit_key_x = "cx_u"
 
     data_file_clean = write_clean_file(path_to_data, type_='_shunt', hdr_key=hdr_key_x, unit_key=unit_key_x)
     if data_file_clean is None:

@@ -42,7 +42,7 @@ void sample_burst(Pins *myPins, Sensors *Sen)
   unsigned long int local_micros_init = micros();
   if ( ap.samp_points>0 )
   {
-    Serial.printf("unit_shunt, time, vovcn, vovcnkf,\n");
+    Serial.printf("u_cx, time, vovcn, vovcnkf,\n");
     for (unsigned long int i=0; i<ap.samp_points; i++ )  // Cx
     {
       unsigned long int local_micros = micros();
@@ -51,7 +51,7 @@ void sample_burst(Pins *myPins, Sensors *Sen)
       Sen->ShuntNoAmp->sample_Vc();
       Sen->ShuntNoAmp->sample_combine();
       Sen->ShuntNoAmp->sample_filter_kf(false);
-      Serial.printf("shunt_unit, %8.6f, %8.6f, %8.6f,\n",
+      Serial.printf("cx_u, %8.6f, %8.6f, %8.6f,\n",
         (local_micros - local_micros_init)*1e-6, Sen->ShuntNoAmp->Vo_Vc(), Sen->ShuntNoAmp->Vo_Vc_kf());
     }
     ap.samp_points = 0;

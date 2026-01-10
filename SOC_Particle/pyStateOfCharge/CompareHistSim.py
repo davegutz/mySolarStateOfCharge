@@ -66,6 +66,34 @@ HYS_CAP_REDESIGN = 3.6e4  # faster time constant needed
 HYS_SOC_MIN_MARG = 0.15  # add to soc_min to set thr for detecting low endpoint condition for reset of hysteresis
 
 
+def load_off_nominal_battery(Battery_to_add=None):
+    # Load off-nominal Battery values
+    if Battery_to_add is not None:
+        # Scroll through all off-nominals make dictionary
+        Battery_off_dict = {}
+        for field_name in Battery_to_add.dtype.names:
+            # print(f"field_name {field_name}  ", end='')
+            try:
+                Battery_off_dict[field_name] = Battery_to_add[field_name][-1]
+            except IndexError:
+                Battery_off_dict[field_name] = Battery_to_add[field_name]
+                # print(f"Battery_off field_name {field_name}   value {Battery_to_add[field_name]}")
+        return Battery_off_dict
+    else:
+        return None
+
+def translate_battery(Battery=None, Battery_off_dict=None):
+    # Translate the off-nominal values imported from data stream
+    print("Over-writing pre-existing off-nominal values into Battery class structure")
+    for key in dir(Battery):
+        # print(f"{key=}:   ", end='')
+        if key.isupper() and not key.startswith('__'):
+            if key in Battery_off_dict:
+                print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
+                setattr(Battery, key, Battery_off_dict[key])
+                print(f" {getattr(Battery, key)}")
+    return Battery
+
 # Calculate thresholds from global input values listed above (review these)
 def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb):
     # There is no fault logic in the python code, so hard code it here
@@ -152,10 +180,10 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.plot(hi.time, hi.soc_ekf, marker='+', markersize='3', linestyle='--', color='blue', label='soc_ekf')
         plt.legend(loc=1)
         plt.subplot(332)
-        plt.plot(hi.time, hi.Tb, marker='.', markersize='3', linestyle='-', color='black', label='Tb')
+        plt.plot(hi.time, hi.Tb_f, marker='.', markersize='3', linestyle='-', color='black', label='Tb_f')
         plt.legend(loc=1)
         plt.subplot(333)
-        plt.plot(hi.time, hi.ib, marker='+', markersize='3', linestyle='-', color='green', label='ib')
+        plt.plot(hi.time, hi.ib_f, marker='+', markersize='3', linestyle='-', color='green', label='ib_f')
         plt.legend(loc=1)
         plt.subplot(334)
         plt.plot(hi.time, hi.tweak_sclr_amp, marker='+', markersize='3', linestyle='None', color='orange',
@@ -197,8 +225,8 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.xlabel(time_units)
         plt.legend(loc=1)
         plt.subplot(339)
-        plt.plot(hi.time, hi.vb, marker='.', markersize='3', linestyle='None', color='red', label='vb')
-        plt.plot(hi.time, hi.voc, marker='.', markersize='3', linestyle='None', color='blue', label='voc')
+        plt.plot(hi.time, hi.vb_f, marker='.', markersize='3', linestyle='None', color='red', label='vb_f')
+        plt.plot(hi.time, hi.voc_f, marker='.', markersize='3', linestyle='None', color='blue', label='voc_f')
         plt.plot(hi.time, hi.voc_stat_chg, marker='.', markersize='3', linestyle='None', color='green',
                  label='voc_stat_chg')
         plt.plot(hi.time, hi.voc_stat_dis, marker='.', markersize='3', linestyle='None', color='red',
@@ -216,8 +244,8 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.suptitle(subtitle)
         plt.plot(hi.time, hi.vsat, marker='.', markersize='1', linestyle='-', color='orange', linewidth='1',
                  label='vsat')
-        plt.plot(hi.time, hi.vb, marker='1', markersize='3', linestyle='None', color='black', label='vb')
-        plt.plot(hi.time, hi.voc, marker='.', markersize='3', linestyle='None', color='orange', label='voc')
+        plt.plot(hi.time, hi.vb_f, marker='1', markersize='3', linestyle='None', color='black', label='vb_f')
+        plt.plot(hi.time, hi.voc_f, marker='.', markersize='3', linestyle='None', color='orange', label='voc_f')
         plt.plot(hi.time, hi.voc_stat_chg, marker='.', markersize='3', linestyle='-', color='green',
                  label='voc_stat_chg')
         plt.plot(hi.time, hi.voc_stat_dis, marker='.', markersize='3', linestyle='-', color='red',
@@ -261,7 +289,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.xlabel(time_units)
         plt.legend(loc=1)
         plt.subplot(223)
-        plt.plot(hi.time, hi.ib, marker='.', markersize='3', linestyle='-', color='red', label='ib')
+        plt.plot(hi.time, hi.ib_f, marker='.', markersize='3', linestyle='-', color='red', label='ib_f')
         plt.xlabel(time_units)
         plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -294,7 +322,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.xlabel(time_units)
         plt.legend(loc=4)
         plt.subplot(223)
-        plt.plot(hi.time, hi.ib, color='black', label='ib')
+        plt.plot(hi.time, hi.ib_f, color='black', label='ib_f')
         plt.plot(hi.time, hi.soc*10, color='green', label='soc*10')
         plt.plot(hi.time, hi.ioc_redesign, marker='o', markersize='3', linestyle='-', color='cyan',
                  label='ioc_redesign')
@@ -312,7 +340,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plt.subplot(331)
     plt.title(plot_title + ' f4')
     print('f4', end=':  ')
-    plt.plot(hi.time, hi.ib, color='green', linestyle='-', label='ib')
+    plt.plot(hi.time, hi.ib_f, color='green', linestyle='-', label='ib_f')
     plt.plot(hi.time, hi.ib_diff, color='black', linestyle='-.', label='ib_diff')
     plt.plot(hi.time, hi.ib_diff_thr, color='red', linestyle='-.', label='ib_diff_thr')
     plt.plot(hi.time, -hi.ib_diff_thr, color='red', linestyle='-.')
@@ -321,13 +349,14 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plt.plot(hi.time, hi.sat + 2, color='magenta', linestyle='-', label='sat+2')
     plt.legend(loc=1)
     plt.subplot(333)
-    plt.plot(hi.time, hi.vb, color='green', linestyle='-', label='vb')
+    plt.plot(hi.time, hi.vb_f, color='green', linestyle='-', label='vb_f')
     plt.legend(loc=1)
     plt.subplot(334)
-    plt.plot(hi.time, hi.voc_stat, color='green', linestyle='-', label='voc_stat')
+    plq(plt, hi, 'time', hi, 'voc_stat', color='green', linestyle='-', label='voc_stat')
+    plq(plt, hi, 'time', hi, 'voc_stat_f', color='green', linestyle='-', label='voc_stat_f')
     plt.plot(hi.time, hi.vsat, color='blue', linestyle='-', label='vsat')
     plt.plot(hi.time, hi.voc_soc + 0.1, color='black', linestyle='-.', label='voc_soc+0.1')
-    plt.plot(hi.time, hi.voc + 0.1, color='green', linestyle=':', label='voc+0.1')
+    plq(plt, hi, 'time', hi, 'voc', add=0.1, color='green', linestyle=':', label='voc+0.1')
     plt.legend(loc=1)
     plt.subplot(335)
     plq(plt, hi, 'time', hi, 'e_wrap_filt', color='black', linestyle='--', label='e_wrap_filt')
@@ -397,7 +426,7 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plq(plt, sv, 'time', sv, 'dv_hys', color='orange', linestyle='-.', label='dv_hys_s_ver')
     plt.legend(loc=1)
     plt.subplot(334)
-    plq(plt, mr, 'soc', mr, 'vb', color='black', linestyle='-', label='vb')
+    plq(plt, mr, 'soc', mr, 'vb', color='black', linestyle='-', label='vb_f')
     plq(plt, mr, 'soc', mr, 'vb_f', color='black', linestyle='-', label='vb_f')
     plt.plot(mv.time, mv.vb, color='cyan', linestyle='--', label='vb_ver')
     plq(plt, smv, 'time', smv, 'vb_s', color='orange', linestyle='-.', label='vb_s_ver')
@@ -480,7 +509,7 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plq(plt, mr, 'time', mr, 'voc', linestyle='-', color='blue', label='voc'+run_str)
     plq(plt, mr, 'time', mr, 'voc_f', linestyle='-', color='blue', label='voc_f'+run_str)
     plt.plot(mv.time, mv.voc, linestyle='--', color='cyan', label='voc'+ver_str)
-    plq(plt, mr, 'time', mr, 'voc_stat', linestyle='-', color='orange', label='voc_stat'+run_str)
+    plq(plt, mr, 'time', mr, 'voc_stat', linestyle='-', color='orange', label='voc_stat_f'+run_str)
     plq(plt, mr, 'time', mr, 'voc_stat_f', linestyle='-', color='orange', label='voc_stat_f'+run_str)
     plq(plt, smv, 'time', smv, 'voc_stat_s', linestyle=':', color='red', label='voc_stat_s'+ver_str)
     plq(plt, sv, 'time', smv, 'vb_s', linestyle='--', color='pink', label='vb_s'+ver_str)
@@ -492,18 +521,18 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plt.xlabel('sec')
     plt.legend(loc=2)
     plt.subplot(336)
-    plq(plt, mr, 'time', mr, 'vb', linestyle='-', color='blue', label='vb'+run_str)
+    plq(plt, mr, 'time', mr, 'vb', linestyle='-', color='blue', label='vb_f'+run_str)
     plq(plt, mr, 'time', mr, 'vb_f', linestyle='-', color='blue', label='vb_f'+run_str)
-    plt.plot(mv.soc, mv.vb, color='cyan', linestyle='--', label='vb'+ver_str)
+    plt.plot(mv.soc, mv.vb, color='cyan', linestyle='--', label='vb_f'+ver_str)
     plq(plt, smv, 'soc_s', smv, 'vb_s', color='magenta', linestyle=':', label='vb_s'+ver_str)
-    plq(plt, mr, 'time', mr, 'voc_stat', linestyle='-', color='orange', label='voc_stat'+run_str)
+    plq(plt, mr, 'time', mr, 'voc_stat', linestyle='-', color='orange', label='voc_stat_f'+run_str)
     plq(plt, mr, 'time', mr, 'voc_stat_f', linestyle='-', color='orange', label='voc_stat_f'+run_str)
     plt.xlabel('state-of-charge')
     plt.legend(loc=2)
     plt.subplot(337)
-    plq(plt, mr, 'time', mr, 'vb', linestyle='-', color='blue', label='vb'+run_str)
+    plq(plt, mr, 'time', mr, 'vb', linestyle='-', color='blue', label='vb_f'+run_str)
     plq(plt, mr, 'time', mr, 'vb_f', linestyle='-', color='blue', label='vb_f'+run_str)
-    plt.plot(mv.time, mv.vb, color='cyan', linestyle='--', label='vb'+ver_str)
+    plt.plot(mv.time, mv.vb, color='cyan', linestyle='--', label='vb_f'+ver_str)
     plq(plt, smv, 'time', smv, 'vb_s', color='magenta', linestyle=':', label='vb_s'+ver_str)
     plt.xlabel('sec')
     plt.legend(loc=2)
@@ -526,7 +555,7 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     return fig_list, fig_files
 
 
-def calc_fault(d_ra, d_mod):
+def calc_fault(d_ra, d_mod, Battery=None):
     falw = d_ra.falw.astype(int)
     fltw = d_ra.fltw.astype(int)
     dscn_fa = np.bool_(falw & 2 ** 10)
@@ -603,6 +632,7 @@ def bandaid(h):
     bms_off_s = h['bms_off'].copy()
     sat_s = h['sat'].copy()
     chm_s = h['chm_s'].copy()
+    dt_s = h['dt'].copy()
     sel = np.zeros(len(h.time_ux))
     preserving = np.ones(len(h.time_ux))
     mon_run = rf.rec_append_fields(h, 'res', res)
@@ -626,6 +656,7 @@ def bandaid(h):
     mon_run = rf.rec_append_fields(mon_run, 'y_ekf', sel)
     sim_run = np.array(np.zeros(len(h.time), dtype=[('time', '<f8')])).view(np.recarray)
     sim_run.time = mon_run.time.copy()
+    sim_run = rf.rec_append_fields(sim_run, 'dt_s', dt_s)
     sim_run = rf.rec_append_fields(sim_run, 'chm_s', chm_s)
     sim_run = rf.rec_append_fields(sim_run, 'sat_s', sat_s)
     sim_run = rf.rec_append_fields(sim_run, 'ib_in_s', ib_in_s)
@@ -868,10 +899,10 @@ def add_qcrs(hist, mon_t_=False, mon=None, qcrs=None, t_rated=None, dqdt=None):
 
 
 def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=False, unit_key=None, sync_time=None,
-                       dt_resample=10, Tb_force=None):
+                       dt_resample=10, Tb_force=None, skip=1, v1_only=False):
     """Load history, reconstruct samples by linear interpolation and normalize all soc and Tb to 20C"""
 
-    print(f"\nload_hist_and_prep:\n{data_file=}\n{data_only=}\n{mon_t=}\n{unit_key=}\n{dt_resample=}\n{Tb_force=}\n")
+    print(f"\nload_hist_and_prep:\n{data_file=}\n{data_only=}\n{mon_t=}\n{unit_key=}\n{dt_resample=}\n{Tb_force=}\n{skip=}\n")
 
     # Save these
     rated_batt_cap_in = 100.
@@ -919,6 +950,17 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
         # tkinter.messagebox.showwarning(message="CompareHistSim:  Data missing.  See monitor window for info.")
         # return None, None, None, None, None
 
+    # Load battery (ref)
+    battery_hdr = "Battery_hdr"
+    battery_val = "Battery_val"
+    battery_file_clean = write_clean_file(data_file, type_='_battery', hdr_key=battery_hdr,
+                                          unit_key=battery_val, skip=skip)
+    if battery_file_clean and not v1_only:
+        battery_raw = np.genfromtxt(battery_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+    else:
+        battery_raw = None
+        print(f"load_hist_and_prep: returning battery_raw=None")
+
     # Save files
     filename = None
     if temp_flt_file_clean is not None:
@@ -929,7 +971,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
     elif temp_sum_file_clean is not None:
         filename = os.path.split(temp_sum_file_clean)[1].replace('.csv', '_') + os.path.split(__file__)[1].split('.')[0]
 
-    # Load configuration
+    # Load Battery
     unit = None
     t_rated = None
     dqdt = None
@@ -956,6 +998,10 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
     qcrs = rated_batt_cap_in * 3600.
     batt = BatteryMonitor(mod_code=chm)
 
+    # Override Battery with loaded values Battery_hdr/Battery_val in battery_raw
+    Battery_off_dict = load_off_nominal_battery(Battery_to_add=battery_raw)
+    batt = translate_battery(Battery=batt, Battery_off_dict=Battery_off_dict)
+
     # Force Tb.  This is useful for verifying calibration runs where voc(soc) schedule extracted from the run
     # with slightly varying Tb but assumed constant when making new schedule
     if Tb_force is not None:
@@ -976,7 +1022,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
 
             # noinspection PyTypeChecker
             fault = add_stuff_f(f_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
-                                time_sync=sync_time, unit=unit)
+                                time_sync=sync_time, unit=unit, Battery=Battery)
             print("\nfault after add_stuff_f:\n", fault.dtype.names, fault, "\n")
             fault = filter_Tb(fault, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap_in)  # tb_band=100 disables banding
         else:
@@ -993,7 +1039,8 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
         h_combo_raw = remove_0T(h_combo_raw, 'HISTORY u and h in h_combo_raw')
         print("\nhist raw:\n", h_combo_raw.dtype.names, "\n", h_combo_raw, "\n", h_combo_raw.dtype.names, "\n")
         # noinspection PyTypeChecker
-        hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in, time_sync=sync_time)
+        hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
+                           time_sync=sync_time, Battery=Battery)
         hist = add_mod(hist, mon_t, mon)
         hist = add_chm(hist, mon_t, mon, chm)
         hist = add_qcrs(hist, mon_t_=mon_t, mon=mon, qcrs=qcrs, t_rated=t_rated, dqdt=dqdt)
@@ -1029,7 +1076,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
             # Hand fix oddities
             mon, sim = bandaid(h_20C_resamp)
 
-        return mon, sim, unit, fault, hist_20C, filename
+        return mon, sim, unit, fault, hist_20C, filename, Battery
 
 
 def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=False, unit_key=None, sync_time=None,
@@ -1053,7 +1100,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
     use_sat_mon_in = True
 
     # Load history, normalizing all soc and Tb to 20C
-    mon_run, sim_run, unit, fault, hist_20C, filename = \
+    mon_run, sim_run, unit, fault, hist_20C, filename, Battery = \
         load_hist_and_prep(data_file=data_file, time_end_in=time_end_in, data_only=data_only, mon_t=mon_t,
                            unit_key=unit_key, sync_time=sync_time, dt_resample=dt_resample, Tb_force=Tb_force)
 
@@ -1072,7 +1119,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
                                        use_mon_soc=use_mon_soc_in, add_voc_mon=dvoc_mon_in, add_voc_sim=dvoc_sim_in,
                                        unit=unit, use_ib_mon=True, request_history=request_history, mod_force=0,
                                        use_sat_mon=use_sat_mon_in)
-        mon_ver, sim_ver, sim_s_ver, mon_r, sim_r = replicate(replicateOptions)
+        mon_ver, sim_ver, sim_s_ver, mon_r, sim_r, battery = replicate(replicateOptions)
         save_clean_file(mon_ver, mon_file_save, 'mon_rep_hist' + date_)
 
     # Plots
@@ -1120,20 +1167,30 @@ def main():
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251107pm_soc4p2_hi_lo_bb.csv'
+    # data_file = gdrive + 'GitHubArchive/SOC_Particle/dataReduction/g20250612a/vv4H 20251107pm_soc4p2_hi_lo_bb.csv'
+    # plots=True
+    # # plots = False
+    # unit_key = 'g20250612a_soc4p2_hi_lo_bb'
+    # # dt_resample = 900
+    # dt_resample = 1
+    # Tb_force = None
+    # # Do this when running compare_hist_sim on run that schedule extracted assuming constant Tb
+    # # Tb_force = 35
+    # request_history = 5  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
+
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/soc4p2_reflash20260109_soc4p2_hi_lo_bb.csv'
+    data_only = False
+    mon_t = False
+    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
+    dt_resample = 900
+    Tb_force = None
+    request_history = None
+
     plots=True
     # plots = False
-    mon_t = False
-    unit_key = 'g20250612a_soc4p2_hi_lo_bb'
-    # dt_resample = 900
-    dt_resample = 1
-    Tb_force = None
-    # Do this when running compare_hist_sim on run that schedule extracted assuming constant Tb
-    # Tb_force = 35
-    request_hist_in = 5  # 1=ekf 2=soc 3=soc_s 4=temp 5=volt
 
-    compare_hist_sim(data_file=data_file, mon_t=mon_t, unit_key=unit_key, dt_resample=dt_resample,
-                     data_only=not plots, Tb_force=Tb_force, request_history=request_hist_in)
+    compare_hist_sim(data_file=data_file, mon_t=False, unit_key=unit_key, dt_resample=dt_resample,
+                     data_only=not plots, Tb_force=Tb_force, request_history=request_history)
 
 
 if __name__ == '__main__':

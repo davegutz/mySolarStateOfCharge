@@ -684,10 +684,11 @@ class DeviceConstants:
 
 class SavedData:
     def __init__(self, battery=None, rap=None, sel=None, ekf=None, temp=None, shunt=None,
-                 time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None, init_time_in=None):
+                 time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None, init_time_in=None, time_shift_in=None):
         i_end = 0
         n = None
         ib_lag = None
+        self.time_shift = time_shift_in
 
         # Load off-nominal Battery values
         if battery is not None:
@@ -803,6 +804,7 @@ class SavedData:
                 except IOError:
                     self.zero_end = 0
             self.time_run = self.time[self.zero_end]
+            print(f" SavedData:  zero_end {self.zero_end}  time_run {self.time_run} time_shift{self.time_shift}")
             self.time -= self.time_run
             self.time_min = self.time / 60.
             self.time_day = self.time / 3600. / 24.
@@ -844,6 +846,8 @@ class SavedData:
             self.cTime = self.cTime[:i_end]
             self.dt = np.array(rap.dt[:i_end])
             self.time = np.array(self.time[:i_end])
+            if self.time_shift:
+                self.time += self.time_shift
             self.reset = np.array(rap.reset[:i_end])
             self.reset_all_faults = np.array(rap.reset_all_faults[:i_end])
             self.reset_temp = np.array(rap.reset_temp[:i_end])
@@ -1402,14 +1406,16 @@ class SavedData:
         if self.time_t is None:
             self.time_t = np.copy(self.dt)
 
-            # Initialization time logic
-        if self.time[0] == 0.:  # no initialization flat detected at beginning of recording
-            self.init_time = 1.
+        # Initialization time logic
+        if init_time_in:
+            self.init_time = init_time_in
         else:
-            if init_time_in:
-                self.init_time = init_time_in
+            if self.time[0] == 0.:  # no initialization flat detected at beginning of recording
+                self.init_time = 1.
             else:
                 self.init_time = -4.
+        print(f"\nSavedData: time[0]={self.time[0]}  init_time={self.init_time}\n")
+
         for i in range(n):
             if self.time[i] <= self.init_time:
                 lag_reset = True

@@ -110,6 +110,7 @@ class Battery(Coulombs):
     WRAP_LO_AMP = -4.  # Wrap high voltage threshold amplified, A (-4)
     WRAP_HI_NOA = 32  # Wrap high voltage threshold non-amplified, A(32)
     WRAP_LO_NOA = -40.  # Wrap high voltage threshold non-amplified, A (-40)
+    HDWE_IB_HI_LO = 1.  # Type of selection logic philosophy. Only True is implemented and debugged now
     HDWE_IB_HI_LO_NOA_LO = -11. # Fully NOA unit discharge transition, A (-11, soc4p2)
     HDWE_IB_HI_LO_AMP_LO = -10. # Fully NOA unit discharge transition, A (-10, soc4p2)
     HDWE_IB_HI_LO_AMP_HI = 10.  # Fully NOA unit charge transition, A (10, soc4p2)
@@ -141,9 +142,9 @@ class Battery(Coulombs):
     CURR_SCALE_DISCH = 1.  # scale factor for strength of discharging compared to baseling charging
     # KF_Q_STD = 0.015  # Shunt KF process uncertainty
     # KF_R_STD = 0.001  # Shunt KF state uncertainty
-    KF_Q_STD = None  # Shunt KF process uncertainty
-    KF_R_STD = None  # Shunt KF state uncertainty
-    dc_dc_on = False  # Truck charging
+    KF_Q_STD = 0.0003  # Shunt KF process uncertainty
+    KF_R_STD = 0.1000  # Shunt KF state uncertainty
+    dc_dc_on = 0.  # Truck charging
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents

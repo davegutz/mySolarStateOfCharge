@@ -86,7 +86,7 @@ def add_ib_lag(data, mon):
 
 
 # Add schedule lookups and do some rack and stack
-def add_stuff(d_ra, mon, ib_band=0.5):
+def add_stuff(d_ra, mon, ib_band=0.5, Battery=None):
     voc_soc = []
     soc_min = []
     vsat = []
@@ -114,7 +114,7 @@ def add_stuff(d_ra, mon, ib_band=0.5):
     if hasattr(d_mod, 'voc_dyn'):
         voc = d_mod.voc_dyn.copy()
         d_mod = rf.rec_append_fields(d_mod, 'voc', np.array(voc, dtype=float))
-    d_mod = calc_fault(d_ra, d_mod)
+    d_mod = calc_fault(d_ra, d_mod, Battery)
     voc_stat_chg = np.copy(d_mod.voc_stat)
     voc_stat_dis = np.copy(d_mod.voc_stat)
     for i in range(len(voc_stat_chg)):
@@ -155,7 +155,7 @@ def add_stuff(d_ra, mon, ib_band=0.5):
 
 
 # Add schedule lookups and do some rack and stack
-def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=None, unit=None):
+def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=None, unit=None, Battery=None):
     voc_soc = []
     soc_min = []
     vsat = []
@@ -250,7 +250,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     d_mod = rf.rec_append_fields(d_mod, 'dv_dyn_f', np.array(dv_dyn_f, dtype=float))
     d_mod = add_ib_lag(d_mod, mon)
     d_mod = add_ib(d_mod, mon)
-    d_mod = calc_fault(d_ra, d_mod)
+    d_mod = calc_fault(d_ra, d_mod, Battery)
     voc_stat_chg = np.copy(d_mod.voc_stat_f)
     voc_stat_dis = np.copy(d_mod.voc_stat_f)
     for i in range(len(voc_stat_chg)):
@@ -302,6 +302,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     d_mod = rf.rec_append_fields(d_mod, 'P', np.array(P, dtype=float))
     z = d_mod.voc_stat_f.copy()
     d_mod = rf.rec_append_fields(d_mod, 'z', np.array(z, dtype=float))
+    # disable_amp_fault_per = d_mod.
 
     return d_mod
 
@@ -786,7 +787,7 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     return fig_list, fig_files
 
 
-def calc_fault(d_ra, d_mod):
+def calc_fault(d_ra, d_mod, Battery=None):
     falw = d_ra.falw.astype(int)
     fltw = d_ra.fltw.astype(int)
     dscn_fa = np.bool_(falw & 2 ** 10)
@@ -808,6 +809,24 @@ def calc_fault(d_ra, d_mod):
     vb_fa = np.bool_(falw & 2 ** 1)
     tb_fa = np.bool_(falw & 2 ** 0)
     e_wrap = d_mod.voc_soc - d_mod.voc_f
+    if Battery.HDWE_IB_HI_LO > 0:
+        ib_amp_hi_ = d_ra.ibmh_f >= Battery.HDWE_IB_HI_LO_AMP_HI / Battery.NP
+        ib_amp_lo_ = d_ra.ibmh_f <= Battery.HDWE_IB_HI_LO_AMP_LO / Battery.NP
+        ib_noa_hi_ = d_ra.ibnh_f >= Battery.HDWE_IB_HI_LO_AMP_HI / Battery.NP
+        ib_noa_lo_ = d_ra.ibnh_f <= Battery.HDWE_IB_HI_LO_AMP_LO / Battery.NP
+        ib_lo_active_ = np.bool_(Battery.HDWE_IB_HI_LO_AMP_LO / Battery.NP < d_ra.ibnh_f)
+        temp = np.bool_(d_ra.ibnh_f < Battery.HDWE_IB_HI_LO_AMP_HI / Battery.NP)
+        ib_lo_active_ = ib_lo_active_ & temp
+    else:
+        ib_amp_hi_ = False
+        ib_amp_lo_ = False
+        ib_noa_hi_ = False
+        ib_noa_lo_ = False
+        ib_lo_active_ = False
+    disable_amp_fault_per_ = disable_amp_fault_ = (ib_amp_hi_ & ib_noa_hi_) | (ib_amp_lo_ & ib_noa_lo_)
+    d_mod = rf.rec_append_fields(d_mod, 'disable_amp_fault_per', np.array(disable_amp_fault_per_, dtype=bool))
+
+
     d_mod = rf.rec_append_fields(d_mod, 'e_wrap', np.array(e_wrap, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'dscn_fa', np.array(dscn_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_diff_fa', np.array(ib_diff_fa, dtype=float))
