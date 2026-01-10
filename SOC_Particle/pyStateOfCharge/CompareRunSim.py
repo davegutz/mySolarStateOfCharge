@@ -46,7 +46,8 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
 def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=False,
-                    verbose=True, scale_in=1., slr_hys_sim=1., request_history=5, Battery=None):
+                    verbose=True, scale_in=1., slr_hys_sim=1., request_history=5, Battery=None, init_time_in=None,
+                    time_shift_in=None):
 
     if data_file.count('soc4p2_hi_lo'):
        IB_CHARGE_NOA = True
@@ -54,14 +55,13 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
         IB_CHARGE_NOA = False
 
     print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n \
-{IB_CHARGE_NOA=}\n{verbose=}\n{scale_in=}\n{slr_hys_sim=}\n{request_history=}\n")
+{IB_CHARGE_NOA=}\n{verbose=}\n{scale_in=}\n{slr_hys_sim=}\n{request_history=}\n{init_time_in=}\n{time_shift_in=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
 
     # Transient  inputs
     zero_zero_in = False
-    # init_time_in = None
     use_vb_sim_in = False
     use_ib_mon_in = False
     tune_in = False
@@ -91,7 +91,8 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
 
     # # Load mon v4 (old)
     mon_run, sim_run, f, data_file_clean, temp_flt_file_clean, _ = \
-        load_data(data_file, 1, unit_key, zero_zero_in, time_end_in, legacy=legacy_in)
+        load_data(data_file, 1, unit_key, zero_zero_in, time_end_in, legacy=legacy_in, init_time_in=init_time_in,
+                  time_shift_in=time_shift_in)
 
     # How to initialize
     if mon_run is None:
@@ -169,6 +170,8 @@ def main():
     scale_in = 1.0
     slr_hys_sim = 1.0
     request_history = 3
+    init_time_in  = None  # that logic doesn't work yet
+    time_shift_in = None
 
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewamps_soc2p2_hi_lo_bb.csv' # problems with Vb=0 icharge=0
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsXm2_soc2p2_hi_lo_bb.csv'  # problems with sat
@@ -179,7 +182,10 @@ def main():
     # Rf, vv4,
     # Rk,
     # vv0,
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_bb.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_bb - Copy with bug 20260107.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFailFf_soc2p2_hi_lo_bb.csv'
+
 
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 
@@ -194,6 +200,8 @@ def main():
     time_end_in = None
     # time_end_in = 78.
     #
+    time_shift_in = None
+    # time_shift_in = -1.811
     #
     s_hys_sim_in = 1.
     # s_hys_sim_in = 0.
@@ -203,7 +211,7 @@ def main():
 
     # RunSim plot selection
     # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m  8=vb_wrap
-    request_hist_in = 8
+    request_hist_in = 5
     # request_hist_in = None
 
     # # mon_soc_in = False # old runsim work ******************
@@ -215,7 +223,7 @@ def main():
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=use_mon_soc_, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
-                    request_history=request_hist_in)
+                    request_history=request_hist_in, init_time_in=init_time_in, time_shift_in=time_shift_in)
 
 
 # import cProfile
