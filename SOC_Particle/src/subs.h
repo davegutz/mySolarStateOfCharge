@@ -116,7 +116,7 @@ void sample_burst(Pins *myPins, Sensors *SenS);
 void harvest_temp_change(const double tb_f, BatteryMonitor *Mon, BatterySim *Sim, const float rate, const float dt);
 void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const boolean use_soc_in);
 void load_ib_vb(const boolean reset, const boolean reset_temp, const boolean reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon);
-void monitor(const boolean reset, const boolean reset_temp, const unsigned long long now,
+void monitor(const boolean reset, const boolean reset_temp,  const boolean reset_ekf, const unsigned long long now,
   TFDelay *Is_sat_delay, BatteryMonitor *Mon, Sensors *Sen);
 void oled_display(Adafruit_SSD1306 *display, Sensors *Sen, BatteryMonitor *Mon);
 void oled_display(Sensors *Sen, BatteryMonitor *Mon);

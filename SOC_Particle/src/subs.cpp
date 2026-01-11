@@ -201,19 +201,19 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
 
   // Call calculate/count_coulombs twice because sat_ is a used-before-calculated (UBC)
   // Simple 'call twice' method because sat_ is discrete not analog which would require iteration
-  Mon->calculate(Sen, true);
+  Mon->calculate(Sen, true, true);
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.calc1:  "); debug_m1(Mon, Sen);}
   #endif
-  Mon->count_coulombs(Sen, true, 0., Mon->is_sat(true), 0.);
+  Mon->count_coulombs(Sen, true, 0., Mon->is_sat(true));
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.c_c1:  "); debug_m1(Mon, Sen);}
   #endif
-  Mon->calculate(Sen, true);  // Call again because sat is a UBC
+  Mon->calculate(Sen, true, true);  // Call again because sat is a UBC
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.calc2:  "); debug_m1(Mon, Sen);}
   #endif
-  Mon->count_coulombs(Sen, true, 0., Mon->is_sat(true), 0.);
+  Mon->count_coulombs(Sen, true, 0., Mon->is_sat(true));
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.c_c2:  "); debug_m1(Mon, Sen);}
   #endif
@@ -258,11 +258,11 @@ void load_ib_vb(const boolean reset, const boolean reset_temp, const boolean res
 // Inputs:  sp.mon_chm, Sen->Ib, Sen->Vb, Sen->Tb_f
 // States:  Mon.soc, Mon.soc_ekf
 // Outputs: tcharge_wt, tcharge_ekf, Voc, Voc_filt
-void  monitor(const boolean reset, const boolean reset_temp, const unsigned long long now,
+void  monitor(const boolean reset, const boolean reset_temp, const boolean reset_ekf, const unsigned long long now,
   TFDelay *Is_sat_delay, BatteryMonitor *Mon, Sensors *Sen)
 {
   // EKF - calculates tb_f_, voc_stat_, voc_ as functions of sensed parameters vb & ib (not soc)
-  Mon->calculate(Sen, reset_temp);
+  Mon->calculate(Sen, reset_temp, reset_ekf);
 
   // Debounce saturation calculation done in ekf using voc model
   boolean sat = Mon->is_sat(reset);
@@ -270,7 +270,7 @@ void  monitor(const boolean reset, const boolean reset_temp, const unsigned long
 
   // Memory store
   // Initialize to ekf when not saturated
-  Mon->count_coulombs(Sen, reset_temp, Mon->ib_charge(), Sen->saturated, Mon->delta_q_ekf());
+  Mon->count_coulombs(Sen, reset_temp, Mon->ib_charge(), Sen->saturated);
 
   // Charge charge time for display
   Mon->calc_charge_time(Mon->q(), Mon->q_capacity(), Sen->ib(), Mon->soc());

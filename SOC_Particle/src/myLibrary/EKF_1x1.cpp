@@ -105,8 +105,8 @@ void EKF_1x1::update_ekf(const double z, double x_min, double x_max)
   P_post_ = P_;
 
   if ( sp.debug()==35 )
-    sendTxBuf(String::format("EKF_1x1::update_ekf, u_,freeze_,z_,hx_,x_Prior_,x_,P_prior_,P_,H_,S_,K_,y_,  %7.4f, %d, %7.4f, %7.4f,%13.10f,%13.10f,%13.10f, %13.10f, %7.4f, %7.4f,%10.7f, %7.4f,\n",
-      u_, freeze_, z_, hx_, x_prior_, x_, P_, P_prior_, H_, S_, K_, y_), true, true);
+    sendTxBuf(String::format("tbf u freeze z hx: %8.4f%8.4f%2d%8.4f%8.4f,   xp x P Pp:  %13.10f%13.10f%13.10f%13.10f,  H S K y:  %11.6f%7.4f%7.4f%11.7f,\n",
+      Tb_f_for_hx_, u_, freeze_, z_, hx_,        x_prior_, x_, P_, P_prior_,      H_, S_, K_, y_), true, true);
 
 }
 

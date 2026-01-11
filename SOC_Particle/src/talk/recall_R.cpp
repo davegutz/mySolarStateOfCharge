@@ -45,6 +45,11 @@ boolean recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             Mon->init_battery_mon(true, Sen);       // Reset mon battery state
             break;
 
+        case ( 'e' ):  // Re:  Reset EKF
+            Serial.printf("Reset Extended Kalman filter\n");
+            cp.ekf_reset = true;
+            break;
+
         case ( 'f' ):  // Rf:  Reset fault Rf
             Serial.printf("Reset latches\n");
             Sen->Flt->reset_all_faults(true);

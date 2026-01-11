@@ -180,8 +180,8 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
         count_since_last_header += 1
     if mon.reset:
         print(Colors.fg.red, end='')
-    elif mon.reset_temp:
-        print(Colors.fg.orange, end='')
+    # elif mon.reset_temp:
+    #     print(Colors.fg.orange, end='')
     elif mon.reset_ekf:
         print(Colors.fg.lightblue, end='')
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),

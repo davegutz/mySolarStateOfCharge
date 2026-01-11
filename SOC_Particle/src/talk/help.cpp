@@ -146,9 +146,10 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sendTxBuf("\nR<?>   Reset\n", true, true);
   sendTxBuf("  Ca=<val> ", true, true); sendTxBuf("initialize_all to present inputs\n", true, true);
   sendTxBuf("  Rb= ", true, true); sendTxBuf("batteries to present inputs\n", true, true);
+  sendTxBuf("  Re= ", true, true); sendTxBuf("Extended Kalman Filter in battery\n", true, true);
   sendTxBuf("  Rf= ", true, true); sendTxBuf("fault logic latches\n", true, true);
   sendTxBuf("  Ri= ", true, true); sendTxBuf("infinite counter\n", true, true);
-  sendTxBuf("  Rk= ", true, true); sendTxBuf("kalman filters in shunt\n", true, true);
+  sendTxBuf("  Rk= ", true, true); sendTxBuf("kalman Filters in shunt\n", true, true);
   sendTxBuf("  Rr= ", true, true); sendTxBuf("saturate Mon and equalize Sim & Mon\n", true, true);
   sendTxBuf("  RR= ", true, true); sendTxBuf("DEPLOY\n", true, true);
   sendTxBuf("  Rs= ", true, true); sendTxBuf("small.  Reinitialize filters\n", true, true);

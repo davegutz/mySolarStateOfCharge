@@ -21,9 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
-#ifndef EKF_1X1_H_
-#define EKF_1X1_H_
+#pragma once
 
 class BatteryMonitor;
 
@@ -79,5 +77,3 @@ protected:
 };
 
 // Methods
-
-#endif

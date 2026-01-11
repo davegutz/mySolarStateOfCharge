@@ -272,6 +272,7 @@ void loop()
   unsigned long long elapsed = 0;
   unsigned long long elapsed_reset = 0;
   static boolean reset = true;
+  static boolean reset_ekf = true;
   static boolean reset_kf = true;
   static boolean reset_temp = true;
   static boolean reset_publish = true;
@@ -338,6 +339,7 @@ void loop()
         reset_temp, Sen->Sim->tb_f(), Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate), true, true);
     Log.info("ino:  print_temp_serial");
     print_temp_serial(reset_temp, Sen);
+    Serial.printf("reset_temp Tb_model Tb_model_filt tb_f %8.4f%8.4f%8.4f\n", Sen->Tb_model, Sen->Tb_model_filt, Sen->Sim->tb_f());
   }
 
   // Sample Ib
@@ -384,7 +386,7 @@ void loop()
     // Inputs:  sp.mon_chm, Sen->Ib, Sen->Vb, Sen->Tb_f
     // States:  Mon.soc
     // Outputs: tcharge_wt, tcharge_ekf
-    monitor(reset, reset_temp, now, Is_sat_delay, Mon, Sen);
+    monitor(reset, reset_temp, reset_ekf, now, Is_sat_delay, Mon, Sen);
 
     // Re-init Coulomb Counter to EKF if it is different than EKF or if never saturated
     Mon->regauge(Sen->Tb_f);
@@ -462,7 +464,7 @@ void loop()
   // Initialize complete once sensors and models started and summary written
   if ( read )
   {
-    reset = reset_kf = cp.kf_reset_print = false;
+    reset = reset_ekf = reset_kf = cp.ekf_reset_print = cp.kf_reset_print = false;
     if ( reset_temp ) sendTxBuf("*", true, true);
   }
   if ( read_temp && elapsed_reset>ap.temp_delay && reset_temp )
@@ -482,14 +484,9 @@ void loop()
     start_reset = System.millis();
     if ( cp.soft_reset_sim ) cp.cmd_soft_sim_hold();
   }
-  if ( cp.kf_reset )
-  {
-    cp.kf_reset_print = true;
-    reset_kf = true;
-  }
-  cp.soft_reset = false;
-  cp.soft_reset_sim = false;
-  cp.kf_reset = false;
+  if ( cp.ekf_reset ) cp.ekf_reset_print = reset_ekf = true;
+  if ( cp.kf_reset ) cp.kf_reset_print = reset_kf = true;
+  cp.soft_reset = cp.soft_reset_sim = cp.ekf_reset = cp.kf_reset = false;
   Log.info("ino:  end loop\n\n\n");
 
 } // loop

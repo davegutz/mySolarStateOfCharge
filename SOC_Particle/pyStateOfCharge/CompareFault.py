@@ -155,7 +155,7 @@ def add_stuff(d_ra, mon, ib_band=0.5, Battery=None):
 
 
 # Add schedule lookups and do some rack and stack
-def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=None, unit=None, Battery=None):
+def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=None, unit=None):
     voc_soc = []
     soc_min = []
     vsat = []

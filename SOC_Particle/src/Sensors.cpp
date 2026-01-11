@@ -1367,6 +1367,7 @@ void Sensors::select_temp(BatteryMonitor *Mon)
       Tb_f = RATED_TEMP + ap.Tb_bias_model;  // Simplifying assumption that Tb_f perfectly quiet - so don't have to make model of filter
       Tb_f_rate = 0.;
     }
+    Serial.printf("select_temp tb_fa Tb %2d%8.4f\n", Flt->tb_fa(), Tb);
     if ( sp.debug()==16) Serial.printf("Tb_noise %9.5f Tb%9.5f Tb_f%9.5f Tb_f%9.5f tb_fa %d\n", Tb_noise(), Tb, Tb_f, Tb_f, Flt->tb_fa());
   }
   else

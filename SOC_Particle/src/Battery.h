@@ -178,7 +178,7 @@ public:
   float amp_hrs_remaining_soc() { return amp_hrs_remaining_soc_; };
   float calc_charge_time(const double q, const float q_capacity, const float charge_curr, const float soc);
   virtual float calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc);
-  float calculate(Sensors *Sen, const boolean reset);
+  float calculate(Sensors *Sen, const boolean reset,  const boolean reset_ekf);
   boolean converged_ekf() { return EKF_converged->state(); };
   double delta_q_ekf() { return delta_q_ekf_; };
   float hx() { return hx_; };

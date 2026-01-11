@@ -217,7 +217,7 @@ BatteryMonitor::~BatteryMonitor() {}
         -
         gnd
 */ 
-float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
+float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const boolean reset_ekf)
 {
     // Inputs
     tb_f_ = Sen->Tb_f;
@@ -279,7 +279,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
 //      ib_dyn, bms_off_, voltage_low_, bms_charging_, Sen->Flt->vb_fa(), sp.tweak_test(), vb_, voc_stat_f_, voc_soc_, voc_, voc_dead_, dvdyn);
 
     // EKF 1x1
-    if ( eframe_ == 0 )
+    if ( eframe_ == 0 || reset_ekf )
     {
         static unsigned long long ekf_now_past = Sen->now;
         float ddq_dt = ib_charge_ekf;
@@ -292,25 +292,30 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp)
         voc_stat_f_ = VocStatFilt->calculate(voc_stat_, reset_temp, ap.voc_stat_filt, dt_ekf_);
 
         // ddq_dt -= chem_.dqdt * q_capacity_ * T_rate;  // noisy
-        predict_ekf(ddq_dt, freeze);       // u = d(dq)/dt
-        update_ekf(voc_stat_f_, 0., 1.);  // z = _f, estimated = voc_filtered = hx, predicted = est past
-        soc_ekf_ = x_ekf();             // x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
+        if ( reset_ekf || reset_temp )
+            solve_ekf(reset_ekf, reset_temp, Sen);
+        else
+        {
+            predict_ekf(ddq_dt, freeze);  // u = d(dq)/dt
+            update_ekf(voc_stat_f_, 0., 1.);  // z = _f, estimated = voc_filtered = hx, predicted = est past
+        }
+        soc_ekf_ = x_ekf();  // x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
         q_ekf_ = soc_ekf_ * q_capacity_;
         delta_q_ekf_ = q_ekf_ - q_capacity_;
         y_filt_ = y_filt->calculate(y_, reset_temp, min(dt_ekf_, EKF_T_RESET));
         // EKF convergence.  Audio industry found that detection of quietness requires no more than
         // second order filter of the signal.   Anything more is 'gilding the lily'
-        boolean conv = abs(y_filt_)<ap.ekf_conv && !cp.soft_reset;  // Initialize false
-        EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_ekf_, EKF_T_RESET), cp.soft_reset);
-
+        boolean conv = abs(y_filt_)<ap.ekf_conv && !cp.soft_reset && !cp.ekf_reset;  // Initialize false
+        EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_ekf_, EKF_T_RESET), cp.soft_reset || cp.ekf_reset);
+        
         if ( sp.debug()==37 )
-            sendTxBuf(String::format("BatteryMonitor, ib,vb,voc, voc_stat_f(z_),  hx_,H_,K_,y_,P_,soc,soc_ekf,y_ekf_f,conv,  %7.3f,%7.3f,%7.3f,%7.3f,      %7.4f, %7.4f,%10.7f, %7.4f,%11.8f,%7.4f,%7.4f,%7.4f,  %d,\n",
-                ib_, vb_, voc_, voc_stat_f_,     hx_, H_, K_, y_, P_, soc_, soc_ekf_, y_filt_, converged_ekf()), true, true);
+            sendTxBuf(String::format("res tbf ib vb voc_stat:%d %8.4f%8.4f%8.4f%8.4f   z hx: %8.4f%8.4f,   H S K y:%11.6f%7.4f%7.4f%11.7f,   soc soc_ekf y_ekf_f:%11.8f%11.8f%11.7f,  conv:%d,\n",
+                reset_ekf, Tb_f_for_hx_, ib_, vb_, voc_stat_,      voc_stat_f_, voc_stat_f_, hx_,       H_, S_, K_, y_,     soc_, soc_ekf_, y_filt_,    converged_ekf()), true, true);
 
-    if ( sp.debug()==3 || sp.debug()==4 ) EKF_1x1::print_ekf_serial(this);  // print EKF in Read frame
+        if ( sp.debug()==3 || sp.debug()==4 ) EKF_1x1::print_ekf_serial(this);  // print EKF in Read frame
     }
     eframe_++;
-    if ( reset_temp || cp.soft_reset || eframe_ >= ap.eframe_mult ) eframe_ = 0;  // '>=' allows changing ap.eframe_mult on the fly
+    if ( reset_temp || reset_ekf || cp.soft_reset || eframe_ >= ap.eframe_mult ) eframe_ = 0;  // '>=' allows changing ap.eframe_mult on the fly
 
     // Deadband filter
     voc_dead_ = SdVb_->update(voc_);   // used for saturation test
@@ -518,6 +523,8 @@ float BatteryMonitor::r_ss () { return chem_.r_ss * ap.slr_res; };
 */
 boolean BatteryMonitor::solve_ekf(const boolean reset, const boolean reset_temp, Sensors *Sen)
 {
+    if ( !reset && !reset_temp ) return false;
+
     // Average dynamic inputs through the initialization period before apply EKF
     static double Tb_avg = Sen->Tb_f;
     static float Vb_avg = Sen->Vb;
@@ -543,7 +550,7 @@ boolean BatteryMonitor::solve_ekf(const boolean reset, const boolean reset_temp,
         Vb_avg = Sen->Vb;
         Ib_avg = Sen->Ib;
         n_avg = 0;
-        return ( true );
+        // return ( true );  //  why is this here?
     }
 
     // Solver
@@ -556,9 +563,10 @@ boolean BatteryMonitor::solve_ekf(const boolean reset, const boolean reset_temp,
         ice_->increment();
         soc_solved = ice_->x();
         voc_solved = calc_soc_voc(soc_solved, Tb_avg, &dv_dsoc);
-        ice_->e(voc_solved - voc_stat_);
+        ice_->e(voc_solved - voc_stat_f_);
         ice_->iterate(sp.debug()==-1 && reset_temp, SOLV_SUCC_COUNTS, false);
     }
+    Serial.printf("cnt tb_avg soc_solved voc_stat voc_solved%2d%8.4f%11.7f%13.9f%13.9f ice_->e %13.9f \n", ice_->count(), Tb_avg, soc_solved, voc_stat_f_, voc_solved, ice_->e());
     init_soc_ekf(soc_solved);
 
     #ifdef DEBUG_DETAIL

@@ -75,6 +75,8 @@ public:
   boolean soft_sim_hold;    // Use talk to reset sim only
   Tb_union tb_info;         // Use cp to pass DS2482 I2C information
   boolean write_summary;    // Use talk to issue a write command to summary
+  boolean ekf_reset;        // Reset Extended Kalman Filter
+  boolean ekf_reset_print;  // Reset Extended Kalman Filter status saved for printing
   boolean kf_reset;         // Reset kalman filters
   boolean kf_reset_print;   // Reset kalman filters status saved for printing
   uint8_t ble_first_char;   // Control boot communication, psuedo token
@@ -104,12 +106,16 @@ public:
     queue_str = "";
     soon_str = "";
     asap_str = "";
+    ekf_reset = false;
+    ekf_reset_print = false;
     kf_reset = false;
     kf_reset_print = false;
     ble_first_char = '\0';
   }
 
-  void cmd_reset(void) { soft_reset = true; kf_reset = true; }
+  void cmd_reset(void) { soft_reset = true; ekf_reset = true; kf_reset = true; }
+
+  void cmd_reset_ekf(void) { ekf_reset = true; }
 
   void cmd_reset_kf(void) { kf_reset = true; }
 
@@ -124,6 +130,7 @@ public:
     model_cutback = true;
     model_saturated = true;
     soft_reset = true;
+    ekf_reset = true;
     kf_reset = true;
     num_v_print = 0UL;
   }
@@ -181,8 +188,9 @@ public:
       sendTxBuf(String::format(" soft_reset_sim %d\n", soft_reset_sim), true, true);
       sendTxBuf(String::format(" tb_info.t_c %7.3f\n", tb_info.t_c), true, true);
       sendTxBuf(String::format(" tb_info.ready %d\n", tb_info.ready), true, true);
-      sendTxBuf(String::format(" write_summary %d\n\n", write_summary), true, true);
+      sendTxBuf(String::format(" write_summary %d\n", write_summary), true, true);
       sendTxBuf(String::format(" kf_reset %d\n", kf_reset), true, true);
+      sendTxBuf(String::format(" ekf_reset %d\n\n", ekf_reset), true, true);
 
     #endif
   }
