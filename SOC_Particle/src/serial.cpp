@@ -229,10 +229,10 @@ void print_ekf_header(void)
   // if ( dt_ekf_ == 0. ) return;
   double eTime = double(now_ekf_)/1000.;
 
-  Serial.printf("unit_ekf,%13.4f,%8.4f,%13.10f,%13.10f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,",
+  Serial.printf("unit_ekf,%13.4f,%8.4f,%13.10f,%13.10f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%11.8g,%10.7g,%10.7g,",
     eTime, dt_ekf_, Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_);
 
-  Serial.printf("%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%d,%11.8f,%10.7f,",
+  Serial.printf("%11.8g,%10.7g,%11.8g,%10.7g,%10.7g,%10.7g,%d,%11.8f,%11.8f,",
     x_prior_, P_prior_, x_post_, P_post_, hx_, H_, freeze_, Tb_f_for_hx_, x_for_hx_);
 
   Serial.printf("%9.6f,%9.6f,%9.6f,%9.6f,",

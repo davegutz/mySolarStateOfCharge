@@ -60,7 +60,10 @@ class EKF1x1:
         s += "  Q = {:10.6g}\n".format(self.Q)
         s += "  H = {:10.6g}\n".format(self.H)
         s += "  Outputs:\n"
-        s += "  x  = {:10.6g}\n".format(self.x)
+        s += "  x_prior  = {:10.8g}\n".format(self.x_prior)
+        s += "  x        = {:10.8g}\n".format(self.x)
+        s += "  x_for_hx = {:10.8}\n".format(self.x_for_hx)
+        s += "  x_post   = {:10.8g}\n".format(self.x_post)
         s += "  hx = {:10.6g}\n".format(self.hx)
         s += "  y  = {:10.6g}\n".format(self.y_ekf)
         s += "  P  = {:10.6g}\n".format(self.P)

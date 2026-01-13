@@ -678,33 +678,34 @@ txBuf = String::format("") +
   #else
     String::format(("Active/Standby Decisions\n") +
   #endif
-    String::format(" wml     %d  %d 'Fo ^'\n", wrap_lo_m_flt(), wrap_lo_m_fa()) +
-    String::format(" wmh     %d  %d 'Fi ^'\n", wrap_hi_m_flt(), wrap_hi_m_fa()) +
-    String::format(" wnl     %d  %d 'Fo ^'\n", wrap_lo_n_flt(), wrap_lo_n_fa()) +
-    String::format(" wnh     %d  %d 'Fi ^'\n", wrap_hi_n_flt(), wrap_hi_n_fa()) +
-    String::format(" vc      %d  %d 'FI 1'\n", vc_flt(), vc_fa()) +
-    String::format(" bare n  %d  x \n", ib_noa_bare()) +
-    String::format(" bare m  %d  x \n", ib_amp_bare()) +
-    String::format(" ib_dsc  %d  %d 'Fq v'\n", ib_dscn_flt(), ib_dscn_fa()) +
-    String::format(" ibd_lo  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_lo_flt(), ib_diff_lo_fa()) +
-    String::format(" ibd_hi  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_hi_flt(), ib_diff_hi_fa()) +
-    String::format(" red wv  %d  %d   'Fd, Fi/Fo ^'\n",  red_loss(), wrap_vb_fa()) +
-    String::format(" wl      %d  %d 'Fo ^'\n", wrap_lo_flt(), wrap_lo_fa()) +
-    String::format(" wh      %d  %d 'Fi ^'\n", wrap_hi_flt(), wrap_hi_fa()) +
-    String::format(" vc | cc_dif %d  %d 'x Fc ^'\n", vc_fa(), cc_diff_fa()) +
-    String::format(" ib n    %d  %d 'FI 1'\n", ib_noa_flt(), ib_noa_fa()) +
-    String::format(" ib m    %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa()) +
-    String::format(" vb      %d  %d 'Fv 1  *SV, *Dc/*Dv'.", vb_flt(), vb_fa()) +
-    String::format(" vb_functional_fa %d\n", vb_functional_fa_) +
-    String::format(" tb      %d  %d 'Ft 1'\n  ", tb_flt(), tb_fa());
+    String::format("       Fault  Fail'\n") +
+    String::format("1 wnl     %d  %d 'Fo ^'\n", wrap_lo_n_flt(), wrap_lo_n_fa()) +
+    String::format("0 wnh     %d  %d 'Fi ^'\n", wrap_hi_n_flt(), wrap_hi_n_fa()) +
+    String::format("F wml     %d  %d 'Fo ^'\n", wrap_lo_m_flt(), wrap_lo_m_fa()) +
+    String::format("E wmh     %d  %d 'Fi ^'\n", wrap_hi_m_flt(), wrap_hi_m_fa()) +
+    String::format("D vc      %d  %d 'FI 1'\n", vc_flt(), vc_fa()) +
+    String::format("C bare n  %d  x \n", ib_noa_bare()) +
+    String::format("B bare m  %d  x \n", ib_amp_bare()) +
+    String::format("A ib_dsc  %d  %d 'Fq v'\n", ib_dscn_flt(), ib_dscn_fa()) +
+    String::format("9 ibd_lo  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_lo_flt(), ib_diff_lo_fa()) +
+    String::format("8 ibd_hi  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_hi_flt(), ib_diff_hi_fa()) +
+    String::format("7 red wv  %d  %d   'Fd, Fi/Fo ^'\n",  red_loss(), wrap_vb_fa()) +
+    String::format("6 wl      %d  %d 'Fo ^'\n", wrap_lo_flt(), wrap_lo_fa()) +
+    String::format("5 wh      %d  %d 'Fi ^'\n", wrap_hi_flt(), wrap_hi_fa()) +
+    String::format("4 vc | cc_dif %d  %d 'x Fc ^'\n", vc_fa(), cc_diff_fa()) +
+    String::format("3 ib n    %d  %d 'FI 1'\n", ib_noa_flt(), ib_noa_fa()) +
+    String::format("2 ib m    %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa()) +
+    String::format("1 vb      %d  %d 'Fv 1  *SV, *Dc/*Dv'.", vb_flt(), vb_fa()) +
+    String::format("  vb_func %d  %d\n", vb_functional_flt(), vb_functional_fa()) +
+    String::format("0 tb      %d  %d 'Ft 1'\n  ", tb_flt(), tb_fa()) +
+    String::format("    Fault  Fail'\n");
   sendTxBuf(txBuf, true, true);
 
   txBuf = bitMapPrint(pr.buff, fltw_, NUM_FLT) +
-    String::format(pr.buff) +
     String::format("   ") +
     bitMapPrint(pr.buff, falw_, NUM_FA) +
-    String::format("%s\n", pr.buff) +
-    String::format("  10FEDCBA9876543210   10FExxBA9876543210\n") +
+    String::format("\n") +
+    String::format("10FEDCBA9876543210   10FExxBA9876543210\n") +
     String::format("  fltw=%ld     falw=%ld\n", fltw_, falw_);
   sendTxBuf(txBuf, true, true);
 
