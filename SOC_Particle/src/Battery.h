@@ -179,7 +179,7 @@ public:
   float calc_charge_time(const double q, const float q_capacity, const float charge_curr, const float soc);
   virtual float calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc);
   float calculate(Sensors *Sen, const boolean reset,  const boolean reset_ekf);
-  boolean converged_ekf() { return EKF_converged->state(); };
+  boolean converged_ekf() { return ekf_conv_; };
   double delta_q_ekf() { return delta_q_ekf_; };
   float hx() { return hx_; };
   float ib_charge() { return ib_charge_; };
@@ -217,6 +217,7 @@ protected:
   float amp_hrs_remaining_ekf_;  // Discharge amp*time left if drain to q_ekf=0, A-h
   float amp_hrs_remaining_soc_;  // Discharge amp*time left if drain soc_ to 0, A-h
   uint8_t eframe_;     // Counter to run EKF slower than Coulomb Counter and ChargeTransfer models
+  boolean ekf_conv_;   // Check that EKF error is within tolerance (T=converged)
   float ib_charge_;    // Current input avaiable for charging, A
   float ib_past_;      // Past value of current to synchronize e_wrap dynamics with model, A
   double q_ekf_;       // Filtered charge calculated by ekf, C

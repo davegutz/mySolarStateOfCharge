@@ -14,8 +14,8 @@
 // Miscellaneous
 #define ASK_DURING_BOOT       1   // Flag to ask for application of this file to * retained adjustements
 #define MODELING            247   // Nominal modeling bitmap (* 'Xm'), 0=all hdwe, 1+=Tb, 2+=Vb, 4+=Ib, 7=all model.  +240 for discn
-#define VV                   35   // Nominal verbosity (vv) (0)
-#define XM                  247   // Nominal modeling (Xm) (0)
+#define VV                    0   // Nominal verbosity (vv) (0)
+#define XM                  247   // Nominal modeling (Xm) (247)
 
 // Sensor biases
 #define CURR_BIAS_AMP         0.00  // Calibration of amplified shunt sensor (* 'DA'), A, from 0.15 on 20250608

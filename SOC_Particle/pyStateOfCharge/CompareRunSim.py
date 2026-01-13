@@ -184,7 +184,7 @@ def main():
     # vv0,
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_bb - Copy with bug 20260107.csv'
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_bb.csv'
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFailFf_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampLoFail_soc2p2_hi_lo_bb.csv'
 
 
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
