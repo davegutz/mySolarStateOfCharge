@@ -294,7 +294,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const bo
         // ddq_dt -= chem_.dqdt * q_capacity_ * T_rate;  // noisy
         if ( reset_ekf || reset_temp )
         {
- if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("BatteryMonitor::calculate        mod_ib tb_fa Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Tb_f);
+ if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("BatteryMonitor::calculate        mod_ib tb_fa Tb Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt sim.tb_f Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Sim->tb_f(), Sen->Tb_f);
             solve_ekf(reset_ekf, reset_temp, Sen);
         }
         else

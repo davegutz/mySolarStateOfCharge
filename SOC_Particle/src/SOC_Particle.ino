@@ -324,8 +324,8 @@ void loop()
     Sen->T_temp = ReadTemp->updateTime();
     if ( reset_temp )
     {
-      Sen->Tb_model = Sen->Tb_model_filt = RATED_TEMP + ap.Tb_bias_model;
-if ( sp.debug()==35 || sp.debug()==37 )   Serial.printf("\nread_temp/reset_temp:            mod_ib tb_fa Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Tb_f);
+      Sen->Tb_model = Sen->Tb_model_filt = NOMINAL_TB + ap.Tb_bias_model;
+if ( sp.debug()==35 || sp.debug()==37 )   Serial.printf("read_temp/reset_temp:            mod_ib tb_fa Tb Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt sim.tb_f Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Sim->tb_f(), Sen->Tb_f);
     
       if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 396 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt, %11.8f %11.8f\n",
         Sen->Tb_model, Sen->Tb_model_filt), true, true);
@@ -333,11 +333,11 @@ if ( sp.debug()==35 || sp.debug()==37 )   Serial.printf("\nread_temp/reset_temp:
     Log.info("ino:  temp_load_and_filter");
     
     Sen->temp_load_and_filter(Sen, reset_temp);
- if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("read_temp/temp_load_and_filter:  mod_ib tb_fa Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Tb_f);
+ if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("read_temp/temp_load_and_filter:  mod_ib tb_fa Tb Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt sim.tb_f Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Sim->tb_f(), Sen->Tb_f);
     Sen->select_temp(Mon);
- if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("read_temp/select_temp:           mod_ib tb_fa Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Tb_f);
+ if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("read_temp/select_temp:           mod_ib tb_fa Tb Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt sim.tb_f Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Sim->tb_f(), Sen->Tb_f);
     Sen->Tb_model = Sen->Tb_model_filt = Sen->Sim->tb_f();
- if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("read_temp/ assign:               mod_ib tb_fa Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Tb_f);
+ if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("read_temp/ assign:               mod_ib tb_fa Tb Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt sim.tb_f Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Sim->tb_f(), Sen->Tb_f);
 
     if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 403 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
         reset_temp, Sen->Sim->tb_f(), Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate), true, true);

@@ -21,8 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _MY_SENSORS_H
-#define _MY_SENSORS_H
+#pragma once
 
 #include "myLibrary/myFilters.h"
 #include "Battery.h"
@@ -662,5 +661,3 @@ protected:
 
 float scale_select(const float in, const ScaleBrk *brk, const float lo, const float hi);
 float scale_select(const float in, const ScaleBrk *brk, const float lo, const float hi, int8_t *sel_stat);
-
-#endif

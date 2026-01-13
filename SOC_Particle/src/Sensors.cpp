@@ -1199,9 +1199,9 @@ void Fault::wrap_scalars(BatteryMonitor *Mon)
 
 // Class Sensors
 Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *ReadTemp, Sync *Talk, Sync *Summarize,
-  unsigned long long time_now, unsigned long long millis, BatteryMonitor *Mon):  inst_millis_(millis),
-  inst_time_(time_now), reset_temp_(false), sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_vb_(0UL),
-  sample_time_vb_hdwe_(0UL)
+  unsigned long long time_now, unsigned long long millis, BatteryMonitor *Mon): Tb(NOMINAL_TB), Tb_f(NOMINAL_TB), Tb_hdwe(NOMINAL_TB),
+  Tb_hdwe_filt(NOMINAL_TB), Tb_model(NOMINAL_TB), Tb_model_filt(NOMINAL_TB),  inst_millis_(millis), inst_time_(time_now),
+  reset_temp_(false),  sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_vb_(0UL), sample_time_vb_hdwe_(0UL)
 {
   this->T = T;
   this->T_filt = T;
@@ -1363,8 +1363,8 @@ void Sensors::select_temp(BatteryMonitor *Mon)
     }
     else
     {
-      Tb = RATED_TEMP + Tb_noise() + ap.Tb_bias_model;
-      Tb_f = RATED_TEMP + ap.Tb_bias_model;  // Simplifying assumption that Tb_f perfectly quiet - so don't have to make model of filter
+      Tb = NOMINAL_TB + Tb_noise() + ap.Tb_bias_model;
+      Tb_f = NOMINAL_TB + ap.Tb_bias_model;  // Simplifying assumption that Tb_f perfectly quiet - so don't have to make model of filter
       Tb_f_rate = 0.;
     }
     if ( sp.debug()==16) Serial.printf("Tb_noise %9.5f Tb%9.5f Tb_f%9.5f Tb_f%9.5f tb_fa %d\n", Tb_noise(), Tb, Tb_f, Tb_f, Flt->tb_fa());
@@ -1386,7 +1386,7 @@ void Sensors::select_temp(BatteryMonitor *Mon)
     }
   }
   sample_time_tb_ = SensorTb->sample_time();
-if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("Sensors::select_temp             mod_ib tb_fa Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), this->Flt->tb_fa(), this->Tb, this->Tb_model, this->Tb_model_filt, this->Tb_hdwe, this->Tb_hdwe_filt, this->Tb_f);
+if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("Sensors::select_temp             mod_ib tb_fa Tb Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt sim.tb_f Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), this->Flt->tb_fa(), this->Tb, this->Tb_model, this->Tb_model_filt, this->Tb_hdwe, this->Tb_hdwe_filt, this->Sim->tb_f(), this->Tb_f);
 }
 
 // Make final assignemnts
@@ -1623,7 +1623,7 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
   #else
     Tb_hdwe = RATED_TEMP;
   #endif
-if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("Sensors::temp_load_and_filter0   mod_ib tb_fa Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Tb_f);
+if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("Sensors::temp_load_and_filter0   mod_ib tb_fa Tb Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt sim.tb_f Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Sim->tb_f(), Sen->Tb_f);
 
   // Filter and add rate limited bias
   if ( reset_temp_ && Tb_hdwe>TEMP_RANGE_CHECK_MAX )  // Bootup T=85.5 C
@@ -1637,7 +1637,7 @@ if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("Sensors::temp_load_and_f
         T_temp, Tb_hdwe, Tb_hdwe_filt, TbSenseFilt->rstate(), TbSenseFilt->lstate());
 
   Tb_hdwe_filt_rate = TbSenseFilt->rate();
-if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("Sensors::temp_load_and_filter1   mod_ib tb_fa Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Tb_f);
+if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("Sensors::temp_load_and_filter1   mod_ib tb_fa Tb Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt sim.tb_f Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Sim->tb_f(), Sen->Tb_f);
 
   if ( sp.debug()==16 || (sp.debug()==-1 && reset_temp_) ) Serial.printf("reset_temp_ T_temp Tb_bias_hdwe_loc, RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, Tb_hdwe_filt_rate, ready, rstate, lstate %d %8.6f %11.8f %11.8f %11.8f %11.8f %11.8f %d %11.8f  %11.8f\n",
     reset_temp_, T_temp, sp.Tb_bias_hdwe(), RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, Tb_hdwe_filt_rate, cp.tb_info.ready, TbSenseFilt->rstate(),  TbSenseFilt->lstate());
@@ -1647,7 +1647,7 @@ if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("Sensors::temp_load_and_f
   #else
     Flt->tb_stale(reset_temp_, Sen);
   #endif
-if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("Sensors::temp_load_and_filterX   mod_ib tb_fa Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Tb_f);
+if ( sp.debug()==35 || sp.debug()==37 )  Serial.printf("Sensors::temp_load_and_filterX   mod_ib tb_fa Tb Tb_model Tb_model_filt Tb_hdwe Tb_hdw_filt sim.tb_f Tb_f: %2d%2d%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f%8.4f\n", sp.mod_ib(), Sen->Flt->tb_fa(), Sen->Tb, Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe, Sen->Tb_hdwe_filt, Sen->Sim->tb_f(), Sen->Tb_f);
 }
 
 // Load analog voltage
