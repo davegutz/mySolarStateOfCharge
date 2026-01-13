@@ -218,8 +218,9 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
     if ( sp.debug()==-1 ){ Serial.printf("M.c_c2:  "); debug_m1(Mon, Sen);}
   #endif
   
-  // Solve EKF
-  Mon->solve_ekf(true, true, Sen);
+  // // Solve EKF
+  // if ( sp.debug()==35 || sp.debug()==37 ) Serial.printf("initialize_all:  Tb_f %7.4f\n", Sen->Tb_f);
+  // Mon->solve_ekf(true, true, Sen);
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("end:  "); debug_m1(Mon, Sen);}
   #endif

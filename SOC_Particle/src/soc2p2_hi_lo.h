@@ -1,6 +1,3 @@
-#ifndef soc2p2_h
-#define soc2p2_h
-
 #include "version.h"
 
 // Features config
@@ -16,7 +13,9 @@
 
 // Miscellaneous
 #define ASK_DURING_BOOT       1   // Flag to ask for application of this file to * retained adjustements
-#define MODELING              0   // Nominal modeling bitmap (* 'Xm'), 0=all hdwe, 1+=Tb, 2+=Vb, 4+=Ib, 7=all model.  +240 for discn
+#define MODELING            247   // Nominal modeling bitmap (* 'Xm'), 0=all hdwe, 1+=Tb, 2+=Vb, 4+=Ib, 7=all model.  +240 for discn
+#define VV                   35   // Nominal verbosity (vv) (0)
+#define XM                  247   // Nominal modeling (Xm) (0)
 
 // Sensor biases
 #define CURR_BIAS_AMP         0.00  // Calibration of amplified shunt sensor (* 'DA'), A, from 0.15 on 20250608
@@ -75,5 +74,3 @@
 
 // Frame time for ADC read of thermistor
 #define TEMP_INIT_DELAY 1
-
-#endif

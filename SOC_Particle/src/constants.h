@@ -22,9 +22,7 @@
 // SOFTWARE.
 
 */
-
-#ifndef CONSTANTS_H_
-#define CONSTANTS_H_
+#pragma once
 
 // Hardware configuration
 #undef HDWE_UNIT
@@ -242,6 +240,12 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #if !defined(NOM_DY)
     #define NOM_DY             0.0          // Nominal Dy Sim table bias (Dy) (0.0)
 #endif
+#if !defined(VV)
+    #define VV                   0          // Nominal verbosity (vv) (0)
+#endif
+#if !defined(XM)
+    #define XM                   0          // Nominal modeling (Xm) (0)
+#endif
 #if !defined(TEMP_BIAS)
     #define TEMP_BIAS          0.0          // Nominal bias on Tb (D^) (0.0)
 #endif
@@ -333,5 +337,3 @@ const float VO_CONV_GAIN = float(PHOTON_ADC_VOLT) / float(PHOTON_ADC_COUNT) * fl
 
 const float VH3V3_CONV_GAIN = float(PHOTON_ADC_VOLT) / float(PHOTON_ADC_COUNT);
 const float VTB_CONV_GAIN = float(PHOTON_ADC_VOLT) / float(PHOTON_ADC_COUNT) * float(VTB_S);
-
-#endif // CONSTANTS_H_
