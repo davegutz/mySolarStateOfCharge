@@ -1035,6 +1035,9 @@ class SavedData:
             self.wrap_m_and_n_fa = None
             self.ib_is_functional = None
             self.voltage_low = None
+            self.vb_model = None
+            self.vb_hdwe = None
+            self.vb_hdwe_f = None
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
@@ -1083,7 +1086,15 @@ class SavedData:
             if hasattr(sel, 'e_wm_t'):
                 self.e_wrap_m_trim = np.array(sel.e_wm_t[:i_end])
             self.e_wrap_m_trimmed = np.array(sel.ib_wrp_tr_m[:i_end])
-            self.vb_m = np.array(sel.vb_m[:i_end])
+            self.vb_model = np.array(sel.vb_m[:i_end])
+            if hasattr(sel, 'vb_h'):
+                self.vb_hdwe = np.array(sel.vb_h[:i_end])
+            else:
+                self.vb_hdwe = np.array(sel.vb[:i_end])
+            if hasattr(sel, 'vb_h_f'):
+                self.vb_hdwe_f = np.array(sel.vb_h_f[:i_end])
+            else:
+                self.vb_hdwe_f = np.array(sel.vb_h[:i_end])
             self.voc_m = np.array(sel.voc_m[:i_end])
             self.voc_soc_m = np.array(sel.voc_soc_m[:i_end])
             if hasattr(sel, 'ib_amp'):
@@ -1358,6 +1369,7 @@ class SavedData:
         if self.Tb_hdwe_filt_rate is None:
             self.Tb_hdwe_filt_rate = np.copy(self.Tb_f_rate_rap)
         if self.Tb_hdwe_filt is None:
+            print(f"Using Tb_f_rap to initialize Tb_hdwe_filt")
             self.Tb_hdwe_filt = np.copy(self.Tb_f_rap)
         if self.Tb_mod is None:
             self.Tb_mod = np.copy(self.Tb_rap)

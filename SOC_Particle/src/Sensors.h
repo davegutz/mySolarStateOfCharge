@@ -626,6 +626,7 @@ public:
   float Tb_noise();
   float vb() { return Vb / sp.nS(); };                            // Battery select unit voltage, V
   float vb_hdwe() { return Vb_hdwe / sp.nS(); };                  // Battery select hardware unit voltage, V
+  float vb_hdwe_f() { return Vb_hdwe_f / sp.nS(); };              // Battery select hardware unit voltage filtered, V
   void vb_load(const uint16_t vb_pin, const boolean reset);       // Analog read of Vb
   float vb_model() { return (Vb_model / sp.nS()); };              // Battery select model unit voltage, V
   float Vb_add();

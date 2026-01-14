@@ -318,6 +318,7 @@ void print_signal_sel_header(void)
   Serial.printf("  ib_wrp_reset_m, ib_wrp_T_m, ib_wrp_tau_m, ib_wrp_rate_m, ib_wrp_state_m,ib_amp,");
   Serial.printf("  ib_amp_lo, ib_amp_hi, ib_noa_lo, ib_noa_hi, ib_noa_kf, kfres, x1n, ib_wrp_tr_m, ib_wrp_tr_n,");
   Serial.printf("  vb_m, voc_m, voc_soc_m, vb_functional_flt, vb_functional_fa, wrap_m_and_n_fa, ib_is_functional,v_low,");
+  Serial.printf("  vb_h_f,");
   Serial.printf("\n");
 }
 void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, BatterySim *Sim)
@@ -383,6 +384,9 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
         Sen->Flt->LoopIbAmp->vb(), Sen->Flt->LoopIbAmp->voc(), Sen->Flt->LoopIbAmp->voc_soc(),
         Sen->Flt->vb_functional_fa(), Sen->Flt->vb_functional_flt(), Sen->Flt->wrap_m_and_n_fa(), Sen->Flt->ib_is_functional(),
         Mon->voltage_low());
+      Serial.printf("%s", pr.buff);
+
+      sprintf(pr.buff, "%8.6f,", Sen->vb_hdwe_f());
       Serial.printf("%s", pr.buff);
 
       Serial.printf("\n");

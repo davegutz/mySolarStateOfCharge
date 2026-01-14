@@ -195,7 +195,7 @@ if __name__ == '__main__':
         data_file_clean = '../dataReduction/real world Xp20 20220626_sim.txt'
         mon_run = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=None).view(np.recarray)
         t_v = mon_run.c_time - mon_run.c_time[0]
-        # vb_t = mon_run.vb_m   # not useful except to back out voc
+        # vb_t = mon_run.vb_model   # not useful except to back out voc
         ib_t = mon_run.ib_s
         # voc_stat_target_t = mon_run.voc_stat_m
         soc_t = mon_run.soc_s

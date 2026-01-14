@@ -364,6 +364,10 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_noa_hdwe = 0.
         self.ib_noa_model = 0.
         self.ib_hdwe = 0.
+        self.vb_model = 0.
+        self.vb_hdwe = 0.
+        self.vb_hdwe_f = 0.
+        self.ib_hdwe_f = 0.
         self.ib_hdwe_model = 0.
         self.ib_dyn = 0.
         self.ib_dyn_rstate = 0.
@@ -506,6 +510,9 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_amp_model = SN.mon_run.ibmm[G.i]
         self.ib_noa_hdwe = SN.mon_run.ibnh[G.i]
         self.ib_noa_model = SN.mon_run.ibnm[G.i]
+        self.vb_model = SN.mon_run.vb_model[G.i]
+        self.vb_hdwe = SN.mon_run.vb_hdwe[G.i]
+        self.vb_hdwe_f = SN.mon_run.vb_hdwe_f[G.i]
         if rp.modeling_ib:
             self.ib_amp = self.ib_amp_model
             self.ib_noa = self.ib_noa_model

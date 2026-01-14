@@ -182,9 +182,7 @@ def main():
     # Rf, vv4,
     # Rk,
     # vv0,
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_bb - Copy with bug 20260107.csv'
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_bb.csv'
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampLoFail_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFailNoise_soc2p2_hi_lo_bb.csv'
 
 
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
@@ -211,15 +209,15 @@ def main():
 
     # RunSim plot selection
     # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m  8=vb_wrap
-    request_hist_in = 1
+    request_hist_in = 5
     # request_hist_in = None
 
     # # mon_soc_in = False # old runsim work ******************
     use_mon_soc_ = False
     # use_mon_soc_ = True
 
-    # plots = False
-    plots = True
+    plots = False
+    # plots = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=use_mon_soc_, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
