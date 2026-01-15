@@ -1365,7 +1365,8 @@ void Sensors::select_temp(BatteryMonitor *Mon)
     else
     {
       Tb = NOMINAL_TB + Tb_noise() + ap.Tb_bias_model;
-      Tb_f = NOMINAL_TB + ap.Tb_bias_model;  // Simplifying assumption that Tb_f perfectly quiet - so don't have to make model of filter
+      // Tb_f = NOMINAL_TB + ap.Tb_bias_model;  // Simplifying assumption that Tb_f perfectly quiet - so don't have to make model of filter
+      Tb_f = Tb;
       Tb_f_rate = 0.;
     }
     if ( sp.debug()==16) Serial.printf("Tb_noise %9.5f Tb%9.5f Tb_f%9.5f Tb_f%9.5f tb_fa %d\n", Tb_noise(), Tb, Tb_f, Tb_f, Flt->tb_fa());
