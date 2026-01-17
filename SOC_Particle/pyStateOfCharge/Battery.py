@@ -218,6 +218,7 @@ class Battery(Coulombs):
         self.Tb_state = None
         self.Tb_hdwe_filt = None
         self.Tb_hdwe_filt_rate = None
+        self.Tb_model_filt_rate = None
         self.reset = True
         self.voltage_low = False
 
@@ -401,6 +402,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.dt_temp = None
         self.reset_temp = True
         self.Tb_rap = None
+        self.Tb_model = None
         self.Tb_f_rap = None
         self.Tb_f_rate_rap = None
         self.dt_temp = 0.
@@ -412,7 +414,8 @@ class BatteryMonitor(Battery, EKF1x1):
             self.Tb_hdwe = SN.Tb_hdwe_init
             self.Tb_hdwe_filt =SN.Tb_hdwe_filt_init
             self.Tb_hdwe_filt_rate = SN.Tb_hdwe_filt_rate_init
-            self.Tb_hdwe_filt_rate = SN.Tb_hdwe_filt_rate_init
+            self.Tb_model_filt =SN.Tb_model_filt_init
+            self.Tb_model_filt_rate = SN.Tb_model_filt_rate_init
             self.e_wrap = SN.e_wrap_init
             self.e_wrap_filt = SN.e_wrap_filt_init
             self.ib_amp_lo = False
@@ -431,6 +434,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.Tb_f = SN.Tb_f_init
             self.Tb_f_rate = SN.Tb_f_rate_init
             self.Tb_rap = SN.Tb_rap_init
+            self.Tb_model = SN.Tb_model_init
             self.Tb_f_rap = SN.Tb_f_rap_init
             self.Tb_f_rate_rap = SN.Tb_f_rate_rap_init
             self.ib = SN.ib_init
@@ -814,6 +818,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.x_for_hx.append(self.x_for_hx)
         self.saved.Tb.append(self.Tb)
         self.saved.Tb_f.append(self.Tb_f)
+        self.saved.Tb_model.append(self.Tb_model)
         self.saved.Tb_f_rate.append(self.Tb_f_rate)
         self.saved.Tb_rap.append(self.Tb_rap)
         self.saved.Tb_f_rap.append(self.Tb_f_rap)
@@ -855,6 +860,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_lstate.append(self.Tb_state)
         self.saved.Tb_hdwe.append(self.Tb_hdwe)
         self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
+        self.saved.Tb_model_filt.append(self.Tb_model_filt)
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
         self.saved.reset_kf.append(self.reset_kf)
         self.saved.iscn_f.append(iscn_f)
@@ -1452,10 +1458,13 @@ class Saved:
         self.Tb_lstate = []
         self.Tb_hdwe = []
         self.Tb_hdwe_filt = []
+        self.Tb_model_filt = []
         self.Tb_hdwe_filt_rate = []
+        self.Tb_model_filt_rate = []
         self.e_wrap_m_reset = []
         self.reset_kf = []
         self.iscn_f = []
+        self.Tb_model = []
 
 
 def overall_batt(mv, sv, filename,

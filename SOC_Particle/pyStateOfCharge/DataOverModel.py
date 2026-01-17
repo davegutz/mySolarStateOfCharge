@@ -1222,12 +1222,14 @@ class SavedData:
             self.time_t = None
             self.T_t = None
             self.Tb_hdwe = None
-            self.Tb_mod = None
+            self.Tb_model = None
             self.Tb = None
             self.Tb_f = None
             self.Tb_f_rate = None
             self.Tb_hdwe_filt = None
+            self.Tb_model_filt = None
             self.Tb_hdwe_filt_rate = None
+            self.Tb_model_filt_rate = None
         else:
             self.skip_t = np.array(np.bool(np.atleast_1d(temp.skip)[:i_end]))
             self.time_t = np.array(np.atleast_1d(temp.c_time)[:i_end]) - self.time_run
@@ -1236,9 +1238,11 @@ class SavedData:
             self.Tb = np.array(np.atleast_1d(temp.Tb)[:i_end])
             self.Tb_f = np.array(np.atleast_1d(temp.Tb_f)[:i_end])
             self.Tb_f_rate = np.array(np.atleast_1d(temp.Tb_f_rate)[:i_end])
-            self.Tb_mod = np.array(np.atleast_1d(temp.Tb_mod)[:i_end])
+            self.Tb_model = np.array(np.atleast_1d(temp.Tb_mod)[:i_end])
             self.Tb_hdwe_filt = np.array(np.atleast_1d(temp.Tb_hdwe_filt)[:i_end])
+            self.Tb_model_filt = np.array(np.atleast_1d(temp.Tb_model_filt)[:i_end])
             self.Tb_hdwe_filt_rate = np.array(np.atleast_1d(temp.Tb_hdwe_filt_rate)[:i_end])
+            self.Tb_model_filt_rate = np.array(np.atleast_1d(temp.Tb_model_filt_rate)[:i_end])
 
         # Workarounds for incomplete data sets e.g. vv1, vv2, vv3
         if self.dv_dyn_m is None:
@@ -1331,11 +1335,16 @@ class SavedData:
             self.Tb_hdwe = np.copy(self.Tb_rap)
         if self.Tb_hdwe_filt_rate is None:
             self.Tb_hdwe_filt_rate = np.copy(self.Tb_f_rate_rap)
+        if self.Tb_model_filt_rate is None:
+            self.Tb_model_filt_rate = np.copy(self.Tb_f_rate_rap)
         if self.Tb_hdwe_filt is None:
             print(f"Using Tb_f_rap to initialize Tb_hdwe_filt")
             self.Tb_hdwe_filt = np.copy(self.Tb_f_rap)
-        if self.Tb_mod is None:
-            self.Tb_mod = np.copy(self.Tb_rap)
+        if self.Tb_model is None:
+            self.Tb_model = np.copy(self.Tb_rap)
+        if self.Tb_model_filt is None:
+            print(f"Using Tb_f_rap to initialize Tb_model_filt")
+            self.Tb_model_filt = np.copy(self.Tb_f_rap)
         if self.dt_ekf is None:
             self.dt_ekf = np.copy(self.dt)
         if self.vb_h is None:

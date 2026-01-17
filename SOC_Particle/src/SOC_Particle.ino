@@ -333,7 +333,6 @@ void loop()
     
     Sen->temp_load_and_filter(Sen, reset_temp);
     Sen->select_temp(Mon);
-    Sen->Tb_model = Sen->Tb_model_filt = Sen->Sim->tb_f();
 
     if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 403 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
         reset_temp, Sen->Sim->tb_f(), Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate), true, true);

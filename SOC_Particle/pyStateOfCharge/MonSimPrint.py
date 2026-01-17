@@ -376,7 +376,7 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
 #4
 def print_temp_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header
-    hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce     Tt       Tb_hdwe                    Tb                         Tb_hdwe_filt               Tb_rap                     Tb_f                       Tb_f_rap                    Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
+    hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce     Tt       Tb_hdwe                    Tb                         Tb_hdwe_filt               Tb_rap                     Tb_f_rap                   Tb_model                   Tb_model_f                 Tb_f                        Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -394,8 +394,10 @@ def print_temp_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
           "{:14.7f}".format(SN.mon_run.Tb[i_temp]), "{:11.7f}".format(mon.Tb),
           "{:14.7f}".format(SN.mon_run.Tb_hdwe_filt[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt),
           "{:14.7f}".format(SN.mon_run.Tb_rap[G.i]), "{:11.7f}".format(mon.Tb_rap),
-          "{:14.7f}".format(SN.mon_run.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
           "{:14.7f}".format(SN.mon_run.Tb_f_rap[G.i]), "{:11.7f}".format(mon.Tb_f_rap),
+          "{:14.7f}".format(SN.mon_run.Tb_model[i_temp]), "{:11.7f}".format(mon.Tb_model),
+          "{:14.7f}".format(SN.mon_run.Tb_model_filt[i_temp]), "{:11.7f}".format(mon.Tb_model_filt),
+          "{:14.7f}".format(SN.mon_run.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
           "{:14.7f}".format(SN.mon_run.Tb_hdwe_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt_rate),
           "{:14.7f}".format(SN.mon_run.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate), "{:11.7f}".format(SN.Tb_f_rate),
           "{:14.7f}".format(SN.mon_run.Tb_f_rate_rap[G.i]), "{:11.7f}".format(mon.Tb_f_rate_rap),

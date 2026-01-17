@@ -530,14 +530,15 @@ public:
   float Vb_volt;              // Sensed battery bank voltage at ADC, V
   float Vc;                   // Selected common reference voltage, V
   float Vc_hdwe;              // Sensed common reference voltage, V
-  double Tb;                   // Selected battery bank temp, C
+  double Tb;                  // Selected battery bank temp, C
   double Tb_f;                // Selected filtered battery bank temp, C
-  double Tb_f_rate;            // Selected filtered battery bank temp rate, C/s
-  double Tb_hdwe;              // Sensed battery temp, C
+  double Tb_f_rate;           // Selected filtered battery bank temp rate, C/s
+  double Tb_hdwe;             // Sensed battery temp, C
   double Tb_hdwe_filt;        // Filtered, sensed battery temp, C
-  double Tb_hdwe_filt_rate;    // Filtered, sensed battery temp, C/s
-  double Tb_model;             // Temperature used for battery bank temp in model, C
-  double Tb_model_filt;        // Filtered, modeled battery bank temp, C
+  double Tb_hdwe_filt_rate;   // Filtered, sensed battery temp, C/s
+  double Tb_model;            // Temperature used for battery bank temp in model, C
+  double Tb_model_filt;       // Filtered, modeled battery bank temp, C
+  double Tb_model_filt_rate;  // Filtered, modeled battery bank temp rate, C/s
   float Ib;                   // Selected battery bank current, A
   float Ib_f;                 // Selected filtered battery bank current, A
   float Ib_amp;               // Initial selected amp battery bank current, A
@@ -572,6 +573,7 @@ public:
   TempSensor* SensorTb;       // Tb sense
   Sync *Summarize;            // Handle to debug read time
   Sync *Talk;                 // Handle to debug talk time
+  LagExp* TbModelFilt;        // Linear filter for modeled Tb (with injected noise).
   LagExp* TbSenseFilt;        // Linear filter for Tb. There are 1 Hz AAFs in hardware for Vb and Ib
   SlidingDeadband *SdTb;      // Non-linear filter for Tb
   BatterySim *Sim;            // Used to model Vb and Ib.   Use Talk 'Xp?' to toggle model on/off

@@ -438,7 +438,7 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
 // print temperatures for data collection
 void print_temp_header(void)
 {
- Serial.printf("unit_t, c_time, T_t, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_hdwe_filt, Tb_f,  Tb_hdwe_filt_rate, Tb_f_rate,\n");
+ Serial.printf("unit_t, c_time, T_t, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_hdwe_filt, Tb_model_filt,Tb_f,  Tb_hdwe_filt_rate, Tb_model_filt_rate, Tb_f_rate,\n");
 }
 void print_temp_serial(const boolean reset, Sensors *Sen)
 {
@@ -446,9 +446,9 @@ void print_temp_serial(const boolean reset, Sensors *Sen)
   {
     // if ( Sen->T_temp == 0. ) return;
     double cTime = double(Sen->now_temp)/1000.;
-    Serial.printf("temp_unit, %13.4f, %8.4f, %11.8f, %11.8f, %11.8f, %d, %11.8f, %11.8f, %11.8f, %11.8f,\n",
-      cTime, Sen->T_temp, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_hdwe_filt, Sen->Tb_f, Sen->Tb_hdwe_filt_rate,
-      Sen->Tb_f_rate);
+    Serial.printf("temp_unit, %13.4f, %8.4f, %11.8f, %11.8f, %11.8f, %d, %11.8f, %11.8f, %11.8f, %11.8f, %11.8f,  %11.8f,\n",
+      cTime, Sen->T_temp, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_hdwe_filt, Sen->Tb_model_filt, Sen->Tb_f, Sen->Tb_hdwe_filt_rate,
+      Sen->Tb_model_filt_rate, Sen->Tb_f_rate);
     Log.info("    print_temp_serial cTime,%9.3f,", cTime);
   }
 }

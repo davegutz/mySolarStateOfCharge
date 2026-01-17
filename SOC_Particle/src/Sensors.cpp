@@ -1219,6 +1219,7 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   #elif !defined(HDWE_BARE)
     this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY_DS18, pins->VTb_pin);
   #endif
+  this->TbModelFilt = new LagExp(double(READ_DELAY)/1000., TB_FILT, -20.0, 150.);
   this->TbSenseFilt = new LagExp(double(READ_DELAY)/1000., TB_FILT, -20.0, 150.);
   this->Sim = new BatterySim(ap.ds_voc_soc, 0., 0.);
   this->elapsed_inj = 0ULL;
@@ -1365,8 +1366,9 @@ void Sensors::select_temp(BatteryMonitor *Mon)
     else
     {
       Tb = NOMINAL_TB + Tb_noise() + ap.Tb_bias_model;
+      Tb_model = Tb;
       // Tb_f = NOMINAL_TB + ap.Tb_bias_model;  // Simplifying assumption that Tb_f perfectly quiet - so don't have to make model of filter
-      Tb_f = Tb;
+      Tb_f = Tb_model_filt;
       Tb_f_rate = 0.;
     }
     if ( sp.debug()==16) Serial.printf("Tb_noise %9.5f Tb%9.5f Tb_f%9.5f Tb_f%9.5f tb_fa %d\n", Tb_noise(), Tb, Tb_f, Tb_f, Flt->tb_fa());
@@ -1615,6 +1617,8 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
   reset_temp_ = reset_temp;
   #ifndef HDWE_BARE
     Tb_hdwe = SensorTb->sample(Sen);  // Must sample even if using model
+    Tb_model_filt = TbModelFilt->calculate(Tb_model, reset_temp_, ap.tb_filt, min(T_temp, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
+    Tb_model_filt_rate = TbModelFilt->rate();
     if ( sp.mod_tb() )
     {
       Tb_hdwe = Tb_model;
