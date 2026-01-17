@@ -207,9 +207,9 @@ def ekf_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         plt.plot(mv.time, mv.dv_hys, marker='.', markersize='1', markevery=48, linestyle='None', color='magenta',
                  label='dv_hys' + ver_str)
         plq(plt, sr, 'time', sr, 'dv_hys_s', linestyle=':', color='cyan', label='dv_hys_s' + run_str)
-        plq(plt, sv, 'time', smv, 'dv_hys', marker='.', markersize='1', markevery=64, linestyle='None',
+        plq(plt, sv, 'time', sv, 'dv_hys', marker='.', markersize='1', markevery=64, linestyle='None',
             color='black', label='dv_hys_s' + ver_str)
-        plq(plt, sv, 'time', sv, 'dv_hys_s', marker='.', markersize='1', markevery=64, linestyle='None',
+        plq(plt, smv, 'time', smv, 'dv_hys_s', marker='.', markersize='1', markevery=64, linestyle='None',
             color='black', label='dv_hys_s' + ver_str)
         plt.xlabel('sec')
         plt.legend(loc=4)
@@ -222,7 +222,7 @@ def ekf_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         plq(plt, sr, 'soc_s', sr, 'dv_hys_s', linestyle=':', color='cyan', label='dv_hys_s' + run_str)
         plq(plt, sv, 'soc', sv, 'dv_hys', marker='.', markersize='1', markevery=5, linestyle='None',
             color='black', label='dv_hys_s' + ver_str)
-        plq(plt, sv, 'soc_s', sv, 'dv_hys_s', marker='.', markersize='1', markevery=5, linestyle='None',
+        plq(plt, smv, 'soc_s', smv, 'dv_hys_s', marker='.', markersize='1', markevery=5, linestyle='None',
             color='black', label='dv_hys_s' + ver_str)
         plt.xlabel('soc')
         plt.legend(loc=4)
@@ -231,7 +231,7 @@ def ekf_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         plq(plt, sr, 'time', sr, 'soc_s', linestyle='--', color='blue', label='soc_s' + run_str)
         plt.plot(mv.time, mv.soc, linestyle='-.', color='red', label='soc' + ver_str)
         plq(plt, sv, 'time', sv, 'soc', linestyle=':', color='cyan', label='soc_s' + ver_str)
-        plq(plt, sv, 'time', sv, 'soc_s', linestyle=':', color='cyan', label='soc_s' + ver_str)
+        plq(plt, smv, 'time', smv, 'soc_s', linestyle=':', color='cyan', label='soc_s' + ver_str)
         plt.xlabel('sec')
         plt.legend(loc=4)
         plt.subplot(334)

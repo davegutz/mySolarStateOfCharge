@@ -25,17 +25,6 @@ from myFilters import LagExp
 from pyDAGx import myTables
 from KF1x1 import KF1x1VarDtxx
 
-class MutableInt:
-    def __init__(self, value):
-        self.value = value
-
-    def __iadd__(self, other):
-        self.value += other
-        return self
-
-    def __repr__(self):
-        return str(self.value)
-
 
 class ProArray:
     def __init__(self, data, mutable=False):
@@ -307,7 +296,6 @@ class Sensors:
         self.x_init = self.soc_init
         self.x_prior_init = self.x_init
         self.soc_ekf_init = self.soc_init
-        self.z_ekf_init = self.hx_init
         self.z_init = self.hx_init
         self.skip_e = np.bool(np.zeros(len(self.dv_dyn_s)))
         self.skip_t = np.bool(np.zeros(len(self.dv_dyn_s)))
@@ -317,16 +305,11 @@ class Sensors:
 
         self.VoVcm = 0.
         self.VoVcm_f = 0.
-        self.vratm = 0.
-        self.iscm = 0.
-        self.iscm_f = 0.
 
         self.VoVcn = 0.
         self.VoVcn_f = 0.
-        self.vratn = 0.
         self.iscn = 0.
         self.iscn_f = 0.
-        self.reset_k = False
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -338,13 +321,6 @@ class Sensors:
         self.Tb = mon_Tb + self.dTb
         self.Tb_f = mon_Tb_f + self.dTb
         self.Tb_f_rate = mon_Tb_f_rate
-
-    def calc_dTb(self, i, SN, t):
-        if self.dTb != 0.:
-            dTb = SN.lut_dTb.interp(t[i])
-        else:
-            dTb = self.dTb
-        return dTb
 
     def calc_temp_pass_1(self, OPT, mon_, sim_, i_temp):
         mon = mon_
@@ -429,13 +405,11 @@ class Sensors:
             if hasattr(self.mon_run, 'vovcm'):
                 self.VoVcm = self.mon_run.vovcm[i]
                 self.KfShuntAmp.calculate(reset=self.reset_kf, dt=self.mon_run.ib_dyn_T_m[i], in_=self.VoVcm)
-                self.VoVcm_f, self.vratm = self.KfShuntAmp.get_state()
+                self.VoVcm_f, _ = self.KfShuntAmp.get_state()
                 self.VoVcm_f = float(self.VoVcm_f)
-                self.iscm = float((self.VoVcm * Battery.SHUNT_AMP_GAIN + Battery.CURR_BIAS_AMP) / Battery.NP)
-                self.iscm_f = float((self.VoVcm_f * Battery.SHUNT_AMP_GAIN + Battery.CURR_BIAS_AMP) / Battery.NP)
             self.VoVcn = self.mon_run.vovcn[i]
             self.KfShuntNoa.calculate(reset=self.reset_kf, dt=self.mon_run.ib_dyn_T_n[i], in_=self.VoVcn)
-            self.VoVcn_f, self.vratn = self.KfShuntNoa.get_state()
+            self.VoVcn_f, _ = self.KfShuntNoa.get_state()
             self.VoVcn_f = float(self.VoVcn_f)
             self.iscn = float((self.VoVcn * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)
             self.iscn_f = float((self.VoVcn_f * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)

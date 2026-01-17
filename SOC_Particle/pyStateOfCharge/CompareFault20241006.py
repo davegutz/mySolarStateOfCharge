@@ -53,75 +53,6 @@ HYS_SOC_MIN_MARG = 0.15  # add to soc_min to set thr for detecting low endpoint 
 
 
 # Add schedule lookups and do some rack and stack
-def add_stuff(d_ra, mon, ib_band=0.5):
-    voc_soc = []
-    soc_min = []
-    vsat = []
-    time_sec = []
-    dt = []
-    for i in range(len(d_ra.time_ux)):
-        voc_soc.append(mon.chemistry.lookup_voc(d_ra.soc[i], d_ra.Tb[i]))
-        soc_min.append((mon.chemistry.lut_min_soc.interp(d_ra.Tb[i])))
-        vsat.append(mon.chemistry.nom_vsat + (d_ra.Tb[i] - mon.chemistry.rated_temp) * mon.chemistry.dvoc_dt)
-        time_sec.append(float(d_ra.time_ux[i] - d_ra.time_ux[0]))
-        if i > 0:
-            dt.append(float(d_ra.time_ux[i] - d_ra.time_ux[i - 1]))
-        else:
-            dt.append(float(d_ra.time_ux[1] - d_ra.time_ux[0]))
-    time_min = (d_ra.time_ux-d_ra.time_ux[0])/60.
-    time_day = (d_ra.time_ux-d_ra.time_ux[0])/3600./24.
-    d_mod = rf.rec_append_fields(d_ra, 'time_sec', np.array(time_sec, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'time_min', np.array(time_min, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'time_day', np.array(time_day, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'voc_soc', np.array(voc_soc, dtype=float))
-    if not hasattr(d_mod, 'soc_min'):
-        d_mod = rf.rec_append_fields(d_mod, 'soc_min', np.array(soc_min, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'vsat', np.array(vsat, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'ib_sel', np.array(d_mod.ib, dtype=float))
-    if hasattr(d_mod, 'voc_dyn'):
-        voc = d_mod.voc_dyn.copy()
-        d_mod = rf.rec_append_fields(d_mod, 'voc', np.array(voc, dtype=float))
-    d_mod = calc_fault(d_ra, d_mod)
-    voc_stat_chg = np.copy(d_mod.voc_stat)
-    voc_stat_dis = np.copy(d_mod.voc_stat)
-    for i in range(len(voc_stat_chg)):
-        if d_mod.ib[i] > -ib_band:
-            voc_stat_dis[i] = None
-        elif d_mod.ib[i] < ib_band:
-            voc_stat_chg[i] = None
-    d_mod = rf.rec_append_fields(d_mod, 'voc_stat_chg', np.array(voc_stat_chg, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'voc_stat_dis', np.array(voc_stat_dis, dtype=float))
-    if hasattr(d_mod, 'voc_dyn'):
-        dv_hys = d_mod.voc_dyn - d_mod.voc_stat
-    else:
-        dv_hys = d_mod.voc - d_mod.voc_stat
-    d_mod = rf.rec_append_fields(d_mod, 'dv_hys', np.array(dv_hys, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'dV_hys', np.array(dv_hys, dtype=float))
-    dv_hys_unscaled = d_mod.dv_hys / HYS_SCALE_20220917d
-    d_mod = rf.rec_append_fields(d_mod, 'dv_hys_unscaled', np.array(dv_hys_unscaled, dtype=float))
-    if hasattr(d_mod, 'voc_dyn'):
-        dv_hys_required = d_mod.voc_dyn - voc_soc + dv_hys
-    else:
-        dv_hys_required = d_mod.voc - voc_soc + dv_hys
-    d_mod = rf.rec_append_fields(d_mod, 'dv_hys_required', np.array(dv_hys_required, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'dt', np.array(dt, dtype=float))
-
-    dv_hys_rescaled = d_mod.dv_hys_unscaled
-    pos = dv_hys_rescaled >= 0
-    neg = dv_hys_rescaled < 0
-    dv_hys_rescaled[pos] *= HYS_RESCALE_CHG
-    dv_hys_rescaled[neg] *= HYS_RESCALE_DIS
-    d_mod = rf.rec_append_fields(d_mod, 'dv_hys_rescaled', np.array(dv_hys_rescaled, dtype=float))
-    if hasattr(d_mod, 'voc_dyn'):
-        voc_stat_rescaled = d_mod.voc_dyn - d_mod.dv_hys_rescaled
-    else:
-        voc_stat_rescaled = d_mod.voc - d_mod.dv_hys_rescaled
-    d_mod = rf.rec_append_fields(d_mod, 'voc_stat_rescaled', np.array(voc_stat_rescaled, dtype=float))
-
-    return d_mod
-
-
-# Add schedule lookups and do some rack and stack
 def add_stuff_f20241006(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0.):
     voc_soc = []
     soc_min = []
@@ -1087,7 +1018,6 @@ if __name__ == '__main__':
         h_raw = remove_nan(h_raw)
         # noinspection PyTypeChecker
         h = add_stuff_f(h_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in)
-        # h = add_stuff(h_raw, batt, ib_band=IB_BAND)
         print("\nh:\n", h, "\n")
         h_20C = filter_Tb(h, 20., batt, tb_band=TB_BAND, rated_batt_cap=rated_batt_cap_in)
         # Shift time_ux and add data

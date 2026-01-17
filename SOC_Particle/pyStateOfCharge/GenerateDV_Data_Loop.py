@@ -131,7 +131,6 @@ for prof_type, Tb, csv_file in prof_types:
                 soc_s = float('nan')
                 soc_ekf = float('nan')
                 soc_min_fake = 0.
-                Tbl = Tb
                 sat = voc_soc > vsat
                 if reset:
                     output.write('unit,               hm,                  cTime,       dt,       chm,qcrs,sat,sel,mod,bmso, Tb,  vb,  ib,   ib_charge, ioc, voc_soc,    vsat,dv_dyn,voc_stat,voc_ekf,     y_ekf,    soc_s,soc_ekf,soc,soc_min, dv,\n')

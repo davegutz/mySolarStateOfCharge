@@ -86,75 +86,6 @@ def add_ib_lag(data, mon):
 
 
 # Add schedule lookups and do some rack and stack
-def add_stuff(d_ra, mon, ib_band=0.5, Battery=None):
-    voc_soc = []
-    soc_min = []
-    vsat = []
-    time_sec = []
-    dt = []
-    for i in range(len(d_ra.time_ux)):
-        voc_soc.append(mon.chemistry.lookup_voc(d_ra.soc[i], d_ra.Tb[i]))
-        soc_min.append((mon.chemistry.lut_min_soc.interp(d_ra.Tb[i])))
-        vsat.append(mon.chemistry.nom_vsat + (d_ra.Tb[i] - mon.chemistry.rated_temp) * mon.chemistry.dvoc_dt)
-        time_sec.append(float(d_ra.time_ux[i] - d_ra.time_ux[0]))
-        if i > 0:
-            dt.append(float(d_ra.time_ux[i] - d_ra.time_ux[i - 1]))
-        else:
-            dt.append(float(d_ra.time_ux[1] - d_ra.time_ux[0]))
-    time_min = (d_ra.time_ux-d_ra.time_ux[0])/60.
-    time_day = (d_ra.time_ux-d_ra.time_ux[0])/3600./24.
-    d_mod = rf.rec_append_fields(d_ra, 'time_sec', np.array(time_sec, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'time_min', np.array(time_min, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'time_day', np.array(time_day, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'voc_soc', np.array(voc_soc, dtype=float))
-    if not hasattr(d_mod, 'soc_min'):
-        d_mod = rf.rec_append_fields(d_mod, 'soc_min', np.array(soc_min, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'vsat', np.array(vsat, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'ib_sel', np.array(d_mod.ib, dtype=float))
-    if hasattr(d_mod, 'voc_dyn'):
-        voc = d_mod.voc_dyn.copy()
-        d_mod = rf.rec_append_fields(d_mod, 'voc', np.array(voc, dtype=float))
-    d_mod = calc_fault(d_ra, d_mod, Battery)
-    voc_stat_chg = np.copy(d_mod.voc_stat)
-    voc_stat_dis = np.copy(d_mod.voc_stat)
-    for i in range(len(voc_stat_chg)):
-        if d_mod.ib[i] > -ib_band:
-            voc_stat_dis[i] = None
-        elif d_mod.ib[i] < ib_band:
-            voc_stat_chg[i] = None
-    d_mod = rf.rec_append_fields(d_mod, 'voc_stat_chg', np.array(voc_stat_chg, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'voc_stat_dis', np.array(voc_stat_dis, dtype=float))
-    if hasattr(d_mod, 'voc_dyn'):
-        dv_hys = d_mod.voc_dyn - d_mod.voc_stat
-    else:
-        dv_hys = d_mod.voc - d_mod.voc_stat
-    d_mod = rf.rec_append_fields(d_mod, 'dv_hys', np.array(dv_hys, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'dV_hys', np.array(dv_hys, dtype=float))
-    dv_hys_unscaled = d_mod.dv_hys / HYS_SCALE_20220917d
-    d_mod = rf.rec_append_fields(d_mod, 'dv_hys_unscaled', np.array(dv_hys_unscaled, dtype=float))
-    if hasattr(d_mod, 'voc_dyn'):
-        dv_hys_required = d_mod.voc_dyn - voc_soc + dv_hys
-    else:
-        dv_hys_required = d_mod.voc - voc_soc + dv_hys
-    d_mod = rf.rec_append_fields(d_mod, 'dv_hys_required', np.array(dv_hys_required, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'dt', np.array(dt, dtype=float))
-
-    dv_hys_rescaled = d_mod.dv_hys_unscaled
-    pos = dv_hys_rescaled >= 0
-    neg = dv_hys_rescaled < 0
-    dv_hys_rescaled[pos] *= HYS_RESCALE_CHG
-    dv_hys_rescaled[neg] *= HYS_RESCALE_DIS
-    d_mod = rf.rec_append_fields(d_mod, 'dv_hys_rescaled', np.array(dv_hys_rescaled, dtype=float))
-    if hasattr(d_mod, 'voc_dyn'):
-        voc_stat_rescaled = d_mod.voc_dyn - d_mod.dv_hys_rescaled
-    else:
-        voc_stat_rescaled = d_mod.voc - d_mod.dv_hys_rescaled
-    d_mod = rf.rec_append_fields(d_mod, 'voc_stat_rescaled', np.array(voc_stat_rescaled, dtype=float))
-
-    return d_mod
-
-
-# Add schedule lookups and do some rack and stack
 def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=None, unit=None):
     voc_soc = []
     soc_min = []
@@ -385,11 +316,11 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.legend(loc=1)
         plt.subplot(332)
         plq(plt, hi, 'time_ux', hi, 'Tb_f', marker='.', markersize='3', color='black', linestyle='-', label='Tb_f')
-        plq(plt, hi, 'time_ux', hi, 'Tb', marker='.', markersize='3', color='black', linestyle='-', label='Tb')
+        plq(plt, hi, 'time_ux', hi, 'Tb', marker='.', markersize='3', color='black', linestyle='-', label='Tb', warn=False)
         plt.legend(loc=1)
         plt.subplot(333)
         plq(plt, hi, 'time_ux', hi, 'ib_f', marker='+', markersize='3', color='green', linestyle='-', label='ib_f')
-        plq(plt, hi, 'time_ux', hi, 'ib', marker='.', markersize='3', color='black', linestyle='-', label='ib')
+        plq(plt, hi, 'time_ux', hi, 'ib', marker='.', markersize='3', color='black', linestyle='-', label='ib', warn=False)
         plt.legend(loc=1)
         plt.subplot(334)
         plt.plot(hi.time_ux, hi.tweak_sclr_amp, marker='+', markersize='3', linestyle='None', color='orange',
@@ -443,9 +374,9 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.legend(loc=1)
         plt.subplot(339)
         plq(plt, hi, 'time_ux', hi, 'vb_f', marker='.', markersize='3', color='red', linestyle='None', label='vb_f')
-        plq(plt, hi, 'time_ux', hi, 'vb', marker='.', markersize='3', color='orange', linestyle='None', label='vb')
+        plq(plt, hi, 'time_ux', hi, 'vb', marker='.', markersize='3', color='orange', linestyle='None', label='vb', warn=False)
         plq(plt, hi, 'time_ux', hi, 'voc_f', marker='.', markersize='3', color='black', linestyle='None', label='voc_f')
-        plq(plt, hi, 'time_ux', hi, 'voc', marker='.', markersize='3', color='blue', linestyle='None', label='voc')
+        plq(plt, hi, 'time_ux', hi, 'voc', marker='.', markersize='3', color='blue', linestyle='None', label='voc', warn=False)
         plt.plot(hi.time_ux, hi.voc_stat_chg, marker='.', markersize='3', linestyle='None', color='green',
                  label='voc_stat_chg')
         plt.plot(hi.time_ux, hi.voc_stat_dis, marker='.', markersize='3', linestyle='None', color='red',
@@ -464,9 +395,9 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.plot(hi.time_ux, hi.vsat, marker='.', markersize='1', linestyle='-', color='orange', linewidth='1',
                  label='vsat')
         plq(plt, hi, 'time_ux', hi, 'vb_f', marker='.', markersize='3', color='red', linestyle='None', label='vb_f')
-        plq(plt, hi, 'time_ux', hi, 'vb', marker='.', markersize='3', color='orange', linestyle='None', label='vb')
+        plq(plt, hi, 'time_ux', hi, 'vb', marker='.', markersize='3', color='orange', linestyle='None', label='vb', warn=False)
         plq(plt, hi, 'time_ux', hi, 'voc_f', marker='.', markersize='3', color='black', linestyle='None', label='voc_f')
-        plq(plt, hi, 'time_ux', hi, 'voc', marker='.', markersize='3', color='blue', linestyle='None', label='voc')
+        plq(plt, hi, 'time_ux', hi, 'voc', marker='.', markersize='3', color='blue', linestyle='None', label='voc', warn=False)
         plt.plot(hi.time_ux, hi.voc_stat_chg, marker='.', markersize='3', linestyle='-', color='green',
                  label='voc_stat_chg')
         plt.plot(hi.time_ux, hi.voc_stat_dis, marker='.', markersize='3', linestyle='-', color='red',
@@ -511,7 +442,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.legend(loc=1)
         plt.subplot(223)
         plq(plt, hi, 'time_ux', hi, 'ib_f', marker='.', markersize='3', color='red', linestyle='-', label='ib_f')
-        plq(plt, hi, 'time_ux', hi, 'ib', marker='.', markersize='3', color='orange', linestyle='-', label='ib')
+        plq(plt, hi, 'time_ux', hi, 'ib', marker='.', markersize='3', color='orange', linestyle='-', label='ib', warn=False)
         plt.xlabel('days')
         plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -546,7 +477,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.legend(loc=4)
         plt.subplot(223)
         plq(plt, hi, 'time_ux', hi, 'ib_f', color='black', label='ib_f')
-        plq(plt, hi, 'time_ux', hi, 'ib', color='blue', label='ib')
+        plq(plt, hi, 'time_ux', hi, 'ib', color='blue', label='ib', warn=False)
         plt.plot(hi.time_ux, hi.soc*10, color='green', label='soc*10')
         plt.plot(hi.time_ux, hi.ioc_redesign, marker='o', markersize='3', linestyle='-', color='cyan',
                  label='ioc_redesign')
@@ -565,7 +496,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plt.title(plot_title + ' f4')
     print('f4', end=':  ')
     plq(plt, hi, 'time_ux', hi, 'ib_f', color='green', label='ib_f')
-    plq(plt, hi, 'time_ux', hi, 'ib', color='cyan', label='ib')
+    plq(plt, hi, 'time_ux', hi, 'ib', color='cyan', label='ib', warn=False)
     plt.plot(hi.time_ux, hi.ib_diff, color='black', linestyle='-.', label='ib_diff')
     plt.plot(hi.time_ux, hi.ib_diff_thr, color='red', linestyle='-.', label='ib_diff_thr')
     plt.plot(hi.time_ux, -hi.ib_diff_thr, color='red', linestyle='-.')
@@ -575,18 +506,18 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plt.legend(loc=1)
     plt.subplot(333)
     plq(plt, hi, 'time_ux', hi, 'vb_f', color='green', linestyle='-', label='vb_f')
-    plq(plt, hi, 'time_ux', hi, 'vb', color='cyan', linestyle='-', label='vb')
+    plq(plt, hi, 'time_ux', hi, 'vb', color='cyan', linestyle='-', label='vb', warn=False)
     plt.legend(loc=1)
     plt.subplot(334)
     plq(plt, hi, 'time_ux', hi, 'voc_stat_f', color='green', linestyle='-', label='voc_stat_f')
-    plq(plt, hi, 'time_ux', hi, 'voc_stat', color='cyan', linestyle='-', label='voc_stat')
+    plq(plt, hi, 'time_ux', hi, 'voc_stat', color='cyan', linestyle='-', label='voc_stat', warn=False)
     plt.plot(hi.time_ux, hi.vsat, color='blue', linestyle='-', label='vsat')
     plt.plot(hi.time_ux, hi.voc_soc + 0.1, color='black', linestyle='-.', label='voc_soc+0.1')
     plq(plt, hi, 'time_ux', hi, 'voc_f', add=0.1, color='green', linestyle=':', label='voc_f+0.1')
-    plq(plt, hi, 'time_ux', hi, 'voc', add=0.1, color='cyan', linestyle=':', label='voc+0.1')
+    plq(plt, hi, 'time_ux', hi, 'voc', add=0.1, color='cyan', linestyle=':', label='voc+0.1', warn=False)
     plt.legend(loc=1)
     plt.subplot(335)
-    plq(plt, hi, 'time_ux', hi, 'e_wrap_filt', color='black', linestyle='--', label='e_wrap_filt')
+    plq(plt, hi, 'time_ux', hi, 'e_wrap_filt', color='black', linestyle='--', label='e_wrap_filt', warn=False)
     plq(plt, hi, 'time_ux', hi, 'e_w_f', color='black', linestyle='--', label='e_wrap_filt')
     plt.plot(hi.time_ux, hi.ewhi_thr, color='red', linestyle='-.', label='ewhi_thr')
     plt.plot(hi.time_ux, hi.ewlo_thr, color='red', linestyle='-.', label='ewlo_thr')
@@ -1205,7 +1136,6 @@ if __name__ == '__main__':
         h_raw = remove_nan(h_raw)
         # noinspection PyTypeChecker
         h = add_stuff_f(h_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in)
-        # h = add_stuff(h_raw, batt, ib_band=IB_BAND)
         print("\nh:\n", h, "\n")
         h_20C = filter_Tb(h, 20., batt, tb_band=TB_BAND, rated_batt_cap=rated_batt_cap_in)
         # Shift time_ux and add data

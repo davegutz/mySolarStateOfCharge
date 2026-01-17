@@ -203,7 +203,6 @@ def replicate(OPT: UserOptions):
 
     # time loop initialization
     now = t[0]
-    dtnow = dt[0]
     reset_ekf = True
     G.i = -1
     i_ekf = -1
