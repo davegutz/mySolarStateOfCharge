@@ -78,7 +78,6 @@ def mash(raw_data, v_off_thresh=None, rated_temp=25.):
     # Aggregate the normalized soc data
     soc = []
     soc_rated_off = 1.  # initial value only
-    s_rf = None
     for (curve, nom_unit_cap, temp, p_color, p_style, marker, marker_size) in raw_data:
         soc_norm = 1. - (1. - curve.soc) * nom_unit_cap / Battery.NOM_UNIT_CAP
         lut_vstat_soc = myTables.TableInterp1D(curve.vstat, soc_norm)

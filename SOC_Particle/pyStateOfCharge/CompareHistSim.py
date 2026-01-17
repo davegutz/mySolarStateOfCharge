@@ -1022,7 +1022,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
 
             # noinspection PyTypeChecker
             fault = add_stuff_f(f_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
-                                time_sync=sync_time, unit=unit, Battery=Battery)
+                                time_sync=sync_time, unit=unit)
             print("\nfault after add_stuff_f:\n", fault.dtype.names, fault, "\n")
             fault = filter_Tb(fault, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap_in)  # tb_band=100 disables banding
         else:
@@ -1040,7 +1040,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
         print("\nhist raw:\n", h_combo_raw.dtype.names, "\n", h_combo_raw, "\n", h_combo_raw.dtype.names, "\n")
         # noinspection PyTypeChecker
         hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
-                           time_sync=sync_time, Battery=Battery)
+                           time_sync=sync_time)
         hist = add_mod(hist, mon_t, mon)
         hist = add_chm(hist, mon_t, mon, chm)
         hist = add_qcrs(hist, mon_t_=mon_t, mon=mon, qcrs=qcrs, t_rated=t_rated, dqdt=dqdt)

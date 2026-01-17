@@ -52,7 +52,6 @@ class SyncInfo:
         self.time_mon = sav_mon.time
         self.sync_cTime = sync
         self.cTime = sav_mon.cTime
-        self.cTime_0 = sav_mon.cTime[0]
         self.time = sav_mon.time
         self.int_mon = []
         self.length = len(sync)

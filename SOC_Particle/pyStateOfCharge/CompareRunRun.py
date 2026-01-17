@@ -92,7 +92,6 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
         # print(f"{sync_to_ctime=}\n{sync_info_run.del_mon=}\n{sync_info_test.del_mon=}\n{master_sync_del=}\n{mon_test.time=}")
     elif sync_to_ctime is True:
         cTime_0_run = mon_run.cTime[0]
-        cTime_0_test = mon_test.cTime[0]
         cTime_sync = cTime_0_run
         mon_run.time = mon_run.cTime - cTime_sync
         mon_test.time = mon_test.cTime - cTime_sync

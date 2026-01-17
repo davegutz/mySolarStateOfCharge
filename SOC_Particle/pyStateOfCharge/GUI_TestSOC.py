@@ -1472,7 +1472,7 @@ if __name__ == '__main__':
 
     # init row
     empty_csv_path = tk.StringVar(master, os.path.join(Test.dataReduction_folder, 'empty.csv'))
-    dum1, init_val, dum2 = lookup.get('satInit')
+    _, init_val, _ = lookup.get('satInit')
     init = tk.StringVar(master, init_val)
     init_label = tk.Label(option_panel_left, text='init & clear:', font=label_font_gentle)
     init_label.pack(padx=5, pady=5)

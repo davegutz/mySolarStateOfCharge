@@ -597,7 +597,7 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
     import os
     (path, basename) = os.path.split(path_to_data)
     version = version_from_data_file(path_to_data)
-    (path_to_temp, save_pdf_path, dum) = local_paths(version)
+    (path_to_temp, save_pdf_path, _) = local_paths(version)
     csv_file = path_to_temp+'/'+basename.replace('.csv', type_ + '.csv', 1)
     # Header
     have_header_str = None
@@ -929,7 +929,6 @@ class SavedData:
             self.ib_diff_f = None
             self.ib_diff_flt = None
             self.ib_diff_fa = None
-            self.voc_soc_sel = None
             self.e_wrap = None
             self.e_wrap_filt = None
             self.e_wrap_trim = None
@@ -946,7 +945,6 @@ class SavedData:
             self.e_wrap_n = None
             self.e_wrap_n_filt = None
             self.e_wrap_n_trim = None
-            self.e_wrap_n_trimmed = None
             self.wrap_hi_flt = None
             self.wrap_hi_m_flt = None
             self.wrap_hi_n_flt = None
@@ -982,9 +980,6 @@ class SavedData:
             self.dscn_fa = None
             self.vb_flt = None
             self.vb_fa = None
-            self.ib_finj = None
-            self.Tb_finj = None
-            self.vb_finj = None
             self.tb_sel = None
             self.tb_flt = None
             self.tb_fa = None
@@ -998,30 +993,18 @@ class SavedData:
             self.preserving = None
             self.y_ekf_f = None
             self.ib_dec = None
-            self.ib_dyn_a_m = None
-            self.ib_dyn_b_m = None
-            self.ib_dyn_b_m = None
             self.ib_dyn_T_m = None
             self.ib_dyn_tau_m = None
             self.ib_dyn_rstate_m = None
             self.ib_dyn_lstate_m = None
-            self.ib_dyn_a_n = None
-            self.ib_dyn_b_n = None
-            self.ib_dyn_b_n = None
             self.ib_dyn_T_n = None
             self.ib_dyn_tau_n = None
             self.ib_dyn_rstate_n = None
             self.ib_dyn_lstate_n = None
-            self.ib_wrp_a_n = None
-            self.ib_wrp_b_n = None
             self.ib_wrp_T_m = None
             self.ib_wrp_tau_m = None
-            self.ib_wrp_rstate_m = None
-            self.ib_wrp_lstate_m = None
             self.ib_wrp_T_n = None
             self.ib_wrp_tau_n = None
-            self.ib_wrp_rstate_n = None
-            self.ib_wrp_lstate_n = None
             self.disable_amp_fault = None
             self.disable_amp_fault_per = None
             self.vr = None
@@ -1065,7 +1048,6 @@ class SavedData:
             self.ib_diff_f = np.array(sel.ib_diff_f[:i_end])
             self.ib_diff_flt = np.bool_((np.array(fltw) & 2**8) | (np.array(fltw) & 2**9))
             self.ib_diff_fa = np.bool_((np.array(falw) & 2**8) | (np.array(falw) & 2**9))
-            self.voc_soc_sel = np.array(sel.voc_soc[:i_end])
             self.e_wrap = np.array(sel.e_w[:i_end])
             self.e_wrap_filt = np.array(sel.e_w_f[:i_end])
             self.ib_dyn_m = np.array(sel.ib_dm[:i_end])
@@ -1176,11 +1158,7 @@ class SavedData:
             self.ib_is_functional = np.bool_(np.array(sel.ib_is_functional[:i_end]))
             self.voltage_low = np.bool_(np.array(sel.v_low[:i_end]))
         if shunt is None:
-            unit_shunt = None
-            self.skip_shunt = None
             self.i = 0
-            self.time_shunt = None
-            self.dt_shunt = None
             self.Vcm = None
             self.Vom = None
             self.VoVcm = None
@@ -1193,7 +1171,6 @@ class SavedData:
             self.assign_all_from(shunt, i_end)
             # Special handling
             self.c_time_shunt = np.array(shunt.c_time[:i_end]) - self.time_run
-            self.skip_shunt = np.bool(np.array(shunt.skip[:i_end]))
 
         if ekf is None:
             self.skip_e = None
@@ -1521,9 +1498,6 @@ class SavedDataSim:
             self.soc_s = None
             self.reset_s = None
             self.d_delta_q_s = None
-            self.ib_dyn_s_a = None
-            self.ib_dyn_s_b = None
-            self.ib_dyn_s_c = None
             self.ib_dyn_s_T = None
             self.ib_dyn_s_tau = None
             self.ib_dyn_s_rstate = None
@@ -1624,32 +1598,6 @@ if __name__ == '__main__':
         import matplotlib
         matplotlib.use('tkagg')
     plt.rcParams['axes.grid'] = True
-
-    def compare_print(mr, mv):
-        s = " time,      ib,                   vb,              dv_dyn,          voc_stat,\
-                    voc,        voc_ekf,         y_ekf,               soc_ekf,      soc,\n"
-        for i in range(len(mv.time)):
-            s += "{:7.3f},".format(mr.time[i])
-            s += "{:11.3f},".format(mr.ib[i])
-            s += "{:9.3f},".format(mv.ib[i])
-            s += "{:9.2f},".format(mr.vb[i])
-            s += "{:5.2f},".format(mv.vb[i])
-            s += "{:9.2f},".format(mr.dv_dyn[i])
-            s += "{:5.2f},".format(mv.dv_dyn[i])
-            s += "{:9.2f},".format(mr.voc_stat[i])
-            s += "{:5.2f},".format(mv.voc_stat[i])
-            s += "{:9.2f},".format(mr.voc[i])
-            s += "{:5.2f},".format(mv.voc[i])
-            s += "{:9.2f},".format(mr.voc_ekf[i])
-            s += "{:5.2f},".format(mv.voc_ekf[i])
-            s += "{:13.6f},".format(mr.y_ekf[i])
-            s += "{:9.6f},".format(mv.y_ekf[i])
-            s += "{:7.3f},".format(mr.soc_ekf[i])
-            s += "{:5.3f},".format(mv.soc_ekf[i])
-            s += "{:7.3f},".format(mr.soc[i])
-            s += "{:5.3f},".format(mv.soc[i])
-            s += "\n"
-        return s
 
 
     def main(data_file_old_txt, unit_key):

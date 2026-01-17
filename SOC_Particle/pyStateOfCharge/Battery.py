@@ -352,8 +352,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vb_model = 0.
         self.vb_hdwe = 0.
         self.vb_hdwe_f = 0.
-        self.ib_hdwe_f = 0.
-        self.ib_hdwe_model = 0.
         self.ib_dyn = 0.
         self.ib_dyn_rstate = 0.
         self.ib_dyn_lstate = 0.
@@ -362,7 +360,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.voc_stat_f_tau = 0.
         self.voc_stat_f_T = 0.
         self.voc_ekf = 0.
-        self.Temp_Rlim = RateLimit()
         self.eframe = 0
         if OPT is not None:
             self.eframe_mult = OPT.eframe_mult
@@ -389,8 +386,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.disable_amp_fault = False
         self.disable_amp_fault_per = False
         self.DisabAmpFltPer = TFDelay(False, Battery.DISAB_LO_SET, Battery.DISAB_LO_RESET, 0.1)
-        self.IbAmpRate = RateLagExp(dt=0.1, tau=Battery.WRAP_ERR_FILT/4., min_=-Battery.MAX_WRAP_ERR_FILT,
-                                    max_=Battery.MAX_WRAP_ERR_FILT)
         self.LoopIbAmp = Looparound(Mon_=self, wrap_hi_amp=Battery.WRAP_HI_AMP, wrap_lo_amp=Battery.WRAP_LO_AMP,
                                     max_err=Battery.MAX_WRAP_ERR_FILT/(Battery.IB_ABS_MAX_NOA/Battery.IB_ABS_MAX_AMP),
                                     name="Amp")
@@ -485,9 +480,12 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_amp_model = SN.mon_run.ibmm[G.i]
         self.ib_noa_hdwe = SN.mon_run.ibnh[G.i]
         self.ib_noa_model = SN.mon_run.ibnm[G.i]
-        self.vb_model = SN.mon_run.vb_model[G.i]
-        self.vb_hdwe = SN.mon_run.vb_hdwe[G.i]
-        self.vb_hdwe_f = SN.mon_run.vb_hdwe_f[G.i]
+        if hasattr(SN.mon_run, 'vb_model'):
+            self.vb_model = SN.mon_run.vb_model[G.i]
+        if hasattr(SN.mon_run, 'vb_hdwe'):
+            self.vb_hdwe = SN.mon_run.vb_hdwe[G.i]
+        if hasattr(SN.mon_run, 'vb_hdwe_f'):
+            self.vb_hdwe_f = SN.mon_run.vb_hdwe_f[G.i]
         if rp.modeling_ib:
             self.ib_amp = self.ib_amp_model
             self.ib_noa = self.ib_noa_model
@@ -500,7 +498,6 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_noa_pst = SN.mon_run.ibnh[max(G.i - 1, 0)]
         # self.ib_hdwe = self.ib_noa_hdwe
         self.ib_hdwe = SN.mon_run.ib_h[G.i]
-        self.ib_hdwe_model = self.ib_noa_model
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
@@ -543,7 +540,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_lag = self.IbLag.calculate_tau(self.ib, reset, self.dt, self.chemistry.ib_lag_tau)
         if reset:
             self.ib_past = self.ib
-            self.ib_past_past = self.ib
 
         # Dynamic emf
         if rp.modeling_ib:
@@ -673,9 +669,6 @@ class BatteryMonitor(Battery, EKF1x1):
         # Jacobian of measurement function
         self.H = self.dv_dsoc
         return self.hx, self.H, self.tb_f_for_hx, self.x_for_hx
-
-    def lag_ib(self, ib, reset):
-        self.ib_lag = self.IbLag.calculate_tau(ib, reset, self.dt, self.chemistry.ib_lag_tau)
 
     def init_soc_ekf(self, mr, i, i_ekf):
         self.soc_ekf = mr.soc_ekf[i]
@@ -1237,10 +1230,6 @@ def is_sat(tb_f, rated_temp, voc, soc, nom_vsat, dvoc_dt, low_t):
     return tb_f > low_t and (voc >= vsat or soc >= Battery.mxeps_bb)
 
 
-def calc_vsat(tb_f, rated_temp, vsat, dvoc_dt):
-    return sat_voc(tb_f, rated_temp, vsat, dvoc_dt)
-
-
 def sat_voc(tb_f, rated_temp, vsat, dvoc_dt):
     return vsat + (tb_f-rated_temp)*dvoc_dt
 
@@ -1251,7 +1240,6 @@ class Looparound:
     def __init__(self, Mon_, wrap_hi_amp=0., wrap_lo_amp=0., max_err=None, name=''):
         self.Mon = Mon_
         self.reset = True
-        self.zero = False
         self.dt = 0.
         self.dt_past = 0.
         self.dv_dyn = 0.
@@ -1283,10 +1271,6 @@ class Looparound:
         self.WrapHi = TFDelay(dt=2., in_=False, t_true=Battery.WRAP_HI_S, t_false=Battery.WRAP_HI_R)
         self.WrapLo = TFDelay(dt=2., in_=False, t_true=Battery.WRAP_LO_S, t_false=Battery.WRAP_LO_R)
         self.name = name
-
-    def absorb_states(self, other):
-        self.ib = other.ib
-        self.ChargeTransfer.absorb(other.ChargeTransfer)
 
     # Update the loop
     # needs to be called twice with reset=True to initialize properly
