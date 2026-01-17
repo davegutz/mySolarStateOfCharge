@@ -36,7 +36,6 @@ class Retained:
     def __init__(self):
         self.cutback_gain_scalar = 1.
         self.delta_q = 0.
-        self.delta_q_model = 0.
         self.modeling = 0
         self.modeling_ib = False
         self.modeling_vb = False
@@ -60,12 +59,10 @@ def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=No
 class Battery(Coulombs):
     import Globals as G
     # Battery constants
-    NOMINAL_TB = 15.  # Middle of the road Tb for decent reversionary operation, deg C (15.)
     NOM_UNIT_CAP = 108.4  # Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah
     NOM_SYS_VOLT = 12.  # Nominal system output, V, at which the reported amps are used (12)
     mxeps_bb = 1.05  # Numerical maximum of coefficient model with scaled soc
     TCHARGE_DISPLAY_DEADBAND = 0.1  # Inside this +/- deadband, charge time is displayed '---', A
-    DF1 = 0.02  # Weighted selection lower transition drift, fraction
     DF2 = 0.70  # Threshold to reset Coulomb Counter if different from ekf, fraction (0.05)
     EKF_CONV = 2e-3  # EKF tracking error indicating convergence, V (1e-3)
     EKF_T_CONV = 30.  # EKF set convergence test time, sec (30.)
@@ -81,14 +78,10 @@ class Battery(Coulombs):
     EKF_R_SD_NORM = 0.5  # Standard deviation of normal EKF state uncertainty, fraction (0-1) (0.5)
     IMAX_NUM = 100000.  # Overflow protection since ib past value used
     HYS_SOC_MIN_MARG = 0.15  # Add to soc_min to set thr for detecting low endpoint condition for reset of hysteresis
-    HYS_SOC_MAX = 0.99  # Detect high endpoint condition for reset of hysteresis
-    HYS_E_WRAP_THR = 0.1  # Detect e_wrap going the other way; need to reset dv_hys at endpoints
     HYS_IB_THR = 1.  # Ignore reset if opposite situation exists
     HYS_SCALE = 1.  # Used to disable hysteresis from sim on the app
     IB_MIN_UP = 0.2  # Min up charge current for come alive, BMS logic, and fault
     cp_eframe_mult = 20  # Run EKF 20 times slower than Coulomb Counter
-    READ_DELAY = 100  # nominal read time, ms
-    EKF_EFRAME_MULT = 20  # Multi-frame rate consistent with READ_DELAY (20 for READ_DELAY=100)
     VB_DC_DC = 13.5  # Estimated dc-dc charger, V
     HDB_VBATT = 0.05  # Half deadband to filter vb, V (0.05)
     WRAP_ERR_FILT = 4.  # Wrap error filter time constant, s (4)
@@ -115,7 +108,6 @@ class Battery(Coulombs):
     HDWE_IB_HI_LO_AMP_LO = -10. # Fully NOA unit discharge transition, A (-10, soc4p2)
     HDWE_IB_HI_LO_AMP_HI = 10.  # Fully NOA unit charge transition, A (10, soc4p2)
     HDWE_IB_HI_LO_NOA_HI = 11.  # Fully NOA unit charge transition, A (11, soc4p2)
-    MAX_NOA_RATE =  1.  # Max reasonable amp rate used to disable e_wrap and ib_diff fault logic, A/s (1.0)
     WRAP_SOC_HI_OFF = 0.97  # Disable e_wrap_hi when saturated (0.97)
     WRAP_SOC_LO_OFF_REL = 0.2  # Disable e_wrap when near empty (soc lo for high Tb where soc_min=.2, voltage cutback, 0.2)
     WRAP_SOC_LO_OFF_ABS = 0.35  # Disable e_wrap when near empty (soc lo any Tb, 0.35)
@@ -139,7 +131,6 @@ class Battery(Coulombs):
     CURR_BIAS_NOA = 0.  # hdwe bias, A
     NS = 1  # Number serial batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
     NP = 1  # Number parallel batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
-    CURR_SCALE_DISCH = 1.  # scale factor for strength of discharging compared to baseling charging
     # KF_Q_STD = 0.015  # Shunt KF process uncertainty
     # KF_R_STD = 0.001  # Shunt KF state uncertainty
     KF_Q_STD = 0.0003  # Shunt KF process uncertainty
@@ -179,9 +170,6 @@ class Battery(Coulombs):
         self.ib_dyn = 0.  # Model current induced back emf before resistance multiply, A
         self.ib_dyn_rstate = 0.  # Model current rate, A
         self.ib_dyn_lstate = 0.  # Model current rate, A
-        self.ib_dyn_a = 0.  # Model current rate, A
-        self.ib_dyn_b = 0.  # Model current rate, A
-        self.ib_dyn_c = 0.  # Model current rate, A
         self.vb = Battery.NOM_SYS_VOLT  # Battery voltage at post, V
         self.ib = 0.  # Current into battery post, A
         self.ib_in = 0.  # Current into calculate, A
@@ -217,9 +205,6 @@ class Battery(Coulombs):
         self.ib_dyn = 0.  # Placeholder so BatterySim can be plotted
         self.ib_dyn_rstate = 0.  # Placeholder so BatterySim can be plotted
         self.ib_dyn_lstate = 0.  # Placeholder so BatterySim can be plotted
-        self.ib_dyn_a = 0.  # Placeholder so BatterySim can be plotted
-        self.ib_dyn_b = 0.  # Placeholder so BatterySim can be plotted
-        self.ib_dyn_c = 0.  # Placeholder so BatterySim can be plotted
         self.bms_off = False
         self.mod = 7
         self.sel = 0
@@ -372,14 +357,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_dyn = 0.
         self.ib_dyn_rstate = 0.
         self.ib_dyn_lstate = 0.
-        self.ib_dyn_a = 0.
-        self.ib_dyn_b = 0.
-        self.ib_dyn_c = 0.
         self.voc_stat_f_rstate = 0.
         self.voc_stat_f_lstate = 0.
-        self.voc_stat_f_a = 0.
-        self.voc_stat_f_b = 0.
-        self.voc_stat_f_c = 0.
         self.voc_stat_f_tau = 0.
         self.voc_stat_f_T = 0.
         self.voc_ekf = 0.
@@ -392,17 +371,13 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap = 0.
         self.e_wrap_filt = 0.
         self.e_wrap_rate = 0.
-        self.reset_past = True
         self.ib_past = 0.
         self.dt_past = 0.
         self.ib_amp = 0.
         self.ib_amp_pst = 0.
-        self.ib_amp_2pst = 0.
-        self.ib_amp_fut = 0.
         self.ib_noa = 0.
         self.ib_noa_pst = 0.
         self.ib_noa_2pst = 0.
-        self.ib_noa_fut = 0.
         self.e_wrap_m = None
         self.e_wrap_m_filt = None
         self.e_wrap_m_trim = None
@@ -518,15 +493,11 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_noa = self.ib_noa_model
             self.ib_amp_pst = SN.mon_run.ibmm[max(G.i-1, 0)]
             self.ib_noa_pst = SN.mon_run.ibnm[max(G.i-1, 0)]
-            self.ib_amp_2pst = SN.mon_run.ibmm[max(G.i-2, 0)]
-            self.ib_noa_2pst = SN.mon_run.ibnm[max(G.i-2, 0)]
         else:
             self.ib_amp = self.ib_amp_hdwe
             self.ib_noa = self.ib_noa_hdwe
             self.ib_amp_pst = SN.mon_run.ibmh[max(G.i - 1, 0)]
             self.ib_noa_pst = SN.mon_run.ibnh[max(G.i - 1, 0)]
-            self.ib_amp_2pst = SN.mon_run.ibmh[max(G.i - 2, 0)]
-            self.ib_noa_2pst = SN.mon_run.ibnh[max(G.i - 2, 0)]
         # self.ib_hdwe = self.ib_noa_hdwe
         self.ib_hdwe = SN.mon_run.ib_h[G.i]
         self.ib_hdwe_model = self.ib_noa_model
@@ -585,9 +556,6 @@ class BatteryMonitor(Battery, EKF1x1):
                                                                self.chemistry.tau_ct)
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
-        self.ib_dyn_a = self.ChargeTransfer.a
-        self.ib_dyn_b = self.ChargeTransfer.b
-        self.ib_dyn_c = self.ChargeTransfer.c
         self.voc = self.vb - (self.ib_dyn*self.chemistry.r_ct + ib_dc*self.chemistry.r_0)
         if self.bms_off and self.voltage_low:
             self.voc_stat = self.vb
@@ -620,9 +588,6 @@ class BatteryMonitor(Battery, EKF1x1):
                                                         self.VOC_STAT_FILT)
             self.voc_stat_f_rstate = self.voc_stat_filt.rstate
             self.voc_stat_f_lstate = self.voc_stat_filt.state
-            self.voc_stat_f_a = self.voc_stat_filt.a
-            self.voc_stat_f_b = self.voc_stat_filt.b
-            self.voc_stat_f_c = self.voc_stat_filt.c
             self.voc_stat_f_tau = self.voc_stat_filt.tau
             self.voc_stat_f_T = self.voc_stat_filt.dt
             self.predict_ekf(u=ddq_dt, reset=self.reset_ekf, freeze=self.bms_off)  # u = d(q)/dt
@@ -817,9 +782,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.ib_dyn_lstate.append(self.ib_dyn_lstate)
         self.saved.voc_stat_f_rstate.append(self.voc_stat_f_rstate)
         self.saved.voc_stat_f_lstate.append(self.voc_stat_f_lstate)
-        self.saved.voc_stat_f_a.append(self.voc_stat_f_a)
-        self.saved.voc_stat_f_b.append(self.voc_stat_f_b)
-        self.saved.voc_stat_f_c.append(self.voc_stat_f_c)
         self.saved.voc_stat_f_tau.append(self.voc_stat_f_tau)
         self.saved.voc_stat_f_T.append(self.voc_stat_f_T)
         self.saved.voc.append(self.voc)
@@ -905,7 +867,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.iscn_f.append(iscn_f)
 
     def wrap(self, reset=True, modeling_ib=None, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
-             ib_amp_pst=None, ib_noa_pst=None, ib_amp_2pst=None, ib_noa_2pst=None, rp=None):
+             ib_amp_pst=None, ib_noa_pst=None, rp=None):
         """Wrap logic"""
 
         # e_wrap scalars normally calculated in Sensors
@@ -1121,9 +1083,6 @@ class BatterySim(Battery):
                                                                self.chemistry.tau_ct)
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
-        self.ib_dyn_a = self.ChargeTransfer.a
-        self.ib_dyn_b = self.ChargeTransfer.b
-        self.ib_dyn_c = self.ChargeTransfer.c
         self.vb = self.voc + self.ib_dyn*self.chemistry.r_ct + self.ib*self.chemistry.r_0
         if self.bms_off:
             if Battery.dc_dc_on:
@@ -1295,7 +1254,6 @@ class Looparound:
         self.zero = False
         self.dt = 0.
         self.dt_past = 0.
-        self.dt_past2 = 0.
         self.dv_dyn = 0.
         self.e_wrap = 0.
         self.e_wrap_filt = 0.
@@ -1383,7 +1341,6 @@ class Looparound:
                                              dt=self.dt_past, reset=self.reset)  # non-latching
         self.ib_past2 = self.ib_past
         self.ib_past = self.ib
-        self.dt_past2 = self.dt_past
         self.dt_past = self.dt
 
 

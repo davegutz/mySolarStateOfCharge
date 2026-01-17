@@ -111,7 +111,7 @@ def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
 #7
 def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                           ibmh                        ibmm                  ib_amp_lo    ib_amp_hi   dis_amp_flt   per    dt                    ib_amp                    ib_dyn_T_m       ib_dyn_tau_m              ib_dyn_rstate_m                ib_dyn_lstate_m                      ib_dyn_m                 vb                    dv_dyn_m             vb_m                      voc_m                    voc_soc                voc_soc_m                   e_wrap_m                  e_wrap_m_trim         e_wrap_trimmed_m         e_wrap_m_T           e_wrap_m_tau           e_wrap_m_rate            e_wrap_m_reset       e_wrap_m_state         e_wrap_m_filt       disable_amp_fault      ib_amp_lo     e_wrap_m_reset"
+    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                           ibmh                        ibmm                  ib_amp_lo    ib_amp_hi   dis_amp_flt   per    dt                    ib_amp                    ib_dyn_T_m       ib_dyn_rstate_m                ib_dyn_lstate_m                      ib_dyn_m                 vb                    dv_dyn_m             vb_m                      voc_m                    voc_soc                voc_soc_m                   e_wrap_m                  e_wrap_m_trim         e_wrap_trimmed_m         e_wrap_m_T           e_wrap_m_rate            e_wrap_m_reset       e_wrap_m_state         e_wrap_m_filt       disable_amp_fault      ib_amp_lo     e_wrap_m_reset"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -143,7 +143,6 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:11.4f}".format(SN.mon_run.dt[G.i]), "{:7.4f}".format(mon.dt),
           "{:15.6f}".format(SN.mon_run.ib_amp[G.i]), "{:13.6f}".format(mon.ib_amp),
           "{:9.4f}".format(SN.mon_run.ib_dyn_T_m[G.i]), "{:5.4f}".format(mon.LoopIbAmp.ChargeTransfer.dt),
-          "{:12.6f}".format(SN.mon_run.ib_dyn_tau_m[G.i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.tau),
           "{:15.6f}".format(SN.mon_run.ib_dyn_rstate_m[G.i]), "{:13.6f}".format(mon.LoopIbAmp.ChargeTransfer.rstate),
           "{:15.6f}".format(SN.mon_run.ib_dyn_lstate_m[G.i]), "{:13.6f}".format(mon.LoopIbAmp.ChargeTransfer.state),
           "{:21.5f}".format(SN.mon_run.ib_dyn_m[G.i]), "{:12.5f}".format(mon.LoopIbAmp.ib_dyn),
@@ -157,7 +156,6 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:16.5f}".format(SN.mon_run.e_wrap_m_trim[G.i]), "{:8.5f}".format(mon.e_wrap_m_trim),
           "{:12.6f}".format(SN.mon_run.e_wrap_m_trimmed[G.i]), "{:9.6f}".format(mon.LoopIbAmp.e_wrap_trimmed),
           "{:12.4f}".format(SN.mon_run.ib_wrp_T_m[G.i]), "{:9.4f}".format(mon.LoopIbAmp.WrapErrFilt.dt),
-          "{:12.6f}".format(SN.mon_run.ib_wrp_tau_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.tau),
           "{:12.6f}".format(SN.mon_run.ib_wrp_rate_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.rate),
           "{:12d}".format(bool(SN.mon_run.ib_wrp_reset_m[G.i])), "{:9d}".format(bool(mon.LoopIbAmp.WrapErrFilt.reset)),
           "{:12.6f}".format(SN.mon_run.ib_wrp_state_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.state),
@@ -171,7 +169,7 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
 
 def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
     global count_since_last_header
-    hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa       ib_charge              soc                    soc_ekf                y_ekf                   voc_ekf                Tb_f                     x_prior               frz   x                        x_for_hx                 x_post                    Tb_f_rap                  tb_f_for_hx                hx                         u_ekf                   voc_stat_f            z                      z_ekf       P                              P_post                       P_prior                       H                      R                     S                    K                          f_rstate             f_lstate            f_tau                    f_T"
+    hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa       ib_charge              soc                    soc_ekf                y_ekf                   voc_ekf                Tb_f                     x_prior               frz   x                        x_for_hx                 x_post                    Tb_f_rap                  tb_f_for_hx                hx                         u_ekf                   voc_stat_f            z                      z_ekf       P                              P_post                       P_prior                       H                      R                     S                    K                          f_rstate             f_lstate            f_T"
     i_ekf = max(i_ekf, 0)
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
@@ -214,7 +212,6 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
           "{:13.9f}".format(SN.mon_run.K[i_ekf]), "{:10.9f}".format(mon.K),
           "{:11.5f}".format(SN.mon_run.voc_stat_f_rstate[i_ekf]), "{:8.5f}".format(mon.voc_stat_f_rstate),
           "{:11.5f}".format(SN.mon_run.voc_stat_f_lstate[i_ekf]), "{:8.5f}".format(mon.voc_stat_f_lstate),
-          "{:12.6f}".format(SN.mon_run.voc_stat_f_tau[i_ekf]), "{:9.6f}".format(mon.voc_stat_f_tau),
           "{:12.6f}".format(SN.mon_run.voc_stat_f_T[i_ekf]), "{:9.6f}".format(mon.voc_stat_f_T),
           )
     print(Colors.reset, end='')
@@ -448,7 +445,7 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
 #5
 def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                            ib_charge                   ib_sel         ib                          ibmh                        ibmm                        ibnh                        ibnm                        ibh                         ib_s                 ib_amp_lo    ib_amp_hi   ib_noa_lo   ib_noa_hi dis_amp_flt   per    dt                    ib_amp                    ib_dyn_T_m     ib_dyn_tau_m              ib_dyn_rstate_m                ib_dyn_lstate_m                      ib_dyn_m                vb                    vb_model               vb_hdwe               vb_hdwe_f             dv_dyn_m               e_wrap_m_T           e_wrap_m_tau           e_wrap_m_rate          e_wrap_m_reset         e_wrap_m_state        voc                   voc_soc                e_wrap_m             e_wrap_m_filt     disable_amp_fault ib_amp_lo  ib_noa_lo  e_wrap_m_reset  e_wrap_m_trim        ib_dyn_n                ib_dyn_T_n       ib_dyn_tau_n           dv_dyn_n               e_wrap_n             e_wrap_n_filt         ib_dyn_n                    ib_dyn                   ib_dyn_T_n       ib_dyn_tau_n              ib_dyn_rstate_n                ib_dyn_lstate_n            dv_dyn_n               e_wrap_n_T             e_wrap_n_tau           e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt        ib                          e_wrap               e_wrap_filt           ib_dyn_rstate                ib_dyn_lstate                   ib_dyn                      dv_dyn                 dv_hys                soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_s            voc_stat_f             soc_ekf               y_ekf"
+    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                            ib_charge                   ib_sel         ib                          ibmh                        ibmm                        ibnh                        ibnm                        ibh                         ib_s                 ib_amp_lo    ib_amp_hi   ib_noa_lo   ib_noa_hi dis_amp_flt   per    dt                    ib_amp                    ib_dyn_T_m     ib_dyn_rstate_m                ib_dyn_lstate_m                      ib_dyn_m                vb                    vb_model               vb_hdwe               vb_hdwe_f             dv_dyn_m               e_wrap_m_T           e_wrap_m_rate          e_wrap_m_reset         e_wrap_m_state        voc                   voc_soc                e_wrap_m             e_wrap_m_filt     disable_amp_fault ib_amp_lo  ib_noa_lo  e_wrap_m_reset  e_wrap_m_trim        ib_dyn_n                ib_dyn_T_n       dv_dyn_n               e_wrap_n             e_wrap_n_filt         ib_dyn_n                    ib_dyn                   ib_dyn_T_n       ib_dyn_rstate_n                ib_dyn_lstate_n            dv_dyn_n               e_wrap_n_T             e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt        ib                          e_wrap               e_wrap_filt           ib_dyn_rstate                ib_dyn_lstate                   ib_dyn                      dv_dyn                 dv_hys                soc                      dt              Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_s            voc_stat_f             soc_ekf               y_ekf"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -487,7 +484,6 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:11.4f}".format(SN.mon_run.dt[G.i]), "{:7.4f}".format(mon.dt),
           "{:14.5f}".format(SN.mon_run.ib_amp[G.i]), "{:12.5f}".format(mon.ib_amp),
           "{:9.4f}".format(SN.mon_run.ib_dyn_T_m[G.i]), "{:5.4f}".format(mon.LoopIbAmp.ChargeTransfer.dt),
-          "{:12.6f}".format(SN.mon_run.ib_dyn_tau_m[G.i]), "{:8.6f}".format(mon.LoopIbAmp.ChargeTransfer.tau),
           "{:15.6f}".format(SN.mon_run.ib_dyn_rstate_m[G.i]), "{:13.6f}".format(mon.LoopIbAmp.ChargeTransfer.rstate),
           "{:15.6f}".format(SN.mon_run.ib_dyn_lstate_m[G.i]), "{:13.6f}".format(mon.LoopIbAmp.ChargeTransfer.state),
           "{:21.5f}".format(SN.mon_run.ib_dyn_m[G.i]), "{:12.5f}".format(mon.LoopIbAmp.ib_dyn),
@@ -497,7 +493,6 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:11.5f}".format(SN.mon_run.vb_hdwe_f[G.i]), "{:9.5f}".format(mon.vb_hdwe_f),
           "{:11.5f}".format(SN.mon_run.dv_dyn_m[G.i]), "{:8.5f}".format(mon.LoopIbAmp.dv_dyn),
           "{:12.4f}".format(SN.mon_run.ib_wrp_T_m[G.i]), "{:9.4f}".format(mon.LoopIbAmp.WrapErrFilt.dt),
-          "{:12.6f}".format(SN.mon_run.ib_wrp_tau_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.tau),
           "{:12.6f}".format(SN.mon_run.ib_wrp_rate_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.rate),
           "{:12d}".format(bool(SN.mon_run.ib_wrp_reset_m[G.i])), "{:9d}".format(bool(mon.LoopIbAmp.WrapErrFilt.reset)),
           "{:12.6f}".format(SN.mon_run.ib_wrp_state_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.state),
@@ -511,19 +506,16 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:16.5f}".format(SN.mon_run.e_wrap_m_trim[G.i]), "{:8.5f}".format(mon.e_wrap_m_trim),
           "{:14.5f}".format(SN.mon_run.ib_dyn_n[G.i]), "{:12.5f}".format(mon.LoopIbNoa.ib_dyn),
           "{:9.4f}".format(SN.mon_run.ib_dyn_T_n[G.i]), "{:5.4f}".format(mon.LoopIbNoa.ChargeTransfer.dt),
-          "{:12.6f}".format(SN.mon_run.ib_dyn_tau_n[G.i]), "{:8.6f}".format(mon.LoopIbNoa.ChargeTransfer.tau),
           "{:11.5f}".format(SN.mon_run.dv_dyn_n[G.i]), "{:8.5f}".format(mon.LoopIbNoa.dv_dyn),
           "{:11.5f}".format(SN.mon_run.e_wrap_n[G.i]), "{:8.5f}".format(mon.e_wrap_n),
           "{:11.5f}".format(SN.mon_run.e_wrap_n_filt[G.i]), "{:8.5f}".format(mon.e_wrap_n_filt),
           "{:14.5f}".format(SN.mon_run.ib_dyn_n[G.i]), "{:12.5f}".format(mon.LoopIbNoa.ib_dyn),
           "{:14.5f}".format(SN.mon_run.ib_dyn[G.i]), "{:12.5f}".format(mon.ib_dyn),
           "{:9.4f}".format(SN.mon_run.ib_dyn_T_n[G.i]), "{:5.4f}".format(mon.LoopIbNoa.ChargeTransfer.dt),
-          "{:12.6f}".format(SN.mon_run.ib_dyn_tau_n[G.i]), "{:8.6f}".format(mon.LoopIbNoa.ChargeTransfer.tau),
           "{:15.6f}".format(SN.mon_run.ib_dyn_rstate_n[G.i]), "{:13.6f}".format(mon.LoopIbNoa.ChargeTransfer.rstate),
           "{:15.6f}".format(SN.mon_run.ib_dyn_lstate_n[G.i]), "{:13.6f}".format(mon.LoopIbNoa.ChargeTransfer.state),
           "{:11.5f}".format(SN.mon_run.dv_dyn_n[G.i]), "{:9.5f}".format(mon.LoopIbNoa.dv_dyn),
           "{:12.4f}".format(SN.mon_run.ib_wrp_T_n[G.i]), "{:9.4f}".format(mon.LoopIbNoa.WrapErrFilt.dt),
-          "{:12.6f}".format(SN.mon_run.ib_wrp_tau_n[G.i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.tau),
           "{:12.6f}".format(SN.mon_run.ib_wrp_rate_n[G.i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.rate),
           "{:12.6f}".format(SN.mon_run.ib_wrp_state_n[G.i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.state),
           "{:11.5f}".format(SN.mon_run.e_wrap_n[G.i]), "{:8.5f}".format(mon.e_wrap_n),

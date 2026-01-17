@@ -169,7 +169,7 @@ void setup()
     Log.info("setup I2C Wire");
     #ifdef HDWE_ADS1013_AMP_NOA
       Wire.setSpeed(CLOCK_SPEED_100KHZ);
-      sendTxBuf("Nominal Wire setup for ADS1013\n", true, true;
+      sendTxBuf("Nominal Wire setup for ADS1013\n", true, true);
     #else
       Wire.setSpeed(CLOCK_SPEED_100KHZ);
       sendTxBuf("Wire started\n", true, true);
