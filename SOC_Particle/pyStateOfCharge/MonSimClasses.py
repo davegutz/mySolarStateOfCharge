@@ -111,7 +111,7 @@ class Sensors:
             else:
                 self.Tb_f_rate = self.mon_run.Tb_f_rate_rap[0]
             self.Tb_past = self.mon_run.Tb_rap[0] + self.dTb
-            self.Tb_f_past = self.mon_run.Tb_f_rate_rap[0] + self.dTb
+            self.Tb_f_past = self.mon_run.Tb_f_rap[0] + self.dTb
             self.Tb_f_rate_past = self.mon_run.Tb_f_rate_rap[0]
             self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
             self.TbModelFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
@@ -146,6 +146,7 @@ class Sensors:
             self.Tb_model_init = self.mon_run.Tb_model[0]
             self.Tb_hdwe_filt_init = self.mon_run.Tb_hdwe_filt[0]
             self.Tb_model_filt_init = self.mon_run.Tb_model_filt[0]
+            self.Tb_model_filt_fut = self.mon_run.Tb_model_filt[0]
             self.Tb_hdwe_filt_rate_init = self.mon_run.Tb_hdwe_filt_rate[0]
             self.Tb_model_filt_rate_init = self.mon_run.Tb_model_filt_rate[0]
             self.e_wrap_init = self.mon_run.e_wrap[0]
@@ -175,6 +176,8 @@ class Sensors:
             self.ib_charge_init = self.mon_run.ib_charge[0]
             self.vb_init = self.mon_run.vb[0]
             self.voc_stat_init = self.mon_run.voc_stat[0]
+            self.dt_temp_fut = self.mon_run.Tt[1]
+            self.dt_temp = self.mon_run.Tt[0]
 
         elif run_type == 'HistSim':
 
@@ -253,7 +256,6 @@ class Sensors:
             self.vb_init = self.mon_run.vb_f[0]
             self.ibmm = self.mon_run.ibmh_f
             self.ibnm = self.mon_run.ibnh_f
-            self.Tb_f_rap = self.mon_run.Tb_f
 
             self.z = self.mon_run.z
             self.z_init = self.z[0]
@@ -339,6 +341,9 @@ class Sensors:
         mon.reset_temp = (i_temp < 2) or mon.reset or OPT.run_type == 'HistSim'  # make sure temp init is longer than reset
         if hasattr(OPT.mon_run, 'Tt'):
             mon.dt_temp = OPT.mon_run.Tt[i_temp]
+            index = min(i_temp+1, len(OPT.mon_run.Tt)-1)
+            self.dt_temp = self.dt_temp_fut
+            self.dt_temp_fut = OPT.mon_run.Tt[index]
         else:
             mon.dt_temp = mon.dt
         if OPT.run_type == 'RunSim':
@@ -362,7 +367,7 @@ class Sensors:
         else:
             sim.Tb_f = sim.Tb
 
-        print(f"calc)temp_pass_1:  mr.Tb_model {OPT.mon_run.Tb_model[i_temp]}--->mon.Tb_model {mon.Tb_model}", end='')
+        print(f"calc_temp_pass_1:  mr.Tb_model {OPT.mon_run.Tb_model[i_temp]}--->mon.Tb_model {mon.Tb_model}", end='')
         return mon, sim
 
     def calc_temp_pass_2(self, mon_run, mon, Battery_, i_temp, rp):
@@ -378,10 +383,13 @@ class Sensors:
                                                       mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
         if hasattr(mon_run, 'Tb_model_filt'):
-            mon.Tb_model_filt = \
-                self.TbModelFilt.calculate_tau_seeded(mon.Tb_model, mon_run.Tb_model_filt[i_temp], mon.reset_temp,
-                                                      mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
+            mon.Tb_model_filt = self.Tb_model_filt_fut
+            index_temp = min(i_temp+1, len(mon_run.Tb_model_filt)-1)
+            self.Tb_model_filt_fut = \
+                self.TbModelFilt.calculate_tau_seeded(mon.Tb_model, mon_run.Tb_model_filt[index_temp], mon.reset_temp,
+                                                      self.dt_temp_fut, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
+            print(f" reset_temp {mon.reset_temp} Tt {mon.dt_temp} Tb_model_run {mon_run.Tb_model[i_temp]}  mon_run.Tb_model_filt {mon_run.Tb_model_filt[i_temp]} Tb_model {mon.Tb_model} Tb_model_filt {mon.Tb_model_filt}  Tb_model_filt_state {self.TbModelFilt.state} ", end='')
         else:
             mon.Tb_model_filt = \
                 self.TbModelFilt.calculate_tau_seeded(mon.Tb_model, mon.Tb_model,
@@ -410,7 +418,7 @@ class Sensors:
         self.assign_tb(mon.Tb, mon.Tb_f, mon.Tb_f_rate)
         if i_temp > 2:
             pass
-        print(f"calc)temp_pass_2:  mr.Tb_model {mon_run.Tb_model[i_temp]}--->mon.Tb_model {mon.Tb_model}")
+        print(f"calc_temp_pass_2:  mr.Tb_model {mon_run.Tb_model[i_temp]}--->mon.Tb_model {mon.Tb_model}")
         return mon
 
     def update_ekf(self, i_ekf):

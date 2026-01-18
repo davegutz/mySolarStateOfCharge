@@ -376,7 +376,7 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
 #4
 def print_temp_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header
-    hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce     Tt       Tb_hdwe                    Tb                         Tb_hdwe_filt               Tb_rap                     Tb_f_rap                   Tb_model                   Tb_model_f                 Tb_f                        Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
+    hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce     Tt               Tb_hdwe                    Tb                         Tb_hdwe_filt               Tb_rap                     Tb_f_rap                   Tb_model                   Tb_model_filt              Tb_f                        Tb_h_f_r                   Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -389,7 +389,7 @@ def print_temp_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
-          "{:9.3f}".format(SN.mon_run.Tt[i_temp]),
+          "{:9.3f}".format(SN.mon_run.Tt[i_temp]), "{:7.3f}".format(mon.dt_temp),
           "{:13.7f}".format(SN.mon_run.Tb_hdwe[i_temp]), "{:11.7f}".format(mon.Tb_hdwe),
           "{:14.7f}".format(SN.mon_run.Tb[i_temp]), "{:11.7f}".format(mon.Tb),
           "{:14.7f}".format(SN.mon_run.Tb_hdwe_filt[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt),

@@ -816,19 +816,25 @@ class SavedData:
                     self.c_time_shunt = np.array(np.atleast_1d(shunt.c_time) - self.time_run)
                     i_end = min(i_end, len(self.c_time_shunt))
             else:
-                i_end = np.where(self.time <= time_end)[0][-1] + 1
+                if temp is not None:
+                    time_t = np.atleast_1d(np.array(np.array(temp.c_time) - time_end))
+                    Tt = np.atleast_1d(np.array(temp.T_t))
+                    time_end = time_t[-1] + Tt[-1]
+                    i_end = np.where(self.time <= time_end)[0][-1] + 1
+                else:
+                    i_end = len(self.time)
                 if sel is not None:
                     self.c_time_s = np.array(sel.c_time) - self.time_run
                     i_end_sel = np.where(self.c_time_s <= time_end)[0][-1] + 1
                     i_end = np.minimum(i_end, i_end_sel)
                     self.zero_end = np.minimum(self.zero_end, i_end-1)
+                if ekf is not None:
+                    self.time_e = np.array(np.atleast_1d(ekf.c_time) - self.time_run)
                 if shunt is not None:
                     self.c_time_shunt = np.array(shunt.c_time) - self.time_run
                     i_end_shunt = np.where(self.c_time_shunt <= time_end)[0][-1] + 1
                     i_end = np.minimum(i_end, i_end_shunt)
                     self.zero_end = np.minimum(self.zero_end, i_end-1)
-                if ekf is not None:
-                    self.time_e = np.array(np.atleast_1d(ekf.c_time) - self.time_run)
             self.cTime = self.cTime[:i_end]
             self.dt = np.array(rap.dt[:i_end])
             self.time = np.array(self.time[:i_end])

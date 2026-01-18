@@ -1617,8 +1617,10 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
   reset_temp_ = reset_temp;
   #ifndef HDWE_BARE
     Tb_hdwe = SensorTb->sample(Sen);  // Must sample even if using model
+    
     Tb_model_filt = TbModelFilt->calculate(Tb_model, reset_temp_, ap.tb_filt, min(T_temp, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
     Tb_model_filt_rate = TbModelFilt->rate();
+
     if ( sp.mod_tb() )
     {
       Tb_hdwe = Tb_model;
@@ -1637,10 +1639,10 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
   Tb_hdwe += sp.Tb_bias_hdwe();  // Fault injection
 
   Tb_hdwe_filt = TbSenseFilt->calculate(Tb_hdwe, reset_temp_, ap.tb_filt, min(T_temp, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
+  Tb_hdwe_filt_rate = TbSenseFilt->rate();
+
   if ( sp.debug()==16 ) Serial.printf("temp_load_and_filter: T_temp, Tb_hdwe, Tb_hdwe_filt, rstate, lstate %11.8f %11.8f %11.8f %11.8f %11.8f\n",
         T_temp, Tb_hdwe, Tb_hdwe_filt, TbSenseFilt->rstate(), TbSenseFilt->lstate());
-
-  Tb_hdwe_filt_rate = TbSenseFilt->rate();
 
   if ( sp.debug()==16 || (sp.debug()==-1 && reset_temp_) ) Serial.printf("reset_temp_ T_temp Tb_bias_hdwe_loc, RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, Tb_hdwe_filt_rate, ready, rstate, lstate %d %8.6f %11.8f %11.8f %11.8f %11.8f %11.8f %d %11.8f  %11.8f\n",
     reset_temp_, T_temp, sp.Tb_bias_hdwe(), RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, Tb_hdwe_filt_rate, cp.tb_info.ready, TbSenseFilt->rstate(),  TbSenseFilt->lstate());
