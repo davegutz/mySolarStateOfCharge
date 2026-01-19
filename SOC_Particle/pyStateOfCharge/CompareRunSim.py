@@ -134,7 +134,7 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_
                                        ver_str='_ver')
         fig_list, fig_files = sim_s_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                          plot_title=plot_title, fig_list=fig_list, run_str='',
-                                         ver_str='_ver')
+                                         ver_str='_ver', strict_overplot=strict_overplot)
         fig_list, fig_files = gp_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files=fig_files,
                                       plot_title=plot_title, fig_list=fig_list, run_str='',
                                       ver_str='_ver', Battery=Battery)

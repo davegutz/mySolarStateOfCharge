@@ -38,7 +38,7 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 
 def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
-               run_str='_run', ver_str='_ver'):
+               run_str='_run', ver_str='_ver', strict_overplot=False):
     print('sim_s_plot', end=':  ')
     if sr and smv:
         fig_list.append(plt.figure())  # sim_s  1
@@ -118,45 +118,50 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
 
         fig_list.append(plt.figure())  # sim_s  2
         plt.subplot(331)
-        plt.title(plot_title + ' sim_s 2')
-        print('sim_s 2', end=':  ')
+        if strict_overplot:
+            plt.title(plot_title + ' sim_s 2')
+            print('sim_s 2', end=':  ')
         plt.plot(mr.time, mr.vb, color='red', linestyle='-', label='vb'+run_str)
-        plt.plot(mr.time, mr.voc, color='black',  linestyle='--', label='voc'+run_str)
-        plt.plot(mr.time, mr.voc_stat, color='blue', linestyle='-.', label='voc_stat'+run_str)
-        plq(plt, mr, 'time', mr, 'voc_soc', color='orange', linestyle=':', label='voc_soc'+run_str)
-        plq(plt, mr, 'time', mr, 'vb_h', color='cyan', linestyle=':', label='vb_hdwe'+run_str)
+        plt.plot(mv.time, mv.vb, color='blue', linestyle='--', label='vb'+ver_str)
+        plq(plt, sr, 'time', sr, 'vb_s', color='black', linestyle='-.', label='vb_s'+run_str)
+        plt.plot(smv.time, smv.vb_s, color='orange', linestyle=':', label='vb_s'+ver_str)
         plt.legend(loc=1)
-        plt.subplot(332)
-        plq(plt, sr, 'time', sr, 'vb_s', color='red', linestyle='-', label='vb_s'+run_str)
-        plq(plt, sr, 'time', sr, 'voc_s', color='black', linestyle='--', label='voc_s'+run_str)
-        plt.plot(sr.time, sr.voc_stat_s, color='blue', linestyle='-.', label='voc_stat_s'+run_str)
-        plt.legend(loc=1)
-        plt.subplot(334)
-        plt.plot(mv.time, mv.vb, color='red', linestyle='-', label='vb'+ver_str)
-        plt.plot(mv.time, mv.voc, color='black', linestyle='--', label='voc'+ver_str)
-        plt.plot(mv.time, mv.voc_stat, color='blue', linestyle='-.', label='voc_stat'+ver_str)
-        plt.legend(loc=1)
-        plt.subplot(335)
-        plt.plot(smv.time, smv.vb_s, color='red', linestyle='-', label='vb_s'+ver_str)
-        plt.plot(smv.time, smv.voc_s, color='black', linestyle='--', label='voc_s'+ver_str)
-        plt.plot(mv.time, mv.voc_soc, color='blue', linestyle='-.', label='voc_soc'+ver_str)
-        plt.plot(smv.time, smv.voc_stat_s, color='orange', linestyle=':', label='voc_stat_s'+ver_str)
-        plt.legend(loc=1)
+        if not strict_overplot:
+            plt.subplot(333)
+            plt.plot(mr.time, mr.vb, color='red', linestyle='-', label='vb'+run_str)
+            plt.plot(mr.time, mr.voc, color='black',  linestyle='--', label='voc'+run_str)
+            plt.plot(mr.time, mr.voc_stat, color='blue', linestyle='-.', label='voc_stat'+run_str)
+            plq(plt, mr, 'time', mr, 'voc_soc', color='orange', linestyle=':', label='voc_soc'+run_str)
+            plq(plt, mr, 'time', mr, 'vb_h', color='cyan', linestyle=':', label='vb_hdwe'+run_str)
+            plt.legend(loc=1)
+        if not strict_overplot:
+            plt.subplot(332)
+            plq(plt, sr, 'time', sr, 'vb_s', color='red', linestyle='-', label='vb_s'+run_str)
+            plq(plt, sr, 'time', sr, 'voc_s', color='black', linestyle='--', label='voc_s'+run_str)
+            plt.plot(sr.time, sr.voc_stat_s, color='blue', linestyle='-.', label='voc_stat_s'+run_str)
+            plt.legend(loc=1)
+        if not strict_overplot:
+            plt.subplot(334)
+            plt.plot(mv.time, mv.vb, color='red', linestyle='-', label='vb'+ver_str)
+            plt.plot(mv.time, mv.voc, color='black', linestyle='--', label='voc'+ver_str)
+            plt.plot(mv.time, mv.voc_stat, color='blue', linestyle='-.', label='voc_stat'+ver_str)
+            plt.legend(loc=1)
+        if not strict_overplot:
+            plt.subplot(335)
+            plt.plot(smv.time, smv.vb_s, color='red', linestyle='-', label='vb_s'+ver_str)
+            plt.plot(smv.time, smv.voc_s, color='black', linestyle='--', label='voc_s'+ver_str)
+            plt.plot(mv.time, mv.voc_soc, color='blue', linestyle='-.', label='voc_soc'+ver_str)
+            plt.plot(smv.time, smv.voc_stat_s, color='orange', linestyle=':', label='voc_stat_s'+ver_str)
+            plt.legend(loc=1)
         plt.subplot(337)
         plt.plot(mr.time, mr.soc, color='red', linestyle='-', label='soc'+run_str)
-        plt.plot(mr.time, mr.soc_ekf, color='black',  linestyle='--', label='soc_ekf'+run_str)
-        plt.plot(mv.time, mv.soc, color='blue', linestyle='-.', label='soc'+ver_str)
+        plt.plot(mv.time, mv.soc, color='blue', linestyle='--', label='soc'+ver_str)
+        plt.plot(mr.time, mr.soc_ekf, color='black',  linestyle='-.', label='soc_ekf'+run_str)
         plt.plot(mv.time, mv.soc_ekf, color='orange', linestyle=':', label='soc_ekf'+ver_str)
         plt.legend(loc=1)
         plt.subplot(338)
         plt.plot(sr.time, sr.soc_s, color='orange', linestyle='-', label='soc_s'+run_str)
         plt.plot(smv.time, smv.soc_s, color='cyan', linestyle='--', label='soc_s'+ver_str)
-        plt.legend(loc=1)
-        plt.subplot(333)
-        plt.plot(mr.time, mr.vb, color='red', linestyle='-', label='vb'+run_str)
-        plq(plt, sr, 'time', sr, 'vb_s', color='black', linestyle='--', label='vb_s'+run_str)
-        plt.plot(mv.time, mv.vb, color='blue', linestyle='-.', label='vb'+ver_str)
-        plt.plot(smv.time, smv.vb_s, color='orange', linestyle=':', label='vb_s'+ver_str)
         plt.legend(loc=1)
         plt.subplot(336)
         plt.plot(mr.time, mr.voc, color='red', linestyle='-', label='voc'+run_str)
@@ -166,8 +171,8 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         plt.legend(loc=1)
         plt.subplot(339)
         plt.plot(mr.time, mr.voc_stat, color='red', linestyle='-', label='voc_stat'+run_str)
-        plt.plot(sr.time, sr.voc_stat_s, color='black',  linestyle='--', label='voc_stat_s'+run_str)
-        plt.plot(mv.time, mv.voc_stat, color='blue', linestyle='-.', label='voc_stat'+ver_str)
+        plt.plot(mv.time, mv.voc_stat, color='blue', linestyle='--', label='voc_stat'+ver_str)
+        plt.plot(sr.time, sr.voc_stat_s, color='black',  linestyle='-.', label='voc_stat_s'+run_str)
         plt.plot(smv.time, smv.voc_stat_s, color='orange', linestyle=':', label='voc_stat_s'+ver_str)
         plt.legend(loc=1)
 
@@ -176,19 +181,39 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         plt.title(plot_title + ' sim_s 2a')
         print('sim_s 2a', end=':  ')
         plt.plot(mr.time, mr.vb, color='black', linestyle='-', label='vb' + run_str)
-        plq(plt, sr, 'time', sr, 'vb_s', color='green', linestyle='--', label='vb_s'+run_str)
+        if strict_overplot:
+            plq(plt, mv, 'time', mv, 'vb', color='red', linestyle='--', label='vb' + ver_str)
+        plq(plt, sr, 'time', sr, 'vb_s', color='green', linestyle='-.', label='vb_s'+run_str)
+        if strict_overplot:
+            plq(plt, smv, 'time', smv, 'vb_s', color='orange', linestyle=':', label='vb_s' + ver_str)
         plt.plot(mr.time, mr.voc, color='brown', linestyle='-', label='voc'+run_str)
-        plq(plt, sr, 'time', sr, 'voc_s', color='blue', linestyle='-', label='voc_s'+run_str)
-        plt.plot(mr.time, mr.voc_stat, color='lightgreen', linestyle=':', label='voc_stat'+run_str)
-        plt.plot(sr.time, sr.voc_stat_s, color='magenta',  linestyle=':', label='voc_stat_s'+run_str)
+        if strict_overplot:
+            plq(plt, mv, 'time', mv, 'voc', linestyle='--', color='red', label='voc' + ver_str)
+        plq(plt, sr, 'time', sr, 'voc_s', color='blue', linestyle='-.', label='voc_s'+run_str)
+        if strict_overplot:
+            plq(plt, smv, 'time', smv, 'voc_s', color='red', linestyle=':', label='voc_s' + ver_str)
+        plt.plot(mr.time, mr.voc_stat, color='lightgreen', linestyle='-', label='voc_stat'+run_str)
+        if strict_overplot:
+            plq(plt, mv, 'time', mv, 'voc_stat', linestyle='--', color='cyan', label='voc_stat' + ver_str)
+        plt.plot(sr.time, sr.voc_stat_s, color='magenta',  linestyle='-.', label='voc_stat_s'+run_str)
+        if strict_overplot:
+            plq(plt, smv, 'time', smv, 'voc_stat_s', linestyle=':', color='red', label='voc_stat_s' + ver_str)
         plt.legend(loc=1)
         plt.subplot(222)
-        plt.plot(mr.time, mr.e_wrap, color='magenta', linestyle=':', label='e_wrap' + run_str)
-        plt.plot(mr.time, mr.e_wrap_filt, color='red', linestyle='-', label='e_wrap_filt' + run_str)
+        plt.plot(mr.time, mr.e_wrap, color='magenta', linestyle='-', label='e_wrap' + run_str)
+        if strict_overplot:
+            plq(plt, mv, 'time', mv, 'e_wrap', color='blue', linestyle='--', label='e_wrap'+ver_str)
+        plt.plot(mr.time, mr.e_wrap_filt, color='magenta', linestyle='-.', label='e_wrap_filt' + run_str)
+        if strict_overplot:
+            plq(plt, mv, 'time', mv, 'e_wrap_filt', color='blue', linestyle=':', label='e_wrap_filt' + ver_str)
         plt.legend(loc=1)
         plt.subplot(223)
         plt.plot(mr.time, mr.dv_dyn, color='black', linestyle='-', label='dv_dyn' + run_str)
+        if strict_overplot:
+            plq(plt, mv, 'time', mv, 'dv_dyn', color='cyan', linestyle='--', label='dv_dyn_ver')
         plt.plot(sr.time, sr.dv_dyn_s, color='red', linestyle='--', label='dv_dyn_s' + run_str)
+        if strict_overplot:
+            plq(plt, smv, 'time', smv, 'dv_dyn_s', color='magenta', linestyle='--', label='dv_dyn_s' + ver_str)
         if sr.voc_s is None:
             sr.dv_hyst_s_est = None
         else:
@@ -196,8 +221,12 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         plq(plt, sr, 'time', sr, 'dv_hyst_s_est', color='cyan', linestyle=':', label='dv_hyst_s_est'+run_str)
         plt.legend(loc=1)
         plt.subplot(224)
-        plt.plot(mr.time, mr.ib_charge, color='black', linestyle='-', label='ib_charge' + run_str)
-        plq(plt, sr, 'time', sr, 'ib_charge_s', color='red', linestyle='--', label='ib_charge_s'+run_str)
+        plt.plot(mr.time, mr.ib_charge, color='red', linestyle='-', label='ib_charge' + run_str)
+        if strict_overplot:
+            plq(plt, mv, 'time', mv, 'ib_charge', color='cyan', linestyle='--', label='ib_charge' + ver_str)
+        plq(plt, sr, 'time', sr, 'ib_charge_s', color='red', linestyle='-.', label='ib_charge_s'+run_str)
+        if strict_overplot:
+            plq(plt, smv, 'time', smv, 'ib_charge_s', color='cyan', linestyle=':', label='ib_charge_s' + ver_str)
         plt.legend(loc=1)
 
         fig_list.append(plt.figure())  # sim_s  3
@@ -259,7 +288,9 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         plt.legend(loc=1)
         plt.subplot(326)
         plq(plt, mr, 'soc', mr, 'voc_soc', color='blue', linestyle='-', label='voc_soc'+run_str)
-        plq(plt, mr, 'soc', mr, 'voc_stat', color='red', linestyle='-', label='voc_stat' + run_str)
+        plt.plot(mv.soc, mv.voc_soc, color='red', linestyle='--', label='voc_soc'+ver_str)
+        plq(plt, mr, 'soc', mr, 'voc_stat', color='red', linestyle='-.', label='voc_stat' + run_str)
+        plt.plot(mv.soc, mv.voc_stat, color='orange', linestyle=':', label='voc_stat'+ver_str)
         plt.legend(loc=1)
 
         fig_list.append(plt.figure())  # sim_s  4
@@ -281,16 +312,19 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         plq(plt, mr, 'soc', mr, 'voc_soc', color='green', linestyle=':', label='voc_soc'+run_str)
         plt.plot(mv.soc, mv.voc_soc, color='orange', linestyle='-', label='voc_soc'+ver_str)
         plq(plt, mr, 'soc', mr, 'vb_h', color='magenta', linestyle='-', label='vb'+run_str)
-        plq(plt, sv, 'soc', sv, 'voc_stat', color='red', linestyle=':', label='voc_stat_s'+ver_str)
+        plq(plt, mr, 'soc', mr, 'voc_stat', color='blue', linestyle='-.', label='voc_stat_s'+run_str)
         plq(plt, smv, 'soc_s', smv, 'voc_stat_s', color='red', linestyle=':', label='voc_stat_s'+ver_str)
         plt.ylim(12.5, 14.5)
         plt.legend(loc=1)
         plt.subplot(223)
         plt.plot(mr.soc, mr.voc_stat, color='magenta', linestyle='-', label='voc_stat = z'+run_str)
         plt.plot(mv.soc, mv.voc_stat, color='black', linestyle='--', label='voc_stat = z'+ver_str)
-        plt.plot(mv.soc, mv.voc_ekf, color='cyan', linestyle=':', label='voc_ekf(soc) = hx'+ver_str)
-        plq(plt, mr, 'soc', mr, 'vb_h', color='magenta', linestyle='-', label='vb'+run_str)
-        plq(plt, sv, 'soc', sv, 'voc_stat', color='red', linestyle=':', label='voc_stat_s'+ver_str)
+        plt.plot(mr.soc, mr.voc_ekf, color='magenta', linestyle='-.', label='voc_ekf(soc) = hx'+run_str)
+        plt.plot(mv.soc, mv.voc_ekf, color='black', linestyle=':', label='voc_ekf(soc) = hx'+ver_str)
+        plq(plt, mr, 'soc', mr, 'vb_h', color='magenta', linestyle='-', label='vb_hdwe'+run_str)
+        plq(plt, mv, 'soc', mv, 'vb_hdwe', color='black', linestyle='--', label='vb_hdwe'+ver_str)
+        # plq(plt, sv, 'soc', sv, 'voc_stat', color='red', linestyle=':', label='voc_stat_s'+ver_str)
+        plq(plt, mr, 'soc', mr, 'voc_stat', color='blue', linestyle='-.', label='voc_stat_s'+run_str)
         plq(plt, smv, 'soc_s', smv, 'voc_stat_s', color='red', linestyle=':', label='voc_stat_s'+ver_str)
         plt.ylim(12.5, 14.5)
         plt.legend(loc=1)

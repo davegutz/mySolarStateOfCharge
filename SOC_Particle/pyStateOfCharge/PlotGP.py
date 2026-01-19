@@ -131,6 +131,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.legend(loc=1)
     plt.subplot(325)
     plq(plt, mr, 'soc', mr, 'voc', linestyle='-', color='black', label='voc' + run_str)
+    plq(plt, mv, 'soc', mv, 'voc', linestyle='--', color='orange', label='voc' + ver_str)
     plq(plt, mr, 'soc', mr, 'voc_d', linestyle='-', color='black', label='voc_d' + run_str, warn=False)
     plt.plot(mr.soc, mr.voc_soc, color='red', linestyle='-', label='voc_soc' + run_str)
     plt.plot(mv.soc, mv.voc_soc, color='orange', linestyle='--', label='voc_soc' + ver_str)
@@ -139,7 +140,6 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     else:
         values = np.array(mr.voc_soc) - np.array(mr.voc_d)+13.
     plt.plot(mr.soc, values, color='blue', linestyle='-', label='dv' + run_str + '+13')
-    plq(plt, mr, 'soc', mr, 'voc', linestyle='-', color='black', label='voc' + run_str)
 
     plt.plot(mv.soc, np.array(mv.voc_soc) - np.array(mv.voc)+13., color='orange', linestyle='--',
              label='dv' + ver_str + '+13')

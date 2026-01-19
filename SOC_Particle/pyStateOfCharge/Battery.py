@@ -866,6 +866,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
         self.saved.reset_kf.append(self.reset_kf)
         self.saved.iscn_f.append(iscn_f)
+        self.saved.vb_hdwe.append(self.vb_hdwe)
         self.saved.vb_hdwe_f.append(self.vb_hdwe_f)
 
     def wrap(self, reset=True, modeling_ib=None, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
@@ -1470,6 +1471,7 @@ class Saved:
         self.reset_kf = []
         self.iscn_f = []
         self.Tb_model = []
+        self.vb_hdwe = []
         self.vb_hdwe_f = []
 
 
