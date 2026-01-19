@@ -74,7 +74,7 @@ def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', labe
             print(f"plq: skipping     {yt}({st})     labeled  '{label}'")
 
 def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
-             run_str='_run', ver_str='_ver'):
+             run_str='_run', ver_str='_ver', strict_overplot=False):
     print('dom_plot', end=':  ')
     if fig_files is None:
         fig_files = []
@@ -166,9 +166,10 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.legend(loc=1)
     plt.subplot(322)
     plq(plt, mr, 'time', mr, 'voc_stat', color='green', linestyle='-', label='voc_stat'+run_str)
-    plq(plt, mr, 'time', mr, 'voc_stat_f', color='green', linestyle='-', label='voc_stat_f'+run_str, warn=False)
     plq(plt, mv, 'time', mv, 'voc_stat', color='orange', linestyle='--', label='voc_stat'+ver_str)
-    plq(plt, mv, 'time', mv, 'voc_stat_f', color='red', linestyle=':', label='voc_stat_f'+ver_str)
+    if not strict_overplot:
+        plq(plt, mr, 'time', mr, 'voc_stat_f', color='green', linestyle='-.', label='voc_stat_f'+run_str, warn=False)
+        plq(plt, mv, 'time', mv, 'voc_stat_f', color='red', linestyle=':', label='voc_stat_f'+ver_str)
     plt.legend(loc=1)
     plt.subplot(323)
     plq(plt, mr, 'time', mr, 'voc', color='green', linestyle='-', label='voc'+run_str)
@@ -181,7 +182,8 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mr, 'time', mr, 'y_ekf', color='green', linestyle='-', label='y_ekf'+run_str, stairs=True)
     plq(plt, mv, 'time', mv, 'y_ekf', color='orange', linestyle='--', label='y_ekf'+ver_str, stairs=True)
     plq(plt, mv, 'time', mv, 'y_filt', color='black', linestyle='-.', label='y_filt'+ver_str)
-    plq(plt, mv, 'time', mv, 'y_filt2', color='cyan', linestyle=':', label='y_filt2'+ver_str)
+    if not strict_overplot:
+        plq(plt, mv, 'time', mv, 'y_filt2', color='cyan', linestyle=':', label='y_filt2'+ver_str)
     plt.legend(loc=1)
     plt.subplot(325)
     plt.plot(mr.time, mr.dv_hys, color='green', linestyle='-', label='dv_hys'+run_str)
@@ -193,9 +195,10 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.legend(loc=1)
     plt.subplot(326)
     plq(plt, mr, 'time_t', mr, 'Tb', color='green', linestyle='-', label='Tb'+run_str, stairs=True)
-    plq(plt, mr, 'time_t', mr, 'Tb_f', color='green', linestyle='-', label='Tb_f'+run_str, stairs=True)
     plq(plt, mv, 'time_t', mv, 'Tb', color='orange', linestyle='--', label='Tb'+ver_str, stairs=True, warn=False)
-    plq(plt, mv, 'time', mv, 'Tb', color='orange', linestyle='--', label='Tb'+ver_str)
+    plq(plt, mv, 'time', mv, 'Tb', color='red', linestyle='-.', label='Tb'+ver_str)
+    plq(plt, mr, 'time_t', mr, 'Tb_f', color='green', linestyle='-', label='Tb_f'+run_str, stairs=True)
+    plq(plt, mv, 'time', mv, 'Tb_f', color='orange', linestyle='--', label='Tb_f' + ver_str, stairs=True)
     plt.plot(mr.time, mr.chm, color='black', linestyle='-', label='mon_chm'+run_str)
     plq(plt, sr, 'time', sr, 'chm_s', color='cyan', linestyle='--', label='sim_chm'+run_str)
     plt.ylim(0., 50.)
@@ -237,8 +240,9 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     print('DOM 4', end=':  ')
     plt.plot(mr.time, mr.soc, color='orange', linestyle='-', label='soc'+run_str)
     plt.plot(mv.time, mv.soc, color='green', linestyle='--', label='soc'+ver_str)
-    plq(plt, smv, 'time', smv, 'soc_s', color='black', linestyle='-.', label='soc_s'+ver_str)
-    plt.plot(mr.time, mr.soc_ekf, color='red', linestyle='-', label='soc_ekf'+run_str)
+    plq(plt, sr, 'time', sr, 'soc_s', color='magenta', linestyle='-.', label='soc_s'+run_str)
+    plq(plt, smv, 'time', smv, 'soc_s', color='black', linestyle=':', label='soc_s'+ver_str)
+    plt.plot(mr.time, mr.soc_ekf, color='blue', linestyle='-', label='soc_ekf'+run_str)
     plt.plot(mv.time, mv.soc_ekf, color='cyan', linestyle='--', label='soc_ekf'+ver_str)
     plt.legend(loc=1)
     plt.subplot(132)
