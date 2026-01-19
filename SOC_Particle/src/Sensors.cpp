@@ -1369,7 +1369,7 @@ void Sensors::select_temp(BatteryMonitor *Mon)
       Tb_model = Tb;
       // Tb_f = NOMINAL_TB + ap.Tb_bias_model;  // Simplifying assumption that Tb_f perfectly quiet - so don't have to make model of filter
       Tb_f = Tb_model_filt;
-      Tb_f_rate = 0.;
+      Tb_f_rate = Tb_model_filt_rate;
     }
     if ( sp.debug()==16) Serial.printf("Tb_noise %9.5f Tb%9.5f Tb_f%9.5f Tb_f%9.5f tb_fa %d\n", Tb_noise(), Tb, Tb_f, Tb_f, Flt->tb_fa());
   }
@@ -1617,7 +1617,7 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
   reset_temp_ = reset_temp;
   #ifndef HDWE_BARE
     Tb_hdwe = SensorTb->sample(Sen);  // Must sample even if using model
-    
+
     Tb_model_filt = TbModelFilt->calculate(Tb_model, reset_temp_, ap.tb_filt, min(T_temp, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
     Tb_model_filt_rate = TbModelFilt->rate();
 

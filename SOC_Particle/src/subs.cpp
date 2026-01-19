@@ -102,7 +102,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   {
     Sen->Tb = Sen->Tb_model;
     Sen->Tb_f = Sen->Tb_model_filt;
-    Sen->Tb_f_rate = 0.;
+    Sen->Tb_f_rate = Sen->Tb_model_filt_rate;
   }
   else
   {

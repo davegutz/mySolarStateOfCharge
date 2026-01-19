@@ -168,7 +168,8 @@ void print_rapid_serial(const boolean reset, Publish *pubList, Sensors *Sen, Bat
   
   sprintf(pr.buff,  "%s,%s,%13.4f,%8.4f,   %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,   ", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
-    reset, Sen->reset_temp(), cp.soft_reset_print, cp.soft_reset_sim_print, Sen->Flt->reset_all_faults_print(), cp.ekf_reset_print, cp.kf_reset_print, Mon->initializing(), Sen->Sim->initializing());
+    reset, Sen->reset_temp(), cp.soft_reset_print, cp.soft_reset_sim_print, Sen->Flt->reset_all_faults_print(), cp.ekf_reset_print,
+    cp.kf_reset_print, Mon->initializing(), Sen->Sim->initializing());
     Serial.printf("%s", pr.buff);
 
   sprintf(pr.buff,  "%d,%9.2f,%9.2f,%2d,%2d,%2d,%2d,   %11.8f,%11.8f,%11.8f,  ", \

@@ -242,7 +242,7 @@ def replicate(OPT: UserOptions):
             calc_temp = True
         if calc_temp:
             i_temp += 1
-            mon, sim = SN.calc_temp_pass_1(OPT, mon, sim, i_temp)
+            mon, sim = SN.calc_temp_pass_1(OPT, mon, sim, i_temp, rp)
 
         # Input
         rp.modeling = rp.add_modeling(modeling[G.i])
