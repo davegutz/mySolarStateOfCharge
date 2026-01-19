@@ -115,7 +115,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.subplot(221)
     plt.title(plot_title + ' 1a')
     print('1a', end=':  ')
-    if hasattr(mr, 'mod_data') and mr.mod_data[0] != 0:
+    if hasattr(mr, 'mod_data') and mr.mod_data[0] != 0 and not strict_overplot:
         plq(plt, mr, 'time', mr, 'ibmm', color='black', linestyle='-', label='ib_amp_mod'+run_str)
         plq(plt, mv, 'time', mv, 'ibmm', color='red', linestyle='-.', label='ib_amp_mod'+ver_str, warn=False)
         plq(plt, mr, 'time', mr, 'ibnm', color='green', linestyle='--', label='ib_noa_mod'+run_str)
