@@ -1599,6 +1599,7 @@ if __name__ == '__main__':
         import matplotlib
         matplotlib.use('tkagg')
     plt.rcParams['axes.grid'] = True
+    plt.rcParams['legend.fontsize'] = 'small'
 
 
     def main(data_file_old_txt, unit_key):

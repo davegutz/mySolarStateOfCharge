@@ -34,6 +34,7 @@ if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
 plt.rcParams['axes.grid'] = True
+plt.rcParams['legend.fontsize'] = 'small'
 
 # Suppress all UserWarning messages
 import warnings

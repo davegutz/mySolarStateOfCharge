@@ -36,6 +36,7 @@ if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
 plt.rcParams['axes.grid'] = True
+plt.rcParams['legend.fontsize'] = 'small'
 
 
 # Add ib_lag = ib lagged by time constant

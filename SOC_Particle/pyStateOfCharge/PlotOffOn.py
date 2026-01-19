@@ -38,7 +38,7 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 
 def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
-                run_str='_run', ver_str='_ver'):
+                run_str='_run', ver_str='_ver', strict_overplot=False):
     print('off_on_plot', end=':  ')
     if sr and smv:
         fig_list.append(plt.figure())  # 7 off/on sim
@@ -64,12 +64,14 @@ def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, 
         plt.plot(sr.time, sr.soc_s, linestyle='-', color='black', label='soc_s' + run_str)
         plq(plt, sv, 'time', sv, 'soc', linestyle='--', color='orange', label='soc_s' + ver_str)
         plq(plt, smv, 'time', smv, 'soc_s', linestyle='-.', color='red', label='soc_s' + ver_str)
+        plt.xlabel('sec')
         plt.legend(loc=1)
         plt.subplot(324)
         plq(plt, sr, 'time', sr, 'ib_s', linestyle='-', color='black', label='ib_s' + run_str)
         plq(plt, smv, 'time', smv, 'ib_s', linestyle='--', color='orange', label='ib_s' + ver_str)
         plq(plt, sr, 'time', sr, 'ib_dyn_s', linestyle='-', color='blue', label='ib_dyn_s' + run_str)
         plq(plt, sv, 'time', sv, 'ib_dyn', linestyle='--', color='red', label='ib_dyn_s' + ver_str)
+        plt.xlabel('sec')
         plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
@@ -80,8 +82,11 @@ def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, 
         plt.title(plot_title + ' off/on mon 1')
         print('off/on mon 1', end=':  ')
         plt.plot(mr.time, mr.vb, color='black', linestyle='-', label='vb' + run_str)
-        plt.plot(mr.time, mr.voc, color='blue', linestyle='--', label='voc' + run_str)
+        plt.plot(mv.time, mv.vb, color='green', linestyle='--', label='vb' + ver_str)
+        plt.plot(mr.time, mr.voc, color='blue', linestyle='-.', label='voc' + run_str)
+        plt.plot(mv.time, mv.voc, color='cyan', linestyle=':', label='voc' + ver_str)
         plt.plot(mr.time, mr.voc_stat, color='magenta', linestyle='-.', label='voc_stat' + run_str)
+        plt.plot(mv.time, mv.voc_stat, color='orange', linestyle=':', label='voc_stat' + ver_str)
         plt.legend(loc=1)
         plt.subplot(322)
         plt.plot(mr.time, mr.dv_hys, linestyle='-', color='black', label='dv_hys' + run_str)
@@ -93,17 +98,12 @@ def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, 
         plt.legend(loc=1)
         plt.subplot(324)
         plt.plot(mr.time, mr.ib_sel, linestyle='-', color='red', label='ib_sel' + run_str)
+        plt.plot(mv.time, mv.ib, linestyle='--', color='black', label='ib' + ver_str)
         plt.plot(sr.time, sr.ib_in_s, linestyle='--', color='cyan', label='ib_in_s' + run_str)
         plt.plot(mr.time, mr.ib_charge, linestyle='-.', color='blue', label='ib_charge' + run_str)
         plt.plot(mv.time, mv.ib_charge, linestyle=':', color='orange', label='ib_charge' + ver_str)
         plt.legend(loc=1)
-        plt.subplot(325)
-        plt.plot(mr.time, mr.ib_sel, linestyle='-', color='red', label='ib_sel' + run_str)
-        plt.plot(sr.time, sr.ib_in_s, linestyle='--', color='cyan', label='ib_in_s' + run_str)
-        plt.plot(smv.time, smv.ib_charge_s, linestyle='-.', color='blue', label='ib_charge_s' + run_str)
-        plt.plot(smv.time, smv.ib_charge_s, linestyle=':', color='orange', label='ib_charge_s' + ver_str)
-        plt.legend(loc=1)
-        if hasattr(mr, 'vr'):
+        if not strict_overplot and hasattr(mr, 'vr'):
             plt.subplot(326)
             plq(plt, mr, 'time', mr, 'vr', color='green', linestyle='-', label='vr' + run_str)
             plt.legend(loc=1)
@@ -126,7 +126,6 @@ def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, 
         plq(plt, mv, 'time', mv, 'delta_q', color='magenta', linestyle='--', label='delta_q' + ver_str)
         plq(plt, sr, 'time', sr, 'dq_s', color='black', linestyle='-.', label='delta_q_s' + run_str)
         plq(plt, smv, 'time', smv, 'dq_s', color='cyan', linestyle=':', label='delta_q_s' + ver_str)
-        plt.xlabel('sec')
         plt.legend(loc=2)
         plt.subplot(323)
         plq(plt, mr, 'time', mr, 'soc', color='blue', linestyle='-', label='soc' + run_str)
@@ -148,7 +147,6 @@ def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, 
         plq(plt, mv, 'time', mv, 'sat', add=2, color='magenta', linestyle='--', label='sat' + ver_str + ' +2')
         plq(plt, sr, 'time', sr, 'sat_s', add=2, color='black', linestyle='-.', label='sat_s' + run_str + ' +2')
         plq(plt, smv, 'time', smv, 'sat_s', add=2, color='red', linestyle=':', label='sat_s' + ver_str + ' +2')
-        plt.xlabel('sec')
         plt.legend(loc=2)
         plt.subplot(325)
         ymax = max([max(sublist) for sublist in [mr.Tb_rap, mr.Tb, mv.Tb, smv.Tb_s, mr.Tb_f, mr.Tb_f, smv.Tb_f_s]])
@@ -168,12 +166,15 @@ def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, 
         plq(plt, mv, 'time', mv, 'Tb_f',  add=f_add, color='orange', linestyle=':', label='Tb_f' + ver_str + ' +' + f_add_str, stairs=True)
         plq(plt, sr, 'time', sr, 'Tb_f_s', add=f_add+.1, color='blue', linestyle='-', label='Tb_f_s' + run_str + ' +' + f_add_str)
         plq(plt, smv, 'time', smv, 'Tb_f_s', add=f_add+.1, color='red', linestyle='--', label='Tb_f_s' + ver_str + ' +' + f_add_str)
+        plq(plt, mr, 'time', mr, 'reset_temp', slr=0.1*diff, add=int(ymax+f_add), color='black', linestyle='-', label='reset_temp' + run_str)
         plq(plt, mv, 'time', mv, 'reset_temp', slr=0.1*diff, add=int(ymax+f_add), color='green', linestyle='--', label='reset_temp' + ver_str)
+        plt.xlabel('sec')
         plt.ylim(ymin_int, )
         plt.legend(loc=2)
         plt.subplot(326)
         from Battery import Battery
         import numpy as np
+        mr.reset_temp_scl = np.array(mr.reset_temp) * Battery.T_RLIM
         mv.reset_temp_scl = np.array(mv.reset_temp) * Battery.T_RLIM
         plq(plt, mr, 'time', mr, 'Tb_f_rate_rap', add=0.004, color='cyan', linestyle='-', label='Tb_f_rate_rap' + run_str + '+ 0.004')
         plq(plt, mv, 'time', mv, 'Tb_f_rate_rap', add=0.004, color='orange', linestyle='--', label='Tb_f_rate_rap' + ver_str + '+ 0.004')
@@ -181,7 +182,9 @@ def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, 
         plq(plt, mv, 'time', mv, 'Tb_f_rate', add=0.002, color='blue', linestyle='--', label='Tb_f_rate' + ver_str + '+ 0.002')
         plq(plt, mr, 'time_t', mr, 'Tb_hdwe_filt_rate', color='black', linestyle='-', label='Tb_hdwe_filt_rate' + run_str, stairs=True)
         plq(plt, mv, 'time', mv, 'Tb_hdwe_filt_rate', color='green', linestyle='--', label='Tb_hdwe_filt_rate' + ver_str)
+        plq(plt, mr, 'time', mr, 'reset_temp_scl', add=-0.002, color='black', linestyle='-', label='reset_temp' + run_str + '- 0.002')
         plq(plt, mv, 'time', mv, 'reset_temp_scl', add=-0.002, color='green', linestyle='--', label='reset_temp' + ver_str + '- 0.002')
+        plt.xlabel('sec')
         plt.legend(loc=2)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)

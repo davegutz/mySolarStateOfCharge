@@ -1034,6 +1034,7 @@ if __name__ == '__main__':
         import matplotlib
         matplotlib.use('tkagg')
     plt.rcParams['axes.grid'] = True
+    plt.rcParams['legend.fontsize'] = 'small'
     from datetime import datetime
 
 

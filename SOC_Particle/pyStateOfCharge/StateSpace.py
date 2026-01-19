@@ -175,6 +175,7 @@ if __name__ == '__main__':
             matplotlib.use('tkagg')
 
         plt.rcParams['axes.grid'] = True
+        plt.rcParams['legend.fontsize'] = 'small'
 
         ss = StateSpace(2, 2, 1)
         ss.A, ss.B, ss.C, ss.D, ss.AinvB = construct_state_space_model()

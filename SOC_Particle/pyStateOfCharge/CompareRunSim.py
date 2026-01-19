@@ -40,6 +40,7 @@ if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
 plt.rcParams['axes.grid'] = True
+plt.rcParams['legend.fontsize'] = 'small'
 
 # Suppress all UserWarning messages
 import warnings
@@ -47,15 +48,18 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=False,
                     verbose=True, scale_in=1., slr_hys_sim=1., request_history=5, Battery=None, init_time_in=None,
-                    time_shift_in=None):
+                    time_shift_in=None, strict_overplot=False):
 
     if data_file.count('soc4p2_hi_lo'):
        IB_CHARGE_NOA = True
     else:
         IB_CHARGE_NOA = False
 
-    print(f"\ncompare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n \
-{IB_CHARGE_NOA=}\n{verbose=}\n{scale_in=}\n{slr_hys_sim=}\n{request_history=}\n{init_time_in=}\n{time_shift_in=}\n")
+    print(f"\n \
+compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n \
+{IB_CHARGE_NOA=}\n{verbose=}\n{scale_in=}\n{slr_hys_sim=}\n{request_history=}\n{init_time_in=}\n{time_shift_in=}\n \
+{strict_overplot=}\n \
+          ")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
@@ -136,7 +140,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
                                       ver_str='_ver', Battery=Battery)
         fig_list, fig_files = off_on_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                           plot_title=plot_title, fig_list=fig_list, run_str='',
-                                          ver_str='_ver')
+                                          ver_str='_ver', strict_overplot=strict_overplot)
         if tune_in:
             fig_list, fig_files = tune_r(mon_run, mon_ver, sim_s_ver, filename, fig_files,
                                          plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')
@@ -172,6 +176,7 @@ def main():
     request_history = 3
     init_time_in  = None  # that logic doesn't work yet
     time_shift_in = None
+    strict_overplot_in = True
 
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewamps_soc2p2_hi_lo_bb.csv' # problems with Vb=0 icharge=0
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsXm2_soc2p2_hi_lo_bb.csv'  # problems with sat
@@ -209,19 +214,23 @@ def main():
 
     # RunSim plot selection
     # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m  8=vb_wrap
-    request_hist_in = 2
+    request_hist_in = 4
     # request_hist_in = None
 
     # # mon_soc_in = False # old runsim work ******************
     use_mon_soc_ = False
     # use_mon_soc_ = True
 
-    plots = False
-    # plots = True
+    # plots = False
+    plots = True
+
+    # strict_overplot_in = False
+    strict_overplot_in = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=use_mon_soc_, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
-                    request_history=request_hist_in, init_time_in=init_time_in, time_shift_in=time_shift_in)
+                    request_history=request_hist_in, init_time_in=init_time_in, time_shift_in=time_shift_in,
+                    strict_overplot=strict_overplot_in)
 
 
 # import cProfile

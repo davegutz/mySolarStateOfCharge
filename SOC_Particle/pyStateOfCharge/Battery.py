@@ -846,7 +846,9 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.e_wrap_n_trim.append(self.e_wrap_n_trim)
         self.saved.e_wrap_rate.append(self.e_wrap_rate)
         self.saved.ib_amp.append(self.ib_amp)
+        self.saved.ib_amp_model.append(self.ib_amp_model)
         self.saved.ib_noa.append(self.ib_noa)
+        self.saved.ib_noa_model.append(self.ib_noa_model)
         self.saved.ib_lag.append(self.ib_lag)
         self.saved.voc_soc_new.append(self.voc_soc_new)
         self.saved.ewmhi_thr.append(self.ewmhi_thr)
@@ -864,6 +866,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
         self.saved.reset_kf.append(self.reset_kf)
         self.saved.iscn_f.append(iscn_f)
+        self.saved.vb_hdwe_f.append(self.vb_hdwe_f)
 
     def wrap(self, reset=True, modeling_ib=None, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
              ib_amp_pst=None, ib_noa_pst=None, rp=None):
@@ -1449,7 +1452,9 @@ class Saved:
         self.ib_lag = []  # Lagged ib, A
         self.voc_soc_new = []  # New schedule values
         self.ib_amp = []
+        self.ib_amp_model = []
         self.ib_noa = []
+        self.ib_noa_model = []
         self.ewmhi_thr = []
         self.ewmlo_thr = []
         self.ewnhi_thr = []
@@ -1465,6 +1470,7 @@ class Saved:
         self.reset_kf = []
         self.iscn_f = []
         self.Tb_model = []
+        self.vb_hdwe_f = []
 
 
 def overall_batt(mv, sv, filename,

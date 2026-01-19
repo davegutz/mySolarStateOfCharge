@@ -224,6 +224,8 @@ if __name__ == '__main__':
         import matplotlib
         matplotlib.use('tkagg')
     plt.rcParams['axes.grid'] = True
+    plt.rcParams['legend.fontsize'] = 'small'
+
 
     #  Instructions:
     #  Copy current values of obs battery from Chemistry_BMS for mod_code entered below in LocalChem, into assign_obs above

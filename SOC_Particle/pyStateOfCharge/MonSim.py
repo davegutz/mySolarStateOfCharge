@@ -428,6 +428,8 @@ if __name__ == '__main__':
         import matplotlib
         matplotlib.use('tkagg')
     plt.rcParams['axes.grid'] = True
+    plt.rcParams['legend.fontsize'] = 'small'
+
 
     def main():
         date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")

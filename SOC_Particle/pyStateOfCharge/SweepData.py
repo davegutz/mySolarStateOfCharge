@@ -425,6 +425,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from DataOverModel import plq
     plt.rcParams['axes.grid'] = True
+    plt.rcParams['legend.fontsize'] = 'small'
     from butterHighPassDemo import butter_highpass_filter
     time_end = None
     from KF1x1_test import load_data_KF1x1_test

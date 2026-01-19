@@ -707,7 +707,7 @@ def compare_run():
     if modeling.get():
         print('compare_run_sim.  save_pdf_path', os.path.join(Test.version_path, './figures'))
         # master.withdraw()
-        compare_run_sim(data_file=Test.file_path, unit_key=Test.key)
+        compare_run_sim(data_file=Test.file_path, unit_key=Test.key, strict_overplot=True)
         # master.deiconify()
     else:
         if not Ref.key_exists_in_file:
@@ -773,7 +773,7 @@ def compare_run_sim_choose():
         for testpath in testpaths:
             test_folder_path, test_parent, basename, test_txt, key = contain_all(testpath)
             if key != '':
-                compare_run_sim(data_file=testpath, unit_key=key)
+                compare_run_sim(data_file=testpath, unit_key=key, strict_overplot=True)
             else:
                 tk.messagebox.showerror(message='key not found in' + testpath)
         update_data_buttons()
