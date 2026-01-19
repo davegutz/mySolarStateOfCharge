@@ -127,13 +127,14 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         plq(plt, mr, 'time', mr, 'ibnh', color='green', linestyle='--', label='ib_noa_hdwe' + run_str)
         plq(plt, mr, 'time', mr, 'ibnh_f', color='green', linestyle='--', label='ib_noa_hdwe_f' + run_str)
         plq(plt, mv, 'time', mv, 'ibnh', color='blue', linestyle=':', label='ib_noa_hdwe' + ver_str)
-    plq(plt, mr, 'time', mr, 'ib_sel', add=+1, color='black', linestyle='-', label='ib_sel'+run_str+'+1')
-    plq(plt, mv, 'time', mv, 'ib_sel', add=+1, color='red', linestyle='--', label='ib_sel'+ver_str+'+1', warn=False)
-    plq(plt, mr, 'time', mr, 'ib_charge', add=+1, linestyle='-.', color='green', label='ib_charge'+run_str+'+1')
-    plq(plt, mv, 'time', mv, 'ib_charge', add=+1, linestyle=':', color='blue', label='ib_charge'+ver_str+'+1')
+    if not strict_overplot:
+        plq(plt, mr, 'time', mr, 'ib_sel', add=+0, color='red', linestyle='-', label='ib_sel'+run_str)
+        plq(plt, mv, 'time', mv, 'ib_sel', add=+0, color='black', linestyle='--', label='ib_sel'+ver_str, warn=False)
+    plq(plt, mr, 'time', mr, 'ib_charge', add=+0, linestyle='-.', color='orange', label='ib_charge'+run_str)
+    plq(plt, mv, 'time', mv, 'ib_charge', add=+0, linestyle=':', color='blue', label='ib_charge'+ver_str)
     plt.legend(loc=1)
-    plt.subplot(222)
-    if hasattr(mr, 'ib_sel_stat'):
+    if not strict_overplot and hasattr(mr, 'ib_sel_stat'):
+        plt.subplot(222)
         plq(plt, mr, 'time', mr, 'ib_sel_stat', color='black', linestyle='-', label='ib_sel_stat'+run_str)
         plq(plt, mv, 'time', mv, 'ib_sel_stat', color='red', linestyle='--', label='ib_sel_stat'+ver_str, warn=False)
         plq(plt, mr, 'time', mr, 'ib_dec', add=2, color='black', linestyle='-', label='ib_dec'+run_str+'+2')
@@ -148,10 +149,11 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mr, 'time', mr, 'y_ekf_f', slr=-1, color='black', linestyle=':', label='-y_ekf_f'+run_str, stairs=True)
     plq(plt, mv, 'time', mv, 'y_ekf_f', slr=-1, color='red', linestyle=':', label='-y_ekf_f'+ver_str, warn=False)
     plt.legend(loc=1)
-    plt.subplot(224)
-    plq(plt, mr, 'time', mr, 'cc_dif', color='black', linestyle='-', label='cc_diff'+run_str)
-    plq(plt, mv, 'time', mv, 'cc_dif', color='red', linestyle='--', label='cc_diff'+ver_str, warn=False)
-    plt.legend(loc=1)
+    if not strict_overplot:
+        plt.subplot(224)
+        plq(plt, mr, 'time', mr, 'cc_dif', color='black', linestyle='-', label='cc_diff'+run_str)
+        plq(plt, mv, 'time', mv, 'cc_dif', color='red', linestyle='--', label='cc_diff'+ver_str, warn=False)
+        plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     plt.savefig(fig_file_name, format="png")
