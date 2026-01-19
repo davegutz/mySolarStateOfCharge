@@ -845,7 +845,13 @@ def grab_macro():
 
 
 def grab_init():
-    add_to_clip_board(init.get())
+    try:
+        current_ut = 'UT' + str(int(time.time())) + ';'
+        print(f"current_ut {current_ut}")
+    except:
+        current_ut = ''
+        print(f"current_ut blank ***No Internet??")
+    add_to_clip_board(init.get() + current_ut)
     grab_all_nominal()
     init_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black')
     clear_data_silent()
