@@ -115,7 +115,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.subplot(221)
     plt.title(plot_title + ' 1a')
     print('1a', end=':  ')
-    if hasattr(mr, 'mod_data') and mr.mod_data[0] != 0 and not strict_overplot:
+    if hasattr(mr, 'mod_data') and mr.mod_data[0] != 0 and strict_overplot:
         plq(plt, mr, 'time', mr, 'ibmm', color='black', linestyle='-', label='ib_amp_mod'+run_str)
         plq(plt, mv, 'time', mv, 'ibmm', color='red', linestyle='-.', label='ib_amp_mod'+ver_str, warn=False)
         plq(plt, mr, 'time', mr, 'ibnm', color='green', linestyle='--', label='ib_noa_mod'+run_str)
@@ -141,13 +141,14 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         plq(plt, mv, 'time', mv, 'ib_dec', add=2, color='red', linestyle='--', label='ib_dec'+ver_str+'+2', warn=False)
         plt.legend(loc=1)
     plt.subplot(223)
-    plq(plt, mr, 'time', mr, 'e_wrap', color='black', linestyle='-', label='e_wrap'+run_str)
-    plq(plt, mv, 'time', mv, 'e_wrap', color='red', linestyle='--', label='e_wrap'+ver_str)
-    plq(plt, mr, 'time', mr, 'e_wrap_filt', color='black', linestyle='-.', label='e_wrap_filt'+run_str)
-    plq(plt, mv, 'time', mv, 'e_wrap_filt', color='red', linestyle=':', label='e_wrap_filt'+ver_str)
+    plq(plt, mr, 'time', mr, 'e_wrap', color='black', linestyle='-', label='e_wrap'+run_str, stairs=True)
+    plq(plt, mv, 'time', mv, 'e_wrap', color='red', linestyle='--', label='e_wrap'+ver_str, stairs=True)
+    plq(plt, mr, 'time', mr, 'e_wrap_filt', color='black', linestyle='-.', label='e_wrap_filt'+run_str, stairs=True)
+    plq(plt, mv, 'time', mv, 'e_wrap_filt', color='red', linestyle=':', label='e_wrap_filt'+ver_str, stairs=True)
     plq(plt, mr, 'time', mr, 'y_ekf', slr=-1, color='green', linestyle='-.', label='-y_ekf'+run_str, stairs=True)
-    plq(plt, mr, 'time', mr, 'y_ekf_f', slr=-1, color='black', linestyle=':', label='-y_ekf_f'+run_str, stairs=True)
-    plq(plt, mv, 'time', mv, 'y_ekf_f', slr=-1, color='red', linestyle=':', label='-y_ekf_f'+ver_str, warn=False)
+    plq(plt, mv, 'time', mv, 'y_ekf', slr=-1, color='orange', linestyle=':', label='-y_ekf'+ver_str, stairs=True)
+    plq(plt, mr, 'time', mr, 'y_ekf_f', slr=-1, color='black', linestyle='-.', label='-y_ekf_f'+run_str, stairs=True)
+    plq(plt, mv, 'time', mv, 'y_filt', slr=-1, color='red', linestyle=':', label='-y_ekf_f'+ver_str, stairs=True)
     plt.legend(loc=1)
     if not strict_overplot:
         plt.subplot(224)
@@ -174,18 +175,19 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         plq(plt, mv, 'time', mv, 'voc_stat_f', color='red', linestyle=':', label='voc_stat_f'+ver_str)
     plt.legend(loc=1)
     plt.subplot(323)
-    plq(plt, mr, 'time', mr, 'voc', color='green', linestyle='-', label='voc'+run_str)
-    plq(plt, mr, 'time', mr, 'voc_d', color='green', linestyle='-', label='voc_d'+run_str, warn=False)
-    plt.plot(mv.time, mv.voc, color='orange', linestyle='--', label='voc'+ver_str)
+    plq(plt, mr, 'time', mr, 'voc', color='green', linestyle='-', label='voc'+run_str, stairs=True)
+    plq(plt, mr, 'time', mr, 'voc_d', color='green', linestyle='-', label='voc_d'+run_str, warn=False, stairs=True)
+    plq(plt, mv, 'time', mv, 'voc', color='orange', linestyle='--', label='voc'+ver_str, stairs=True)
     plq(plt, mr, 'time', mr, 'voc_ekf', color='blue', linestyle='-.', label='voc_ekf'+run_str, stairs=True)
-    plt.plot(mv.time, mv.voc_ekf, color='red', linestyle=':', label='voc_ekf'+ver_str)
+    plq(plt, mv, 'time', mv, 'voc_ekf', color='red', linestyle=':', label='voc_ekf'+ver_str, stairs=True)
     plt.legend(loc=1)
     plt.subplot(324)
     plq(plt, mr, 'time', mr, 'y_ekf', color='green', linestyle='-', label='y_ekf'+run_str, stairs=True)
     plq(plt, mv, 'time', mv, 'y_ekf', color='orange', linestyle='--', label='y_ekf'+ver_str, stairs=True)
-    plq(plt, mv, 'time', mv, 'y_filt', color='black', linestyle='-.', label='y_filt'+ver_str)
+    plq(plt, mr, 'time', mr, 'y_ekf_f', color='blue', linestyle='-.', label='y_ekf_f'+run_str, stairs=True)
+    plq(plt, mv, 'time', mv, 'y_filt', color='red', linestyle=':', label='y_ekf_f'+ver_str, stairs=True)
     if not strict_overplot:
-        plq(plt, mv, 'time', mv, 'y_filt2', color='cyan', linestyle=':', label='y_filt2'+ver_str)
+        plq(plt, mv, 'time', mv, 'y_filt2', color='cyan', linestyle=':', label='y_filt2'+ver_str, stairs=True)
     plt.legend(loc=1)
     plt.subplot(325)
     plt.plot(mr.time, mr.dv_hys, color='green', linestyle='-', label='dv_hys'+run_str)
@@ -242,7 +244,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     print('DOM 4', end=':  ')
     plt.plot(mr.time, mr.soc, color='orange', linestyle='-', label='soc'+run_str)
     plt.plot(mv.time, mv.soc, color='green', linestyle='--', label='soc'+ver_str)
-    plq(plt, sr, 'time', sr, 'soc_s', color='magenta', linestyle='-.', label='soc_s'+run_str)
+    plq(plt, sr, 'time', sr, 'soc_s', color='red', linestyle='-.', label='soc_s'+run_str)
     plq(plt, smv, 'time', smv, 'soc_s', color='black', linestyle=':', label='soc_s'+ver_str)
     plt.plot(mr.time, mr.soc_ekf, color='blue', linestyle='-', label='soc_ekf'+run_str)
     plt.plot(mv.time, mv.soc_ekf, color='cyan', linestyle='--', label='soc_ekf'+ver_str)
@@ -252,6 +254,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mr, 'time', mr, 'vb_f', color='orange', linestyle='-', label='vb_f'+run_str, warn=False)
     plq(plt, mr, 'time', mr, 'vb_h', color='cyan', linestyle='--', label='vb_hdwe'+run_str)
     plt.plot(mv.time, mv.vb, color='green', linestyle='-.', label='vb'+ver_str)
+    plq(plt, mr, 'time', mr, 'vb_s', color='red', linestyle='-.', label='vb_s'+run_str)
     plq(plt, smv, 'time', smv, 'vb_s', color='black', linestyle=':', label='vb_s'+ver_str)
     plt.legend(loc=1)
     plt.subplot(133)
@@ -259,6 +262,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mr, 'soc', mr, 'vb_f', color='orange', linestyle='-', label='vb_f'+run_str, warn=False)
     plq(plt, mr, 'soc', mr, 'vb_h', color='cyan', linestyle='--', label='vb_hdwe'+run_str)
     plt.plot(mv.soc, mv.vb, color='green', linestyle='-.', label='vb'+ver_str)
+    plq(plt, mr, 'soc_s', mr, 'vb_s', color='red', linestyle='-.', label='vb_s'+run_str)
     plq(plt, smv, 'soc_s', smv, 'vb_s', color='black', linestyle=':', label='vb_s'+ver_str)
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -426,13 +430,14 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     # plt.legend(loc=1)
     fig_list, fig_files = ult_plot(mr, mv, sr, smv, filename,
                                    fig_files, plot_title=plot_title, fig_list=fig_list,
-                                   run_str='', ver_str='_ver')
+                                   run_str='', ver_str='_ver', strict_overplot=strict_overplot)
 
     return fig_list, fig_files
 
 
 
-def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_list=None, run_str='_run', ver_str='_ver'):
+def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_list=None, run_str='_run', ver_str='_ver',
+             strict_overplot=False):
     if fig_files is None:
         fig_files = []
 
@@ -454,13 +459,13 @@ def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_lis
     plq(plt, mr, 'time', mr, 'ibd_thr', slr=-1., color='red', linestyle=':')
     plt.legend(loc=1)
     plt.subplot(334)
-    plq(plt, mr, 'time', mr, 'e_wrap', color='magenta', linestyle='--', label='e_wrap' + run_str)
+    plq(plt, mr, 'time', mr, 'e_wrap', color='black', linestyle='--', label='e_wrap' + run_str)
+    plq(plt, mv, 'time', mv, 'e_wrap', color='red', linestyle='--', label='e_wrap' + ver_str)
     plq(plt, mr, 'time', mr, 'e_wrap_filt', color='black', linestyle='-', label='e_wrap_filt' + run_str, warn=False)
-    plq(plt, mr, 'time', mr, 'e_w_f', color='black', linestyle='-', label='e_wrap_filt' + run_str, warn=False)
-    plq(plt, mv, 'time', mv, 'e_wrap', color='red', linestyle='-.', label='e_wrap' + ver_str)
-    plq(plt, mv, 'time', mv, 'e_wrap_filt', color='magenta', linestyle='--', label='e_wrap_filt' + ver_str)
-    plq(plt, mr, 'time', mr, 'e_wrap_n', color='green', linestyle='-', label='e_wrap_n' + run_str)
-    plq(plt, mv, 'time', mv, 'e_wrap_n', color='pink', linestyle='-.', label='e_wrap_n' + ver_str)
+    plq(plt, mv, 'time', mv, 'e_wrap_filt', color='orange', linestyle='--', label='e_wrap_filt' + ver_str)
+    plq(plt, mr, 'time', mr, 'e_w_f', color='black', linestyle='-.', label='e_wrap_filt' + run_str, warn=False)
+    plq(plt, mr, 'time', mr, 'e_wrap_n', color='green', linestyle='-.', label='e_wrap_n' + run_str)
+    plq(plt, mv, 'time', mv, 'e_wrap_n', color='pink', linestyle=':', label='e_wrap_n' + ver_str)
     plq(plt, mr, 'time', mr, 'e_wrap_n_filt', color='cyan', linestyle='--', label='e_wrap_n_filt' + run_str, warn=False)
     plq(plt, mr, 'time', mr, 'e_wn_f', color='cyan', linestyle='--', label='e_wrap_n_filt' + run_str, warn=False)
     plq(plt, mv, 'time', mv, 'e_wrap_n_filt', color='green', linestyle='-.', label='e_wrap_n_filt' + ver_str)
