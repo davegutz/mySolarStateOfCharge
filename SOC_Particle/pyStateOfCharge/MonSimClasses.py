@@ -280,10 +280,10 @@ class Sensors:
                                               t_rated=self.mon_run.t_rated)
         else:
             self.q_cap_s = self.sim_run.qcap_s
-        if not hasattr(self.sim_run, 'dq_s'):
+        if not hasattr(self.sim_run, 'delta_q_s'):
             self.delta_q_s = -self.q_cap_s * (1. - self.mon_run.soc_s)
         else:
-            self.delta_q_s = self.sim_run.dq_s
+            self.delta_q_s = self.sim_run.delta_q_s
         self.d_delta_q_s_init = 0.
         self.delta_q_s_init = self.delta_q_s[0]
 

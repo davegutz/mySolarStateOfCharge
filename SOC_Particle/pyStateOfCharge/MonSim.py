@@ -234,7 +234,7 @@ def replicate(OPT: UserOptions):
 
         # Get temperature data
         if hasattr(OPT.mon_run, 'time_t'):
-            if hasattr(OPT.mon_run, 'mtb') and  OPT.mon_run.mtb[G.i]>0. :
+            if hasattr(OPT.mon_run, 'mtb') and  OPT.mon_run.mtb[G.i]>0. and G.i+1 < len(OPT.mon_run.time) :
                 calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i+1])
             else:
                 calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i])
@@ -263,7 +263,7 @@ def replicate(OPT: UserOptions):
         prn_soc_debug(OPT, time=now, leader="before sim init:         ", i_temp=i_temp, mon=mon, sim=sim)
 
         if reset:
-            sim.apply_soc(OPT.mon_run.soc_s[G.i], SN.Tb_f_past)  # calculates delta_q
+            sim.apply_soc(OPT.mon_run.soc_s[G.i], SN.Tb_f_past, OPT.sim_run.delta_q_s[G.i])  # calculates delta_q
             prn_soc_debug(OPT, time=now, leader="after sim.apply_soc:     ", i_temp=i_temp, mon=mon, sim=sim)
             sim.load(sim.delta_q)
             sim.assign_tb(sim.Tb)

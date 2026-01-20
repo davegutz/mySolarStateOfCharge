@@ -103,13 +103,15 @@ class Coulombs:
         self.soc = self.q / self.q_capacity
         self.resetting = True
 
-    def apply_soc(self, soc, tb_f):
+    def apply_soc(self, soc, tb_f, delta_q):
         """Memory set, adjust bookkeeping as needed.  delta_q preserved"""
         self.soc = soc
         self.tb_f = tb_f
         self.q_capacity = self.calculate_capacity(tb_f=tb_f)
         self.q = self.soc * self.q_capacity
-        self.delta_q = -self.q_capacity * (1. - self.soc)
+        # self.q_eps = delta_q + self.q_capacity * (1. - self.soc)
+        # self.delta_q = -self.q_capacity * (1. - self.soc) + self.q_eps
+        self.delta_q = delta_q
         self.resetting = True  # momentarily turn off saturation check
 
     def calculate_capacity(self, tb_f):

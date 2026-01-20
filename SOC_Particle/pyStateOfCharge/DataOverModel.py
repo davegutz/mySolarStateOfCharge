@@ -192,10 +192,9 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.subplot(325)
     plt.plot(mr.time, mr.dv_hys, color='green', linestyle='-', label='dv_hys'+run_str)
     plt.plot(mv.time, mv.dv_hys, color='cyan', linestyle='--', label='dv_hys'+ver_str)
-    # plt.plot(smv.time, np.array(smv.dv_hys_s)+0.1, color='red', linestyle='-', label='dv_hys_s'+ver_str+'+0.1')
-    plq(plt, smv, 'time', smv, 'dv_hys_s', add=0.1, color='red', linestyle='-', label='dv_hys_s'+ver_str+'+0.1', warn=False)
-    plq(plt, sr, 'time', sr, 'dv_hys_s', add=-0.1, color='magenta', linestyle='-', label='dv_hys_s'+ver_str+'-0.1', warn=False)
-    # plt.plot(sr.time, np.array(sr.dv_hys_s)-0.1, color='magenta',  linestyle='-', label='dv_hys_s-0.1'+run_str)
+    if not strict_overplot:
+        plq(plt, smv, 'time', smv, 'dv_hys_s', add=0.1, color='red', linestyle='-', label='dv_hys_s'+ver_str+'+0.1', warn=False)
+        plq(plt, sr, 'time', sr, 'dv_hys_s', add=-0.1, color='magenta', linestyle='-', label='dv_hys_s'+ver_str+'-0.1', warn=False)
     plt.legend(loc=1)
     plt.subplot(326)
     plq(plt, mr, 'time_t', mr, 'Tb', color='green', linestyle='-', label='Tb'+run_str, stairs=True)
@@ -1506,7 +1505,7 @@ class SavedDataSim:
             self.ib_s = None
             self.ib_dyn_s = None
             self.sat_s = None
-            self.dq_s = None
+            self.delta_q_s = None
             self.soc_s = None
             self.reset_s = None
             self.d_delta_q_s = None
@@ -1552,7 +1551,7 @@ class SavedDataSim:
             self.ib_charge_s = data.ib_charge_s[:i_end]
             self.ioc_s = data.ioc_s[:i_end]
             self.sat_s = data.sat_s[:i_end]
-            self.dq_s = data.dq_s[:i_end]
+            self.delta_q_s = data.dq_s[:i_end]
             self.qcap_s = data.q_cap_s[:i_end]
             self.soc_s = data.soc_s[:i_end]
             self.reset_s = data.reset_s[:i_end]
@@ -1571,7 +1570,7 @@ class SavedDataSim:
             self.dv_dyn_s = np.copy(mon_for_fake.dv_dyn)
             self.dv_hys_s = np.copy(mon_for_fake.dv_hys)
             self.Tb_hdwe = np.copy(mon_for_fake.Tb_rap)
-            self.dq_s = np.copy(mon_for_fake.delta_q)
+            self.delta_q_s = np.copy(mon_for_fake.delta_q)
             self.delta_q_s = np.copy(mon_for_fake.delta_q)
             self.voc_stat_s = np.copy(mon_for_fake.voc_stat)
             self.qcrs_s = np.copy(mon_for_fake.qcrs)
@@ -1594,7 +1593,7 @@ class SavedDataSim:
         s += "{:8.3f},".format(self.ib_dyn_s[self.i])
         s += "{:7.3f},".format(self.sat_s[self.i])
         # s += "{:5.3f},".format(self.ddq_s[self.i])
-        s += "{:5.3f},".format(self.dq_s[self.i])
+        s += "{:5.3f},".format(self.delta_q_s[self.i])
         # s += "{:5.3f},".format(self.qcap_s[self.i])
         s += "{:7.3f},".format(self.soc_s[self.i])
         s += "{:d},".format(self.reset_s[self.i])

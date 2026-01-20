@@ -989,6 +989,7 @@ class BatterySim(Battery):
         self.ib_fut = 0.  # Future value of limited current, A
         self.reset_temp_past = self.sat
         self.dt_past = 0.
+        # self.q_eps = 0.  # tiny adjustment to charge to book-keep soc_s and delta_q_s to be the same as data stream
         if SN is not None:
             self.Tb = SN.Tb0
             self.dv_dyn = SN.dv_dyn_s_init
@@ -1136,23 +1137,15 @@ class BatterySim(Battery):
         self.ib_charge = charge_curr
         self.Tb_f = tb_f
         self.d_delta_q = self.ib_charge * self.dt
-        # if self.ib_charge < 0.:
-        #     print(f"{SN.sim_run.ib_charge_s[G.i] * SN.sim_run.dt_s[G.i]=} {self.dt * self.ib_charge} {SN.sim_run.d_delta_q_s[G.i]=} {self.d_delta_q}")
         if self.ib_charge > 0.:
             self.d_delta_q *= self.chemistry.coul_eff
-        if self.ib_charge < 0.:
-            pass
 
         # Rate limit temperature.  When modeling, initialize to no change
-        self.Tb_f = tb_f
         self.Tb_f_rate = SN.Tb_f_rate_past
 
         # Saturation and re - init.Goal is to set q_capacity and hold it so remember last saturation status
         if OPT.use_mon_soc or not bool(SN.mon_run.mvb[G.i]):
             if mon_sat or self.reset_temp_past:
-                # self.soc = SN.soc_s[G.i]
-                # self.q = self.q_capacity * self.soc
-                # self.delta_q = self.q - self.q_capacity
                 self.apply_delta_q_brief(SN.delta_q_s[G.i])
         elif self.model_saturated and reset_temp:
             self.delta_q = 0.
@@ -1227,7 +1220,7 @@ class BatterySim(Battery):
         self.saved_s.ib_charge_s.append(self.ib_charge)
         self.saved_s.ib_fut_s.append(self.ib_fut)
         self.saved_s.sat_s.append(int(self.sat))
-        self.saved_s.dq_s.append(self.delta_q)
+        self.saved_s.delta_q_s.append(self.delta_q)
         self.saved_s.q_s.append(self.q)
         self.saved_s.soc_s.append(self.soc)
         self.saved_s.reset_s.append(self.reset)
@@ -1872,7 +1865,7 @@ class SavedS:
         self.ib_fut_s = []
         self.sat_s = []
         self.ddq_s = []
-        self.dq_s = []
+        self.delta_q_s = []
         self.q_s = []
         self.qcap_s = []
         self.soc_s = []
@@ -1896,7 +1889,7 @@ class SavedS:
             s += "{:8.3f},".format(self.ib_fut_s[i])
             s += "{:1.0f},".format(self.sat_s[i])
             s += "{:5.3f},".format(self.ddq_s[i])
-            s += "{:5.3f},".format(self.dq_s[i])
+            s += "{:5.3f},".format(self.delta_q_s[i])
             s += "{:5.3f},".format(self.qcap_s[i])
             s += "{:7.3f},".format(self.soc_s[i])
             s += "{:d},".format(self.reset_s[i])

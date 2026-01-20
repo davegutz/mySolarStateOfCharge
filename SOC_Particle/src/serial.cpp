@@ -172,7 +172,7 @@ void print_rapid_serial(const boolean reset, Publish *pubList, Sensors *Sen, Bat
     cp.kf_reset_print, Mon->initializing(), Sen->Sim->initializing());
     Serial.printf("%s", pr.buff);
 
-  sprintf(pr.buff,  "%d,%9.2f,%9.2f,%2d,%2d,%2d,%2d,   %11.8f,%11.8f,%11.8f,  ", \
+  sprintf(pr.buff,  "%d,%10.4f,%10.4f,%2d,%2d,%2d,%2d,   %11.8f,%11.8f,%11.8f,  ", \
     CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(), pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
     Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate);
     Serial.printf("%s", pr.buff);
@@ -182,7 +182,7 @@ void print_rapid_serial(const boolean reset, Publish *pubList, Sensors *Sen, Bat
     Mon->ib_charge(), Mon->voc_soc(), Mon->ib_dyn_rstate(), Mon->ib_dyn_lstate());
     Serial.printf("%s", pr.buff);
 
-  sprintf(pr.buff,  "%11.7f,%11.7f,%11.7f,%11.7f,  %11.7f,  %11.7f,%11.7f,%11.7f,%5.3f,%12.7f,%12.7f,", \
+  sprintf(pr.buff,  "%11.7f,%11.7f,%11.7f,%11.7f,  %11.7f,  %11.8f,%11.8f,%11.8f,%5.3f,%12.7f,%12.7f,", \
     Mon->vsat(), Mon->dv_dyn(), Mon->voc_stat(), Mon->hx(),
     Mon->y_ekf(),
     Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc(), Mon->soc_min(), Mon->d_delta_q(), Mon->delta_q());
@@ -411,7 +411,7 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
         // if ( Sim->dt() == 0. ) return;
         double cTime = double(Sen->now)/1000.;
 
-        sprintf(pr.buff, "unit_sim, %13.4f, %8.4f, %d, %9.2f, %d, %11.8f, %7.6f,%7.6f, ",
+        sprintf(pr.buff, "unit_sim, %13.4f, %8.4f, %d, %10.4f, %d, %11.8f, %7.6f,%7.6f, ",
             cTime, Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->tb_f(), Sim->vsat(), Sim->voc_stat());
         Serial.printf("%s", pr.buff);
 
@@ -419,7 +419,7 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
             Sim->dv_dyn(), Sim->vb(), Sim->ib_s(), Sim->ib_dyn(), Sim->dv_hys(), Sim->ib_in(), Sim->ib_charge(), Sim->ioc());
         Serial.printf("%s", pr.buff);
 
-        sprintf(pr.buff, " %d,  %9.4f, %9.4f,  %10.7f, %d, %7.6f,",
+        sprintf(pr.buff, " %d,  %9.4f, %10.4f,  %11.8f, %d, %7.6f,",
             Sim->saturated(), Sim->delta_q(), Sim->q_capacity(), Sim->soc(), reset_temp, Sim->d_delta_q_s());
         Serial.printf("%s", pr.buff);
 

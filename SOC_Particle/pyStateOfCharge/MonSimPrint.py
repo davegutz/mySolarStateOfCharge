@@ -26,6 +26,7 @@ HDR_SPREAD = 10
 
 def prn_soc_debug(OPT, leader="", time=None, i_temp=None, mon=None, sim=None):
     execute = False
+    # execute = True
     if not execute:
         return
     else:
@@ -48,12 +49,12 @@ def prn_soc_debug(OPT, leader="", time=None, i_temp=None, mon=None, sim=None):
         elif OPT.request_history == 3:  # soc_s
             if time is not None:
                 print("time {:7.3f}".format(time), end='')
-            print(" " * 375 + leader, end='')
+            print(" " * 522 + leader, end='')
             print(
-                "{:11.8f}".format(OPT.mon_run.soc_s[G.i]), "{:8.7f}".format(sim.soc),
-                "{:14.7f}".format(OPT.sim_run.Tb_f_s[G.i]), "{:11.7f}".format(sim.Tb_f),
-                "{:14.4f}".format(OPT.sim_run.d_delta_q_s[G.i]), "{:11.4f}".format(sim.d_delta_q),
-                "{:14.4f}".format(OPT.sim_run.dq_s[G.i]), "{:11.4f}".format(sim.delta_q), "{:2.0f}".format(sim.reset_temp_past),
+                "{:11.8f}".format(OPT.mon_run.soc_s[G.i]), "{:9.8f}".format(sim.soc),
+                "{:14.8f}".format(OPT.sim_run.Tb_f_s[G.i]), "{:11.8f}".format(sim.Tb_f),
+                "{:15.6f}".format(OPT.sim_run.d_delta_q_s[G.i]), "{:13.6f}".format(sim.d_delta_q),
+                "{:15.6f}".format(OPT.sim_run.delta_q_s[G.i]), "{:13.6f}".format(sim.delta_q), "{:2.0f}".format(sim.reset_temp_past),
             )
         elif OPT.request_history == 4:  # temp
             if time is not None:
@@ -308,7 +309,7 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
 # 3
 def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
     global count_since_last_header
-    hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce    sa       sa_s       dt                    dt_s                  ib                         ib_in_s                       ib_s                          ib_charge_s                ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s              ib_charge_s                 ioc_s                     soc                     d_delq                           delq                       i * dt_s * coul_eff     soc_s                    Tb_f_s                      d_delq_s                   delq_s                      qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                bms_off_s    voltage_low_s"
+    hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce    sa       sa_s       dt                    dt_s                  ib                         ib_in_s                       ib_s                          ib_charge_s                ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s                 ib_charge_s                 ioc_s                  soc                     d_delq                     delq                            i * dt_s * coul_eff       soc_s                 Tb_f_s                         d_delta_q_s              delta_q_s                       qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                bms_off_s    voltage_low_s"
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -346,10 +347,10 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
           "{:14.7f}".format(SN.mon_run.d_delta_q[G.i]), "{:11.7f}".format(mon.d_delta_q),
           "{:16.6f}".format(SN.mon_run.delta_q[G.i]), "{:13.6f}".format(mon.delta_q),
           "{:14.5f}".format(i_dt_old), "{:11.5f}".format(i_dt_new),
-          "{:11.8f}".format(SN.mon_run.soc_s[G.i]), "{:9.8f}".format(sim.soc),
+          "{:11.6f}".format(SN.mon_run.soc_s[G.i]), "{:9.6f}".format(sim.soc),
           "{:14.8f}".format(SN.sim_run.Tb_f_s[G.i]), "{:11.8f}".format(sim.Tb_f),
-          "{:14.5f}".format(SN.sim_run.d_delta_q_s[G.i]), "{:12.5f}".format(sim.d_delta_q),
-          "{:14.5f}".format(SN.sim_run.dq_s[G.i]), "{:12.5f}".format(sim.delta_q),
+          "{:15.6f}".format(SN.sim_run.d_delta_q_s[G.i]), "{:13.6f}".format(sim.d_delta_q),
+          "{:15.6f}".format(SN.sim_run.delta_q_s[G.i]), "{:13.6f}".format(sim.delta_q),
           "{:12.2f}".format(SN.mon_run.qcrs[G.i]), "{:9.2f}".format(mon.q_cap_rated_scaled),
           "{:12.2f}".format(SN.mon_run.q_capacity[G.i]), "{:9.2f}".format(mon.q_capacity),
           "{:12.2f}".format(SN.sim_run.qcap_s[G.i]), "{:9.2f}".format(sim.q_capacity),
@@ -649,7 +650,7 @@ def save_clean_file(mon_ver, csv_file, unit_key):
         print("Wrote(save_clean_file):", csv_file)
 
 def save_clean_file_sim(sim_ver, csv_file, unit_key):
-    header_str = "unit_m,c_time,Tb_s,vsat_s,voc_stat_s,dv_dyn_s,vb_s,ib_s,sat_s,dq_s,\
+    header_str = "unit_m,c_time,Tb_s,vsat_s,voc_stat_s,dv_dyn_s,vb_s,ib_s,sat_s,delta_q_s,\
     soc_s,reset_s,"
     n = len(sim_ver.time)
     with open(csv_file, "w") as output:
