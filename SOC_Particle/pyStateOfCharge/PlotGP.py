@@ -40,7 +40,7 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 
 def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
-            run_str='_run', ver_str='_ver', Battery=None):
+            run_str='_run', ver_str='_ver', Battery=None, strict_overplot=False):
     print('gp_plot', end=':  ')
     fig_list.append(plt.figure())  # GP 1
     plt.subplot(221)
@@ -64,7 +64,8 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.subplot(224)
     plq(plt, sr, 'time', sr, 'ib_in_s', linestyle='-', color='blue', label='ib_in_s' + run_str)
     plq(plt, smv, 'time', smv, 'ib_in_s', linestyle='--', color='red', label='ib_in_s' + ver_str)
-    plq(plt, smv, 'time', smv, 'ib_fut_s', linestyle='-.', color='orange', label='ib_fut_s' + ver_str)
+    if not strict_overplot:
+        plq(plt, smv, 'time', smv, 'ib_fut_s', linestyle='-.', color='orange', label='ib_fut_s' + ver_str)
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
@@ -75,14 +76,14 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.title(plot_title + ' GP 2')
     print('GP 2', end=':  ')
     plq(plt, mr, 'time', mr, 'vb', linestyle='-', color='black', label='vb' + run_str)
+    plq(plt, mv, 'time', mv, 'vb', linestyle='--', color='orange', label='vb' + ver_str)
     plq(plt, mr, 'time', mr, 'vb_f', linestyle='-', color='black', label='vb_f' + run_str, warn=False)
-    plt.plot(mv.time, mv.vb, color='orange', linestyle='--', label='vb' + ver_str)
     plq(plt, mr, 'time', mr, 'voc', linestyle='-', color='blue', label='voc' + run_str)
     plq(plt, mr, 'time', mr, 'voc_d', linestyle='-', color='blue', label='voc_d' + run_str, warn=False)
-    plt.plot(mv.time, mv.voc, color='red', linestyle='--', label='voc' + ver_str)
+    plq(plt, mv, 'time', mv, 'voc', linestyle='--', color='red', label='voc' + ver_str)
     plq(plt, mr, 'time', mr, 'voc_stat', linestyle='-.', color='cyan', label='voc_stat' + run_str)
+    plq(plt, mv, 'time', mv, 'voc_stat', linestyle=':', color='black', label='voc_stat' + ver_str, warn=False)
     plq(plt, mr, 'time', mr, 'voc_stat_f', linestyle='-.', color='cyan', label='voc_stat_f' + run_str, warn=False)
-    plt.plot(mv.time, mv.voc_stat, color='black', linestyle=':', label='voc_stat' + ver_str)
     plt.legend(loc=1)
     plt.subplot(222)
     plt.plot(mr.time, mr.dv_hys, linestyle='-', color='black', label='dv_hys' + run_str)
@@ -94,8 +95,11 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.legend(loc=1)
     plt.subplot(224)
     plq(plt, mr, 'time', mr, 'ib_sel', linestyle='-', color='black', label='ib_sel' + run_str)
+    plq(plt, mv, 'time', mv, 'ib_sel', linestyle='--', color='black', label='ib_sel' + ver_str, warn=False)
     plq(plt, sr, 'time', sr, 'ib_in_s', linestyle='--', color='cyan', label='ib_in_s' + run_str)
-    plt.plot(mv.time, mv.ib_charge, linestyle='-.', color='orange', label='ib_charge' + ver_str)
+    plq(plt, smv, 'time', smv, 'ib_in_s', linestyle='-.', color='magenta', label='ib_in_s' + ver_str)
+    plq(plt, mr, 'time', mr, 'ib_charge', linestyle='-', color='cyan', label='ib_charge' + run_str)
+    plq(plt, mv, 'time', mv, 'ib_charge', linestyle='-.', color='orange', label='ib_charge' + ver_str)
     plq(plt, mr, 'time', mr, 'ib_diff', linestyle=':', color='red', label='ib_diff' + run_str)
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -168,6 +172,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plq(plt, sr, 'time', sr, 'dv_dyn_s', color='black', linestyle='-.', label='dv_dyn_s' + run_str)
     plq(plt, smv, 'time', smv, 'dv_dyn_s', color='magenta', linestyle=':', label='dv_dyn_s' + ver_str)
     plt.plot(mr.time, mr.dv_hys, color='pink', linestyle='-', label='dv_hys' + run_str)
+    plt.plot(mv.time, mv.dv_hys, color='blue', linestyle='--', label='dv_hys' + ver_str)
     plt.xlabel('sec')
     plt.legend(loc=3)
     plt.subplot(332)
@@ -200,6 +205,7 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plq(plt, mr, 'time', mr, 'voc_d', linestyle='-', color='blue', label='voc_d' + run_str, warn=False)
     plt.plot(mv.time, mv.voc, linestyle='--', color='cyan', label='voc' + ver_str)
     plq(plt, mr, 'time', mr, 'voc_stat', add=-1., linestyle='-', color='orange', label='voc_stat' + run_str + '-1')
+    plq(plt, mv, 'time', mv, 'voc_stat', add=-1., linestyle='--', color='blue', label='voc_stat' + ver_str + '-1')
     plq(plt, mr, 'time', mr, 'voc_stat_f', add=-1., linestyle='-', color='orange', label='voc_stat_f' + run_str + '-1', warn=False)
     plq(plt, sr, 'time', sr, 'voc_stat_s', add=-1., linestyle='-.', color='blue', label='voc_stat_s' + run_str + '-1')
     plq(plt, smv, 'time', smv, 'voc_stat_s', add=-1., linestyle=':', color='red', label='voc_stat_s' + ver_str + '-1')
@@ -225,9 +231,9 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     plt.legend(loc=2)
     plt.subplot(337)
     plq(plt, mr, 'time', mr, 'vb', color='blue', linestyle='-', label='vb' + run_str)
-    plq(plt, mr, 'time', mr, 'vb_hdwe_f', color='blue', linestyle='-', label='vb_hdwe_f' + run_str)
-    plt.plot(mr.time, mr.vb, color='magenta', linestyle='--', label='vb' + run_str)
-    plt.plot(mv.time, mv.vb, color='cyan', linestyle='-.', label='vb' + ver_str)
+    plq(plt, mv, 'time', mv, 'vb', color='orange', linestyle='--', label='vb' + ver_str)
+    plq(plt, mr, 'time', mr, 'vb_hdwe_f', color='green', linestyle='-', label='vb_hdwe_f' + run_str)
+    plq(plt, mv, 'time', mv, 'vb_hdwe_f', color='magenta', linestyle='--', label='vb_hdwe_f' + ver_str)
     plq(plt, sr, 'time', sr, 'vb_s', color='black', linestyle='-.', label='vb_s' + run_str)
     plq(plt, smv, 'time', smv, 'vb_s', color='magenta', linestyle=':', label='vb_s' + ver_str)
     plt.xlabel('sec')

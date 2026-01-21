@@ -218,7 +218,12 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
             sr.dv_hyst_s_est = None
         else:
             sr.dv_hyst_s_est = sr.voc_s - sr.voc_stat_s
-        plq(plt, sr, 'time', sr, 'dv_hyst_s_est', color='cyan', linestyle=':', label='dv_hyst_s_est'+run_str)
+        plq(plt, sr, 'time', sr, 'dv_hyst_s_est', color='cyan', linestyle='-', label='dv_hyst_s_est'+run_str)
+        if smv.voc_s is None:
+            smv.dv_hyst_s_est = None
+        else:
+            smv.dv_hyst_s_est = np.array(smv.voc_s) - np.array(smv.voc_stat_s)
+        plq(plt, smv, 'time', smv, 'dv_hyst_s_est', color='magenta', linestyle='--', label='dv_hyst_s_est'+ver_str)
         plt.legend(loc=1)
         plt.subplot(224)
         plt.plot(mr.time, mr.ib_charge, color='red', linestyle='-', label='ib_charge' + run_str)
@@ -314,6 +319,8 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         plq(plt, mv, 'soc', mv, 'vb_hdwe', color='black', linestyle='--', label='vb_hdwe'+ver_str)
         plq(plt, mr, 'soc', mr, 'voc_stat', color='red', linestyle='-.', label='voc_stat_s'+run_str)
         plq(plt, smv, 'soc_s', smv, 'voc_stat_s', color='blue', linestyle=':', label='voc_stat_s'+ver_str)
+        plq(plt, mr, 'soc', mr, 'voc_soc', color='green', linestyle='-.', label='voc_soc'+run_str)
+        plt.plot(mv.soc, mv.voc_soc, color='orange', linestyle=':', label='voc_soc'+ver_str)
         plt.ylim(12.5, 14.5)
         plt.legend(loc=1)
         plt.subplot(222)

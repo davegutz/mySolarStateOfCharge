@@ -137,7 +137,7 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_
                                          ver_str='_ver', strict_overplot=strict_overplot)
         fig_list, fig_files = gp_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files=fig_files,
                                       plot_title=plot_title, fig_list=fig_list, run_str='',
-                                      ver_str='_ver', Battery=Battery)
+                                      ver_str='_ver', Battery=Battery, strict_overplot=strict_overplot)
         fig_list, fig_files = off_on_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                           plot_title=plot_title, fig_list=fig_list, run_str='',
                                           ver_str='_ver', strict_overplot=strict_overplot)
@@ -187,7 +187,7 @@ def main():
     # Rf, vv4,
     # Rk,
     # vv0,
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression40C_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\satSitBB_soc2p2_hi_lo_bb.csv'
 
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 
@@ -199,8 +199,8 @@ def main():
     #
     # # The following are not implemented in GUI
     #
-    time_end_in = None
-    # time_end_in = 10
+    # time_end_in = None
+    time_end_in = 306
     #
     time_shift_in = None
     # time_shift_in = -1.811
@@ -213,15 +213,15 @@ def main():
 
     # RunSim plot selection
     # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m  8=vb_wrap
-    request_hist_in = 3
+    request_hist_in = 5
     # request_hist_in = None
 
     # # mon_soc_in = False # old runsim work ******************
     use_mon_soc_ = False
     # use_mon_soc_ = True
 
-    # plots = False
-    plots = True
+    plots = False
+    # plots = True
 
     # strict_overplot_in = False
     strict_overplot_in = True
