@@ -170,7 +170,7 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
 
 def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
     global count_since_last_header
-    hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa       ib_charge              soc                    soc_ekf                y_ekf                   voc_ekf                Tb_f                     x_prior               frz   x                        x_for_hx                 x_post                    Tb_f_rap                  tb_f_for_hx                hx                         u_ekf                   voc_stat_f            z                      z_ekf       P                              P_post                       P_prior                       H                      R                     S                    K                          f_rstate             f_lstate            f_T"
+    hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa       ib_charge              soc                    soc_ekf                x_ekf                   y_ekf                   voc_ekf                Tb_f                     x_prior               frz   x                        x_for_hx                 x_post                    Tb_f_rap                  tb_f_for_hx                hx                         u_ekf                   voc_stat_f            z                      z_ekf       P                              P_post                       P_prior                       H                      R                     S                    K                          f_rstate             f_lstate            f_T"
     i_ekf = max(i_ekf, 0)
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
@@ -191,6 +191,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
           "{:10.5f}".format(SN.mon_run.ib_charge[G.i]), "{:9.5f}".format(mon.ib_charge),
           "{:13.7f}".format(SN.mon_run.soc[G.i]), "{:10.7f}".format(mon.soc),
           "{:11.7f}".format(SN.mon_run.soc_ekf[G.i]), "{:9.7f}".format(mon.soc_ekf),
+          "{:12.7f}".format(SN.mon_run.soc_ekf[G.i]), "{:10.7f}".format(mon.x),
           "{:12.7f}".format(SN.mon_run.y_ekf[G.i]), "{:10.7f}".format(mon.y_ekf),
           "{:11.5f}".format(SN.mon_run.voc_ekf[G.i]), "{:9.5f}".format(mon.voc_ekf),
           "{:14.7f}".format(SN.mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),

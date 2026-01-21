@@ -677,12 +677,7 @@ class BatteryMonitor(Battery, EKF1x1):
     def init_soc_ekf(self, mr, i, i_ekf):
         self.soc_ekf = mr.soc_ekf[i]
         self.y_ekf = mr.y_ekf[i]
-
-        if hasattr(mr, 'x'):
-            self.init_ekf(mr.x[i_ekf], 0.0)
-        else:
-            self.init_ekf(mr.soc_ekf[i_ekf], 0.0)
-
+        self.init_ekf(mr.soc_ekf[i], 0.0)
         self.q_ekf = self.soc * self.q_capacity
         self.P = mr.P[i_ekf]
 
@@ -721,10 +716,7 @@ class BatteryMonitor(Battery, EKF1x1):
         else:
             self.dt_eframe = mr.dt[i] * Battery.EKF_EFRAME_MULT
 
-        if hasattr(mr, 'x'):
-            self.x = mr.x[i_ekf]
-        else:
-            self.x = mr.soc_ekf[i_ekf]
+        self.x = mr.soc_ekf[i]
 
         if hasattr(mr, 'x_prior'):
             self.x_prior = mr.x_prior[i_ekf]

@@ -458,7 +458,7 @@ def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_lis
     plq(plt, mr, 'time', mr, 'ibd_thr', slr=-1., color='red', linestyle=':')
     plt.legend(loc=1)
     plt.subplot(334)
-    plq(plt, mr, 'time', mr, 'e_wrap', color='black', linestyle='--', label='e_wrap' + run_str)
+    plq(plt, mr, 'time', mr, 'e_wrap', color='black', linestyle='-', label='e_wrap' + run_str)
     plq(plt, mv, 'time', mv, 'e_wrap', color='red', linestyle='--', label='e_wrap' + ver_str)
     plq(plt, mr, 'time', mr, 'e_wrap_filt', color='black', linestyle='-', label='e_wrap_filt' + run_str, warn=False)
     plq(plt, mv, 'time', mv, 'e_wrap_filt', color='orange', linestyle='--', label='e_wrap_filt' + ver_str)
