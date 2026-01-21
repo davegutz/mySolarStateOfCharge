@@ -435,8 +435,8 @@ void Fault::ib_logic(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
     #ifdef HDWE_IB_HI_LO
       ib_amp_hi_ = Sen->ib_amp_model() >= HDWE_IB_HI_LO_AMP_HI / sp.nP();
       ib_amp_lo_ = Sen->ib_amp_model() <= HDWE_IB_HI_LO_AMP_LO / sp.nP();
-      ib_noa_hi_ = Sen->ib_noa_model() >= HDWE_IB_HI_LO_AMP_HI / sp.nP();
-      ib_noa_lo_ = Sen->ib_noa_model() <= HDWE_IB_HI_LO_AMP_LO / sp.nP();
+      ib_noa_hi_ = Sen->ib_noa_model() >= HDWE_IB_HI_LO_NOA_HI / sp.nP();
+      ib_noa_lo_ = Sen->ib_noa_model() <= HDWE_IB_HI_LO_NOA_LO / sp.nP();
       ib_lo_active_ = IbLoActive->calculate(HDWE_IB_HI_LO_AMP_LO / sp.nP() < Sen->Ib_noa_model &&
                                             Sen->Ib_noa_model < HDWE_IB_HI_LO_AMP_HI / sp.nP(),
                                             IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET, Sen->T , reset_loc);
@@ -454,8 +454,8 @@ void Fault::ib_logic(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
     #ifdef HDWE_IB_HI_LO
       ib_amp_hi_ = Sen->ib_amp_hdwe() >= HDWE_IB_HI_LO_AMP_HI / sp.nP();
       ib_amp_lo_ = Sen->ib_amp_hdwe() <= HDWE_IB_HI_LO_AMP_LO / sp.nP();
-      ib_noa_hi_ = Sen->ib_noa_hdwe() >= HDWE_IB_HI_LO_AMP_HI / sp.nP();
-      ib_noa_lo_ = Sen->ib_noa_hdwe() <= HDWE_IB_HI_LO_AMP_LO / sp.nP();
+      ib_noa_hi_ = Sen->ib_noa_hdwe() >= HDWE_IB_HI_LO_NOA_HI / sp.nP();
+      ib_noa_lo_ = Sen->ib_noa_hdwe() <= HDWE_IB_HI_LO_NOA_LO / sp.nP();
       ib_lo_active_ = IbLoActive->calculate(HDWE_IB_HI_LO_AMP_LO / sp.nP() < Sen->Ib_noa_hdwe &&
                                             Sen->Ib_noa_hdwe < HDWE_IB_HI_LO_AMP_HI / sp.nP(),
                                             IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET, Sen->T , reset_loc);

@@ -199,8 +199,8 @@ def main():
     #
     # # The following are not implemented in GUI
     #
-    # time_end_in = None
-    time_end_in = 306
+    time_end_in = None
+    # time_end_in = 400
     #
     time_shift_in = None
     # time_shift_in = -1.811
@@ -220,8 +220,8 @@ def main():
     use_mon_soc_ = False
     # use_mon_soc_ = True
 
-    plots = False
-    # plots = True
+    # plots = False
+    plots = True
 
     # strict_overplot_in = False
     strict_overplot_in = True

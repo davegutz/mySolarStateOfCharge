@@ -64,8 +64,10 @@ def get_modeling(mr, mod_force=None):
 
 def sync_to_mon_or_sim(mr, sr, t_mx=None):
     if sr is not None and len(sr.time) < len(mr.time):
-        time = sr.time
-        dtime = sr.dt_s
+        # time = sr.time
+        # dtime = sr.dt_s
+        time = mr.time
+        dtime = mr.dt
     else:
         time = mr.time
         dtime = mr.dt
@@ -228,7 +230,6 @@ def replicate(OPT: UserOptions):
         T_ekf = None
         if G.i != 0:
             candidate_dt = t[G.i] - t[G.i-1]  # update
-            # print(f"{t[G.i]=} {t[G.i-1]=} {candidate_dt=}")
             if candidate_dt > 1e-6:
                 T = dt[G.i]
 

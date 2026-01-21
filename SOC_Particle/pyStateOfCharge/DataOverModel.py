@@ -800,7 +800,6 @@ class SavedData:
                 except IOError:
                     self.zero_end = 0
             self.time_run = self.time[self.zero_end]
-            print(f" SavedData:  zero_end {self.zero_end}  time_run {self.time_run} time_shift{self.time_shift}")
             self.time -= self.time_run
             self.time_min = self.time / 60.
             self.time_day = self.time / 3600. / 24.
@@ -827,9 +826,8 @@ class SavedData:
                     i_end = min(i_end, len(self.c_time_shunt))
             else:
                 if temp is not None:
-                    time_t = np.atleast_1d(np.array(np.array(temp.c_time) - time_end))
+                    time_t = np.atleast_1d(np.array(np.array(temp.c_time) - self.time_run))
                     Tt = np.atleast_1d(np.array(temp.T_t))
-                    time_end = time_t[-1] + Tt[-1]
                     i_end = np.where(self.time <= time_end)[0][-1] + 1
                 else:
                     i_end = len(self.time)
@@ -1414,7 +1412,6 @@ class SavedData:
                 self.init_time = 1.
             else:
                 self.init_time = -4.
-        print(f"\nSavedData: time[0]={self.time[0]}  init_time={self.init_time}\n")
 
         for i in range(n):
             if self.time[i] <= self.init_time:
