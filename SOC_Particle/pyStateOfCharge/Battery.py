@@ -165,6 +165,7 @@ class Battery(Coulombs):
         self.q = 0  # Charge, C
         self.voc = Battery.NOM_SYS_VOLT  # Model open circuit voltage, V
         self.voc_stat = self.voc  # Static model open circuit voltage from charge process, V
+        self.voc_stat_past = self.voc_stat
         self.voc_stat_f = self.voc_stat
         self.dv_dyn = 0.  # Model current induced back emf, V
         self.ib_dyn = 0.  # Model current induced back emf before resistance multiply, A
@@ -206,6 +207,7 @@ class Battery(Coulombs):
         self.ib_dyn_rstate = 0.  # Placeholder so BatterySim can be plotted
         self.ib_dyn_lstate = 0.  # Placeholder so BatterySim can be plotted
         self.bms_off = False
+        self.bms_off_past = self.bms_off
         self.mod = 7
         self.sel = 0
         self.tweak_test = tweak_test
@@ -481,6 +483,7 @@ class BatteryMonitor(Battery, EKF1x1):
     # (EKF_EFRAME_MULT multi-frame always <= DP)
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
                   q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, i=None):
+        self.reset = reset
         self.ib_amp_hdwe = SN.mon_run.ibmh[G.i]
         self.ib_amp_model = SN.mon_run.ibmm[G.i]
         self.ib_noa_hdwe = SN.mon_run.ibnh[G.i]
@@ -527,10 +530,16 @@ class BatteryMonitor(Battery, EKF1x1):
         self.voc_soc, self.dv_dsoc = self.calc_soc_voc(self.soc, self.Tb_f_rap)
 
         # Battery management system model (uses past value bms_off and voc_stat)
-        if not self.bms_off:
+        voltage_low_past = self.voltage_low
+        if (not self.bms_off) or self.reset:
             self.voltage_low = self.voc_stat < self.chemistry.vb_down
+            if (self.voltage_low != voltage_low_past) and not self.reset:
+                print(f"\nBMS OFF voc_stat {self.voc_stat} vb_down {self.chemistry.vb_down} vb_rising {self.chemistry.vb_rising} bms_off {self.bms_off} voltage_low {self.voltage_low} \n\n")
         else:
             self.voltage_low = self.voc_stat < self.chemistry.vb_rising
+            if self.voltage_low != voltage_low_past:
+                print(f"\nBMS ON voc_stat {self.voc_stat} vb_down {self.chemistry.vb_down} vb_rising {self.chemistry.vb_rising} bms_off {self.bms_off} voltage_low {self.voltage_low} \n\n")
+        self.bms_off_past = self.bms_off
         bms_charging = self.ib > Battery.IB_MIN_UP
         if reset and SN.mon_run.bms_off[0] is not None:
             self.bms_off = SN.mon_run.bms_off[0]
@@ -558,6 +567,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
         self.voc = self.vb - (self.ib_dyn*self.chemistry.r_ct + ib_dc*self.chemistry.r_0)
+        self.voc_stat_past = self.voc_stat
         if self.bms_off and self.voltage_low:
             self.voc_stat = self.vb
             self.voc = self.vb
@@ -1060,6 +1070,7 @@ class BatterySim(Battery):
         # lots of chatter as it shuts off, restores vb due to loss of dynamic current, then repeats shutoff.
         # Using voc_ is not better because change in dv_hys_ causes the same effect.   So using nice quiet
         # voc_stat_ for ease of simulation, not accuracy.
+        voltage_low_past = self.voltage_low
         if not self.bms_off:
             self.voltage_low = self.voc_stat < self.chemistry.vb_down_sim
         else:

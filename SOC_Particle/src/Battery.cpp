@@ -235,11 +235,18 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const bo
     voc_soc_ = voc_soc_tab(soc_, tb_f_);
 
     // Battery management system model
-    if ( !bms_off_ )
-        voltage_low_ = voc_stat_ < chem_.vb_down;
-    else
-        voltage_low_ = voc_stat_ < chem_.vb_rising;
     bms_charging_ = ib_ > IB_MIN_UP;
+    boolean voltage_low_past = voltage_low_;
+    if ( !bms_off_ || reset_temp)
+    {
+        voltage_low_ = voc_stat_ < chem_.vb_down;
+        if ( (voltage_low_ != voltage_low_past) && !reset_temp ) Serial.printf("\nBMS OFF voc_stat%7.3f vb_down%7.3f vb_rising%7.3f bms_off %d voltage_low %d \n\n", voc_stat_, chem_.vb_down, chem_.vb_rising, bms_off_, voltage_low_);
+    }
+    else
+    {
+        voltage_low_ = voc_stat_ < chem_.vb_rising;
+        if ( voltage_low_ != voltage_low_past ) Serial.printf("\nBMS ON  voc_stat%7.3f vb_down%7.3f vb_rising%7.3f bms_off %d voltage_low %d \n\n", voc_stat_, chem_.vb_down, chem_.vb_rising, bms_off_, voltage_low_);
+    }
     bms_off_ = (tb_f_ <= chem_.low_t) || ( voltage_low_ && !Sen->Flt->vb_fa() && !sp.tweak_test() );    // KISS
     Sen->bms_off = bms_off_;
     ib_charge_ = ib_;
@@ -322,8 +329,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const bo
     if ( sp.debug()==34 )
         Serial.printf("BatteryMonitor:dt,ib,voc_stat_tab,voc_stat_f,voc,voc_dead,dv_dyn,vb,   u,Fx,Bu,P,   z_,S_,K_,y_,soc_ekf, y_ekf_f, soc, conv,  %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,     %7.3f,%7.3f,%7.4f,%7.4f,       %7.3f,%7.4f,%10.7f,%7.4f,%7.4f,%7.4f, %7.4f,  %d,\n",
             dt_, ib_, voc_soc_, voc_stat_f_, voc_, voc_dead_, dv_dyn_, vb_,     u_, Fx_, Bu_, P_,    z_, S_, K_, y_, soc_ekf_, y_filt_, soc_, converged_ekf());
-
-            if ( sp.debug()==-24 ) Serial.printf("Mon:  ib%7.3f soc%8.4f reset_temp%d tau_ct%9.5f r_ct%7.3f r_0%7.3f dv_dyn%7.3f dv_hys%7.3f voc_soc%7.3f  voc_stat_f%7.3f voc%7.3f vb%7.3f ib _charge%7.3f ",
+    if ( sp.debug()==-24 ) Serial.printf("Mon:  ib%7.3f soc%8.4f reset_temp%d tau_ct%9.5f r_ct%7.3f r_0%7.3f dv_dyn%7.3f dv_hys%7.3f voc_soc%7.3f  voc_stat_f%7.3f voc%7.3f vb%7.3f ib _charge%7.3f ",
         ib_, soc_, reset_temp, chem_.tau_ct, chem_.r_ct, chem_.r_0, dv_dyn_, dv_hys_, voc_soc_, voc_stat_f_, voc_, vb_, ib_charge_);
 
     // Charge time if used ekf 
