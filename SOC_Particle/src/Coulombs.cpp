@@ -48,6 +48,7 @@ Coulombs::Coulombs(double *sp_delta_q, const float q_cap_rated,
       put_dy_voc(dy_voc);
       put_dz_voc(dz_voc);
       coul_eff_ = (chem_.coul_eff*s_coul_eff);
+      soc_ekf_min_ = chem_.soc_ekf_min;
     }
 Coulombs::~Coulombs() {}
 

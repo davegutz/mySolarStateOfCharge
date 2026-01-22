@@ -78,11 +78,11 @@ def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
                 case 0:
                     hdr = ''
                 case 1:
-                    hdr = print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp)
+                    hdr = print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp)
                 case 2:
-                    hdr = print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf)
+                    hdr = print_soc_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf)
                 case 3:
-                    hdr = print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf)
+                    hdr = print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf)
                 case 4:
                     hdr = print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf)
                 case 5:
@@ -168,9 +168,9 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     print(Colors.reset, end='')
     return hdr
 
-def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
+def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
     global count_since_last_header
-    hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa       ib_charge              soc                    soc_ekf                x_ekf                   y_ekf                   voc_ekf                Tb_f                     x_prior               frz   x                        x_for_hx                 x_post                    Tb_f_rap                  tb_f_for_hx                hx                         u_ekf                   voc_stat_f            z                      z_ekf       P                              P_post                       P_prior                       H                      R                     S                    K                          f_rstate             f_lstate            f_T"
+    hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa           bms_off    volt_low     frz     ib_charge              soc                    soc_ekf                x_ekf                   y_ekf                   voc_ekf                Tb_f                     x_prior                  x                        x_for_hx                 x_post                    Tb_f_rap                  tb_f_for_hx                hx                         u_ekf                   voc_stat_f            z                      z_ekf       P                              P_post                       P_prior                      H                        R                     S                    K                          f_rstate             f_lstate            f_T"
     i_ekf = max(i_ekf, 0)
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
@@ -179,8 +179,8 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
         count_since_last_header += 1
     if mon.reset:
         print(Colors.fg.red, end='')
-    # elif mon.reset_temp:
-    #     print(Colors.fg.orange, end='')
+    elif calc_ekf:
+        print(Colors.fg.green, end='')
     elif mon.reset_ekf:
         print(Colors.fg.lightblue, end='')
 
@@ -188,6 +188,9 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
           "{:4d}".format(i_ekf), "{:4d}".format(mon.reset_ekf), "{:4d}".format(calc_ekf),
           "{:9.3f}".format(SN.mon_run.dt_ekf[i_ekf]), "{:6.3f}".format(mon.dt_eframe),
           "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
+          "{:7d}".format(bool(SN.mon_run.bms_off[G.i])), "{:3d}".format(bool(mon.bms_off)),
+          "{:7d}".format(bool(SN.mon_run.voltage_low[G.i])), "{:3d}".format(bool(mon.voltage_low)),
+          "{:7.0f}".format(SN.mon_run.frz[i_ekf]), "{:3.0f}".format(mon.frz),
           "{:10.5f}".format(SN.mon_run.ib_charge[G.i]), "{:9.5f}".format(mon.ib_charge),
           "{:13.7f}".format(SN.mon_run.soc[G.i]), "{:10.7f}".format(mon.soc),
           "{:11.7f}".format(SN.mon_run.soc_ekf[G.i]), "{:9.7f}".format(mon.soc_ekf),
@@ -195,7 +198,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, calc_ekf, calc_temp):
           "{:12.7f}".format(SN.mon_run.y_ekf[G.i]), "{:10.7f}".format(mon.y_ekf),
           "{:11.5f}".format(SN.mon_run.voc_ekf[G.i]), "{:9.5f}".format(mon.voc_ekf),
           "{:14.7f}".format(SN.mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
-          "{:13.8f}".format(SN.mon_run.x_prior[i_ekf]), "{:10.8f}".format(mon.x_prior), "{:2.0f}".format(SN.mon_run.frz[i_ekf]),
+          "{:13.8f}".format(SN.mon_run.x_prior[i_ekf]), "{:10.8f}".format(mon.x_prior),
           "{:13.8f}".format(SN.mon_run.x[i_ekf]), "{:10.8f}".format(mon.x),
           "{:13.8f}".format(SN.mon_run.x_for_hx[i_ekf]), "{:10.8f}".format(mon.x_for_hx),
           "{:13.8f}".format(SN.mon_run.x_post[i_ekf]), "{:10.8f}".format(mon.x_post),
@@ -267,7 +270,7 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     print(Colors.reset, end='')
     return hdr
 
-def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
+def print_soc_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header
     hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce    sa     ib_charge            soc                     dt                  i * dt * coul_eff    d_delq                           delq                       Tb_f                      Tb_f_rap                    ddq                  delq                       qcrs                   q_cap                  Tb                       Tb_f_rate"
     if calc_temp and count_since_last_header > HDR_SPREAD:
@@ -308,7 +311,7 @@ def print_soc_RunSim(SN, i_temp, t, mon, calc_temp, i_ekf, calc_ekf):
     return hdr
 
 # 3
-def print_soc_s_RunSim(SN, i_temp, t, mon, calc_temp, sim, i_ekf, calc_ekf):
+def print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header
     hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce    sa       sa_s       dt                    dt_s                  ib                         ib_in_s                       ib_s                          ib_charge_s                ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s                 ib_charge_s                 ioc_s                  soc                     d_delq                     delq                            i * dt_s * coul_eff       soc_s                 Tb_f_s                         d_delta_q_s              delta_q_s                       qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                bms_off_s    voltage_low_s"
     if calc_temp and count_since_last_header > HDR_SPREAD:

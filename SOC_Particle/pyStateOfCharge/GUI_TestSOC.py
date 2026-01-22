@@ -51,6 +51,10 @@ if platform.system() == 'Darwin':
 else:
     from tkinter import Button as myButton
 bg_color = 'lightgray'
+if sys.version_info.major == 3 and sys.version_info.minor < 12:
+    import pyautogui
+else:
+    from pynput.keyboard import Key, Controller
 
 # sys.stdout = open('logs.txt', 'w')
 # sys.stderr = open('logse.txt', 'w')
@@ -1128,10 +1132,11 @@ def stay_awake(up_set_min=3.):
         time.sleep(30.)
         for i in range(0, 3):
             if sys.version_info.minor > 11:
-                keyboard.press(Key.f15)  # Shift key does not disturb fullscreen
-                keyboard.release(Key.f15)  # Shift key does not disturb fullscreen
+                keyboard = Controller()
+                keyboard.press(Key.f15)  # f15 key does not disturb fullscreen
+                keyboard.release(Key.f15)  # f15 key does not disturb fullscreen
             else:
-                pyautogui.press('f15')  # Shift key does not disturb fullscreen
+                pyautogui.press('f15')  # f15 key does not disturb fullscreen
         up_time_min = (time.time() - start_time) / 60.
         print(f"stay_awake: {up_time_min=} out of {up_set_min}")
         # Check putty running

@@ -200,6 +200,7 @@ void Chemistry::assign_BB()
     r_0 = 0.0113;       // ChargeTransfer R0, ohms (0.0113)
     r_ct = 0.001;       // ChargeTransfer diffusion resistance, ohms (0.001)
     r_sd = 70;          // Equivalent model for EKF reference.	Parasitic discharge equivalent, ohms (70.)
+    soc_ekf_min = X_SOC[0]; // Minimum SOC for EKF operation
     tau_ct = 83.;       // ChargeTransfer diffusion time constant, s (=1/Rct/Cct) (83.)
     tau_sd = 2.5e7;     // Equivalent model for EKF reference.	Parasitic discharge time constant, sec (2.5e7)
     c_sd = tau_sd / r_sd;

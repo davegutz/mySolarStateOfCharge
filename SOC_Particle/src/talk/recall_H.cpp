@@ -44,8 +44,8 @@ boolean recall_H(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
         sp.print_fault_header(&pp.pubList);
         chit("Pr;Q;", SOON);
         Serial.printf("\n");
-        print_battery_header();
-        print_battery_serial();
+        // print_battery_header();  // When Hd is triggered at end of GUI run, after BZ command, this changes settings for python model
+        // print_battery_serial();  // When Hd is triggered at end of GUI run, after BZ command, this changes settings for python model
         sp.print_history_array();
         sp.print_fault_header(&pp.pubList);
         sp.print_fault_array();

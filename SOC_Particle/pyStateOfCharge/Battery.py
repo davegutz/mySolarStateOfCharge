@@ -410,6 +410,7 @@ class BatteryMonitor(Battery, EKF1x1):
                                           Battery.HDWE_IB_HI_LO_AMP_HI, Battery.HDWE_IB_HI_LO_NOA_HI)
         self.reset_kf = False
         self.iscn_f = 0.
+        self.frz = False
         if SN is not None:
             self.Tb_hdwe = SN.Tb_hdwe_init
             self.Tb_hdwe_filt =SN.Tb_hdwe_filt_init
@@ -572,9 +573,6 @@ class BatteryMonitor(Battery, EKF1x1):
         # EKF 1x1
         self.reset_ekf = reset_ekf
         if calc_ekf:
-            if not self.reset_ekf:
-                pass
-            # print(f"{reset_ekf=} {self.soc_ekf} {self.x_ekf=} {self.voc_stat_ekf=}")
             self.voc_stat_ekf = self.voc_stat
             self.dt_eframe = dt_ekf
             ddq_dt = self.ib_charge_ekf
@@ -590,7 +588,8 @@ class BatteryMonitor(Battery, EKF1x1):
             self.voc_stat_f_lstate = self.voc_stat_filt.state
             self.voc_stat_f_tau = self.voc_stat_filt.tau
             self.voc_stat_f_T = self.voc_stat_filt.dt
-            self.predict_ekf(u=ddq_dt, reset=self.reset_ekf, freeze=self.bms_off)  # u = d(q)/dt
+            self.frz = self.bms_off
+            self.predict_ekf(u=ddq_dt, reset=self.reset_ekf, freeze=self.frz)  # u = d(q)/dt
             self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1.)  # z = voc, voc_filtered = hx
             self.soc_ekf = self.x  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
             self.q_ekf = self.soc_ekf * self.q_capacity

@@ -98,6 +98,7 @@ protected:
   float q_min_;       // Floor on charge available to use, C
   boolean sat_;       // Indication that battery is saturated, T=saturated
   float soc_;         // Fraction of saturation charge (q_capacity_) available (0-1)
+  float soc_ekf_min_; // Minimum SOC for EKF operation
   float soc_inf_;     // Fraction of saturation charge (q_capacity_) available (-inf - inf)
   float soc_min_;     // As battery cools, the voltage drops and there appears a minimum soc it can deliver
   double *sp_delta_q_;// Charge since saturated, C

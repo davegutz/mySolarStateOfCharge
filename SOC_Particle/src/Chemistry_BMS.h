@@ -64,6 +64,7 @@ public:
   float r_sd;       // Equivalent model for EKF reference.	Parasitic discharge equivalent, ohms
   float c_sd;       // Equivalent model for EKF reference.  Parasitic discharge equivalent, Farads
   float r_ss;       // Equivalent model for state space model initialization, ohms
+  float soc_ekf_min; // Minimum SOC for EKF operation
   TableInterp1D *hys_Tn_;     // soc 1-D table, V_min
   TableInterp2D *hys_Ts_;     // dv-soc 2-D table scalar
   TableInterp1D *hys_Tx_;     // soc 1-D table, V_max
