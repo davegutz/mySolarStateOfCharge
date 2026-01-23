@@ -1467,9 +1467,6 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
   if ( sp.debug()==62 ) Serial.printf(" Ib%7.3f Ib_hdwe%7.3f Ib_hdwe_model%7.3f Ib_amp%7.3f Ib_amp_model%7.3f Ib_amp_hdwe%7.3f Ib_noa%7.3f Ib_noa_model%7.3f Ib_noa_hdwe%7.3f\n",
    Ib, Ib_hdwe, Ib_hdwe_model, Ib_amp, Ib_amp_model, Ib_amp_hdwe, Ib_noa, Ib_noa_model, Ib_noa_hdwe);
 
-  // print_signal_select for data collection
-  print_signal_sel_serial(reset, this, Mon, Sim);
-
 }
 
 // Selection print debug

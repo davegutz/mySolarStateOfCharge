@@ -170,7 +170,7 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
 
 def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
     global count_since_last_header
-    hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa        voc_stat_past       bms_off_past  volt_low       frz     ib_charge              soc                    soc_ekf                x_ekf                   y_ekf                   voc_ekf                Tb_f                     x_prior                  x                        x_for_hx                 x_post                    Tb_f_rap                  tb_f_for_hx                hx                         u_ekf                   voc_stat_f            z                      z_ekf       P                              P_post                       P_prior                      H                        R                     S                    K                          f_rstate             f_lstate            f_T"
+    hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa        voc_stat              voc_stat_past       bms_off_past  volt_low       bms_off     frz     ib_charge              soc                    soc_ekf                x_ekf                   y_ekf                   voc_ekf                Tb_f                     x_prior                  x                        x_for_hx                 x_post                    Tb_f_rap                  tb_f_for_hx                hx                         u_ekf                   voc_stat_f            z                      z_ekf       P                              P_post                       P_prior                      H                        R                     S                    K                          f_rstate             f_lstate            f_T"
     i_ekf = max(i_ekf, 0)
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
@@ -188,9 +188,11 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
           "{:4d}".format(i_ekf), "{:4d}".format(mon.reset_ekf), "{:4d}".format(calc_ekf),
           "{:9.3f}".format(SN.mon_run.dt_ekf[i_ekf]), "{:6.3f}".format(mon.dt_eframe),
           "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
+          "{:11.5f}".format(SN.mon_run.voc_stat[G.i]), "{:9.5f}".format(mon.voc_stat),
           "{:11.5f}".format(SN.mon_run.voc_stat[G.i-1]), "{:9.5f}".format(mon.voc_stat_past),
           "{:7d}".format(bool(SN.mon_run.bms_off[G.i-1])), "{:3d}".format(bool(mon.bms_off_past)),
           "{:7d}".format(bool(SN.mon_run.voltage_low[G.i])), "{:3d}".format(bool(mon.voltage_low)),
+          "{:7d}".format(bool(SN.mon_run.bms_off[G.i])), "{:3d}".format(bool(mon.bms_off)),
           "{:7.0f}".format(SN.mon_run.frz[i_ekf]), "{:3.0f}".format(mon.frz),
           "{:10.5f}".format(SN.mon_run.ib_charge[G.i]), "{:9.5f}".format(mon.ib_charge),
           "{:13.7f}".format(SN.mon_run.soc[G.i]), "{:10.7f}".format(mon.soc),

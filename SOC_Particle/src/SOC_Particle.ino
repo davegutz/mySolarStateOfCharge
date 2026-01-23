@@ -412,6 +412,7 @@ void loop()
     Log.info("ino:  print_rapid_data");
     print_shunt_serial(reset, Sen);
     print_rapid_data(reset, Sen, Mon, reset_temp);
+    print_signal_sel_serial(reset, Sen, Mon, Sen->Sim);
 
     Log.info("end read");
   }  // end read (high speed frame)

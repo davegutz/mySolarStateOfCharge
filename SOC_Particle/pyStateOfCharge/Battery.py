@@ -531,19 +531,21 @@ class BatteryMonitor(Battery, EKF1x1):
 
         # Battery management system model (uses past value bms_off and voc_stat)
         voltage_low_past = self.voltage_low
-        if (not self.bms_off) or self.reset:
-            self.voltage_low = self.voc_stat < self.chemistry.vb_down
-            if (self.voltage_low != voltage_low_past) and not self.reset:
-                print(f"\nBMS OFF voc_stat {self.voc_stat} vb_down {self.chemistry.vb_down} vb_rising {self.chemistry.vb_rising} bms_off {self.bms_off} voltage_low {self.voltage_low} \n\n")
-        else:
-            self.voltage_low = self.voc_stat < self.chemistry.vb_rising
-            if self.voltage_low != voltage_low_past:
-                print(f"\nBMS ON voc_stat {self.voc_stat} vb_down {self.chemistry.vb_down} vb_rising {self.chemistry.vb_rising} bms_off {self.bms_off} voltage_low {self.voltage_low} \n\n")
         self.bms_off_past = self.bms_off
-        bms_charging = self.ib > Battery.IB_MIN_UP
-        if reset and SN.mon_run.bms_off[0] is not None:
-            self.bms_off = SN.mon_run.bms_off[0]
+        if self.reset:
+            self.bms_off_past = SN.mon_run.bms_off[G.i-1]
+            self.voltage_low = self.bms_off = SN.mon_run.bms_off[G.i]
         else:
+            if not self.bms_off:
+                self.voltage_low = self.voc_stat < self.chemistry.vb_down
+                if (self.voltage_low != voltage_low_past) and not self.reset:
+                    print(f"\nBMS OFF voc_stat {self.voc_stat} vb_down {self.chemistry.vb_down} vb_rising {self.chemistry.vb_rising} bms_off {self.bms_off} voltage_low {self.voltage_low} \n\n")
+            else:
+                self.voltage_low = self.voc_stat < self.chemistry.vb_rising
+                if self.voltage_low != voltage_low_past:
+                    print(f"\nBMS ON voc_stat {self.voc_stat} vb_down {self.chemistry.vb_down} vb_rising {self.chemistry.vb_rising} bms_off {self.bms_off} voltage_low {self.voltage_low} \n\n")
+        bms_charging = self.ib > Battery.IB_MIN_UP
+        if not self.reset:
             self.bms_off = (self.Tb_f <= self.chemistry.low_t) or (self.voltage_low and not rp.tweak_test)  # KISS
         self.ib_charge = self.ib
         self.ib_charge_ekf = self.ib_charge
