@@ -199,7 +199,7 @@ class Battery(Coulombs):
         self.Tb = tb_f
         self.Tb_f = tb_f
         self.Tb_f_rate = None
-        self.saved = Saved()  # for plots and prints
+        self.saved = Saved('ver')  # for plots and prints
         self.dv_hys = 0.  # Placeholder so BatterySim can be plotted
         self.tau_hys = 0.  # Placeholder so BatterySim can be plotted
         self.dv_dyn = 0.  # Placeholder so BatterySim can be plotted
@@ -484,10 +484,10 @@ class BatteryMonitor(Battery, EKF1x1):
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
                   q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, i=None):
         self.reset = reset
-        self.ib_amp_hdwe = SN.mon_run.ibmh[G.i]
-        self.ib_amp_model = SN.mon_run.ibmm[G.i]
-        self.ib_noa_hdwe = SN.mon_run.ibnh[G.i]
-        self.ib_noa_model = SN.mon_run.ibnm[G.i]
+        self.ib_amp_hdwe = SN.mon_run.ib_amp_hdwe[G.i]
+        self.ib_amp_model = SN.mon_run.ib_amp_model[G.i]
+        self.ib_noa_hdwe = SN.mon_run.ib_noa_hdwe[G.i]
+        self.ib_noa_model = SN.mon_run.ib_noa_model[G.i]
         if hasattr(SN.mon_run, 'vb_model'):
             self.vb_model = SN.mon_run.vb_model[G.i]
         if hasattr(SN.mon_run, 'vb_hdwe'):
@@ -497,14 +497,13 @@ class BatteryMonitor(Battery, EKF1x1):
         if rp.modeling_ib:
             self.ib_amp = self.ib_amp_model
             self.ib_noa = self.ib_noa_model
-            self.ib_amp_pst = SN.mon_run.ibmm[max(G.i-1, 0)]
-            self.ib_noa_pst = SN.mon_run.ibnm[max(G.i-1, 0)]
+            self.ib_amp_pst = SN.mon_run.ib_amp_model[max(G.i-1, 0)]
+            self.ib_noa_pst = SN.mon_run.ib_noa_model[max(G.i-1, 0)]
         else:
             self.ib_amp = self.ib_amp_hdwe
             self.ib_noa = self.ib_noa_hdwe
-            self.ib_amp_pst = SN.mon_run.ibmh[max(G.i - 1, 0)]
-            self.ib_noa_pst = SN.mon_run.ibnh[max(G.i - 1, 0)]
-        # self.ib_hdwe = self.ib_noa_hdwe
+            self.ib_amp_pst = SN.mon_run.ib_amp_hdwe[max(G.i - 1, 0)]
+            self.ib_noa_pst = SN.mon_run.ib_noa_hdwe[max(G.i - 1, 0)]
         self.ib_hdwe = SN.mon_run.ib_h[G.i]
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, unit=self.unit)
@@ -988,7 +987,7 @@ class BatterySim(Battery):
                                      max_=Battery.NOM_UNIT_CAP*scale, min_=-Battery.NOM_UNIT_CAP*scale)
         self.d_delta_q = 0.  # Charging rate, Coulombs/sec
         self.ib_charge = 0.  # Charge current, A
-        self.saved_s = SavedS()  # for plots and prints
+        self.saved_s = SavedS('ver_s')  # for plots and prints
         self.ib_fut = 0.  # Future value of limited current, A
         self.reset_temp_past = self.sat
         self.dt_past = 0.
@@ -1337,7 +1336,8 @@ class Looparound:
 
 class Saved:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
-    def __init__(self):
+    def __init__(self, str=None):
+        self.str = str
         self.time_run = None
         self.time = []
         self.time_min = []
@@ -1837,7 +1837,8 @@ def overall_batt(mv, sv, filename,
 
 class SavedS:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
-    def __init__(self):
+    def __init__(self, str=None):
+        self.str = str
         self.time_run = None
         self.time = []
         self.time_min = []

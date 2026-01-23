@@ -47,6 +47,16 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', label=None, marker=None,
         markersize=None, markevery=None, stairs=False, warn=True):
+    if not label:
+        add_str = ''
+        if add > 0:
+            add_str = '+' + str(add)
+        elif add < 0:
+            add_str = str(add)
+        if sy.str:
+            label = yt + '_' + sy.str + add_str
+        else:
+            label = yt + add_str
     if (sx is not None and sy is not None and hasattr(sx, st) and hasattr(sy, yt) and getattr(sy, yt) is not None and
             len(getattr(sy, yt)) > 0 and getattr(sy, yt)[0] is not None):
         try:
@@ -116,17 +126,17 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.title(plot_title + ' 1a')
     print('1a', end=':  ')
     if hasattr(mr, 'mod_data') and mr.mod_data[0] != 0 and strict_overplot:
-        plq(plt, mr, 'time', mr, 'ibmm', color='black', linestyle='-', label='ib_amp_mod'+run_str)
-        plq(plt, mv, 'time', mv, 'ibmm', color='red', linestyle='-.', label='ib_amp_mod'+ver_str, warn=False)
-        plq(plt, mr, 'time', mr, 'ibnm', color='green', linestyle='--', label='ib_noa_mod'+run_str)
-        plq(plt, mv, 'time', mv, 'ibnm', color='blue', linestyle=':', label='ib_noa_mod'+ver_str, warn=False)
+        plq(plt, mr, 'time', mr, 'ib_amp_model', color='black', linestyle='-')
+        plq(plt, mv, 'time', mv, 'ib_amp_model', color='red', linestyle='-.', warn=False)
+        plq(plt, mr, 'time', mr, 'ib_noa_model', color='green', linestyle='--')
+        plq(plt, mv, 'time', mv, 'ib_noa_model', color='blue', linestyle=':', warn=False)
     else:
-        plq(plt, mr, 'time', mr, 'ibmh', color='black', linestyle='-', label='ib_amp_hdwe' + run_str)
-        plq(plt, mr, 'time', mr, 'ibmh_f', color='black', linestyle='-', label='ib_amp_hdwe_f' + run_str)
-        plq(plt, mv, 'time', mv, 'ibmh', color='red', linestyle='-.', label='ib_amp_hdwe' + ver_str)
-        plq(plt, mr, 'time', mr, 'ibnh', color='green', linestyle='--', label='ib_noa_hdwe' + run_str)
-        plq(plt, mr, 'time', mr, 'ibnh_f', color='green', linestyle='--', label='ib_noa_hdwe_f' + run_str)
-        plq(plt, mv, 'time', mv, 'ibnh', color='blue', linestyle=':', label='ib_noa_hdwe' + ver_str)
+        plq(plt, mr, 'time', mr, 'ib_amp_hdwe', color='black', linestyle='-', label='ib_amp_hdwe' + run_str)
+        plq(plt, mr, 'time', mr, 'ib_amp_hdwe_f', color='black', linestyle='-', label='ib_amp_hdwe_f' + run_str)
+        plq(plt, mv, 'time', mv, 'ib_amp_hdwe', color='red', linestyle='-.', label='ib_amp_hdwe' + ver_str)
+        plq(plt, mr, 'time', mr, 'ib_noa_hdwe', color='green', linestyle='--', label='ib_noa_hdwe' + run_str)
+        plq(plt, mr, 'time', mr, 'ib_noa_hdwe_f', color='green', linestyle='--', label='ib_noa_hdwe_f' + run_str)
+        plq(plt, mv, 'time', mv, 'ib_noa_hdwe', color='blue', linestyle=':', label='ib_noa_hdwe' + ver_str)
     if not strict_overplot:
         plq(plt, mr, 'time', mr, 'ib_sel', add=+0, color='red', linestyle='-', label='ib_sel'+run_str)
         plq(plt, mv, 'time', mv, 'ib_sel', add=+0, color='black', linestyle='--', label='ib_sel'+ver_str, warn=False)
@@ -370,8 +380,8 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     # plt.subplot(221)
     # plt.title(plot_title + ' DOM 6')
     # print('DOM 6', end=':  ')
-    # plq(plt, mr, 'time', mr, 'ibmh', color='blue', linestyle='-', label='ib_amp_hdwe' + run_str)
-    # plq(plt, mr, 'time', mr, 'ibnh', color='green', linestyle='-', label='ib_noa_hdwe' + run_str)
+    # plq(plt, mr, 'time', mr, 'ib_amp_hdwe', color='blue', linestyle='-', label='ib_amp_hdwe' + run_str)
+    # plq(plt, mr, 'time', mr, 'ib_noa_hdwe', color='green', linestyle='-', label='ib_noa_hdwe' + run_str)
     # plq(plt, mr, 'time', mr, 'ib_sel', color='red', linestyle='--', label='ib_sel' + run_str)
     # plq(plt, mr, 'time', mr, 'ib_charge', linestyle=':', color='blue', label='ib_charge' + run_str)
     # plq(plt, mr, 'time', mr, 'ib_diff', color='orange', linestyle='-', label='ib_diff' + run_str)
@@ -444,14 +454,14 @@ def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_lis
     plt.subplot(331)
     plt.title(plot_title + ' Ult 1')
     print('Ult 1', end=':  ')
-    plq(plt, mr, 'time', mr, 'ibmh', color='green', linestyle='-', label='ib_amp_hdwe' + run_str)
-    plq(plt, mv, 'time', mv, 'ibmh', color='red', linestyle='--', label='ib_amp_hdwe' + ver_str, warn=False)
-    plq(plt, mr, 'time', mr, 'ibnh', color='blue', linestyle='-.', label='ib_noa_hdwe' + run_str)
-    plq(plt, mv, 'time', mv, 'ibnh', color='orange', linestyle=':', label='ib_noa_hdwe' + ver_str, warn=False)
-    plq(plt, mr, 'time', mr, 'ibmm', add=1., color='green', linestyle='-', label='ib_amp_model' + run_str + '+1')
-    plq(plt, mv, 'time', mv, 'ibmm', add=1., color='red', linestyle='--', label='ib_amp_model' + ver_str + '+1', warn=False)
-    plq(plt, mr, 'time', mr, 'ibnm', add=1., color='blue', linestyle='-.', label='ib_noa_model' + run_str + '+1')
-    plq(plt, mv, 'time', mv, 'ibnm', add=1., color='orange', linestyle=':', label='ib_noa_model' + ver_str + '+1', warn=False)
+    plq(plt, mr, 'time', mr, 'ib_amp_hdwe', color='green', linestyle='-', label='ib_amp_hdwe' + run_str)
+    plq(plt, mv, 'time', mv, 'ib_amp_hdwe', color='red', linestyle='--', label='ib_amp_hdwe' + ver_str, warn=False)
+    plq(plt, mr, 'time', mr, 'ib_noa_hdwe', color='blue', linestyle='-.', label='ib_noa_hdwe' + run_str)
+    plq(plt, mv, 'time', mv, 'ib_noa_hdwe', color='orange', linestyle=':', label='ib_noa_hdwe' + ver_str, warn=False)
+    plq(plt, mr, 'time', mr, 'ib_amp_model', add=1., color='green', linestyle='-', label='ib_amp_model' + run_str + '+1')
+    plq(plt, mv, 'time', mv, 'ib_amp_model', add=1., color='red', linestyle='--', label='ib_amp_model' + ver_str + '+1', warn=False)
+    plq(plt, mr, 'time', mr, 'ib_noa_model', add=1., color='blue', linestyle='-.', label='ib_noa_model' + run_str + '+1')
+    plq(plt, mv, 'time', mv, 'ib_noa_model', add=1., color='orange', linestyle=':', label='ib_noa_model' + ver_str + '+1', warn=False)
     plq(plt, mr, 'time', mr, 'ib_diff_f', color='magenta', linestyle='-', label='ib_diff_f' + run_str)
     plq(plt, mv, 'time', mv, 'ib_diff_f', color='cyan', linestyle='--', label='ib_diff_f' + ver_str, warn=False)
     plq(plt, mr, 'time', mr, 'ibd_thr', color='red', linestyle=':', label='ib_diff_thr' + run_str)
@@ -680,7 +690,9 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
 
 class SavedData:
     def __init__(self, battery=None, rap=None, sel=None, ekf=None, temp=None, shunt=None,
-                 time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None, init_time_in=None, time_shift_in=None):
+                 time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None, init_time_in=None, time_shift_in=None,
+                 str=None):
+        self.str = str
         i_end = 0
         n = None
         ib_lag = None
@@ -910,12 +922,12 @@ class SavedData:
             self.user_sel = None
             self.cc_dif = None
             self.ccd_fa = None
-            self.ibmh = None
-            self.ibnh = None
-            self.ibmm = None
-            self.ibnm = None
+            self.ib_amp_hdwe = None
+            self.ib_noa_hdwe = None
+            self.ib_amp_model = None
+            self.ib_noa_model = None
             self.ibm = None
-            self.ibmkf = None
+            self.ib_amp_hdwe_kf = None
             self.ibnkf = None
             self.vovcn = None
             self.ib_noa_lo = None
@@ -1029,12 +1041,12 @@ class SavedData:
             self.user_sel = np.array(sel.user_sel[:i_end])
             self.cc_dif = np.array(sel.cc_dif[:i_end])
             self.ccd_fa = np.bool_(np.array(falw) & 2**4)
-            self.ibmh = np.array(sel.ibmh[:i_end])
-            self.ibnh = np.array(sel.ibnh[:i_end])
-            self.ibmm = np.array(sel.ibmm[:i_end])
-            self.ibnm = np.array(sel.ibnm[:i_end])
+            self.ib_amp_hdwe = np.array(sel.ibmh[:i_end])
+            self.ib_noa_hdwe = np.array(sel.ibnh[:i_end])
+            self.ib_amp_model = np.array(sel.ibmm[:i_end])
+            self.ib_noa_model = np.array(sel.ibnm[:i_end])
             self.ibm = np.array(sel.ibm[:i_end])
-            self.ibmkf = np.array(sel.ibmkf[:i_end])
+            self.ib_amp_hdwe_kf = np.array(sel.ibmkf[:i_end])
             self.ibnkf = np.array(sel.ibnkf[:i_end])
             self.vovcn = np.array(sel.vovcn[:i_end])
             self.ib_noa_kf = np.array(sel.ib_noa_kf[:i_end])
@@ -1263,14 +1275,14 @@ class SavedData:
             self.dv_dyn_m = np.copy(self.dv_dyn)
         if self.dv_dyn_n is None:
             self.dv_dyn_n = np.copy(self.dv_dyn)
-        if self.ibmh is None:
-            self.ibmh = np.copy(self.ib)
-        if self.ibnh is None:
-            self.ibnh = np.copy(self.ib)
-        if self.ibmm is None:
-            self.ibmm = np.copy(self.ib)
-        if self.ibnm is None:
-            self.ibnm = np.copy(self.ib)
+        if self.ib_amp_hdwe is None:
+            self.ib_amp_hdwe = np.copy(self.ib)
+        if self.ib_noa_hdwe is None:
+            self.ib_noa_hdwe = np.copy(self.ib)
+        if self.ib_amp_model is None:
+            self.ib_amp_model = np.copy(self.ib)
+        if self.ib_noa_model is None:
+            self.ib_noa_model = np.copy(self.ib)
         if self.ib_dyn_m is None:
             self.ib_dyn_m = np.copy(self.ib_dyn)
         if self.ib_dyn_lstate_m is None:
@@ -1474,7 +1486,8 @@ class SavedData:
 
 
 class SavedDataSim:
-    def __init__(self, time_run, data=None, time_end=None, fake=False, mon_for_fake=None):
+    def __init__(self, time_run, data=None, time_end=None, fake=False, mon_for_fake=None, str=None):
+        self.str = str
         if data is None:
             self.skip_s = None
             self.i = 0
@@ -1635,10 +1648,10 @@ if __name__ == '__main__':
 
         # Load
         mon_run_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-        mon_run = SavedData(mon_run_raw, time_end, zero_zero=zero_zero_in)
+        mon_run = SavedData(mon_run_raw, time_end, zero_zero=zero_zero_in, str='')
         try:
             sim_run_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-            sim_run = SavedDataSim(mon_run.time_run, sim_run_raw, time_end)
+            sim_run = SavedDataSim(mon_run.time_run, sim_run_raw, time_end, str='_s')
         except IOError:
             sim_run = None
 
