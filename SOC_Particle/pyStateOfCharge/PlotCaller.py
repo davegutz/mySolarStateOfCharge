@@ -170,7 +170,7 @@ class Line:
         ostr += self.mk_ev_arg.__str__()
         ostr += self.stairs_arg.__str__()
         ostr += self.warn_arg.__str__()
-        ostr += ')'
+        ostr += ")\n"
         return ostr
 
 

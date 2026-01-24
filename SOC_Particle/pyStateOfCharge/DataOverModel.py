@@ -94,26 +94,24 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         plt.subplot(221)
         plt.title(plot_title + ' init 1')
         print('init 1', end=':  ')
-        plt.plot(sr.time, sr.reset_s, color='black', linestyle='-', label='reset_s'+run_str)
+        plq(plt, sr, 'time', sr, 'reset_s', color='black', linestyle='-', label='reset_s'+run_str)
         plq(plt, smv, 'time', smv, 'reset_s', color='red', linestyle='--', label='reset_s'+ver_str)
-        plt.plot(mr.time, mr.reset, color='magenta', linestyle='-', label='reset'+run_str)
-        plt.plot(mv.time, mv.reset, color='cyan', linestyle='--', label='reset'+ver_str)
+        plq(plt, mr, 'time', mr,'reset', color='magenta', linestyle='-', label='reset'+run_str)
+        plq(plt, mv, 'time', mv,'reset', color='cyan', linestyle='--', label='reset'+ver_str)
         plt.legend(loc=1)
         plt.subplot(222)
-        plt.plot(sr.time, sr.Tb_s, color='black', linestyle='-', label='Tb_s'+run_str)
-        plt.plot(sv.time, sv.Tb, color='red', linestyle='--', label='Tb_s'+ver_str)
+        plq(plt, sr, 'time', sr, 'Tb_s', color='black', linestyle='-', label='Tb_s'+run_str)
+        plq(plt, sv, 'time', sv, 'Tb', color='red', linestyle='--', label='Tb_s'+ver_str)
         plq(plt, mr, 'time_t', mr, 'Tb', color='blue', linestyle='-.', label='Tb'+run_str, stairs=True)
-        plt.plot(mv.time, mv.Tb, color='green', linestyle=':', label='Tb'+ver_str)
+        plq(plt, mv, 'time', mv,'Tb', color='green', linestyle=':', label='Tb'+ver_str)
         plt.legend(loc=1)
         plt.subplot(223)
-        plt.plot(sr.time, sr.soc_s, color='black', linestyle='-', label='soc_s'+run_str)
-        plt.plot(sv.time, sv.soc, color='red', linestyle='--', label='soc_s'+ver_str)
-        plt.plot(mr.time, mr.soc, color='blue', linestyle='-.', label='soc'+run_str)
-        plt.plot(mv.time, mv.soc, color='green', linestyle=':', label='soc'+ver_str)
-        plt.plot(mr.time, mr.soc_ekf, marker='^', markersize='5', markevery=32, linestyle='None', color='orange',
-                 label='soc_ekf'+run_str)
-        plt.plot(mv.time, mv.soc_ekf, marker='+', markersize='5', markevery=32, linestyle='None', color='cyan',
-                 label='soc_ekf'+ver_str)
+        plq(plt, sr, 'time', sr, 'soc_s', color='black', linestyle='-', label='soc_s'+run_str)
+        plq(plt, sv, 'time', sv, 'soc', color='red', linestyle='--', label='soc_s'+ver_str)
+        plq(plt, mr, 'time', mr,'soc', color='blue', linestyle='-.', label='soc'+run_str)
+        plq(plt, mv, 'time', mv,'soc', color='green', linestyle=':', label='soc'+ver_str)
+        plq(plt, mr, 'time', mr,'soc_ekf', marker='^', markersize='5', markevery=32, linestyle='None', color='orange',               label='soc_ekf'+run_str)
+        plq(plt, mv, 'time', mv,'soc_ekf', marker='+', markersize='5', markevery=32, linestyle='None', color='cyan',            label='soc_ekf'+ver_str)
         plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
@@ -175,7 +173,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     print('DOM 2', end=':  ')
     plq(plt, mr, 'time', mr, 'dv_dyn', color='green', linestyle='-', label='dv_dyn'+run_str)
     plq(plt, mr, 'time', mr, 'dv_dyn_f', color='green', linestyle='-', label='dv_dyn_f'+run_str, warn=False)
-    plt.plot(mv.time, mv.dv_dyn, color='orange', linestyle='--', label='dv_dyn'+ver_str)
+    plq(plt, mv, 'time', mv, 'dv_dyn', color='orange', linestyle='--', label='dv_dyn'+ver_str)
     plt.legend(loc=1)
     plt.subplot(322)
     plq(plt, mr, 'time', mr, 'voc_stat', color='green', linestyle='-', label='voc_stat'+run_str)
@@ -200,8 +198,8 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         plq(plt, mv, 'time', mv, 'y_filt2', color='cyan', linestyle=':', label='y_filt2'+ver_str, stairs=True)
     plt.legend(loc=1)
     plt.subplot(325)
-    plt.plot(mr.time, mr.dv_hys, color='green', linestyle='-', label='dv_hys'+run_str)
-    plt.plot(mv.time, mv.dv_hys, color='cyan', linestyle='--', label='dv_hys'+ver_str)
+    plq(plt, mr, 'time', mr,'dv_hys', color='green', linestyle='-', label='dv_hys'+run_str)
+    plq(plt, mv, 'time', mv,'dv_hys', color='cyan', linestyle='--', label='dv_hys'+ver_str)
     if not strict_overplot:
         plq(plt, smv, 'time', smv, 'dv_hys_s', add=0.1, color='red', linestyle='-', label='dv_hys_s'+ver_str+'+0.1', warn=False)
         plq(plt, sr, 'time', sr, 'dv_hys_s', add=-0.1, color='magenta', linestyle='-', label='dv_hys_s'+ver_str+'-0.1', warn=False)
@@ -212,7 +210,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mv, 'time', mv, 'Tb', color='red', linestyle='-.', label='Tb'+ver_str)
     plq(plt, mr, 'time_t', mr, 'Tb_f', color='green', linestyle='-', label='Tb_f'+run_str, stairs=True)
     plq(plt, mv, 'time', mv, 'Tb_f', color='orange', linestyle='--', label='Tb_f' + ver_str, stairs=True)
-    plt.plot(mr.time, mr.chm, color='black', linestyle='-', label='mon_chm'+run_str)
+    plq(plt, mr, 'time', mr,'chm', color='black', linestyle='-', label='mon_chm'+run_str)
     plq(plt, sr, 'time', sr, 'chm_s', color='cyan', linestyle='--', label='sim_chm'+run_str)
     plt.ylim(0., 50.)
     plt.legend(loc=1)
@@ -224,24 +222,24 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.subplot(221)
     plt.title(plot_title + ' DOM 3')
     print('DOM 3', end=':  ')
-    plt.plot(mr.time, mr.soc, color='blue', linestyle='-', label='soc'+run_str)
-    plt.plot(mv.time, mv.soc, color='red', linestyle='--', label='soc'+ver_str)
+    plq(plt, mr, 'time', mr,'soc', color='blue', linestyle='-', label='soc'+run_str)
+    plq(plt, mv, 'time', mv,'soc', color='red', linestyle='--', label='soc'+ver_str)
     plt.legend(loc=1)
     plt.subplot(222)
-    plt.plot(mr.time, mr.soc_ekf, color='green', linestyle='-', label='soc_ekf'+run_str)
-    plt.plot(mv.time, mv.soc_ekf, color='orange', linestyle='--', label='soc_ekf'+ver_str)
+    plq(plt, mr, 'time', mr,'soc_ekf', color='green', linestyle='-', label='soc_ekf'+run_str)
+    plq(plt, mv, 'time', mv,'soc_ekf', color='orange', linestyle='--', label='soc_ekf'+ver_str)
     plt.legend(loc=1)
     plt.subplot(223)
-    plt.plot(mr.time, mr.soc_s, color='blue', linestyle='-.', label='soc_s'+run_str)
-    plt.plot(mv.time, mv.soc_s, color='red', linestyle=':', label='soc_s'+ver_str)
+    plq(plt, mr, 'time', mr,'soc_s', color='blue', linestyle='-.', label='soc_s'+run_str)
+    plq(plt, mv, 'time', mv,'soc_s', color='red', linestyle=':', label='soc_s'+ver_str)
     plt.legend(loc=1)
     plt.subplot(224)
-    plt.plot(mr.time, mr.soc, color='blue', linestyle='-', label='soc'+run_str)
-    plt.plot(mv.time, mv.soc, color='red', linestyle='--', label='soc'+ver_str)
-    plt.plot(mr.time, mr.soc_s, color='green', linestyle='-.', label='soc_s'+run_str)
-    plt.plot(mv.time, mv.soc_s, color='orange', linestyle=':', label='soc_s'+ver_str)
-    plt.plot(mr.time, mr.soc_ekf, color='cyan', linestyle='-', label='soc_ekf'+run_str)
-    plt.plot(mv.time, mv.soc_ekf, color='black', linestyle='--', label='soc_ekf'+ver_str)
+    plq(plt, mr, 'time', mr,'soc', color='blue', linestyle='-', label='soc'+run_str)
+    plq(plt, mv, 'time', mv,'soc', color='red', linestyle='--', label='soc'+ver_str)
+    plq(plt, mr, 'time', mr,'soc_s', color='green', linestyle='-.', label='soc_s'+run_str)
+    plq(plt, mv, 'time', mv,'soc_s', color='orange', linestyle=':', label='soc_s'+ver_str)
+    plq(plt, mr, 'time', mr,'soc_ekf', color='cyan', linestyle='-', label='soc_ekf'+run_str)
+    plq(plt, mv, 'time', mv,'soc_ekf', color='black', linestyle='--', label='soc_ekf'+ver_str)
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
@@ -251,18 +249,18 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plt.subplot(131)
     plt.title(plot_title + ' DOM 4')
     print('DOM 4', end=':  ')
-    plt.plot(mr.time, mr.soc, color='orange', linestyle='-', label='soc'+run_str)
-    plt.plot(mv.time, mv.soc, color='green', linestyle='--', label='soc'+ver_str)
+    plq(plt, mr, 'time', mr,'soc', color='orange', linestyle='-', label='soc'+run_str)
+    plq(plt, mv, 'time', mv,'soc', color='green', linestyle='--', label='soc'+ver_str)
     plq(plt, sr, 'time', sr, 'soc_s', color='red', linestyle='-.', label='soc_s'+run_str)
     plq(plt, smv, 'time', smv, 'soc_s', color='black', linestyle=':', label='soc_s'+ver_str)
-    plt.plot(mr.time, mr.soc_ekf, color='blue', linestyle='-', label='soc_ekf'+run_str)
-    plt.plot(mv.time, mv.soc_ekf, color='cyan', linestyle='--', label='soc_ekf'+ver_str)
+    plq(plt, mr, 'time', mr,'soc_ekf', color='blue', linestyle='-', label='soc_ekf'+run_str)
+    plq(plt, mv, 'time', mv,'soc_ekf', color='cyan', linestyle='--', label='soc_ekf'+ver_str)
     plt.legend(loc=1)
     plt.subplot(132)
     plq(plt, mr, 'time', mr, 'vb', color='orange', linestyle='-', label='vb'+run_str)
     plq(plt, mr, 'time', mr, 'vb_f', color='orange', linestyle='-', label='vb_f'+run_str, warn=False)
     plq(plt, mr, 'time', mr, 'vb_h', color='cyan', linestyle='--', label='vb_hdwe'+run_str)
-    plt.plot(mv.time, mv.vb, color='green', linestyle='-.', label='vb'+ver_str)
+    plq(plt, mv, 'time', mv,'vb', color='green', linestyle='-.', label='vb'+ver_str)
     plq(plt, mr, 'time', mr, 'vb_s', color='red', linestyle='-.', label='vb_s'+run_str)
     plq(plt, smv, 'time', smv, 'vb_s', color='black', linestyle=':', label='vb_s'+ver_str)
     plt.legend(loc=1)
@@ -270,7 +268,7 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mr, 'soc', mr, 'vb', color='orange', linestyle='-', label='vb'+run_str)
     plq(plt, mr, 'soc', mr, 'vb_f', color='orange', linestyle='-', label='vb_f'+run_str, warn=False)
     plq(plt, mr, 'soc', mr, 'vb_h', color='cyan', linestyle='--', label='vb_hdwe'+run_str)
-    plt.plot(mv.soc, mv.vb, color='green', linestyle='-.', label='vb'+ver_str)
+    plq(plt, mv, 'soc', mv, 'vb', color='green', linestyle='-.', label='vb'+ver_str)
     plq(plt, mr, 'soc_s', mr, 'vb_s', color='red', linestyle='-.', label='vb_s'+run_str)
     plq(plt, smv, 'soc_s', smv, 'vb_s', color='black', linestyle=':', label='vb_s'+ver_str)
     plt.legend(loc=1)
@@ -284,20 +282,20 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     print('DOM 4a', end=':  ')
     plq(plt, mr, 'time', mr, 'ib', color='orange', linestyle='-', label='ib'+run_str)
     plq(plt, mr, 'time', mr, 'ib_f', color='orange', linestyle='-', label='ib_f'+run_str, warn=False)
-    plt.plot(mv.time, mv.ib, color='green', linestyle='--', label='ib'+ver_str)
+    plq(plt, mv, 'time', mv,'ib', color='green', linestyle='--', label='ib'+ver_str)
     plq(plt, mr, 'time', mr, 'ib_charge', color='red', linestyle='-.', label='ib_charge'+run_str)
     plq(plt, mr, 'time', mr, 'ib_charge_f', color='red', linestyle='-.', label='ib_charge_f'+run_str, warn=False)
-    plt.plot(mv.time, mv.ib_charge, color='black', linestyle=':', label='ib_charge'+ver_str)
+    plq(plt, mv, 'time', mv,'ib_charge', color='black', linestyle=':', label='ib_charge'+ver_str)
     plt.legend(loc=1)
     plt.subplot(312)
     plq(plt, sr, 'time', sr, 'soc_s', color='orange', linestyle='-', label='soc_s'+run_str)
     plq(plt, smv, 'time', smv, 'soc_s', color='green', linestyle='--', label='soc_s'+ver_str)
-    plt.plot(mr.time, mr.soc, color='red', linestyle='-.', label='soc'+run_str)
-    plt.plot(mv.time, mv.soc, color='black', linestyle=':', label='soc'+ver_str)
+    plq(plt, mr, 'time', mr,'soc', color='red', linestyle='-.', label='soc'+run_str)
+    plq(plt, mv, 'time', mv,'soc', color='black', linestyle=':', label='soc'+ver_str)
     plt.legend(loc=1)
     plt.subplot(313)
     plq(plt, mr, 'time', mr, 'Tb_rap', color='red', linestyle='-', label='Tb_rap'+run_str)
-    plt.plot(mv.time, mv.Tb_rap, color='cyan', linestyle='--', label='Tb_rap'+ver_str)
+    plq(plt, mv, 'time', mv,'Tb_rap', color='cyan', linestyle='--', label='Tb_rap'+ver_str)
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
@@ -307,11 +305,11 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     # plt.subplot(231)
     # plt.title(plot_title + ' DOM 5')
     # print('DOM 5', end=':  ')
-    # plt.plot(mr.time, mr.ib_charge, color='black', linestyle='-', label='ib_charge' + run_str)
-    # plt.plot(mv.time, mv.ib_charge, linestyle='--', color='blue', label='ib_charge' + ver_str)
-    # plt.plot(mr.time, mr.ib_diff_flt + 2, color='green', linestyle='-', label='ib_diff_flt' + run_str + '+2')
+    # plq(plt, mr, 'time', mr,'ib_charge, color='black', linestyle='-', label='ib_charge' + run_str)
+    # plq(plt, mv, 'time', mv,'ib_charge, linestyle='--', color='blue', label='ib_charge' + ver_str)
+    # plq(plt, mr, 'time', mr,'ib_diff_flt + 2, color='green', linestyle='-', label='ib_diff_flt' + run_str + '+2')
     # plq(plt, mv, 'time', mv, 'ib_diff_flt', add=+2, color='red', linestyle='--', label='ib_diff_flt' + ver_str + '+2')
-    # plt.plot(mr.time, mr.ib_diff_fa + 2, color='magenta', linestyle='-', label='ib_diff_fa' + run_str + '+2')
+    # plq(plt, mr, 'time', mr,'ib_diff_fa + 2, color='magenta', linestyle='-', label='ib_diff_fa' + run_str + '+2')
     # plq(plt, mv, 'time', mv, 'ib_diff_fa', add=+2, color='cyan', linestyle='--', label='ib_diff_fa' + ver_str + '+2')
     # plt.legend(loc=1)
     # plt.subplot(232)
@@ -368,11 +366,11 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     # plq(plt, mv, 'time', mv, 'wrap_lo_n_fa', add=+2, color='red', linestyle='-.', label='wrap_lo_n_fa' + ver_str + '+2')
     # plt.legend(loc=1)
     # plt.subplot(236)
-    # plt.plot(mr.time, mr.red_loss, color='green', linestyle='-', label='red_loss' + run_str)
+    # plq(plt, mr, 'time', mr,'red_loss, color='green', linestyle='-', label='red_loss' + run_str)
     # plq(plt, mv, 'time', mv, 'red_loss', color='red', linestyle='--', label='red_loss' + ver_str)
-    # plt.plot(mr.time, mr.wv_fa - 2, color='green', linestyle='-', label='wrap_vb_fa' + run_str + '-2')
+    # plq(plt, mr, 'time', mr,'wv_fa - 2, color='green', linestyle='-', label='wrap_vb_fa' + run_str + '-2')
     # plq(plt, mv, 'time', mv, 'wv_fa', add=-2, color='red', linestyle='--', label='wrap_vb_fa' + ver_str + '-2')
-    # plt.plot(mr.time, mr.ccd_fa - 4, color='green', linestyle='-', label='cc_diff_fa' + run_str + '-4')
+    # plq(plt, mr, 'time', mr,'ccd_fa - 4, color='green', linestyle='-', label='cc_diff_fa' + run_str + '-4')
     # plq(plt, mv, 'time', mv, 'ccd_fa', add=-4, color='red', linestyle='--', label='cc_diff_fa' + ver_str + '-4')
     # plt.legend(loc=1)
 
@@ -510,7 +508,7 @@ def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_lis
     plt.subplot(338)
     plq(plt, mr, 'time', mr, 'cc_dif', color='black', linestyle='-', label='cc_dif' + run_str)
     plq(plt, mr, 'time', mr, 'ccd_thr', color='red', linestyle='--', label='ccd_thr' + run_str)
-    # plt.plot(mr.time, -mr.ccd_thr, color='red', linestyle='--')
+    # plq(plt, mr.time, -mr.ccd_thr, color='red', linestyle='--')
     plq(plt, mr, 'time', mr, 'ccd_thr', slr=-1., color='red', linestyle='--')
     plt.ylim(-.01, .01)
     plt.legend(loc=3)
@@ -556,10 +554,10 @@ def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_lis
     plq(plt, mv, 'time', mv, 'ib_dec', color='orange', linestyle=':', label='ib_dec' + ver_str, warn=False)
     plt.legend(loc=1)
     plt.subplot(335)
-    plt.plot(mr.time, np.array(mr.bms_off) + 4, color='green', linestyle='-', label='bms_off' + run_str + '+4')
-    plt.plot(mv.time, np.array(mv.bms_off) + 4, color='red', linestyle='--', label='bms_off' + ver_str + '+4')
+    plq(plt, mr, 'time', mr, 'bms_off', add=+4, color='green', linestyle='-', label='bms_off' + run_str + '+4')
+    plq(plt, mv, 'time', mv, 'bms_off', add=+4, color='red', linestyle='--', label='bms_off' + ver_str + '+4')
     if sr is not None:
-        plt.plot(sr.time, np.array(sr.bms_off_s) + 4, color='blue', linestyle='-.', label='bms_off_s' + run_str + '+4')
+        plq(plt, sr, 'time', sr, 'bms_off_s', add=+4, color='blue', linestyle='-.', label='bms_off_s' + run_str + '+4')
     if hasattr(mr, 'mod_data'):
         mod_min = min(min(mr.mod_data), min(mv.mod_data))
     else:
@@ -568,15 +566,13 @@ def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_lis
     plq(plt, mv, 'time', mv, 'mod_data', add=-mod_min, color='red', linestyle='--', label='mod' + ver_str + '-' + str(mod_min))
     if smv is not None:
         if hasattr(smv, 'bmso_s'):
-            plt.plot(smv.time, np.array(smv.bmso_s) + 4, color='orange', linestyle=':',
-                     label='bms_off_s' + ver_str + '+4')
+            plq(plt, smv, 'time', smv, 'bmso_s', add=+4, color='orange', linestyle=':',   label='bms_off_s' + ver_str + '+4')
         elif hasattr(smv, 'bms_off_s'):
-            plt.plot(smv.time, np.array(smv.bms_off_s) + 4, color='orange', linestyle=':',
-                     label='bms_off_s' + ver_str + '+4')
-    plt.plot(mr.time, mr.sat + 2, color='green', linestyle='-', label='sat' + run_str + '+2')
-    plt.plot(mv.time, np.array(mv.sat) + 2, color='red', linestyle='--', label='sat' + ver_str + '+2')
-    plt.plot(mr.time, mr.sel, color='black', linestyle='-.', label='sel' + run_str)
-    plt.plot(mv.time, mv.sel, color='blue', linestyle=':', label='sel' + ver_str)
+            plq(plt, smv, 'time', smv, 'bms_off_s', add=+4, color='orange', linestyle=':',  label='bms_off_s' + ver_str + '+4')
+    plq(plt, mr, 'time', mr,'sat', add=+2, color='green', linestyle='-', label='sat' + run_str + '+2')
+    plq(plt, mv, 'time', mv, 'sat', add=+2, color='red', linestyle='--', label='sat' + ver_str + '+2')
+    plq(plt, mr, 'time', mr,'sel', color='black', linestyle='-.', label='sel' + run_str)
+    plq(plt, mv, 'time', mv,'sel', color='blue', linestyle=':', label='sel' + ver_str)
     plq(plt, mr, 'time', mr, 'ib_sel_stat', add=-2, color='green', linestyle='-', label='ib_sel_stat' + run_str + '-2')
     plq(plt, mv, 'time', mv, 'ib_sel_stat', add=-2, color='red', linestyle=':', label='ib_sel_stat' + ver_str + '-2', warn=False)
     plq(plt, mr, 'time', mr, 'vb_sel', add=-2, color='black', linestyle='--', label='vb_sel_stat' + run_str + '-2')
@@ -691,8 +687,8 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
 class SavedData:
     def __init__(self, battery=None, rap=None, sel=None, ekf=None, temp=None, shunt=None,
                  time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None, init_time_in=None, time_shift_in=None,
-                 str=None):
-        self.str = str
+                 str_=None):
+        self.str = str_
         i_end = 0
         n = None
         ib_lag = None
@@ -1449,7 +1445,7 @@ class SavedData:
 
     def truncate(self, i_end=None, key_attr='time'):
         """
-        Iterates over members of an self, assigns values to numpy.ndarray members
+        Iterates over members of a self, assigns values to numpy.ndarray members
         up to i_end.
         """
         for attr_name in dir(self):
@@ -1486,8 +1482,8 @@ class SavedData:
 
 
 class SavedDataSim:
-    def __init__(self, time_run, data=None, time_end=None, fake=False, mon_for_fake=None, str=None):
-        self.str = str
+    def __init__(self, time_run, data=None, time_end=None, fake=False, mon_for_fake=None, str_=None):
+        self.str = str_
         if data is None:
             self.skip_s = None
             self.i = 0
@@ -1648,10 +1644,10 @@ if __name__ == '__main__':
 
         # Load
         mon_run_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-        mon_run = SavedData(mon_run_raw, time_end, zero_zero=zero_zero_in, str='')
+        mon_run = SavedData(mon_run_raw, time_end, zero_zero=zero_zero_in, str_='')
         try:
             sim_run_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-            sim_run = SavedDataSim(mon_run.time_run, sim_run_raw, time_end, str='_s')
+            sim_run = SavedDataSim(mon_run.time_run, sim_run_raw, time_end, str_='_s')
         except IOError:
             sim_run = None
 

@@ -173,7 +173,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
 
     mon = SavedData(battery=battery_raw, rap=mon_raw, sel=sel_raw, ekf=ekf_raw, temp=temp_raw, shunt=shunt_raw,
                     time_end=time_end_in, zero_zero=zero_zero_in, zero_thr=zero_thr_in, sync_cTime=sync,
-                    init_time_in=init_time_in, time_shift_in=time_shift_in, str='')
+                    init_time_in=init_time_in, time_shift_in=time_shift_in, str_='')
     if mon.chm is not None:
         chm = int(mon.chm[-1])
     elif path_to_data.__contains__('bb'):
