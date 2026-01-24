@@ -310,8 +310,8 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.title(plot_title + ' f1')
         print('f1', end=':  ')
         plt.suptitle(subtitle)
-        plt.plot(hi.time_ux, hi.soc, marker='.', markersize='3', linestyle='-', color='black', label='soc')
-        plt.plot(hi.time_ux, hi.soc_ekf, marker='+', markersize='3', linestyle='--', color='blue',
+        plq(plt, hi, 'time_ux', hi, 'soc', marker='.', markersize='3', linestyle='-', color='black', label='soc')
+        plq(plt, hi, 'time_ux', hi, 'soc_ekf', marker='+', markersize='3', linestyle='--', color='blue',
                  label='soc_ekf')
         plt.legend(loc=1)
         plt.subplot(332)
@@ -323,53 +323,53 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plq(plt, hi, 'time_ux', hi, 'ib', marker='.', markersize='3', color='black', linestyle='-', label='ib', warn=False)
         plt.legend(loc=1)
         plt.subplot(334)
-        plt.plot(hi.time_ux, hi.tweak_sclr_amp, marker='+', markersize='3', linestyle='None', color='orange',
+        plq(plt, hi, 'time_ux', hi, 'tweak_sclr_amp', marker='+', markersize='3', linestyle='None', color='orange',
                  label='tweak_sclr_amp')
-        plt.plot(hi.time_ux, hi.tweak_sclr_noa, marker='^', markersize='3', linestyle='None', color='green',
+        plq(plt, hi, 'time_ux', hi, 'tweak_sclr_noa', marker='^', markersize='3', linestyle='None', color='green',
                  label='tweak_sclr_noa')
         plt.ylim(-6, 6)
         plt.legend(loc=1)
         plt.subplot(335)
-        plt.plot(hi.time_ux, hi.falw, marker='+', markersize='3', linestyle='None', color='magenta', label='falw')
+        plq(plt, hi, 'time_ux', hi, 'falw', marker='+', markersize='3', linestyle='None', color='magenta', label='falw')
         plt.legend(loc=0)
         plt.subplot(336)
-        plt.plot(hi.soc, hi.soc_ekf, marker='+', markersize='3', linestyle='-', color='blue', label='soc_ekf')
-        plt.plot([0, 1], [cc_dif_tol, 1.+cc_dif_tol], linestyle=':', color='red')
-        plt.plot([0, 1], [-cc_dif_tol, 1.-cc_dif_tol], linestyle=':', color='red')
+        plq(plt, hi, 'soc', hi, 'soc_ekf', marker='+', markersize='3', linestyle='-', color='blue', label='soc_ekf')
+
+
+        class Temp:
+            def __init__(self):
+                self.str = ''
+                self.zero_one =  [0, 1]
+                self.ptol = [cc_dif_tol, 1.+cc_dif_tol]
+                self.ntol = [-cc_dif_tol, 1.-cc_dif_tol]
+
+
+        tmp = Temp()
+        plq(plt, tmp, 'zero_one', tmp, 'ptol', linestyle=':', color='red')
+        plq(plt, tmp, 'zero_one', tmp, 'ntol', linestyle=':', color='red')
         plt.xlim(0, 1)
         plt.ylim(0, 1)
         plt.xlabel('soc')
         plt.legend(loc=4)
         plt.subplot(337)
-        plt.plot(hi.time_ux, hi.dv_hys, marker='o', markersize='3', linestyle='-', color='blue', label='dv_hys')
-        plt.plot(hi.time_ux, hi.dv_hys_rescaled, marker='o', markersize='3', linestyle='-', color='cyan',
-                 label='dv_hys_rescaled')
-        plt.plot(hi.time_ux, hi.dv_hys_required, linestyle='--', color='black', label='dv_hys_required')
-        plt.plot(hi.time_ux, -hi.e_wrap, marker='o', markersize='3', linestyle='None', color='red',
-                 label='-e_wrap')
-        plt.plot(hi.time_ux, hi.dv_hys_remodel, marker='x', markersize='3', linestyle=':', color='lawngreen',
-                 label='dv_hys_remodel')
-        plt.plot(hi.time_ux, hi.dv_hys_redesign_chg, marker=3, markersize='3', linestyle=':', color='springgreen',
-                 label='dv_hys_redesign_chg')
-        plt.plot(hi.time_ux, hi.dv_hys_redesign_dis, marker=3, markersize='3', linestyle=':', color='orangered',
-                 label='dv_hys_redesign_dis')
+        plq(plt, hi, 'time_ux', hi, 'dv_hys', marker='o', markersize='3', linestyle='-', color='blue', label='dv_hys')
+        plq(plt, hi, 'time_ux', hi, 'dv_hys_rescaled', marker='o', markersize='3', linestyle='-', color='cyan',                 label='dv_hys_rescaled')
+        plq(plt, hi, 'time_ux', hi, 'dv_hys_required', linestyle='--', color='black', label='dv_hys_required')
+        plq(plt, hi, 'time_ux', hi, 'e_wrap', slr=-1, marker='o', markersize='3', linestyle='None', color='red',                 label='-e_wrap')
+        plq(plt, hi, 'time_ux', hi, 'dv_hys_remodel', marker='x', markersize='3', linestyle=':', color='lawngreen',                 label='dv_hys_remodel')
+        plq(plt, hi, 'time_ux', hi, 'dv_hys_redesign_chg', marker=3, markersize='3', linestyle=':', color='springgreen',                 label='dv_hys_redesign_chg')
+        plq(plt, hi, 'time_ux', hi, 'dv_hys_redesign_dis', marker=3, markersize='3', linestyle=':', color='orangered',                 label='dv_hys_redesign_dis')
         plt.xlabel('days')
         plt.legend(loc=1)
         plt.subplot(338)
-        plt.plot(hi.time_ux, hi.e_wrap, marker='o', markersize='3', linestyle='-', color='black', label='e_wrap')
-        plt.plot(hi.time_ux, hi.wv_fa, marker=0, markersize='4', linestyle=':', color='red', label='wrap_vb_fa')
-        plt.plot(hi.time_ux, hi.wrap_lo_fa-1, marker=2, markersize='4', linestyle=':', color='orange',
-                 label='wrap_lo_fa-1')
-        plt.plot(hi.time_ux, hi.wrap_hi_fa+1, marker=3, markersize='4', linestyle=':', color='green',
-                 label='wrap_hi_fa+1')
-        plt.plot(hi.time_ux, hi.wrap_lo_m_flt-1, marker=2, markersize='4', linestyle=':', color='orange',
-                 label='wrap_lo_m_fa-1')
-        plt.plot(hi.time_ux, hi.wrap_hi_m_flt+1, marker=3, markersize='4', linestyle=':', color='green',
-                 label='wrap_hi_m_fa+1')
-        plt.plot(hi.time_ux, hi.wrap_lo_n_flt-1, marker=2, markersize='4', linestyle=':', color='orange',
-                 label='wrap_lo_n_fa-1')
-        plt.plot(hi.time_ux, hi.wrap_hi_n_flt+1, marker=3, markersize='4', linestyle=':', color='green',
-                 label='wrap_hi_n_fa+1')
+        plq(plt, hi, 'time_ux', hi, 'e_wrap', marker='o', markersize='3', linestyle='-', color='black', label='e_wrap')
+        plq(plt, hi, 'time_ux', hi, 'wv_fa', marker=0, markersize='4', linestyle=':', color='red', label='wrap_vb_fa')
+        plq(plt, hi, 'time_ux', hi, 'wrap_lo_fa', add=-1, marker=2, markersize='4', linestyle=':', color='orange',                 label='wrap_lo_fa-1')
+        plq(plt, hi, 'time_ux', hi, 'wrap_hi_fa', add=+1, marker=3, markersize='4', linestyle=':', color='green',                 label='wrap_hi_fa+1')
+        plq(plt, hi, 'time_ux', hi, 'wrap_lo_m_flt', add=-1, marker=2, markersize='4', linestyle=':', color='orange',                 label='wrap_lo_m_fa-1')
+        plq(plt, hi, 'time_ux', hi, 'wrap_hi_m_flt', add=+1, marker=3, markersize='4', linestyle=':', color='green',                 label='wrap_hi_m_fa+1')
+        plq(plt, hi, 'time_ux', hi, 'wrap_lo_n_flt', add=-1, marker=2, markersize='4', linestyle=':', color='orange',                 label='wrap_lo_n_fa-1')
+        plq(plt, hi, 'time_ux', hi, 'wrap_hi_n_flt', add=+1, marker=3, markersize='4', linestyle=':', color='green',                 label='wrap_hi_n_fa+1')
         plt.xlabel('days')
         plt.legend(loc=1)
         plt.subplot(339)
@@ -377,10 +377,8 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plq(plt, hi, 'time_ux', hi, 'vb', marker='.', markersize='3', color='orange', linestyle='None', label='vb', warn=False)
         plq(plt, hi, 'time_ux', hi, 'voc_f', marker='.', markersize='3', color='black', linestyle='None', label='voc_f')
         plq(plt, hi, 'time_ux', hi, 'voc', marker='.', markersize='3', color='blue', linestyle='None', label='voc', warn=False)
-        plt.plot(hi.time_ux, hi.voc_stat_chg, marker='.', markersize='3', linestyle='None', color='green',
-                 label='voc_stat_chg')
-        plt.plot(hi.time_ux, hi.voc_stat_dis, marker='.', markersize='3', linestyle='None', color='red',
-                 label='voc_stat_dis')
+        plq(plt, hi, 'time_ux', hi, 'voc_stat_chg', marker='.', markersize='3', linestyle='None', color='green',                 label='voc_stat_chg')
+        plq(plt, hi, 'time_ux', hi, 'voc_stat_dis', marker='.', markersize='3', linestyle='None', color='red',                 label='voc_stat_dis')
         plt.xlabel('days')
         plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -392,51 +390,34 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.title(plot_title + ' f2')
         print('f2', end=':  ')
         plt.suptitle(subtitle)
-        plt.plot(hi.time_ux, hi.vsat, marker='.', markersize='1', linestyle='-', color='orange', linewidth='1',
+        plq(plt, hi, 'time_ux', hi, 'vsat', marker='.', markersize='1', linestyle='-', color='orange', linewidth='1',
                  label='vsat')
         plq(plt, hi, 'time_ux', hi, 'vb_f', marker='.', markersize='3', color='red', linestyle='None', label='vb_f')
         plq(plt, hi, 'time_ux', hi, 'vb', marker='.', markersize='3', color='orange', linestyle='None', label='vb', warn=False)
         plq(plt, hi, 'time_ux', hi, 'voc_f', marker='.', markersize='3', color='black', linestyle='None', label='voc_f')
         plq(plt, hi, 'time_ux', hi, 'voc', marker='.', markersize='3', color='blue', linestyle='None', label='voc', warn=False)
-        plt.plot(hi.time_ux, hi.voc_stat_chg, marker='.', markersize='3', linestyle='-', color='green',
-                 label='voc_stat_chg')
-        plt.plot(hi.time_ux, hi.voc_stat_dis, marker='.', markersize='3', linestyle='-', color='red',
-                 label='voc_stat_dis')
-        plt.plot(hi.time_ux, hi.voc_soc, marker='2', markersize='3', linestyle=':', color='cyan', label='voc_soc')
+        plq(plt, hi, 'time_ux', hi, 'voc_stat_chg', marker='.', markersize='3', linestyle='-', color='green',                 label='voc_stat_chg')
+        plq(plt, hi, 'time_ux', hi, 'voc_stat_dis', marker='.', markersize='3', linestyle='-', color='red',                 label='voc_stat_dis')
+        plq(plt, hi, 'time_ux', hi, 'voc_soc', marker='2', markersize='3', linestyle=':', color='cyan', label='voc_soc')
         plt.xlabel('days')
         plt.legend(loc=1)
         plt.subplot(122)
-        plt.plot(hi.time_ux, hi.bms_off + 22, marker='h', markersize='3', linestyle='-', color='blue',
-                 label='bms_off+22')
-        plt.plot(hi.time_ux, hi.sat + 20, marker='s', markersize='3', linestyle='-', color='red', label='sat+20')
-        plt.plot(hi.time_ux, hi.dscn_fa + 18, marker='o', markersize='3', linestyle='-', color='black',
-                 label='dscn_fa+18')
-        plt.plot(hi.time_ux, hi.ib_diff_fa + 16, marker='^', markersize='3', linestyle='-', color='blue',
-                 label='ib_diff_fa+16')
-        plt.plot(hi.time_ux, hi.wv_fa + 14, marker='s', markersize='3', linestyle='-', color='cyan',
-                 label='wrap_vb_fa+14')
-        plt.plot(hi.time_ux, hi.wrap_lo_fa + 12, marker='p', markersize='3', linestyle='-', color='blue',
-                 label='wrap_lo_fa+12')
-        plt.plot(hi.time_ux, hi.wrap_lo_m_fa + 12, marker='p', markersize='3', linestyle='--', color='red',
-                 label='wrap_lo_m_fa+12')
-        plt.plot(hi.time_ux, hi.wrap_lo_n_fa + 12, marker='p', markersize='3', linestyle='-.', color='orange',
-                 label='wrap_lo_n_fa+12')
-        plt.plot(hi.time_ux, hi.wrap_hi_fa + 10, marker='h', markersize='3', linestyle='-', color='blue',
-                 label='wrap_hi_fa+10')
-        plt.plot(hi.time_ux, hi.wrap_hi_m_fa + 10, marker='h', markersize='3', linestyle='--', color='red',
-                 label='wrap_hi_m_fa+10')
-        plt.plot(hi.time_ux, hi.wrap_hi_n_fa + 10, marker='h', markersize='3', linestyle='-.', color='orange',
-                 label='wrap_hi_n_fa+10')
-        plt.plot(hi.time_ux, hi.ccd_fa + 8, marker='H', markersize='3', linestyle='-', color='blue',
-                 label='cc_diff_fa+8')
-        plt.plot(hi.time_ux, hi.ib_noa_fa + 6, marker='+', markersize='3', linestyle='-', color='red',
-                 label='ib_noa_fa+6')
-        plt.plot(hi.time_ux, hi.ib_amp_fa + 4, marker='_', markersize='3', linestyle='-', color='magenta',
-                 label='ib_amp_fa+4')
-        plt.plot(hi.time_ux, hi.vb_fa + 2, marker='1', markersize='3', linestyle='-', color='cyan',
-                 label='vb_fa+2')
-        plt.plot(hi.time_ux, hi.tb_fa, marker='2', markersize='3', linestyle='-', color='orange',
-                 label='tb_fa')
+        plq(plt, hi, 'time_ux', hi, 'bms_off + 22', marker='h', markersize='3', linestyle='-', color='blue',                 label='bms_off+22')
+        plq(plt, hi, 'time_ux', hi, 'sat + 20', marker='s', markersize='3', linestyle='-', color='red', label='sat+20')
+        plq(plt, hi, 'time_ux', hi, 'dscn_fa + 18', marker='o', markersize='3', linestyle='-', color='black',                 label='dscn_fa+18')
+        plq(plt, hi, 'time_ux', hi, 'ib_diff_fa + 16', marker='^', markersize='3', linestyle='-', color='blue',                 label='ib_diff_fa+16')
+        plq(plt, hi, 'time_ux', hi, 'wv_fa + 14', marker='s', markersize='3', linestyle='-', color='cyan',                 label='wrap_vb_fa+14')
+        plq(plt, hi, 'time_ux', hi, 'wrap_lo_fa + 12', marker='p', markersize='3', linestyle='-', color='blue',                 label='wrap_lo_fa+12')
+        plq(plt, hi, 'time_ux', hi, 'wrap_lo_m_fa + 12', marker='p', markersize='3', linestyle='--', color='red',                 label='wrap_lo_m_fa+12')
+        plq(plt, hi, 'time_ux', hi, 'wrap_lo_n_fa + 12', marker='p', markersize='3', linestyle='-.', color='orange',                 label='wrap_lo_n_fa+12')
+        plq(plt, hi, 'time_ux', hi, 'wrap_hi_fa + 10', marker='h', markersize='3', linestyle='-', color='blue',                 label='wrap_hi_fa+10')
+        plq(plt, hi, 'time_ux', hi, 'wrap_hi_m_fa + 10', marker='h', markersize='3', linestyle='--', color='red',                        label='wrap_hi_m_fa+10')
+        plq(plt, hi, 'time_ux', hi, 'wrap_hi_n_fa + 10', marker='h', markersize='3', linestyle='-.', color='orange',       label='wrap_hi_n_fa+10')
+        plq(plt, hi, 'time_ux', hi, 'ccd_fa + 8', marker='H', markersize='3', linestyle='-', color='blue',                 label='cc_diff_fa+8')
+        plq(plt, hi, 'time_ux', hi, 'ib_noa_fa + 6', marker='+', markersize='3', linestyle='-', color='red',                 label='ib_noa_fa+6')
+        plq(plt, hi, 'time_ux', hi, 'ib_amp_fa + 4', marker='_', markersize='3', linestyle='-', color='magenta',                 label='ib_amp_fa+4')
+        plq(plt, hi, 'time_ux', hi, 'vb_fa + 2', marker='1', markersize='3', linestyle='-', color='cyan',                 label='vb_fa+2')
+        plq(plt, hi, 'time_ux', hi, 'tb_fa', marker='2', markersize='3', linestyle='-', color='orange',                 label='tb_fa')
         plt.ylim(-1, 24)
         plt.xlabel('days')
         plt.legend(loc=1)
@@ -454,37 +435,30 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.title(plot_title + ' f3')
         print('f3', end=':  ')
         plt.suptitle(subtitle)
-        plt.plot(hi.time_ux, hi.dv_hys, marker='o', markersize='3', linestyle='-', color='blue', label='dv_hys')
-        plt.plot(hi.time_ux, hi.dv_hys_rescaled, marker='o', markersize='3', linestyle='-', color='cyan',
-                 label='dv_hys_rescaled')
-        plt.plot(hi.time_ux, hi.dv_hys_required, linestyle='--', color='black', label='dv_hys_required')
-        plt.plot(hi.time_ux, -hi.e_wrap, marker='o', markersize='3', linestyle='None', color='red',
-                 label='-e_wrap')
-        plt.plot(hi.time_ux, hi.dv_hys_redesign_chg, marker=3, markersize='3', linestyle='-', color='green',
-                 label='dv_hys_redesign_chg')
-        plt.plot(hi.time_ux, hi.dv_hys_redesign_dis, marker=3, markersize='3', linestyle='-', color='red',
-                 label='dv_hys_redesign_dis')
+        plq(plt, hi, 'time_ux', hi, 'dv_hys', marker='o', markersize='3', linestyle='-', color='blue', label='dv_hys')
+        plq(plt, hi, 'time_ux', hi, 'dv_hys_rescaled', marker='o', markersize='3', linestyle='-', color='cyan',                 label='dv_hys_rescaled')
+        plq(plt, hi, 'time_ux', hi, 'dv_hys_required', linestyle='--', color='black', label='dv_hys_required')
+        plq(plt, hi, 'time_ux', hi, 'e_wrap', slr=-1, marker='o', markersize='3', linestyle='None', color='red',                 label='-e_wrap')
+        plq(plt, hi, 'time_ux', hi, 'dv_hys_redesign_chg', marker=3, markersize='3', linestyle='-', color='green',                 label='dv_hys_redesign_chg')
+        plq(plt, hi, 'time_ux', hi, 'dv_hys_redesign_dis', marker=3, markersize='3', linestyle='-', color='red',                 label='dv_hys_redesign_dis')
         plt.xlabel('days')
         plt.legend(loc=4)
         # plt.ylim(-0.7, 0.7)
         plt.ylim(bottom=-0.7)
         plt.subplot(222)
-        plt.plot(hi.time_ux, hi.res_redesign_chg, marker='o', markersize='3', linestyle='-', color='green',
-                 label='res_redesign_chg')
-        plt.plot(hi.time_ux, hi.res_redesign_dis, marker='o', markersize='3', linestyle='-', color='red',
-                 label='res_redesign_dis')
+        plq(plt, hi, 'time_ux', hi, 'res_redesign_chg', marker='o', markersize='3', linestyle='-', color='green',                 label='res_redesign_chg')
+        plq(plt, hi, 'time_ux', hi, 'res_redesign_dis', marker='o', markersize='3', linestyle='-', color='red',                 label='res_redesign_dis')
         plt.xlabel('days')
         plt.legend(loc=4)
         plt.subplot(223)
         plq(plt, hi, 'time_ux', hi, 'ib_f', color='black', label='ib_f')
         plq(plt, hi, 'time_ux', hi, 'ib', color='blue', label='ib', warn=False)
-        plt.plot(hi.time_ux, hi.soc*10, color='green', label='soc*10')
-        plt.plot(hi.time_ux, hi.ioc_redesign, marker='o', markersize='3', linestyle='-', color='cyan',
-                 label='ioc_redesign')
+        plq(plt, hi, 'time_ux', hi, 'soc*10', color='green', label='soc*10')
+        plq(plt, hi, 'time_ux', hi, 'ioc_redesign', marker='o', markersize='3', linestyle='-', color='cyan',                 label='ioc_redesign')
         plt.xlabel('days')
         plt.legend(loc=4)
         plt.subplot(224)
-        plt.plot(hi.time_ux, hi.dv_dot_redesign, linestyle='--', color='black', label='dv_dot_redesign')
+        plq(plt, hi, 'time_ux', hi, 'dv_dot_redesign', linestyle='--', color='black', label='dv_dot_redesign')
         plt.xlabel('days')
         plt.legend(loc=4)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -497,12 +471,12 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     print('f4', end=':  ')
     plq(plt, hi, 'time_ux', hi, 'ib_f', color='green', label='ib_f')
     plq(plt, hi, 'time_ux', hi, 'ib', color='cyan', label='ib', warn=False)
-    plt.plot(hi.time_ux, hi.ib_diff, color='black', linestyle='-.', label='ib_diff')
-    plt.plot(hi.time_ux, hi.ib_diff_thr, color='red', linestyle='-.', label='ib_diff_thr')
-    plt.plot(hi.time_ux, -hi.ib_diff_thr, color='red', linestyle='-.')
+    plq(plt, hi, 'time_ux', hi, 'ib_diff', color='black', linestyle='-.', label='ib_diff')
+    plq(plt, hi, 'time_ux', hi, 'ib_diff_thr', color='red', linestyle='-.', label='ib_diff_thr')
+    plq(plt, hi, 'time_ux', hi, 'ib_diff_thr', slr=-1, color='red', linestyle='-.')
     plt.legend(loc=1)
     plt.subplot(332)
-    plt.plot(hi.time_ux, hi.sat + 2, color='magenta', linestyle='-', label='sat+2')
+    plq(plt, hi, 'time_ux', hi, 'sat + 2', color='magenta', linestyle='-', label='sat+2')
     plt.legend(loc=1)
     plt.subplot(333)
     plq(plt, hi, 'time_ux', hi, 'vb_f', color='green', linestyle='-', label='vb_f')
@@ -511,50 +485,50 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plt.subplot(334)
     plq(plt, hi, 'time_ux', hi, 'voc_stat_f', color='green', linestyle='-', label='voc_stat_f')
     plq(plt, hi, 'time_ux', hi, 'voc_stat', color='cyan', linestyle='-', label='voc_stat', warn=False)
-    plt.plot(hi.time_ux, hi.vsat, color='blue', linestyle='-', label='vsat')
-    plt.plot(hi.time_ux, hi.voc_soc + 0.1, color='black', linestyle='-.', label='voc_soc+0.1')
+    plq(plt, hi, 'time_ux', hi, 'vsat', color='blue', linestyle='-', label='vsat')
+    plq(plt, hi, 'time_ux', hi, 'voc_soc', add=+0.1, color='black', linestyle='-.', label='voc_soc+0.1')
     plq(plt, hi, 'time_ux', hi, 'voc_f', add=0.1, color='green', linestyle=':', label='voc_f+0.1')
     plq(plt, hi, 'time_ux', hi, 'voc', add=0.1, color='cyan', linestyle=':', label='voc+0.1', warn=False)
     plt.legend(loc=1)
     plt.subplot(335)
     plq(plt, hi, 'time_ux', hi, 'e_wrap_filt', color='black', linestyle='--', label='e_wrap_filt', warn=False)
     plq(plt, hi, 'time_ux', hi, 'e_w_f', color='black', linestyle='--', label='e_wrap_filt')
-    plt.plot(hi.time_ux, hi.ewhi_thr, color='red', linestyle='-.', label='ewhi_thr')
-    plt.plot(hi.time_ux, hi.ewlo_thr, color='red', linestyle='-.', label='ewlo_thr')
+    plq(plt, hi, 'time_ux', hi, 'ewhi_thr', color='red', linestyle='-.', label='ewhi_thr')
+    plq(plt, hi, 'time_ux', hi, 'ewlo_thr', color='red', linestyle='-.', label='ewlo_thr')
     plt.ylim(-1, 1)
     plt.legend(loc=1)
     plt.subplot(336)
-    plt.plot(hi.time_ux, hi.wrap_hi_flt + 6, color='blue', linestyle='-', label='wrap_hi_flt+6')
-    plt.plot(hi.time_ux, hi.wrap_hi_m_flt + 6, color='red', linestyle='--', label='wrap_hi_m_flt+6')
-    plt.plot(hi.time_ux, hi.wrap_hi_n_flt + 6, color='orange', linestyle='-.', label='wrap_hi_n_flt+6')
-    plt.plot(hi.time_ux, hi.wrap_lo_flt + 4, color='blue', linestyle='-', label='wrap_lo_flt+4')
-    plt.plot(hi.time_ux, hi.wrap_lo_m_flt + 4, color='red', linestyle='--', label='wrap_lo_m_flt+4')
-    plt.plot(hi.time_ux, hi.wrap_lo_n_flt + 4, color='orange', linestyle='-.', label='wrap_lo_n_flt+4')
+    plq(plt, hi, 'time_ux', hi, 'wrap_hi_flt + 6', color='blue', linestyle='-', label='wrap_hi_flt+6')
+    plq(plt, hi, 'time_ux', hi, 'wrap_hi_m_flt + 6', color='red', linestyle='--', label='wrap_hi_m_flt+6')
+    plq(plt, hi, 'time_ux', hi, 'wrap_hi_n_flt + 6', color='orange', linestyle='-.', label='wrap_hi_n_flt+6')
+    plq(plt, hi, 'time_ux', hi, 'wrap_lo_flt + 4', color='blue', linestyle='-', label='wrap_lo_flt+4')
+    plq(plt, hi, 'time_ux', hi, 'wrap_lo_m_flt + 4', color='red', linestyle='--', label='wrap_lo_m_flt+4')
+    plq(plt, hi, 'time_ux', hi, 'wrap_lo_n_flt + 4', color='orange', linestyle='-.', label='wrap_lo_n_flt+4')
     plt.legend(loc=1)
     plt.subplot(339)
-    plt.plot(hi.time_ux, hi.wrap_hi_fa + 6, color='blue', linestyle='-', label='wrap_hi_fa+6')
-    plt.plot(hi.time_ux, hi.wrap_hi_m_fa + 6, color='red', linestyle='--', label='wrap_hi_m_fa+6')
-    plt.plot(hi.time_ux, hi.wrap_hi_n_fa + 6, color='orange', linestyle='-.', label='wrap_hi_n_fa+6')
-    plt.plot(hi.time_ux, hi.wrap_lo_fa + 4, color='blue', linestyle='-', label='wrap_lo_fa+4')
-    plt.plot(hi.time_ux, hi.wrap_lo_m_fa + 4, color='red', linestyle='--', label='wrap_lo_m_fa+4')
-    plt.plot(hi.time_ux, hi.wrap_lo_n_fa + 4, color='orange', linestyle='-.', label='wrap_lo_n_fa+4')
-    plt.plot(hi.time_ux, hi.wv_fa + 2, color='orange', linestyle='-.', label='wrap_vb_fa+2')
-    plt.plot(hi.time_ux, hi.ccd_fa, color='green', linestyle='-', label='cc_diff_fa')
-    plt.plot(hi.time_ux, hi.red_loss, color='blue', linestyle='--', label='red_loss')
+    plq(plt, hi, 'time_ux', hi, 'wrap_hi_fa + 6', color='blue', linestyle='-', label='wrap_hi_fa+6')
+    plq(plt, hi, 'time_ux', hi, 'wrap_hi_m_fa + 6', color='red', linestyle='--', label='wrap_hi_m_fa+6')
+    plq(plt, hi, 'time_ux', hi, 'wrap_hi_n_fa + 6', color='orange', linestyle='-.', label='wrap_hi_n_fa+6')
+    plq(plt, hi, 'time_ux', hi, 'wrap_lo_fa + 4', color='blue', linestyle='-', label='wrap_lo_fa+4')
+    plq(plt, hi, 'time_ux', hi, 'wrap_lo_m_fa + 4', color='red', linestyle='--', label='wrap_lo_m_fa+4')
+    plq(plt, hi, 'time_ux', hi, 'wrap_lo_n_fa + 4', color='orange', linestyle='-.', label='wrap_lo_n_fa+4')
+    plq(plt, hi, 'time_ux', hi, 'wv_fa + 2', color='orange', linestyle='-.', label='wrap_vb_fa+2')
+    plq(plt, hi, 'time_ux', hi, 'ccd_fa', color='green', linestyle='-', label='cc_diff_fa')
+    plq(plt, hi, 'time_ux', hi, 'red_loss', color='blue', linestyle='--', label='red_loss')
     plt.legend(loc=1)
     plt.subplot(337)
-    plt.plot(hi.time_ux, hi.cc_dif, color='black', linestyle='-', label='cc_diff')
-    plt.plot(hi.time_ux, hi.cc_diff_thr, color='red', linestyle='--', label='cc_diff_thr')
-    plt.plot(hi.time_ux, -hi.cc_diff_thr, color='red', linestyle='--')
+    plq(plt, hi, 'time_ux', hi, 'cc_dif', color='black', linestyle='-', label='cc_diff')
+    plq(plt, hi, 'time_ux', hi, 'cc_diff_thr', color='red', linestyle='--', label='cc_diff_thr')
+    plq(plt, hi, 'time_ux', hi, 'cc_diff_thr', slr=-1, color='red', linestyle='--')
     # plt.ylim(-.01, .01)
     plt.legend(loc=1)
     plt.subplot(338)
-    plt.plot(hi.time_ux, hi.ib_diff_flt + 2, color='cyan', linestyle='-', label='ib_diff_flt+2')
-    plt.plot(hi.time_ux, hi.ib_diff_fa + 2, color='magenta', linestyle='--', label='ib_diff_fa+2')
-    plt.plot(hi.time_ux, hi.vb_flt, color='blue', linestyle='-.', label='vb_flt')
-    plt.plot(hi.time_ux, hi.vb_fa, color='black', linestyle=':', label='vb_fa')
-    plt.plot(hi.time_ux, hi.tb_flt, color='red', linestyle='-', label='tb_flt')
-    plt.plot(hi.time_ux, hi.tb_fa, color='cyan', linestyle='--', label='tb_fa')
+    plq(plt, hi, 'time_ux', hi, 'ib_diff_flt', add=2, color='cyan', linestyle='-', label='ib_diff_flt+2')
+    plq(plt, hi, 'time_ux', hi, 'ib_diff_fa', add=2, color='magenta', linestyle='--', label='ib_diff_fa+2')
+    plq(plt, hi, 'time_ux', hi, 'vb_flt', color='blue', linestyle='-.', label='vb_flt')
+    plq(plt, hi, 'time_ux', hi, 'vb_fa', color='black', linestyle=':', label='vb_fa')
+    plq(plt, hi, 'time_ux', hi, 'tb_flt', color='red', linestyle='-', label='tb_flt')
+    plq(plt, hi, 'time_ux', hi, 'tb_fa', color='cyan', linestyle='--', label='tb_fa')
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
@@ -571,56 +545,56 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plt.subplot(331)
     plt.title(plot_title + ' O_F 1')
     print('0_F 1', end=':  ')
-    plt.plot(mr.time_ux, mr.ib_sel, color='black', linestyle='-', label='ib_sel=ib_in')
-    plt.plot(mv.time_ux, mv.ib_in, color='cyan', linestyle='--', label='ib_in_ver')
-    plt.plot(smv.time_ux, smv.ib_in_s, color='orange', linestyle='-.', label='ib_in_s_ver')
-    plt.plot(mr.time_ux, mr.Tb, color='red', linestyle='-', label='Tb')
-    plt.plot(mv.time_ux, mv.Tb, color='blue', linestyle='--', label='Tb_ver')
-    plt.plot(smv.time_ux, mv.Tb, color='green', linestyle='-.', label='Tb_s_ver')
+    plq(plt, mr, 'time_ux', mr, 'ib_sel', color='black', linestyle='-', label='ib_sel=ib_in')
+    plq(plt, mv, 'time_ux', mv, 'ib_in', color='cyan', linestyle='--', label='ib_in_ver')
+    plq(plt, smv, 'time_ux', smv, 'ib_in_s', color='orange', linestyle='-.', label='ib_in_s_ver')
+    plq(plt, mr, 'time_ux', mr, 'Tb', color='red', linestyle='-', label='Tb')
+    plq(plt, mv, 'time_ux', mv, 'Tb', color='blue', linestyle='--', label='Tb_ver')
+    plq(plt, smv, 'time_ux', mv, 'Tb', color='green', linestyle='-.', label='Tb_s_ver')
     plt.legend(loc=1)
     plt.subplot(332)
     plq(plt, mr, 'time_ux', mr, 'ioc', color='black', linestyle='-', label='ioc')
-    plt.plot(mv.time_ux, mv.ioc, color='cyan', linestyle='--', label='ioc_ver')
-    plt.plot(sv.time_ux, sv.ioc, color='orange', linestyle=':', label='ioc_s_ver')
+    plq(plt, mv, 'time_ux', mv, 'ioc', color='cyan', linestyle='--', label='ioc_ver')
+    plq(plt, sv, 'time_ux', sv, 'ioc', color='orange', linestyle=':', label='ioc_s_ver')
     plt.legend(loc=1)
     plt.subplot(333)
-    plt.plot(mr.time_ux, mr.dV_hys, color='black', linestyle='-', label='dV_hys')
-    plt.plot(mv.time_ux, mv.dv_hys, color='cyan', linestyle='--', label='dv_hys_ver')
-    plt.plot(sv.time_ux, sv.dv_hys, color='orange', linestyle='-.', label='dv_hys_s_ver')
+    plq(plt, mr, 'time_ux', mr, 'dV_hys', color='black', linestyle='-', label='dV_hys')
+    plq(plt, mv, 'time_ux', mv, 'dv_hys', color='cyan', linestyle='--', label='dv_hys_ver')
+    plq(plt, sv, 'time_ux', sv, 'dv_hys', color='orange', linestyle='-.', label='dv_hys_s_ver')
     plt.legend(loc=1)
     plt.subplot(334)
-    plt.plot(mr.time_ux, mr.vb, color='black', linestyle='-', label='vb')
-    plt.plot(mv.time_ux, mv.vb, color='cyan', linestyle='--', label='vb_ver')
-    plt.plot(smv.time_ux, smv.vb_s, color='orange', linestyle='-.', label='vb_s_ver')
+    plq(plt, mr, 'time_ux', mr, 'vb', color='black', linestyle='-', label='vb')
+    plq(plt, mv, 'time_ux', mv, 'vb', color='cyan', linestyle='--', label='vb_ver')
+    plq(plt, smv, 'time_ux', smv, 'vb_s', color='orange', linestyle='-.', label='vb_s_ver')
     plt.legend(loc=1)
     plt.subplot(335)
-    plt.plot(mr.time_ux, mr.voc, color='black', linestyle='-', label='voc')
-    plt.plot(mv.time_ux, mv.voc, color='cyan', linestyle='--', label='voc_ver')
-    plt.plot(smv.time_ux, smv.voc_s, color='orange', linestyle='-.', label='voc_s_ver')
+    plq(plt, mr, 'time_ux', mr, 'voc', color='black', linestyle='-', label='voc')
+    plq(plt, mv, 'time_ux', mv, 'voc', color='cyan', linestyle='--', label='voc_ver')
+    plq(plt, smv, 'time_ux', smv, 'voc_s', color='orange', linestyle='-.', label='voc_s_ver')
     plt.legend(loc=1)
     plt.subplot(336)
-    plt.plot(mr.time_ux, mr.soc, color='black', linestyle='-', label='soc')
-    plt.plot(mv.time_ux, mv.soc, color='cyan', linestyle='--', label='soc_ver')
-    plt.plot(smv.time_ux, smv.soc_s, color='orange', linestyle='-.', label='soc_s_ver')
-    plt.plot(mr.time_ux, mr.soc_ekf, color='blue', linestyle='-', label='soc_ekf')
-    plt.plot(mv.time_ux, mv.soc_ekf, color='red', linestyle='--', label='soc_ekf_ver')
+    plq(plt, mr, 'time_ux', mr, 'soc', color='black', linestyle='-', label='soc')
+    plq(plt, mv, 'time_ux', mv, 'soc', color='cyan', linestyle='--', label='soc_ver')
+    plq(plt, smv, 'time_ux', smv, 'soc_s', color='orange', linestyle='-.', label='soc_s_ver')
+    plq(plt, mr, 'time_ux', mr, 'soc_ekf', color='blue', linestyle='-', label='soc_ekf')
+    plq(plt, mv, 'time_ux', mv, 'soc_ekf', color='red', linestyle='--', label='soc_ekf_ver')
     plt.legend(loc=1)
     plt.subplot(337)
-    plt.plot(mr.time_ux, mr.voc_stat, color='black', linestyle='-', label='voc_stat')
-    plt.plot(mv.time_ux, mv.voc_stat, color='cyan', linestyle='--', label='voc_stat_ver')
-    plt.plot(smv.time_ux, smv.voc_stat_s, color='orange', linestyle='-.', label='voc_stat_s_ver')
+    plq(plt, mr, 'time_ux', mr, 'voc_stat', color='black', linestyle='-', label='voc_stat')
+    plq(plt, mv, 'time_ux', mv, 'voc_stat', color='cyan', linestyle='--', label='voc_stat_ver')
+    plq(plt, smv, 'time_ux', smv, 'voc_stat_s', color='orange', linestyle='-.', label='voc_stat_s_ver')
     plt.legend(loc=1)
     plt.subplot(338)
-    plt.plot(mr.time_ux, mr.e_wrap, color='black', linestyle='-', label='e_wrap')
-    plt.plot(mv.time_ux, np.array(mv.voc_soc) - np.array(mv.voc_stat), color='cyan', linestyle='--',
-             label='e_wrap_ver')
-    plt.plot(mr.time_ux, np.array(mr.soc_ekf) - np.array(mr.soc), color='blue', linestyle='-',
-             label='cc_dif')
-    plt.plot(mv.time_ux, np.array(mv.soc_ekf) - np.array(mv.soc), color='red', linestyle='--',
-             label='cc_dif_ver')
-    plt.plot(mr.time_ux, mr.cc_diff_thr, color='cyan', linestyle='--', label='cc_diff_thr')
-    plt.plot(mr.time_ux, -mr.cc_diff_thr, color='cyan', linestyle='--')
-    # plt.plot(smv.time_ux, np.array(smv.voc_soc_s) - np.array(smv.voc_stat_s), color='orange', linestyle='-.',
+    plq(plt, mr, 'time_ux', mr, 'e_wrap', color='black', linestyle='-', label='e_wrap')
+    mv.e_wrap = np.array(mv.voc_soc) -  np.array(mv.voc_stat)
+    mr.cc_dif = np.array(mr.soc_ekf) - np.array(mr.soc)
+    mv.cc_dif = np.array(mv.soc_ekf) - np.array(mv.soc)
+    plq(plt, mv, 'time_ux', mv, 'e_wrap', color='cyan', linestyle='--',         label='e_wrap_ver')
+    plq(plt, mr, 'time_ux', mv, 'cc_dif', color='blue', linestyle='-',         label='cc_dif')
+    plq(plt, mv, 'time_ux', mv, 'cc_dif', color='red', linestyle='--',          label='cc_dif_ver')
+    plq(plt, mr, 'time_ux', mr, 'cc_diff_thr', color='cyan', linestyle='--', label='cc_diff_thr')
+    plq(plt, mr, 'time_ux', mr, 'cc_diff_thr', slr=-1, color='cyan', linestyle='--')
+    # plq(plt, smv, 'time_ux', np.array(smv.voc_soc_s) - np.array(smv.voc_stat_s)', color='orange', linestyle='-.',
     # label='e_wrap_filt_s_ver')
     plq(plt, mr, 'time_ux', mr, 'ewhi_thr', color='red', linestyle='-.', label='ewhi_thr')
     plq(plt, mr, 'time_ux', mr, 'ewlo_thr', color='red', linestyle='-.', label='ewlo_thr')
@@ -628,8 +602,8 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plt.legend(loc=1)
     plt.subplot(339)
     plq(plt, mr, 'time_ux', mr, 'dv_dyn', color='black', linestyle='-', label='dv_dyn')
-    plt.plot(mv.time_ux, mv.dv_dyn, color='cyan', linestyle='--', label='dv_dyn_ver')
-    plt.plot(smv.time_ux, smv.dv_dyn_s, color='orange', linestyle='-.', label='dv_dyn_s_ver')
+    plq(plt, mv, 'time_ux', mv, 'dv_dyn', color='cyan', linestyle='--', label='dv_dyn_ver')
+    plq(plt, smv, 'time_ux', smv, 'dv_dyn_s', color='orange', linestyle='-.', label='dv_dyn_s_ver')
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
@@ -638,78 +612,78 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     fig_files.append(fig_file_name)
     plt.savefig(fig_file_name, format="png")
 
-    run_str = ''
-    ver_str = '_ver'
+    ref_str = ''
+    test_str = '_ver'
 
     fig_list.append(plt.figure())  # GP 3 Tune
     plt.subplot(331)
     plt.title(plot_title + ' GP 3 Tune')
     print('GP 3 Tune', end=':  ')
     mr.dv_dyn = mr.vb - mr.voc
-    plt.plot(mr.time_ux, mr.dv_dyn, color='blue', linestyle='-', label='dv_dyn'+ref_str)
-    plt.plot(mv.time_ux, mv.dv_dyn, color='cyan', linestyle='--', label='dv_dyn'+test_str)
-    # plt.plot(sr.time_ux, sr.dv_dyn_s, color='black', linestyle='-.', label='dv_dyn_s'+ref_str)
-    plt.plot(mv.time_ux, smv.dv_dyn_s, color='magenta', linestyle=':', label='dv_dyn_s'+test_str)
+    plq(plt, mr, 'time_ux', mr, 'dv_dyn', color='blue', linestyle='-', label='dv_dyn'+ref_str)
+    plq(plt, mv, 'time_ux', mv, 'dv_dyn', color='cyan', linestyle='--', label='dv_dyn'+test_str)
+    # plq(plt, sr, 'time_ux', sr, 'dv_dyn_s', color='black', linestyle='-.', label='dv_dyn_s'+ref_str)
+    plq(plt, mv, 'time_ux', smv, 'dv_dyn_s', color='magenta', linestyle=':', label='dv_dyn_s'+test_str)
     plt.xlabel('sec')
     plt.legend(loc=3)
     plt.subplot(332)
-    plt.plot(mr.time_ux, mr.soc, linestyle='-', color='blue', label='soc'+ref_str)
-    plt.plot(mv.time_ux, mv.soc, linestyle='--', color='cyan', label='soc'+test_str)
-    # plt.plot(sr.time_ux, sr.soc_s, linestyle='-.', color='black', label='soc_s'+ref_str)
-    plt.plot(sv.time_ux, smv.soc_s, linestyle=':', color='magenta', label='soc_s'+test_str)
-    plt.plot(mr.time_ux, mr.soc_ekf, linestyle='-', color='green', label='soc_ekf'+ref_str)
-    plt.plot(mv.time_ux, mv.soc_ekf, linestyle='--', color='red', label='soc_ekf'+test_str)
+    plq(plt, mr, 'time_ux', mr, 'soc', linestyle='-', color='blue', label='soc'+ref_str)
+    plq(plt, mv, 'time_ux', mv, 'soc', linestyle='--', color='cyan', label='soc'+test_str)
+    # plq(plt, sr, 'time_ux', sr, 'soc_s', linestyle='-.', color='black', label='soc_s'+ref_str)
+    plq(plt, sv, 'time_ux', smv, 'soc_s', linestyle=':', color='magenta', label='soc_s'+test_str)
+    plq(plt, mr, 'time_ux', mr, 'soc_ekf', linestyle='-', color='green', label='soc_ekf'+ref_str)
+    plq(plt, mv, 'time_ux', mv, 'soc_ekf', linestyle='--', color='red', label='soc_ekf'+test_str)
     plt.xlabel('sec')
     plt.legend(loc=4)
     plt.subplot(333)
-    plt.plot(mr.time_ux, mr.ib_sel, linestyle='-', color='blue', label='ib_sel'+ref_str)
-    plt.plot(mv.time_ux, mv.ib_in, linestyle='-', color='cyan', label='ib_in'+test_str)
-    # plt.plot(sr.time_ux, sr.ib_s, linestyle='--', color='black', label='ib_in_s'+ref_str)
-    plt.plot(smv.time_ux, smv.ib_in_s, linestyle=':', color='red', label='ib_in_s'+test_str)
+    plq(plt, mr, 'time_ux', mr, 'ib_sel', linestyle='-', color='blue', label='ib_sel'+ref_str)
+    plq(plt, mv, 'time_ux', mv, 'ib_in', linestyle='-', color='cyan', label='ib_in'+test_str)
+    # plq(plt, sr, 'time_ux', sr, 'ib_s, linestyle='--', color='black', label='ib_in_s'+ref_str)
+    plq(plt, smv, 'time_ux', smv, 'ib_in_s', linestyle=':', color='red', label='ib_in_s'+test_str)
     plt.xlabel('sec')
     plt.legend(loc=3)
     plt.subplot(334)
-    plt.plot(mr.time_ux, mr.voc, linestyle='-', color='blue', label='voc'+ref_str)
-    plt.plot(mv.time_ux, mv.voc, linestyle='--', color='cyan', label='voc'+test_str)
-    # plt.plot(sr.time_ux, sr.voc_s, linestyle='-', color='blue', label='voc_s'+ref_str)
-    # plt.plot(smv.time_ux, smv.voc_s, linestyle='--', color='cyan', label='voc_s'+test_str)
-    # plt.plot(sr.time_ux, sr.voc_stat_s, linestyle='-.', color='blue', label='voc_stat_s'+ref_str)
-    plt.plot(mr.time_ux, mr.voc_stat, color='orange', linestyle='-', label='voc_stat'+ref_str)
-    plt.plot(smv.time_ux, smv.voc_stat_s, linestyle=':', color='red', label='voc_stat_s'+test_str)
-    # plt.plot(sr.time_ux, sr.vb_s, linestyle='-', color='orange', label='vb_s'+ref_str)
-    plt.plot(sv.time_ux, smv.vb_s, linestyle='--', color='pink', label='vb_s'+test_str)
+    plq(plt, mr, 'time_ux', mr, 'voc', linestyle='-', color='blue', label='voc'+ref_str)
+    plq(plt, mv, 'time_ux', mv, 'voc', linestyle='--', color='cyan', label='voc'+test_str)
+    # plq(plt, sr, 'time_ux', sr, 'voc_s', linestyle='-', color='blue', label='voc_s'+ref_str)
+    # plq(plt, smv, 'time_ux', smv, 'voc_s', linestyle='--', color='cyan', label='voc_s'+test_str)
+    # plq(plt, sr, 'time_ux', sr, 'voc_stat_s', linestyle='-.', color='blue', label='voc_stat_s'+ref_str)
+    plq(plt, mr, 'time_ux', mr, 'voc_stat', color='orange', linestyle='-', label='voc_stat'+ref_str)
+    plq(plt, smv, 'time_ux', smv, 'voc_stat_s', linestyle=':', color='red', label='voc_stat_s'+test_str)
+    # plq(plt, sr, 'time_ux', sr, 'vb_s', linestyle='-', color='orange', label='vb_s'+ref_str)
+    plq(plt, sv, 'time_ux', smv, 'vb_s', linestyle='--', color='pink', label='vb_s'+test_str)
     plt.xlabel('sec')
     plt.legend(loc=2)
     plt.subplot(335)
-    plt.plot(mr.time_ux, mr.e_wrap, color='black', linestyle='-', label='e_wrap'+ref_str)
-    plt.plot(mv.time_ux, mv.e_wrap, color='orange', linestyle='--', label='e_wrap'+test_str)
+    plq(plt, mr, 'time_ux', mr, 'e_wrap', color='black', linestyle='-', label='e_wrap'+ref_str)
+    plq(plt, mv, 'time_ux', mv, 'e_wrap', color='orange', linestyle='--', label='e_wrap'+test_str)
     plt.xlabel('sec')
     plt.legend(loc=2)
     plt.subplot(336)
-    plt.plot(mr.soc, mr.vb, color='blue', linestyle='-', label='vb'+ref_str)
-    plt.plot(mv.soc, mv.vb, color='cyan', linestyle='--', label='vb'+test_str)
-    # plt.plot(sr.soc_s, sr.vb_s, color='black', linestyle='-.', label='vb_s'+ref_str)
-    plt.plot(smv.soc_s, smv.vb_s, color='magenta', linestyle=':', label='vb_s'+test_str)
-    plt.plot(mr.soc, mr.voc_stat, color='orange', linestyle='-', label='voc_stat'+ref_str)
+    plq(plt, mr, 'soc', mr, 'vb', color='blue', linestyle='-', label='vb'+ref_str)
+    plq(plt, mv, 'soc', mv, 'vb', color='cyan', linestyle='--', label='vb'+test_str)
+    # plq(plt, sr.soc_s, sr.vb_s', color='black', linestyle='-.', label='vb_s'+ref_str)
+    plq(plt, smv, 'soc_s', smv, 'vb_s', color='magenta', linestyle=':', label='vb_s'+test_str)
+    plq(plt, mr, 'soc', mr, 'voc_stat', color='orange', linestyle='-', label='voc_stat'+ref_str)
     plt.xlabel('state-of-charge')
     plt.legend(loc=2)
     plt.subplot(337)
-    plt.plot(mr.time_ux, mr.vb, color='blue', linestyle='-', label='vb'+ref_str)
-    plt.plot(mv.time_ux, mv.vb, color='cyan', linestyle='--', label='vb'+test_str)
-    # plt.plot(sr.time_ux, sr.vb_s, color='black', linestyle='-.', label='vb_s'+ref_str)
-    plt.plot(smv.time_ux, smv.vb_s, color='magenta', linestyle=':', label='vb_s'+test_str)
+    plq(plt, mr, 'time_ux', mr, 'vb', color='blue', linestyle='-', label='vb'+ref_str)
+    plq(plt, mv, 'time_ux', mv, 'vb', color='cyan', linestyle='--', label='vb'+test_str)
+    # plq(plt, sr, 'time_ux', sr, 'vb_s', color='black', linestyle='-.', label='vb_s'+ref_str)
+    plq(plt, smv, 'time_ux', smv, 'vb_s', color='magenta', linestyle=':', label='vb_s'+test_str)
     plt.xlabel('sec')
     plt.legend(loc=2)
     plt.subplot(338)
-    plt.plot(mr.time_ux, mr.dv_hys, color='blue', linestyle='-', label='dv_hys'+ref_str)
-    plt.plot(mv.time_ux, mv.dv_hys, color='cyan', linestyle='--', label='dv_hys'+test_str)
-    # plt.plot(sr.time_ux, sr.dv_hys_s, color='black', linestyle='-.', label='dv_hys_s'+ref_str)
-    plt.plot(smv.time_ux, smv.dv_hys_s, color='magenta', linestyle=':', label='dv_hys_s'+test_str)
+    plq(plt, mr, 'time_ux', mr, 'dv_hys', color='blue', linestyle='-', label='dv_hys'+ref_str)
+    plq(plt, mv, 'time_ux', mv, 'dv_hys', color='cyan', linestyle='--', label='dv_hys'+test_str)
+    # plq(plt, sr, 'time_ux', sr, 'dv_hys_s', color='black', linestyle='-.', label='dv_hys_s'+ref_str)
+    plq(plt, smv, 'time_ux', smv, 'dv_hys_s', color='magenta', linestyle=':', label='dv_hys_s'+test_str)
     plt.xlabel('sec')
     plt.legend(loc=3)
     plt.subplot(339)
-    plt.plot(mr.time_ux, mr.Tb, color='blue', linestyle='-', label='Tb'+ref_str)
-    plt.plot(mv.time_ux, mv.tau_hys, color='cyan', linestyle='--', label='tau_hys' + test_str)
+    plq(plt, mr, 'time_ux', mr, 'Tb', color='blue', linestyle='-', label='Tb'+ref_str)
+    plq(plt, mv, 'time_ux', mv, 'tau_hys', color='cyan', linestyle='--', label='tau_hys' + test_str)
     plt.legend(loc=3)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
@@ -1043,156 +1017,6 @@ if __name__ == '__main__':
         # date_ = datetime.now().strftime("%y%m%d")
         skip = 1
 
-        # Save these
-        t_max_in = None
-        sres0_in = 1.
-        sresct_in = 1.
-        stauct_in = 1.
-        # chm_in = 0
-        s_hys_in = 1.
-        s_hys_cap_in = 1.
-        slr_cap_chg_in = 1.
-        slr_cap_dis_in = 1.
-        slr_hys_chg_in = 1.
-        slr_hys_dis_in = 1.
-        scale_in = 1
-        cc_dif_tol_in = 0.2
-        use_mon_soc_in = True  # Reconstruction of soc using sub-sampled data is poor.
-        #  Drive everything with soc from Monitor
-        rated_batt_cap_in = 108.4  # A-hr capacity of test article
-        dvoc_mon_in = 0.
-        dvoc_sim_in = 0.
-
-        # User inputs
-        """
-        input_files = ['fail 20221125.txt']
-        input_files = ['coldCharge1 v20221028.txt']
-        input_files = ['fault_20221206.txt']
-        input_files = ['CH 20230128.txt']; chm_in = 1
-        
-        input_files = ['hist v20230205 20230206.txt']; chm_in = 1; rated_batt_cap_in = 100.; scale_in = 1.127;
-        sres0_in = 3.; sresct_in = 0.76; stauct_in = 0.8; slr_hys_chg_in = 1; slr_hys_dis_in = 1; slr_cap_chg_in = 1.;
-        slr_cap_dis_in = 1.; myCH_Tuner_in = 4  # 0.9 - 1.0 Tune 3
-        
-        input_files = ['g20230530/Hd_20230714_soc1a_bb.csv']; chm_in = 0; rated_batt_cap_in = 108.4;
-        input_files = ['g20230530/hist_Dc06_20230715_soc1a_bb.csv']; chm_in = 0; rated_batt_cap_in = 108.4;
-        input_files = ['g20230530/Hd_Dc06_20230725_soc1a_bb.csv']
-        """
-        input_files = ['g20231111b/ampHiFail_pro3p2_bb.csv']; chm_in = 0
-        """
-        input_files = ['g20230530/serial_20231002_104351.csv']; chm_in = 0; rated_batt_cap_in = 108.4;
-        dvoc_mon_in = -0.3; dvoc_sim_in = dvoc_mon_in
-        input_files = ['serial_20230206_141936.txt', 'serial_20230210_133437.txt', 'serial_20230211_151501.txt',
-                        'serial_20230212_202717.txt', 'serial_20230215_064843.txt', 'serial_20230215_165025.txt',
-                        'serial_20230216_145024.txt', 'serial_20230217_072709.txt', 'serial_20230217_185204.txt',
-                        'serial_20230218_050029.txt', 'serial_20230218_134250.txt', 'serial_20230219_164928.txt',
-                        'serial_20230220_134304.txt', 'serial_20230223_055858.txt', 'serial_20230224_171855.txt',
-                        'serial_20230225_180933.txt', 'serial_20230227_130855.txt']; chm_in = 1;
-        rated_batt_cap_in = 100.; scale_in = 1.127; cc_dif_tol_in = 0.5
-        temp_hist_file = 'hist20221028.txt'
-        temp_flt_file = 'flt20221028.txt'
-        """
-        temp_hist_file = 'hist_CompareFault.txt'
-        temp_flt_file = 'flt_CompareFault.txt'
-        path_to_pdfs = '../dataReduction/figures'
-        path_to_data = '../dataReduction'
-        path_to_temp = '../dataReduction/temp'
-        import os
-        if not os.path.isdir(path_to_temp):
-            os.mkdir(path_to_temp)
-
-        # Load configuration
-        batt = BatteryMonitor(mod_code=chm_in)
-
-        # cat files
-        cat(temp_hist_file, input_files, in_path=path_to_data, out_path=path_to_temp)
-
-        # Load history
-        temp_hist_file = os.path.join(path_to_temp, temp_hist_file)
-        temp_hist_file_clean = write_clean_file(temp_hist_file, type_='', hdr_key='fltb', unit_key='unit_f',
-                                                skip=skip, comment_str='---')
-        if temp_hist_file_clean:
-            h_raw_ = np.genfromtxt(temp_hist_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-        else:
-            print("data from", temp_hist_file, "empty after loading")
-            exit(1)
-
-        # Load fault
-        temp_flt_file_clean = write_clean_file(temp_hist_file, type_='', hdr_key='fltb', unit_key='unit_f',
-                                               skip=skip, comment_str='---')
-        if temp_flt_file_clean:
-            f_raw_ = np.genfromtxt(temp_flt_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-        else:
-            print("data from", temp_flt_file, "empty after loading")
-            exit(1)
-        f_raw = np.unique(f_raw_)
-        f_raw = remove_nan(f_raw)
-        # noinspection PyTypeChecker
-        f = add_stuff_f(f_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in)
-        print("\nf:\n", f, "\n")
-        f = filter_Tb(f, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap_in)
-
-        # Sort unique
-        h_raw = np.unique(h_raw_)
-        h_raw = remove_nan(h_raw)
-        # noinspection PyTypeChecker
-        h = add_stuff_f(h_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in)
-        print("\nh:\n", h, "\n")
-        h_20C = filter_Tb(h, 20., batt, tb_band=TB_BAND, rated_batt_cap=rated_batt_cap_in)
-        # Shift time_ux and add data
-        time0 = h_20C.time_ux[0]
-        h_20C.time_ux -= time0
-        # T_100 = 0.1
-        # T_100 = 0.3
-        # T_100 = 5
-        T_100 = 60
-        h_20C_resamp_100 = resample(data=h_20C, dt_resamp=T_100, time_var='time_ux',
-                                    specials=[
-                                        ('falw', 0), ('dscn_fa', 0), ('ib_diff_fa', 0), ('wv_fa', 0),
-                                        ('wrap_lo_fa', 0), ('wrap_hi_fa', 0),
-                                        ('wrap_lo_m_fa', 0), ('wrap_hi_m_fa', 0), ('wrap_lo_n_fa', 0), ('wrap_hi_n_fa', 0),
-                                        ('wrap_lo_flt', 0), ('wrap_hi_flt', 0),
-                                        ('wrap_lo_m_flt', 0), ('wrap_hi_m_flt', 0), ('wrap_lo_n_flt', 0), ('wrap_hi_n_flt', 0),
-                                        ('ccd_fa', 0), ('ib_noa_fa', 0), ('ib_amp_fa', 0), ('vb_fa', 0), ('tb_fa', 0),
-                                    ])
-        for i in range(len(h_20C_resamp_100.time_ux)):
-            if i == 0:
-                h_20C_resamp_100.dt[i] = h_20C_resamp_100.time_ux[1] - h_20C_resamp_100.time_ux[0]
-            else:
-                h_20C_resamp_100.dt[i] = h_20C_resamp_100.time_ux[i] - h_20C_resamp_100.time_ux[i-1]
-        mon_run_100, sim_run_100 = bandaid(h_20C_resamp_100, chm_in=chm_in)
-        mon_ver_100, sim_ver_100, sim_s_ver_100, mon_r, sim_r =\
-            replicate(mon_run_100, sim_run=sim_run_100, init_time=1., verbose=False, max_time=t_max_in, slr_res_0=sres0_in,
-                      slr_res_ct=sresct_in, stauct_mon=stauct_in, slr_tauct_sim=stauct_in, use_vb_sim=False,
-                      slr_hys_sim=s_hys_in, slr_hys_mon=s_hys_in,
-                      slr_hys_cap_sim=s_hys_cap_in, slr_cap_chg=s_cap_chg_in, slr_cap_dis=s_cap_dis_in,
-                      slr_hys_chg=s_hys_chg_in, slr_hys_dis=slr_hys_dis_in, scale_in=scale_in, use_mon_soc=use_mon_soc_in,
-                      add_voc_mon=dvoc_mon_in, add_voc_sim=dvoc_sim_in)
-
-        # Plots
-        fig_list = []
-        fig_files = []
-        filename = os.path.split(temp_hist_file_clean)[1].replace('.csv', '_') + os.path.split(__file__)[1].split('.')[0]
-        plot_title = filename + '   ' + date_time
-        if len(f.time_ux) > 1:
-            fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
-                                             fig_list=fig_list, cc_dif_tol=cc_dif_tol_in)
-        if len(h_20C.time_ux) > 1:
-            fig_list, fig_files = overall_batt(mon_ver_100, sim_ver_100, suffix='_100',
-                                               filename=filename, fig_files=fig_files,
-                                               plot_title=plot_title, fig_list=fig_list)
-            fig_list, fig_files = overall_fault(mon_run_100, mon_ver_100, sim_ver_100, sim_s_ver_100, filename,
-                                                fig_files, plot_title=plot_title, fig_list=fig_list)
-            fig_list, fig_files = tune_r(mon_run_100, mon_ver_100, sim_s_ver_100, filename,
-                                         fig_files, plot_title=plot_title, fig_list=fig_list)
-
-        precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=path_to_pdfs)
-        unite_pictures_into_pdf(outputPdfName=filename+'_'+date_time+'.pdf', save_pdf_path=path_to_pdfs)
-        cleanup_fig_files(fig_files)
-
-        plt.show(block=False)
-        string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
-        show_killer(string, 'CompareFault', fig_list=fig_list)
 
 
     main()

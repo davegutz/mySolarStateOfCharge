@@ -118,6 +118,7 @@ class Line:
         self.y = None
         self.y_text = None
         self.add_arg = Arg()
+        self.slr_arg = Arg()
         self.col_arg = Arg()
         self.ls_arg = Arg()
         self.mk_arg = Arg()
@@ -140,6 +141,8 @@ class Line:
                 continue
             elif I.__contains__('add='):
                 self.add_arg = Arg('add=', I.replace('add=', ""))
+            elif I.__contains__('slr='):
+                self.slr_arg = Arg('slr=', I.replace('slr=', ""))
             elif I.__contains__('color='):
                 self.col_arg = Arg('color=', I.replace('color=', ""))
             elif I.__contains__('linestyle='):
@@ -163,6 +166,7 @@ class Line:
         ostr += ', ' + self.y
         ostr += ', ' + self.y_txt
         ostr += self.add_arg.__str__()
+        ostr += self.slr_arg.__str__()
         ostr += self.col_arg.__str__()
         ostr += self.ls_arg.__str__()
         ostr += self.mk_arg.__str__()

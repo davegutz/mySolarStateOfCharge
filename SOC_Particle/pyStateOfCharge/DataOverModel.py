@@ -48,15 +48,18 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', label=None, marker=None,
         markersize=None, markevery=None, stairs=False, warn=True):
     if not label:
+        slr_str = ''
+        if slr != 0:
+            slr_str = str(add) + '*'
         add_str = ''
         if add > 0:
             add_str = '+' + str(add)
         elif add < 0:
             add_str = str(add)
         if sy.str:
-            label = yt + '_' + sy.str + add_str
+            label = slr_str + yt + '_' + sy.str + add_str
         else:
-            label = yt + add_str
+            label = slr_str + yt + add_str
     if (sx is not None and sy is not None and hasattr(sx, st) and hasattr(sy, yt) and getattr(sy, yt) is not None and
             len(getattr(sy, yt)) > 0 and getattr(sy, yt)[0] is not None):
         try:
