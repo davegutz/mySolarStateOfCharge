@@ -156,7 +156,7 @@ class Line:
                 self.stairs_arg = Arg('stairs=', I.replace('stairs=', ""))
 
     def __str__(self):
-        ostr = self.header
+        ostr = self.header + '('
         ostr += self.plt_dir
         ostr += ', ' + self.x
         ostr += ', ' + self.x_txt
@@ -206,16 +206,16 @@ print(trans)
 
 def do_one(path_to_infile, path_to_outfile):
     num_plq_in = 0
+    os.remove(path_to_outfile)
     with (open(path_to_infile, "r", encoding='cp437') as input_file):  # reads all characters even bad ones
         with open(path_to_outfile, "a") as output:
             for line in input_file:
                 if line.__contains__('plq(') :
-                    stripped_line = line.rstrip('\r\n')
                     num_plq_in += 1
-                    trans = Line(stripped_line)
+                    trans = Line(line)
                     output.write(trans.__str__())
                 else:
-                    output.write(f"\n")
+                    output.write(line)
 
 def main():
     do_one('./PlotGP.py', './PlotGPt.py')
