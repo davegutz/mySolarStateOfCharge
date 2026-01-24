@@ -1,0 +1,203 @@
+# GP_batteryEKF - general purpose battery class for EKF use
+# Copyright (C) 2023 Dave Gutz
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation;
+# version 2.1 of the License.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# Lesser General Public License for more details.
+#
+# See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
+
+"""Define a general purpose battery model including Randles' model and SoC-VOV model as well as Kalman filtering
+support for simplified Mathworks' tracker. See Huria, Ceraolo, Gazzarri, & Jackey, 2013 Simplified Extended Kalman
+Filter Observer for SOC Estimation of Commercial Power-Oriented LFP Lithium Battery Cells.
+Dependencies:
+    - numpy      (everything)
+    - matplotlib (plots)
+    - reportlab  (figures, pdf)
+"""
+from json.encoder import encode_basestring
+
+import numpy as np
+import matplotlib.pyplot as plt
+from datetime import datetime
+from Battery import Battery, overall_batt
+from myFilters import LagExp
+# below suppresses runtime error display******************
+# import os
+# os.environ["KIVY_NO_CONSOLELOG"] = "1"
+# from kivy.utils import platform  # failed experiment to run BLE data plotting realtime on android
+# if platform != 'linux':
+#     from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files
+from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files
+import Chemistry_BMS
+from Colors import Colors
+import re
+from local_paths import version_from_data_file, local_paths
+import os
+import sys
+import ast
+import textwrap
+
+
+# def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', label=None, marker=None,
+#         markersize=None, markevery=None, stairs=False, warn=True):
+
+
+
+def extract_arguments_text(function_call_string: str) -> list[str]:
+    """
+    Reads a line of text that is a function call and produces a list
+    containing the original text of its arguments.
+
+    Args:
+        function_call_string: A string containing a single Python function call.
+
+    Returns:
+        A list of strings, where each string is the text of an argument.
+    """
+    # ast.parse needs the input to be a valid expression.
+    # The mode='eval' expects a single expression.
+    try:
+        # Remove leading/trailing whitespace for clean parsing
+        source_line = function_call_string.strip()
+        tree = ast.parse(source_line, mode='eval')
+    except SyntaxError as e:
+        raise ValueError(f"Invalid function call syntax: {e}")
+
+    # The body of the expression should be an ast.Call node
+    call_node = tree.body
+    if not isinstance(call_node, ast.Call):
+        raise ValueError("Provided string is not a function call expression")
+
+    arguments_text = []
+
+    # 1. Process positional arguments
+    for arg in call_node.args:
+        # ast.get_source_segment extracts the original source code for the node
+        arg_text = ast.get_source_segment(source_line, arg)
+        if arg_text is not None:
+            arguments_text.append(arg_text)
+
+    # 2. Process keyword arguments (e.g., name="value")
+    for kwarg in call_node.keywords:
+        key_text = kwarg.arg  # The keyword name (string)
+        # Get the source segment for the value part
+        value_text = ast.get_source_segment(source_line, kwarg.value)
+        if value_text is not None:
+            arguments_text.append(f"{key_text}={value_text}")
+
+    return arguments_text
+
+
+class Arg:
+
+    def __init__(self, directive=None, value=None):
+        self.directive = directive  # e.g. 'add='
+        self.val = value
+        
+    def __str__(self):
+        if self.directive is None and self.val is None:
+            return ''
+        else:
+            return ', ' + self.directive + self.val
+
+
+class Line:
+    def __init__(self, in_str):
+        in_list = extract_arguments_text(in_str)
+        self.plt_dir = 'plt'
+        self.x = None
+        self.x_txt = None
+        self.y = None
+        self.y_text = None
+        self.add_arg = Arg()
+        self.col_arg = Arg()
+        self.ls_arg = Arg()
+        self.mk_arg = Arg()
+        self.mk_sz_arg = Arg()
+        self.mk_ev_arg= Arg()
+        self.stairs_arg = Arg()
+        self.warn_arg = Arg()
+        i = -1
+        for I in in_list:
+            i += 1
+            if i == 1:
+                self.x = I
+            elif i == 2:
+                self.x_txt = I
+            elif i == 3:
+                self.y = I
+            elif i == 4:
+                self.y_txt = I
+            if I.__contains__('label='):  # labels are built into plq if label=None.  So skip them
+                continue
+            elif I.__contains__('add='):
+                self.add_arg = Arg('add=', I.replace('add=', ""))
+            elif I.__contains__('color='):
+                self.col_arg = Arg('color=', I.replace('color=', ""))
+            elif I.__contains__('linestyle='):
+                self.ls_arg = Arg('linestyle=', I.replace('linestyle=', ""))
+            elif I.__contains__('marker='):
+                self.mk_arg = Arg('marker=', I.replace('marker=', ""))
+            elif I.__contains__('markersize='):
+                self.mk_sz_arg = Arg('markersize=', I.replace('markersize=', ""))
+            elif I.__contains__('markevery='):
+                self.mk_ev_arg = Arg('markevery=', I.replace('markevery=', ""))
+            elif I.__contains__('warn='):
+                self.warn_arg = Arg('warn=', I.replace('warn=', ""))
+            elif I.__contains__('stairs='):
+                self.stairs_arg = Arg('stairs=', I.replace('stairs=', ""))
+
+    def __str__(self):
+        ostr = "plq("
+        ostr += self.plt_dir
+        ostr += ', ' + self.x
+        ostr += ', ' + self.x_txt
+        ostr += ', ' + self.y
+        ostr += ', ' + self.y_txt
+        ostr += self.add_arg.__str__()
+        ostr += self.col_arg.__str__()
+        ostr += self.ls_arg.__str__()
+        ostr += self.mk_arg.__str__()
+        ostr += self.mk_sz_arg.__str__()
+        ostr += self.mk_ev_arg.__str__()
+        ostr += self.stairs_arg.__str__()
+        ostr += self.warn_arg.__str__()
+        ostr += ')'
+        return ostr
+
+
+
+call1 = "plq(plt, mr, 'time_t', mr, 'Tb', add=1, color='green', linestyle='-', label='Tb'+run_str, stairs=True)"
+call2 = "plq(plt, mv, 'time_t', mv, 'Tb', add=-1.5, color='orange', linestyle='--', label='Tb'+ver_str, stairs=True, warn=False)"
+call3 = "plq(plt, mv, 'time', mv, 'Tb', color='red', linestyle='-.', label='Tb'+ver_str)"
+
+print(f"Input: {call1}")
+print(f"Arguments: {extract_arguments_text(call1)}")
+print("-" * 20)
+
+print(f"Input: {call2}")
+print(f"Arguments: {extract_arguments_text(call2)}")
+print("-" * 20)
+
+print(f"Input: {call3}")
+print(f"Arguments: {extract_arguments_text(call3)}")
+print("-" * 20)
+
+print(call1)
+trans = Line(call1)
+print(trans)
+
+print(call2)
+trans = Line(call2)
+print(trans)
+
+print(call3)
+trans = Line(call3)
+print(trans)
