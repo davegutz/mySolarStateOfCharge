@@ -21,3 +21,12 @@ SOC_Particle/nul
 ble-uart-peripheral/nul
 *.csv#
 *.csv#
+SOC_Particle/pyStateOfCharge/Battery - Copy.py
+SOC_Particle/pyStateOfCharge/CompareFault - Copy.py
+SOC_Particle/pyStateOfCharge/CompareHistSim - Copy.py
+SOC_Particle/pyStateOfCharge/DataOverModel - Copy.py
+SOC_Particle/pyStateOfCharge/PlotEKF - Copy.py
+SOC_Particle/pyStateOfCharge/PlotGP - Copy.py
+SOC_Particle/pyStateOfCharge/PlotHist - Copy.py
+SOC_Particle/pyStateOfCharge/PlotOffOn - Copy.py
+SOC_Particle/pyStateOfCharge/PlotSimS - Copy.py

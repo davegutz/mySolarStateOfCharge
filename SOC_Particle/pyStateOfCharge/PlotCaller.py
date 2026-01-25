@@ -226,7 +226,16 @@ def do_one(path_to_infile, path_to_outfile):
                     output.write(line)
 
 def main():
-    do_one('./PlotGP.py', './PlotGPt.py')
+    do_one('./CompareFault - Copy.py', './CompareFault.py')
+    do_one('./DataOverModel - Copy.py', './DataOverModel.py')
+    do_one('./PlotEKF - Copy.py', './PlotEKF.py')
+    do_one('./PlotHist - Copy.py', './PlotHist.py')
+    do_one('./CompareHistSim - Copy.py', './CompareHistSim.py')
+    do_one('./PlotSimS - Copy.py', './PlotSimS.py')
+    do_one('./PlotGP - Copy.py', './PlotGP.py')
+    do_one('./PlotOffOn - Copy.py', './PlotOffOn.py')
+    do_one('./Battery - Copy.py', './Battery.py')
+
 
 if __name__ == "__main__":
     import sys
