@@ -324,9 +324,11 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         plq(plt, smv, 'soc_s', smv, 'voc_stat_s', color='blue', linestyle=':', label='voc_stat_s'+ver_str)
         plq(plt, mr, 'soc', mr, 'voc_soc', color='green', linestyle='-.', label='voc_soc'+run_str)
         plq(plt, mv, 'soc', mv, 'voc_soc', color='orange', linestyle=':', label='voc_soc'+ver_str)
-        # if min(1)
-        xmin = 12.5
-        plt.ylim(12.5, 14.5)
+        if min(mv.voc_stat) < 4.:
+            xmin = 0
+        else:
+            xmin = 12.5
+        plt.ylim(xmin, 14.5)
         plt.legend(loc=1)
         plt.subplot(222)
         plq(plt, mr, 'soc', mr, 'voc_stat', color='magenta', linestyle='-', label='voc_stat = z '+run_str)
@@ -339,7 +341,7 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         plq(plt, smv, 'soc_s', smv, 'voc_stat_s', color='blue', linestyle=':', label='voc_stat_s'+ver_str)
         plq(plt, mr, 'soc', mr, 'voc_soc', color='green', linestyle='-.', label='voc_soc'+run_str)
         plq(plt, mv, 'soc', mv, 'voc_soc', color='orange', linestyle=':', label='voc_soc'+ver_str)
-        plt.ylim(12.5, 14.5)
+        plt.ylim(xmin, 14.5)
         plt.legend(loc=1)
         plt.subplot(224)
         plq(plt, mr, 'time', mr, 'voc_stat', color='magenta', linestyle='-', label='voc_stat = z'+run_str)
@@ -352,6 +354,6 @@ def sim_s_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, f
         plq(plt, smv, 'time', smv, 'voc_stat_s', color='blue', linestyle=':', label='voc_stat_s'+ver_str)
         plq(plt, mr, 'time', mr, 'voc_soc', color='green', linestyle='-.', label='voc_soc'+run_str)
         plq(plt, mv, 'time', mv, 'voc_soc', color='orange', linestyle=':', label='voc_soc'+ver_str)
-        plt.ylim(12.5, 14.5)
+        plt.ylim(xmin, 14.5)
         plt.legend(loc=1)
     return fig_list, fig_files
