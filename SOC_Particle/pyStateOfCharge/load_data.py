@@ -193,7 +193,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     else:
         sim_raw = None
         sim = SavedDataSim(time_run=mon.time_run, data=sim_raw, time_end=time_end_in, fake=True, mon_for_fake=mon,
-                           str='run_s')
+                           str_='run_s')
         print(f"load_data: returning sim=None")
 
     # Calculate sync information
@@ -216,6 +216,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     else:
         f = None
         print(f"load_data: returning f=None")
+    f.str = ''
 
     return mon, sim, f, data_file_clean, temp_flt_file_clean, sync_info
 

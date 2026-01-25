@@ -46,7 +46,7 @@ if sys.platform == 'darwin':
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', label=None, marker=None,
-        markersize=None, markevery=None, stairs=False, warn=True):
+        markersize=None, markevery=None, stairs=False, warn=True, linewidth=None):
     if not label:
         slr_str = ''
         if slr != 0:
@@ -78,7 +78,7 @@ def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', labe
                 plt_.stairs(yscld, x_in, color=color, linestyle=linestyle, label=label)
             else:
                 plt_.plot(getattr(sx, st), yscld, color=color, linestyle=linestyle, label=label, marker=marker,
-                          markersize=markersize, markevery=markevery)
+                          markersize=markersize, markevery=markevery, linewidth=linewidth)
         except ValueError:
             if warn:
                 print(f"plq: skipping     {yt}({st})     labeled  '{label}'")
@@ -128,15 +128,13 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     print('1a', end=':  ')
     if hasattr(mr, 'mod_data') and mr.mod_data[0] != 0 and strict_overplot:
         plq(plt, mr, 'time', mr, 'ib_amp_model', color='black', linestyle='-')
-        plq(plt, mv, 'time', mv, 'ib_amp_model', color='red', linestyle='-.', warn=False)
+        plq(plt, mv, 'time', mv, 'ib_amp_model', color='red', linestyle='-.')
         plq(plt, mr, 'time', mr, 'ib_noa_model', color='green', linestyle='--')
-        plq(plt, mv, 'time', mv, 'ib_noa_model', color='blue', linestyle=':', warn=False)
+        plq(plt, mv, 'time', mv, 'ib_noa_model', color='blue', linestyle=':')
     else:
         plq(plt, mr, 'time', mr, 'ib_amp_hdwe', color='black', linestyle='-', label='ib_amp_hdwe' + run_str)
-        plq(plt, mr, 'time', mr, 'ib_amp_hdwe_f', color='black', linestyle='-', label='ib_amp_hdwe_f' + run_str)
         plq(plt, mv, 'time', mv, 'ib_amp_hdwe', color='red', linestyle='-.', label='ib_amp_hdwe' + ver_str)
         plq(plt, mr, 'time', mr, 'ib_noa_hdwe', color='green', linestyle='--', label='ib_noa_hdwe' + run_str)
-        plq(plt, mr, 'time', mr, 'ib_noa_hdwe_f', color='green', linestyle='--', label='ib_noa_hdwe_f' + run_str)
         plq(plt, mv, 'time', mv, 'ib_noa_hdwe', color='blue', linestyle=':', label='ib_noa_hdwe' + ver_str)
     if not strict_overplot:
         plq(plt, mr, 'time', mr, 'ib_sel', add=+0, color='red', linestyle='-', label='ib_sel'+run_str)
@@ -1044,9 +1042,9 @@ class SavedData:
             self.ib_noa_hdwe = np.array(sel.ibnh[:i_end])
             self.ib_amp_model = np.array(sel.ibmm[:i_end])
             self.ib_noa_model = np.array(sel.ibnm[:i_end])
-            self.ibm = np.array(sel.ibm[:i_end])
+            self.ib_model = np.array(sel.ibm[:i_end])
             self.ib_amp_hdwe_kf = np.array(sel.ibmkf[:i_end])
-            self.ibnkf = np.array(sel.ibnkf[:i_end])
+            self.ib_noa_hdwe_kf = np.array(sel.ibnkf[:i_end])
             self.vovcn = np.array(sel.vovcn[:i_end])
             self.ib_noa_kf = np.array(sel.ib_noa_kf[:i_end])
             self.kfres = np.array(sel.kfres[:i_end])

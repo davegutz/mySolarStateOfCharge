@@ -193,13 +193,13 @@ class Sensors:
             if not hasattr(self.mon_run, 'e_wrap_n_trim'):
                 self.mon_run.e_wrap_n_trim = np.copy(self.mon_run.e_wm_t) * 0.
             if not hasattr(self.mon_run, 'ib_dyn_m'):
-                self.mon_run.ib_dyn_m = np.copy(self.mon_run.ibmh_f)
+                self.mon_run.ib_dyn_m = np.copy(self.mon_run.ib_amp_hdwe_f)
             if not hasattr(self.mon_run, 'ib_dyn_n'):
                self.mon_run.ib_dyn_n = np.copy(self.mon_run.ib_noa_hdwe_f)
 
             self.dt_s = self.sim_run.dt_s
             if not hasattr(self.mon_run, 'ibmm'):
-               self.mon_run.ibmm = np.copy(self.mon_run.ibmh_f)
+               self.mon_run.ibmm = np.copy(self.mon_run.ib_amp_hdwe_f)
             if not hasattr(self.mon_run, 'ib_noa_model'):
                self.mon_run.ib_noa_model = np.copy(self.mon_run.ib_noa_hdwe_f)
             if not hasattr(self.mon_run, 'ib_h'):
@@ -244,18 +244,18 @@ class Sensors:
             self.TbModelFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
             self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
 
-            self.LoopAmp = SensorLooparound(self.mon_run.ibmh_f, self.mon_run.ib_dyn_m, self.mon_run.e_wrap_m_trim,
+            self.LoopAmp = SensorLooparound(self.mon_run.ib_amp_hdwe_f, self.mon_run.ib_dyn_m, self.mon_run.e_wrap_m_trim,
                                             self.mon_run.e_wrap_m_filt)
 
             self.LoopNoa = SensorLooparound(self.mon_run.ib_noa_hdwe_f, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_m_trim * 0.,
                                             self.mon_run.e_wrap_n_filt)
-            self.ib_amp = self.mon_run.ibmh_f
-            self.ib_noa = self.mon_run.ib_noa_hdwe =_f
+            self.ib_amp = self.mon_run.ib_amp_hdwe_f
+            self.ib_noa = self.mon_run.ib_noa_hdwe_f
             self.ib_init = self.mon_run.ib_f[0]
             self.ib_dyn = ProArray(self.mon_run.ib_dyn)
             self.ib_charge_init = self.mon_run.ib_charge_f[0]
             self.vb_init = self.mon_run.vb_f[0]
-            self.ib_amp_model = self.mon_run.ibmh_f
+            self.ib_amp_model = self.mon_run.ib_amp_hdwe_f
             self.ib_noa_model = self.mon_run.ib_noa_hdwe_f
 
             self.z = self.mon_run.z

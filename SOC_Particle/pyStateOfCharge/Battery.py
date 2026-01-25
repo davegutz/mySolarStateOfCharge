@@ -850,8 +850,10 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.e_wrap_rate.append(self.e_wrap_rate)
         self.saved.ib_amp.append(self.ib_amp)
         self.saved.ib_amp_model.append(self.ib_amp_model)
+        self.saved.ib_amp_hdwe.append(self.ib_amp_hdwe)
         self.saved.ib_noa.append(self.ib_noa)
         self.saved.ib_noa_model.append(self.ib_noa_model)
+        self.saved.ib_noa_hdwe.append(self.ib_noa_hdwe)
         self.saved.ib_lag.append(self.ib_lag)
         self.saved.voc_soc_new.append(self.voc_soc_new)
         self.saved.ewmhi_thr.append(self.ewmhi_thr)
@@ -1452,8 +1454,10 @@ class Saved:
         self.voc_soc_new = []  # New schedule values
         self.ib_amp = []
         self.ib_amp_model = []
+        self.ib_amp_hdwe = []
         self.ib_noa = []
         self.ib_noa_model = []
+        self.ib_noa_hdwe = []
         self.ewmhi_thr = []
         self.ewmlo_thr = []
         self.ewnhi_thr = []

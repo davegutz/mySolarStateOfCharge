@@ -126,6 +126,7 @@ class Line:
         self.mk_ev_arg= Arg()
         self.stairs_arg = Arg()
         self.warn_arg = Arg()
+        self.lw_arg = Arg()
         i = -1
         for I in in_list:
             i += 1
@@ -147,6 +148,8 @@ class Line:
                 self.col_arg = Arg('color=', I.replace('color=', ""))
             elif I.__contains__('linestyle='):
                 self.ls_arg = Arg('linestyle=', I.replace('linestyle=', ""))
+            elif I.__contains__('linewidth='):
+                self.ls_arg = Arg('linewidth=', I.replace('linewidth=', ""))
             elif I.__contains__('marker='):
                 self.mk_arg = Arg('marker=', I.replace('marker=', ""))
             elif I.__contains__('markersize='):
@@ -169,6 +172,7 @@ class Line:
         ostr += self.slr_arg.__str__()
         ostr += self.col_arg.__str__()
         ostr += self.ls_arg.__str__()
+        ostr += self.lw_arg.__str__()
         ostr += self.mk_arg.__str__()
         ostr += self.mk_sz_arg.__str__()
         ostr += self.mk_ev_arg.__str__()

@@ -60,10 +60,10 @@ HYS_SOC_MIN_MARG = 0.15  # add to soc_min to set thr for detecting low endpoint 
 
 # Add ib_lag = ib lagged by time constant
 def add_ib(data, mon):
-    if hasattr(data, 'ibmh_f'):
-        data = rf.rec_append_fields(data, 'ibmh', np.array(data.ibmh_f, dtype=float))
-    if hasattr(data, 'ibnh_f'):
-        data = rf.rec_append_fields(data, 'ibnh', np.array(data.ibnh_f, dtype=float))
+    if hasattr(data, 'ib_amp_hdwe_f'):
+        data = rf.rec_append_fields(data, 'ib_amp_hdwe', np.array(data.ib_amp_hdwe_f, dtype=float))
+    if hasattr(data, 'ib_noa_hdwe_f'):
+        data = rf.rec_append_fields(data, 'ib_noa_hdwe', np.array(data.ib_noa_hdwe_f, dtype=float))
     return data
 
 
@@ -87,6 +87,11 @@ def add_ib_lag(data, mon):
 
 # Add schedule lookups and do some rack and stack
 def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=None, unit=None):
+    # Rename
+    names = list(d_ra.dtype.names)
+    names[names.index('ibmh_f')] = 'ib_amp_hdwe_f'
+    names[names.index('ibnh_f')] = 'ib_noa_hdwe_f'
+    d_ra.dtype.names = tuple(names)
     voc_soc = []
     soc_min = []
     vsat = []
@@ -111,7 +116,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
         soc = d_ra.soc[i]
         voc_stat_f = d_ra.voc_stat_f[i]
         Tb_f = d_ra.Tb_f[i]
-        ib_diff_ = d_ra.ibmh_f[i] - d_ra.ibnh_f[i]
+        ib_diff_ = d_ra.ib_amp_hdwe_f[i] - d_ra.ib_noa_hdwe_f[i]
         cc_dif_ = d_ra.soc[i] - d_ra.soc_ekf[i]
         ib_diff.append(ib_diff_)
         C_rate = d_ra.ib_f[i] / rated_batt_cap
@@ -402,21 +407,21 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.xlabel('days')
         plt.legend(loc=1)
         plt.subplot(122)
-        plq(plt, hi, 'time_ux', hi, 'bms_off + 22', marker='h', markersize='3', linestyle='-', color='blue',                 label='bms_off+22')
-        plq(plt, hi, 'time_ux', hi, 'sat + 20', marker='s', markersize='3', linestyle='-', color='red', label='sat+20')
-        plq(plt, hi, 'time_ux', hi, 'dscn_fa + 18', marker='o', markersize='3', linestyle='-', color='black',                 label='dscn_fa+18')
-        plq(plt, hi, 'time_ux', hi, 'ib_diff_fa + 16', marker='^', markersize='3', linestyle='-', color='blue',                 label='ib_diff_fa+16')
-        plq(plt, hi, 'time_ux', hi, 'wv_fa + 14', marker='s', markersize='3', linestyle='-', color='cyan',                 label='wrap_vb_fa+14')
-        plq(plt, hi, 'time_ux', hi, 'wrap_lo_fa + 12', marker='p', markersize='3', linestyle='-', color='blue',                 label='wrap_lo_fa+12')
-        plq(plt, hi, 'time_ux', hi, 'wrap_lo_m_fa + 12', marker='p', markersize='3', linestyle='--', color='red',                 label='wrap_lo_m_fa+12')
-        plq(plt, hi, 'time_ux', hi, 'wrap_lo_n_fa + 12', marker='p', markersize='3', linestyle='-.', color='orange',                 label='wrap_lo_n_fa+12')
-        plq(plt, hi, 'time_ux', hi, 'wrap_hi_fa + 10', marker='h', markersize='3', linestyle='-', color='blue',                 label='wrap_hi_fa+10')
-        plq(plt, hi, 'time_ux', hi, 'wrap_hi_m_fa + 10', marker='h', markersize='3', linestyle='--', color='red',                        label='wrap_hi_m_fa+10')
-        plq(plt, hi, 'time_ux', hi, 'wrap_hi_n_fa + 10', marker='h', markersize='3', linestyle='-.', color='orange',       label='wrap_hi_n_fa+10')
-        plq(plt, hi, 'time_ux', hi, 'ccd_fa + 8', marker='H', markersize='3', linestyle='-', color='blue',                 label='cc_diff_fa+8')
-        plq(plt, hi, 'time_ux', hi, 'ib_noa_fa + 6', marker='+', markersize='3', linestyle='-', color='red',                 label='ib_noa_fa+6')
-        plq(plt, hi, 'time_ux', hi, 'ib_amp_fa + 4', marker='_', markersize='3', linestyle='-', color='magenta',                 label='ib_amp_fa+4')
-        plq(plt, hi, 'time_ux', hi, 'vb_fa + 2', marker='1', markersize='3', linestyle='-', color='cyan',                 label='vb_fa+2')
+        plq(plt, hi, 'time_ux', hi, 'bms_off', add=22, marker='h', markersize='3', linestyle='-', color='blue',                 label='bms_off+22')
+        plq(plt, hi, 'time_ux', hi, 'sat', add=20, marker='s', markersize='3', linestyle='-', color='red', label='sat+20')
+        plq(plt, hi, 'time_ux', hi, 'dscn_fa', add=18, marker='o', markersize='3', linestyle='-', color='black',                 label='dscn_fa+18')
+        plq(plt, hi, 'time_ux', hi, 'ib_diff_fa', add=16, marker='^', markersize='3', linestyle='-', color='blue',                 label='ib_diff_fa+16')
+        plq(plt, hi, 'time_ux', hi, 'wv_fa', add=14, marker='s', markersize='3', linestyle='-', color='cyan',                 label='wrap_vb_fa+14')
+        plq(plt, hi, 'time_ux', hi, 'wrap_lo_fa', add=12, marker='p', markersize='3', linestyle='-', color='blue',                 label='wrap_lo_fa+12')
+        plq(plt, hi, 'time_ux', hi, 'wrap_lo_m_fa', add=12, marker='p', markersize='3', linestyle='--', color='red',                 label='wrap_lo_m_fa+12')
+        plq(plt, hi, 'time_ux', hi, 'wrap_lo_n_fa', add=12, marker='p', markersize='3', linestyle='-.', color='orange',                 label='wrap_lo_n_fa+12')
+        plq(plt, hi, 'time_ux', hi, 'wrap_hi_fa', add=10, marker='h', markersize='3', linestyle='-', color='blue',                 label='wrap_hi_fa+10')
+        plq(plt, hi, 'time_ux', hi, 'wrap_hi_m_fa', add=10, marker='h', markersize='3', linestyle='--', color='red',                        label='wrap_hi_m_fa+10')
+        plq(plt, hi, 'time_ux', hi, 'wrap_hi_n_fa', add=10, marker='h', markersize='3', linestyle='-.', color='orange',       label='wrap_hi_n_fa+10')
+        plq(plt, hi, 'time_ux', hi, 'ccd_fa', add=8, marker='H', markersize='3', linestyle='-', color='blue',                 label='cc_diff_fa+8')
+        plq(plt, hi, 'time_ux', hi, 'ib_noa_fa', add=6, marker='+', markersize='3', linestyle='-', color='red',                 label='ib_noa_fa+6')
+        plq(plt, hi, 'time_ux', hi, 'ib_amp_fa', add=4, marker='_', markersize='3', linestyle='-', color='magenta',                 label='ib_amp_fa+4')
+        plq(plt, hi, 'time_ux', hi, 'vb_fa', add=2, marker='1', markersize='3', linestyle='-', color='cyan',                 label='vb_fa+2')
         plq(plt, hi, 'time_ux', hi, 'tb_fa', marker='2', markersize='3', linestyle='-', color='orange',                 label='tb_fa')
         plt.ylim(-1, 24)
         plt.xlabel('days')
@@ -453,7 +458,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.subplot(223)
         plq(plt, hi, 'time_ux', hi, 'ib_f', color='black', label='ib_f')
         plq(plt, hi, 'time_ux', hi, 'ib', color='blue', label='ib', warn=False)
-        plq(plt, hi, 'time_ux', hi, 'soc*10', color='green', label='soc*10')
+        plq(plt, hi, 'time_ux', hi, 'soc', slr=10, color='green', label='soc*10')
         plq(plt, hi, 'time_ux', hi, 'ioc_redesign', marker='o', markersize='3', linestyle='-', color='cyan',                 label='ioc_redesign')
         plt.xlabel('days')
         plt.legend(loc=4)
@@ -476,7 +481,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plq(plt, hi, 'time_ux', hi, 'ib_diff_thr', slr=-1, color='red', linestyle='-.')
     plt.legend(loc=1)
     plt.subplot(332)
-    plq(plt, hi, 'time_ux', hi, 'sat + 2', color='magenta', linestyle='-', label='sat+2')
+    plq(plt, hi, 'time_ux', hi, 'sat', add=2, color='magenta', linestyle='-', label='sat+2')
     plt.legend(loc=1)
     plt.subplot(333)
     plq(plt, hi, 'time_ux', hi, 'vb_f', color='green', linestyle='-', label='vb_f')
@@ -498,21 +503,21 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plt.ylim(-1, 1)
     plt.legend(loc=1)
     plt.subplot(336)
-    plq(plt, hi, 'time_ux', hi, 'wrap_hi_flt + 6', color='blue', linestyle='-', label='wrap_hi_flt+6')
-    plq(plt, hi, 'time_ux', hi, 'wrap_hi_m_flt + 6', color='red', linestyle='--', label='wrap_hi_m_flt+6')
-    plq(plt, hi, 'time_ux', hi, 'wrap_hi_n_flt + 6', color='orange', linestyle='-.', label='wrap_hi_n_flt+6')
-    plq(plt, hi, 'time_ux', hi, 'wrap_lo_flt + 4', color='blue', linestyle='-', label='wrap_lo_flt+4')
-    plq(plt, hi, 'time_ux', hi, 'wrap_lo_m_flt + 4', color='red', linestyle='--', label='wrap_lo_m_flt+4')
-    plq(plt, hi, 'time_ux', hi, 'wrap_lo_n_flt + 4', color='orange', linestyle='-.', label='wrap_lo_n_flt+4')
+    plq(plt, hi, 'time_ux', hi, 'wrap_hi_flt', add=6, color='blue', linestyle='-', label='wrap_hi_flt+6')
+    plq(plt, hi, 'time_ux', hi, 'wrap_hi_m_flt', add=6, color='red', linestyle='--', label='wrap_hi_m_flt+6')
+    plq(plt, hi, 'time_ux', hi, 'wrap_hi_n_flt', add=6, color='orange', linestyle='-.', label='wrap_hi_n_flt+6')
+    plq(plt, hi, 'time_ux', hi, 'wrap_lo_flt', add=4, color='blue', linestyle='-', label='wrap_lo_flt+4')
+    plq(plt, hi, 'time_ux', hi, 'wrap_lo_m_flt', add=4, color='red', linestyle='--', label='wrap_lo_m_flt+4')
+    plq(plt, hi, 'time_ux', hi, 'wrap_lo_n_flt', add=4, color='orange', linestyle='-.', label='wrap_lo_n_flt+4')
     plt.legend(loc=1)
     plt.subplot(339)
-    plq(plt, hi, 'time_ux', hi, 'wrap_hi_fa + 6', color='blue', linestyle='-', label='wrap_hi_fa+6')
-    plq(plt, hi, 'time_ux', hi, 'wrap_hi_m_fa + 6', color='red', linestyle='--', label='wrap_hi_m_fa+6')
-    plq(plt, hi, 'time_ux', hi, 'wrap_hi_n_fa + 6', color='orange', linestyle='-.', label='wrap_hi_n_fa+6')
-    plq(plt, hi, 'time_ux', hi, 'wrap_lo_fa + 4', color='blue', linestyle='-', label='wrap_lo_fa+4')
-    plq(plt, hi, 'time_ux', hi, 'wrap_lo_m_fa + 4', color='red', linestyle='--', label='wrap_lo_m_fa+4')
-    plq(plt, hi, 'time_ux', hi, 'wrap_lo_n_fa + 4', color='orange', linestyle='-.', label='wrap_lo_n_fa+4')
-    plq(plt, hi, 'time_ux', hi, 'wv_fa + 2', color='orange', linestyle='-.', label='wrap_vb_fa+2')
+    plq(plt, hi, 'time_ux', hi, 'wrap_hi_fa', add=6, color='blue', linestyle='-', label='wrap_hi_fa+6')
+    plq(plt, hi, 'time_ux', hi, 'wrap_hi_m_fa', add=6, color='red', linestyle='--', label='wrap_hi_m_fa+6')
+    plq(plt, hi, 'time_ux', hi, 'wrap_hi_n_fa', add=6, color='orange', linestyle='-.', label='wrap_hi_n_fa+6')
+    plq(plt, hi, 'time_ux', hi, 'wrap_lo_fa', add=4, color='blue', linestyle='-', label='wrap_lo_fa+4')
+    plq(plt, hi, 'time_ux', hi, 'wrap_lo_m_fa', add=4, color='red', linestyle='--', label='wrap_lo_m_fa+4')
+    plq(plt, hi, 'time_ux', hi, 'wrap_lo_n_fa', add=4, color='orange', linestyle='-.', label='wrap_lo_n_fa+4')
+    plq(plt, hi, 'time_ux', hi, 'wv_fa', add=2, color='orange', linestyle='-.', label='wrap_vb_fa+2')
     plq(plt, hi, 'time_ux', hi, 'ccd_fa', color='green', linestyle='-', label='cc_diff_fa')
     plq(plt, hi, 'time_ux', hi, 'red_loss', color='blue', linestyle='--', label='red_loss')
     plt.legend(loc=1)
@@ -715,12 +720,12 @@ def calc_fault(d_ra, d_mod, Battery=None):
     tb_fa = np.bool_(falw & 2 ** 0)
     e_wrap = d_mod.voc_soc - d_mod.voc_f
     if Battery.HDWE_IB_HI_LO > 0:
-        ib_amp_hi_ = d_ra.ibmh_f >= Battery.HDWE_IB_HI_LO_AMP_HI / Battery.NP
-        ib_amp_lo_ = d_ra.ibmh_f <= Battery.HDWE_IB_HI_LO_AMP_LO / Battery.NP
-        ib_noa_hi_ = d_ra.ibnh_f >= Battery.HDWE_IB_HI_LO_AMP_HI / Battery.NP
-        ib_noa_lo_ = d_ra.ibnh_f <= Battery.HDWE_IB_HI_LO_AMP_LO / Battery.NP
-        ib_lo_active_ = np.bool_(Battery.HDWE_IB_HI_LO_AMP_LO / Battery.NP < d_ra.ibnh_f)
-        temp = np.bool_(d_ra.ibnh_f < Battery.HDWE_IB_HI_LO_AMP_HI / Battery.NP)
+        ib_amp_hi_ = d_ra.ib_amp_hdwe_f >= Battery.HDWE_IB_HI_LO_AMP_HI / Battery.NP
+        ib_amp_lo_ = d_ra.ib_amp_hdwe_f <= Battery.HDWE_IB_HI_LO_AMP_LO / Battery.NP
+        ib_noa_hi_ = d_ra.ib_noa_hdwe_f >= Battery.HDWE_IB_HI_LO_AMP_HI / Battery.NP
+        ib_noa_lo_ = d_ra.ib_noa_hdwe_f <= Battery.HDWE_IB_HI_LO_AMP_LO / Battery.NP
+        ib_lo_active_ = np.bool_(Battery.HDWE_IB_HI_LO_AMP_LO / Battery.NP < d_ra.ib_noa_hdwe_f)
+        temp = np.bool_(d_ra.ib_noa_hdwe_f < Battery.HDWE_IB_HI_LO_AMP_HI / Battery.NP)
         ib_lo_active_ = ib_lo_active_ & temp
     else:
         ib_amp_hi_ = False
