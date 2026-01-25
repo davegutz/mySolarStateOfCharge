@@ -1161,8 +1161,6 @@ class SavedData:
             self.disable_amp_fault_per = np.array(sel.disable_amp_fault_per[:i_end])
             if hasattr(sel, 'vr'):
                 self.vr = np.array(sel.vr[:i_end])
-            self.vb_functional_flt = np.bool_(np.array(sel.vb_functional_flt[:i_end]))
-            self.vb_functional_fa = np.bool_(np.array(sel.vb_functional_fa[:i_end]))
             self.wrap_m_and_n_fa = np.bool_(np.array(sel.wrap_m_and_n_fa[:i_end]))
             self.ib_is_functional = np.bool_(np.array(sel.ib_is_functional[:i_end]))
             self.voltage_low = np.bool_(np.array(sel.v_low[:i_end]))

@@ -557,6 +557,13 @@ void oled_display(Sensors *Sen, BatteryMonitor *Mon)
         disp_Tbop.c_str(), dispBot.c_str(), cp.num_v_print);
     sendTxBuf(txBuf, true, true);
   }
+  else if ( 1<=sp.debug() && sp.debug()<=4 )  // Normal BLE display as long as 'vv4' so can watch GUI_test in progress
+  {
+    String txBuf;
+    txBuf = String::format("%s   Tb,C  VOC,V  Ib,A \n%s   EKF,Ah  chg,hrs  CC, Ah\nPf; for fails.  prints=%ld\n\n",
+        disp_Tbop.c_str(), dispBot.c_str(), cp.num_v_print);
+    sendTxBuf(txBuf, false, true);
+  }
 
   blink += 1;
   if (blink>3) blink = 0;

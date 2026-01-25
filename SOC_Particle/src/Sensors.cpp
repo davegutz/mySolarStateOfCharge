@@ -351,7 +351,7 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
   ib_noa_hi_(false), ib_noa_invalid_(false), ib_noa_lo_(false), ib_quiet_(0), ib_rate_(0),
   ib_sel_stat_(IB_SEL_STAT_DEF), ib_sel_stat_last_(IB_SEL_STAT_DEF), latched_fail_(false),
   latched_fail_fake_(false), reset_all_faults_(false), sp_preserving_(preserving), tb_sel_stat_(TB_SEL_STAT_DEF),
-  tb_sel_stat_last_(TB_SEL_STAT_DEF), vb_functional_fa_(false), vb_sel_stat_(VB_SEL_STAT_DEF),
+  tb_sel_stat_last_(TB_SEL_STAT_DEF), vb_sel_stat_(VB_SEL_STAT_DEF),
   vb_sel_stat_last_(VB_SEL_STAT_DEF)
 {
   IbNoaRate = new RateLagExp(T, WRAP_ERR_FILT/4., -MAX_ERR_FILT, MAX_ERR_FILT);
@@ -620,11 +620,8 @@ void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
     failAssign( (WrapHi->calculate(wrap_hi_flt(), WRAP_HI_S, WRAP_HI_R, Sen->T, reset_loc) && !vb_fa()), WRAP_HI_FA );  // not latched
     failAssign( (WrapLo->calculate(wrap_lo_flt(), WRAP_LO_S, WRAP_LO_R, Sen->T, reset_loc) && !vb_fa()), WRAP_LO_FA );  // not latched
   #endif
-  vb_functional_flt_ = ( ib_is_functional_ && Mon->bms_off()  && !ib_really_quiet());
-  vb_functional_fa_ = ( (vb_functional_fa_ || vb_functional_flt_) && !reset_all_faults_ );
   failAssign( ( wrap_vb_fa() && !reset_loc ) ||
-              ( !ib_diff_fa() && wrap_m_and_n_fa() && ib_really_quiet() ) ||
-              ( vb_functional_fa_ ),  // A soft Vb drift low confirmed by active Ib
+              ( !ib_diff_fa() && wrap_m_and_n_fa() && ib_really_quiet() ),
                WRAP_VB_FA);    // WRAP_VB_FA latches latches because vb is single sensor
 }
 
@@ -657,10 +654,9 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
 
   txBuf = String::format(" soc%7.3f soc_inf%7.3f voc%7.3f  voc_soc%7.3f\n", Mon->soc(), Mon->soc_inf(), Mon->voc(), Mon->voc_soc()) +
     String::format(" dis_tb_fa %d  dis_vb_fa %d  dis_ib_fa %d\n", ap.disab_tb_fa, ap.disab_vb_fa, ap.disab_ib_fa) +
-    String::format(" bms_off  %d\n\n", Mon->bms_off()) +
-    String::format(" vb_functional flt/fa %d/%d\n", vb_functional_flt_, vb_functional_fa_) +
-    String::format(" wrap_m_and_n_fa %d\n", Sen->Flt->wrap_m_and_n_fa()) +
     String::format(" ib_is_quiet %d ib_really_quiet %d\n", ib_is_quiet_, ib_really_quiet_) +
+    String::format(" bms_off  %d\n\n", Mon->bms_off()) +
+    String::format(" wrap_m_and_n_fa %d\n", Sen->Flt->wrap_m_and_n_fa()) +
     String::format(" Tbh%9.5f Tbm=%9.5f sel%9.5f\n", Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb) +
     String::format(" Vbh%7.3f Vbm %7.3f sel%7.3f\n", Sen->Vb_hdwe, Sen->Vb_model, Sen->Vb) +
     String::format(" V3v3%7.3f\n", Sen->ShuntAmp->Vc()*2.) +
@@ -696,7 +692,7 @@ txBuf = String::format("") +
     String::format("3 ib n    %d  %d 'FI 1'\n", ib_noa_flt(), ib_noa_fa()) +
     String::format("2 ib m    %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa()) +
     String::format("1 vb      %d  %d 'Fv 1  *SV, *Dc/*Dv'.", vb_flt(), vb_fa()) +
-    String::format("  vb_func %d  %d\n", vb_functional_flt(), vb_functional_fa()) +
+    String::format("  bms_off %d\n", Mon->bms_off()) +
     String::format("0 tb      %d  %d 'Ft 1'\n  ", tb_flt(), tb_fa()) +
     String::format("    Fault  Fail'\n");
   sendTxBuf(txBuf, true, true);

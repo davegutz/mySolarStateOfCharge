@@ -369,6 +369,7 @@ public:
   float ib_dyn_m() { return LoopIbAmp->ib_dyn(); };
   float ib_dyn_n() { return LoopIbNoa->ib_dyn(); };
   boolean ib_is_functional() { return ib_is_functional_; };
+  boolean ib_is_quiet() { return ib_is_quiet_; };
   void ib_logic(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
   boolean ib_noa_bare() { return faultRead(IB_NOA_BARE); };
   boolean ib_noa_fa() { return failRead(IB_NOA_FA); };
@@ -418,8 +419,6 @@ public:
   int8_t vb_sel_stat() { return vb_sel_stat_; };
   boolean vb_fa() { return failRead(VB_FA); };
   boolean vb_flt() { return faultRead(VB_FLT); };
-  boolean vb_functional_fa() { return vb_functional_fa_; };
-  boolean vb_functional_flt() { return vb_functional_flt_; };
   int8_t vb_sel_stat_past() { return vb_sel_stat_last_; };
   boolean vc_fa() { return failRead(VC_FA); };
   boolean vc_flt() { return faultRead(VC_FLT); };
@@ -506,8 +505,6 @@ protected:
   uint8_t *sp_preserving_;  // Saving fault buffer.   Stopped recording.  T=preserve
   int8_t tb_sel_stat_;      // Memory of Tb signal selection, 0=none, 1=sensor
   int8_t tb_sel_stat_last_; // past value
-  boolean vb_functional_fa_;// Memory of Vb functional failure, T=latched fail
-  boolean vb_functional_flt_;// Transient Vb functional failure, T=faulted
   int8_t vb_sel_stat_;      // Memory of Vb signal selection, 0=none, 1=sensor
   int8_t vb_sel_stat_last_; // past value
 };
