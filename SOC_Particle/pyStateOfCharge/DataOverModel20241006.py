@@ -47,7 +47,7 @@ if sys.platform == 'darwin':
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
-def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', label=None, marker=None,
+def plq(plt_, sx, st, sy, yt, slr=1, add=0., color='black', linestyle='-', label=None, marker=None,
         markersize=None, markevery=None):
     if (sx is not None and sy is not None and hasattr(sx, st) and hasattr(sy, yt) and
             len(getattr(sy, yt)) > 0 and getattr(sy, yt)[0] is not None):
@@ -461,7 +461,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     # plq(plt, mo, 'time', mo, 'ib_diff', color='orange', linestyle='-', label='ib_diff' + ref_str)
     # plq(plt, mo, 'time', mo, 'ib_diff_f', color='magenta', linestyle='--', label='ib_diff_f' + ref_str)
     # plq(plt, mo, 'time', mo, 'ibd_thr', color='red', linestyle=':', label='ib_diff_thr' + ref_str)
-    # plq(plt, mo, 'time', mo, 'ibd_thr', slr=-1., color='red', linestyle=':')
+    # plq(plt, mo, 'time', mo, 'ibd_thr', slr=-1, color='red', linestyle=':')
     # plq(plt, mo, 'time', mo, 'ib_diff_flt', add=+2, color='green', linestyle='-', label='ib_diff_flt' + ref_str + '+2')
     # plq(plt, mo, 'time', mo, 'ib_diff_fa', add=+2, color='magenta', linestyle='-', label='ib_diff_fa' + ref_str + '+2')
     # plt.legend(loc=1)
@@ -526,7 +526,7 @@ def dom_plot(mo, mv, so, sv, smv, filename, fig_files=None, plot_title=None, fig
     plq(plt, mo, 'time', mo, 'ib_diff_f', color='magenta', linestyle='-', label='ib_diff_f' + ref_str)
     plq(plt, mv, 'time', mv, 'ib_diff_f', color='cyan', linestyle='--', label='ib_diff_f' + test_str)
     plq(plt, mo, 'time', mo, 'ibd_thr', color='red', linestyle=':', label='ib_diff_thr' + ref_str)
-    plq(plt, mo, 'time', mo, 'ibd_thr', slr=-1., color='red', linestyle=':')
+    plq(plt, mo, 'time', mo, 'ibd_thr', slr=-1, color='red', linestyle=':')
     plt.legend(loc=1)
     plt.subplot(334)
     plq(plt, mo, 'time', mo, 'e_wrap', color='magenta', linestyle='--', label='e_wrap' + ref_str)

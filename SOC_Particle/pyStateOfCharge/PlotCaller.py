@@ -45,12 +45,12 @@ import ast
 import textwrap
 
 
-# def plq(plt_, sx, st, sy, yt, slr=1., add=0., color='black', linestyle='-', label=None, marker=None,
+# def plq(plt_, sx, st, sy, yt, slr=1, add=0., color='black', linestyle='-', label=None, marker=None,
 #         markersize=None, markevery=None, stairs=False, warn=True):
 
 
 
-def extract_arguments_text(function_call_string: str) -> list[str]:
+def extract(function_call_string: str) -> list[str]:
     """
     Reads a line of text that is a function call and produces a list
     containing the original text of its arguments.
@@ -68,6 +68,7 @@ def extract_arguments_text(function_call_string: str) -> list[str]:
         source_line = function_call_string.strip()
         tree = ast.parse(source_line, mode='eval')
     except SyntaxError as e:
+        print(f"ValueError source_line:  {source_line}")
         raise ValueError(f"Invalid function call syntax: {e}")
 
     # The body of the expression should be an ast.Call node
@@ -111,7 +112,7 @@ class Arg:
 class Line:
     def __init__(self, in_str):
         self.header = in_str.split('(')[0]
-        in_list = extract_arguments_text(in_str)
+        in_list = extract(in_str)
         self.plt_dir = 'plt'
         self.x = None
         self.x_txt = None
@@ -179,51 +180,36 @@ class Line:
         ostr += self.stairs_arg.__str__()
         ostr += self.warn_arg.__str__()
         ostr += ")\n"
+        if ostr.count("color=") > 1:
+            pass
         return ostr
-
-
-
-call1 = "plq(plt, mr, 'time_t', mr, 'Tb', add=1, color='green', linestyle='-', label='Tb'+run_str, stairs=True)"
-call2 = "plq(plt, mv, 'time_t', mv, 'Tb', add=-1.5, color='orange', linestyle='--', label='Tb'+ver_str, stairs=True, warn=False)"
-call3 = "plq(plt, mv, 'time', mv, 'Tb', color='red', linestyle='-.', label='Tb'+ver_str)"
-
-print(f"Input: {call1}")
-print(f"Arguments: {extract_arguments_text(call1)}")
-print("-" * 20)
-
-print(f"Input: {call2}")
-print(f"Arguments: {extract_arguments_text(call2)}")
-print("-" * 20)
-
-print(f"Input: {call3}")
-print(f"Arguments: {extract_arguments_text(call3)}")
-print("-" * 20)
-
-print(call1)
-trans = Line(call1)
-print(trans)
-
-print(call2)
-trans = Line(call2)
-print(trans)
-
-print(call3)
-trans = Line(call3)
-print(trans)
 
 
 def do_one(path_to_infile, path_to_outfile):
     num_plq_in = 0
     os.remove(path_to_outfile)
+    print(f"doing {path_to_infile} --> {path_to_outfile}")
     with (open(path_to_infile, "r", encoding='cp437') as input_file):  # reads all characters even bad ones
         with open(path_to_outfile, "a") as output:
-            for line in input_file:
-                if line.__contains__('plq(') :
+            lines = input_file.readlines()
+            i = 0
+            while i < len(lines):
+                line = lines[i]
+                if "plq(" in line and not "# " in line and not "def" in line:
                     num_plq_in += 1
+                    line_ends_comma = (line.count(",\n") > 0) or (line.count(", \n") > 0)
+                    # print(f" comma? {line_ends_comma}  {line}")
+                    if line_ends_comma:
+                        next_line = lines[i+1]
+                        combined_line = line + " " + next_line.strip() + "\n"
+                        line = combined_line
+                        # print(f"Error fixed: {combined_line}")
+                        i += 1
                     trans = Line(line)
                     output.write(trans.__str__())
                 else:
                     output.write(line)
+                i += 1
 
 def main():
     do_one('./CompareFault - Copy.py', './CompareFault.py')
