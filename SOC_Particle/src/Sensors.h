@@ -248,6 +248,8 @@ public:
   boolean reset() { return reset_; };
   float e_wrap_trim() { return e_wrap_trim_; };
   float e_wrap_trimmed() { return e_wrap_trimmed_; };
+  float ewhi_thr() { return ewhi_thr_; };
+  float ewlo_thr() { return ewlo_thr_; };
   uint8_t hi_fail() { return hi_fail_; };
   uint8_t hi_fault() { return hi_fault_; };
   float ib_dyn() { return ib_dyn_; };
@@ -279,8 +281,10 @@ protected:
   float e_wrap_rate_;       // Wrap error rate, V/s
   float e_wrap_trim_;       // Trimmer, V
   float e_wrap_trimmed_;    // Trimmer applied to e_wrap_, V
-  float ewhi_thr_;          // Threshold e_wrap failed high, V
-  float ewlo_thr_;          // Threshold e_wrap failed low, V
+  float ewhi_thr_;   // Threshold e_wrap failed high kicked, V
+  float ewhi_thr_base_;     // Threshold e_wrap failed high base, V
+  float ewlo_thr_;   // Threshold e_wrap failed low kicked, V
+  float ewlo_thr_base_;     // Threshold e_wrap failed low base, V
   uint8_t hi_fail_;         // Fail bit
   uint8_t hi_fault_;        // Fault bit
   float ib_;                // Sensed unit shunt current, A
@@ -322,10 +326,12 @@ public:
   boolean dscn_flt() { return faultRead(IB_DSCN_FLT); };
   boolean disable_amp_fault() { return disable_amp_fault_; };
   boolean disable_amp_fault_per() { return disable_amp_fault_per_; };
-  float ewhi_thr_;      // Threshold e_wrap failed high, V
-  float ewhi_thr() { return ewhi_thr_; };
-  float ewlo_thr_;      // Threshold e_wrap failed low, V
-  float ewlo_thr() { return ewlo_thr_; };
+  // float ewhi_thr_base_;        // Threshold e_wrap failed high, V
+  // float ewhi_thr_;      // Threshold e_wrap failed high kicked, V
+  // float ewhi_thr() { return ewhi_thr_; };
+  // float ewhi_thr_base_;        // Threshold e_wrap failed high, V
+  // float ewlo_thr_;      // Threshold e_wrap failed low kickesd, V
+  // float ewlo_thr() { return ewlo_thr_; };
   float dv_dyn_m() { return LoopIbAmp->dv_dyn(); };
   float dv_dyn_n() { return LoopIbNoa->dv_dyn(); };
   float e_wrap() { return e_wrap_; };
@@ -507,6 +513,10 @@ protected:
   int8_t tb_sel_stat_last_; // past value
   int8_t vb_sel_stat_;      // Memory of Vb signal selection, 0=none, 1=sensor
   int8_t vb_sel_stat_last_; // past value
+  float wrap_hi_amp_;       // Wrap high amplified, V
+  float wrap_hi_noa_;       // Wrap high non-amplified, V
+  float wrap_lo_amp_;       // Wrap low amplified, V
+  float wrap_lo_noa_;       // Wrap low non-amplified, V
 };
 
 

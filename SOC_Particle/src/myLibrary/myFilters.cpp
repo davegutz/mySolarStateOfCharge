@@ -735,6 +735,33 @@ double DiscreteIntegrator::calculate(double in, double T, boolean RESET, double 
   }
   return (lstate_);
 }
+double DiscreteIntegrator::calculate(double in, double T, boolean RESET, double init_value, double max, double min)
+{
+  T_ = T;
+  max_ = max;;
+  min_ = min;
+  if (RESET)
+  {
+    lstate_ = init_value;  rstate_ = 0.0;
+  }
+  else
+  {
+    lstate_ += (a_*in + b_*rstate_)*T_/c_;
+  }
+  if ( lstate_<min_ )
+  {
+    lstate_ = min_;  lim_ = true;  rstate_ = 0.0;
+  }
+  else if ( lstate_>max_ )
+  {
+    lstate_ = max_;  lim_ = true;  rstate_ = 0.0;
+  }
+  else
+  {
+    lim_ = false;  rstate_ = in;
+  }
+  return (lstate_);
+}
 
 // AB-2 Integrator future-predictor
 // constructors

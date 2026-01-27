@@ -1,6 +1,6 @@
 #include "version.h"
 
-// Features config
+// Features config                  94:94:4A:04:C0:41
 #define HDWE_UNIT               "soc2p2_hi_lo" //https://console.particle.io/soc-particle-28171/devices/0a10aced202194944a04c040
 #define SOFT_SBAUD              460800      // Default Serial baud when able (don't think this does anything)
 #define HDWE_IB_HI_LO

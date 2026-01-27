@@ -112,7 +112,7 @@ def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
 #7
 def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                           ibmh                        ibmm                  ib_amp_lo    ib_amp_hi   dis_amp_flt   per    dt                    ib_amp                    ib_dyn_T_m       ib_dyn_rstate_m                ib_dyn_lstate_m                      ib_dyn_m                 vb                    dv_dyn_m             vb_m                      voc_m                    voc_soc                voc_soc_m                   e_wrap_m                  e_wrap_m_trim         e_wrap_trimmed_m         e_wrap_m_T           e_wrap_m_rate            e_wrap_m_reset       e_wrap_m_state         e_wrap_m_filt       disable_amp_fault      ib_amp_lo     e_wrap_m_reset"
+    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                           ibmh                        ibmm                  ib_amp_lo    ib_amp_hi   dis_amp_flt   per    dt                    ib_amp                    ib_dyn_T_m          ib_dyn_rstate_m                ib_dyn_lstate_m                      ib_dyn_m                vb                     dv_dyn_m             vb_m                      voc_m                     voc_soc               voc_soc_m                   e_wrap_m                  e_wrap_m_trim        e_wrap_trimmed_m         e_wrap_m_T           e_wrap_m_rate            e_wrap_m_reset       e_wrap_m_state         e_wrap_m_filt       e_wrap_m_flt   e_wrap_m_fa    disable_amp_fault      ib_amp_lo     e_wrap_m_reset"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -135,8 +135,8 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
           "{:9.4f}".format(SN.mon_run.dt[G.i]), "{:7.4f}".format(mon.dt),
           "{:13.7f}".format(SN.mon_run.vb[G.i]), "{:11.7f}".format(mon.vb),
-          "{:14.5f}".format(SN.mon_run.ibmh[G.i]), "{:12.5f}".format(mon.ib_amp_hdwe),
-          "{:14.5f}".format(SN.mon_run.ibmm[G.i]), "{:12.5f}".format(mon.ib_amp_model),
+          "{:14.5f}".format(SN.mon_run.ib_amp_hdwe[G.i]), "{:12.5f}".format(mon.ib_amp_hdwe),
+          "{:14.5f}".format(SN.mon_run.ib_amp_model[G.i]), "{:12.5f}".format(mon.ib_amp_model),
           "{:7d}".format(bool(SN.mon_run.ib_amp_lo[G.i])), "{:2d}".format(bool(mon.ib_amp_lo)),
           "{:7d}".format(bool(SN.mon_run.ib_amp_hi[G.i])), "{:2d}".format(bool(mon.ib_amp_hi)),
           "{:7d}".format(bool(SN.mon_run.disable_amp_fault[G.i])), "{:2d}".format(bool(mon.disable_amp_fault)),
@@ -161,6 +161,8 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:12d}".format(bool(SN.mon_run.ib_wrp_reset_m[G.i])), "{:9d}".format(bool(mon.LoopIbAmp.WrapErrFilt.reset)),
           "{:12.6f}".format(SN.mon_run.ib_wrp_state_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.state),
           "{:11.5f}".format(SN.mon_run.e_wrap_m_filt[G.i]), "{:8.5f}".format(mon.e_wrap_m_filt),
+          "{:8d}".format(SN.mon_run.wrap_hi_m_flt[G.i]), "{:4d}".format(mon.wrap_hi_m_flt),
+          "{:8d}".format(SN.mon_run.wrap_hi_m_fa[G.i]), "{:4d}".format(mon.wrap_hi_m_fa),
           "{:5.0f}".format(SN.mon_run.disable_amp_fault[G.i]),  "{:2.0f}".format(mon.disable_amp_fault),  "{:2.0f}".format(mon.ib_amp_lo),
           "{:26.0f}".format(SN.mon_run.e_wrap_m_reset[G.i]), "{:2d}".format(mon.e_wrap_m_reset),
           # "{:11.5f}".format(SN.mon_run.e_wrap_m_filt[G.i]), "{:8.5f}".format(mon.e_wrap_m_filt), "{:8.5f}".format(SN.e_wrap_m_filt_init),

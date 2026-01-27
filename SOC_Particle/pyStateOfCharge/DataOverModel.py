@@ -416,8 +416,8 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     # plq(plt, mv, 'time', mv, 'e_wrap_m_trim', color='magenta', linestyle='-', label='e_wrap_m_trim' + ver_str)
     # plq(plt, mv, 'time', mv, 'e_wrap_m_filt', color='blue', linestyle='--', label='e_wrap_m_filt' + ver_str)
     # # plq(plt, mr, 'time', mr, 'e_wrap_n_filt', color='green', linestyle='-', label='e_wrap_n_filt' + run_str)
-    # plq(plt, mr, 'time', mr, 'ewh_thr', color='red', linestyle='-.', label='ewh_thr' + run_str)
-    # plq(plt, mr, 'time', mr, 'ewl_thr', color='red', linestyle='-.', label='ewl_thr' + run_str)
+    # plq(plt, mr, 'time', mr, 'ewhi_thr', color='red', linestyle='-.', label='ewhi_thr' + run_str)
+    # plq(plt, mr, 'time', mr, 'ewlo_thr', color='red', linestyle='-.', label='ewlo_thr' + run_str)
     # plq(plt, mv, 'time', mv, 'ewmhi_thr', color='orange', linestyle=':', label='ewmhi_thr' + ver_str)
     # plq(plt, mv, 'time', mv, 'ewmlo_thr', color='orange', linestyle=':', label='ewmlo_thr' + ver_str)
     # plt.ylim(-0.2, 0.2)
@@ -430,8 +430,8 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     # plq(plt, mv, 'time', mv, 'e_wrap_n_trim', color='magenta', linestyle='-', label='e_wrap_n_trim' + ver_str)
     # plq(plt, mv, 'time', mv, 'e_wrap_n_filt', color='green', linestyle='--', label='e_wrap_n_filt' + ver_str)
     # # plq(plt, mr, 'time', mr, 'e_wrap_m_filt', color='blue', linestyle='-', label='e_wrap_m_filt' + run_str)
-    # plq(plt, mr, 'time', mr, 'ewh_thr', color='red', linestyle=':', label='ewh_thr' + run_str)
-    # plq(plt, mr, 'time', mr, 'ewl_thr', color='red', linestyle=':', label='ewl_thr' + run_str)
+    # plq(plt, mr, 'time', mr, 'ewhi_thr', color='red', linestyle=':', label='ewhi_thr' + run_str)
+    # plq(plt, mr, 'time', mr, 'ewlo_thr', color='red', linestyle=':', label='ewlo_thr' + run_str)
     # plq(plt, mv, 'time', mv, 'ewnhi_thr', color='orange', linestyle=':', label='ewnhi_thr' + ver_str)
     # plq(plt, mv, 'time', mv, 'ewnlo_thr', color='orange', linestyle=':', label='ewnlo_thr' + ver_str)
     # plt.ylim(-1, 1)
@@ -479,8 +479,8 @@ def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_lis
     plq(plt, mv, 'time', mv, 'e_wrap_n_filt', color='green', linestyle='-.')
     plq(plt, mr, 'time', mr, 'cc_dif', color='green', linestyle='-')
     plq(plt, mv, 'time', mv, 'cc_dif', color='red', linestyle='--', warn=False)
-    plq(plt, mr, 'time', mr, 'ewh_thr', color='red', linestyle='-.')
-    plq(plt, mr, 'time', mr, 'ewl_thr', color='red', linestyle='-.')
+    plq(plt, mr, 'time', mr, 'ewhi_thr', color='red', linestyle='-.')
+    plq(plt, mr, 'time', mr, 'ewlo_thr', color='red', linestyle='-.')
     plt.ylim(-1, 1)
     plt.legend(loc=1)
     plt.subplot(332)
@@ -993,8 +993,8 @@ class SavedData:
             self.tb_flt = None
             self.tb_fa = None
             self.ccd_thr = None
-            self.ewh_thr = None
-            self.ewl_thr = None
+            self.ewhi_thr = None
+            self.ewlo_thr = None
             self.ewhm_thr = None
             self.ewlm_thr = None
             self.ibd_thr = None
@@ -1121,6 +1121,27 @@ class SavedData:
             self.ib_rate = np.array(sel.ib_rate[:i_end])
             self.ib_quiet = np.array(sel.ib_quiet[:i_end])
             self.ib_really_quiet = np.array(sel.ib_really_quiet[:i_end])
+
+            """    String::format("1 wnl     %d  %d 'Fo ^'\n", wrap_lo_n_flt(), wrap_lo_n_fa()) +
+                String::format("0 wnh     %d  %d 'Fi ^'\n", wrap_hi_n_flt(), wrap_hi_n_fa()) +
+                String::format("F wml     %d  %d 'Fo ^'\n", wrap_lo_m_flt(), wrap_lo_m_fa()) +
+                String::format("E wmh     %d  %d 'Fi ^'\n", wrap_hi_m_flt(), wrap_hi_m_fa()) +
+                String::format("D vc      %d  %d 'FI 1'\n", vc_flt(), vc_fa()) +
+                String::format("C bare n  %d  x \n", ib_noa_bare()) +
+                String::format("B bare m  %d  x \n", ib_amp_bare()) +
+                String::format("A ib_dsc  %d  %d 'Fq v'\n", ib_dscn_flt(), ib_dscn_fa()) +
+                String::format("9 ibd_lo  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_lo_flt(), ib_diff_lo_fa()) +
+                String::format("8 ibd_hi  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_hi_flt(), ib_diff_hi_fa()) +
+                String::format("7 red wv  %d  %d   'Fd, Fi/Fo ^'\n",  red_loss(), wrap_vb_fa()) +
+                String::format("6 wl      %d  %d 'Fo ^'\n", wrap_lo_flt(), wrap_lo_fa()) +
+                String::format("5 wh      %d  %d 'Fi ^'\n", wrap_hi_flt(), wrap_hi_fa()) +
+                String::format("4 vc | cc_dif %d  %d 'x Fc ^'\n", vc_fa(), cc_diff_fa()) +
+                String::format("3 ib n    %d  %d 'FI 1'\n", ib_noa_flt(), ib_noa_fa()) +
+                String::format("2 ib m    %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa()) +
+                String::format("1 vb      %d  %d 'Fv 1  *SV, *Dc/*Dv'.", vb_flt(), vb_fa()) +  String::format("  bms_off %d\n", Mon->bms_off()) +
+                String::format("0 tb      %d  %d 'Ft 1'\n  ", tb_flt(), tb_fa()) +
+                String::format("    Fault  Fail'\n");
+            """
             self.dscn_flt = np.bool_(np.array(fltw) & 2**10)
             self.dscn_fa = np.bool_(np.array(falw) & 2**10)
             self.vb_flt = np.bool_(np.array(fltw) & 2**1)
@@ -1129,10 +1150,10 @@ class SavedData:
             self.tb_flt = np.bool_(np.array(fltw) & 2**0)
             self.tb_fa = np.bool_(np.array(falw) & 2**0)
             self.ccd_thr = np.array(sel.ccd_thr[:i_end])
-            self.ewh_thr = np.array(sel.ewh_thr[:i_end])
-            self.ewl_thr = np.array(sel.ewl_thr[:i_end])
-            self.ewhm_thr = self.ewh_thr / 10.  # WRAP_HI_NOA / WRAP_HI_AMP = SHUNT_AMP_R2 / SHUNT_NOA_R2
-            self.ewlm_thr = self.ewl_thr / 10.  # WRAP_LO_NOA / WRAP_LO_AMP = SHUNT_AMP_R2 / SHUNT_NOA_R2
+            self.ewhi_thr = np.array(sel.ewh_thr[:i_end])
+            self.ewlo_thr = np.array(sel.ewl_thr[:i_end])
+            self.ewhm_thr = self.ewhi_thr / 10.  # WRAP_HI_NOA / WRAP_HI_AMP = SHUNT_AMP_R2 / SHUNT_NOA_R2
+            self.ewlm_thr = self.ewlo_thr / 10.  # WRAP_LO_NOA / WRAP_LO_AMP = SHUNT_AMP_R2 / SHUNT_NOA_R2
             self.ibd_thr = np.array(sel.ibd_thr[:i_end])
             self.ibq_thr = np.array(sel.ibq_thr[:i_end])
             self.preserving = np.array(sel.preserving[:i_end])

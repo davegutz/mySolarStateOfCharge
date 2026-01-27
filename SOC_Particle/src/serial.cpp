@@ -350,7 +350,7 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
 
       sprintf(pr.buff, "%ld, %ld, %7.3f, %7.3f, %d, %d, %9.6f,%7.3f,%7.3f,%7.3f,%7.3f,%d,%d,%7.3f,%d,",
           Sen->Flt->fltw(), Sen->Flt->falw(), Sen->Flt->ib_rate(), Sen->Flt->ib_quiet(),  Sen->Flt->ib_really_quiet(), Sen->Flt->tb_sel_status(),
-          Sen->Flt->cc_diff_thr(), Sen->Flt->ewhi_thr(), Sen->Flt->ewlo_thr(), Sen->Flt->ib_diff_thr(), Sen->Flt->ib_quiet_thr(), Sen->Flt->preserving(), ap.fake_faults,
+          Sen->Flt->cc_diff_thr(), Sen->Flt->LoopIbAmp->ewhi_thr(), Sen->Flt->LoopIbAmp->ewlo_thr(), Sen->Flt->ib_diff_thr(), Sen->Flt->ib_quiet_thr(), Sen->Flt->preserving(), ap.fake_faults,
           Mon->y_ekf_filt(), Sen->Flt->ib_decision());
       Serial.printf("%s", pr.buff);
 

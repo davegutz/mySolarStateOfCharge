@@ -312,6 +312,13 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #if !defined(KF_R_STD)
     #define KF_R_STD        0.1000 // Shunt KF state uncertainty  tune 2025128 like ishunt_cal_filt F_W_I=0.5, F_Z_I=0.8
 #endif
+#if !defined(EWLO_TRM_SLR)
+    #define EWLO_TRM_SLR    0.75 // Amp looparound low error trim scalar (0.75)
+#endif
+#if !defined(EWHI_TRM_SLR)
+    #define EWHI_TRM_SLR    0.75 // Amp looparound high error trim scalar (0.75)
+#endif
+
 // Conversion gains
 // Voltage measurement gains
 #if !defined(HDWE_BARE)

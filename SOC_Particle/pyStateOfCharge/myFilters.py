@@ -217,6 +217,28 @@ class DiscreteIntegrator:
             self.rate_state = in_
         return self.state
 
+    def calculate_lim(self, in_, dt, reset, init_value, max_, min_):
+        self.dt = dt
+        self.max = max_
+        self.min = min_
+        if reset:
+            self.state = init_value
+            self.rate_state = 0.
+        else:
+            self.state += (self.a*in_ + self.b*self.rate_state) * self.dt / self.c
+        if self.state < self.min:
+            self.state = self.min
+            self.lim = True
+            self.rate_state = 0.
+        elif self.state > self.max:
+            self.state = self.max
+            self.lim = True
+            self.rate_state = 0.
+        else:
+            self.lim = False
+            self.rate_state = in_
+        return self.state
+
 
 class AB2Integrator(DiscreteIntegrator):
     """AB2 Integrator"""

@@ -137,6 +137,8 @@ class Battery(Coulombs):
     KF_Q_STD = 0.0003  # Shunt KF process uncertainty
     KF_R_STD = 0.1000  # Shunt KF state uncertainty
     dc_dc_on = 0.  # Truck charging
+    EWLO_TRM_SLR = 0.75
+    EWHI_TRM_SLR = 0.75
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
@@ -414,6 +416,11 @@ class BatteryMonitor(Battery, EKF1x1):
         self.reset_kf = False
         self.iscn_f = 0.
         self.frz = False
+        self.wrap_hi_m_flt = False
+        self.wrap_hi_m_fa = False
+        self.wrap_lo_m_flt = False
+        self.wrap_lo_m_fa = False
+
         if SN is not None:
             self.Tb_hdwe = SN.Tb_hdwe_init
             self.Tb_hdwe_filt =SN.Tb_hdwe_filt_init
@@ -952,6 +959,10 @@ class BatteryMonitor(Battery, EKF1x1):
             self.e_wrap_m_filt = self.LoopIbAmp.e_wrap_filt
             self.e_wrap_m_rate = self.LoopIbAmp.e_wrap_rate
             self.e_wrap_m_trim = self.LoopIbAmp.e_wrap_trim
+            self.wrap_hi_m_flt = self.LoopIbAmp.hi_fault
+            self.wrap_hi_m_fa = self.LoopIbAmp.hi_fail
+            self.wrap_lo_m_flt = self.LoopIbAmp.lo_fault
+            self.wrap_lo_m_fa = self.LoopIbAmp.lo_fail
 
         # Scale for final selection
         self.e_wrap = self.sel_brk_hdwe.scale_select(ib_noa_hdwe, self.e_wrap_m, self.e_wrap_n)
@@ -1269,7 +1280,9 @@ class Looparound:
         self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.NOM_UNIT_CAP*self.Mon.scale_cap,
                                      min_=-Battery.NOM_UNIT_CAP*self.Mon.scale_cap, tau=self.chem.tau_ct)
         self.ewhi_thr = 0.
+        self.ewhi_thr_base = 0.
         self.ewlo_thr = 0.
+        self.ewlo_thr_base = 0.
         self.ib = 0.
         self.ib_past = 0.
         self.ib_past2 = 0.
@@ -1284,7 +1297,7 @@ class Looparound:
 
     # Update the loop
     # needs to be called twice with reset=True to initialize properly
-    def calculate(self, reset=True, rp=None, ib=0., loop_gain=0., dt=None, ewsat_slr=1, ewmin_slr=1,
+    def calculate(self, reset=True, rp=None, ib=0., loop_gain=0., dt=None, ewsat_slr=1., ewmin_slr=1.,
                   ib_init=0., ib_dyn_init=0., e_wrap_filt_init=0., e_wrap_trim_init=0.):
         self.reset = reset
         self.dt = dt
@@ -1309,9 +1322,10 @@ class Looparound:
 
         # Trimmer using past values
         trim_rate_lim = max(min(self.e_wrap_filt * loop_gain, Battery.MAX_TRIM_RATE), -Battery.MAX_TRIM_RATE)
-        # e_wrap_trim_ = -Trim_->calculate(trim_rate_lim, min(Sen_->T, F_MAX_T_WRAP), reset_, trim_init);
-        self.e_wrap_trim = -self.Trim.calculate(in_=trim_rate_lim, dt=min(dt_into_wrap, Battery.F_MAX_T_WRAP), reset=self.reset,
-                                                init_value = -e_wrap_trim_init)
+        self.e_wrap_trim = -self.Trim.calculate_lim(in_=trim_rate_lim, dt=min(dt_into_wrap, Battery.F_MAX_T_WRAP),
+                                                reset=self.reset, init_value = -e_wrap_trim_init,
+                                                max_=-self.ewlo_thr_base * Battery.EWLO_TRM_SLR,
+                                                min_=-self.ewhi_thr_base * Battery.EWHI_TRM_SLR)
         self.e_wrap_trimmed = self.e_wrap + self.e_wrap_trim
         self.e_wrap_filt = self.WrapErrFilt.calculate_seeded(in_=self.e_wrap_trimmed, _out_init=e_wrap_filt_init,
                                                              reset=self.reset,
@@ -1320,8 +1334,10 @@ class Looparound:
         self.e_wrap_rate = self.WrapErrFilt.rate
 
         # Thresholds. Scalars are calculated by Flt->wrap_scalars()
-        self.ewhi_thr = self.Mon.chemistry.r_ss * self.wrap_hi_amp * ewsat_slr * ewmin_slr
-        self.ewlo_thr = self.Mon.chemistry.r_ss * self.wrap_lo_amp * ewsat_slr * ewmin_slr
+        self.ewhi_thr_base = self.Mon.chemistry.r_ss * self.wrap_hi_amp
+        self.ewhi_thr = self.ewhi_thr_base * ewsat_slr * ewmin_slr
+        self.ewlo_thr_base = self.Mon.chemistry.r_ss * self.wrap_lo_amp
+        self.ewlo_thr = self.ewlo_thr_base * ewsat_slr * ewmin_slr
 
         # sat logic screens out voc jump when ib>0 when saturated
         # wrap_hi and wrap_lo don't latch because need them available to check next ib sensor selection for dual ib sensor

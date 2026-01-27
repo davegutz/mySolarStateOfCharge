@@ -3,7 +3,7 @@
 #include "version.h"
 
 // Features config
-#define HDWE_UNIT               "pro2p2_hi_lo"
+#define HDWE_UNIT               "pro2p2_hi_lo"  // 
 #define SOFT_SBAUD              460800      // Default Serial baud when able (don't think this does anything)
 #define HDWE_IB_HI_LO
 #define HDWE_2WIRE

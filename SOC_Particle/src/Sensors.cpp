@@ -290,7 +290,8 @@ void Looparound::calculate(const boolean reset, const float ib, Sensors *Sen)
   {
     trim_init = -(Mon_->vb() - Mon_->voc_soc() - dv_dyn_);
     trim_rate_lim = max(min(e_wrap_filt_*wrap_trim_gain_, MAX_TRIM_RATE), -MAX_TRIM_RATE);
-    e_wrap_trim_ = -Trim_->calculate(trim_rate_lim, min(Sen_->T, F_MAX_T_WRAP), reset_, trim_init);
+    e_wrap_trim_ = -Trim_->calculate(trim_rate_lim, min(Sen_->T, F_MAX_T_WRAP), reset_, trim_init,
+                                      -ewlo_thr_base_*EWLO_TRM_SLR, -ewhi_thr_base_*EWHI_TRM_SLR);
   }
   else
   {
@@ -305,8 +306,10 @@ void Looparound::calculate(const boolean reset, const float ib, Sensors *Sen)
   e_wrap_rate_ = WrapErrFilt_->rate();  // TODO:  wrap rates not needed?
 
   // Thresholds. Scalars are calculated by Flt->wrap_scalars()
-  ewhi_thr_ = Mon_->r_ss() * wrap_hi_amp_ * ap.ewhi_slr * Sen_->Flt->ewsat_slr() * Sen_->Flt->ewmin_slr();
-  ewlo_thr_ = Mon_->r_ss() * wrap_lo_amp_ * ap.ewlo_slr * Sen_->Flt->ewsat_slr() * Sen_->Flt->ewmin_slr();
+  ewhi_thr_base_ = Mon_->r_ss() * wrap_hi_amp_ * ap.ewhi_slr;
+  ewhi_thr_ = ewhi_thr_base_ * Sen_->Flt->ewsat_slr() * Sen_->Flt->ewmin_slr();
+  ewlo_thr_base_ = Mon_->r_ss() * wrap_lo_amp_ * ap.ewlo_slr;
+  ewlo_thr_ = ewlo_thr_base_ * Sen_->Flt->ewsat_slr() * Sen_->Flt->ewmin_slr();
 
   // sat logic screens out voc jumps when ib>0 when saturated
   // wrap_hi and wrap_lo don't latch because need them available to check next ib sensor selection for dual ib sensor
@@ -352,7 +355,8 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
   ib_sel_stat_(IB_SEL_STAT_DEF), ib_sel_stat_last_(IB_SEL_STAT_DEF), latched_fail_(false),
   latched_fail_fake_(false), reset_all_faults_(false), sp_preserving_(preserving), tb_sel_stat_(TB_SEL_STAT_DEF),
   tb_sel_stat_last_(TB_SEL_STAT_DEF), vb_sel_stat_(VB_SEL_STAT_DEF),
-  vb_sel_stat_last_(VB_SEL_STAT_DEF)
+  vb_sel_stat_last_(VB_SEL_STAT_DEF), wrap_hi_amp_(WRAP_HI_AMP), wrap_hi_noa_(WRAP_HI_NOA),
+   wrap_lo_amp_(WRAP_LO_AMP), wrap_lo_noa_(WRAP_LO_NOA)
 {
   IbNoaRate = new RateLagExp(T, WRAP_ERR_FILT/4., -MAX_ERR_FILT, MAX_ERR_FILT);
   IbErrFilt = new LagTustin(T, TAU_ERR_FILT, -IBATT_DISAGREE_THRESH*1.5, IBATT_DISAGREE_THRESH*1.5);  // actual update time provided run time
@@ -643,7 +647,8 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
     String::format(" cc_diff%9.6f  thr%9.6f Fc^\n", cc_diff_, cc_diff_thr_) +
     String::format(" ib_lo_active %d\n", ib_lo_active_) +
     String::format(" ib_diff%7.3f thr%7.3f Fd^\n", ib_diff_f_, ib_diff_thr_) +
-    String::format(" e_wrap_filt%7.3f thr%7.3f Fo^%7.3f Fi^\n", e_wrap_filt_, ewlo_thr_, ewhi_thr_) +
+    // String::format(" e_wrap_filt%7.3f thr%7.3f Fo^%7.3f Fi^\n", e_wrap_filt_, ewlo_thr_, ewhi_thr_) +
+    String::format(" e_wrap_filt%7.3f\n", e_wrap_filt_) +
     String::format(" ib_quiet%7.3f thr%7.3f Fq v\n", ib_quiet_, ib_quiet_thr_) +
     String::format(" sel_brk_hdwe:     ");
   sendTxBuf(txBuf, true, true);
@@ -1189,8 +1194,10 @@ void Fault::wrap_scalars(BatteryMonitor *Mon)
     ewsat_slr_ = 1.;
     ewmin_slr_ = 1.;
   }
-  ewhi_thr_ = Mon->r_ss() * WRAP_HI_A * ap.ewhi_slr * ewsat_slr_ * ewmin_slr_;
-  ewlo_thr_ = Mon->r_ss() * WRAP_LO_A * ap.ewlo_slr * ewsat_slr_ * ewmin_slr_;
+  // ewhi_thr_base_ = Mon->r_ss() * WRAP_HI_A * ap.ewhi_slr;
+  // ewhi_thr_ = ewhi_thr_base_ * ewsat_slr_ * ewmin_slr_;
+  // ewlo_thr_base_ = Mon->r_ss() * WRAP_LO_A * ap.ewlo_slr;
+  // ewlo_thr_ = ewlo_thr_base_ * ewsat_slr_ * ewmin_slr_;
 }
 
 
