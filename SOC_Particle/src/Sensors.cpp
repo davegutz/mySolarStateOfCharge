@@ -325,7 +325,7 @@ void Looparound::calculate(const boolean reset, const float ib, Sensors *Sen)
   ib_past_ = ib_;
 }
 
-String Looparound::pretty_print()
+String Looparound::pretty_print(Sensors *Sen)
 {
   String txBuf;
   txBuf = String::format(" reset %d\n", reset_) + 
@@ -335,6 +335,14 @@ String Looparound::pretty_print()
     String::format(" voc%7.3f V\n", voc_) +
     String::format(" e_wrap%7.3f V\n", e_wrap_) +
     String::format(" e_wrap_f%7.3f V\n", e_wrap_filt_) +
+    String::format(" ewhi_slr%7.3f V\n",  ap.ewhi_slr) +
+    String::format(" ewlo_slr%7.3f V\n",  ap.ewlo_slr) +
+    String::format(" ewmin_slr%7.3f V\n",  Sen_->Flt->ewmin_slr()) +
+    String::format(" ewsat_slr%7.3f V\n", Sen_->Flt->ewsat_slr()) +
+    String::format(" ewhi_thr_base%7.3f V\n", ewhi_thr_base_) +
+    String::format(" ewlo_thr_base%7.3f V\n", ewlo_thr_base_) +
+    String::format(" ewhi_thr (kicked)%7.3f V\n", ewhi_thr_) +
+    String::format(" ewlo_thr (kicked)%7.3f V\n", ewlo_thr_) +
     String::format(" e_wrap_trim%7.3f V\n", e_wrap_trim_) +
     String::format(" e_wrap_trimmed%7.3f V\n", e_wrap_trimmed_) +
     String::format(" wrap_trim_gain%7.3f r/s\n", wrap_trim_gain_) +
@@ -635,12 +643,12 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
 
   txBuf = String::format("\nLooparound Amp:\n");
   sendTxBuf(txBuf, true, true);
-  txBuf = LoopIbAmp->pretty_print();
+  txBuf = LoopIbAmp->pretty_print(Sen);
   sendTxBuf(txBuf, true, true);
 
   txBuf = String::format("\nLooparound Noa:\n");
   sendTxBuf(txBuf, true, true);
-  txBuf = LoopIbNoa->pretty_print();
+  txBuf = LoopIbNoa->pretty_print(Sen);
   sendTxBuf(txBuf, true, true);
 
   txBuf = String::format("\nFault:\n") +

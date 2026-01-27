@@ -479,8 +479,13 @@ def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_lis
     plq(plt, mv, 'time', mv, 'e_wrap_n_filt', color='green', linestyle='-.')
     plq(plt, mr, 'time', mr, 'cc_dif', color='green', linestyle='-')
     plq(plt, mv, 'time', mv, 'cc_dif', color='red', linestyle='--', warn=False)
-    plq(plt, mr, 'time', mr, 'ewhi_thr', color='red', linestyle='-.')
-    plq(plt, mr, 'time', mr, 'ewlo_thr', color='red', linestyle='-.')
+    plq(plt, mr, 'time', mr, 'ewnhi_thr', color='red', linestyle='--')
+    plq(plt, mv, 'time', mv, 'ewnhi_thr', color='orange', linestyle='-.')
+    plq(plt, mr, 'time', mr, 'ewnlo_thr', color='red', linestyle='--')
+    plq(plt, mv, 'time', mv, 'ewnlo_thr', color='orange', linestyle='-.')
+    # if active standby
+    # plq(plt, mr, 'time', mr, 'ewhi_thr', color='red', linestyle='-.')
+    # plq(plt, mr, 'time', mr, 'ewlo_thr', color='red', linestyle='-.')
     plt.ylim(-1, 1)
     plt.legend(loc=1)
     plt.subplot(332)
@@ -502,8 +507,10 @@ def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_lis
     plq(plt, mr, 'time', mr, 'e_wrap_m_trim', color='magenta', linestyle='-.')
     plq(plt, mr, 'time', mr, 'e_wm_t', color='magenta', linestyle='-.', warn=False)
     plq(plt, mv, 'time', mv, 'e_wrap_m_trim', color='cyan', linestyle=':', warn=False)
-    plq(plt, mv, 'time', mv, 'ewmhi_thr', color='red', linestyle='-.')
-    plq(plt, mv, 'time', mv, 'ewmlo_thr', color='red', linestyle='-.')
+    plq(plt, mr, 'time', mr, 'ewmhi_thr', color='red', linestyle='--')
+    plq(plt, mv, 'time', mv, 'ewmhi_thr', color='orange', linestyle='-.')
+    plq(plt, mr, 'time', mr, 'ewmlo_thr', color='red', linestyle='--')
+    plq(plt, mv, 'time', mv, 'ewmlo_thr', color='orange', linestyle='-.')
     plt.ylim(-0.2, 0.2)
     plt.legend(loc=1)
     plt.subplot(338)
@@ -705,7 +712,7 @@ class SavedData:
                     self.Battery_off_dict[field_name] = battery[field_name][-1]
                 except IndexError:
                     self.Battery_off_dict[field_name] = battery[field_name]
-                    print(f"Battery_off field_name {field_name}   valeu {battery[field_name]}")
+                    print(f"Battery_off field_name {field_name}   value {battery[field_name]}")
             # print(self.Battery_off_dict)
             # Print affected values
             print(f"dictionary to apply to Battery class")
@@ -995,8 +1002,10 @@ class SavedData:
             self.tb_flt = None
             self.tb_fa = None
             self.ccd_thr = None
-            self.ewhi_thr = None
-            self.ewlo_thr = None
+            self.ewmhi_thr = None
+            self.ewmlo_thr = None
+            self.ewnhi_thr = None
+            self.ewnlo_thr = None
             self.ewhm_thr = None
             self.ewlm_thr = None
             self.ibd_thr = None
@@ -1154,10 +1163,10 @@ class SavedData:
             self.tb_flt = np.bool_(np.array(fltw) & 2**0)
             self.tb_fa = np.bool_(np.array(falw) & 2**0)
             self.ccd_thr = np.array(sel.ccd_thr[:i_end])
-            self.ewhi_thr = np.array(sel.ewh_thr[:i_end])
-            self.ewlo_thr = np.array(sel.ewl_thr[:i_end])
-            self.ewhm_thr = self.ewhi_thr / 10.  # WRAP_HI_NOA / WRAP_HI_AMP = SHUNT_AMP_R2 / SHUNT_NOA_R2
-            self.ewlm_thr = self.ewlo_thr / 10.  # WRAP_LO_NOA / WRAP_LO_AMP = SHUNT_AMP_R2 / SHUNT_NOA_R2
+            self.ewmhi_thr = np.array(sel.ewmhi_thr[:i_end])
+            self.ewmlo_thr = np.array(sel.ewmlo_thr[:i_end])
+            self.ewnhi_thr = np.array(sel.ewnhi_thr[:i_end])
+            self.ewnlo_thr = np.array(sel.ewnlo_thr[:i_end])
             self.ibd_thr = np.array(sel.ibd_thr[:i_end])
             self.ibq_thr = np.array(sel.ibq_thr[:i_end])
             self.preserving = np.array(sel.preserving[:i_end])

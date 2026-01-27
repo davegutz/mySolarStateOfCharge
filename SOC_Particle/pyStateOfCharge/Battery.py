@@ -139,6 +139,8 @@ class Battery(Coulombs):
     dc_dc_on = 0.  # Truck charging
     EWLO_TRM_SLR = 0.75
     EWHI_TRM_SLR = 0.75
+    EWHI_SLR = 1.
+    EWLO_SLR = 1.
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
@@ -397,11 +399,11 @@ class BatteryMonitor(Battery, EKF1x1):
                                     name="Amp")
         self.LoopIbNoa = Looparound(Mon_=self, wrap_hi_amp=Battery.WRAP_HI_NOA, wrap_lo_amp=Battery.WRAP_LO_NOA,
                                     max_err=Battery.MAX_WRAP_ERR_FILT, name="Noa")
-        self.ewnhi_thr = None
-        self.ewnlo_thr = None
-        self.ewmhi_thr = None
+        self.ewnhi_thr = 0.
+        self.ewnlo_thr = 0.
+        self.ewmhi_thr = 0.
+        self.ewmlo_thr = 0.
         self.e_wrap_m_reset = True
-        self.ewmlo_thr = None
         self.reset_ekf = None
         self.voc_stat_ekf = 0.
         self.dt_temp = None
@@ -1334,9 +1336,9 @@ class Looparound:
         self.e_wrap_rate = self.WrapErrFilt.rate
 
         # Thresholds. Scalars are calculated by Flt->wrap_scalars()
-        self.ewhi_thr_base = self.Mon.chemistry.r_ss * self.wrap_hi_amp
+        self.ewhi_thr_base = self.Mon.chemistry.r_ss * self.wrap_hi_amp * Battery.EWHI_SLR
         self.ewhi_thr = self.ewhi_thr_base * ewsat_slr * ewmin_slr
-        self.ewlo_thr_base = self.Mon.chemistry.r_ss * self.wrap_lo_amp
+        self.ewlo_thr_base = self.Mon.chemistry.r_ss * self.wrap_lo_amp * Battery.EWLO_SLR
         self.ewlo_thr = self.ewlo_thr_base * ewsat_slr * ewmin_slr
 
         # sat logic screens out voc jump when ib>0 when saturated
