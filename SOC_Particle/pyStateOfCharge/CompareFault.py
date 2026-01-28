@@ -496,7 +496,6 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plq(plt, hi, 'time_ux', hi, 'e_w_f', color='black', linestyle='--')
     plq(plt, hi, 'time_ux', hi, 'ewhi_thr', color='red', linestyle='-.')
     plq(plt, hi, 'time_ux', hi, 'ewlo_thr', color='red', linestyle='-.')
-    plt.ylim(-1, 1)
     plt.legend(loc=1)
     plt.subplot(336)
     plq(plt, hi, 'time_ux', hi, 'wrap_hi_flt', add=6, color='blue', linestyle='-')

@@ -126,7 +126,8 @@ void print_battery_header()
 {
   Serial.printf("Battery_hdr, HDWE_IB_HI_LO, HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI, IB_ABS_MAX_NOA, IB_ABS_MAX_AMP, KF_Q_STD, KF_R_STD,");
   Serial.printf("SHUNT_AMP_GAIN, CURR_BIAS_AMP, SHUNT_NOA_GAIN, CURR_BIAS_NOA, NS, NP, CURR_SCALE_DISCH, HYS_SCALE, dc_dc_on,");
-  Serial.printf("EWLO_TRM_SLR, EWHI_TRM_SLR, EWHI_SLR, EWLO_SLR,\n");
+  Serial.printf("EWLO_TRM_SLR, EWHI_TRM_SLR, WRAP_HI_AMP, WRAP_LO_AMP, WRAP_HI_NOA, WRAP_LO_NOA, EWHI_SLR, EWLO_SLR,");
+  Serial.printf("IBATT_DISAGREE_THRESH, IB_DIFF_SLR,");
   Serial.printf("\n");
 }
 
@@ -143,7 +144,11 @@ void print_battery_serial()
   Serial.printf("%10.7f,%10.7f,%10.7f,%10.7f,%4.2f,%4.2f,%10.7f,%10.7f,%d,",
     SHUNT_AMP_GAIN, sp.ib_bias_amp_z, SHUNT_NOA_GAIN, sp.ib_bias_noa_z, NS, NP, sp.ib_disch_slr_z, ap.hys_scale, ap.dc_dc_on);
   
-  Serial.printf("%10.7f,%10.7f,%10.7f,%10.7f,\n", EWLO_TRM_SLR, EWHI_TRM_SLR, ap.ewhi_slr, ap.ewlo_slr);
+  Serial.printf("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+    EWLO_TRM_SLR, EWHI_TRM_SLR, WRAP_HI_AMP, WRAP_LO_AMP, WRAP_HI_NOA, WRAP_LO_NOA, ap.ewhi_slr, ap.ewlo_slr);
+
+  Serial.printf("%10.7f,%10.7f,",
+    IBATT_DISAGREE_THRESH, ap.ib_diff_slr);
 
   Serial.printf("\n");
 }
@@ -313,7 +318,7 @@ void print_signal_sel_header(void)
   Serial.printf("unit_s,c_time,reset,resaf,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,  kfres,vovcm,vovcn,ibmkf,ibnkf,  ib_diff, ib_diff_f,");
   Serial.printf("  vr,voc_soc,e_w,e_w_f,ib_dm,dv_dm,e_wm,e_wm_r,e_wm_f,ib_dn,dv_dn,e_wn,e_wn_f,e_wm_t,");
   Serial.printf("  ib_sel_stat,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_h,vb_s,mvb,vb,  mtb,Tb_fa, ");
-  Serial.printf("  fltw, falw, ib_rate, ib_quiet, ib_really_quiet, tb_sel, ccd_thr, ewmhi_thr, ewmlo_thr, ewnhi_thr, ewnlo_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,");
+  Serial.printf("  ib_rate, ib_quiet, ib_really_quiet, tb_sel, ccd_thr, ewmhi_thr, ewmlo_thr, ewnhi_thr, ewnlo_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,");
   Serial.printf("  ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rstate_m, ib_dyn_lstate_m,");
   Serial.printf("  ib_dyn_T_n, ib_dyn_tau_n, ib_dyn_rstate_n, ib_dyn_lstate_n,");
   Serial.printf("  ib_wrp_T_n, ib_wrp_tau_n, ib_wrp_rate_n, ib_wrp_state_n, disable_amp_fault, disable_amp_fault_per,");
@@ -321,6 +326,7 @@ void print_signal_sel_header(void)
   Serial.printf("  ib_amp_lo, ib_amp_hi, ib_noa_lo, ib_noa_hi, ib_noa_kf, kfres, x1n, ib_wrp_tr_m, ib_wrp_tr_n,");
   Serial.printf("  vb_m, voc_m, voc_soc_m, wrap_m_and_n_fa, ib_is_functional,v_low,");
   Serial.printf("  vb_h_f,");
+  Serial.printf("  fltw, falw, ");
   Serial.printf("\n");
 }
 void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, BatterySim *Sim)
@@ -349,8 +355,8 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
             sp.mod_tb(), Sen->Flt->tb_fa());
       Serial.printf("%s", pr.buff);
 
-      sprintf(pr.buff, "%ld, %ld, %7.3f, %7.3f, %d, %d, %9.6f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%d,%d,%7.3f,%d,",
-          Sen->Flt->fltw(), Sen->Flt->falw(), Sen->Flt->ib_rate(), Sen->Flt->ib_quiet(),  Sen->Flt->ib_really_quiet(), Sen->Flt->tb_sel_status(),
+      sprintf(pr.buff, "%7.3f, %7.3f, %d, %d, %9.6f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%d,%d,%7.3f,%d,",
+          Sen->Flt->ib_rate(), Sen->Flt->ib_quiet(),  Sen->Flt->ib_really_quiet(), Sen->Flt->tb_sel_status(),
           Sen->Flt->cc_diff_thr(), Sen->Flt->LoopIbAmp->ewhi_thr(),Sen->Flt->LoopIbAmp->ewlo_thr(), Sen->Flt->LoopIbNoa->ewhi_thr(),
           Sen->Flt->LoopIbNoa->ewlo_thr(), Sen->Flt->ib_diff_thr(), Sen->Flt->ib_quiet_thr(), Sen->Flt->preserving(),
           ap.fake_faults, Mon->y_ekf_filt(), Sen->Flt->ib_decision());
@@ -390,6 +396,9 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
       Serial.printf("%s", pr.buff);
 
       sprintf(pr.buff, "%8.6f,", Sen->vb_hdwe_f());
+      Serial.printf("%s", pr.buff);
+
+      sprintf(pr.buff, "%ld, %ld,", Sen->Flt->fltw(), Sen->Flt->falw());
       Serial.printf("%s", pr.buff);
 
       Serial.printf("\n");

@@ -102,8 +102,8 @@ class Battery(Coulombs):
     WRAP_HI_R = (WRAP_HI_S/2.)  # Wrap high failure reset time, sec ('up 1, down 2')
     WRAP_HI_AMP = 3.2  # Wrap high voltage threshold amplified, A(3.2)
     WRAP_LO_AMP = -4.  # Wrap high voltage threshold amplified, A (-4)
-    WRAP_HI_NOA = 32  # Wrap high voltage threshold non-amplified, A(32)
-    WRAP_LO_NOA = -40.  # Wrap high voltage threshold non-amplified, A (-40)
+    WRAP_HI_NOA = 6.4  # Wrap high voltage threshold non-amplified, A(32)
+    WRAP_LO_NOA = -8.  # Wrap high voltage threshold non-amplified, A (-40)
     HDWE_IB_HI_LO = 1.  # Type of selection logic philosophy. Only True is implemented and debugged now
     HDWE_IB_HI_LO_NOA_LO = -11. # Fully NOA unit discharge transition, A (-11, soc4p2)
     HDWE_IB_HI_LO_AMP_LO = -10. # Fully NOA unit discharge transition, A (-10, soc4p2)
@@ -141,6 +141,8 @@ class Battery(Coulombs):
     EWHI_TRM_SLR = 0.75
     EWHI_SLR = 1.
     EWLO_SLR = 1.
+    IBATT_DISAGREE_THRESH = None
+    IB_DIFF_SLR = None
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents

@@ -187,7 +187,7 @@ def main():
     # Rf, vv4,
     # Rk,
     # vv0,
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\offSitHysBmsNoiseBB_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaHiFailSlowest_soc2p2_hi_lo_bb.csv'
 
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 
@@ -200,7 +200,7 @@ def main():
     # # The following are not implemented in GUI
     #
     time_end_in = None
-    # time_end_in = 23.2
+    # time_end_in = 50.
     #
     time_shift_in = None
     # time_shift_in = -1.811
@@ -213,7 +213,7 @@ def main():
 
     # RunSim plot selection
     # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m  8=vb_wrap
-    request_hist_in = 1
+    request_hist_in = 7
     # request_hist_in = None
 
     # # mon_soc_in = False # old runsim work ******************

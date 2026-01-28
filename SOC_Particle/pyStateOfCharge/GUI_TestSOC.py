@@ -103,14 +103,14 @@ sel_list = [
     ]
 sel_list1 = [
     'flatSitHys', 'offSitHysBmsNoiseBB', 'offSitHysBmsNoiseCH', 'offSitHysBmsNoiseCHG', 'ampHiFailSlow',
-    'noaHiFailSlow', 'vHiFail', 'vHiFailNoise', 'vHiFailH', 'vHiFailFf', 'pulseSSH', 'tbFailMod1W', 'tbFailHdwe1W',
+    'noaHiFailSlowest', 'noaHiFailSlow', 'vHiFail', 'vHiFailNoise', 'vHiFailH', 'vHiFailFf', 'pulseSSH', 'tbFailMod1W', 'tbFailHdwe1W',
     'tLoFailHdwe', 'DvMon', 'DvSim', 'faultParade', 'allInBBn', 'allInCHn', 'allInCHGn', 'stepDown',
     'stepUp',
     ]
 macro_sel_list = [
     'end_early', 'modMidInit', 'modMidInitNoCc', 'modLowInitBB', 'modLowInitCH', 'modLowInitCHG',
     'noisePackage', 'silentPackage', 'quiet', 'quietwait', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
-    'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50', 'c00',
+    'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50', 'c00',
     'twitch', 'time_stamp', 's00', 'sd50', 'sc50',
     ]
 
@@ -141,9 +141,11 @@ d18 = time_stamp + 'Dn18;Dm0.0001;'  # 0.0001 helps saturation logic behave corr
 c06 = time_stamp + 'Dm6;Dn0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
 d06 = time_stamp + 'Dn6;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
 c08 = time_stamp + 'Dm8;Dn0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
+d05 = time_stamp + 'Dn5;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
 d08 = time_stamp + 'Dn8;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
 c10 = time_stamp + 'Dm10;Dn0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
 d10 = time_stamp + 'Dn10;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
+d20 = time_stamp + 'Dn20;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
 c50 = time_stamp + 'Dm50;Dn0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
 d50 = time_stamp + 'Dn50;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
 cm50 = time_stamp + 'Dm-50;Dn0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
@@ -248,8 +250,11 @@ lookup = {
         'offSitHysBmsNoiseCHG': (667, modLowInitCHG + slowTwitchDef + 'Xa-324;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage + quiet + cleanup, ("Stress test with 2x normal Vb noise DV0.10.  Takes about 10 minutes.", "operate around saturation, starting above, go below, come back up. Tune Ca to start just above vsat. Go low enough to exercise hys reset ", "Make sure comes back on.", "It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shutoff.")),
         # 'ampHiFailSlow': (515, modMidInit + tranPrep + c10 + 'Fi4,Fc0.0006;Fd0.5;XQ400000;' + c00 + quiet + cleanup, ("Active Standby Should detect and switch amp current failure. Will be slow (~6 min) detection as it waits for the EKF to wind up to produce a cc_diff fault.", "Will display “diff” on OLED due to 6 A difference before switch (not cc_diff).", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see cc_diff_fa")),
         # 'noaHiFailSlow': (515, modMidInit + tranPrep + d10 + 'Fc0.0006;Fd0.5;XQ400000;' + c00 + quiet + cleanup, ("Active Standby Should detect and switch amp current failure. Will be slow (~6 min) detection as it waits for the EKF to wind up to produce a cc_diff fault.", "Will display “diff” on OLED due to 6 A difference before switch (not cc_diff).", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see cc_diff_fa")),
+        # TODO for all volatile and saved parameters in Battery.csv:  'tranPrep' no 'vv' statment.  'stream' starts data incl 'vv'.  All adjusts before 'stream'
         'ampHiFailSlow': (515, modMidInit + 'Fi3;Fc0.0006;Fd0.5;' + tranPrep + c10 + 'XQ400000;' + c00 + quiet + cleanup, ("Will not detect and switch amp current failure because both currents can feed SOC_EKF so cc_diff is ambiguous. Will be slow (~6 min) cc_diff detection as it waits for the EKF to wind up to produce a cc_diff fault.", "Will display “diff” on OLED due to 6 A difference for most of the run (not cc_diff).", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see that cc_diff_fa does not set")),
-        'noaHiFailSlow': (515, modMidInit+ 'Fc0.0006;Fd0.5;' + tranPrep + d10 + 'XQ400000;' + c00 + quiet + cleanup, ("Will not detect and switch amp current failure because both currents can feed SOC_EKF so cc_diff is ambiguous.  Will be slow (~6 min) cc_diff detection as it waits for the EKF to wind up to produce a cc_diff fault.", "Will display “diff” on OLED due to 6 A difference before switch (not cc_diff).", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see cc_diff_fa")),
+        'noaHiFailSlowest': (515, modMidInit+ 'Fc0.0006;' + tranPrep + d05 + 'XQ400000;' + c00 + quiet + cleanup, ("Will not detect and switch amp current failure because both currents can feed SOC_EKF so cc_diff is ambiguous.  Cannnot ever produce a cc_diff fault.", "Will display “diff” due to 6 A difference..", "EKF won't move because fed by amp.", "Run for 6  minutes to see potential cc_diff_fa")),
+        'noaHiFailSlower': (515, modMidInit+ 'Fc0.0006;' + tranPrep + d08 + 'XQ400000;' + c00 + quiet + cleanup, ("Will detect and switch noa current failure due to diff and wrap.  Cannnot ever produce a cc_diff fault.", "Will display “diff” due to 6 A difference..", "EKF won't move because fed by amp.", "Run for 6  minutes to see potential cc_diff_fa")),
+        'noaHiFailSlow': (515, modMidInit+ 'Fc0.0006;' + tranPrep + d20 + 'XQ400000;' + c00 + quiet + cleanup, ("Will not detect and switch amp current failure because both currents can feed SOC_EKF so cc_diff is ambiguous.  Cannnot ever produce a cc_diff fault.", "Will display “diff” due to 6 A difference..", "EKF won't move because fed by amp.", "Run for 6  minutes to see potential cc_diff_fa")),
         'vHiFail': (90, modMidInit + tranPrep + 'XY;Dv0.82;XQ60000;' + 'Dv0;' + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1' fig 4.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
         'vHiFailNoise': (90, modMidInit + noisePackage + tranPrep + 'XY;Dv0.82;XQ60000;' + 'Dv0;' + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1' fig 4.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
         'vHiFailH': (66, modMidInit + tranPrep + 'SH.3;W10;' + 'XY;Dv0.82;XQ30000;' + 'Dv0;' + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1' fig 4.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION.  Initial BB shift will be limited by hys table")),
@@ -283,6 +288,7 @@ macro_lookup = {
         'c06': (5, c06, ('', '', '', '')),
         'd06': (5, d06, ('', '', '', '')),
         'c08': (5, c08, ('', '', '', '')),
+        'd05': (5, d05, ('', '', '', '')),
         'd08': (5, d08, ('', '', '', '')),
         'c10': (5, c10, ('', '', '', '')),
         'd10': (5, d10, ('', '', '', '')),
