@@ -111,7 +111,7 @@ macro_sel_list = [
     'end_early', 'modMidInit', 'modMidInitNoCc', 'modLowInitBB', 'modLowInitCH', 'modLowInitCHG',
     'noisePackage', 'silentPackage', 'quiet', 'quietwait', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
     'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50', 'c00',
-    'twitch', 'time_stamp', 's00', 'sd50', 'sc50',
+    'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50',
     ]
 
 # Macro
@@ -153,10 +153,10 @@ dm50 = time_stamp + 'Dn-50;Dm0.0001;'  # 0.0001 helps saturation logic behave co
 sc50 = time_stamp + 'DI50;'  # 50 amp discharge
 sd50 = time_stamp + 'DI-50;'  # 50 amp discharge
 c00 = 'Dm0;Dn0;Rf;W50;'
+dv0 = 'Dv0;Rf;W50;'
 s00 = 'DI0;Rf;W100;'
 twitch = time_stamp + 'XR;'
 vm12 = 'Dv-12;'
-v00 = 'Dv0;'
 
 # Note:  Photon 2 is throughput limited on the Serial buses.  The *tweak* transients are sensitive to differences
 # caused by over-runs and slip and set Dr400 before Xp* then resets to Dr100 (nominal).
@@ -229,7 +229,7 @@ lookup = {
         'allProto': (552, modMidInit + tranPrep + c50 + 'XQ25000;' + c00 + tempCleanup + '  Rs;W4;Xp10;  Rs;W4;Xp13;  ' + modMidInitNoCc + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ('Proto multi', "Must have same 'vv*' throughout", "No 'HR' either")),
         'pulseSS': (50, synced_slow + 'XS;Dm0;Dn0;vv0;Xm255;Ca.5;Pm;W2;Rs;W10;vv4;W2;' + 'Rs;W20;Xp7;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
         'rapidTweakRegressionH0': (205, 'Sh0;' + slow + 'Rs;W4;Xp10;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'No hysteresis. Best test for seeing time skews and checking fault logic for false trips', 'Tease out cause of e_wrap faults.  e_wrap MUST be flat!', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
-        'offLowSoc': (85, modLowInitGen + tranPrep  + vm12 + 'XQ55000;' + v00 + quiet + cleanup, ('Test for clean faults on shutoff.',)),
+        'offLowSoc': (85, modLowInitGen + tranPrep  + vm12 + 'XQ55000;' + dv0 + quiet + cleanup, ('Test for clean faults on shutoff.',)),
         'offSitHysBmsBB': (800, modLowInitBB + slowTwitchDef + 'Xa-162;' + tranPrep + twitch + 'XQ568000;' + 'Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
         'offSitHysBmsCH': (800, modLowInitCH + slowTwitchDef + 'Xa-324;' + tranPrep + twitch + 'XQ568000;' + 'Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
         'offSitHysBmsCHG': (800, modLowInitCHG + slowTwitchDef + 'Xa-324;' + tranPrep + twitch + 'XQ568000;' + 'Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
@@ -255,16 +255,16 @@ lookup = {
         'noaHiFailSlowest': (515, modMidInit+ 'Fc0.0006;' + tranPrep + d05 + 'XQ400000;' + c00 + quiet + cleanup, ("Will not detect and switch amp current failure because both currents can feed SOC_EKF so cc_diff is ambiguous.  Cannnot ever produce a cc_diff fault.", "Will display “diff” due to 6 A difference..", "EKF won't move because fed by amp.", "Run for 6  minutes to see potential cc_diff_fa")),
         'noaHiFailSlower': (515, modMidInit+ 'Fc0.0006;' + tranPrep + d08 + 'XQ400000;' + c00 + quiet + cleanup, ("Will detect and switch noa current failure due to diff and wrap.  Cannnot ever produce a cc_diff fault.", "Will display “diff” due to 6 A difference..", "EKF won't move because fed by amp.", "Run for 6  minutes to see potential cc_diff_fa")),
         'noaHiFailSlow': (515, modMidInit+ 'Fc0.0006;' + tranPrep + d20 + 'XQ400000;' + c00 + quiet + cleanup, ("Will not detect and switch amp current failure because both currents can feed SOC_EKF so cc_diff is ambiguous.  Cannnot ever produce a cc_diff fault.", "Will display “diff” due to 6 A difference..", "EKF won't move because fed by amp.", "Run for 6  minutes to see potential cc_diff_fa")),
-        'vHiFail': (90, modMidInit + tranPrep + 'XY;Dv0.82;XQ60000;' + 'Dv0;' + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1' fig 4.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
-        'vHiFailNoise': (90, modMidInit + noisePackage + tranPrep + 'XY;Dv0.82;XQ60000;' + 'Dv0;' + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1' fig 4.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
-        'vHiFailH': (66, modMidInit + tranPrep + 'SH.3;W10;' + 'XY;Dv0.82;XQ30000;' + 'Dv0;' + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1' fig 4.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION.  Initial BB shift will be limited by hys table")),
-        'vHiFailFf': (90, modMidInit + tranPrep + 'Ff1;XY;Dv0.8;XQ60000;' + 'Dv0;' + quiet + cleanup, ("Run for about 1 minute.", "Should detect voltage failure (see DOM1 fig 2 or 3) but not display anything on OLED.", "Usually shows SAT.")),
+        'vHiFail': (138, modMidInit + tranPrep + 'XY;Dv0.82;XQ60000;' + dv0 + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1' fig 4.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
+        'vHiFailNoise': (138, modMidInit + noisePackage + tranPrep + 'XY;Dv0.82;XQ60000;' + dv0 + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1' fig 4.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
+        'vHiFailH': (84, modMidInit + tranPrep + 'SH.3;W10;' + 'XY;Dv0.82;XQ30000;' + dv0 + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1' fig 4.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION.  Initial BB shift will be limited by hys table")),
+        'vHiFailFf': (138, modMidInit + tranPrep + 'Ff1;XY;Dv0.8;XQ60000;' + dv0 + quiet + cleanup, ("Run for about 1 minute.", "Should detect voltage failure (see DOM1 fig 2 or 3) but not display anything on OLED.", "Usually shows SAT.")),
         'pulseSSH': (25, synced_slow + 'Xp8;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
         'tbFailMod1W': (136, modMidInit + tranPrep + 'Xv.002;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + quiet + cleanup, ("Run for 80 sec.   Plot Ult 1 Fig 4 should show Tb was detected as fault but not failed.",)),
         'tbFailHdwe1W': (136, modMidInit + 'Xm246;' + tranPrep + 'Xv.002;W10;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + quiet + cleanup, ("Run for 80 sec.   Plot Ult 1 Fig 4 should show Tb was detected as failed.", "")),
-        'tLoFailHdwe': (185, modMidInit + 'Xm230;' + tranPrep + 'XY;Dt-113;XQ120000;' + 'Dt0;' + cleanup + '<W50;' + quietwait + '<Pf;', ("Simulates open thermistor.", "To diagnose, begin with 'Ult 1' fig 4.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
-        'DvMon': (152, modMidInit + tranPrep + 'XY;Dw-0.8;Dn0.0001;XQ120000;Dw0;' + quiet + cleanup, ("Should detect and switch voltage failure and use vb_model", "'*fail' will be displayed.", "To evaluate plots, start looking at 'Ult 1' fig 4. Fault record (frozen). Will see 'redl' flashing on OLED even after fault cleared automatically (lost redundancy).", "Run for 2 min to confirm no cc_diff_fa")),
-        'DvSim': (152, modMidInit + tranPrep + 'XY;Dy-0.8;Dn0.0001;XQ120000;Dy0;' + quiet + cleanup, ("Should detect and switch voltage failure and use vb_model", "'*fail' will be displayed.", "To evaluate plots, start looking at 'Ult 1' fig 4. Fault record (frozen). Will see 'redl' flashing on OLED even after fault cleared automatically (lost redundancy).", "Run for 2 min to confirm no cc_diff_fa")),
+        'tLoFailHdwe': (185, modMidInit + 'Xm230;' + tranPrep + 'XY;Dt-113;XQ120000;' + 'Dt0;Rf;W50;' + cleanup + '<W50;' + quietwait + '<Pf;', ("Simulates open thermistor.", "To diagnose, begin with 'Ult 1' fig 4.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
+        'DvMon': (152, modMidInit + tranPrep + 'XY;Dw-0.8;Dn0.0001;XQ120000;Dw0;Rf;W50;' + quiet + cleanup, ("Should detect and switch voltage failure and use vb_model", "'*fail' will be displayed.", "To evaluate plots, start looking at 'Ult 1' fig 4. Fault record (frozen). Will see 'redl' flashing on OLED even after fault cleared automatically (lost redundancy).", "Run for 2 min to confirm no cc_diff_fa")),
+        'DvSim': (152, modMidInit + tranPrep + 'XY;Dy-0.8;Dn0.0001;XQ120000;Dy0;Rf;W50;' + quiet + cleanup, ("Should detect and switch voltage failure and use vb_model", "'*fail' will be displayed.", "To evaluate plots, start looking at 'Ult 1' fig 4. Fault record (frozen). Will see 'redl' flashing on OLED even after fault cleared automatically (lost redundancy).", "Run for 2 min to confirm no cc_diff_fa")),
         'faultParade': (320, modMidInit + 'Dh1000;vv4;W4;XY;Dm50;Dn0.0001;W200;Dm0;Dn0;W20;Rf;XQ240000;' + quiet + cleanup, ("Check fault, history, and summary logging", "Should flag faults but take no action", "", "", "")),
         'stepDown': (103, modMidInit + tranPrep + sd50 + 'XQ25000;' + s00 + quiet + cleanup, ("Should be normal hard discharge step", "", "", "")),
         'stepUp': (103, modMidInit + tranPrep + sc50 + 'XQ25000;' + s00 + quiet + cleanup, ("Should be normal hard charge step", "", "", "")),
@@ -298,6 +298,7 @@ macro_lookup = {
         'd50': (5, d50, ('', '', '', '')),
         'cm50': (5, cm50, ('', '', '', '')),
         'c00': (5, c00, ('', '', '', '')),
+        'dv0': (5, dv0, ('', '', '', '')),
         'twitch': (5, twitch, ('', '', '', '')),
         }
 
