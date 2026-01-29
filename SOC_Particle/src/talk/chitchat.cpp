@@ -465,6 +465,7 @@ void describe(BatteryMonitor *Mon, Sensors *Sen)
         break;
 
       case ( 'Q' ):  // Q:  quick critical
+        debug_qs(Mon, Sen);
         debug_q(Mon, Sen);
         break;
 

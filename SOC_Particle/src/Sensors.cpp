@@ -706,20 +706,19 @@ txBuf = String::format("") +
     String::format("2 ib m    %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa()) +
     String::format("1 vb      %d  %d 'Fv 1  *SV, *Dc/*Dv'.", vb_flt(), vb_fa()) +
     String::format("  bms_off %d\n", Mon->bms_off()) +
-    String::format("0 tb      %d  %d 'Ft 1'\n  ", tb_flt(), tb_fa()) +
-    String::format("  B-time_long%2d", dispRead(time_long)) +
-    String::format("  A-accy%2d", dispRead(accy)) +
-    String::format("  9-off%2d", dispRead(off)) +
-    String::format("  8-SAT%2d", dispRead(SAT)) +
-    String::format("  7-flt_ekf%2d", dispRead(flt_ekf)) +
-    String::format("  6-flt_tb%2d", dispRead(flt_tb)) +
-    String::format(" *5-fail_vb%2d", dispRead(fail_vb)) +
-    String::format(" *4-fail_ibm%2d", dispRead(fail_ibm)) +
-    String::format(" *3-fail_ib%2d", dispRead(fail_ib)) +
-    String::format("  2-red_loss%2d", dispRead(dispw::red_loss)) +
-    String::format("  1-diff_ib%2d", dispRead(diff_ib)) +
-    String::format("  0-conn%2d\n", dispRead(conn)) + 
-    String::format("    Fault  Fail   Disp'\n");
+    String::format("0 tb      %d  %d 'Ft 1'\n\n", tb_flt(), tb_fa()) +
+    String::format("B-time_long%2d\n", dispRead(time_long)) +
+    String::format("A-accy     %2d\n", dispRead(accy)) +
+    String::format("9-off      %2d\n", dispRead(off)) +
+    String::format("8-SAT      %2d\n", dispRead(SAT)) +
+    String::format("7-flt_ekf  %2d\n", dispRead(flt_ekf)) +
+    String::format("6-flt_tb   %2d\n", dispRead(flt_tb)) +
+    String::format("*5-fail_vb %2d\n", dispRead(fail_vb)) +
+    String::format("*4-fail_ibm%2d\n", dispRead(fail_ibm)) +
+    String::format("*3-fail_ib %2d\n", dispRead(fail_ib)) +
+    String::format("2-red_loss %2d\n", dispRead(dispw::red_loss)) +
+    String::format("1-diff_ib %2d\n", dispRead(diff_ib)) +
+    String::format("0-conn    %2d\n\n", dispRead(conn)); 
   sendTxBuf(txBuf, true, true);
 // enum dispw {conn=0, diff_ib=1, red_loss=2, fail_ib=3, fail_ibm=4, fail_vb=5, flt_tb=6, flt_ekf=7, SAT=8, off=9, accy=10, time_long=11, Count};
 
@@ -730,7 +729,7 @@ txBuf = String::format("") +
     bitMapPrint(pr.buff, cp.disp_word, static_cast<int>(dispw::Count)) +
     String::format("\n") +
     String::format("10FEDCBA9876543210   10FExxBA9876543210   BA9876543210\n\n") +
-    String::format("  fltw=%ld                    falw=%ld         dispw=%ld\n",
+    String::format("  fltw=%8ld       falw=%8ld         dispw=%8ld\n",
       fltw_, falw_, cp.disp_word);
   sendTxBuf(txBuf, true, true);
 

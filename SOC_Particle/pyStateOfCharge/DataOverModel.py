@@ -560,6 +560,19 @@ def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_lis
     plq(plt, mv, 'time', mv, 'ib_diff_flt', add=-8, color='red', linestyle='--', warn=False)
     plq(plt, mr, 'time', mr, 'ib_dec', color='blue', linestyle='-.')
     plq(plt, mv, 'time', mv, 'ib_dec', color='orange', linestyle=':', warn=False)
+    plq(plt, mr, 'time', mr, 'time_long', add=-10, color='green', linestyle='-')
+    plq(plt, mr, 'time', mr, 'accy', add=-12, color='green', linestyle='-')
+    plq(plt, mr, 'time', mr, 'off', add=-14, color='green', linestyle='-')
+    plq(plt, mr, 'time', mr, 'SAT', add=-16, color='green', linestyle='-')
+    plq(plt, mr, 'time', mr, 'flt_ekf', add=-18, color='green', linestyle='-')
+    plq(plt, mr, 'time', mr, 'flt_tb', add=-20, color='green', linestyle='-')
+    plq(plt, mr, 'time', mr, 'fail_vb', add=-22, color='green', linestyle='-')
+    plq(plt, mr, 'time', mr, 'fail_ibm', add=-24, color='green', linestyle='-')
+    plq(plt, mr, 'time', mr, 'fail_ib', add=-26, color='green', linestyle='-')
+    plq(plt, mr, 'time', mr, 'red_loss', add=-28, color='green', linestyle='-')
+    plq(plt, mr, 'time', mr, 'diff_ib', add=-30, color='green', linestyle='-')
+    plq(plt, mr, 'time', mr, 'conn', add=-32, color='green', linestyle='-')
+    # enum  dispw {conn = 0, diff_ib = 1, red_loss = 2, fail_ib = 3, fail_ibm = 4, fail_vb = 5, flt_tb = 6, flt_ekf = 7, SAT = 8, off = 9, accy = 10, time_long = 11, Count};
     plt.legend(loc=1)
     plt.subplot(335)
     plq(plt, mr, 'time', mr, 'bms_off', add=+4, color='green', linestyle='-')
@@ -587,6 +600,7 @@ def ult_plot(mr, mv, sr, smv, filename, fig_files=None, plot_title=None, fig_lis
     plq(plt, mv, 'time', mv, 'vb_sel', add=-2, color='orange', linestyle='-.', warn=False)
     plq(plt, mr, 'time', mr, 'preserving', add=-2, color='blue', linestyle='-.')
     plt.legend(loc=1)
+    plt.rcParams['legend.fontsize'] = 'small'
 
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
@@ -954,6 +968,7 @@ class SavedData:
             self.dv_dyn_n = None
             self.fltw = None
             self.falw = None
+            self.dispw = None
             self.e_wrap_m = None
             self.e_wrap_m_filt = None
             self.e_wrap_m_trim = None
@@ -1041,14 +1056,27 @@ class SavedData:
             self.vb_model = None
             self.vb_hdwe = None
             self.vb_hdwe_f = None
+            self.time_long = None
+            self.accy = None
+            self.off = None
+            self.SAT = None
+            self.flt_ekf = None
+            self.flt_tb = None
+            self.fail_vb = None
+            self.fail_ibm = None
+            self.fail_ib = None
+            self.red_loss = None
+            self.diff_ib = None
+            self.conn = None
+
         else:
             falw = np.array(sel.falw[:i_end], dtype=np.uint32)
             fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
+            dispw = np.array(sel.dispw[:i_end], dtype=np.uint32)
             self.skip_sel = np.array(np.bool(sel.skip[:i_end]))
             self.c_time_s = np.array(sel.c_time[:i_end]) - self.time_run
             self.user_sel = np.array(sel.user_sel[:i_end])
             self.cc_dif = np.array(sel.cc_dif[:i_end])
-            self.ccd_fa = np.bool_(np.array(falw) & 2**4)
             self.ib_amp_hdwe = np.array(sel.ibmh[:i_end])
             self.ib_noa_hdwe = np.array(sel.ibnh[:i_end])
             self.ib_amp_model = np.array(sel.ibmm[:i_end])
@@ -1066,6 +1094,7 @@ class SavedData:
             self.ib_amp_hi = np.array(sel.ib_amp_hi[:i_end])
             self.ib_diff = np.array(sel.ib_diff[:i_end])
             self.ib_diff_f = np.array(sel.ib_diff_f[:i_end])
+            self.ccd_fa = np.bool_(np.array(falw) & 2**4)
             self.ib_diff_flt = np.bool_((np.array(fltw) & 2**8) | (np.array(fltw) & 2**9))
             self.ib_diff_fa = np.bool_((np.array(falw) & 2**8) | (np.array(falw) & 2**9))
             self.e_wrap = np.array(sel.e_w[:i_end])
@@ -1162,6 +1191,21 @@ class SavedData:
             self.tb_sel = np.array(sel.tb_sel[:i_end])
             self.tb_flt = np.bool_(np.array(fltw) & 2**0)
             self.tb_fa = np.bool_(np.array(falw) & 2**0)
+            # Displays
+            self.time_long = np.bool_(np.array(dispw) & 2**11)
+            self.accy = np.bool_(np.array(dispw) & 2**10)
+            self.off = np.bool_(np.array(dispw) & 2**9)
+            self.SAT = np.bool_(np.array(dispw) & 2**8)
+            self.flt_ekf = np.bool_(np.array(dispw) & 2**7)
+            self.flt_tb = np.bool_(np.array(dispw) & 2**6)
+            self.fail_vb = np.bool_(np.array(dispw) & 2**5)
+            self.fail_ibm = np.bool_(np.array(dispw) & 2**4)
+            self.fail_ib = np.bool_(np.array(dispw) & 2**3)
+            self.red_loss = np.bool_(np.array(dispw) & 2**2)
+            self.diff_ib = np.bool_(np.array(dispw) & 2**1)
+            self.conn = np.bool_(np.array(dispw) & 2**0)
+            #enum  dispw {conn = 0, diff_ib = 1, red_loss = 2, fail_ib = 3, fail_ibm = 4, fail_vb = 5, flt_tb = 6, flt_ekf = 7, SAT = 8, off = 9, accy = 10, time_long = 11, Count};
+
             self.ccd_thr = np.array(sel.ccd_thr[:i_end])
             self.ewmhi_thr = np.array(sel.ewmhi_thr[:i_end])
             self.ewmlo_thr = np.array(sel.ewmlo_thr[:i_end])
