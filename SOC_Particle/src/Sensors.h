@@ -220,10 +220,10 @@ protected:
 #define WRAP_LO_N_FA  17  // Wrap isolates to Ib amp low fail, heals because dual sensor (no latch)
 #define NUM_FA        18  // Number of these
 
-#define faultSet(bit) (bitSet(fltw_, bit) )
-#define failSet(bit) (bitSet(falw_, bit) )
+// #define faultSet(bit) (bitSet(fltw_, bit) )
+// #define failSet(bit) (bitSet(falw_, bit) )
 #define faultRead(bit) ( (fltw_ >> bit) & 1 )  // old bitRead(int value, int bit) with value=falw_
-#define failRead(bit) ( (fltw_ >> bit) & 1 )  // old bitRead(int value, int bit) with value=falw_
+#define failRead(bit) ( (falw_ >> bit) & 1 )  // old bitRead(int value, int bit) with value=falw_
 #define faultAssign(bval, bit) if (bval) bitSet(fltw_, bit); else bitClear(fltw_, bit)
 #define failAssign(bval, bit) if (bval) bitSet(falw_, bit); else bitClear(falw_, bit)
 
