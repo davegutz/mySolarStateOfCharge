@@ -126,9 +126,6 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_
         if f is not None and temp_flt_file_clean and len(f.time_ux) > 1 and not strict_overplot:
             fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                              fig_list=fig_list, cc_dif_tol=cc_dif_tol_in)
-        fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
-                                       plot_title=plot_title, fig_list=fig_list, run_str='',
-                                       ver_str='_ver', strict_overplot=strict_overplot)
         fig_list, fig_files = ekf_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list, run_str='',
                                        ver_str='_ver', strict_overplot=strict_overplot)
@@ -144,6 +141,9 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_
         if tune_in:
             fig_list, fig_files = tune_r(mon_run, mon_ver, sim_s_ver, filename, fig_files,
                                          plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')
+        fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
+                                       plot_title=plot_title, fig_list=fig_list, run_str='',
+                                       ver_str='_ver', strict_overplot=strict_overplot)
 
         # Copies
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
@@ -187,7 +187,7 @@ def main():
     # Rf, vv4,
     # Rk,
     # vv0,
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaHiFailSlowest_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_bb.csv'
 
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 
@@ -223,8 +223,8 @@ def main():
     # plots = False
     plots = True
 
-    # strict_overplot_in = False
-    strict_overplot_in = True
+    strict_overplot_in = False
+    # strict_overplot_in = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=use_mon_soc_, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
