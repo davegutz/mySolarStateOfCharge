@@ -80,6 +80,7 @@ public:
   boolean kf_reset;         // Reset kalman filters
   boolean kf_reset_print;   // Reset kalman filters status saved for printing
   uint8_t ble_first_char;   // Control boot communication, psuedo token
+  uint32_t disp_word;       // Display status bitmapped word (see dispw:: enum)
 
   CommandPars()
   {
@@ -111,7 +112,10 @@ public:
     kf_reset = false;
     kf_reset_print = false;
     ble_first_char = '\0';
+    disp_word = 0UL;
   }
+
+  void clear_disp_word() { disp_word = 0; };
 
   void cmd_reset(void) { soft_reset = true; ekf_reset = true; kf_reset = true; }
 
@@ -190,7 +194,8 @@ public:
       sendTxBuf(String::format(" tb_info.ready %d\n", tb_info.ready), true, true);
       sendTxBuf(String::format(" write_summary %d\n", write_summary), true, true);
       sendTxBuf(String::format(" kf_reset %d\n", kf_reset), true, true);
-      sendTxBuf(String::format(" ekf_reset %d\n\n", ekf_reset), true, true);
+      sendTxBuf(String::format(" ekf_reset %d\n", ekf_reset), true, true);
+      sendTxBuf(String::format(" disp_word %d\n\n", disp_word), true, true);
 
     #endif
   }

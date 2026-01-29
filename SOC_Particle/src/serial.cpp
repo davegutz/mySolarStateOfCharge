@@ -326,7 +326,7 @@ void print_signal_sel_header(void)
   Serial.printf("  ib_amp_lo, ib_amp_hi, ib_noa_lo, ib_noa_hi, ib_noa_kf, kfres, x1n, ib_wrp_tr_m, ib_wrp_tr_n,");
   Serial.printf("  vb_m, voc_m, voc_soc_m, wrap_m_and_n_fa, ib_is_functional,v_low,");
   Serial.printf("  vb_h_f,");
-  Serial.printf("  fltw, falw, ");
+  Serial.printf("  fltw, falw, dispw,");
   Serial.printf("\n");
 }
 void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, BatterySim *Sim)
@@ -398,7 +398,7 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
       sprintf(pr.buff, "%8.6f,", Sen->vb_hdwe_f());
       Serial.printf("%s", pr.buff);
 
-      sprintf(pr.buff, "%ld, %ld,", Sen->Flt->fltw(), Sen->Flt->falw());
+      sprintf(pr.buff, "%ld, %ld, %ld,", Sen->Flt->fltw(), Sen->Flt->falw(), cp.disp_word);
       Serial.printf("%s", pr.buff);
 
       Serial.printf("\n");

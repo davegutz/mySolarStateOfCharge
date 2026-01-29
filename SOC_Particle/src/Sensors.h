@@ -51,6 +51,7 @@ struct Pins;
 #endif
 
 enum ibSel {UsingNoa=-1, UsingDef=0, UsingAmp=1, UsingNone=2};
+enum dispw {conn=0, diff_ib=1, red_loss=2, fail_ib=3, fail_ibm=4, fail_vb=5, flt_tb=6, flt_ekf=7, SAT=8, off=9, accy=10, time_long=11, Count};
 
 /*
                   ^ scale
@@ -220,12 +221,12 @@ protected:
 #define WRAP_LO_N_FA  17  // Wrap isolates to Ib amp low fail, heals because dual sensor (no latch)
 #define NUM_FA        18  // Number of these
 
-// #define faultSet(bit) (bitSet(fltw_, bit) )
-// #define failSet(bit) (bitSet(falw_, bit) )
-#define faultRead(bit) ( (fltw_ >> bit) & 1 )  // old bitRead(int value, int bit) with value=falw_
-#define failRead(bit) ( (falw_ >> bit) & 1 )  // old bitRead(int value, int bit) with value=falw_
+#define faultRead(bit) ( (fltw_ >> bit) & 1 )
+#define failRead(bit) ( (falw_ >> bit) & 1 )
+#define dispRead(bit) ( (cp.disp_word >> bit) & 1 )
 #define faultAssign(bval, bit) if (bval) bitSet(fltw_, bit); else bitClear(fltw_, bit)
 #define failAssign(bval, bit) if (bval) bitSet(falw_, bit); else bitClear(falw_, bit)
+#define dispAssign(bval, bit) if (bval) bitSet(cp.disp_word, bit); else bitClear(cp.disp_word, bit)
 
 String bitMapPrint(char *buf, const int16_t fw, const uint8_t num);
 

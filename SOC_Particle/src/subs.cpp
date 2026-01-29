@@ -29,6 +29,7 @@
 #include "Summary.h"
 #include "talk/chitchat.h"
 #include "ble.h"
+#include "Sensors.h"
 
 extern SavedPars sp;    // Various parameters to be static at system level and saved through power cycle
 extern VolatilePars ap; // Various adjustment parameters shared at system level
@@ -284,6 +285,7 @@ void oled_display(Adafruit_SSD1306 *display, Sensors *Sen, BatteryMonitor *Mon)
 {
   static uint8_t blink = 0;
   String disp_0, disp_1, disp_2;
+  cp.clear_disp_word();
 
   #ifndef HDWE_BARE
     display->clearDisplay();
@@ -301,15 +303,24 @@ void oled_display(Adafruit_SSD1306 *display, Sensors *Sen, BatteryMonitor *Mon)
   sprintf(pr.buff, "%3.0f", pp.pubList.Tb);
   disp_0 = pr.buff;
   if ( Sen->Flt->tb_fa() && (blink==0 || blink==1) )
+  {
     disp_0 = "***";
+    dispAssign(true, flt_tb);
+  }
 
   // Voc
   sprintf(pr.buff, "%5.2f", pp.pubList.Voc);
   disp_1 = pr.buff;
   if ( Sen->Flt->vb_sel_stat()==0 && (blink==1 || blink==2) )
+  {
     disp_1 = "*fail";
+    dispAssign(true, fail_vb);
+  }
   else if ( Sen->bms_off )
+  {
     disp_1 = " off ";
+    dispAssign(true, off);
+  }
 
   // Ib
   sprintf(pr.buff, "%6.1f", pp.pubList.Ib);
@@ -319,30 +330,60 @@ void oled_display(Adafruit_SSD1306 *display, Sensors *Sen, BatteryMonitor *Mon)
     #ifdef HDWE_IB_HI_LO
       if ( Sen->Flt->ib_amp_fa() 
       && Sen->Flt->ib_noa_fa() && !sp.mod_ib() )
+      {
         disp_2 = "*fail";
+        dispAssign(true, fail_ibm);
+      }
       else if ( Sen->Flt->dscn_fa() && !sp.mod_ib() )
+      {
         disp_2 = " conn ";
+        dispAssign(true, conn);
+      }
       else if ( Sen->Flt->ib_diff_fa() )
+      {
         disp_2 = " diff ";
+        dispAssign(true, diff_ib);
+      }
       else if ( Sen->Flt->ib_choice()!=0 )
+      {
         disp_2 = " redl ";
+        dispAssign(true, red_loss);
+      }
     #else
       if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() && !sp.mod_ib() )
+      {
         disp_2 = "*fail";
+        dispAssign(true, fail_vb);
+    }
       else if ( Sen->Flt->dscn_fa() && !sp.mod_ib() )
+      {
         disp_2 = " conn ";
+        dispAssign(true, conn);
+      }
       else if ( Sen->Flt->ib_diff_fa() )
+      {
         disp_2 = " diff ";
+        dispAssign(true, diff_ib);
+      }
       else if ( Sen->Flt->red_loss() )
+      {
         disp_2 = " redl ";
+        dispAssign(true, red_loss);
+      }
     #endif
   }
   else if ( blink==3 )
   {
     if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() && !sp.mod_ib() )
+    {
       disp_2 = "*fail";
+      dispAssign(true, fail_ib);
+    }
     else if ( Sen->Flt->dscn_fa() && !sp.mod_ib() )
+    {
       disp_2 = " conn ";
+      dispAssign(true, conn);
+    }
   }
   String disp_Tbop = disp_0.substring(0, 4) + " " + disp_1.substring(0, 6) + " " + disp_2.substring(0, 7);
   display->println(disp_Tbop.c_str());
@@ -356,7 +397,10 @@ void oled_display(Adafruit_SSD1306 *display, Sensors *Sen, BatteryMonitor *Mon)
   if ( blink==0 || blink==1 || blink==2 )
   {
     if ( Sen->Flt->cc_diff_fa() )
+    {
       disp_0 = "---";
+      dispAssign(true, diff_ib);
+    }
   }
   display->print(disp_0.c_str());
 
@@ -368,6 +412,7 @@ void oled_display(Adafruit_SSD1306 *display, Sensors *Sen, BatteryMonitor *Mon)
   else
   {
     sprintf(pr.buff, " --- ");
+    dispAssign(true, time_long);  
   }  
   disp_1 = pr.buff;
   display->print(disp_1.c_str());
@@ -380,7 +425,10 @@ void oled_display(Adafruit_SSD1306 *display, Sensors *Sen, BatteryMonitor *Mon)
     disp_2 = pr.buff;
   }
   else if (Sen->saturated)
+  {
     disp_2 = "SAT";
+    dispAssign(true, SAT);
+  }
   display->print(disp_2.c_str());
   String dispBot = disp_0 + disp_1 + " " + disp_2;
 
@@ -408,25 +456,36 @@ void oled_display(Adafruit_SSD1306 *display, Sensors *Sen, BatteryMonitor *Mon)
   blink += 1;
   if (blink>3) blink = 0;
 }
+
 void oled_display(Sensors *Sen, BatteryMonitor *Mon)
 {
   static uint8_t blink = 0;
   String disp_0, disp_1, disp_2;
+  cp.clear_disp_word();
 
   // ---------- Top Line of Display -------------------------------------------
   // Tb
   sprintf(pr.buff, "%3.0f", pp.pubList.Tb);
   disp_0 = pr.buff;  // Default
   if ( Sen->Flt->tb_fa() && (blink==0 || blink==1) )
+  {
     disp_0 = "***";
+    dispAssign(true, flt_tb);
+  }
 
   // Voc
   sprintf(pr.buff, "%5.2f", pp.pubList.Voc);
   disp_1 = pr.buff;  // Default
   if ( Sen->Flt->vb_sel_stat()==0 && (blink==1 || blink==2) )
+  {
     disp_1 = "*fail";
+    dispAssign(true, fail_vb);
+  }
   else if ( Sen->bms_off )
+  {
     disp_1 = " off ";
+    dispAssign(true, off);
+  }
 
   // Ib
   sprintf(pr.buff, "%6.1f", pp.pubList.Ib);
@@ -435,42 +494,76 @@ void oled_display(Sensors *Sen, BatteryMonitor *Mon)
     if ( blink==2 )
     {
       if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() )
+      {
         disp_2 = "*fail";
+        dispAssign(true, fail_ib);
+      }
       else if ( Sen->Flt->ib_choice()==1 )
+      {
         disp_2 = "*fail";
+        dispAssign(true, fail_ib);
+      }
       else if ( Sen->Flt->ib_choice()==-1 )
+      {
         disp_2 = "*amp";
+        dispAssign(true, fail_ibm);
+      }
       // auto section
       else if ( Sen->Flt->ib_diff_fa() )
+      {
         disp_2 = " diff ";
+        dispAssign(true, diff_ib);
+      }
       // another default
       else if ( Sen->Flt->ib_choice()!=0 )
+      {
         disp_2 = " redl ";
+        dispAssign(true, red_loss);
+      }
     }
     else if ( blink==3 )
     {
       if ( Sen->Flt->dscn_fa() && !sp.mod_ib() )
+      {
         disp_2 = " conn ";
+        dispAssign(true, conn);
+      }
     }
   #else
     if ( blink==2 )
     {
       if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() && !sp.mod_ib() )
+      {
         disp_2 = "*fail";
+        dispAssign(true, fail_vb);
+      }
       else if ( Sen->Flt->dscn_fa() && !sp.mod_ib() )
+      {
         disp_2 = " conn ";
+        dispAssign(true, conn);
+      }
       else if ( Sen->Flt->ib_diff_fa() )
+      {
         disp_2 = " diff ";
+        dispAssign(true, diff_ib);
+  }
       else if ( Sen->Flt->red_loss() )
+      {
         disp_2 = " redl ";
+        dispAssign(true, red_loss);
+      }
     }
     else if ( blink==3 )
     {
       if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() && !sp.mod_ib() )
+      {
         disp_2 = "*fail";
+        dispAssign(true, fail_vb);
+      }
       else if ( Sen->Flt->dscn_fa() && !sp.mod_ib() )
+      {
         disp_2 = " conn ";
-    }
+        dispAssign(true, conn);}
   #endif
   String disp_Tbop = disp_0.substring(0, 4) + " " + disp_1.substring(0, 6) + " " + disp_2.substring(0, 7);
 
@@ -478,17 +571,22 @@ void oled_display(Sensors *Sen, BatteryMonitor *Mon)
   // Hrs EHK
   sprintf(pr.buff, "%3.0f", pp.pubList.Amp_hrs_remaining_ekf);
   disp_0 = pr.buff;  // Default
+
   #ifdef HDWE_IB_HI_LO
     if ( blink==0 || blink==1 || blink==2 )
     {
       if ( Sen->Flt->cc_diff_fa() && !Sen->Flt->ib_diff_fa() )
+      {
         disp_0 = "---";
+        dispAssign(true, flt_ekf);
+      }
     }
   #else
     if ( blink==0 || blink==1 || blink==2 )
     {
       if ( Sen->Flt->cc_diff_fa() )
         disp_0 = "---";
+        dispAssign(true, flt_ekf);
     }
   #endif
 
@@ -500,20 +598,30 @@ void oled_display(Sensors *Sen, BatteryMonitor *Mon)
   else
   {
     sprintf(pr.buff, " --- ");
-  }  
+    dispAssign(true, time_long);
+  }
   disp_1 = pr.buff;
 
   // Hrs large
   #ifdef HDWE_IB_HI_LO
     sprintf(pr.buff, "%3.0f", pp.pubList.Amp_hrs_remaining_soc);
     if ( Sen->saturated && blink==0 )
+    {
       disp_2 = "SAT";
+      dispAssign(true, SAT);
+    }
     else if ( blink==2 )
     {
       if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() )
+      {
         disp_2 = "fail";
+        dispAssign(true, fail_ib);
+    }
       else if ( Sen->Flt->ib_choice()!=0 )
+      {
         disp_2 = "accy";
+        dispAssign(true, accy);
+      }
       else
       {
         disp_2 = pr.buff;
@@ -526,13 +634,22 @@ void oled_display(Sensors *Sen, BatteryMonitor *Mon)
   #else
     sprintf(pr.buff, "%3.0f", min(pp.pubList.Amp_hrs_remaining_soc, 999.));
     if (Sen->saturated && blink==0)
+    {
       disp_2 = "SAT";
+      dispAssign(true, SAT);
+    }
     else if ( blink==2 )
     {
       if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() && !sp.mod_ib() )
+      {
         disp_2 = "fail";
+        dispAssign(true, fail_ib);
+      }
       else if ( ( Sen->Flt->ib_amp_fa() || Sen->Flt->ib_noa_fa() ) && !sp.mod_ib() )
+      {
         disp_2 = "accy";
+        dispAssign(true, accy);
+      }
       else
       {
         disp_2 = pr.buff;
