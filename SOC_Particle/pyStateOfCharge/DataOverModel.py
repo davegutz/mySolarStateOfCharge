@@ -515,7 +515,6 @@ class SavedData:
             self.ib_wrp_T_n = None
             self.ib_wrp_tau_n = None
             self.disable_amp_fault = None
-            self.disable_amp_fault_per = None
             self.vr = None
             self.ib_wrp_rate_n = None
             self.ib_wrp_state_n = None
@@ -710,7 +709,6 @@ class SavedData:
             self.ib_wrp_state_n = np.array(sel.ib_wrp_state_n[:i_end])
             self.ib_wrp_tau_n = np.array(sel.ib_wrp_tau_n[:i_end])
             self.disable_amp_fault = np.array(sel.disable_amp_fault[:i_end])
-            self.disable_amp_fault_per = np.array(sel.disable_amp_fault_per[:i_end])
             if hasattr(sel, 'vr'):
                 self.vr = np.array(sel.vr[:i_end])
             self.wrap_m_and_n_fa = np.bool_(np.array(sel.wrap_m_and_n_fa[:i_end]))
@@ -956,8 +954,6 @@ class SavedData:
             self.x_for_hx = np.copy(self.x)
         if self.disable_amp_fault is None:
             self.disable_amp_fault = np.copy(self.ib) * 0
-        if self.disable_amp_fault_per is None:
-            self.disable_amp_fault_per = np.copy(self.ib) * 0
         if self.time_e is None:
             self.time_e = np.copy(self.dt)
         if self.time_t is None:

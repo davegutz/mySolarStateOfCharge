@@ -238,7 +238,6 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     d_mod = rf.rec_append_fields(d_mod, 'P', np.array(P, dtype=float))
     z = d_mod.voc_stat_f.copy()
     d_mod = rf.rec_append_fields(d_mod, 'z', np.array(z, dtype=float))
-    # disable_amp_fault_per = d_mod.
 
     return d_mod
 
@@ -728,8 +727,7 @@ def calc_fault(d_ra, d_mod, Battery=None):
         ib_noa_hi_ = False
         ib_noa_lo_ = False
         ib_lo_active_ = False
-    disable_amp_fault_per_ = disable_amp_fault_ = (ib_amp_hi_ & ib_noa_hi_) | (ib_amp_lo_ & ib_noa_lo_)
-    d_mod = rf.rec_append_fields(d_mod, 'disable_amp_fault_per', np.array(disable_amp_fault_per_, dtype=bool))
+    disable_amp_fault_ = (ib_amp_hi_ & ib_noa_hi_) | (ib_amp_lo_ & ib_noa_lo_)
 
 
     d_mod = rf.rec_append_fields(d_mod, 'e_wrap', np.array(e_wrap, dtype=float))

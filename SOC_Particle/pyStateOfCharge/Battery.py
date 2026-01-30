@@ -394,7 +394,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap_n_rate = None
         self.e_wrap_m_rate = None
         self.disable_amp_fault = False
-        self.disable_amp_fault_per = False
         self.DisabAmpFltPer = TFDelay(False, Battery.DISAB_LO_SET, Battery.DISAB_LO_RESET, 0.1)
         self.LoopIbAmp = Looparound(Mon_=self, wrap_hi_amp=Battery.WRAP_HI_AMP, wrap_lo_amp=Battery.WRAP_LO_AMP,
                                     max_err=Battery.MAX_WRAP_ERR_FILT/(Battery.IB_ABS_MAX_NOA/Battery.IB_ABS_MAX_AMP),
@@ -468,7 +467,6 @@ class BatteryMonitor(Battery, EKF1x1):
             self.soc_ekf = SN.soc_ekf_init
             self.z_ekf = SN.z_init
             self.z = SN.z_init
-            self.disable_amp_fault_per = SN.mon_run.disable_amp_fault_per[0]
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -944,8 +942,6 @@ class BatteryMonitor(Battery, EKF1x1):
             if self.ib_noa_lo:
                 pass
             self.disable_amp_fault = (self.ib_amp_hi and self.ib_noa_hi) or (self.ib_amp_lo and self.ib_noa_lo)
-            self.disable_amp_fault_per = self.DisabAmpFltPer.calculate(self.disable_amp_fault, Battery.DISAB_LO_SET,
-                                                                       Battery.DISAB_LO_RESET, self.dt, reset)
             # print(f"ib_amp_hi/lo, ib_noa_hi/lo = {self.ib_amp_hi} {self.ib_amp_lo} {self.ib_noa_hi} {self.ib_noa_lo}")
             self.e_wrap_m_reset = reset or self.disable_amp_fault
             if rp.modeling_ib:

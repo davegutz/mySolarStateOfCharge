@@ -359,6 +359,7 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
   e_wrap_(0), e_wrap_filt_(0), fltw_(0UL), falw_(0UL),
   ib_amp_hi_(false), ib_amp_invalid_(false), ib_amp_lo_(false), ib_choice_(UsingDef),
   ib_choice_last_(UsingDef), ib_decision_(0), ib_diff_(0), ib_diff_f_(0), ib_lo_active_(true),
+  ib_lo_limited_hi_(false), ib_lo_limited_lo_(false),
   ib_noa_hi_(false), ib_noa_invalid_(false), ib_noa_lo_(false), ib_quiet_(0), ib_rate_(0),
   ib_sel_stat_(IB_SEL_STAT_DEF), ib_sel_stat_last_(IB_SEL_STAT_DEF), latched_fail_(false),
   latched_fail_fake_(false), reset_all_faults_(false), sp_preserving_(preserving), tb_sel_stat_(TB_SEL_STAT_DEF),
@@ -372,10 +373,10 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
   IbdNegPer = new TFDelay(false, IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, T);
   IbdHiPer = new TFDelay(false, IBATT_DISAGREE_SET, IBATT_DISAGREE_RESET, T);
   IbdLoPer = new TFDelay(false, IBATT_DISAGREE_SET, IBATT_DISAGREE_RESET, T);
-  DisabAmpFltPer = new TFDelay(false, DISAB_LO_SET, DISAB_LO_RESET, T);
   CcdiffPer  = new TFDelay(false, CC_DIFF_SET, CC_DIFF_RESET, T);
   IbAmpHardFail  = new TFDelay(false, IB_HARD_SET, IB_HARD_RESET, T);
-  IbLoActive  = new TFDelay(true, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET, T);
+  IbLoLimitedHi  = new TFDelay(true, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET, T);
+  IbLoLimitedLo  = new TFDelay(true, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET, T);
   IbNoAmpHardFail  = new TFDelay(false, IB_HARD_SET, IB_HARD_RESET, T);
   TbHardFail  = new TFDelay(false, TB_HARD_SET, TB_HARD_RESET, T);
   TbStaleFail  = new TFDelay(false, TB_STALE_SET, TB_STALE_RESET, T);
@@ -419,17 +420,19 @@ void Fault::cc_diff(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
 void Fault::ib_diff(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
 {
   boolean reset_loc = reset || reset_all_faults_;
-  if ( !ib_lo_active_ || disable_amp_fault_ ) ib_diff_ = 0.;
-  ib_diff_f_ = IbErrFilt->calculate(ib_diff_, reset_loc || disable_amp_fault_ || !ib_lo_active_, min(Sen->T, MAX_ERR_T));
+  if ( disable_amp_fault_ ) ib_diff_ = 0.;
+  else if ( ib_lo_limited_hi_ ) ib_diff_ = max(0., ib_diff_);  // limit error when low amp is pegged high
+  else if ( ib_lo_limited_lo_ ) ib_diff_ = min(0., ib_diff_);  // limit error when low amp is pegged low
+  ib_diff_f_ = IbErrFilt->calculate(ib_diff_, reset_loc || disable_amp_fault_ || ib_lo_limited_hi_ || ib_lo_limited_lo_, min(Sen->T, MAX_ERR_T));
   ib_diff_thr_ = IBATT_DISAGREE_THRESH*ap.ib_diff_slr;
-  faultAssign( IbdPosPer->calculate((ib_diff_f_>=ib_diff_thr_), IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, Sen->T, reset_loc) && 
-      ib_lo_active_, IB_DIFF_HI_FLT );
-  faultAssign( IbdNegPer->calculate((ib_diff_f_<=-ib_diff_thr_), IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, Sen->T, reset_loc) &&
-      ib_lo_active_, IB_DIFF_LO_FLT );
+  faultAssign( IbdPosPer->calculate((ib_diff_f_>=ib_diff_thr_), IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, Sen->T, reset_loc),
+    IB_DIFF_HI_FLT );
+  faultAssign( IbdNegPer->calculate((ib_diff_f_<=-ib_diff_thr_), IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, Sen->T, reset_loc),
+    IB_DIFF_LO_FLT );
   failAssign( IbdHiPer->calculate(ib_diff_hi_flt(), IBATT_DISAGREE_SET, IBATT_DISAGREE_RESET, Sen->T, reset_loc),
-      IB_DIFF_HI_FA ); // IB_DIFF_FA not latched
+    IB_DIFF_HI_FA ); // IB_DIFF_FA not latched
   failAssign( IbdLoPer->calculate(ib_diff_lo_flt(), IBATT_DISAGREE_SET, IBATT_DISAGREE_RESET, Sen->T, reset_loc),
-     IB_DIFF_LO_FA ); // IB_DIFF_FA not latched
+    IB_DIFF_LO_FA ); // IB_DIFF_FA not latched
 
   // if ( sp.debug()==2 || sp.debug()==4 ) Serial.printf("ib_diff_%7.3f reset_loc %d disable_amp_fault_ %d ib_diff_f_ %7.3f ib_diff_thr_ %7.3f ib_lo_active_ %d\n",
   //    ib_diff_, reset_loc, disable_amp_fault_, ib_diff_f_, ib_diff_thr_, ib_lo_active_);
@@ -449,14 +452,18 @@ void Fault::ib_logic(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
       ib_amp_lo_ = Sen->ib_amp_model() <= HDWE_IB_HI_LO_AMP_LO / sp.nP();
       ib_noa_hi_ = Sen->ib_noa_model() >= HDWE_IB_HI_LO_NOA_HI / sp.nP();
       ib_noa_lo_ = Sen->ib_noa_model() <= HDWE_IB_HI_LO_NOA_LO / sp.nP();
-      ib_lo_active_ = IbLoActive->calculate(HDWE_IB_HI_LO_AMP_LO / sp.nP() < Sen->Ib_noa_model &&
-                                            Sen->Ib_noa_model < HDWE_IB_HI_LO_AMP_HI / sp.nP(),
-                                            IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET, Sen->T , reset_loc);
+      ib_lo_limited_hi_ = IbLoLimitedHi->calculate(ib_amp_hi_, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET,
+                                                   Sen->T , reset_loc);
+      ib_lo_limited_lo_ = IbLoLimitedLo->calculate(ib_amp_lo_, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET,
+                                                   Sen->T , reset_loc);
+      ib_lo_active_ = !ib_lo_limited_hi_ && !ib_lo_limited_lo_;
     #else
       ib_amp_hi_ = false;
       ib_amp_lo_ = false;
       ib_noa_hi_ = false;
       ib_noa_lo_ = false;
+      ib_lo_limited_hi_ = false;
+      ib_lo_limited_lo_ = false;
       ib_lo_active_ = false;
     #endif
   }
@@ -468,9 +475,11 @@ void Fault::ib_logic(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
       ib_amp_lo_ = Sen->ib_amp_hdwe() <= HDWE_IB_HI_LO_AMP_LO / sp.nP();
       ib_noa_hi_ = Sen->ib_noa_hdwe() >= HDWE_IB_HI_LO_NOA_HI / sp.nP();
       ib_noa_lo_ = Sen->ib_noa_hdwe() <= HDWE_IB_HI_LO_NOA_LO / sp.nP();
-      ib_lo_active_ = IbLoActive->calculate(HDWE_IB_HI_LO_AMP_LO / sp.nP() < Sen->Ib_noa_hdwe &&
-                                            Sen->Ib_noa_hdwe < HDWE_IB_HI_LO_AMP_HI / sp.nP(),
-                                            IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET, Sen->T , reset_loc);
+      ib_lo_limited_hi_ = IbLoLimitedHi->calculate(ib_amp_hi_, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET,
+                                                   Sen->T , reset_loc);
+      ib_lo_limited_lo_ = IbLoLimitedLo->calculate(ib_amp_lo_, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET,
+                                                   Sen->T , reset_loc);
+      ib_lo_active_ =    !ib_lo_limited_hi_ && !ib_lo_limited_lo_;
     #else
       ib_amp_hi_ = false;
       ib_amp_lo_ = false;
@@ -480,7 +489,6 @@ void Fault::ib_logic(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
     #endif
   }
   disable_amp_fault_ = (ib_amp_hi_ && ib_noa_hi_) || (ib_amp_lo_ && ib_noa_lo_);
-  disable_amp_fault_per_ = DisabAmpFltPer->calculate( disable_amp_fault_, DISAB_LO_SET, DISAB_LO_RESET, Sen->T, reset);
 
 }
 
@@ -653,9 +661,10 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
 
   txBuf = String::format("\nFault:\n") +
     String::format(" cc_diff%9.6f  thr%9.6f Fc^\n", cc_diff_, cc_diff_thr_) +
-    String::format(" ib_lo_active %d\n", ib_lo_active_) +
+    String::format(" ib_lo_limited_hi %d\n", ib_lo_limited_hi_) +
+    String::format(" ib_lo_active     %d\n", ib_lo_active_) +
+    String::format(" ib_lo_limited_lo %d\n", ib_lo_limited_lo_) +
     String::format(" ib_diff%7.3f thr%7.3f Fd^\n", ib_diff_f_, ib_diff_thr_) +
-    // String::format(" e_wrap_filt%7.3f thr%7.3f Fo^%7.3f Fi^\n", e_wrap_filt_, ewlo_thr_, ewhi_thr_) +
     String::format(" e_wrap_filt%7.3f\n", e_wrap_filt_) +
     String::format(" ib_quiet%7.3f thr%7.3f Fq v\n", ib_quiet_, ib_quiet_thr_) +
     String::format(" sel_brk_hdwe:     ");
@@ -717,8 +726,8 @@ txBuf = String::format("") +
     String::format("*4-fail_ibm%2d\n", dispRead(fail_ibm)) +
     String::format("*3-fail_ib %2d\n", dispRead(fail_ib)) +
     String::format("2-red_loss %2d\n", dispRead(dispw::red_loss)) +
-    String::format("1-diff_ib %2d\n", dispRead(diff_ib)) +
-    String::format("0-conn    %2d\n\n", dispRead(conn)); 
+    String::format("1-diff_ib  %2d\n", dispRead(diff_ib)) +
+    String::format("0-conn     %2d\n\n", dispRead(conn)); 
   sendTxBuf(txBuf, true, true);
 // enum dispw {conn=0, diff_ib=1, red_loss=2, fail_ib=3, fail_ibm=4, fail_vb=5, flt_tb=6, flt_ekf=7, SAT=8, off=9, accy=10, time_long=11, Count};
 
@@ -1006,6 +1015,12 @@ void Fault::ib_decision_hi_lo(Sensors *Sen)
           ib_choice_ = UsingDef;  // ambiguous; keep trying
           latched_fail_ = false;
           ib_decision_ = 8;
+        }
+        else if ( cc_diff_fa() ) // isolated
+        {
+          ib_choice_ = UsingNoa; 
+          latched_fail_ = true;
+          ib_decision_ = 10;
         }
         else  // all's well
         {
