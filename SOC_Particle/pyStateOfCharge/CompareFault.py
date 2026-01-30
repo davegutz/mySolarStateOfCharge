@@ -29,7 +29,7 @@ from PlotGP import tune_r
 from PlotKiller import show_killer
 from Colors import Colors
 from resample import remove_nan
-from DataOverModel import plq
+from plot.plq import plq as plq
 from Chemistry_BMS import ib_lag
 from myFilters import LagExp
 

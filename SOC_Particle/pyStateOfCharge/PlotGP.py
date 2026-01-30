@@ -24,7 +24,7 @@ Dependencies:
 import numpy as np
 import matplotlib.pyplot as plt
 from myFilters import InlineExpLag
-from DataOverModel import plq
+from plot.plq import plq as plq
 # below suppresses runtime error display******************
 # import os
 # os.environ["KIVY_NO_CONSOLELOG"] = "1"

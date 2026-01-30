@@ -29,7 +29,7 @@ from PlotGP import tune_r
 from PlotKiller import show_killer
 from Colors import Colors
 from resample import remove_nan
-from DataOverModel import plq
+from plot.plq import plq as plq
 
 #  For this battery Battleborn 100 Ah with 1.084 x capacity
 IB_BAND = 1.  # Threshold to declare charging or discharging

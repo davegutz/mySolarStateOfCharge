@@ -423,7 +423,7 @@ class Wave:
 if __name__ == "__main__":
     import numpy as np
     import matplotlib.pyplot as plt
-    from DataOverModel import plq
+    from plot.plq import plq as plq
     plt.rcParams['axes.grid'] = True
     plt.rcParams['legend.fontsize'] = 'small'
     from butterHighPassDemo import butter_highpass_filter

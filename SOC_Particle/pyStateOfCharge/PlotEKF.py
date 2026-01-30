@@ -22,7 +22,7 @@ Dependencies:
     - reportlab  (figures, pdf)
 """
 import matplotlib.pyplot as plt
-from DataOverModel import plq
+from plot.plq import plq as plq
 import sys
 if sys.platform == 'darwin':
     import matplotlib

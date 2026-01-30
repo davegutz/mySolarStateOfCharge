@@ -48,7 +48,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=False,
                     verbose=True, scale_in=1., slr_hys_sim=1., request_history=5, Battery=None, init_time_in=None,
-                    time_shift_in=None, strict_overplot=False):
+                    time_shift_in=None, strict_overplot=False, terse=False):
 
     if data_file.count('soc4p2_hi_lo'):
        IB_CHARGE_NOA = True
@@ -58,7 +58,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
     print(f"\n \
 compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n \
 {IB_CHARGE_NOA=}\n{verbose=}\n{scale_in=}\n{slr_hys_sim=}\n{request_history=}\n{init_time_in=}\n{time_shift_in=}\n \
-{strict_overplot=}\n \
+{strict_overplot=}\n{terse=}\n \
           ")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
@@ -123,27 +123,28 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_
         data_root_test = data_root_test.replace('.csv', '')
         filename = data_root_test
         plot_title = dir_root_test + '/' + data_root_test + '   ' + date_time
-        if f is not None and temp_flt_file_clean and len(f.time_ux) > 1 and not strict_overplot:
+        if not terse and f is not None and temp_flt_file_clean and len(f.time_ux) > 1 and not strict_overplot:
             fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                              fig_list=fig_list, cc_dif_tol=cc_dif_tol_in)
-        fig_list, fig_files = ekf_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
-                                       plot_title=plot_title, fig_list=fig_list, run_str='',
-                                       ver_str='_ver', strict_overplot=strict_overplot)
-        fig_list, fig_files = sim_s_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
-                                         plot_title=plot_title, fig_list=fig_list, run_str='',
-                                         ver_str='_ver', strict_overplot=strict_overplot)
-        fig_list, fig_files = gp_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files=fig_files,
-                                      plot_title=plot_title, fig_list=fig_list, run_str='',
-                                      ver_str='_ver', Battery=Battery, strict_overplot=strict_overplot)
-        fig_list, fig_files = off_on_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
+        if not terse:
+            fig_list, fig_files = ekf_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
+                                           plot_title=plot_title, fig_list=fig_list, run_str='',
+                                           ver_str='_ver', strict_overplot=strict_overplot)
+            fig_list, fig_files = sim_s_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
+                                             plot_title=plot_title, fig_list=fig_list, run_str='',
+                                             ver_str='_ver', strict_overplot=strict_overplot)
+            fig_list, fig_files = gp_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files=fig_files,
                                           plot_title=plot_title, fig_list=fig_list, run_str='',
-                                          ver_str='_ver', strict_overplot=strict_overplot)
-        if tune_in:
-            fig_list, fig_files = tune_r(mon_run, mon_ver, sim_s_ver, filename, fig_files,
-                                         plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')
+                                          ver_str='_ver', Battery=Battery, strict_overplot=strict_overplot)
+            fig_list, fig_files = off_on_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
+                                              plot_title=plot_title, fig_list=fig_list, run_str='',
+                                              ver_str='_ver', strict_overplot=strict_overplot)
+            if tune_in:
+                fig_list, fig_files = tune_r(mon_run, mon_ver, sim_s_ver, filename, fig_files,
+                                             plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')
         fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list, run_str='',
-                                       ver_str='_ver', strict_overplot=strict_overplot)
+                                       ver_str='_ver', strict_overplot=strict_overplot, terse=terse)
 
         # Copies
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
@@ -222,6 +223,8 @@ def main():
 
     # plots = False
     plots = True
+    # terse_in = False
+    terse_in = True
 
     strict_overplot_in = False
     # strict_overplot_in = True
@@ -229,7 +232,7 @@ def main():
     compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
                     use_mon_soc_=use_mon_soc_, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
                     request_history=request_hist_in, init_time_in=init_time_in, time_shift_in=time_shift_in,
-                    strict_overplot=strict_overplot_in)
+                    strict_overplot=strict_overplot_in, terse=terse_in)
 
 
 # import cProfile

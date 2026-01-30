@@ -86,6 +86,7 @@ def_dict = {
         'macro': 'end_early',
         'mod_in_app': "247",
         'modeling': True,
+        'terse': True,
     },
     }
 
@@ -724,7 +725,7 @@ def compare_run():
     if modeling.get():
         print('compare_run_sim.  save_pdf_path', os.path.join(Test.version_path, './figures'))
         # master.withdraw()
-        compare_run_sim(data_file=Test.file_path, unit_key=Test.key, strict_overplot=True)
+        compare_run_sim(data_file=Test.file_path, unit_key=Test.key, strict_overplot=True, terse=terse.get())
         # master.deiconify()
     else:
         if not Ref.key_exists_in_file:

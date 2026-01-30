@@ -29,7 +29,7 @@ if sys.platform == 'darwin':
     matplotlib.use('tkagg')
 plt.rcParams.update({'figure.max_open_warning': 0})
 import Globals as G
-# from DataOverModel import plq
+# from plot.plq import plq as plq
 
 
 class Retained:
