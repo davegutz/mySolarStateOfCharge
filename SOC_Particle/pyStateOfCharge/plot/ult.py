@@ -12,7 +12,7 @@
 #
 # See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
 
-""" ult_1 does..TODO
+""" ult the ultimate general overview plots
 Dependencies:
     - numpy      (everything)
     - plq       GP plotter function

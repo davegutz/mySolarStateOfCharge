@@ -27,7 +27,8 @@ from PlotKiller import show_killer
 from PlotHist import tune_hs, hs_plot
 from PlotOffOn import off_on_plot
 from DataOverModel import dom_plot
-from DataOverModel import write_clean_file, plq
+from DataOverModel import write_clean_file
+from plot.plq import plq as plq
 from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files, precleanup_fig_files
 from datetime import datetime
 from load_data import load_data, remove_nan, remove_0T

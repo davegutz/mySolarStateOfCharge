@@ -13,7 +13,7 @@
 #
 # See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
 
-""" dom does..TODO
+""" General data-over-model
 Dependencies:
     - numpy      (everything)
     - matplotlib (plots)
@@ -24,7 +24,10 @@ import matplotlib.pyplot as plt
 from plot.plq import plq as plq
 
 def init_1(mr, mv, sr, sv, smv, filename, plot_title=None, strict_overplot=False, fig_list=None, fig_files=None):
-    fig_list.append(plt.figure())  # init 1
+    if fig_files is None:
+        fig_files = []
+
+    fig_list.append(plt.figure())
     plt.subplot(221)
     plt.title(plot_title + ' init 1')
     print('init 1', end=':  ')
@@ -54,6 +57,9 @@ def init_1(mr, mv, sr, sv, smv, filename, plot_title=None, strict_overplot=False
     return fig_list, fig_files
 
 def init_1a(mr, mv, sr, sv, smv, filename, plot_title=None, strict_overplot=False, fig_list=None, fig_files=None):
+    if fig_files is None:
+        fig_files = []
+
     fig_list.append(plt.figure())
     plt.subplot(221)
     plt.title(plot_title + ' 1a')
@@ -99,6 +105,8 @@ def init_1a(mr, mv, sr, sv, smv, filename, plot_title=None, strict_overplot=Fals
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     plt.savefig(fig_file_name, format="png")
+
+    return fig_list, fig_files
 
 def dom_2(mr, mv, sr, sv, smv, filename, plot_title=None, strict_overplot=False, fig_list=None, fig_files=None):
     fig_list.append(plt.figure())

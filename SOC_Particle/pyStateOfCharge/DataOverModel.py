@@ -44,7 +44,6 @@ if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
 plt.rcParams.update({'figure.max_open_warning': 0})
-from plot.plq import plq as plq
 import plot.dom as dom
 import plot.ult as ult
 

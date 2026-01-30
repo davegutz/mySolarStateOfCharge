@@ -991,6 +991,11 @@ def handle_run_unit(*_args):
     update_data_buttons()
 
 
+def handle_terse(*_args):
+    cf['others']['terse'] = str(terse.get())
+    cf.save_to_file()
+
+
 def handle_test_battery(*_args):
     Test.battery = test_battery.get()
     Test.update_battery_stuff()
@@ -1591,11 +1596,23 @@ if __name__ == '__main__':
                                 wraplength=wrap_length, justify=tk.LEFT, font=butt_font_large)
     save_data_button.pack(side=tk.LEFT, padx=5, pady=5)
 
+
     save_progress_label = tk.Label(sav_panel, text='          ', font=label_font_gentle)
     save_progress_label.pack(side=tk.LEFT, padx=5, pady=5)
     save_progress_button = myButton(sav_panel, text='save progress', command=save_progress, fg="black", bg=bg_color,
                                     wraplength=wrap_length, justify=tk.LEFT)
     save_progress_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+
+    terse_str = cf['others']['terse']
+    if terse_str == 'True':
+        terse = tk.BooleanVar(master, True)
+    else:
+        terse = tk.BooleanVar(master, False)
+    terse_button = tk.Checkbutton(sav_panel, text='terse plots', variable=terse, onvalue=True, offvalue=False)
+    terse_button.pack(side=tk.LEFT, pady=2, fill='x')
+    terse.trace_add('write', handle_terse)
+
 
     clear_data_button = myButton(sav_panel, text='clear', command=clear_data_verbose, fg="red", bg=bg_color,
                                  wraplength=wrap_length, justify=tk.RIGHT)
@@ -1603,6 +1620,7 @@ if __name__ == '__main__':
     save_data_as_button = myButton(sav_panel, text='save as', command=save_data_as, fg="red", bg=bg_color,
                                    wraplength=wrap_length, justify=tk.LEFT)
     save_data_as_button.pack(side=tk.RIGHT, padx=5, pady=5)
+
 
     # Run panel
     mod_in_app = tk.IntVar(master, int(cf['others']['mod_in_app']))
@@ -1660,6 +1678,7 @@ if __name__ == '__main__':
     handle_test_battery()
     handle_run_battery()
     handle_modeling()
+    handle_terse()
     handle_macro()
     handle_option()
     master.mainloop()

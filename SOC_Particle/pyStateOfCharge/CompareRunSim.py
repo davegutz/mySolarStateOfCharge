@@ -142,6 +142,7 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_
             if tune_in:
                 fig_list, fig_files = tune_r(mon_run, mon_ver, sim_s_ver, filename, fig_files,
                                              plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')
+
         fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list, run_str='',
                                        ver_str='_ver', strict_overplot=strict_overplot, terse=terse)
@@ -223,8 +224,8 @@ def main():
 
     # plots = False
     plots = True
-    # terse_in = False
-    terse_in = True
+    terse_in = False
+    # terse_in = True
 
     strict_overplot_in = False
     # strict_overplot_in = True
