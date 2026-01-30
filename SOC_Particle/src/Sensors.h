@@ -393,14 +393,14 @@ public:
   boolean ib_really_quiet() { return ib_really_quiet_; };
   float ib_rate() { return ib_rate_; };
   void ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
-  int8_t latched_fail() { return latched_fail_; };
-  void latched_fail(const boolean cmd) { latched_fail_ = cmd; };
-  int8_t latched_fail_fake() { return latched_fail_fake_; };
-  void latched_fail_fake(const boolean cmd) { latched_fail_fake_ = cmd; };
+  int8_t latched_fail() { return latch_; };
+  void latched_fail(const boolean cmd) { latch_ = cmd; };
+  int8_t latch_fake() { return latch_fake_; };
+  void latch_fake(const boolean cmd) { latch_fake_ = cmd; };
   Looparound *LoopIbAmp;    // Looparound for Ib amp
   Looparound *LoopIbNoa;    // Looparound for Ib noa
-  boolean no_fails() { return !latched_fail_; };
-  boolean no_fails_fake() { return !latched_fail_fake_; };
+  boolean no_fails() { return !latch_; };
+  boolean no_fails_fake() { return !latch_fake_; };
   void preserving(const boolean cmd) {  sp.put_Preserving(cmd); }; // TODO:  Parameter class with = operator --> put. Then *sp_preserving = cmd
   boolean preserving() { return *sp_preserving_; };
   void pretty_print(Sensors *Sen, BatteryMonitor *Mon);
@@ -505,8 +505,8 @@ protected:
   float ib_rate_;           // ib rate, A/s
   int8_t ib_sel_stat_;      // Memory of Ib signal selection, -1=noa, 0=none, 1=a
   int8_t ib_sel_stat_last_; // past value
-  boolean latched_fail_;    // There is a latched fail, T=latched fail
-  boolean latched_fail_fake_; // There would be a latched fail if not faking, T=latched fail
+  boolean latch_;    // There is a latched fail, T=latched fail
+  boolean latch_fake_; // There would be a latched fail if not faking, T=latched fail
   boolean reset_all_faults_;  // Reset all fault logic, gets reset before serial call
   boolean reset_all_faults_print_;  // Reset all fault logic
   uint8_t *sp_preserving_;  // Saving fault buffer.   Stopped recording.  T=preserve

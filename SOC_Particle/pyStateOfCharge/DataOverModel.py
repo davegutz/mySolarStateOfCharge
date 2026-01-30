@@ -467,6 +467,7 @@ class SavedData:
             self.wrap_lo_n_fa = None
             self.wv_fa = None
             self.ib_sel_stat = None
+            self.ib_choice = None
             self.ib_h = None
             self.ib_s = None
             self.mib = None
@@ -622,6 +623,7 @@ class SavedData:
             self.wrap_lo_n_fa = np.bool_(np.array(falw) & 2**17)
             self.wrap_m_and_n_fa = (self.wrap_lo_n_fa & self.wrap_lo_m_fa) | (self.wrap_hi_n_fa & self.wrap_hi_m_fa)
             self.ib_sel_stat = np.array(sel.ib_sel_stat[:i_end])
+            self.ib_choice = np.array(sel.ib_choice[:i_end])
             self.ib_h = np.array(sel.ib_h[:i_end])
             self.ib_s = np.array(sel.ib_s[:i_end])
             self.mib = np.array(sel.mib[:i_end])
@@ -854,6 +856,8 @@ class SavedData:
             self.ib_sel = np.copy(self.ib)
         if self.ib_sel_stat is None:
             self.ib_sel_stat = np.copy(self.ib) * 0
+        if self.ib_choice is None:
+            self.ib_choice = np.copy(self.ib) * 0
         if self.ib_h is None:
             self.ib_h = np.copy(self.ib)
         if self.ib_s is None:

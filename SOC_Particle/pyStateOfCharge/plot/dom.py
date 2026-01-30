@@ -82,8 +82,8 @@ def init_1a(mr, mv, sr, sv, smv, filename, plot_title=None, strict_overplot=Fals
     plt.legend(loc=1)
     if not strict_overplot and hasattr(mr, 'ib_sel_stat'):
         plt.subplot(222)
-        plq(plt, mr, 'time', mr, 'ib_sel_stat', color='black', linestyle='-')
-        plq(plt, mv, 'time', mv, 'ib_sel_stat', color='red', linestyle='--', warn=False)
+        plq(plt, mr, 'time', mr, 'ib_choice', color='black', linestyle='-')
+        plq(plt, mv, 'time', mv, 'ib_choice', color='red', linestyle='--', warn=False)
         plq(plt, mr, 'time', mr, 'ib_dec', add=2, color='black', linestyle='-')
         plq(plt, mv, 'time', mv, 'ib_dec', add=2, color='red', linestyle='--', warn=False)
         plt.legend(loc=1)

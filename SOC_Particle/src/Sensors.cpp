@@ -361,8 +361,8 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
   ib_choice_last_(UsingDef), ib_decision_(0), ib_diff_(0), ib_diff_f_(0), ib_lo_active_(true),
   ib_lo_limited_hi_(false), ib_lo_limited_lo_(false),
   ib_noa_hi_(false), ib_noa_invalid_(false), ib_noa_lo_(false), ib_quiet_(0), ib_rate_(0),
-  ib_sel_stat_(IB_SEL_STAT_DEF), ib_sel_stat_last_(IB_SEL_STAT_DEF), latched_fail_(false),
-  latched_fail_fake_(false), reset_all_faults_(false), sp_preserving_(preserving), tb_sel_stat_(TB_SEL_STAT_DEF),
+  ib_sel_stat_(IB_SEL_STAT_DEF), ib_sel_stat_last_(IB_SEL_STAT_DEF), latch_(false),
+  latch_fake_(false), reset_all_faults_(false), sp_preserving_(preserving), tb_sel_stat_(TB_SEL_STAT_DEF),
   tb_sel_stat_last_(TB_SEL_STAT_DEF), vb_sel_stat_(VB_SEL_STAT_DEF),
   vb_sel_stat_last_(VB_SEL_STAT_DEF), wrap_hi_amp_(WRAP_HI_AMP), wrap_hi_noa_(WRAP_HI_NOA),
    wrap_lo_amp_(WRAP_LO_AMP), wrap_lo_noa_(WRAP_LO_NOA)
@@ -687,8 +687,8 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
     String::format(" Ibh%7.3f Ibh %7.3f Ib%7.3f\n\n", Sen->Ib_hdwe, Sen->Ib_hdwe_model, Sen->Ib);
   sendTxBuf(txBuf, true, true);
 
-  if ( ib_choice_ != ib_choice_last_ || vb_sel_stat_ != vb_sel_stat_last_ || tb_sel_stat_ != tb_sel_stat_last_ )
-    debug_qs(Mon, Sen);
+  // if ( ib_choice_ != ib_choice_last_ || vb_sel_stat_ != vb_sel_stat_last_ || tb_sel_stat_ != tb_sel_stat_last_ )
+  debug_qs(Mon, Sen);
   
 txBuf = String::format("") +
   #ifdef HDWE_IB_HI_LO
@@ -766,7 +766,7 @@ txBuf = String::format("") +
 //          Vb,
 
 //          Tb, Tb_f
-//          latched_fail_
+//          latch_
 void Fault::select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const boolean reset)
 {
   // Reset
@@ -782,16 +782,16 @@ void Fault::select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const boolean re
     ib_decision_hi_lo(Sen);
     if ( ap.fake_faults )
     {
-      latched_fail_fake_ = latched_fail_;
-      latched_fail_ = false;
+      latch_fake_ = latch_;
+      latch_ = false;
       ib_choice_ = ibSel(sp.ib_force());
     }
   #else
     ib_decision_active_standby(Sen);
     if ( ap.fake_faults )
     {
-      latched_fail_fake_ = latched_fail_;
-      latched_fail_ = false;
+      latch_fake_ = latch_;
+      latch_ = false;
       ib_sel_stat_ = sp.ib_force();
     }
   #endif
@@ -802,23 +802,23 @@ void Fault::select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const boolean re
     if ( !vb_sel_stat_last_ && !sp.mod_vb() )
     {
       vb_sel_stat_ = 0;   // Latches
-      latched_fail_ = true;
+      latch_ = true;
     }
     if (  wrap_vb_fa() || vb_fa() )
     {
       vb_sel_stat_ = 0; // Latches
-      latched_fail_ = true;
+      latch_ = true;
     }
   }
   else  // fake_faults
   {
     if ( !vb_sel_stat_last_ )
     {
-      latched_fail_fake_ = true;
+      latch_fake_ = true;
     }
     if (  wrap_vb_fa() || vb_fa() )
     {
-      latched_fail_fake_ = true;
+      latch_fake_ = true;
     }
   }
 
@@ -833,7 +833,7 @@ void Fault::select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const boolean re
   if ( tb_fa() )  // Latches
   {
     tb_sel_stat_ = 0;
-    latched_fail_ = true;
+    latch_ = true;
   }
   else
     tb_sel_stat_ = 1;
@@ -863,8 +863,8 @@ void Fault::select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const boolean re
     if ( ( falw_==0 && fltw_==0 ) || count>1 )
     {
       reset_all_faults_ = false;
-      latched_fail_ = false;
-      latched_fail_fake_ = false;
+      latch_ = false;
+      latch_fake_ = false;
       preserving(false);
       count = 0;
     }
@@ -882,35 +882,35 @@ void Fault::ib_decision_active_standby(Sensors *Sen)
   if ( ap.fake_faults )
   {
     ib_sel_stat_ = IB_SEL_STAT_DEF;
-    latched_fail_ = false;
+    latch_ = false;
     ib_decision_ = 10;
   }
-  else if ( latched_fail_ )
+  else if ( latch_ )
     // ib_decision_ = 0;
     {}
   else if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() )  // these separate inputs don't latch
   {
     ib_decision_ = 1;
     ib_sel_stat_ = 0;    // takes two not latched inputs to set and latch
-    latched_fail_ = true;
+    latch_ = true;
   }
   else if ( sp.ib_force()>0 && !Sen->Flt->ib_amp_fa() )
   {
     ib_decision_ = 2;
     ib_sel_stat_ = 1;
-    latched_fail_ = true;
+    latch_ = true;
   }
   else if ( ib_sel_stat_last_==-1 && !Sen->Flt->ib_noa_fa() && !reset_all_faults_ )  // latches
   {
     ib_decision_ = 3;
     ib_sel_stat_ = -1;
-    latched_fail_ = true;
+    latch_ = true;
   }
   else if ( sp.ib_force()<0 && !Sen->Flt->ib_noa_fa() && !reset_all_faults_)  // latches
   {
     ib_decision_ = 4;
     ib_sel_stat_ = -1;
-    latched_fail_ = true;
+    latch_ = true;
   }
   else if ( sp.ib_force()==0 )  // auto
   {
@@ -918,7 +918,7 @@ void Fault::ib_decision_active_standby(Sensors *Sen)
     {
       ib_decision_ = 5;
       ib_sel_stat_ = -1;
-      latched_fail_ = true;
+      latch_ = true;
     }
     else if ( ib_diff_fa() )  // this input doesn't latch
     {
@@ -926,13 +926,13 @@ void Fault::ib_decision_active_standby(Sensors *Sen)
       {
         ib_decision_ = 6;
         ib_sel_stat_ = -1;      // two not latched fails but result of 'and' with ib_diff_fa latches latched_fail
-        latched_fail_ = true;
+        latch_ = true;
       }
       else if ( cc_diff_fa() )  // this input doesn't latch but result of 'and' with ib_diff_fa latches latched_fail
       {
         ib_decision_ = 7;
         ib_sel_stat_ = -1;      // takes two not latched inputs to isolate ib failure and to set and latch ib_sel
-        latched_fail_ = true;
+        latch_ = true;
       }
     }
   }
@@ -940,44 +940,44 @@ void Fault::ib_decision_active_standby(Sensors *Sen)
             ( (sp.ib_force() >= 0) && ib_sel_stat_last_< 1 )   )  // Latches.  Must reset to move out of no amp selection.  ==0 not reachable
   {
     ib_decision_ = 8;
-    latched_fail_ = true;
+    latch_ = true;
   }
   else
   {
-    latched_fail_ = false;
+    latch_ = false;
   }
   faultAssign(ib_sel_stat_!=1 || sp.ib_force()!=0  || ib_diff_fa() || ib_amp_fa() || ib_noa_fa() || vb_fail(), RED_LOSS); // for active-standby, redundancy loss anytime ib_sel_stat<0
 
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==62 ) Serial.printf("fake_faults %d ib_force %d reset %d ib_sel_stat_last %d ib_amp_fa %d ib_noa_fa %d ib_diff_fa %d vb_sel_stat_last %d wrap_m_fa %d wrap_n_fa %d  cc_diff_fa %d latched_fail_ %d ib_sel_stat %d ib_decision_ %d\n", ap.fake_faults, sp.ib_force(), reset_all_faults_, ib_sel_stat_last_, ib_amp_fa(), ib_noa_fa(), ib_diff_fa(), vb_sel_stat_last_, wrap_m_fa(), wrap_n_fa(), cc_diff_fa(), latched_fail_, ib_sel_stat_, ib_decision_);
+    if ( sp.debug()==62 ) Serial.printf("fake_faults %d ib_force %d reset %d ib_sel_stat_last %d ib_amp_fa %d ib_noa_fa %d ib_diff_fa %d vb_sel_stat_last %d wrap_m_fa %d wrap_n_fa %d  cc_diff_fa %d latch_ %d ib_sel_stat %d ib_decision_ %d\n", ap.fake_faults, sp.ib_force(), reset_all_faults_, ib_sel_stat_last_, ib_amp_fa(), ib_noa_fa(), ib_diff_fa(), vb_sel_stat_last_, wrap_m_fa(), wrap_n_fa(), cc_diff_fa(), latch_, ib_sel_stat_, ib_decision_);
   #endif
 }
 
 // Select ib decision table hi-lo
 // Inputs:  ib_amp_fa, ib_noa_fa, ib_force, ib_diff_fa, vb_sel_stat_last_, wrap_m_fa, wrap_n_fa, cc_diff_fa, wrap_hi_or_lo_fa
-// Outputs:  ib_decision_, ib_choice_, latched_fail_
+// Outputs:  ib_decision_, ib_choice_, latch_
 void Fault::ib_decision_hi_lo(Sensors *Sen)
 {
-  boolean latched_fail_enter = latched_fail_;
-  if ( latched_fail_ )
+  boolean latch_last = latch_;
+  if ( latch_ )
     // ib_decision_ = xx;   lgv
     {}
   else if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() )  // these separate inputs don't latch
   {
     ib_choice_ = UsingNone;
-    latched_fail_ = true;
+    latch_ = true;
     ib_decision_ = 1;
   }
   else if ( sp.ib_force()>0 && !Sen->Flt->ib_noa_fa() )
   {
     ib_choice_ = UsingAmp;
-    latched_fail_ = true;
+    latch_ = true;
     ib_decision_ = 2;
   }
   else if ( sp.ib_force()<0 && !Sen->Flt->ib_noa_fa() && !reset_all_faults_)  // latches
   {
     ib_choice_ = UsingNoa;
-    latched_fail_ = true;
+    latch_ = true;
     ib_decision_ = 3;
   }
   else if ( sp.ib_force()==0 )  // auto section
@@ -985,13 +985,13 @@ void Fault::ib_decision_hi_lo(Sensors *Sen)
     if ( Sen->Flt->ib_amp_fa() && !Sen->Flt->ib_noa_fa() )  // these inputs don't latch
     {
       ib_choice_ = UsingNoa;
-      latched_fail_ = true;
+      latch_ = true;
       ib_decision_ = 4;
     }
     else if ( !Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() )  // these inputs don't latch
     {
       ib_choice_ = UsingAmp;
-      latched_fail_ = true;
+      latch_ = true;
       ib_decision_ = 5;
     }
     else if ( ib_diff_fa() )  // this input doesn't latch
@@ -1001,75 +1001,75 @@ void Fault::ib_decision_hi_lo(Sensors *Sen)
         if ( Sen->Flt->wrap_m_fa() && !Sen->Flt->wrap_n_fa() )
         {
           ib_choice_ = UsingNoa;
-          latched_fail_ = true;
+          latch_ = true;
           ib_decision_ = 6;
         }
         else if ( !Sen->Flt->wrap_m_fa() && Sen->Flt->wrap_n_fa() )
         {
           ib_choice_ = UsingAmp;
-          latched_fail_ = true;
+          latch_ = true;
           ib_decision_ = 7;
         }
         else if ( Sen->Flt->wrap_m_fa() && Sen->Flt->wrap_n_fa() )
         {
           ib_choice_ = UsingDef;  // ambiguous; keep trying
-          latched_fail_ = false;
+          latch_ = false;
           ib_decision_ = 8;
         }
         else if ( cc_diff_fa() ) // isolated
         {
           ib_choice_ = UsingNoa; 
-          latched_fail_ = true;
+          latch_ = true;
           ib_decision_ = 10;
         }
         else  // all's well
         {
           ib_choice_ = ib_choice_last_;
-          latched_fail_ = latched_fail_enter;
+          latch_ = latch_last;
           ib_decision_ = 0;
         }
       }
       else if ( cc_diff_fa() )  // don't know how to isolate due to weighting of amp and noa
       {
         ib_choice_ = UsingDef;  // ambiguous; keep trying
-        latched_fail_ = false;
+        latch_ = false;
         ib_decision_ = 10;
       }
       else  // all's well
       {
         ib_choice_ = ib_choice_last_;
-        latched_fail_ = latched_fail_enter;
+        latch_ = latch_last;
         ib_decision_ = 0;
       }
     }
     else if ( cc_diff_fa() )  // don't know how to isolate due to weighting of amp and noa
     {
         ib_choice_ = UsingDef;  // ambiguous; keep trying
-        latched_fail_ = false;
+        latch_ = false;
         ib_decision_ = 12;
     }
     else  // all's well
     {
       ib_choice_ = ib_choice_last_;
-      latched_fail_ = latched_fail_enter;
+      latch_ = latch_last;
       ib_decision_ = 0;
     }
   }
   else if ( ( (sp.ib_force() <  0) && ib_choice_last_!=UsingNoa ) ||
             ( (sp.ib_force() >= 0) && ib_choice_last_!=UsingAmp )   )  // Latches.  Must reset to move out of no amp selection.  ==0 not reachable
   {
-    latched_fail_ = true;
+    latch_ = true;
     ib_decision_ = 14;
   }
   else
   {
-    latched_fail_ = false;
+    latch_ = false;
     ib_decision_ = 15;
   }
   faultAssign( (ib_choice_!=0 || vb_sel_stat_!=1) && !(sp.mod_ib() || sp.mod_vb()), RED_LOSS);  // hi_lo
 
   #ifdef DEBUG_DETAIL
-    if ( sp.debug()==62 ) Serial.printf("latched_fail_enter %d fake_faults %d ib_force %d reset %d ib_choice_last %d ib_amp_fa %d ib_noa_fa %d ib_diff_fa %d vb_sel_stat_last %d wrap_m_fa %d wrap_n_fa %d  cc_diff_fa %d latched_fail_ %d ib_choice_ %d ib_decision_ %d\n", latched_fail_enter, ap.fake_faults, sp.ib_force(), reset_all_faults_, ib_choice_last_, ib_amp_fa(), ib_noa_fa(), ib_diff_fa(), vb_sel_stat_last_, wrap_m_fa(), wrap_n_fa(), cc_diff_fa(), latched_fail_, ib_choice_, ib_decision_);
+    if ( sp.debug()==62 ) Serial.printf("latch_last %d fake_faults %d ib_force %d reset %d ib_choice_last %d ib_amp_fa %d ib_noa_fa %d ib_diff_fa %d vb_sel_stat_last %d wrap_m_fa %d wrap_n_fa %d  cc_diff_fa %d latch_ %d ib_choice_ %d ib_decision_ %d\n", latch_last, ap.fake_faults, sp.ib_force(), reset_all_faults_, ib_choice_last_, ib_amp_fa(), ib_noa_fa(), ib_diff_fa(), vb_sel_stat_last_, wrap_m_fa(), wrap_n_fa(), cc_diff_fa(), latch_, ib_choice_, ib_decision_);
   #endif
 }
 
