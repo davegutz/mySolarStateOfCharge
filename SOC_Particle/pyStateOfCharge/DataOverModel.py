@@ -45,13 +45,8 @@ if sys.platform == 'darwin':
     matplotlib.use('tkagg')
 plt.rcParams.update({'figure.max_open_warning': 0})
 from plot.plq import plq as plq
-from plot.init_1 import init_1 as init_1
-from plot.init_1a import init_1a as init_1a
-from plot.dom_2 import dom_2 as dom_2
-from plot.dom_3 import dom_3 as dom_3
-from plot.dom_4 import dom_4 as dom_4
-from plot.dom_4a import dom_4a as dom_4a
-from plot.ult_1 import ult_1 as ult_1
+import plot.dom as dom
+import plot.ult as ult
 
 def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
              run_str='_run', ver_str='_ver', strict_overplot=False, terse=False):
@@ -60,31 +55,31 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         fig_files = []
 
     if  not terse and plot_init_in and hasattr(smv, 'time') and hasattr(sr, 'time'):
-        fig_list, fig_files = init_1(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
+        fig_list, fig_files = dom.init_1(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
                                     fig_list=fig_list, strict_overplot=strict_overplot)
 
 
     if not terse:
-        fig_list, fig_files = init_1a(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
+        fig_list, fig_files = dom.init_1a(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
                                       fig_list=fig_list, strict_overplot=strict_overplot)
 
     if not terse:
-        fig_list, fig_files = dom_2(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
+        fig_list, fig_files = dom.dom_2(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
                                     strict_overplot=strict_overplot)
 
     if not terse:
-        fig_list, fig_files = dom_3(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
+        fig_list, fig_files = dom.dom_3(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
                                     strict_overplot=strict_overplot)
 
     if not terse:
-        fig_list, fig_files = dom_4(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
+        fig_list, fig_files = dom.dom_4(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
                                     strict_overplot=strict_overplot)
 
     if not terse:
-        fig_list, fig_files = dom_4a(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
+        fig_list, fig_files = dom.dom_4a(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
                                      fig_list=fig_list, strict_overplot=strict_overplot)
 
-    fig_list, fig_files = ult_1(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
+    fig_list, fig_files = ult.ult_1(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
                                 fig_list=fig_list, strict_overplot=strict_overplot)
 
     return fig_list, fig_files
