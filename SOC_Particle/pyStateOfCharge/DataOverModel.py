@@ -57,6 +57,8 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         fig_files = []
 
     if not terse:
+        fig_list, fig_files = dom.ekf_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
+                                    strict_overplot=strict_overplot)
         if  plot_init_in and hasattr(smv, 'time') and hasattr(sr, 'time'):
             fig_list, fig_files = dom.init_1(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
                                              fig_list=fig_list, strict_overplot=strict_overplot)
