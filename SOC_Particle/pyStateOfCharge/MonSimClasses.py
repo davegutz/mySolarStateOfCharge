@@ -210,6 +210,8 @@ class Sensors:
             self.Tb_hdwe_filt_init = self.mon_run.Tb_h_f[0]
             self.Tb_hdwe_filt_rate_init = 0.
             self.Tb_model_filt_rate_init = 0.
+            self.Tb_model_init = self.mon_run.Tb_h_f[0]
+            self.Tb_model_filt_init = self.mon_run.Tb_h_f[0]
             self.e_wrap_init = self.mon_run.e_wrap[0]
             self.e_wrap_filt_init = self.mon_run.e_wrap_f[0]
             self.e_wrap_m_init = self.mon_run.e_wrap[0]
@@ -338,7 +340,10 @@ class Sensors:
             mon.Tb_hdwe = OPT.mon_run.Tb_hdwe[i_temp]
         else:
             mon.Tb_hdwe = OPT.mon_run.Tb_f[i_temp]
-        mon.Tb_model = OPT.mon_run.Tb_model[i_temp]
+        if hasattr(OPT.mon_run, 'Tb_model'):
+            mon.Tb_model = OPT.mon_run.Tb_model[i_temp]
+        else:
+            mon.Tb_model = OPT.mon_run.Tb_f[i_temp]
         mon.reset_temp = (i_temp < 2) or mon.reset or OPT.run_type == 'HistSim'  # make sure temp init is longer than reset
         if hasattr(OPT.mon_run, 'Tt'):
             mon.dt_temp = OPT.mon_run.Tt[i_temp]

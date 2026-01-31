@@ -65,22 +65,30 @@ VOC_RESET_40 = 0.  # Attempt to rescale to match voc_soc to all data
 HYS_CAP_REDESIGN = 3.6e4  # faster time constant needed
 HYS_SOC_MIN_MARG = 0.15  # add to soc_min to set thr for detecting low endpoint condition for reset of hysteresis
 
-
 def load_off_nominal_battery(Battery_to_add=None):
     # Load off-nominal Battery values
     if Battery_to_add is not None:
         # Scroll through all off-nominals make dictionary
         Battery_off_dict = {}
         for field_name in Battery_to_add.dtype.names:
-            # print(f"field_name {field_name}  ", end='')
+            print(f"field_name {field_name}  ", end='')
             try:
                 Battery_off_dict[field_name] = Battery_to_add[field_name][-1]
             except IndexError:
                 Battery_off_dict[field_name] = Battery_to_add[field_name]
-                # print(f"Battery_off field_name {field_name}   value {Battery_to_add[field_name]}")
+                print(f"Battery_off field_name {field_name}   value {Battery_to_add[field_name]}")
+        # print(self.Battery_off_dict)
+        # Print affected values
+        print(f"dictionary to apply to Battery class")
+        if Battery_off_dict:
+            for key in dir(Battery_to_add):
+                if key in Battery_off_dict and key.isupper() and not key.startswith('__'):
+                    print(f"Battery.{key} {getattr(Battery_to_add, key)} --> ", end='')
+                    print("Battery.{:s} = {:8.6g}".format(key, Battery_off_dict[key]))
         return Battery_off_dict
     else:
         return None
+
 
 def translate_battery(Battery=None, Battery_off_dict=None):
     # Translate the off-nominal values imported from data stream
@@ -615,6 +623,7 @@ def bandaid(h):
     sat_s = h['sat'].copy()
     chm_s = h['chm_s'].copy()
     dt_s = h['dt'].copy()
+    deltaq_s = h['delta_q'].copy()
     sel = np.zeros(len(h.time_ux))
     preserving = np.ones(len(h.time_ux))
     mon_run = rf.rec_append_fields(h, 'res', res)
@@ -844,6 +853,16 @@ def add_chm(hist, mon_t_=False, mon=None, chm=None):
     return hist
 
 
+def add_delta_q(hist, mon_t_=False, mon=None, qcrs=None, t_rated=None, dqdt=None):
+    delta_q = []
+    for i in range(len(hist.time_ux)):
+        t_sec = float(hist.time_ux[i] - hist.time_ux[0]) + mon.time[0]
+        qcrs_m.append(np.interp(t_sec, mon.time, mon.chm))
+        delta_q.append(deltaq)
+    hist = rf.rec_append_fields(hist, 'delta_q', np.array(delta_q, dtype=float))
+    return hist
+
+
 def add_mod(hist, mon_t_=False, mon=None):
     if mon_t_ is False or mon is None:
         print("add_mod:  not executing")
@@ -874,9 +893,17 @@ def add_qcrs(hist, mon_t_=False, mon=None, qcrs=None, t_rated=None, dqdt=None):
         return hist
     else:
         qcrs_m = []
+        t_rated_m = []
+        dqdt_m = []
         for i in range(len(hist.time_ux)):
             t_sec = float(hist.time_ux[i] - hist.time_ux[0]) + mon.time[0]
             qcrs_m.append(np.interp(t_sec, mon.time, mon.chm))
+            t_rated_m.append(t_rated)
+            dqdt_m.append(dqdt)
+        hist = rf.rec_append_fields(hist, 'qcrs_s', np.array(qcrs_m, dtype=float))
+        hist = rf.rec_append_fields(hist, 'qcrs', np.array(qcrs_m, dtype=float))
+        hist = rf.rec_append_fields(hist, 't_rated', np.array(t_rated_m, dtype=float))
+        hist = rf.rec_append_fields(hist, 'dqdt', np.array(dqdt_m, dtype=float))
     return hist
 
 
@@ -953,7 +980,6 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
     elif temp_sum_file_clean is not None:
         filename = os.path.split(temp_sum_file_clean)[1].replace('.csv', '_') + os.path.split(__file__)[1].split('.')[0]
 
-    # Load Battery
     unit = None
     t_rated = None
     dqdt = None
@@ -977,12 +1003,25 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
             rated_batt_cap_in = 108.4  # A-hr capacity of test article
             t_rated = 25.
             dqdt = 0.01
-    qcrs = rated_batt_cap_in * 3600.
     batt = BatteryMonitor(mod_code=chm)
 
     # Override Battery with loaded values Battery_hdr/Battery_val in battery_raw
     Battery_off_dict = load_off_nominal_battery(Battery_to_add=battery_raw)
-    batt = translate_battery(Battery=batt, Battery_off_dict=Battery_off_dict)
+    # Battery = translate_battery(Battery=Battery, Battery_off_dict=Battery_off_dict)
+    # Translate the off-nominal values imported from data stream
+    print("Over-writing pre-existing off-nominal values into Battery class structure")
+    for key in dir(Battery):
+        # print(f"{key=}:   ", end='')
+        if key.isupper() and not key.startswith('__'):
+            if key in Battery_off_dict:
+                print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
+                setattr(Battery, key, Battery_off_dict[key])
+                print(f" {getattr(Battery, key)}")
+
+
+    rated_batt_cap_in = Battery.NOM_UNIT_CAP * Battery.S_CAP_MON
+    rated_batt_cap_s_in = Battery.NOM_UNIT_CAP * Battery.S_CAP_SIM
+    qcrs = rated_batt_cap_in * 3600.
 
     # Force Tb.  This is useful for verifying calibration runs where voc(soc) schedule extracted from the run
     # with slightly varying Tb but assumed constant when making new schedule
@@ -1026,11 +1065,12 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
         hist = add_mod(hist, mon_t, mon)
         hist = add_chm(hist, mon_t, mon, chm)
         hist = add_qcrs(hist, mon_t_=mon_t, mon=mon, qcrs=qcrs, t_rated=t_rated, dqdt=dqdt)
+        hist = add_delta_q(hist, mon_t_=mon_t, mon=mon, qcrs=qcrs, t_rated=t_rated, dqdt=dqdt)
         print("\nhist after adding stuff:\n", hist.dtype.names, "\n", hist, "\n", hist.dtype.names, "\n :hist after adding stuff\n")
         print("\nhist convert to 20C...:", end='')
 
         # Convert all the long time readings (history) to same arbitrary (20 deg C) temperature
-        hist_20C = filter_Tb(hist, 20., batt, tb_band=TB_BAND, rated_batt_cap=rated_batt_cap_in)
+        hist_20C = filter_Tb(hist, 20., Battery, tb_band=TB_BAND, rated_batt_cap=rated_batt_cap_in)
         print("done")
 
         # Shift time by detecting when ib changes
@@ -1149,11 +1189,11 @@ def main():
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/soc4p2dec-jan_soc4p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_bb.csv'
     data_only = False
-    mon_t = False
+    mon_t = True
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
-    dt_resample = 900
+    dt_resample = 10
     Tb_force = None
     request_history = None
 
