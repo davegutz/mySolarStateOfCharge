@@ -26,8 +26,6 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from load_data import load_data
 from DataOverModel import dom_plot
-from PlotSimS import sim_s_plot
-from PlotOffOn import off_on_plot
 import easygui
 from PlotKiller import show_killer
 import tkinter.messagebox
@@ -129,12 +127,12 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_
             # fig_list, fig_files = ekf_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
             #                                plot_title=plot_title, fig_list=fig_list, run_str='',
             #                                ver_str='_ver', strict_overplot=strict_overplot)
-            fig_list, fig_files = sim_s_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
-                                             plot_title=plot_title, fig_list=fig_list, run_str='',
-                                             ver_str='_ver', strict_overplot=strict_overplot)
-            fig_list, fig_files = off_on_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
-                                              plot_title=plot_title, fig_list=fig_list, run_str='',
-                                              ver_str='_ver', strict_overplot=strict_overplot)
+            # fig_list, fig_files = sim_s_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
+            #                                  plot_title=plot_title, fig_list=fig_list, run_str='',
+            #                                  ver_str='_ver', strict_overplot=strict_overplot)
+            # fig_list, fig_files = off_on_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
+            #                                   plot_title=plot_title, fig_list=fig_list, run_str='',
+            #                                   ver_str='_ver', strict_overplot=strict_overplot)
             if tune_in:
                 fig_list, fig_files = gp.tune_r(mon_run, mon_ver, sim_s_ver, filename, fig_files,
                                              plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')

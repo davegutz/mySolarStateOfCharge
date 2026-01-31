@@ -36,6 +36,9 @@ from myFilters import LagExp
 from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files
 from local_paths import version_from_data_file, local_paths
 from Colors import Colors
+import plot.hist as hist
+import plot.off_on as off_on
+import plot.sim_s as sim_s
 import plot.dom as dom
 import plot.ult as ult
 import plot.gp as gp
@@ -57,6 +60,10 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
         fig_files = []
 
     if not terse:
+        # fig_list, fig_files = hist.hs_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
+        #                                     strict_overplot=strict_overplot)
+        # fig_list, fig_files = hist.hs_tune_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
+        #                                          strict_overplot=strict_overplot)
         fig_list, fig_files = dom.ekf_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
                                     strict_overplot=strict_overplot)
         if  plot_init_in and hasattr(smv, 'time') and hasattr(sr, 'time'):
@@ -64,6 +71,8 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
                                              fig_list=fig_list, strict_overplot=strict_overplot)
             fig_list, fig_files = dom.init_1a(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
                                               fig_list=fig_list, strict_overplot=strict_overplot)
+        fig_list, fig_files = sim_s.sim_s_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
+                                                strict_overplot=strict_overplot)
         fig_list, fig_files = dom.dom_2(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
                                     strict_overplot=strict_overplot)
         fig_list, fig_files = dom.dom_3(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
@@ -80,6 +89,8 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
                                       fig_list=fig_list, strict_overplot=strict_overplot)
         fig_list, fig_files = gp.gp_3_ekf(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
                                           fig_list=fig_list, strict_overplot=strict_overplot)
+        fig_list, fig_files = off_on.off_on_plots(mr, mv, sr, sv, smv, filename, fig_files, plot_title=plot_title,
+                                                  fig_list=fig_list, strict_overplot=strict_overplot)
     fig_list, fig_files = gp.gp_3_tune(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
                                        fig_list=fig_list, strict_overplot=strict_overplot)
     fig_list, fig_files = ult.ult_1(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,

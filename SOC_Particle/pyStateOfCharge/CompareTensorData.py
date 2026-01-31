@@ -23,9 +23,6 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from CompareRunRun import load_data
 from DataOverModel import dom_plot
-from PlotSimS import sim_s_plot
-from PlotEKF import ekf_plot
-from PlotGP import gp_plot
 from PlotOffOn import off_on_plot
 import os
 from myFilters import LagExp

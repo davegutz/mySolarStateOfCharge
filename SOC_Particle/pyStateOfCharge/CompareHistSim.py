@@ -24,8 +24,6 @@ from Battery import Battery, BatteryMonitor, is_sat, calculate_capacity
 from MonSim import replicate, save_clean_file, UserOptions
 from resample import resample
 from PlotKiller import show_killer
-from PlotHist import tune_hs, hs_plot
-from PlotOffOn import off_on_plot
 from DataOverModel import dom_plot
 from DataOverModel import write_clean_file
 from plot.plq import plq as plq

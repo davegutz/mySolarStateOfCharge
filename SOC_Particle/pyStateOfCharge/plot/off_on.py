@@ -1,4 +1,4 @@
-# PlotSimS - general purpose plotting, Off / On related
+# GP_batteryEKF - general purpose battery class for EKF use
 # Copyright (C) 2023 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
@@ -13,32 +13,24 @@
 #
 # See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
 
-"""Define a general purpose battery model including Randles' model and SoC-VOV model as well as Kalman filtering
-support for simplified Mathworks' tracker. See Huria, Ceraolo, Gazzarri, & Jackey, 2013 Simplified Extended Kalman
-Filter Observer for SOC Estimation of Commercial Power-Oriented LFP Lithium Battery Cells.
+""" General data-over-model general plot of off/on/off behavior
 Dependencies:
     - numpy      (everything)
     - matplotlib (plots)
     - reportlab  (figures, pdf)
 """
+
 import matplotlib.pyplot as plt
 from plot.plq import plq as plq
-# below suppresses runtime error display******************
-# import os
-# os.environ["KIVY_NO_CONSOLELOG"] = "1"
-# from kivy.utils import platform  # failed experiment to run BLE data plotting realtime on android
-# if platform != 'linux':
-#     from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files
 import sys
 if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
-
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
-def off_on_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
-                run_str='_run', ver_str='_ver', strict_overplot=False):
+def off_on_plots(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
+                strict_overplot=False):
     print('off_on_plot', end=':  ')
     if sr and smv:
         fig_list.append(plt.figure())  # 7 off/on sim

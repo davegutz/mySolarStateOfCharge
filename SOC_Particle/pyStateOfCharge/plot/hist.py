@@ -1,44 +1,38 @@
-# PlotHist - general trend plotting from Hd Data
-# Copyright (C) 2025 Dave Gutz
+# GP_batteryEKF - general purpose battery class for EKF use
+# Copyright (C) 2023 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
-# mrdify it under the terms of the GNU Lesser General Public
+# modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
 #
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# Lesser General Public License for mrre details.
+# Lesser General Public License for more details.
 #
 # See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
 
-"""Plot battery trends, mainly voc(soc) table, faults (esp wrap logic), EKF initialization.
+""" General data-over-model general plot of history files (hist)
 Dependencies:
     - numpy      (everything)
     - matplotlib (plots)
     - reportlab  (figures, pdf)
 """
-import numpy as np
-import matplotlib.pyplot as plt
+
 from myFilters import InlineExpLag
+import matplotlib.pyplot as plt
 from plot.plq import plq as plq
-# below suppresses runtime error display******************
-# import os
-# os.environ["KIVY_NO_CONSOLELOG"] = "1"
-# from kivy.utils import platform  # failed experiment to run BLE data plotting realtime on android
-# if platform != 'linux':
-#     from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files
+import numpy as np
 import sys
 if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
-
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
-def hs_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
-            run_str='_run', ver_str='_ver'):
+def hs_plots(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
+            run_str='_run', ver_str='_ver', strict_overplot=False):
     fig_list.append(plt.figure())  # HS 1
     plt.subplot(221)
     plt.title(plot_title + ' HS 1')
@@ -187,7 +181,8 @@ def hs_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     return fig_list, fig_files
 
 
-def tune_hs(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None, run_str='_run', ver_str='_ver'):
+def hs_tune_plots(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None, run_str='_run', ver_str='_ver',
+                  strict_overplot=False):
     # delineate charging and discharging
     voc_stat_chg = np.copy(mv.voc_stat)
     voc_stat_dis = np.copy(mv.voc_stat)
