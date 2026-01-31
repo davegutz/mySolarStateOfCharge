@@ -147,7 +147,7 @@ def gp_2_nn_lag(mr, mv, sr, sv, smv, filename, plot_title=None, strict_overplot=
     plq(plt, mv, 'soc', mv, 'voc_soc', color='orange', linestyle='--')
     if hasattr(mr, 'voc'):
         mr.dv = np.array(mr.voc_soc) - np.array(mr.voc)
-    else:
+    elif hasattr(mr, 'voc_d'):
         mr.dv = np.array(mr.voc_soc) - np.array(mr.voc_d)
     plq(plt, mr, 'soc', mr, 'dv', add=13, color='blue', linestyle='-')
     mv.dv = np.array(mv.voc_soc) - np.array(mv.voc)

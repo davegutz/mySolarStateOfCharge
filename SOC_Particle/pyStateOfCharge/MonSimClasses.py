@@ -224,6 +224,7 @@ class Sensors:
             self.voc_stat_init = self.mon_run.voc_stat_f[0]
             self.vb_s_init = self.mon_run.vb_f[0]
             self.Tb0 = self.mon_run.Tb_f[0]
+            self.Tb_f_rap = self.mon_run.Tb_f
             self.Tb_f_init = self.mon_run.Tb_f[0]
             self.Tb0_s = self.mon_run.Tb_f[0]
             self.Tb_f_rate_init = 0.

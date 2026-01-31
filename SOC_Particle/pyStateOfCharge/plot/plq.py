@@ -31,7 +31,7 @@ def plq(plt_, sx, st, sy, yt, slr=1, add=0., color='black', linestyle='-', label
             add_str = '+' + str(add)
         elif add < 0:
             add_str = str(add)
-        if sy and sy.str:
+        if sy is not None and hasattr(sy, 'str') and sy.str is not None:
             label = slr_str + yt + '_' + sy.str + add_str
         else:
             label = slr_str + yt + add_str

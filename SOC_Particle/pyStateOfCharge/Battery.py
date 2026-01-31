@@ -145,6 +145,7 @@ class Battery(Coulombs):
     NOM_UNIT_CAP = 108.4  # Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah
     S_CAP_MON = None
     S_CAP_SIM = None
+    RATED_TEMP = None
 
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
@@ -498,7 +499,7 @@ class BatteryMonitor(Battery, EKF1x1):
                   q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, i=None):
         self.reset = reset
         self.ib_amp_hdwe = SN.mon_run.ib_amp_hdwe[G.i]
-        self.ib_amp_model = SN.mon_run.ib_amp_model[G.i]
+        self.ib_amp_model = SN.ib_amp_model[G.i]
         self.ib_noa_hdwe = SN.mon_run.ib_noa_hdwe[G.i]
         self.ib_noa_model = SN.mon_run.ib_noa_model[G.i]
         if hasattr(SN.mon_run, 'vb_model'):

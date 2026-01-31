@@ -655,6 +655,7 @@ def bandaid(h):
     sim_run = rf.rec_append_fields(sim_run, 'dv_dyn_s', bms_off_s)
     sim_run = rf.rec_append_fields(sim_run, 'dv_hys_s', bms_off_s)
     sim_run = rf.rec_append_fields(sim_run, 'voc_stat_s', bms_off_s)
+    sim_run = rf.rec_append_fields(sim_run, 'delta_q_s', deltaq_s)
     return mon_run, sim_run
 
 
@@ -665,6 +666,7 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=100.):
     sat_ = np.copy(h.Tb_f)
     bms_off_ = np.copy(h.Tb_f)
     for i in range(len(h.Tb_f)):
+        print(f"{i=} voc_stat_f {h.voc_stat_f[i]}")
         sat_[i] = is_sat(h.Tb_f[i], mon.chemistry.rated_temp, h.voc_f[i], h.soc[i], mon.chemistry.nom_vsat,
                          mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         # h.bms_off[i] = (h.Tb[i] < low_t) or ((h.voc[i] < low_voc) and (h.ib[i] < IB_MIN_UP))
@@ -852,16 +854,13 @@ def add_chm(hist, mon_t_=False, mon=None, chm=None):
         hist = rf.rec_append_fields(hist, 'chm', np.array(chm, dtype=int))
     return hist
 
-
-def add_delta_q(hist, mon_t_=False, mon=None, qcrs=None, t_rated=None, dqdt=None):
+def add_delta_q(hist):
     delta_q = []
     for i in range(len(hist.time_ux)):
-        t_sec = float(hist.time_ux[i] - hist.time_ux[0]) + mon.time[0]
-        qcrs_m.append(np.interp(t_sec, mon.time, mon.chm))
-        delta_q.append(deltaq)
+        q_capacity = hist.qcrs[i] * (1. +hist.dqdt[i]*(hist.Tb_f[i] - Battery.RATED_TEMP))
+        delta_q.append(-q_capacity * (1. - hist.soc[i]))
     hist = rf.rec_append_fields(hist, 'delta_q', np.array(delta_q, dtype=float))
     return hist
-
 
 def add_mod(hist, mon_t_=False, mon=None):
     if mon_t_ is False or mon is None:
@@ -1065,12 +1064,12 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
         hist = add_mod(hist, mon_t, mon)
         hist = add_chm(hist, mon_t, mon, chm)
         hist = add_qcrs(hist, mon_t_=mon_t, mon=mon, qcrs=qcrs, t_rated=t_rated, dqdt=dqdt)
-        hist = add_delta_q(hist, mon_t_=mon_t, mon=mon, qcrs=qcrs, t_rated=t_rated, dqdt=dqdt)
+        hist = add_delta_q(hist)
         print("\nhist after adding stuff:\n", hist.dtype.names, "\n", hist, "\n", hist.dtype.names, "\n :hist after adding stuff\n")
         print("\nhist convert to 20C...:", end='')
 
         # Convert all the long time readings (history) to same arbitrary (20 deg C) temperature
-        hist_20C = filter_Tb(hist, 20., Battery, tb_band=TB_BAND, rated_batt_cap=rated_batt_cap_in)
+        hist_20C = filter_Tb(hist, 20., batt, tb_band=TB_BAND, rated_batt_cap=rated_batt_cap_in)
         print("done")
 
         # Shift time by detecting when ib changes
@@ -1155,17 +1154,8 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
         if hist_20C is not None and len(hist_20C.time) > 1:
             sim_run = None
             plot_init_in = False
-            fig_list, fig_files = hs_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename,
-                                          fig_files, plot_title=plot_title, fig_list=fig_list,
-                                          run_str='', ver_str='_ver')
-            fig_list, fig_files = off_on_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename,
-                                              fig_files, plot_title=plot_title, fig_list=fig_list,
-                                              run_str='', ver_str='_ver')
             fig_list, fig_files = overall_fault(mon_run, mon_ver, sim_ver, sim_s_ver, filename,
                                                 fig_files, plot_title=plot_title, fig_list=fig_list)
-            fig_list, fig_files = tune_hs(mon_run, mon_ver, sim_s_ver, filename,
-                                         fig_files, plot_title=plot_title, fig_list=fig_list,
-                                         run_str='', ver_str='_ver')
             fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename,
                                            fig_files, plot_title=plot_title, fig_list=fig_list,
                                            plot_init_in=plot_init_in, run_str='', ver_str='_ver')
