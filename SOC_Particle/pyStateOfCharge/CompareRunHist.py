@@ -48,7 +48,8 @@ def compare_run_hist(data_file_=None, unit_key_=None, time_end_in_=None, data_on
     # date_ = datetime.now().strftime("%y%m%d")
 
     dfcs, mo_r, so_r, mv_r, sv_r, ssv_r =\
-        compare_run_sim(data_file=data_file_, unit_key=unit_key_, time_end_in=time_end_in_, data_only=data_only_)
+        compare_run_sim(data_file=data_file_, unit_key=unit_key_, time_end_in=time_end_in_, data_only=data_only_,
+                        mon_str='')
     mo_h, so_h, mv_h, sv_h, ssv_h =\
         compare_hist_sim(data_file=data_file_, unit_key=unit_key_, time_end_in=time_end_in_, data_only=data_only_,
                          mon_t=True, sync_time=mo_r.time_run)
@@ -91,11 +92,12 @@ def compare_run_hist(data_file_=None, unit_key_=None, time_end_in_=None, data_on
 
 
 def main():
-    data_file_full = \
-        '/home/daveg/google-drive/GitHubArchive/SOC_Particle/dataReduction/g20231111b/rapidTweakRegression_pro1a_bb.csv'
-    unit_key_full = 'g20231111b_pro1a_bb'
+    data_file_ = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_bb.csv'
+    data_only_ = True
+    unit_key_ = 'g20250612a_soc2p2_hi_lo_bb'
+    time_end_in_ = None
 
-    compare_run_hist(data_file_=data_file_full, unit_key_=unit_key_full)
+    compare_run_hist(data_file_=data_file_, unit_key_=unit_key_, time_end_in_=time_end_in_, data_only_=data_only_)
 
 
 if __name__ == '__main__':

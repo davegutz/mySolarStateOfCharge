@@ -95,7 +95,7 @@ class SyncInfo:
 
 # Load from files
 def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_batt_cap=Battery.NOM_UNIT_CAP,
-              legacy=False, v1_only=False, zero_thr_in=0.02, init_time_in=None, time_shift_in=None):
+              legacy=False, v1_only=False, zero_thr_in=0.02, init_time_in=None, time_shift_in=None, mon_str=''):
 
     print(f"load_data: \n{path_to_data=}\n{skip=}\n{unit_key=}\n{zero_zero_in=}\n{time_end_in=}\n{rated_batt_cap=}\n"
           f"{legacy=}\n{v1_only=}\n{init_time_in=}\n{time_shift_in=}\n")
@@ -173,7 +173,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
 
     mon = SavedData(battery=battery_raw, rap=mon_raw, sel=sel_raw, ekf=ekf_raw, temp=temp_raw, shunt=shunt_raw,
                     time_end=time_end_in, zero_zero=zero_zero_in, zero_thr=zero_thr_in, sync_cTime=sync,
-                    init_time_in=init_time_in, time_shift_in=time_shift_in, str_='')
+                    init_time_in=init_time_in, time_shift_in=time_shift_in, str_=mon_str)
     if mon.chm is not None:
         chm = int(mon.chm[-1])
     elif path_to_data.__contains__('bb'):

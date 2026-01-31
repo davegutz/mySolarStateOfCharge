@@ -45,7 +45,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=False,
                     verbose=True, scale_in=1., slr_hys_sim=1., request_history=5, Battery=None, init_time_in=None,
-                    time_shift_in=None, strict_overplot=False, terse=False):
+                    time_shift_in=None, strict_overplot=False, terse=False, mon_str=''):
 
     if data_file.count('soc4p2_hi_lo'):
        IB_CHARGE_NOA = True
@@ -55,7 +55,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
     print(f"\n \
 compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n \
 {IB_CHARGE_NOA=}\n{verbose=}\n{scale_in=}\n{slr_hys_sim=}\n{request_history=}\n{init_time_in=}\n{time_shift_in=}\n \
-{strict_overplot=}\n{terse=}\n \
+{strict_overplot=}\n{terse=}\n{mon_str=}\n \
           ")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
@@ -93,7 +93,7 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_
     # # Load mon v4 (old)
     mon_run, sim_run, f, data_file_clean, temp_flt_file_clean, _ = \
         load_data(data_file, 1, unit_key, zero_zero_in, time_end_in, legacy=legacy_in, init_time_in=init_time_in,
-                  time_shift_in=time_shift_in)
+                  time_shift_in=time_shift_in, mon_str=mon_str)
 
     # How to initialize
     if mon_run is None:

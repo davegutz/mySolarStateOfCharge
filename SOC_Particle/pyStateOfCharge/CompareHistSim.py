@@ -921,7 +921,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
     # # Load mon v4 (old)
     if mon_t:
         mon, sim, fault, mon_t_file_clean, temp_mont_t_file_clean, _ = \
-            load_data(data_file, 1, unit_key=unit_key, time_end_in=time_end_in, zero_zero_in=False)
+            load_data(data_file, 1, unit_key=unit_key, time_end_in=time_end_in, zero_zero_in=False, mon_str='hist')
     else:
         mon = None
 

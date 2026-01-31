@@ -179,6 +179,7 @@ class Sensors:
             self.voc_stat_init = self.mon_run.voc_stat[0]
             self.dt_temp_fut = self.mon_run.Tt[1]
             self.dt_temp = self.mon_run.Tt[0]
+            self.ib_amp_model = self.mon_run.ib_amp_model
 
         elif run_type == 'HistSim':
 
