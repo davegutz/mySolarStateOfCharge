@@ -28,13 +28,13 @@ from load_data import load_data
 from DataOverModel import dom_plot
 from PlotSimS import sim_s_plot
 from PlotEKF import ekf_plot
-from PlotGP import tune_r, gp_plot
 from PlotOffOn import off_on_plot
 import easygui
 from PlotKiller import show_killer
 import tkinter.messagebox
 from local_paths import version_from_data_file, local_paths
 import os
+import plot.gp as gp
 
 if sys.platform == 'darwin':
     import matplotlib
@@ -133,14 +133,13 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_
             fig_list, fig_files = sim_s_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                              plot_title=plot_title, fig_list=fig_list, run_str='',
                                              ver_str='_ver', strict_overplot=strict_overplot)
-            fig_list, fig_files = gp_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files=fig_files,
-                                          plot_title=plot_title, fig_list=fig_list, run_str='',
-                                          ver_str='_ver', Battery=Battery, strict_overplot=strict_overplot)
+            # fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
+            #                                plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')
             fig_list, fig_files = off_on_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                               plot_title=plot_title, fig_list=fig_list, run_str='',
                                               ver_str='_ver', strict_overplot=strict_overplot)
             if tune_in:
-                fig_list, fig_files = tune_r(mon_run, mon_ver, sim_s_ver, filename, fig_files,
+                fig_list, fig_files = gp.tune_r(mon_run, mon_ver, sim_s_ver, filename, fig_files,
                                              plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')
 
         fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
@@ -189,7 +188,7 @@ def main():
     # Rf, vv4,
     # Rk,
     # vv0,
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaHiFail_soc2p2_hi_lo_bb.csv'
 
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 
@@ -224,8 +223,8 @@ def main():
 
     # plots = False
     plots = True
-    terse_in = False
-    # terse_in = True
+    # terse_in = False
+    terse_in = True
 
     strict_overplot_in = False
     # strict_overplot_in = True

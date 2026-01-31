@@ -18,7 +18,6 @@
 import matplotlib.pyplot as plt
 from PlotKiller import show_killer
 from DataOverModel import dom_plot
-from PlotGP import tune_r, gp_plot
 from PlotOffOn import off_on_plot
 from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files, precleanup_fig_files
 from datetime import datetime

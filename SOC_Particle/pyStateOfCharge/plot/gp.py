@@ -1,4 +1,4 @@
-# PlotGP - general purpose plotting
+# GP_batteryEKF - general purpose battery class for EKF use
 # Copyright (C) 2023 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
@@ -13,34 +13,28 @@
 #
 # See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
 
-"""Define a general purpose battery model including Randles' model and SoC-VOV model as well as Kalman filtering
-support for simplified Mathworks' tracker. See Huria, Ceraolo, Gazzarri, & Jackey, 2013 Simplified Extended Kalman
-Filter Observer for SOC Estimation of Commercial Power-Oriented LFP Lithium Battery Cells.
+""" General data-over-model general plot
 Dependencies:
     - numpy      (everything)
     - matplotlib (plots)
     - reportlab  (figures, pdf)
 """
-import numpy as np
-import matplotlib.pyplot as plt
+
 from myFilters import InlineExpLag
+import matplotlib.pyplot as plt
 from plot.plq import plq as plq
-# below suppresses runtime error display******************
-# import os
-# os.environ["KIVY_NO_CONSOLELOG"] = "1"
-# from kivy.utils import platform  # failed experiment to run BLE data plotting realtime on android
-# if platform != 'linux':
-#     from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files
+from Battery import Battery
+import numpy as np
 import sys
 if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
-
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
-def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None,
-            run_str='_run', ver_str='_ver', Battery=None, strict_overplot=False):
+def gp_1(mr, mv, sr, sv, smv, filename, plot_title=None, strict_overplot=False, fig_list=None, fig_files=None):
+    if fig_files is None:
+        fig_files = []
     print('gp_plot', end=':  ')
     fig_list.append(plt.figure())  # GP 1
     plt.subplot(221)
@@ -71,7 +65,13 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     fig_files.append(fig_file_name)
     plt.savefig(fig_file_name, format="png")
 
-    fig_list.append(plt.figure())  # GP 2
+    return fig_list, fig_files
+
+
+def gp_2(mr, mv, sr, sv, smv, filename, plot_title=None, strict_overplot=False, fig_list=None, fig_files=None):
+    if fig_files is None:
+        fig_files = []
+    fig_list.append(plt.figure())
     plt.subplot(221)
     plt.title(plot_title + ' GP 2')
     print('GP 2', end=':  ')
@@ -106,7 +106,13 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     fig_files.append(fig_file_name)
     plt.savefig(fig_file_name, format="png")
 
-    fig_list.append(plt.figure())  # GP 2 nn lag
+    return fig_list, fig_files
+
+
+def gp_2_nn_lag(mr, mv, sr, sv, smv, filename, plot_title=None, strict_overplot=False, fig_list=None, fig_files=None):
+    if fig_files is None:
+        fig_files = []
+    fig_list.append(plt.figure())
     plt.subplot(321)
     plt.title(plot_title + ' GP 2 nn lag')
     print('GP 2 nn lag', end=':  ')
@@ -161,6 +167,51 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     plt.savefig(fig_file_name, format="png")
+
+    return fig_list, fig_files
+
+
+def gp_3_ekf(mr, mv, sr, sv, smv, filename, plot_title=None, strict_overplot=False, fig_list=None, fig_files=None):
+    if fig_files is None:
+        fig_files = []
+
+    fig_list.append(plt.figure())
+    plt.subplot(111)
+    plt.title(plot_title + ' GP 3 KF')
+    print('GP 3 KF', end=':  ')
+    plq(plt, mr, 'time', mr, 'ib_amp_hdwe', color='blue', linestyle='-')
+    plq(plt, mr, 'time', mr, 'ib_amp_model', color='red', linestyle='--')
+    plq(plt, mv, 'time', mv, 'ib_amp_model', color='black', linestyle='-.')
+    plq(plt, mr, 'time', mr, 'ib_amp_hdwe_kf', color='black', linestyle='--')
+    plq(plt, mr, 'time', mr, 'ib_noa_hdwe', color='blue', linestyle='-.')
+    plq(plt, mr, 'time', mr, 'ib_noa_model', color='magenta', linestyle='--')
+    plq(plt, mv, 'time', mv, 'ib_noa_model', color='cyan', linestyle='-.')
+    plq(plt, mr, 'time', mr, 'ib_noa_kf', color='black', linestyle='--')
+    plq(plt, mv, 'time', mv, 'iscn_f', color='red', linestyle='-.')
+    plq(plt, mr, 'time', mr, 'ib_sel', add=-5, color='blue', linestyle='-')
+    plq(plt, mr, 'time', mr, 'ib', add=-10, color='green', linestyle='-')
+    plq(plt, mv, 'time', mv, 'ib', add=-10, color='cyan', linestyle='--')
+    plq(plt, sr, 'time', sr, 'ib_in_s', add=-10, color='orange', linestyle='-.')
+    plq(plt, smv, 'time', smv, 'ib_in_s', add=-10, color='red', linestyle=':')
+    plt.xlabel('sec')
+    plt.text(0.5, 0.2, "KF_Q_STD= " + "{:10.6f}".format(Battery.KF_Q_STD) + "KF_R_STD= " + "{:10.6f}".format(Battery.KF_R_STD),
+             horizontalalignment='center',
+             verticalalignment='center',
+             transform=plt.gca().transAxes,
+             fontsize=12,
+             color='blue',
+             bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
+    plt.legend(loc=3)
+    fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
+    fig_files.append(fig_file_name)
+    plt.savefig(fig_file_name, format="png")
+
+    return fig_list, fig_files
+
+
+def gp_3_tune(mr, mv, sr, sv, smv, filename, plot_title=None, strict_overplot=False, fig_list=None, fig_files=None):
+    if fig_files is None:
+        fig_files = []
 
     fig_list.append(plt.figure())  # GP 3 Tune
     plt.subplot(331)
@@ -264,43 +315,12 @@ def gp_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_
     fig_files.append(fig_file_name)
     plt.savefig(fig_file_name, format="png")
 
-
-    fig_list.append(plt.figure())  # GP 3 KF
-    plt.subplot(111)
-    plt.title(plot_title + ' GP 3 KF')
-    print('GP 3 KF', end=':  ')
-    plq(plt, mr, 'time', mr, 'ib_amp_hdwe', color='blue', linestyle='-')
-    plq(plt, mr, 'time', mr, 'ib_amp_model', color='red', linestyle='--')
-    plq(plt, mv, 'time', mv, 'ib_amp_model', color='black', linestyle='-.')
-    plq(plt, mr, 'time', mr, 'ib_amp_hdwe_kf', color='black', linestyle='--')
-    plq(plt, mr, 'time', mr, 'ib_noa_hdwe', color='blue', linestyle='-.')
-    plq(plt, mr, 'time', mr, 'ib_noa_model', color='magenta', linestyle='--')
-    plq(plt, mv, 'time', mv, 'ib_noa_model', color='cyan', linestyle='-.')
-    plq(plt, mr, 'time', mr, 'ib_noa_kf', color='black', linestyle='--')
-    plq(plt, mv, 'time', mv, 'iscn_f', color='red', linestyle='-.')
-    plq(plt, mr, 'time', mr, 'ib_sel', add=-5, color='blue', linestyle='-')
-    plq(plt, mr, 'time', mr, 'ib', add=-10, color='green', linestyle='-')
-    plq(plt, mv, 'time', mv, 'ib', add=-10, color='cyan', linestyle='--')
-    plq(plt, sr, 'time', sr, 'ib_in_s', add=-10, color='orange', linestyle='-.')
-    plq(plt, smv, 'time', smv, 'ib_in_s', add=-10, color='red', linestyle=':')
-    plt.xlabel('sec')
-    plt.text(0.5, 0.2, "KF_Q_STD= " + "{:10.6f}".format(Battery.KF_Q_STD) + "KF_R_STD= " + "{:10.6f}".format(Battery.KF_R_STD),
-             horizontalalignment='center',
-             verticalalignment='center',
-             transform=plt.gca().transAxes,
-             fontsize=12,
-             color='blue',
-             bbox=dict(facecolor='yellow', alpha=0.5, pad=5))
-    plt.legend(loc=3)
-    fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
-    fig_files.append(fig_file_name)
-    plt.savefig(fig_file_name, format="png")
-
-
     return fig_list, fig_files
 
 
 def tune_r(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None, run_str='_run', ver_str='_ver'):
+    if fig_files is None:
+        fig_files = []
     print('tune_r', end=':  ')
     # delineate charging and discharging
     voc_stat_chg = np.copy(mv.voc_stat)
@@ -340,9 +360,9 @@ def tune_r(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None
     ib_filter = InlineExpLag(tau)
     ios_filter = InlineExpLag(tau)
     dv_hys_dot_filter = InlineExpLag(tau)
-    for i in range(n-1):
+    for i in range(n - 1):
         reset = i == 0
-        T = tv[i+1]-tv[i]
+        T = tv[i + 1] - tv[i]
 
         dv_hys_calc_f[i] = dv_hys_calc_filter.update(dv_hys_calc[i], T, reset=reset)
         dv_hys_req_f[i] = dv_hys_req_filter.update(dv_hys_req[i], T, reset=reset)
@@ -366,7 +386,7 @@ def tune_r(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None
             # noinspection PyTypeChecker
             r_req[i] = max(min(dv_hys_req_f[i] / ioc_req[i], 0.1), -0.1)
 
-        ioc_calc_from_dot[i] = ib_f[i] - cap*dv_dot_calc[i]
+        ioc_calc_from_dot[i] = ib_f[i] - cap * dv_dot_calc[i]
         if abs(ioc_calc_from_dot[i]) > 1e-9:
             # noinspection PyTypeChecker
             r_calc_from_dot[i] = max(min(dv_hys_calc_f[i] / ioc_calc_from_dot[i], 0.1), -0.1)
@@ -382,22 +402,22 @@ def tune_r(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None
                 # noinspection PyTypeChecker
                 r_calc[i] = max(min(dv_hys_calc_f[i] / ioc_f[i], 0.1), -0.1)
 
-    dv_dot_calc[n-1] = dv_dot_calc[n-2]
-    dv_dot_req[n-1] = dv_dot_req[n-2]
+    dv_dot_calc[n - 1] = dv_dot_calc[n - 2]
+    dv_dot_req[n - 1] = dv_dot_req[n - 2]
     if hasattr(mv, 'ioc'):
-        r_calc[n-1] = r_calc[n-2]
-    r_calc_from_dot[n-1] = r_calc_from_dot[n-2]
-    ioc_req[n-1] = ioc_req[n-2]
-    dv_hys_req_f[n-1] = dv_hys_req_f[n-2]
-    dv_hys_calc_f[n-1] = dv_hys_calc_f[n-2]
-    ioc_calc_from_dot[n-1] = ioc_calc_from_dot[n-2]
-    ib_f[n-1] = ib_f[n-2]
-    ioc_f  = ib_f.copy()
+        r_calc[n - 1] = r_calc[n - 2]
+    r_calc_from_dot[n - 1] = r_calc_from_dot[n - 2]
+    ioc_req[n - 1] = ioc_req[n - 2]
+    dv_hys_req_f[n - 1] = dv_hys_req_f[n - 2]
+    dv_hys_calc_f[n - 1] = dv_hys_calc_f[n - 2]
+    ioc_calc_from_dot[n - 1] = ioc_calc_from_dot[n - 2]
+    ib_f[n - 1] = ib_f[n - 2]
+    ioc_f = ib_f.copy()
     if hasattr(mv, 'ioc'):
-        ioc_f[n-1] = ioc_f[n-2]
+        ioc_f[n - 1] = ioc_f[n - 2]
     else:
         ioc_f = None
-    dv_dot_cap[n-1] = dv_dot_cap[n-2]
+    dv_dot_cap[n - 1] = dv_dot_cap[n - 2]
     dv_bleed[-1] = dv_bleed[-2]
 
     fig_list.append(plt.figure())  # GP 3 Tune R
@@ -492,6 +512,5 @@ def tune_r(mr, mv, smv, filename, fig_files=None, plot_title=None, fig_list=None
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     plt.savefig(fig_file_name, format="png")
-
 
     return fig_list, fig_files

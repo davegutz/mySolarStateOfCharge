@@ -25,7 +25,6 @@ from MonSim import replicate
 from Battery import overall_batt, calculate_capacity, Retained
 from Util import cat
 from resample import resample
-from PlotGP import tune_r
 from PlotKiller import show_killer
 from Colors import Colors
 from resample import remove_nan

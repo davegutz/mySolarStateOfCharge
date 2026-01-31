@@ -34,18 +34,21 @@ from myFilters import LagExp
 # if platform != 'linux':
 #     from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files
 from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files
-import Chemistry_BMS
-from Colors import Colors
-import re
 from local_paths import version_from_data_file, local_paths
-import os
+from Colors import Colors
+import plot.dom as dom
+import plot.ult as ult
+import plot.gp as gp
+import Chemistry_BMS
 import sys
+import re
+import os
 if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
+
 plt.rcParams.update({'figure.max_open_warning': 0})
-import plot.dom as dom
-import plot.ult as ult
+
 
 def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
              run_str='_run', ver_str='_ver', strict_overplot=False, terse=False):
@@ -53,35 +56,34 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     if fig_files is None:
         fig_files = []
 
-    if  not terse and plot_init_in and hasattr(smv, 'time') and hasattr(sr, 'time'):
-        fig_list, fig_files = dom.init_1(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
-                                    fig_list=fig_list, strict_overplot=strict_overplot)
-
-
     if not terse:
-        fig_list, fig_files = dom.init_1a(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
-                                      fig_list=fig_list, strict_overplot=strict_overplot)
-
-    if not terse:
+        if  plot_init_in and hasattr(smv, 'time') and hasattr(sr, 'time'):
+            fig_list, fig_files = dom.init_1(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
+                                             fig_list=fig_list, strict_overplot=strict_overplot)
+            fig_list, fig_files = dom.init_1a(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
+                                              fig_list=fig_list, strict_overplot=strict_overplot)
         fig_list, fig_files = dom.dom_2(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
                                     strict_overplot=strict_overplot)
-
-    if not terse:
         fig_list, fig_files = dom.dom_3(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
                                     strict_overplot=strict_overplot)
-
-    if not terse:
         fig_list, fig_files = dom.dom_4(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
                                     strict_overplot=strict_overplot)
-
-    if not terse:
         fig_list, fig_files = dom.dom_4a(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
                                      fig_list=fig_list, strict_overplot=strict_overplot)
-
+        fig_list, fig_files = gp.gp_1(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
+                                      fig_list=fig_list, strict_overplot=strict_overplot)
+        fig_list, fig_files = gp.gp_2(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
+                                      fig_list=fig_list, strict_overplot=strict_overplot)
+        fig_list, fig_files = gp.gp_2_nn_lag(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
+                                      fig_list=fig_list, strict_overplot=strict_overplot)
+        fig_list, fig_files = gp.gp_3_ekf(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
+                                          fig_list=fig_list, strict_overplot=strict_overplot)
+    fig_list, fig_files = gp.gp_3_tune(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
+                                       fig_list=fig_list, strict_overplot=strict_overplot)
     fig_list, fig_files = ult.ult_1(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
                                 fig_list=fig_list, strict_overplot=strict_overplot)
-
     return fig_list, fig_files
+
 
 def count_text_fields(line):
     count = 0
