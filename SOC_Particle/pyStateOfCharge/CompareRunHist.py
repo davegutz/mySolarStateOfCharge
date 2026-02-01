@@ -19,8 +19,8 @@ the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 
 from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files, precleanup_fig_files
-import matplotlib.pyplot as plt
 from DataOverModel import dom_plot
+import matplotlib.pyplot as plt
 from PlotKiller import show_killer
 from CompareRunSim import compare_run_sim
 from CompareHistSim import compare_hist_sim

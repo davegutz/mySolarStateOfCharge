@@ -1,5 +1,5 @@
 # MonSimClasses:  Subclasses used to support replicate()
-# Copyright (C) 2025 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,12 +18,12 @@ a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 
-import numpy as np
-import Battery
-from Battery import Battery, calculate_capacity
+from Battery import calculate_capacity
+from Battery import Battery as Battery
+from KF1x1 import KF1x1VarDtxx
 from myFilters import LagExp
 from pyDAGx import myTables
-from KF1x1 import KF1x1VarDtxx
+import numpy as np
 
 
 class ProArray:

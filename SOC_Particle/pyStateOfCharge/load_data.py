@@ -13,13 +13,13 @@
 #
 # See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
 """Utility to load data from csv files"""
-from idlelib.run import flush_stdout
-
-import numpy as np
-from DataOverModel import SavedData, SavedDataSim, write_clean_file
 from CompareFault import add_stuff_f, filter_Tb, IB_BAND
+from SavedData import SavedData, SavedDataSim
 from Battery import Battery, BatteryMonitor
+from DataOverModel import write_clean_file
+from idlelib.run import flush_stdout
 from resample import remove_nan
+import numpy as np
 
 
 def find_sync(path_to_data):

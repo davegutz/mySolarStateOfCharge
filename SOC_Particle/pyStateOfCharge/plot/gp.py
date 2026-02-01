@@ -19,6 +19,8 @@ Dependencies:
     - matplotlib (plots)
     - reportlab  (figures, pdf)
 """
+from dataclasses import dataclass
+from typing import Optional
 
 from myFilters import InlineExpLag
 import matplotlib.pyplot as plt
@@ -26,42 +28,57 @@ from plot.plq import plq as plq
 from Battery import Battery
 import numpy as np
 import sys
+from SavedData import SavedData as SavedData
+from SavedData import SavedDataSim as SavedDataSim
+
 if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
-def gp_1(mr, mv, sr, sv, smv, filename, plot_title=None, strict_overplot=False, fig_list=None, fig_files=None):
+@dataclass
+class PlotOptions:
+    mr: SavedData  # Mandatory monitor data to be replicated
+    mv: Optional[SavedData]  # Embedded monitor data sim
+    sr: Optional[SavedDataSim] = None  # Embedded model data app to be replicated
+    sv: Optional[SavedDataSim] = None  # Embedded model data sim
+    smv: Optional[SavedDataSim] = None  # Embedded model data sim
+    filename: Optional[str] = None  # Name of the file to save screenshots
+    plot_title: Optional[str] = None  # Title to put top of plots
+    strict_overplot: Optional[bool] = False  # Plot only true overplotting parameters
+
+
+def gp_1(S:PlotOptions, fig_list=None, fig_files=None):
     if fig_files is None:
         fig_files = []
     print('gp_plot', end=':  ')
     fig_list.append(plt.figure())  # GP 1
     plt.subplot(221)
-    plt.title(plot_title + ' GP 1')
+    plt.title(S.plot_title + ' GP 1')
     print('GP 1', end=':  ')
-    plq(plt, sr, 'time', sr, 'vb_s', color='black', linestyle='-')
-    plq(plt, smv, 'time', smv, 'vb_s', color='orange', linestyle='--')
-    plq(plt, sr, 'time', sr, 'voc_s', color='blue', linestyle='-.')
-    plq(plt, smv, 'time', smv, 'voc_s', color='red', linestyle=':')
-    plq(plt, sr, 'time', sr, 'voc_stat_s', color='magenta', linestyle='-.')
-    plq(plt, smv, 'time', smv, 'voc_stat_s', color='green', linestyle=':')
+    plq(plt, S.sr, 'time', S.sr, 'vb_s', color='black', linestyle='-')
+    plq(plt, S.smv, 'time', S.smv, 'vb_s', color='orange', linestyle='--')
+    plq(plt, S.sr, 'time', S.sr, 'voc_s', color='blue', linestyle='-.')
+    plq(plt, S.smv, 'time', S.smv, 'voc_s', color='red', linestyle=':')
+    plq(plt, S.sr, 'time', S.sr, 'voc_stat_s', color='magenta', linestyle='-.')
+    plq(plt, S.smv, 'time', S.smv, 'voc_stat_s', color='green', linestyle=':')
     plt.legend(loc=1)
     plt.subplot(222)
-    plq(plt, sr, 'time', sr, 'dv_hys_s', color='black', linestyle='-')
-    plq(plt, smv, 'time', smv, 'dv_hys_s', color='orange', linestyle='--')
+    plq(plt, S.sr, 'time', S.sr, 'dv_hys_s', color='black', linestyle='-')
+    plq(plt, S.smv, 'time', S.smv, 'dv_hys_s', color='orange', linestyle='--')
     plt.legend(loc=1)
     plt.subplot(223)
-    plq(plt, sr, 'time', sr, 'soc_s', color='black', linestyle='-')
-    plq(plt, smv, 'time', smv, 'soc_s', color='orange', linestyle='--')
+    plq(plt, S.sr, 'time', S.sr, 'soc_s', color='black', linestyle='-')
+    plq(plt, S.smv, 'time', S.smv, 'soc_s', color='orange', linestyle='--')
     plt.legend(loc=1)
     plt.subplot(224)
-    plq(plt, sr, 'time', sr, 'ib_in_s', color='blue', linestyle='-')
-    plq(plt, smv, 'time', smv, 'ib_in_s', color='red', linestyle='--')
-    if not strict_overplot:
-        plq(plt, smv, 'time', smv, 'ib_fut_s', color='orange', linestyle='-.')
+    plq(plt, S.sr, 'time', S.sr, 'ib_in_s', color='blue', linestyle='-')
+    plq(plt, S.smv, 'time', S.smv, 'ib_in_s', color='red', linestyle='--')
+    if not S.strict_overplot:
+        plq(plt, S.smv, 'time', S.smv, 'ib_fut_s', color='orange', linestyle='-.')
     plt.legend(loc=1)
-    fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
+    fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     plt.savefig(fig_file_name, format="png")
 

@@ -1,5 +1,5 @@
 # Battery - general purpose battery class for modeling
-# Copyright (C) 2021 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 from TFDelay import TFDelay
 from myFilters import LagTustin, LagExp, General2Pole, RateLimit, SlidingDeadband, TustinIntegrator, RateLagExp
 from Scale import ScaleSelector
+from plot.plq import plq
 import sys
 if sys.platform == 'darwin':
     import matplotlib
@@ -131,8 +132,6 @@ class Battery(Coulombs):
     CURR_BIAS_NOA = 0.  # hdwe bias, A
     NS = 1  # Number serial batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
     NP = 1  # Number parallel batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
-    # KF_Q_STD = 0.015  # Shunt KF process uncertainty
-    # KF_R_STD = 0.001  # Shunt KF state uncertainty
     KF_Q_STD = 0.0003  # Shunt KF process uncertainty
     KF_R_STD = 0.1000  # Shunt KF state uncertainty
     dc_dc_on = 0.  # Truck charging
