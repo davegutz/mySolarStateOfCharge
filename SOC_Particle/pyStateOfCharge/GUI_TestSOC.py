@@ -751,7 +751,7 @@ def compare_run_to_hist():
     update_data_buttons()
     if modeling.get():
         print('compare_hist_to_sim.  save_pdf_path', os.path.join(Test.version_path, './figures'))
-        compare_run_hist(data_file_=Test.file_path, unit_key_=Test.key)
+        compare_run_hist(data_file=Test.file_path, unit_key=Test.key)
     else:
         print('not possible')
 

@@ -1052,7 +1052,8 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
     h_combo_raw = hstack2((h_raw, s_raw))
 
     if h_combo_raw is None:
-        return None, None, unit, None, None, filename
+        # return mon, sim, unit, fault, hist_20C, filename, Battery
+        return None, None, unit, None, None, filename, Battery
     else:
         h_combo_raw = np.unique(h_combo_raw)
         h_combo_raw = remove_nan(h_combo_raw)
@@ -1147,6 +1148,8 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
     if not data_only:
         fig_list = []
         fig_files = []
+        if filename is None:
+            filename = 'none'
         plot_title = filename + '   ' + date_time
         if fault is not None and len(fault.time) > 1:
             fig_list, fig_files = over_fault(fault, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
@@ -1165,7 +1168,10 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
         cleanup_fig_files(fig_files)
     
         plt.show(block=False)
-        string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
+        if not fig_list:
+            string = 'none plots kill'
+        else:
+            string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         show_killer(string, 'CompareFault', fig_list=fig_list)
 
     return mon_run, sim_run, mon_ver, sim_ver, sim_s_ver
@@ -1180,20 +1186,20 @@ def main():
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/zero_soc2p2_hi_lo_bb.csv'
     data_only = False
-    mon_t = True
+    mon_t = False
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
-    dt_resample = 10
+    dt_resample = 1
     Tb_force = None
     request_history = None
+    strict_overplot = True
     terse = True
-    strict_overplot = False
 
     plots=True
     # plots = False
 
-    compare_hist_sim(data_file=data_file, mon_t=False, unit_key=unit_key, dt_resample=dt_resample,
+    compare_hist_sim(data_file=data_file, mon_t=mon_t, unit_key=unit_key, dt_resample=dt_resample,
                      data_only=not plots, Tb_force=Tb_force, request_history=request_history, terse=terse,
                      strict_overplot=strict_overplot)
 
