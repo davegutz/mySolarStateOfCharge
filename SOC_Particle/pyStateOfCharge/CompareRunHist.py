@@ -40,19 +40,20 @@ plt.rcParams['legend.fontsize'] = 'small'
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
-def compare_run_hist(data_file_=None, unit_key_=None, time_end_in_=None, data_only_=True):
+def compare_run_hist(data_file=None, unit_key=None, time_end=None, data_only=True, strict_overplot=False,
+                     terse=False):
 
-    print(f"\ncompare_run_hist:\n{data_file_=}\n{data_only_=}\n{unit_key_=}\n{time_end_in_=}")
+    print(f"\ncompare_run_hist:\n{data_file=}\n{data_only=}\n{unit_key=}\n{time_end=}\n{strict_overplot=}\n{terse=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     # date_ = datetime.now().strftime("%y%m%d")
 
     dfcs, mo_r, so_r, mv_r, sv_r, ssv_r =\
-        compare_run_sim(data_file=data_file_, unit_key=unit_key_, time_end_in=time_end_in_, data_only=data_only_,
-                        mon_str='')
+        compare_run_sim(data_file=data_file, unit_key=unit_key, time_end_in=time_end, data_only=data_only,
+                        mon_str='', strict_overplot=strict_overplot, terse=terse)
     mo_h, so_h, mv_h, sv_h, ssv_h =\
-        compare_hist_sim(data_file=data_file_, unit_key=unit_key_, time_end_in=time_end_in_, data_only=data_only_,
-                         mon_t=True, sync_time=mo_r.time_run)
+        compare_hist_sim(data_file=data_file, unit_key=unit_key, time_end_in=time_end, data_only=data_only,
+                         mon_t=True, sync_time=mo_r.time_run, strict_overplot=strict_overplot, terse=terse)
 
     # Plots
     if mo_r is not None and mo_h is not None:
@@ -60,10 +61,10 @@ def compare_run_hist(data_file_=None, unit_key_=None, time_end_in_=None, data_on
         fig_files = []
 
         # File path operations
-        version = version_from_data_file(data_file_)
+        version = version_from_data_file(data_file)
         _, save_pdf_path, _ = local_paths(version)
 
-        (data_file_folder, _) = os.path.split(data_file_)
+        (data_file_folder, _) = os.path.split(data_file)
 
         data_root_run = dfcs.split('/')[-1].replace('.csv', '')
         dir_root_run = data_file_folder.split('/')[-1].split('\\')[-1]
@@ -92,12 +93,15 @@ def compare_run_hist(data_file_=None, unit_key_=None, time_end_in_=None, data_on
 
 
 def main():
-    data_file_ = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_bb.csv'
-    data_only_ = True
-    unit_key_ = 'g20250612a_soc2p2_hi_lo_bb'
-    time_end_in_ = None
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_bb.csv'
+    data_only = True
+    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
+    time_end = None
+    terse = True
+    strict_overplot = False
 
-    compare_run_hist(data_file_=data_file_, unit_key_=unit_key_, time_end_in_=time_end_in_, data_only_=data_only_)
+    compare_run_hist(data_file=data_file, unit_key=unit_key, time_end=time_end, data_only=data_only,
+                     terse=terse, strict_overplot=strict_overplot)
 
 
 if __name__ == '__main__':

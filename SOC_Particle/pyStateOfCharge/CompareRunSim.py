@@ -183,7 +183,7 @@ def main():
     # Rf, vv4,
     # Rk,
     # vv0,
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaHiFail_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_bb.csv'
 
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 
@@ -218,8 +218,8 @@ def main():
 
     # plots = False
     plots = True
-    # terse_in = False
-    terse_in = True
+    terse_in = False
+    # terse_in = True
 
     strict_overplot_in = False
     # strict_overplot_in = True

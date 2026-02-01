@@ -15,8 +15,8 @@
 """Utility to load data from csv files"""
 
 import numpy as np
-from DataOverModel import SavedData, SavedDataSim, write_clean_file
-from CompareFault import add_stuff_f, filter_Tb, IB_BAND
+from DataOverModel import write_clean_file
+from CompareFault import IB_BAND
 from Battery import Battery, BatteryMonitor
 from resample import remove_nan
 from DataOverModel20241006 import SavedData20241006, SavedDataSim20241006

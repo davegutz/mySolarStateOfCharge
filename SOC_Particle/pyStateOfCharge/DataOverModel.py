@@ -50,48 +50,32 @@ def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
     print('dom_plot', end=':  ')
     if fig_files is None:
         fig_files = []
+    figOptions = PlotOptions(mr=mr, mv=mv, sr=sr, sv=sv, smv=smv, filename=filename, plot_title=plot_title,
+                             strict_overplot=strict_overplot)
 
     if not terse:
         # fig_list, fig_files = hist.hs_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
         #                                     strict_overplot=strict_overplot)
         # fig_list, fig_files = hist.hs_tune_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
         #                                          strict_overplot=strict_overplot)
-        fig_list, fig_files = dom.ekf_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
-                                            strict_overplot=strict_overplot)
+        fig_list, fig_files = dom.ekf_plots(figOptions, fig_files=fig_files, fig_list=fig_list)
         if  plot_init_in and hasattr(smv, 'time') and hasattr(sr, 'time'):
-            fig_list, fig_files = dom.init_1(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
-                                             fig_list=fig_list, strict_overplot=strict_overplot)
-            fig_list, fig_files = dom.init_1a(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
-                                              fig_list=fig_list, strict_overplot=strict_overplot)
-        fig_list, fig_files = sim_s.sim_s_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
-                                                strict_overplot=strict_overplot)
-        fig_list, fig_files = dom.dom_2(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
-                                    strict_overplot=strict_overplot)
-        fig_list, fig_files = dom.dom_3(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
-                                    strict_overplot=strict_overplot)
-        fig_list, fig_files = dom.dom_4(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
-                                    strict_overplot=strict_overplot)
-        fig_list, fig_files = dom.dom_4a(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
-                                     fig_list=fig_list, strict_overplot=strict_overplot)
-
-        figOptions = PlotOptions(mr=mr, mv=mv, sr=sr, sv=sv, smv=smv, filename=filename, plot_title=plot_title,
-                                 strict_overplot=strict_overplot)
-
+            fig_list, fig_files = dom.init_1(figOptions, fig_files=fig_files, fig_list=fig_list)
+            fig_list, fig_files = dom.init_1a(figOptions, fig_files=fig_files, fig_list=fig_list)
+        fig_list, fig_files = sim_s.sim_s_plots(figOptions, fig_files=fig_files, fig_list=fig_list)
+        fig_list, fig_files = dom.dom_2(figOptions, fig_files=fig_files, fig_list=fig_list)
+        fig_list, fig_files = dom.dom_3(figOptions, fig_files=fig_files, fig_list=fig_list)
+        fig_list, fig_files = dom.dom_4(figOptions, fig_files=fig_files, fig_list=fig_list)
+        fig_list, fig_files = dom.dom_4a(figOptions, fig_files=fig_files, fig_list=fig_list)
         fig_list, fig_files = gp.gp_1(figOptions, fig_files=fig_files, fig_list=fig_list)
+        fig_list, fig_files = gp.gp_2(figOptions, fig_files=fig_files, fig_list=fig_list)
+        fig_list, fig_files = gp.gp_2_nn_lag(figOptions, fig_files=fig_files, fig_list=fig_list)
+        fig_list, fig_files = gp.gp_3_ekf(figOptions, fig_files=fig_files, fig_list=fig_list)
+        fig_list, fig_files = off_on.off_on_plots(figOptions, fig_files=fig_files, fig_list=fig_list)
 
+    fig_list, fig_files = gp.gp_3_tune(figOptions, fig_files=fig_files, fig_list=fig_list)
+    fig_list, fig_files = ult.ult_1(figOptions, fig_files=fig_files, fig_list=fig_list)
 
-        fig_list, fig_files = gp.gp_2(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
-                                      fig_list=fig_list, strict_overplot=strict_overplot)
-        fig_list, fig_files = gp.gp_2_nn_lag(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
-                                      fig_list=fig_list, strict_overplot=strict_overplot)
-        fig_list, fig_files = gp.gp_3_ekf(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
-                                          fig_list=fig_list, strict_overplot=strict_overplot)
-        fig_list, fig_files = off_on.off_on_plots(mr, mv, sr, sv, smv, filename, fig_files, plot_title=plot_title,
-                                                  fig_list=fig_list, strict_overplot=strict_overplot)
-    fig_list, fig_files = gp.gp_3_tune(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
-                                       fig_list=fig_list, strict_overplot=strict_overplot)
-    fig_list, fig_files = ult.ult_1(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title,
-                                fig_list=fig_list, strict_overplot=strict_overplot)
     return fig_list, fig_files
 
 
@@ -206,6 +190,7 @@ if __name__ == '__main__':
 
     def main(data_file_old_txt, unit_key):
         from MonSim import replicate, save_clean_file, save_clean_file_sim
+        from SavedData import SavedData, SavedDataSim
         # Trade study inputs
         # i-->0 provides continuous anchor to reset filter (why?)  i shifts important --> 2 current sensors,
         #   hyst in ekf

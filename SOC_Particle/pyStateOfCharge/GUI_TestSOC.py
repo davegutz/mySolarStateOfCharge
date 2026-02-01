@@ -86,6 +86,7 @@ def_dict = {
         'macro': 'end_early',
         'mod_in_app': "247",
         'modeling': True,
+        'strict_overplot':True,
         'terse': True,
     },
     }
@@ -696,7 +697,8 @@ def compare_hist_sim_choose():
                 if answer is None:
                     print('enter operation cancelled')
                     return
-                compare_hist_sim(data_file=testpath, unit_key=key, dt_resample=answer)
+                compare_hist_sim(data_file=testpath, unit_key=key, dt_resample=answer, terse=terse.get(),
+                                 strict_overplot=strict_overplot.get())
             else:
                 tk.messagebox.showerror(message='key not found in' + testpath)
 
@@ -711,7 +713,8 @@ def compare_hist_to_sim():
         if answer is None:
             print('enter operation cancelled')
             return
-        compare_hist_sim(data_file=Test.file_path, unit_key=Test.key, mon_t=True, dt_resample=answer)
+        compare_hist_sim(data_file=Test.file_path, unit_key=Test.key, mon_t=True, dt_resample=answer, terse=terse.get(),
+                         strict_overplot=strict_overplot.get())
         # master.deiconify()
     else:
         print('not possible')
@@ -725,7 +728,8 @@ def compare_run():
     if modeling.get():
         print('compare_run_sim.  save_pdf_path', os.path.join(Test.version_path, './figures'))
         # master.withdraw()
-        compare_run_sim(data_file=Test.file_path, unit_key=Test.key, strict_overplot=True, terse=terse.get())
+        compare_run_sim(data_file=Test.file_path, unit_key=Test.key, strict_overplot=strict_overplot.get(),
+                        terse=terse.get())
         # master.deiconify()
     else:
         if not Ref.key_exists_in_file:
@@ -989,6 +993,11 @@ def handle_run_unit(*_args):
     Ref.unit = ref_unit.get()
     Ref.update_battery_stuff()
     update_data_buttons()
+
+
+def handle_strict_overplot(*_args):
+    cf['others']['strict_overplot'] = str(strict_overplot.get())
+    cf.save_to_file()
 
 
 def handle_terse(*_args):
@@ -1612,6 +1621,16 @@ if __name__ == '__main__':
     terse_button = tk.Checkbutton(sav_panel, text='terse plots', variable=terse, onvalue=True, offvalue=False)
     terse_button.pack(side=tk.LEFT, pady=2, fill='x')
     terse.trace_add('write', handle_terse)
+
+
+    strict_overplot_str = cf['others']['strict_overplot']
+    if strict_overplot_str == 'True':
+        strict_overplot = tk.BooleanVar(master, True)
+    else:
+        strict_overplot = tk.BooleanVar(master, False)
+    strict_overplot_button = tk.Checkbutton(sav_panel, text='strict_overplot plots', variable=strict_overplot, onvalue=True, offvalue=False)
+    strict_overplot_button.pack(side=tk.LEFT, pady=2, fill='x')
+    strict_overplot.trace_add('write', handle_strict_overplot)
 
 
     clear_data_button = myButton(sav_panel, text='clear', command=clear_data_verbose, fg="red", bg=bg_color,

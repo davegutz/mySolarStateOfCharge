@@ -1101,9 +1101,9 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
 
 
 def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=False, unit_key=None, sync_time=None,
-                     dt_resample=10, Tb_force=None, request_history=None):
+                     dt_resample=10, Tb_force=None, request_history=None, strict_overplot=False, terse=False):
 
-    print(f"\ncompare_hist_sim:\n{data_file=}\n{data_only=}\n{mon_t=}\n{unit_key=}\n{dt_resample=}\n{Tb_force=}\n{request_history=}\n")
+    print(f"\ncompare_hist_sim:\n{data_file=}\n{data_only=}\n{mon_t=}\n{unit_key=}\n{dt_resample=}\n{Tb_force=}\n{request_history=}\n{strict_overplot=}\n{terse=}")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
@@ -1154,11 +1154,12 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
         if hist_20C is not None and len(hist_20C.time) > 1:
             sim_run = None
             plot_init_in = False
-            fig_list, fig_files = overall_fault(mon_run, mon_ver, sim_ver, sim_s_ver, filename,
-                                                fig_files, plot_title=plot_title, fig_list=fig_list)
-            fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename,
-                                           fig_files, plot_title=plot_title, fig_list=fig_list,
-                                           plot_init_in=plot_init_in, run_str='', ver_str='_ver')
+            if not terse:
+                fig_list, fig_files = overall_fault(mon_run, mon_ver, sim_ver, sim_s_ver, filename,
+                                                    fig_files, plot_title=plot_title, fig_list=fig_list)
+            fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
+                                           plot_title=plot_title, fig_list=fig_list, run_str='',
+                                           ver_str='_ver', strict_overplot=strict_overplot, terse=terse)
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
         unite_pictures_into_pdf(outputPdfName=filename+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
         cleanup_fig_files(fig_files)
@@ -1186,12 +1187,15 @@ def main():
     dt_resample = 10
     Tb_force = None
     request_history = None
+    terse = True
+    strict_overplot = False
 
     plots=True
     # plots = False
 
     compare_hist_sim(data_file=data_file, mon_t=False, unit_key=unit_key, dt_resample=dt_resample,
-                     data_only=not plots, Tb_force=Tb_force, request_history=request_history)
+                     data_only=not plots, Tb_force=Tb_force, request_history=request_history, terse=terse,
+                     strict_overplot=strict_overplot)
 
 
 if __name__ == '__main__':
