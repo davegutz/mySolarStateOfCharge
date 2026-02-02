@@ -184,10 +184,26 @@ void debug_98(BatteryMonitor *Mon, Sensors *Sen)
 }
 void debug_99(BatteryMonitor *Mon, Sensors *Sen)
 {
-  String txBuf = String::format("Tb Vb Vbrms Vr | Imh Imhkf Imhrms| Inh Inhkf Inhrms| Ibsel| voc voc_soc |*SV,*Dc |*SA,*DA|*SB,*DB| *SD| *Dw| *Sr: %6.2fC %7.3fv %7.3fVrms %7.3fv %6.3fv| %6.2fA %6.2fA %6.2fArms| %6.2fA %6.2fA %6.2fArms| %6.2fA| %6.2fv %6.2fv |%6.3f %6.3fv  |%6.3f %6.3fA | %6.3f %6.3fA |%6.3f|%6.3fv|%6.3f,\n",
-    Sen->Tb_hdwe_filt, Sen->Vb_hdwe_f, Sen->Vb_rms, Sen->ShuntAmp->Vc(), Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_amp_rms, Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->Ib_noa_rms, Sen->Ib_hdwe_f_cal,
-    Mon->voc(), Mon->voc_soc(), sp.Vb_scale(), sp.Vb_bias_hdwe(), sp.ib_scale_amp(), sp.ib_bias_amp(), sp.ib_scale_noa(),
-    sp.ib_bias_noa(), sp.ib_disch_slr(), sp.Dw(), ap.slr_res);
+  String txBuf = 
+    String::format("\n Tb    |") +
+    String::format(" Vb      Vbrms *SV, *Dc   |") + 
+    String::format(" Vr     Vrrms|") +
+    String::format("  Imh    Imhkf  Imhrms  *SA, *DA |") +
+    String::format("  Inh    Inhkf  Inhrms  *SB, *DB |") +
+    String::format(" Ibsel *SDAsy|") +
+    String::format(" voc   voc_soc *DwTab|") +
+    String::format(" *Sr |") +
+    String::format(" T\n") +
+    String::format("%6.2f | %6.3f %6.3f %5.2f %5.2f|%6.3f %6.3f|%6.2f %6.2f %6.3f %5.2f %5.2f| %6.2f %6.2f %6.3f %5.2f %5.2f| %5.2f %5.2f| %5.2f %5.2f %5.2f|%5.2f|%5.3f,\n",
+    Sen->Tb_hdwe_filt,
+    Sen->Vb_hdwe_f, Sen->Vb_rms, sp.Vb_scale(), sp.Vb_bias_hdwe(),
+    Sen->ShuntAmp->Vc(), Sen->Vc_rms, 
+    Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_amp_rms, sp.ib_scale_amp(), sp.ib_bias_amp(),
+    Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->Ib_noa_rms, sp.ib_scale_noa(), sp.ib_bias_noa(),
+    Sen->Ib_hdwe_f_cal, sp.ib_disch_slr(),
+    Mon->voc(), Mon->voc_soc(), sp.Dw(),
+    ap.slr_res,
+    Sen->T);
 
   sendTxBuf(txBuf, true, true);
 }

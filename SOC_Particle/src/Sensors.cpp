@@ -1286,6 +1286,7 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   IbAmpRMS = new RecursiveRMSMonitor();
   IbNoaRMS = new RecursiveRMSMonitor();
   VbRMS = new RecursiveRMSMonitor();
+  VcRMS = new RecursiveRMSMonitor();
   #ifdef HDWE_IB_HI_LO
     sel_brk_hdwe = new ScaleBrk(HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI);
   #else
@@ -1483,6 +1484,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
     }
   }
   Vb_rms = VbRMS->update(Vb);
+  Vc_rms = VcRMS->update(Vc);
   
   
   // ib

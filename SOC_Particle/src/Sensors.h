@@ -569,6 +569,7 @@ public:
   float Ib_model;             // Modeled battery bank current, A
   float Ib_model_in;          // Battery bank current input to model (modified by cutback), A
   float Vb_rms;               // Battery bank voltage noise RMS, V
+  float Vc_rms;               // Battery bank voltage noise RMS, V
   float Wb;                   // Sensed battery bank power, use to compare to other shunts, W
   unsigned long long now;     // Time at sample, ms
   unsigned long long now_temp;// Time at sample, ms
@@ -671,7 +672,8 @@ protected:
   unsigned long long sample_time_vb_hdwe_;  // Exact moment of Vb sample, ms
   LagExp *SelFiltCal;      // Noise filter for calibration
   LagExp *VbFilt;       // Noise filter for calibration
-  RecursiveRMSMonitor *VbRMS; // RMS noise monitor for amp
+  RecursiveRMSMonitor *VbRMS; // RMS noise monitor for Vb
+  RecursiveRMSMonitor *VcRMS; // RMS noise monitor for Vc
 };
 
 // Misc
