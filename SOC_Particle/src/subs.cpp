@@ -276,188 +276,150 @@ void  monitor(const boolean reset, const boolean reset_temp, const boolean reset
   Mon->calc_charge_time(Mon->q(), Mon->q_capacity(), Sen->ib(), Mon->soc());
 }
 
-/* OLED display drive
- e.g.:
-   35  13.71 -4.2    Tb,C  VOC,V  Ib,A 
-   45  -10.0  46     EKF,Ah  chg,hrs  CC, Ah
-*/
-void oled_display(Adafruit_SSD1306 *display, Sensors *Sen, BatteryMonitor *Mon)
+// Read sensors, model signals, select between them.
+// Sim used for any missing signals (Tb, Vb, Ib)
+//    Needed here in this location to have available a value for
+//    Sen->Tb_f when called.   Recalculates Sen->Ib accounting for
+//    saturation.  Sen->Ib is a feedback (used-before-calculated).
+// Inputs:  sp.config, sp.sim_chm, Sen->Tb, Sen->Ib_model_in
+// States:  Sim.soc
+// Outputs: Sim.tb_f_, Sen->Tb_f, Sen->Ib, Sen->Ib_model,
+//   Sen->Vb_model, Sen->Tb_f, sp.inj_bias
+void sense_synth_select(const boolean reset, const boolean reset_temp, const boolean reset_kf, const unsigned long long now,
+  const unsigned long long elapsed,  Pins *myPins, BatteryMonitor *Mon, Sensors *Sen)
 {
-  static uint8_t blink = 0;
-  String disp_0, disp_1, disp_2;
-  cp.clear_disp_word();
+  static unsigned long long int last_snap = now;
+  boolean storing_fault_data = ( now - last_snap )>SNAP_WAIT;
+  if ( storing_fault_data || reset ) last_snap = now;
 
-  #ifndef HDWE_BARE
-    display->clearDisplay();
-  #endif
-  display->setTextSize(1);              // Normal 1:1 pixel scale
-  display->setTextColor(SSD1306_WHITE); // Draw white text
-  #ifdef HDWE_DISP_SKIP
-    display->setCursor(0, HDWE_DISP_SKIP);              // Start at top-left corner
-  #else
-    display->setCursor(0, 0);              // Start at top-left corner
-  #endif
+  // Load Ib and Vb
+  // Outputs: Sen->Ib_model_in, Sen->Ib, Sen->Vb
+  load_ib_vb(reset, reset_temp, reset_kf, Sen, myPins, Mon);
+  Sen->Flt->ib_range(reset, Sen, Mon);
+  Sen->Flt->ib_logic(reset, Sen, Mon);
+  Sen->Flt->ib_wrap(reset, Sen, Mon);
+  Sen->Flt->ib_quiet(reset, Sen);
+  Sen->Flt->cc_diff(reset, Sen, Mon);
+  Sen->Flt->ib_diff(reset, Sen, Mon);
 
-  // ---------- Top Line of Display -------------------------------------------
-  // Tb
-  sprintf(pr.buff, "%3.0f", pp.pubList.Tb);
-  disp_0 = pr.buff;
-  if ( Sen->Flt->tb_fa() && (blink==0 || blink==1) )
-  {
-    disp_0 = "***";
-    dispAssign(true, flt_tb);
-  }
 
-  // Voc
-  sprintf(pr.buff, "%5.2f", pp.pubList.Voc);
-  disp_1 = pr.buff;
-  if ( Sen->Flt->vb_sel_stat()==0 && (blink==1 || blink==2) )
+  // Sim initialize as needed from memory
+  if ( reset_temp )
   {
-    disp_1 = "*fail";
-    dispAssign(true, fail_vb);
+    initialize_all(Mon, Sen, 0., false);
   }
-  else if ( Sen->bms_off )
-  {
-    disp_1 = " off ";
-    dispAssign(true, off);
-  }
+  Sen->Sim->apply_delta_q_t(reset);
+  Sen->Sim->init_battery_sim(reset, Sen);
+  Mon->init_battery_mon(reset, Sen);
 
-  // Ib
-  sprintf(pr.buff, "%6.1f", pp.pubList.Ib);
-  disp_2 = pr.buff;
-  if ( blink==2 )
+  // Sim calculation
+  //  Inputs:  Sen->Tb_f(past), Sen->Ib_model_in
+  //  States: Sim->soc(past)
+  //  Outputs:  Tb_hdwe, Ib_model, Vb_model, sp.inj_bias, Sim.model_saturated
+  Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on, reset) * sp.nS() + Sen->Vb_add();
+  Sen->Ib_model = Sen->Sim->ib_fut() * sp.nP();
+  cp.model_cutback = Sen->Sim->cutback();
+  cp.model_saturated = Sen->Sim->saturated();
+
+  // Inputs:  Sim->Ib
+  Sen->Ib_amp_model = max(min(Sen->Ib_model + Sen->Ib_amp_add() + Sen->Ib_amp_noise(), Sen->Ib_amp_max()), Sen->Ib_amp_min());  // Dm
+  Sen->Ib_noa_model = max(min(Sen->Ib_model + Sen->Ib_noa_add() + Sen->Ib_noa_noise(), Sen->Ib_noa_max()), Sen->Ib_noa_min());  // Dn
+
+  // Select
+  //  Inputs:                                       --->   Outputs:
+  //  Ib_model, Ib_hdwe, Vc_hdwe                    --->   Ib
+  //  Vb_model, Vb_hdwe,                            --->   Vb
+  //  constant,         Tb_hdwe, Tb_hdwe_filt       --->   Tb, Tb_f
+  Log.info("  sense_synth_select:  select_all_logic");
+  Sen->Flt->select_all_logic(Sen, Mon, reset);
+  Log.info("  sense_synth_select:  select_volt_and_current");
+  Sen->select_volt_and_current(Mon);
+
+  // Fault snap buffer management
+  static uint8_t fails_repeated = 0;
+  if ( Sen->Flt->reset_all_faults() )
   {
-    #ifdef HDWE_IB_HI_LO
-      if ( Sen->Flt->ib_amp_fa() 
-      && Sen->Flt->ib_noa_fa() && !sp.mod_ib() )
-      {
-        disp_2 = "*fail";
-        dispAssign(true, fail_ibm);
-      }
-      else if ( Sen->Flt->dscn_fa() && !sp.mod_ib() )
-      {
-        disp_2 = " conn ";
-        dispAssign(true, conn);
-      }
-      else if ( Sen->Flt->ib_diff_fa() )
-      {
-        disp_2 = " diff ";
-        dispAssign(true, diff_ib);
-      }
-      else if ( Sen->Flt->ib_choice()!=0 )
-      {
-        disp_2 = " redl ";
-        dispAssign(true, red_loss);
-      }
-    #else
-      if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() && !sp.mod_ib() )
-      {
-        disp_2 = "*fail";
-        dispAssign(true, fail_vb);
-    }
-      else if ( Sen->Flt->dscn_fa() && !sp.mod_ib() )
-      {
-        disp_2 = " conn ";
-        dispAssign(true, conn);
-      }
-      else if ( Sen->Flt->ib_diff_fa() )
-      {
-        disp_2 = " diff ";
-        dispAssign(true, diff_ib);
-      }
-      else if ( Sen->Flt->red_loss() )
-      {
-        disp_2 = " redl ";
-        dispAssign(true, red_loss);
-      }
-    #endif
+    fails_repeated = 0;
+    Sen->Flt->preserving(false);
   }
-  else if ( blink==3 )
+  static boolean record_past = Sen->Flt->record();
+  boolean instant_of_failure = record_past && !Sen->Flt->record();
+  if ( storing_fault_data || instant_of_failure )
   {
-    if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() && !sp.mod_ib() )
+    if ( Sen->Flt->record() ) fails_repeated = 0;
+    else fails_repeated = min(fails_repeated + 1, 99);
+    if ( fails_repeated < 3 )
     {
-      disp_2 = "*fail";
-      dispAssign(true, fail_ib);
+      sp.put_Iflt(sp.Iflt() + 1);
+      if ( sp.Iflt()>sp.nflt() - 1 ) sp.put_Iflt(0);  // wrap buffer
+      Flt_st fault_snap;
+      fault_snap.assign(Time.now(), Mon, Sen);
+      sp.put_fault(fault_snap, sp.Iflt());
     }
-    else if ( Sen->Flt->dscn_fa() && !sp.mod_ib() )
+    else if ( fails_repeated < 4 )
     {
-      disp_2 = " conn ";
-      dispAssign(true, conn);
+      Serial.printf("preserving fault buffer\n");
+      Sen->Flt->preserving(true);
     }
+    if ( instant_of_failure ) last_snap = now;
   }
-  String disp_Tbop = disp_0.substring(0, 4) + " " + disp_1.substring(0, 6) + " " + disp_2.substring(0, 7);
-  display->println(disp_Tbop.c_str());
-  display->println(F(""));
-  display->setTextColor(SSD1306_WHITE);
+  record_past = Sen->Flt->record();
 
-  // --------------------- Bottom line of Display ------------------------------
-  // Hrs EHK
-  sprintf(pr.buff, "%3.0f", pp.pubList.Amp_hrs_remaining_ekf);
-  disp_0 = pr.buff;
-  if ( blink==0 || blink==1 || blink==2 )
+  // Charge calculation and memory store
+  // Inputs: Sim.model_saturated, Sen->Tb, Sen->Ib
+  // States: Sim.soc
+  Log.info("  sense_synth_select:  Sen->Sim->count_coulombs");
+  Sen->Sim->count_coulombs(Sen, reset_temp, Mon, false);
+
+  // Injection test
+  if ( (Sen->start_inj <= Sen->now) && (Sen->now <= Sen->end_inj) && (Sen->now > 0ULL) ) // in range, test in progress
   {
-    if ( Sen->Flt->cc_diff_fa() )
+    // Shift times because sampling is asynchronous: improve repeatibility
+    if ( Sen->elapsed_inj==0ULL )
     {
-      disp_0 = "---";
-      dispAssign(true, diff_ib);
+      Sen->end_inj += Sen->now - Sen->start_inj;
+      Sen->stop_inj += Sen->now - Sen->start_inj;
+      Sen->start_inj = Sen->now;
+      Serial.printf("SYNC,%7.3f\n", double(Sen->now)/1000.);
     }
-  }
-  display->print(disp_0.c_str());
 
-  // t charge
-  if ( abs(pp.pubList.tcharge) < 24. )
-  {
-    sprintf(pr.buff, "%5.1f", pp.pubList.tcharge);
-  }
-  else
-  {
-    sprintf(pr.buff, " --- ");
-    dispAssign(true, time_long);  
-  }  
-  disp_1 = pr.buff;
-  display->print(disp_1.c_str());
+    Sen->elapsed_inj = Sen->now - Sen->start_inj + 1UL; // Shift by 1 because using ==0 as reset button
 
-  // Hrs large
-  display->setTextSize(2);             // Draw 2X-scale text
-  if ( blink==1 || blink==3 || !Sen->saturated )
-  {
-    sprintf(pr.buff, "%3.0f", min(pp.pubList.Amp_hrs_remaining_soc, 999.));
-    disp_2 = pr.buff;
-  }
-  else if (Sen->saturated)
-  {
-    disp_2 = "SAT";
-    dispAssign(true, SAT);
-  }
-  display->print(disp_2.c_str());
-  String dispBot = disp_0 + disp_1 + " " + disp_2;
-
-  // Display
-  #ifndef HDWE_BARE
-    display->display();
-  #endif
-
-  // Text basic Bluetooth (use serial bluetooth app)
-  if ( sp.debug()==99 ) // Calibration mode
-    debug_99(Mon, Sen);
-  else if ( sp.debug()==98 ) // Calibration mode
-    debug_98(Mon, Sen);
-  else if ( sp.debug()!=-2 )  // Normal display
-  {
-    if ( sp.debug()==5 )
+    // Put a stop to this but retain sp.amp_z to scale fault and history printouts properly
+    if (Sen->now > Sen->stop_inj)
     {
-      String txBuf;
-      txBuf = String::format("%s   Tb,C  VOC,V  Ib,A \n%s   EKF,Ah  chg,hrs  CC, Ah\nPf; for fails.  prints=%ld\n\n",
-        disp_Tbop.c_str(), dispBot.c_str(), cp.num_v_print);
-      sendTxBuf(txBuf, true, true);
+      sp.put_Inj_bias(0);
+      sp.put_Type(0);
     }
   }
 
-  blink += 1;
-  if (blink>3) blink = 0;
+  else if ( Sen->elapsed_inj && sp.tweak_test() )  // Done.  elapsed_inj set to 0 is the reset button
+  {
+    Serial.printf("STOP echo\n");
+    Sen->elapsed_inj = 0ULL;
+    chit("vv0;", ASAP);    // Turn off echo
+    chit("Xp0;", SOON);    // Reset
+  }
+  Sen->Sim->calc_inj(Sen->elapsed_inj, sp.type(), sp.Amp(), sp.freq());
+
+  // Quiet logic.   Reset to ready state at soc=0.5; do not change Modeling.  Passes at least once before running chit.
+  static unsigned long long millis_past = System.millis();
+  static unsigned long int until_q_past = ap.until_q;
+  if ( ap.until_q>0UL && until_q_past==0UL ) until_q_past = ap.until_q;
+  ap.until_q = (unsigned long) max(0, (long) ap.until_q  - (long)(System.millis() - millis_past));
+  if ( ap.until_q==0UL && until_q_past>0UL )
+  {
+    chit("BZ;", SOON);
+    cp.freeze = false;  // unfreeze the queues
+  }
+  until_q_past = ap.until_q;
+  millis_past = System.millis();
+
 }
 
-void oled_display(Sensors *Sen, BatteryMonitor *Mon)
+
+// Serial display function
+void serial_display(Sensors *Sen, BatteryMonitor *Mon)
 {
   static uint8_t blink = 0;
   String disp_0, disp_1, disp_2;
@@ -663,11 +625,9 @@ void oled_display(Sensors *Sen, BatteryMonitor *Mon)
   String dispBot = disp_0 + disp_1 + " " + disp_2;
 
   // Text basic Bluetooth (use serial bluetooth app)
-  if ( sp.debug()==99 ) // Calibration mode
-    debug_99(Mon, Sen);
-  else if ( sp.debug()==98 ) // Calibration mode
-    debug_98(Mon, Sen);
-  else if ( sp.debug()!=-2 && sp.debug()==5 )  // Normal display as long as 'vv5'
+  debug_check_99(Mon, Sen);
+  debug_check_98(Mon, Sen);
+  if ( sp.debug()!=-2 && sp.debug()==5 )  // Normal display as long as 'vv5'
   {
     String txBuf;
     txBuf = String::format("%s   Tb,C  VOC,V  Ib,A \n%s   EKF,Ah  chg,hrs  CC, Ah\nPf; for fails.  prints=%ld\n\n",
@@ -701,147 +661,6 @@ void oled_display(Sensors *Sen, BatteryMonitor *Mon)
       #endif
     }
   #endif
-}
-
-// Read sensors, model signals, select between them.
-// Sim used for any missing signals (Tb, Vb, Ib)
-//    Needed here in this location to have available a value for
-//    Sen->Tb_f when called.   Recalculates Sen->Ib accounting for
-//    saturation.  Sen->Ib is a feedback (used-before-calculated).
-// Inputs:  sp.config, sp.sim_chm, Sen->Tb, Sen->Ib_model_in
-// States:  Sim.soc
-// Outputs: Sim.tb_f_, Sen->Tb_f, Sen->Ib, Sen->Ib_model,
-//   Sen->Vb_model, Sen->Tb_f, sp.inj_bias
-void sense_synth_select(const boolean reset, const boolean reset_temp, const boolean reset_kf, const unsigned long long now,
-  const unsigned long long elapsed,  Pins *myPins, BatteryMonitor *Mon, Sensors *Sen)
-{
-  static unsigned long long int last_snap = now;
-  boolean storing_fault_data = ( now - last_snap )>SNAP_WAIT;
-  if ( storing_fault_data || reset ) last_snap = now;
-
-  // Load Ib and Vb
-  // Outputs: Sen->Ib_model_in, Sen->Ib, Sen->Vb
-  load_ib_vb(reset, reset_temp, reset_kf, Sen, myPins, Mon);
-  Sen->Flt->ib_range(reset, Sen, Mon);
-  Sen->Flt->ib_logic(reset, Sen, Mon);
-  Sen->Flt->ib_wrap(reset, Sen, Mon);
-  Sen->Flt->ib_quiet(reset, Sen);
-  Sen->Flt->cc_diff(reset, Sen, Mon);
-  Sen->Flt->ib_diff(reset, Sen, Mon);
-
-
-  // Sim initialize as needed from memory
-  if ( reset_temp )
-  {
-    initialize_all(Mon, Sen, 0., false);
-  }
-  Sen->Sim->apply_delta_q_t(reset);
-  Sen->Sim->init_battery_sim(reset, Sen);
-  Mon->init_battery_mon(reset, Sen);
-
-  // Sim calculation
-  //  Inputs:  Sen->Tb_f(past), Sen->Ib_model_in
-  //  States: Sim->soc(past)
-  //  Outputs:  Tb_hdwe, Ib_model, Vb_model, sp.inj_bias, Sim.model_saturated
-  Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on, reset) * sp.nS() + Sen->Vb_add();
-  Sen->Ib_model = Sen->Sim->ib_fut() * sp.nP();
-  cp.model_cutback = Sen->Sim->cutback();
-  cp.model_saturated = Sen->Sim->saturated();
-
-  // Inputs:  Sim->Ib
-  Sen->Ib_amp_model = max(min(Sen->Ib_model + Sen->Ib_amp_add() + Sen->Ib_amp_noise(), Sen->Ib_amp_max()), Sen->Ib_amp_min());  // Dm
-  Sen->Ib_noa_model = max(min(Sen->Ib_model + Sen->Ib_noa_add() + Sen->Ib_noa_noise(), Sen->Ib_noa_max()), Sen->Ib_noa_min());  // Dn
-
-  // Select
-  //  Inputs:                                       --->   Outputs:
-  //  Ib_model, Ib_hdwe, Vc_hdwe                    --->   Ib
-  //  Vb_model, Vb_hdwe,                            --->   Vb
-  //  constant,         Tb_hdwe, Tb_hdwe_filt       --->   Tb, Tb_f
-  Log.info("  sense_synth_select:  select_all_logic");
-  Sen->Flt->select_all_logic(Sen, Mon, reset);
-  Log.info("  sense_synth_select:  select_volt_and_current");
-  Sen->select_volt_and_current(Mon);
-
-  // Fault snap buffer management
-  static uint8_t fails_repeated = 0;
-  if ( Sen->Flt->reset_all_faults() )
-  {
-    fails_repeated = 0;
-    Sen->Flt->preserving(false);
-  }
-  static boolean record_past = Sen->Flt->record();
-  boolean instant_of_failure = record_past && !Sen->Flt->record();
-  if ( storing_fault_data || instant_of_failure )
-  {
-    if ( Sen->Flt->record() ) fails_repeated = 0;
-    else fails_repeated = min(fails_repeated + 1, 99);
-    if ( fails_repeated < 3 )
-    {
-      sp.put_Iflt(sp.Iflt() + 1);
-      if ( sp.Iflt()>sp.nflt() - 1 ) sp.put_Iflt(0);  // wrap buffer
-      Flt_st fault_snap;
-      fault_snap.assign(Time.now(), Mon, Sen);
-      sp.put_fault(fault_snap, sp.Iflt());
-    }
-    else if ( fails_repeated < 4 )
-    {
-      Serial.printf("preserving fault buffer\n");
-      Sen->Flt->preserving(true);
-    }
-    if ( instant_of_failure ) last_snap = now;
-  }
-  record_past = Sen->Flt->record();
-
-  // Charge calculation and memory store
-  // Inputs: Sim.model_saturated, Sen->Tb, Sen->Ib
-  // States: Sim.soc
-  Log.info("  sense_synth_select:  Sen->Sim->count_coulombs");
-  Sen->Sim->count_coulombs(Sen, reset_temp, Mon, false);
-
-  // Injection test
-  if ( (Sen->start_inj <= Sen->now) && (Sen->now <= Sen->end_inj) && (Sen->now > 0ULL) ) // in range, test in progress
-  {
-    // Shift times because sampling is asynchronous: improve repeatibility
-    if ( Sen->elapsed_inj==0ULL )
-    {
-      Sen->end_inj += Sen->now - Sen->start_inj;
-      Sen->stop_inj += Sen->now - Sen->start_inj;
-      Sen->start_inj = Sen->now;
-      Serial.printf("SYNC,%7.3f\n", double(Sen->now)/1000.);
-    }
-
-    Sen->elapsed_inj = Sen->now - Sen->start_inj + 1UL; // Shift by 1 because using ==0 as reset button
-
-    // Put a stop to this but retain sp.amp_z to scale fault and history printouts properly
-    if (Sen->now > Sen->stop_inj)
-    {
-      sp.put_Inj_bias(0);
-      sp.put_Type(0);
-    }
-  }
-
-  else if ( Sen->elapsed_inj && sp.tweak_test() )  // Done.  elapsed_inj set to 0 is the reset button
-  {
-    Serial.printf("STOP echo\n");
-    Sen->elapsed_inj = 0ULL;
-    chit("vv0;", ASAP);    // Turn off echo
-    chit("Xp0;", SOON);    // Reset
-  }
-  Sen->Sim->calc_inj(Sen->elapsed_inj, sp.type(), sp.Amp(), sp.freq());
-
-  // Quiet logic.   Reset to ready state at soc=0.5; do not change Modeling.  Passes at least once before running chit.
-  static unsigned long long millis_past = System.millis();
-  static unsigned long int until_q_past = ap.until_q;
-  if ( ap.until_q>0UL && until_q_past==0UL ) until_q_past = ap.until_q;
-  ap.until_q = (unsigned long) max(0, (long) ap.until_q  - (long)(System.millis() - millis_past));
-  if ( ap.until_q==0UL && until_q_past>0UL )
-  {
-    chit("BZ;", SOON);
-    cp.freeze = false;  // unfreeze the queues
-  }
-  until_q_past = ap.until_q;
-  millis_past = System.millis();
-
 }
 
 

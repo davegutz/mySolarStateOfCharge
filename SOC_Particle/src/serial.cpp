@@ -60,11 +60,11 @@ String chat_cmd_from(String *source)
 }
 
 // Non-blocking delay
-void delay_no_block(const unsigned long long interval)
+void delay_no_block(const unsigned long long delay_millis)
 {
   unsigned long long previousMillis = System.millis();
   unsigned long long currentMillis = previousMillis;
-  while( currentMillis - previousMillis < interval )
+  while( currentMillis - previousMillis < delay_millis )
   {
     currentMillis = System.millis();
   }

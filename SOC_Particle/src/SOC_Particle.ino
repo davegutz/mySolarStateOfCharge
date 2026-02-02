@@ -18,8 +18,6 @@
   * 03-Mar-2022   Manually tune for current sensor errors.   Vb model in tables
   * 21-Apr-2022   Add Tweak methods to dynamically determine current sensor erros
   * 18-May-2022   Bunch of cleanup and reorganization
-  * 20-Jul-2022   Add low-emission bluetooth (BLE).  Initialize to EKF when unsaturated.
-  *               Correct time skews to align Vb and Ib.
   * 21-Sep-2022   Alpha release v20220917.  Branch GitHub repository.  Added signal redundancy checks and fault handling.
   * 26-Nov-2022   First Beta release v20221028.   Branch GitHub repository.  Various debugging fixes hysteresis.
   * 12-Dec-2022   RetainedPars-->SavedPars to support Argon with 47L16 EERAM device
@@ -27,7 +25,8 @@
   * 01-Dec-2023   g20231111 Photon 2, DS2482
   * 01-Apr-2024   g20230331 ib_charge = ib_ / sp.nS() while Randles uses ib_.  Tune Tb initialization
   * 17-Apr-2024   Undo previous ib_/sp.nS() change
-  *
+  * ....see git log for more details
+  * 02-Feb-2026   BLE and HI_LO ib selection
 //
 // MIT License
 //
@@ -417,11 +416,11 @@ void loop()
     Log.info("end read");
   }  // end read (high speed frame)
 
-  // OLED and Bluetooth display drivers.   Also convenient update time for saving parameters (remember)
+  // Bluetooth display drivers.   Also convenient update time for saving parameters (remember)
   if ( display_and_remember )
   {
     Log.info("display and remember");
-    oled_display(Sen, Mon);
+    serial_display(Sen, Mon);
     sp.put_Time_now(max( sp.Time_now_z, (unsigned long)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
   }
 

@@ -56,7 +56,7 @@ void debug_12(BatteryMonitor *Mon, Sensors *Sen)
 
 // sp.debug()==-13 ib_dscn for Arduino.
 // Start Arduino serial plotter.  Toggle v like 'vv0;vv-13;' to produce legend
-void debug_m13(Sensors *Sen)
+void debug_check_m13(Sensors *Sen)
 {
 
   // Arduinio header
@@ -78,9 +78,8 @@ void debug_m13(Sensors *Sen)
 
 // sp.debug()==-23 vb for Arduino.
 // Start Arduino serial plotter.  Toggle v like 'vv0;vv-23;' to produce legend
-void debug_m23(Sensors *Sen)
+void debug_check_m23(Sensors *Sen)
 {
-
   // Arduinio header
   static int8_t last_call = 0;
   if ( sp.debug()!=last_call && sp.debug()==-23 )
@@ -96,9 +95,8 @@ void debug_m23(Sensors *Sen)
 
 // sp.debug()==-24 Vb, Ib for Arduino.
 // Start Arduino serial plotter.  Toggle v like 'vv0;vv-23;' to produce legend
-void debug_m24(Sensors *Sen)
+void debug_check_m24(Sensors *Sen)
 {
-
   // Arduinio header
   static int8_t last_call = 0;
   if ( sp.debug()!=last_call && sp.debug()==-23 )
@@ -172,9 +170,11 @@ void debug_qs(BatteryMonitor *Mon, Sensors *Sen)
 
 }
 
-// Calibration
-void debug_98(BatteryMonitor *Mon, Sensors *Sen)
+// Calibration modes: Bluetooth serial output
+void debug_check_98(BatteryMonitor *Mon, Sensors *Sen)
 {
+  if ( sp.debug()!=98 )
+    return;
   String txBuf;
 
   txBuf = String::format("imh imhkf inh inkfh: %6.2fA %6.2fA,  %6.2fA,%6.2fA\n",
@@ -182,30 +182,53 @@ void debug_98(BatteryMonitor *Mon, Sensors *Sen)
 
   sendTxBuf(txBuf, true, true);
 }
-void debug_99(BatteryMonitor *Mon, Sensors *Sen)
+void debug_check_99(BatteryMonitor *Mon, Sensors *Sen)
 {
-  String txBuf = 
-    String::format("\n Tb    |") +
-    String::format(" Vb      Vbrms *SV, *Dc   |") + 
-    String::format(" Vr     Vrrms|") +
-    String::format("  Imh    Imhkf  Imhrms  *SA, *DA |") +
-    String::format("  Inh    Inhkf  Inhrms  *SB, *DB |") +
-    String::format(" Ibsel *SDAsy|") +
-    String::format(" voc   voc_soc *DwTab|") +
-    String::format(" *Sr |") +
-    String::format(" T\n") +
-    String::format("%6.2f | %6.3f %6.3f %5.2f %5.2f|%6.3f %6.3f|%6.2f %6.2f %6.3f %5.2f %5.2f| %6.2f %6.2f %6.3f %5.2f %5.2f| %5.2f %5.2f| %5.2f %5.2f %5.2f|%5.2f|%5.3f,\n",
-    Sen->Tb_hdwe_filt,
-    Sen->Vb_hdwe_f, Sen->Vb_rms, sp.Vb_scale(), sp.Vb_bias_hdwe(),
-    Sen->ShuntAmp->Vc(), Sen->Vc_rms, 
-    Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_amp_rms, sp.ib_scale_amp(), sp.ib_bias_amp(),
-    Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->Ib_noa_rms, sp.ib_scale_noa(), sp.ib_bias_noa(),
-    Sen->Ib_hdwe_f_cal, sp.ib_disch_slr(),
-    Mon->voc(), Mon->voc_soc(), sp.Dw(),
-    ap.slr_res,
-    Sen->T);
+  static int8_t last_call = 0;
+  if ( sp.debug()!=last_call )
+  {
+    if ( sp.debug()==99 )
+    {
+      sendTxBuf(String::format("\nSetting hardware 'Xm0,' and throughput 'Dr1,'\n"), true, true);
+      chit("Xm0,", QUEUE);      // Hardware mode
+      chit("Dr1,", QUEUE);      // Throughput mode
+    }
+    else if ( last_call==99 )
+    {
+      sendTxBuf(String::format("\nRestore defaults: 'Xm, Dr,'\n"), true, true);
+      chit("Xm0,", QUEUE);      // Nominal
+      chit("Dr,", QUEUE);       // Nominal
+    }
+  }
+  last_call = sp.debug();
 
-  sendTxBuf(txBuf, true, true);
+  if ( sp.debug()!=99 )
+    return;
+  else
+  {
+    String txBuf = 
+      String::format("\n Tb   |") +
+      String::format("Vb      Vbrms *SV,     *Dc|") + 
+      String::format("Vr    Vrrms|") +
+      String::format(" Imh    Imhkf Imhrms *SA,    *DA|") +
+      String::format(" Inh    Inhkf Inhrms *SB,    *DB|") +
+      String::format(" Ibsel *SDasy|") +
+      String::format("voc   voc_soc *DwTab|") +
+      String::format("*Sran|") +
+      String::format(" T  |\n") +
+      String::format("%6.2f|%6.3f %6.3f %5.2f %6.2f|%5.3f %5.3f|%6.2f %6.2f %5.3f %5.2f %6.2f|%6.2f %6.2f %5.3f %5.2f %6.2f|%6.2f  %5.2f|%5.2f %5.2f  %7.2f| %4.2f|%5.3f|\n",
+      Sen->Tb_hdwe_filt,
+      Sen->Vb_hdwe_f, Sen->Vb_rms, sp.Vb_scale(), sp.Vb_bias_hdwe(),
+      Sen->ShuntAmp->Vc(), Sen->Vc_rms, 
+      Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_amp_rms, sp.ib_scale_amp(), sp.ib_bias_amp(),
+      Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->Ib_noa_rms, sp.ib_scale_noa(), sp.ib_bias_noa(),
+      Sen->Ib_hdwe_f_cal, sp.ib_disch_slr(),
+      Mon->voc(), Mon->voc_soc(), sp.Dw(),
+      ap.slr_res,
+      Sen->T);
+
+    sendTxBuf(txBuf, true, true);
+  }
 }
 
 #ifdef DEBUG_DETAIL

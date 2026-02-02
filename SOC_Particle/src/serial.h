@@ -48,7 +48,7 @@ extern CommandPars cp;  // Various parameters to be static at system level
 
 // Headers
 String chat_cmd_from(String *source);
-void delay_no_block(const unsigned long long int interval);
+void delay_no_block(const unsigned long long int delay_millis);
 String finish_request(const String in_str);
 boolean is_finished(const char in_char);
 void print_battery_header();

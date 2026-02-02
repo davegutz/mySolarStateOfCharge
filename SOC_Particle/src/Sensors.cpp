@@ -530,9 +530,9 @@ void Fault::ib_quiet(const boolean reset, Sensors *Sen)
       // Fault
   faultAssign( ib_is_quiet_, IB_DSCN_FLT );   // initializes false
   failAssign( QuietPer->calculate(dscn_flt(), QUIET_S, QUIET_R, Sen->T, reset_loc), IB_DSCN_FA);
-  if ( sp.debug()==-13 ) debug_m13(Sen);
-  if ( sp.debug()==-23 ) debug_m23(Sen);
-  if ( sp.debug()==-24 ) debug_m24(Sen);
+  debug_check_m13(Sen);
+  debug_check_m23(Sen);
+  debug_check_m24(Sen);
 }
 
 // Range checks latch
