@@ -8,9 +8,7 @@
   23-Nov-2016   Dave Gutz   LeadLagExp
   09-Feb-2021   Dave Gutz   RateLagExp, LagExp, General2_Pole
  ****************************************************/
-
-#ifndef _myFilters_H
-#define _myFilters_H
+#pragma once
 
 #include "application.h"
 #include <math.h>
@@ -524,4 +522,48 @@ struct PID
   }
 };
 
-#endif
+
+// class NoiseMonitor 20 states past RMS
+class RecursiveRMSMonitor
+{
+public:
+  RecursiveRMSMonitor() {}
+  ~RecursiveRMSMonitor() {}
+  double update(double newValue)
+  {
+      // 1. Remove oldest value from sums if buffer is full
+      if (count == WINDOW_SIZE)
+      {
+          double oldestValue = buffer[index];
+          runningSum -= oldestValue;
+          // For true RMS of noise, we need to handle how the mean affects this.
+          // Simplified: track sum and sum of squares for variance.
+      }
+
+      // 2. Add new value to circular buffer
+      buffer[index] = newValue;
+      runningSum += newValue;
+      index = (index + 1) % WINDOW_SIZE;
+      if (count < WINDOW_SIZE) count++;
+
+      // 3. Calculate current mean
+      double mean = runningSum / count;
+
+      // 4. Calculate RMS relative to the mean (Noise = Deviation)
+      // RMS = sqrt( mean( (x - mean)^2 ) )
+      double currentSumSquares = 0.0;
+      for (int i = 0; i < count; ++i)
+      {
+          currentSumSquares += std::pow(buffer[i] - mean, 2);
+      }
+
+      return std::sqrt(currentSumSquares / count);
+  }
+private:
+  static const int WINDOW_SIZE = 20;
+  double buffer[WINDOW_SIZE] = {0.0};
+  int index = 0;
+  int count = 0;
+  double sumSquares = 0.0;
+  double runningSum = 0.0;
+};

@@ -1283,6 +1283,9 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   NoaFilt = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*sp.nS()*sp.nP(), NOM_UNIT_CAP*sp.nS()*sp.nP());
   SelFiltCal = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*sp.nS()*sp.nP(), NOM_UNIT_CAP*sp.nS()*sp.nP());
   VbFilt = new LagExp(T, AMP_FILT_TAU, 0., NOMINAL_VB*2.5);
+  IbAmpRMS = new RecursiveRMSMonitor();
+  IbNoaRMS = new RecursiveRMSMonitor();
+  VbRMS = new RecursiveRMSMonitor();
   #ifdef HDWE_IB_HI_LO
     sel_brk_hdwe = new ScaleBrk(HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI);
   #else
@@ -1479,6 +1482,8 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
       sample_time_vb_ = sample_time_vb_hdwe_;
     }
   }
+  Vb_rms = VbRMS->update(Vb);
+  
   
   // ib
   if ( sp.mod_ib() )
@@ -1501,6 +1506,8 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
     sample_time_ib_ = sample_time_ib_hdwe_;
     dt_ib_ = dt_ib_hdwe_;
   }
+  Ib_amp_rms = IbAmpRMS->update(Ib_amp);
+  Ib_noa_rms = IbNoaRMS->update(Ib_noa);
   T =  double(dt_ib_)/1000.;
   now = sample_time_ib_ - inst_millis_ + inst_time_*1000;
   Log.info("    select_volt_and_current now:  now,%lld, cTime,%7.3f,", now, double(now)/1000.);

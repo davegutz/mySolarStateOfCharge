@@ -554,6 +554,7 @@ public:
   float Ib_amp_hdwe_f;        // Sensed, filtered amp battery bank current, A
   float Ib_amp_hdwe_kf;       // Sensed, kalman filtered amp battery bank current, A
   float Ib_amp_model;         // Modeled amp battery bank current, A
+  float Ib_amp_rms;           // Amp battery bank current noise RMS, A
   float Ib_hdwe_f;            // Sensed, selected filtered battery bank current, A
   float Ib_hdwe_kf;           // Sensed, selected kalman filtered battery bank current, A
   float Ib_hdwe_f_cal;        // Sensed, filtered selected battery bank current for cal display, A
@@ -561,11 +562,13 @@ public:
   float Ib_noa_hdwe;          // Sensed noa battery bank current, A
   float Ib_noa_hdwe_f;        // Sensed, filtered noa battery bank current, A
   float Ib_noa_hdwe_kf;       // Sensed, kalman filtered noa battery bank current, A
+  float Ib_noa_rms;           // Noa battery bank current noise RMS, A
   float Ib_noa_model;         // Modeled noa battery bank current, A
   float Ib_hdwe;              // Sensed battery bank current, A
   float Ib_hdwe_model;        // Selected model hardware signal, A
   float Ib_model;             // Modeled battery bank current, A
   float Ib_model_in;          // Battery bank current input to model (modified by cutback), A
+  float Vb_rms;               // Battery bank voltage noise RMS, V
   float Wb;                   // Sensed battery bank power, use to compare to other shunts, W
   unsigned long long now;     // Time at sample, ms
   unsigned long long now_temp;// Time at sample, ms
@@ -649,6 +652,8 @@ protected:
   LagExp *AmpFilt;      // Noise filter for calibration
   unsigned long long dt_ib_;                // Delta update of selected Ib sample, ms
   unsigned long long dt_ib_hdwe_;           // Delta update of Ib sample, ms
+  RecursiveRMSMonitor *IbAmpRMS; // RMS noise monitor for amp
+  RecursiveRMSMonitor *IbNoaRMS; // RMS noise monitor for noa
   void ib_choose_active_standby(void);   // Deliberate choice based on inputs and results
   void ib_choose_hi_lo(void);   // Deliberate choice based on inputs and results
   unsigned long long inst_millis_;          // millis offset to account for setup() time, ms
@@ -666,6 +671,7 @@ protected:
   unsigned long long sample_time_vb_hdwe_;  // Exact moment of Vb sample, ms
   LagExp *SelFiltCal;      // Noise filter for calibration
   LagExp *VbFilt;       // Noise filter for calibration
+  RecursiveRMSMonitor *VbRMS; // RMS noise monitor for amp
 };
 
 // Misc
