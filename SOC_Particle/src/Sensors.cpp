@@ -1283,10 +1283,10 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   NoaFilt = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*sp.nS()*sp.nP(), NOM_UNIT_CAP*sp.nS()*sp.nP());
   SelFiltCal = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*sp.nS()*sp.nP(), NOM_UNIT_CAP*sp.nS()*sp.nP());
   VbFilt = new LagExp(T, AMP_FILT_TAU, 0., NOMINAL_VB*2.5);
-  IbAmpRMS = new RecursiveRMSMonitor();
-  IbNoaRMS = new RecursiveRMSMonitor();
-  VbRMS = new RecursiveRMSMonitor();
-  VcRMS = new RecursiveRMSMonitor();
+  IbAmpRMS = new RecursiveRMSMonitorFP();
+  IbNoaRMS = new RecursiveRMSMonitorFP();
+  VbRMS = new RecursiveRMSMonitorFP();
+  VcRMS = new RecursiveRMSMonitorFP();
   #ifdef HDWE_IB_HI_LO
     sel_brk_hdwe = new ScaleBrk(HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI);
   #else

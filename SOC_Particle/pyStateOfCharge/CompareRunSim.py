@@ -183,8 +183,7 @@ def main():
     # Rf, vv4,
     # Rk,
     # vv0,
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_bb.csv'
-
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\zero_soc2p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 
     # # gdrive = '/home/daveg/Documents/'
@@ -194,30 +193,31 @@ def main():
     # unit_key = 'g20250612a_soc2p2_hi_lo_chg'
     #
     # # The following are not implemented in GUI
-    #
+
     time_end_in = None
-    # time_end_in = 50.
-    #
+    # time_end_in = 2.6
+
     time_shift_in = None
     # time_shift_in = -1.811
-    #
+
     s_hys_sim_in = 1.
     # s_hys_sim_in = 0.
-    #
+
     verbose_in = False
     scale_in = 1.0
 
     # RunSim plot selection
     # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m  8=vb_wrap
-    request_hist_in = 7
+    request_hist_in = 4
     # request_hist_in = None
 
     # # mon_soc_in = False # old runsim work ******************
     use_mon_soc_ = False
     # use_mon_soc_ = True
 
-    # plots = False
-    plots = True
+    plots = False
+    # plots = True
+
     terse_in = False
     # terse_in = True
 

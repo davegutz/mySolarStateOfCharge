@@ -653,8 +653,8 @@ protected:
   LagExp *AmpFilt;      // Noise filter for calibration
   unsigned long long dt_ib_;                // Delta update of selected Ib sample, ms
   unsigned long long dt_ib_hdwe_;           // Delta update of Ib sample, ms
-  RecursiveRMSMonitor *IbAmpRMS; // RMS noise monitor for amp
-  RecursiveRMSMonitor *IbNoaRMS; // RMS noise monitor for noa
+  RecursiveRMSMonitorFP *IbAmpRMS; // RMS noise monitor for amp
+  RecursiveRMSMonitorFP *IbNoaRMS; // RMS noise monitor for noa
   void ib_choose_active_standby(void);   // Deliberate choice based on inputs and results
   void ib_choose_hi_lo(void);   // Deliberate choice based on inputs and results
   unsigned long long inst_millis_;          // millis offset to account for setup() time, ms
@@ -672,8 +672,8 @@ protected:
   unsigned long long sample_time_vb_hdwe_;  // Exact moment of Vb sample, ms
   LagExp *SelFiltCal;      // Noise filter for calibration
   LagExp *VbFilt;       // Noise filter for calibration
-  RecursiveRMSMonitor *VbRMS; // RMS noise monitor for Vb
-  RecursiveRMSMonitor *VcRMS; // RMS noise monitor for Vc
+  RecursiveRMSMonitorFP *VbRMS; // RMS noise monitor for Vb
+  RecursiveRMSMonitorFP *VcRMS; // RMS noise monitor for Vc
 };
 
 // Misc

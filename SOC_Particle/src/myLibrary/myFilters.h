@@ -524,17 +524,17 @@ struct PID
 
 
 // class NoiseMonitor 20 states past RMS
-class RecursiveRMSMonitor
+class RecursiveRMSMonitorFP
 {
 public:
-  RecursiveRMSMonitor() {}
-  ~RecursiveRMSMonitor() {}
-  double update(double newValue)
+  RecursiveRMSMonitorFP() {}
+  ~RecursiveRMSMonitorFP() {}
+  float update(float newValue)
   {
       // 1. Remove oldest value from sums if buffer is full
       if (count == WINDOW_SIZE)
       {
-          double oldestValue = buffer[index];
+          float oldestValue = buffer[index];
           runningSum -= oldestValue;
           // For true RMS of noise, we need to handle how the mean affects this.
           // Simplified: track sum and sum of squares for variance.
@@ -547,11 +547,11 @@ public:
       if (count < WINDOW_SIZE) count++;
 
       // 3. Calculate current mean
-      double mean = runningSum / count;
+      float mean = runningSum / count;
 
       // 4. Calculate RMS relative to the mean (Noise = Deviation)
       // RMS = sqrt( mean( (x - mean)^2 ) )
-      double currentSumSquares = 0.0;
+      float currentSumSquares = 0.0;
       for (int i = 0; i < count; ++i)
       {
           currentSumSquares += std::pow(buffer[i] - mean, 2);
@@ -561,9 +561,9 @@ public:
   }
 private:
   static const int WINDOW_SIZE = 20;
-  double buffer[WINDOW_SIZE] = {0.0};
+  float buffer[WINDOW_SIZE] = {0.0};
   int index = 0;
   int count = 0;
-  double sumSquares = 0.0;
-  double runningSum = 0.0;
+  float sumSquares = 0.0;
+  float runningSum = 0.0;
 };

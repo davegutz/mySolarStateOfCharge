@@ -179,8 +179,9 @@ class Battery(Coulombs):
         self.voc_stat_f = self.voc_stat
         self.dv_dyn = 0.  # Model current induced back emf, V
         self.ib_dyn = 0.  # Model current induced back emf before resistance multiply, A
-        self.ib_dyn_rstate = 0.  # Model current rate, A
-        self.ib_dyn_lstate = 0.  # Model current rate, A
+        self.ib_dyn_T = 0.  # Randles update time, s
+        self.ib_dyn_rstate = 0.  # Randles rstate, A
+        self.ib_dyn_lstate = 0.  # Randles lstate, A
         self.vb = Battery.NOM_SYS_VOLT  # Battery voltage at post, V
         self.ib = 0.  # Current into battery post, A
         self.ib_in = 0.  # Current into calculate, A
@@ -214,6 +215,7 @@ class Battery(Coulombs):
         self.tau_hys = 0.  # Placeholder so BatterySim can be plotted
         self.dv_dyn = 0.  # Placeholder so BatterySim can be plotted
         self.ib_dyn = 0.  # Placeholder so BatterySim can be plotted
+        self.ib_dyn_T = 0.  # Placeholder so BatterySim can be plotted
         self.ib_dyn_rstate = 0.  # Placeholder so BatterySim can be plotted
         self.ib_dyn_lstate = 0.  # Placeholder so BatterySim can be plotted
         self.bms_off = False
@@ -366,6 +368,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vb_hdwe = 0.
         self.vb_hdwe_f = 0.
         self.ib_dyn = 0.
+        self.ib_dyn_T = 0.
         self.ib_dyn_rstate = 0.
         self.ib_dyn_lstate = 0.
         self.voc_stat_f_rstate = 0.
@@ -572,13 +575,15 @@ class BatteryMonitor(Battery, EKF1x1):
 
         # Dynamic emf
         if rp.modeling_ib:
+            dt_local = self.dt
             ib_dc = self.ib_past
         else:
-            # ib_dc = self.ib
-            ib_dc = self.ib_past
+            dt_local = self.dt
+            ib_dc = self.ib
         self.vb = vb
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(ib_dc, SN.ib_dyn[G.i], reset, self.dt,
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(ib_dc, SN.ib_dyn[G.i], reset, dt_local,
                                                                self.chemistry.tau_ct)
+        self.ib_dyn_T = self.ChargeTransfer.dt
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
         self.voc = self.vb - (self.ib_dyn*self.chemistry.r_ct + ib_dc*self.chemistry.r_0)
@@ -791,6 +796,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.tau_hys.append(self.tau_hys)
         self.saved.dv_dyn.append(self.dv_dyn)
         self.saved.ib_dyn.append(self.ib_dyn)
+        self.saved.ib_dyn_T.append(self.ib_dyn_T)
         self.saved.ib_dyn_rstate.append(self.ib_dyn_rstate)
         self.saved.ib_dyn_lstate.append(self.ib_dyn_lstate)
         self.saved.voc_stat_f_rstate.append(self.voc_stat_f_rstate)
@@ -916,9 +922,12 @@ class BatteryMonitor(Battery, EKF1x1):
             else:
                 self.ib_noa = ib_noa
                 self.ib_noa_pst = ib_noa_pst
-            # print(f"{self.ib_noa=}", end='')
+            if rp.modeling_ib:
+                dt_local = self.dt
+            else:
+                dt_local = self.dt_past
             self.LoopIbNoa.calculate(reset=reset, rp=rp, ib=self.ib_noa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
-                                     dt=min(self.dt, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
+                                     dt=min(dt_local, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
                                      ib_init = SN.LoopNoa.ib_init, ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
                                      e_wrap_filt_init = SN.e_wrap_n_filt_init, e_wrap_trim_init = SN.e_wrap_n_trim_init)
             self.e_wrap_n = self.LoopIbNoa.e_wrap
@@ -947,10 +956,6 @@ class BatteryMonitor(Battery, EKF1x1):
             self.disable_amp_fault = (self.ib_amp_hi and self.ib_noa_hi) or (self.ib_amp_lo and self.ib_noa_lo)
             # print(f"ib_amp_hi/lo, ib_noa_hi/lo = {self.ib_amp_hi} {self.ib_amp_lo} {self.ib_noa_hi} {self.ib_noa_lo}")
             self.e_wrap_m_reset = reset or self.disable_amp_fault
-            if rp.modeling_ib:
-                dt_local = self.dt
-            else:
-                dt_local = self.dt_past
             self.LoopIbAmp.calculate(reset=self.e_wrap_m_reset, rp=rp, ib=self.ib_amp,
                                      loop_gain=Battery.AMP_WRAP_TRIM_GAIN, dt=min(dt_local, Battery.F_MAX_T_WRAP),
                                      ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr, ib_init=ib_m_init,
@@ -1106,6 +1111,7 @@ class BatterySim(Battery):
         # Charge transfer dynamics
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, self.reset, self.dt,
                                                                self.chemistry.tau_ct)
+        self.ib_dyn_T = self.ChargeTransfer.dt
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
         self.vb = self.voc + self.ib_dyn*self.chemistry.r_ct + self.ib*self.chemistry.r_0
@@ -1203,6 +1209,7 @@ class BatterySim(Battery):
         self.saved.tau_hys.append(self.tau_hys)
         self.saved.dv_dyn.append(self.dv_dyn)
         self.saved.ib_dyn.append(self.ib_dyn)
+        self.saved.ib_dyn_T.append(self.ib_dyn_T)
         self.saved.ib_dyn_rstate.append(self.ib_dyn_rstate)
         self.saved.ib_dyn_lstate.append(self.ib_dyn_lstate)
         self.saved.voc.append(self.voc)
@@ -1231,6 +1238,7 @@ class BatterySim(Battery):
         self.saved_s.dv_dyn_s.append(self.dv_dyn)
         self.saved_s.dv_hys_s.append(self.dv_hys)
         self.saved_s.ib_dyn_s.append(self.ib_dyn)
+        self.saved_s.ib_dyn_T_s.append(self.ib_dyn_T)
         self.saved_s.ib_dyn_rstate_s.append(self.ib_dyn_rstate)
         self.saved_s.ib_dyn_lstate_s.append(self.ib_dyn_lstate)
         self.saved_s.tau_hys_s.append(self.tau_hys)
@@ -1385,6 +1393,7 @@ class Saved:
         self.tau_hys = []
         self.dv_dyn = []
         self.ib_dyn = []
+        self.ib_dyn_T = []
         self.ib_dyn_rstate = []
         self.ib_dyn_lstate = []
         self.voc_stat_f_rstate = []
@@ -1436,8 +1445,9 @@ class Saved:
         self.vsat = []  # Monitor Bank saturation threshold at temperature, deg C
         self.dv_dyn = []  # Monitor Bank current induced back emf, V
         self.ib_dyn = []  # Monitor Bank current induced back emf before resistance multiply, A
-        self.ib_dyn_rstate = []  # Monitor Bank current, A
-        self.ib_dyn_lstate = []  # Monitor Bank current, A
+        self.ib_dyn_T = []  # Monitor Bank Randles update time, A
+        self.ib_dyn_rstate = []  # Monitor Randles current state, A
+        self.ib_dyn_lstate = []  # Monitor Randles current state, A
         self.voc_stat = []  # Monitor Static bank open circuit voltage, V
         self.voc = []  # Monitor Static bank open circuit voltage, V
         self.voc_ekf = []  # Monitor bank solved static open circuit voltage, V
@@ -1511,204 +1521,204 @@ def overall_batt(mv, sv, filename,
         plt.figure()  # Batt 1
         fig_list += 1
         plt.subplot(321)
-        plt.title(S.plot_title + ' B 1')
+        plt.title(plot_title + ' B 1')
         print('B 1', end=':  ')
-        plq(plt, S.mv, 'time', S.mv, 'ib', color='green', linestyle='-')
-        plq(plt, S.mv, 'time', S.mv, 'ioc', color='magenta', linestyle='--')
+        plq(plt, mv, 'time', mv, 'ib', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'ioc', color='magenta', linestyle='--')
         plt.legend(loc=1)
         plt.subplot(323)
-        plq(plt, S.mv, 'time', S.mv, 'vb', color='green', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'vb', color='black', linestyle='--')
-        plq(plt, S.mv, 'time', S.mv, 'voc_stat', color='orange', linestyle='-.')
-        plq(plt, S.sv, 'time', S.sv, 'voc_stat', color='cyan', linestyle=':')
-        plq(plt, S.mv, 'time', S.mv, 'voc', color='magenta')
-        plq(plt, S.sv, 'time', S.sv, 'voc', color='black', linestyle='--')
+        plq(plt, mv, 'time', mv, 'vb', color='green', linestyle='-')
+        plq(plt, sv, 'time', sv, 'vb', color='black', linestyle='--')
+        plq(plt, mv, 'time', mv, 'voc_stat', color='orange', linestyle='-.')
+        plq(plt, sv, 'time', sv, 'voc_stat', color='cyan', linestyle=':')
+        plq(plt, mv, 'time', mv, 'voc', color='magenta')
+        plq(plt, sv, 'time', sv, 'voc', color='black', linestyle='--')
         plt.legend(loc=1)
         plt.subplot(324)
         # plt.legend(loc=1)
         plt.subplot(322)
-        plq(plt, S.mv, 'time', S.mv, 'soc', color='red', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'soc', color='black', linestyle='dotted')
+        plq(plt, mv, 'time', mv, 'soc', color='red', linestyle='-')
+        plq(plt, sv, 'time', sv, 'soc', color='black', linestyle='dotted')
         plt.legend(loc=1)
         plt.subplot(325)
-        plq(plt, S.mv, 'time', S.mv, 'chm', color='cyan', linestyle='--')
-        plq(plt, S.sv, 'time', S.sv, 'chm', color='black', linestyle=':')
+        plq(plt, mv, 'time', mv, 'chm', color='cyan', linestyle='--')
+        plq(plt, sv, 'time', sv, 'chm', color='black', linestyle=':')
         plt.legend(loc=1)
         plt.subplot(326)
-        plq(plt, S.sv, 'soc', S.sv, 'voc', color='red', linestyle='-')
-        plq(plt, S.mv, 'soc', S.mv, 'voc_soc', color='black', linestyle='--')
+        plq(plt, sv, 'soc', sv, 'voc', color='red', linestyle='-')
+        plq(plt, mv, 'soc', mv, 'voc_soc', color='black', linestyle='--')
         plt.legend(loc=1)
-        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 2
         fig_list += 1
         plt.subplot(111)
-        plt.title(S.plot_title + ' B 2')
+        plt.title(plot_title + ' B 2')
         print('B 2', end=':  ')
-        plq(plt, S.mv, 'time', S.mv, 'vb', color='green', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'vb', color='black', linestyle='--')
-        plq(plt, S.mv, 'time', S.mv, 'voc_stat', color='orange', linestyle='-.')
-        plq(plt, S.sv, 'time', S.sv, 'voc_stat', color='cyan', linestyle=':')
-        plq(plt, S.mv, 'time', S.mv, 'voc', color='magenta', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'voc', color='black', linestyle='--')
+        plq(plt, mv, 'time', mv, 'vb', color='green', linestyle='-')
+        plq(plt, sv, 'time', sv, 'vb', color='black', linestyle='--')
+        plq(plt, mv, 'time', mv, 'voc_stat', color='orange', linestyle='-.')
+        plq(plt, sv, 'time', sv, 'voc_stat', color='cyan', linestyle=':')
+        plq(plt, mv, 'time', mv, 'voc', color='magenta', linestyle='-')
+        plq(plt, sv, 'time', sv, 'voc', color='black', linestyle='--')
         plt.legend(loc=1)
-        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 4
         fig_list += 1
         plt.subplot(321)
-        plt.title(S.plot_title+' B 4 MON vs SIM')
+        plt.title(plot_title+' B 4 MON vs SIM')
         print('B 4 MON vs SIM', end=':  ')
-        plq(plt, S.mv, 'time', S.mv, 'ib', color='green', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'ib', color='black', linestyle='--')
-        plq(plt, S.sv, 'time', S.sv, 'ib_in', color='red', linestyle='-.')
+        plq(plt, mv, 'time', mv, 'ib', color='green', linestyle='-')
+        plq(plt, sv, 'time', sv, 'ib', color='black', linestyle='--')
+        plq(plt, sv, 'time', sv, 'ib_in', color='red', linestyle='-.')
         plt.legend(loc=1)
         plt.subplot(322)
-        plq(plt, S.mv, 'time', S.mv, 'vb', color='green', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'vb', color='black', linestyle='--')
-        plq(plt, S.mv, 'time', S.mv, 'voc', color='cyan', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'voc', color='red', linestyle='--')
+        plq(plt, mv, 'time', mv, 'vb', color='green', linestyle='-')
+        plq(plt, sv, 'time', sv, 'vb', color='black', linestyle='--')
+        plq(plt, mv, 'time', mv, 'voc', color='cyan', linestyle='-')
+        plq(plt, sv, 'time', sv, 'voc', color='red', linestyle='--')
         plt.legend(loc=1)
         plt.subplot(323)
-        plq(plt, S.mv, 'time', S.mv, 'vb', color='green', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'vb', color='orange', linestyle='--')
-        plq(plt, S.mv, 'time', S.mv, 'voc', color='cyan', linestyle='-.')
-        plq(plt, S.sv, 'time', S.sv, 'voc', color='red', linestyle=':')
-        plq(plt, S.mv, 'time', S.mv, 'voc_stat', color='magenta', linestyle='--')
-        plq(plt, S.sv, 'time', S.sv, 'voc_stat', color='black', linestyle=':')
+        plq(plt, mv, 'time', mv, 'vb', color='green', linestyle='-')
+        plq(plt, sv, 'time', sv, 'vb', color='orange', linestyle='--')
+        plq(plt, mv, 'time', mv, 'voc', color='cyan', linestyle='-.')
+        plq(plt, sv, 'time', sv, 'voc', color='red', linestyle=':')
+        plq(plt, mv, 'time', mv, 'voc_stat', color='magenta', linestyle='--')
+        plq(plt, sv, 'time', sv, 'voc_stat', color='black', linestyle=':')
         plt.legend(loc=1)
         plt.subplot(324)
-        plq(plt, S.mv, 'time', S.mv, 'dv_dyn', color='green', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'dv_dyn', color='black', linestyle='--')
+        plq(plt, mv, 'time', mv, 'dv_dyn', color='green', linestyle='-')
+        plq(plt, sv, 'time', sv, 'dv_dyn', color='black', linestyle='--')
         plt.legend(loc=1)
         plt.subplot(325)
-        plq(plt, S.mv, 'time', S.mv, 'dv_hys', color='green', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'dv_hys', color='black', linestyle='--')
-        plq(plt, S.mv, 'time', S.mv, 'tau_hys', color='cyan', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'tau_hys', color='red', linestyle='--')
+        plq(plt, mv, 'time', mv, 'dv_hys', color='green', linestyle='-')
+        plq(plt, sv, 'time', sv, 'dv_hys', color='black', linestyle='--')
+        plq(plt, mv, 'time', mv, 'tau_hys', color='cyan', linestyle='-')
+        plq(plt, sv, 'time', sv, 'tau_hys', color='red', linestyle='--')
         plt.legend(loc=1)
         plt.subplot(326)
-        plq(plt, S.mv, 'time', S.mv, 'vb', color='green', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'vb', color='black', linestyle='--')
+        plq(plt, mv, 'time', mv, 'vb', color='green', linestyle='-')
+        plq(plt, sv, 'time', sv, 'vb', color='black', linestyle='--')
         plt.legend(loc=1)
-        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 5
         fig_list += 1
         plt.subplot(331)
-        plt.title(S.plot_title+' B 5 **EKF')
+        plt.title(plot_title+' B 5 **EKF')
         print('B 5 **EKF', end=':  ')
-        plq(plt, S.mv, 'time', S.mv, 'x_ekf', color='red', linestyle='-')
+        plq(plt, mv, 'time', mv, 'x_ekf', color='red', linestyle='-')
         plt.legend(loc=4)
         plt.subplot(332)
-        plq(plt, S.mv, 'time', S.mv, 'hx', color='cyan', linestyle='-')
-        plq(plt, S.mv, 'time', S.mv, 'z_ekf', color='black', linestyle='--')
+        plq(plt, mv, 'time', mv, 'hx', color='cyan', linestyle='-')
+        plq(plt, mv, 'time', mv, 'z_ekf', color='black', linestyle='--')
         plt.legend(loc=4)
         plt.subplot(333)
-        plq(plt, S.mv, 'time', S.mv, 'y_ekf', color='green', linestyle='-')
-        plq(plt, S.mv, 'time', S.mv, 'y_filt', color='black', linestyle='--')
-        plq(plt, S.mv, 'time', S.mv, 'y_filt2', color='cyan', linestyle='-.')
+        plq(plt, mv, 'time', mv, 'y_ekf', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'y_filt', color='black', linestyle='--')
+        plq(plt, mv, 'time', mv, 'y_filt2', color='cyan', linestyle='-.')
         plt.legend(loc=4)
         plt.subplot(334)
-        plq(plt, mv, 'time', S.mv, 'H', color='magenta', linestyle='-')
+        plq(plt, mv, 'time', mv, 'H', color='magenta', linestyle='-')
         plt.ylim(0, 150)
         plt.legend(loc=3)
         plt.subplot(335)
-        plq(plt, mv, 'time', S.mv, 'P', color='orange', linestyle='-')
+        plq(plt, mv, 'time', mv, 'P', color='orange', linestyle='-')
         plt.legend(loc=3)
         plt.subplot(336)
-        plq(plt, mv, 'time', S.mv, 'Fx', color='red', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Fx', color='red', linestyle='-')
         plt.legend(loc=2)
         plt.subplot(337)
-        plq(plt, mv, 'time', S.mv, 'Bu', color='blue', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Bu', color='blue', linestyle='-')
         plt.legend(loc=2)
         plt.subplot(338)
-        plq(plt, mv, 'time', S.mv, 'K', color='red', linestyle='-')
+        plq(plt, mv, 'time', mv, 'K', color='red', linestyle='-')
         plt.legend(loc=4)
-        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 6
         fig_list += 1
-        plt.title(S.plot_title + ' B 6')
+        plt.title(plot_title + ' B 6')
         print('B 6', end=':  ')
-        plq(plt, mv, 'time', S.mv, 'Nonee_voc_ekf', color='blue', linestyle='-.')
-        plq(plt, mv, 'time', S.mv, 'Nonee_soc_ekf', color='red', linestyle='dotted')
+        plq(plt, mv, 'time', mv, 'Nonee_voc_ekf', color='blue', linestyle='-.')
+        plq(plt, mv, 'time', mv, 'Nonee_soc_ekf', color='red', linestyle='dotted')
         plt.ylim(-0.01, 0.01)
         plt.legend(loc=2)
-        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 7
         fig_list += 1
-        plt.title(S.plot_title + ' B 7')
+        plt.title(plot_title + ' B 7')
         print('B 7', end=':  ')
-        plq(plt, mv, 'time', S.mv, 'Nonevoc', color='red', linestyle='-')
-        plq(plt, mv, 'time', S.mv, 'Nonevoc_ekf', color='blue', linestyle='-.')
-        plq(plt, S.sv, 'time', S.sv, 'voc', color='green', linestyle=':')
+        plq(plt, mv, 'time', mv, 'Nonevoc', color='red', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Nonevoc_ekf', color='blue', linestyle='-.')
+        plq(plt, sv, 'time', sv, 'voc', color='green', linestyle=':')
         plt.legend(loc=4)
-        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 8
         fig_list += 1
-        plt.title(S.plot_title + ' B 8')
+        plt.title(plot_title + ' B 8')
         print('B 8', end=':  ')
-        plq(plt, mv, 'time', S.mv, 'Nonesoc_ekf', color='blue', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'soc', color='green', linestyle='-.')
-        plq(plt, mv, 'time', S.mv, 'Nonesoc', color='red', linestyle=':')
+        plq(plt, mv, 'time', mv, 'Nonesoc_ekf', color='blue', linestyle='-')
+        plq(plt, sv, 'time', sv, 'soc', color='green', linestyle='-.')
+        plq(plt, mv, 'time', mv, 'Nonesoc', color='red', linestyle=':')
         plt.legend(loc=4)
-        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 9
         fig_list += 1
-        plt.title(S.plot_title + ' B 9')
+        plt.title(plot_title + ' B 9')
         print('B 9', end=':  ')
-        plq(plt, mv, 'time', S.mv, 'Nonee_voc_ekf', color='blue', linestyle='-.')
-        plq(plt, mv, 'time', S.mv, 'Nonee_soc_ekf', color='red', linestyle='dotted')
+        plq(plt, mv, 'time', mv, 'Nonee_voc_ekf', color='blue', linestyle='-.')
+        plq(plt, mv, 'time', mv, 'Nonee_soc_ekf', color='red', linestyle='dotted')
         plt.legend(loc=2)
-        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 10
         fig_list += 1
         plt.subplot(221)
-        plt.title(S.plot_title + ' B 10')
+        plt.title(plot_title + ' B 10')
         print('B 10', end=':  ')
-        plq(plt, S.sv, 'time', S.sv, 'soc', color='red', linestyle='-')
+        plq(plt, sv, 'time', sv, 'soc', color='red', linestyle='-')
         plt.legend(loc=1)
         plt.subplot(223)
-        plq(plt, S.sv, 'time', S.sv, 'ib', color='blue', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'ioc', color='green', linestyle='-')
+        plq(plt, sv, 'time', sv, 'ib', color='blue', linestyle='-')
+        plq(plt, sv, 'time', sv, 'ioc', color='green', linestyle='-')
         plt.legend(loc=1)
         plt.subplot(224)
-        plq(plt, S.sv, 'time', S.sv, 'dv_hys', color='red', linestyle='-')
-        plq(plt, S.sv, 'time', S.sv, 'tau_hys', color='blue', linestyle='--')
+        plq(plt, sv, 'time', sv, 'dv_hys', color='red', linestyle='-')
+        plq(plt, sv, 'time', sv, 'tau_hys', color='blue', linestyle='--')
         plt.legend(loc=2)
-        fig_file_name = S.filename + "_" + str(len(fig_list)) + ".png"
+        fig_file_name = filename + "_" + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 11
         fig_list += 1
         plt.subplot(111)
-        plt.title(S.plot_title + ' B 11')
+        plt.title(plot_title + ' B 11')
         print('B 11', end=':  ')
-        plq(plt, S.sv, 'soc', S.sv, 'voc_stat', color='black', linestyle='dotted')
+        plq(plt, sv, 'soc', sv, 'voc_stat', color='black', linestyle='dotted')
         plt.legend(loc=2)
-        fig_file_name = S.filename + "_" + str(len(fig_list)) + ".png"
+        fig_file_name = filename + "_" + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
@@ -1736,11 +1746,11 @@ def overall_batt(mv, sv, filename,
         plt.figure()
         fig_list += 1
         plt.subplot(331)
-        plt.title(S.plot_title + ' Battover 1')
+        plt.title(plot_title + ' Battover 1')
         print('Battover 1', end=':  ')
-        plq(plt, mv, 'time', S.mv, 'Noneib', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Noneib', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'ib', color='black', linestyle='--')
-        plq(plt, mv, 'time', S.mv, 'Noneioc', color='magenta', linestyle='-.')
+        plq(plt, mv, 'time', mv, 'Noneioc', color='magenta', linestyle='-.')
         plq(plt, mv1, 'time', mv1, 'ioc', color='blue', linestyle=':')
         plt.legend(loc=1)
         plt.subplot(332)
@@ -1748,114 +1758,114 @@ def overall_batt(mv, sv, filename,
         plt.subplot(333)
         # plt.legend(loc=1)
         plt.subplot(334)
-        plq(plt, mv, 'time', S.mv, 'Nonevb', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Nonevb', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'vb', color='black', linestyle='--')
         plt.legend(loc=1)
         plt.subplot(335)
-        plq(plt, mv, 'time', S.mv, 'Nonevoc_stat', color='magenta', linestyle='-.')
+        plq(plt, mv, 'time', mv, 'Nonevoc_stat', color='magenta', linestyle='-.')
         plq(plt, mv1, 'time', mv1, 'voc_stat', color='blue', linestyle=':')
         plt.legend(loc=1)
         plt.subplot(336)
-        plq(plt, mv, 'time', S.mv, 'Nonevoc', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Nonevoc', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'voc', color='black', linestyle='--')
         plt.legend(loc=1)
         plt.subplot(337)
-        plq(plt, mv, 'time', S.mv, 'Nonevbc_dot', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Nonevbc_dot', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'vbc_dot', color='black', linestyle='--')
         mv.reset = np.array(mv.reset)*reset_max
         mv1.reset = np.array(mv1.reset)*reset_max
-        plq(plt, mv, 'time', S.mv, 'Nonereset', color='orange', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Nonereset', color='orange', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'reset', color='cyan', linestyle='--')
         plt.legend(loc=1)
         plt.subplot(338)
-        plq(plt, mv, 'time', S.mv, 'Nonevcd_dot', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Nonevcd_dot', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'vcd_dot', color='black', linestyle='--')
         plt.legend(loc=1)
         plt.subplot(339)
-        plq(plt, mv, 'time', S.mv, 'Nonesoc', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Nonesoc', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'soc', color='black', linestyle='--')
-        plq(plt, mv, 'time', S.mv, 'Nonesoc_ekf', color='magenta', linestyle='-.')
+        plq(plt, mv, 'time', mv, 'Nonesoc_ekf', color='magenta', linestyle='-.')
         plq(plt, mv1, 'time', mv1, 'soc_ekf', color='blue', linestyle=':')
         plt.legend(loc=1)
-        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
         plt.figure()
         fig_list += 1
         plt.subplot(321)
-        plt.title(S.plot_title + ' Battover 2')
+        plt.title(plot_title + ' Battover 2')
         print('Battover 2', end=':  ')
-        plq(plt, mv, 'time', S.mv, 'Noneib', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Noneib', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'ib', color='black', linestyle='--')
-        plq(plt, mv, 'time', S.mv, 'Noneioc', color='magenta', linestyle='-.')
+        plq(plt, mv, 'time', mv, 'Noneioc', color='magenta', linestyle='-.')
         plq(plt, mv1, 'time', mv1, 'ioc', color='blue', linestyle=':')
         plt.legend(loc=1)
         plt.subplot(322)
-        plq(plt, mv, 'time', S.mv, 'Nonedv_dyn', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Nonedv_dyn', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'dv_dyn', color='black', linestyle='--')
         plt.legend(loc=1)
         plt.subplot(323)
-        plq(plt, mv, 'time', S.mv, 'Nonedv_hys', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Nonedv_hys', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'dv_hys', color='black', linestyle='--')
         plt.legend(loc=1)
         plt.subplot(324)
-        plq(plt, mv, 'time', S.mv, 'Nonetau_hys', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Nonetau_hys', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'tau_hys', color='black', linestyle='--')
         plt.legend(loc=1)
-        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
         plt.figure()
         fig_list += 1
         plt.subplot(331)
-        plt.title(S.plot_title + ' **EKF' + 'Battover 3')
+        plt.title(plot_title + ' **EKF' + 'Battover 3')
         print('Battover 3', end=':  ')
-        plq(plt, mv, 'time', S.mv, 'Nonex_ekf', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Nonex_ekf', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'x_ekf', color='black', linestyle='--')
         plt.legend(loc=4)
         plt.subplot(332)
-        plq(plt, mv, 'time', S.mv, 'Nonehx', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Nonehx', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'hx', color='black', linestyle='--')
-        plq(plt, mv, 'time', S.mv, 'Nonez_ekf', color='magenta', linestyle='-.')
+        plq(plt, mv, 'time', mv, 'Nonez_ekf', color='magenta', linestyle='-.')
         plq(plt, mv1, 'time', mv1, 'z_ekf', color='blue', linestyle=':')
         plt.legend(loc=4)
         plt.subplot(333)
-        plq(plt, mv, 'time', S.mv, 'Noney_ekf', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Noney_ekf', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'y_ekf', color='black', linestyle='--')
-        plq(plt, mv, 'time', S.mv, 'Noney_filt2', color='magenta', linestyle='-.')
+        plq(plt, mv, 'time', mv, 'Noney_filt2', color='magenta', linestyle='-.')
         plq(plt, mv1, 'time', mv1, 'y_filt2', color='blue', linestyle=':')
         plt.legend(loc=4)
         plt.subplot(334)
-        plq(plt, mv, 'time', S.mv, 'NoneH', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'NoneH', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'H', color='black', linestyle='--')
         plt.ylim(0, 150)
         plt.legend(loc=3)
         plt.subplot(335)
-        plq(plt, mv, 'time', S.mv, 'NoneP', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'NoneP', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'P', color='black', linestyle='--')
         plt.legend(loc=3)
         plt.subplot(336)
-        plq(plt, mv, 'time', S.mv, 'NoneFx', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'NoneFx', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'Fx', color='black', linestyle='--')
         plt.legend(loc=2)
         plt.subplot(337)
-        plq(plt, mv, 'time', S.mv, 'NoneBu', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'NoneBu', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'Bu', color='black', linestyle='--')
         plt.legend(loc=2)
         plt.subplot(338)
-        plq(plt, mv, 'time', S.mv, 'NoneK', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'NoneK', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'K', color='black', linestyle='--')
         plt.legend(loc=4)
         plt.subplot(339)
-        plq(plt, mv, 'time', S.mv, 'Nonee_voc_ekf', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Nonee_voc_ekf', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'e_voc_ekf', color='black', linestyle='--')
-        plq(plt, mv, 'time', S.mv, 'Nonee_soc_ekf', color='magenta', linestyle='-.')
+        plq(plt, mv, 'time', mv, 'Nonee_soc_ekf', color='magenta', linestyle='-.')
         plq(plt, mv1, 'time', mv1, 'e_soc_ekf', color='blue', linestyle=':')
         # plt.ylim(-0.01, 0.01)
         plt.legend(loc=2)
-        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         plt.savefig(fig_file_name, format="png")
 
@@ -1889,6 +1899,7 @@ class SavedS:
         self.vb_s = []
         self.ib_s = []
         self.ib_dyn_s = []
+        self.ib_dyn_T_s = []
         self.ib_dyn_rstate_s = []
         self.ib_dyn_lstate_s = []
         self.ib_in_s = []
