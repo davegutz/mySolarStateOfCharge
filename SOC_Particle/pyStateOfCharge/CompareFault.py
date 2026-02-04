@@ -750,7 +750,7 @@ def calc_fault(d_ra, d_mod, Battery=None):
     d_mod = rf.rec_append_fields(d_mod, 'tb_fa', np.array(tb_fa, dtype=float))
 
     try:
-        ib_diff_flt = np.bool_(fltw & 2 ** 8) | (fltw & 2 ** 9)
+        ib_diff_flt = np.bool_((fltw & 2 ** 8) | (fltw & 2 ** 9))
         wrap_hi_flt = np.bool_(fltw & 2 ** 5)
         wrap_lo_flt = np.bool_(fltw & 2 ** 6)
         wrap_hi_m_flt = np.bool_(np.array(fltw) & 2 ** 14)

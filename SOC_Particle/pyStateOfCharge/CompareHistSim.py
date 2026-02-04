@@ -580,7 +580,7 @@ def calc_fault(d_ra, d_mod, Battery=None):
     d_mod = rf.rec_append_fields(d_mod, 'tb_fa', np.array(tb_fa, dtype=float))
 
     try:
-        ib_diff_flt = np.bool_(fltw & 2 ** 8) | (fltw & 2 ** 9)
+        ib_diff_flt = np.bool_((fltw & 2 ** 8) | (fltw & 2 ** 9))
         wrap_hi_flt = np.bool_(fltw & 2 ** 5)
         wrap_lo_flt = np.bool_(fltw & 2 ** 6)
         wrap_hi_m_flt = np.bool_(fltw & 2 ** 14)
@@ -666,7 +666,6 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=100.):
     sat_ = np.copy(h.Tb_f)
     bms_off_ = np.copy(h.Tb_f)
     for i in range(len(h.Tb_f)):
-        print(f"{i=} voc_stat_f {h.voc_stat_f[i]}")
         sat_[i] = is_sat(h.Tb_f[i], mon.chemistry.rated_temp, h.voc_f[i], h.soc[i], mon.chemistry.nom_vsat,
                          mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         # h.bms_off[i] = (h.Tb[i] < low_t) or ((h.voc[i] < low_voc) and (h.ib[i] < IB_MIN_UP))
@@ -1187,17 +1186,17 @@ def main():
 
     # User inputs (multiple input_files allowed
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/zero_soc2p2_hi_lo_bb.csv'
-    data_only = False
+    data_only = True
+    # data_only = False
     mon_t = False
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
     dt_resample = 1
     Tb_force = None
-    request_history = None
+    request_history = 5
     strict_overplot = True
     terse = True
 
-    plots=True
-    # plots = False
+    plots = not data_only
 
     compare_hist_sim(data_file=data_file, mon_t=mon_t, unit_key=unit_key, dt_resample=dt_resample,
                      data_only=not plots, Tb_force=Tb_force, request_history=request_history, terse=terse,
