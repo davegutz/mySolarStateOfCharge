@@ -370,10 +370,7 @@ class Sensors:
             mon.Tb_rap = self.Tb_past
             mon.Tb_f_rap = self.Tb_f_past
             mon.Tb_f_rate_rap = self.Tb_f_rate_past
-        if rp.modeling_Tb:
-            sim.Tb_f = self.Tb_f_past
-        else:
-            sim.Tb_f = sim.Tb
+        sim.Tb_f = self.Tb_f_past  # same  modeling and sensed
 
         return mon, sim
 

@@ -236,7 +236,7 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     print('GP 3 Tune', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'dv_dyn', color='blue', linestyle='-')
     plq(plt, S.mr, 'time', S.mr, 'dv_dyn_f', color='blue', linestyle='-', warn=False)
-    plq(plt, S.mv, 'time', S.sv, 'dv_dyn', color='cyan', linestyle='--')
+    plq(plt, S.mv, 'time', S.mv, 'dv_dyn', color='cyan', linestyle='--')
     plq(plt, S.sr, 'time', S.sr, 'dv_dyn_s', color='black', linestyle='-.')
     plq(plt, S.smv, 'time', S.smv, 'dv_dyn_s', color='magenta', linestyle=':')
     plq(plt, S.mr, 'time', S.mr, 'dv_hys', color='pink', linestyle='-')

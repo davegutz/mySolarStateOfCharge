@@ -1254,6 +1254,7 @@ class BatterySim(Battery):
         self.saved_s.soc_s.append(self.soc)
         self.saved_s.reset_s.append(self.reset)
         self.saved_s.tau_s.append(self.tau_hys)
+        self.saved_s.ioc_s.append(self.ioc)
 
 
 # Other functions
@@ -1913,6 +1914,7 @@ class SavedS:
         self.qcap_s = []
         self.soc_s = []
         self.reset_s = []
+        self.ioc_s = []
 
     def __str__(self):
         s = "unit_m,c_time,Tb_s,vsat_s,voc_stat_s,dv_dyn_s,vb_s,ib_s,ib_dyn_s,sat_s,ddq_s,dq_s,q_s,qcap_s,soc_s,\
