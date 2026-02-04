@@ -90,18 +90,6 @@ def load_off_nominal_battery(Battery_to_add=None):
         return None
 
 
-def translate_battery(Battery=None, Battery_off_dict=None):
-    # Translate the off-nominal values imported from data stream
-    print("Over-writing pre-existing off-nominal values into Battery class structure")
-    for key in dir(Battery):
-        # print(f"{key=}:   ", end='')
-        if key.isupper() and not key.startswith('__'):
-            if key in Battery_off_dict:
-                print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
-                setattr(Battery, key, Battery_off_dict[key])
-                print(f" {getattr(Battery, key)}")
-    return Battery
-
 # Calculate thresholds from global input values listed above (review these)
 def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb):
     # There is no fault logic in the python code, so hard code it here
@@ -660,7 +648,7 @@ def bandaid(h):
 
 
 # Make an array useful for analysis (around temp) and add some metrics
-def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=100.):
+def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=None):
     h = raw[abs(raw.Tb_f - tb_forr) < tb_band]
 
     sat_ = np.copy(h.Tb_f)
@@ -701,7 +689,7 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=100.):
         hys_remodel = Hysteresis_20220917d(scale=HYS_SCALE_20220917d)  # Battery hysteresis model - drift of voc
         t_s_min = h.time_min[0]
         t_e_min = h.time_min[-1]
-        dt_hys_min = 1.
+        dt_hys_min = 1.  # ??????????????????????????????
         dt_hys_sec = dt_hys_min * 60.
         hys_time_min = np.arange(t_s_min, t_e_min, dt_hys_min, dtype=float)
         print(f" {t_s_min=} {t_e_min=} {dt_hys_min=}  days of data = {(t_e_min-t_s_min)/(24.*60)} ", end='')
@@ -905,20 +893,49 @@ def add_qcrs(hist, mon_t_=False, mon=None, qcrs=None, t_rated=None, dqdt=None):
     return hist
 
 
-def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=False, unit_key=None, sync_time=None,
-                       dt_resample=10, Tb_force=None, skip=1, v1_only=False):
+def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, use_mon_csv=False, unit_key=None,
+                       sync_time=None, dt_resample=10, Tb_force=None, skip=1, v1_only=False):
     """Load history, reconstruct samples by linear interpolation and normalize all soc and Tb to 20C"""
 
-    print(f"\nload_hist_and_prep:\n{data_file=}\n{data_only=}\n{mon_t=}\n{unit_key=}\n{dt_resample=}\n{Tb_force=}\n{skip=}\n")
+    print(f"\nload_hist_and_prep:\n{data_file=}\n{data_only=}\n{use_mon_csv=}\n{unit_key=}\n{dt_resample=}\n{Tb_force=}\n{skip=}\n")
+
+    # Load battery (ref)
+    battery_hdr = "Battery_hdr"
+    battery_val = "Battery_val"
+    battery_file_clean = write_clean_file(data_file, type_='_battery', hdr_key=battery_hdr,
+                                          unit_key=battery_val, skip=skip)
+    if battery_file_clean and not v1_only:
+        battery_raw = np.genfromtxt(battery_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+    else:
+        battery_raw = None
+        print(f"load_hist_and_prep: returning battery_raw=None")
+    # Override Battery with loaded values Battery_hdr/Battery_val in battery_raw
+    Battery_off_dict = load_off_nominal_battery(Battery_to_add=battery_raw)
+
+    # Translate the off-nominal values imported from data stream
+    print("Over-writing pre-existing off-nominal values into Battery class structure")
+    for key in dir(Battery):
+        # print(f"{key=}:   ", end='')
+        if key.isupper() and not key.startswith('__'):
+            if key in Battery_off_dict:
+                print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
+                setattr(Battery, key, Battery_off_dict[key])
+                print(f" {getattr(Battery, key)}")
+
+
+    rated_batt_cap_in = Battery.NOM_UNIT_CAP * Battery.S_CAP_MON
+    rated_batt_cap_s_in = Battery.NOM_UNIT_CAP * Battery.S_CAP_SIM
+    qcrs = rated_batt_cap_in * 3600.
+
 
     # Save these
-    rated_batt_cap_in = 100.
+    rated_batt_cap_in = Battery.NOM_UNIT_CAP * Battery.S_CAP_MON
     # Reconstruction of soc using subsampled data is poor.  Drive everything with soc from Monitor
     dvoc_mon_in = 0.
 
     # Load mon to extract mod information
     # # Load mon v4 (old)
-    if mon_t:
+    if use_mon_csv:
         mon, sim, fault, mon_t_file_clean, temp_mont_t_file_clean, _ = \
             load_data(data_file, 1, unit_key=unit_key, time_end_in=time_end_in, zero_zero_in=False, mon_str='hist')
     else:
@@ -932,8 +949,6 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
         s_raw = np.genfromtxt(temp_sum_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
     else:
         print("data from", temp_sum_file_clean, "empty after loading")
-        # tkinter.messagebox.showwarning(message="CompareHistSim:  Data missing.  See monitor window for info.")
-        # return None, None, None, None, None
 
     # Load history
     h_raw = None
@@ -943,8 +958,6 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
         h_raw = np.genfromtxt(temp_hist_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
     else:
         print("data from", temp_hist_file_clean, "empty after loading")
-        # tkinter.messagebox.showwarning(message="CompareHistSim:  Data missing.  See monitor window for info.")
-        # return None, None, None, None, None
 
     # Load fault
     temp_flt_file_clean = write_clean_file(data_file, type_='_flt', hdr_key='fltb', unit_key='unit_f',
@@ -954,19 +967,6 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
     else:
         f_raw = None
         print("data from", temp_flt_file_clean, "empty after loading")
-        # tkinter.messagebox.showwarning(message="CompareHistSim:  Data missing.  See monitor window for info.")
-        # return None, None, None, None, None
-
-    # Load battery (ref)
-    battery_hdr = "Battery_hdr"
-    battery_val = "Battery_val"
-    battery_file_clean = write_clean_file(data_file, type_='_battery', hdr_key=battery_hdr,
-                                          unit_key=battery_val, skip=skip)
-    if battery_file_clean and not v1_only:
-        battery_raw = np.genfromtxt(battery_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-    else:
-        battery_raw = None
-        print(f"load_hist_and_prep: returning battery_raw=None")
 
     # Save files
     filename = None
@@ -981,7 +981,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
     unit = None
     t_rated = None
     dqdt = None
-    if mon_t is True and mon is not None:
+    if use_mon_csv is True and mon is not None:
         chm = int(mon.chm[0])
     else:
         if unit_key.__contains__('bb'):
@@ -1003,23 +1003,6 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
             dqdt = 0.01
     batt = BatteryMonitor(mod_code=chm)
 
-    # Override Battery with loaded values Battery_hdr/Battery_val in battery_raw
-    Battery_off_dict = load_off_nominal_battery(Battery_to_add=battery_raw)
-    # Battery = translate_battery(Battery=Battery, Battery_off_dict=Battery_off_dict)
-    # Translate the off-nominal values imported from data stream
-    print("Over-writing pre-existing off-nominal values into Battery class structure")
-    for key in dir(Battery):
-        # print(f"{key=}:   ", end='')
-        if key.isupper() and not key.startswith('__'):
-            if key in Battery_off_dict:
-                print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
-                setattr(Battery, key, Battery_off_dict[key])
-                print(f" {getattr(Battery, key)}")
-
-
-    rated_batt_cap_in = Battery.NOM_UNIT_CAP * Battery.S_CAP_MON
-    rated_batt_cap_s_in = Battery.NOM_UNIT_CAP * Battery.S_CAP_SIM
-    qcrs = rated_batt_cap_in * 3600.
 
     # Force Tb.  This is useful for verifying calibration runs where voc(soc) schedule extracted from the run
     # with slightly varying Tb but assumed constant when making new schedule
@@ -1061,9 +1044,9 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
         # noinspection PyTypeChecker
         hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
                            time_sync=sync_time)
-        hist = add_mod(hist, mon_t, mon)
-        hist = add_chm(hist, mon_t, mon, chm)
-        hist = add_qcrs(hist, mon_t_=mon_t, mon=mon, qcrs=qcrs, t_rated=t_rated, dqdt=dqdt)
+        hist = add_mod(hist, use_mon_csv, mon)
+        hist = add_chm(hist, use_mon_csv, mon, chm)
+        hist = add_qcrs(hist, mon_t_=use_mon_csv, mon=mon, qcrs=qcrs, t_rated=t_rated, dqdt=dqdt)
         hist = add_delta_q(hist)
         print("\nhist after adding stuff:\n", hist.dtype.names, "\n", hist, "\n", hist.dtype.names, "\n :hist after adding stuff\n")
         print("\nhist convert to 20C...:", end='')
@@ -1089,10 +1072,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
                                     ])
             h_20C_resamp.dt = h_20C_resamp.time.copy()
             for i in range(len(h_20C_resamp.time)):
-                if i == 0:
-                    h_20C_resamp.dt[i] = h_20C_resamp.time[1] - h_20C_resamp.time[0]
-                else:
-                    h_20C_resamp.dt[i] = h_20C_resamp.time[i] - h_20C_resamp.time[i-1]
+                h_20C_resamp.dt[i] = h_20C_resamp.time[i] - h_20C_resamp.time[max(i-1, 0)]
 
             # Hand fix oddities
             mon, sim = bandaid(h_20C_resamp)
@@ -1100,10 +1080,11 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, mon_t=
         return mon, sim, unit, fault, hist_20C, filename, Battery
 
 
-def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=False, unit_key=None, sync_time=None,
-                     dt_resample=10, Tb_force=None, request_history=None, strict_overplot=False, terse=False):
+def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, use_mon_csv=False, unit_key=None,
+                     sync_time=None, dt_resample=10, Tb_force=None, request_history=None, strict_overplot=False,
+                     terse=False):
 
-    print(f"\ncompare_hist_sim:\n{data_file=}\n{data_only=}\n{mon_t=}\n{unit_key=}\n{dt_resample=}\n{Tb_force=}\n{request_history=}\n{strict_overplot=}\n{terse=}")
+    print(f"\ncompare_hist_sim:\n{data_file=}\n{time_end_in=}\n{data_only=}\n{use_mon_csv=}\n{unit_key=}\n{sync_time=}\n{dt_resample=}\n{Tb_force=}\n{request_history=}\n{strict_overplot=}\n{terse=}")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
@@ -1122,7 +1103,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, mon_t=Fa
 
     # Load history, normalizing all soc and Tb to 20C
     mon_run, sim_run, unit, fault, hist_20C, filename, Battery = \
-        load_hist_and_prep(data_file=data_file, time_end_in=time_end_in, data_only=data_only, mon_t=mon_t,
+        load_hist_and_prep(data_file=data_file, time_end_in=time_end_in, data_only=data_only, use_mon_csv=use_mon_csv,
                            unit_key=unit_key, sync_time=sync_time, dt_resample=dt_resample, Tb_force=Tb_force)
 
     # File path operations
@@ -1188,7 +1169,7 @@ def main():
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/zero_soc2p2_hi_lo_bb.csv'
     data_only = True
     # data_only = False
-    mon_t = False
+    use_mon_csv = False
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
     dt_resample = 1
     Tb_force = None
@@ -1198,7 +1179,7 @@ def main():
 
     plots = not data_only
 
-    compare_hist_sim(data_file=data_file, mon_t=mon_t, unit_key=unit_key, dt_resample=dt_resample,
+    compare_hist_sim(data_file=data_file, use_mon_csv=use_mon_csv, unit_key=unit_key, dt_resample=dt_resample,
                      data_only=not plots, Tb_force=Tb_force, request_history=request_history, terse=terse,
                      strict_overplot=strict_overplot)
 

@@ -53,7 +53,7 @@ def compare_run_hist(data_file=None, unit_key=None, time_end=None, data_only=Tru
                         mon_str='', strict_overplot=strict_overplot, terse=terse)
     mo_h, so_h, mv_h, sv_h, ssv_h =\
         compare_hist_sim(data_file=data_file, unit_key=unit_key, time_end_in=time_end, data_only=data_only,
-                         mon_t=True, sync_time=mo_r.time_run, strict_overplot=strict_overplot, terse=terse)
+                         use_mon_csv=True, sync_time=mo_r.time_run, strict_overplot=strict_overplot, terse=terse)
 
     # Plots
     if mo_r is not None and mo_h is not None:

@@ -713,8 +713,8 @@ def compare_hist_to_sim():
         if answer is None:
             print('enter operation cancelled')
             return
-        compare_hist_sim(data_file=Test.file_path, unit_key=Test.key, mon_t=True, dt_resample=answer, terse=terse.get(),
-                         strict_overplot=strict_overplot.get())
+        compare_hist_sim(data_file=Test.file_path, unit_key=Test.key, use_mon_csv=True, dt_resample=answer,
+                         terse=terse.get(), strict_overplot=strict_overplot.get())
         # master.deiconify()
     else:
         print('not possible')
