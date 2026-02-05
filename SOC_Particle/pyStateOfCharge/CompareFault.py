@@ -19,15 +19,9 @@ import numpy as np
 import numpy.lib.recfunctions as rf
 import matplotlib.pyplot as plt
 from Hysteresis_20220917d import Hysteresis_20220917d
-from Hysteresis_20220926 import Hysteresis_20220926
 from Battery import Battery, BatteryMonitor, is_sat
-from MonSim import replicate
 from Battery import overall_batt, calculate_capacity, Retained
-from Util import cat
-from resample import resample
-from PlotKiller import show_killer
 from Colors import Colors
-from resample import remove_nan
 from plot.plq import plq as plq
 from Chemistry_BMS import ib_lag
 from myFilters import LagExp
@@ -53,7 +47,7 @@ VOC_RESET_30 = -0.03  # Attempt to rescale to match voc_soc to all data
 VOC_RESET_40 = 0.  # Attempt to rescale to match voc_soc to all data
 
 #  Redesign Hysteresis_20220917d.  Make a new Hysteresis_20220926.py with new curve
-HYS_CAP_REDESIGN = 3.6e4  # faster time constant needed
+# HYS_CAP_REDESIGN = 3.6e4  # faster time constant needed
 HYS_SOC_MIN_MARG = 0.15  # add to soc_min to set thr for detecting low endpoint condition for reset of hysteresis
 
 
@@ -212,8 +206,6 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     voc_stat_rescaled = d_mod.voc_f - d_mod.dv_hys_rescaled
     d_mod = rf.rec_append_fields(d_mod, 'voc_stat_rescaled', np.array(voc_stat_rescaled, dtype=float))
 
-    # vb = d_mod.vb.copy()
-    # d_mod = rf.rec_append_fields(d_mod, 'vb', np.array(vb, dtype=float))
     voc_dyn = d_mod.voc_f.copy()
     d_mod = rf.rec_append_fields(d_mod, 'voc_dyn', np.array(voc_dyn, dtype=float))
     ib_f = d_mod.ib_f.copy()
@@ -357,8 +349,6 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plq(plt, hi, 'time_ux', hi, 'dv_hys_required', color='black', linestyle='--')
         plq(plt, hi, 'time_ux', hi, 'e_wrap', slr=-1, color='red', linestyle='None', marker='o', markersize='3')
         plq(plt, hi, 'time_ux', hi, 'dv_hys_remodel', color='lawngreen', linestyle=':', marker='x', markersize='3')
-        plq(plt, hi, 'time_ux', hi, 'dv_hys_redesign_chg', color='springgreen', linestyle=':', marker=3, markersize='3')
-        plq(plt, hi, 'time_ux', hi, 'dv_hys_redesign_dis', color='orangered', linestyle=':', marker=3, markersize='3')
         plt.xlabel('days')
         plt.legend(loc=1)
         plt.subplot(338)
@@ -438,26 +428,14 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plq(plt, hi, 'time_ux', hi, 'dv_hys_rescaled', color='cyan', linestyle='-', marker='o', markersize='3')
         plq(plt, hi, 'time_ux', hi, 'dv_hys_required', color='black', linestyle='--')
         plq(plt, hi, 'time_ux', hi, 'e_wrap', slr=-1, color='red', linestyle='None', marker='o', markersize='3')
-        plq(plt, hi, 'time_ux', hi, 'dv_hys_redesign_chg', color='green', linestyle='-', marker=3, markersize='3')
-        plq(plt, hi, 'time_ux', hi, 'dv_hys_redesign_dis', color='red', linestyle='-', marker=3, markersize='3')
         plt.xlabel('days')
         plt.legend(loc=4)
         # plt.ylim(-0.7, 0.7)
         plt.ylim(bottom=-0.7)
-        plt.subplot(222)
-        plq(plt, hi, 'time_ux', hi, 'res_redesign_chg', color='green', linestyle='-', marker='o', markersize='3')
-        plq(plt, hi, 'time_ux', hi, 'res_redesign_dis', color='red', linestyle='-', marker='o', markersize='3')
-        plt.xlabel('days')
-        plt.legend(loc=4)
         plt.subplot(223)
         plq(plt, hi, 'time_ux', hi, 'ib_f', color='black')
         plq(plt, hi, 'time_ux', hi, 'ib', color='blue', warn=False)
         plq(plt, hi, 'time_ux', hi, 'soc', slr=10, color='green')
-        plq(plt, hi, 'time_ux', hi, 'ioc_redesign', color='cyan', linestyle='-', marker='o', markersize='3')
-        plt.xlabel('days')
-        plt.legend(loc=4)
-        plt.subplot(224)
-        plq(plt, hi, 'time_ux', hi, 'dv_dot_redesign', color='black', linestyle='--')
         plt.xlabel('days')
         plt.legend(loc=4)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -592,8 +570,6 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plq(plt, mv, 'time_ux', mv, 'cc_dif', color='red', linestyle='--')
     plq(plt, mr, 'time_ux', mr, 'cc_diff_thr', color='cyan', linestyle='--')
     plq(plt, mr, 'time_ux', mr, 'cc_diff_thr', slr=-1, color='cyan', linestyle='--')
-    # plq(plt, smv, 'time_ux', np.array(smv.voc_soc_s) - np.array(smv.voc_stat_s)', color='orange', linestyle='-.',
-    # label='e_wrap_filt_s_ver')
     plq(plt, mr, 'time_ux', mr, 'ewhi_thr', color='red', linestyle='-.')
     plq(plt, mr, 'time_ux', mr, 'ewlo_thr', color='red', linestyle='-.')
     plt.ylim(-.5, .5)
@@ -610,8 +586,6 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     fig_files.append(fig_file_name)
     plt.savefig(fig_file_name, format="png")
 
-    ref_str = ''
-    test_str = '_ver'
 
     fig_list.append(plt.figure())  # GP 3 Tune
     plt.subplot(331)
@@ -620,14 +594,12 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     mr.dv_dyn = mr.vb - mr.voc
     plq(plt, mr, 'time_ux', mr, 'dv_dyn', color='blue', linestyle='-')
     plq(plt, mv, 'time_ux', mv, 'dv_dyn', color='cyan', linestyle='--')
-    # plq(plt, sr, 'time_ux', sr, 'dv_dyn_s', color='black', linestyle='-.', label='dv_dyn_s'+ref_str)
     plq(plt, mv, 'time_ux', smv, 'dv_dyn_s', color='magenta', linestyle=':')
     plt.xlabel('sec')
     plt.legend(loc=3)
     plt.subplot(332)
     plq(plt, mr, 'time_ux', mr, 'soc', color='blue', linestyle='-')
     plq(plt, mv, 'time_ux', mv, 'soc', color='cyan', linestyle='--')
-    # plq(plt, sr, 'time_ux', sr, 'soc_s', linestyle='-.', color='black', label='soc_s'+ref_str)
     plq(plt, sv, 'time_ux', smv, 'soc_s', color='magenta', linestyle=':')
     plq(plt, mr, 'time_ux', mr, 'soc_ekf', color='green', linestyle='-')
     plq(plt, mv, 'time_ux', mv, 'soc_ekf', color='red', linestyle='--')
@@ -636,19 +608,14 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plt.subplot(333)
     plq(plt, mr, 'time_ux', mr, 'ib_sel', color='blue', linestyle='-')
     plq(plt, mv, 'time_ux', mv, 'ib_in', color='cyan', linestyle='-')
-    # plq(plt, sr, 'time_ux', sr, 'ib_s, linestyle='--', color='black', label='ib_in_s'+ref_str)
     plq(plt, smv, 'time_ux', smv, 'ib_in_s', color='red', linestyle=':')
     plt.xlabel('sec')
     plt.legend(loc=3)
     plt.subplot(334)
     plq(plt, mr, 'time_ux', mr, 'voc', color='blue', linestyle='-')
     plq(plt, mv, 'time_ux', mv, 'voc', color='cyan', linestyle='--')
-    # plq(plt, sr, 'time_ux', sr, 'voc_s', linestyle='-', color='blue', label='voc_s'+ref_str)
-    # plq(plt, smv, 'time_ux', smv, 'voc_s', linestyle='--', color='cyan', label='voc_s'+test_str)
-    # plq(plt, sr, 'time_ux', sr, 'voc_stat_s', linestyle='-.', color='blue', label='voc_stat_s'+ref_str)
     plq(plt, mr, 'time_ux', mr, 'voc_stat', color='orange', linestyle='-')
     plq(plt, smv, 'time_ux', smv, 'voc_stat_s', color='red', linestyle=':')
-    # plq(plt, sr, 'time_ux', sr, 'vb_s', linestyle='-', color='orange', label='vb_s'+ref_str)
     plq(plt, sv, 'time_ux', smv, 'vb_s', color='pink', linestyle='--')
     plt.xlabel('sec')
     plt.legend(loc=2)
@@ -660,7 +627,6 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plt.subplot(336)
     plq(plt, mr, 'soc', mr, 'vb', color='blue', linestyle='-')
     plq(plt, mv, 'soc', mv, 'vb', color='cyan', linestyle='--')
-    # plq(plt, sr.soc_s, sr.vb_s', color='black', linestyle='-.', label='vb_s'+ref_str)
     plq(plt, smv, 'soc_s', smv, 'vb_s', color='magenta', linestyle=':')
     plq(plt, mr, 'soc', mr, 'voc_stat', color='orange', linestyle='-')
     plt.xlabel('state-of-charge')
@@ -712,21 +678,6 @@ def calc_fault(d_ra, d_mod, Battery=None):
     vb_fa = np.bool_(falw & 2 ** 1)
     tb_fa = np.bool_(falw & 2 ** 0)
     e_wrap = d_mod.voc_soc - d_mod.voc_f
-    if Battery.HDWE_IB_HI_LO > 0:
-        ib_amp_hi_ = d_ra.ib_amp_hdwe_f >= Battery.HDWE_IB_HI_LO_AMP_HI / Battery.NP
-        ib_amp_lo_ = d_ra.ib_amp_hdwe_f <= Battery.HDWE_IB_HI_LO_AMP_LO / Battery.NP
-        ib_noa_hi_ = d_ra.ib_noa_hdwe_f >= Battery.HDWE_IB_HI_LO_AMP_HI / Battery.NP
-        ib_noa_lo_ = d_ra.ib_noa_hdwe_f <= Battery.HDWE_IB_HI_LO_AMP_LO / Battery.NP
-        ib_lo_active_ = np.bool_(Battery.HDWE_IB_HI_LO_AMP_LO / Battery.NP < d_ra.ib_noa_hdwe_f)
-        temp = np.bool_(d_ra.ib_noa_hdwe_f < Battery.HDWE_IB_HI_LO_AMP_HI / Battery.NP)
-        ib_lo_active_ = ib_lo_active_ & temp
-    else:
-        ib_amp_hi_ = False
-        ib_amp_lo_ = False
-        ib_noa_hi_ = False
-        ib_noa_lo_ = False
-        ib_lo_active_ = False
-    disable_amp_fault_ = (ib_amp_hi_ & ib_noa_hi_) | (ib_amp_lo_ & ib_noa_lo_)
 
 
     d_mod = rf.rec_append_fields(d_mod, 'e_wrap', np.array(e_wrap, dtype=float))
@@ -753,10 +704,6 @@ def calc_fault(d_ra, d_mod, Battery=None):
         ib_diff_flt = np.bool_((fltw & 2 ** 8) | (fltw & 2 ** 9))
         wrap_hi_flt = np.bool_(fltw & 2 ** 5)
         wrap_lo_flt = np.bool_(fltw & 2 ** 6)
-        wrap_hi_m_flt = np.bool_(np.array(fltw) & 2 ** 14)
-        wrap_lo_m_flt = np.bool_(np.array(fltw) & 2 ** 15)
-        wrap_hi_n_flt = np.bool_(np.array(fltw) & 2 ** 16)
-        wrap_lo_n_flt = np.bool_(np.array(fltw) & 2 ** 17)
         red_loss = np.bool_(fltw & 2 ** 7)
         dscn_flt = np.bool_(fltw & 2 ** 10)
         vb_flt = np.bool_(fltw & 2 ** 1)
@@ -764,10 +711,6 @@ def calc_fault(d_ra, d_mod, Battery=None):
         d_mod = rf.rec_append_fields(d_mod, 'ib_diff_flt', np.array(ib_diff_flt, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_flt', np.array(wrap_hi_flt, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_flt', np.array(wrap_lo_flt, dtype=float))
-        # d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_m_flt', np.array(wrap_hi_m_flt, dtype=float))
-        # d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_n_flt', np.array(wrap_hi_n_flt, dtype=float))
-        # d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_m_flt', np.array(wrap_lo_m_flt, dtype=float))
-        # d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_n_flt', np.array(wrap_lo_n_flt, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'red_loss', np.array(red_loss, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'dscn_flt', np.array(dscn_flt, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'vb_flt', np.array(vb_flt, dtype=float))
@@ -833,7 +776,6 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
     for i in range(len(h.Tb_f)):
         sat_[i] = is_sat(h.Tb_f[i], mon.chemistry.rated_temp, h.voc_f[i], h.soc[i], mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt,
                          mon.chemistry.low_t)
-        # h.bms_off[i] = (h.Tb_f[i] < low_t) or ((h.voc_f[i] < low_voc) and (h.ib_f[i] < IB_MIN_UP))
         bms_off_[i] = (h.Tb_f[i] < mon.chemistry.low_t) or ((h.voc_stat_f[i] < 10.5) and (h.ib_f[i] < Battery.IB_MIN_UP))
 
     # Correct for temp
@@ -892,86 +834,10 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
                 dv_hys_remodel_[i] = np.interp(t_min, hys_time_min, dv_hys_remodel)
             else:
                 dv_hys_remodel_[i] = 0.
-
-        hys_redesign = Hysteresis_20220926(scale=HYS_SCALE_20220926, cap=HYS_CAP_REDESIGN)
-        # Battery hysteresis model - drift of voc
         t_s_min = h.time_min[0]
         t_e_min = h.time_min[-1]
         dt_hys_min = 1.
-        dt_hys_sec = dt_hys_min * 60.
         hys_time_min = np.arange(t_s_min, t_e_min, dt_hys_min, dtype=float)
-        # Note:  Hysteresis_20220926 instantiates hysteresis state to 0. unless told otherwise
-        dv_hys_redesign = []
-        res_redesign = []
-        ioc_redesign = []
-        dv_dot_redesign = []
-        voc_stat_redesign = []
-        voc_stat_redesign_r = []
-        for i in range(len(hys_time_min)):
-            t_sec = hys_time_min[i] * 60
-            tb = np.interp(t_sec, h.time_sec, h.Tb_f)
-            ib = np.interp(t_sec, h.time_sec, h.ib_f)
-            soc = np.interp(t_sec, h.time_sec, h.soc)
-            soc_min = np.interp(t_sec, h.time_sec, h.soc_min)
-            sat = np.interp(t_sec, h.time_sec, sat_)
-            bms_off = np.interp(t_sec, h.time_sec, bms_off_) > 0.5
-            voc = np.interp(t_sec, h.time_sec, h.voc_f)
-            e_wrap = np.interp(t_sec, h.time_sec, h.e_wrap)
-            hys_redesign.calculate_hys(ib, soc)
-            init_low = bms_off or (soc < (soc_min + HYS_SOC_MIN_MARG) and ib > Battery.HYS_IB_THR)
-            dvh = hys_redesign.update(dt_hys_sec, init_high=sat, init_low=init_low, e_wrap=e_wrap)
-            res = hys_redesign.res
-            ioc = hys_redesign.ioc
-            dv_dot = hys_redesign.dv_dot
-            voc_stat = voc - dvh
-            voc_stat_r = voc_stat - (tb - temp_corr) * mon.chemistry.dvoc_dt
-            dv_hys_redesign.append(dvh)
-            res_redesign.append(res)
-            ioc_redesign.append(max(min(ioc, 40.), -40.))
-            dv_dot_redesign.append(dv_dot)
-            voc_stat_redesign.append(voc_stat)
-            voc_stat_redesign_r.append(voc_stat_r)
-        dv_hys_redesign_ = np.copy(h.soc)
-        res_redesign_ = np.copy(h.soc)
-        ioc_redesign_ = np.copy(h.soc)
-        dv_dot_redesign_ = np.copy(h.soc)
-        voc_stat_redesign_ = np.copy(h.soc)
-        voc_stat_redesign_r_ = np.copy(h.soc)
-        for i in range(len(h.time_ux)):
-            t_min = h.time_min[i]
-            if len(hys_time_min) > 0:
-                dv_hys_redesign_[i] = np.interp(t_min, hys_time_min, dv_hys_redesign)
-                dv_hys_redesign_[i] = np.interp(t_min, hys_time_min, dv_hys_redesign)
-                dv_dot_redesign_[i] = np.interp(t_min, hys_time_min, dv_dot_redesign)
-                voc_stat_redesign_[i] = np.interp(t_min, hys_time_min, voc_stat_redesign)
-                voc_stat_redesign_r_[i] = np.interp(t_min, hys_time_min, voc_stat_redesign_r)
-            else:
-                dv_hys_redesign_[i] = 0.
-                ioc_redesign_[i] = 0.
-                dv_dot_redesign_[i] = 0.
-                voc_stat_redesign_[i] = 0.
-                voc_stat_redesign_r_[i] = 0.
-        voc_stat_redesign_r_chg = np.copy(voc_stat_redesign_r_)
-        voc_stat_redesign_r_dis = np.copy(voc_stat_redesign_r_)
-        dv_hys_redesign_chg = np.copy(dv_hys_redesign_)
-        dv_hys_redesign_dis = np.copy(dv_hys_redesign_)
-        res_redesign_chg = np.copy(res_redesign_)
-        res_redesign_dis = np.copy(res_redesign_)
-        for i in range(len(voc_stat_r_chg)):
-            if h.ib_f[i] > -0.5:
-                voc_stat_redesign_r_dis[i] = None
-                dv_hys_redesign_dis[i] = None
-                res_redesign_dis[i] = None
-            elif h.ib_f[i] < 0.5:
-                voc_stat_redesign_r_chg[i] = None
-                dv_hys_redesign_chg[i] = None
-                res_redesign_chg[i] = None
-        h = rf.rec_append_fields(h, 'voc_stat_redesign_r_dis', voc_stat_redesign_r_dis)
-        h = rf.rec_append_fields(h, 'voc_stat_redesign_r_chg', voc_stat_redesign_r_chg)
-        h = rf.rec_append_fields(h, 'dv_hys_redesign_dis', dv_hys_redesign_dis)
-        h = rf.rec_append_fields(h, 'dv_hys_redesign_chg', dv_hys_redesign_chg)
-        h = rf.rec_append_fields(h, 'res_redesign_dis', res_redesign_dis)
-        h = rf.rec_append_fields(h, 'res_redesign_chg', res_redesign_chg)
         h = rf.rec_append_fields(h, 'sat', sat_)
         h = rf.rec_append_fields(h, 'bms_off', bms_off_)
         h = rf.rec_append_fields(h, 'dv_hys_remodel', dv_hys_remodel_)
@@ -979,13 +845,6 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
         h = rf.rec_append_fields(h, 'voc_stat_r_chg', voc_stat_r_chg)
         h = rf.rec_append_fields(h, 'voc_stat_rescaled_r_dis', voc_stat_rescaled_r_dis)
         h = rf.rec_append_fields(h, 'voc_stat_rescaled_r_chg', voc_stat_rescaled_r_chg)
-        h = rf.rec_append_fields(h, 'ioc_redesign', ioc_redesign_)
-        h = rf.rec_append_fields(h, 'dv_dot_redesign', dv_dot_redesign_)
-        h = rf.rec_append_fields(h, 'dv_hys_redesign', dv_hys_redesign_)
-        h = rf.rec_append_fields(h, 'res_redesign', res_redesign_)
-        h = rf.rec_append_fields(h, 'voc_stat_redesign', voc_stat_redesign_)
-        h = rf.rec_append_fields(h, 'voc_stat_redesign_r', voc_stat_redesign_r_)
-
     return h
 
 

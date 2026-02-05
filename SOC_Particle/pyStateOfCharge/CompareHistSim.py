@@ -208,16 +208,6 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.ylim(0, 1)
         plt.xlabel('soc')
         plt.legend(loc=4)
-        plt.subplot(337)
-        plq(plt, hi, 'time', hi, 'dv_hys', color='blue', linestyle='-', marker='o', markersize='3')
-        plq(plt, hi, 'time', hi, 'dv_hys_rescaled', color='cyan', linestyle='-', marker='o', markersize='3')
-        plq(plt, hi, 'time', hi, 'dv_hys_required', color='black', linestyle='--')
-        plq(plt, hi, 'time', hi, 'e_wrap', slr=-1, color='red', linestyle='None', marker='o', markersize='3')
-        plq(plt, hi, 'time', hi, 'dv_hys_remodel', color='lawngreen', linestyle=':', marker='x', markersize='3')
-        plq(plt, hi, 'time', hi, 'dv_hys_redesign_chg', color='springgreen', linestyle=':', marker=3, markersize='3')
-        plq(plt, hi, 'time', hi, 'dv_hys_redesign_dis', color='orangered', linestyle=':', marker=3, markersize='3')
-        plt.xlabel(time_units)
-        plt.legend(loc=1)
         plt.subplot(338)
         plq(plt, hi, 'time', hi, 'e_wrap', color='black', linestyle='-', marker='o', markersize='3')
         plq(plt, hi, 'time', hi, 'wv_fa', color='red', linestyle=':', marker=0, markersize='4')
@@ -286,25 +276,13 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plq(plt, hi, 'time', hi, 'dv_hys_rescaled', color='cyan', linestyle='-', marker='o', markersize='3')
         plq(plt, hi, 'time', hi, 'dv_hys_required', color='black', linestyle='--')
         plq(plt, hi, 'time', hi, 'e_wrap', slr=-1, color='red', linestyle='None', marker='o', markersize='3')
-        plq(plt, hi, 'time', hi, 'dv_hys_redesign_chg', color='green', linestyle='-', marker=3, markersize='3')
-        plq(plt, hi, 'time', hi, 'dv_hys_redesign_dis', color='red', linestyle='-', marker=3, markersize='3')
         plt.xlabel(time_units)
         plt.legend(loc=4)
         # plt.ylim(-0.7, 0.7)
         plt.ylim(bottom=-0.7)
-        plt.subplot(222)
-        plq(plt, hi, 'time', hi, 'res_redesign_chg', color='green', linestyle='-', marker='o', markersize='3')
-        plq(plt, hi, 'time', hi, 'res_redesign_dis', color='red', linestyle='-', marker='o', markersize='3')
-        plt.xlabel(time_units)
-        plt.legend(loc=4)
         plt.subplot(223)
         plq(plt, hi, 'time', hi, 'ib_f', color='black')
         plq(plt, hi, 'time', hi, 'soc', slr=10, color='green')
-        plq(plt, hi, 'time', hi, 'ioc_redesign', color='cyan', linestyle='-', marker='o', markersize='3')
-        plt.xlabel(time_units)
-        plt.legend(loc=4)
-        plt.subplot(224)
-        plq(plt, hi, 'time', hi, 'dv_dot_redesign', color='black', linestyle='--')
         plt.xlabel(time_units)
         plt.legend(loc=4)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -656,7 +634,6 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=None):
     for i in range(len(h.Tb_f)):
         sat_[i] = is_sat(h.Tb_f[i], mon.chemistry.rated_temp, h.voc_f[i], h.soc[i], mon.chemistry.nom_vsat,
                          mon.chemistry.dvoc_dt, mon.chemistry.low_t)
-        # h.bms_off[i] = (h.Tb[i] < low_t) or ((h.voc[i] < low_voc) and (h.ib[i] < IB_MIN_UP))
         bms_off_[i] = (h.Tb_f[i] < mon.chemistry.low_t) or ((h.voc_stat_f[i] < 10.5) and (h.ib_f[i] < Battery.IB_MIN_UP))
 
     # Correct for temp
@@ -683,8 +660,6 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=None):
         elif h.ib_f[i] < 0.5:
             voc_stat_r_chg[i] = None
             voc_stat_rescaled_r_chg[i] = None
-
-    # Hysteresis_20220917d confirm equals data with HYS_SCALE_20220917d
     if len(h.time_ux) > 1:
         hys_remodel = Hysteresis_20220917d(scale=HYS_SCALE_20220917d)  # Battery hysteresis model - drift of voc
         t_s_min = h.time_min[0]
@@ -707,80 +682,6 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=None):
         for i in range(len(h.time_ux)):
             t_min = int(float(h.time_ux[i]) / 60.)
             dv_hys_remodel_[i] = np.interp(t_min, hys_time_min, dv_hys_remodel)
-
-        hys_redesign = Hysteresis_20220926(scale=HYS_SCALE_20220926, cap=HYS_CAP_REDESIGN)
-        # Battery hysteresis model - drift of voc
-        t_s_min = h.time_min[0]
-        t_e_min = h.time_min[-1]
-        dt_hys_min = 1.
-        dt_hys_sec = dt_hys_min * 60.
-        hys_time_min = np.arange(t_s_min, t_e_min, dt_hys_min, dtype=float)
-        # Note:  Hysteresis_20220926 instantiates hysteresis state to 0. unless told otherwise
-        dv_hys_redesign = []
-        res_redesign = []
-        ioc_redesign = []
-        dv_dot_redesign = []
-        voc_stat_redesign = []
-        voc_stat_redesign_r = []
-        for i in range(len(hys_time_min)):
-            t_sec = hys_time_min[i] * 60
-            tb_f = np.interp(t_sec, h.time_sec, h.Tb_f)
-            ib_f = np.interp(t_sec, h.time_sec, h.ib_f)
-            soc = np.interp(t_sec, h.time_sec, h.soc)
-            soc_min = np.interp(t_sec, h.time_sec, h.soc_min)
-            sat = np.interp(t_sec, h.time_sec, sat_)
-            bms_off = np.interp(t_sec, h.time_sec, bms_off_) > 0.5
-            voc_f = np.interp(t_sec, h.time_sec, h.voc_f)
-            e_wrap = np.interp(t_sec, h.time_sec, h.e_wrap)
-            hys_redesign.calculate_hys(ib_f, soc)
-            init_low = bms_off or (soc < (soc_min + HYS_SOC_MIN_MARG) and ib_f > Battery.HYS_IB_THR)
-            dvh = hys_redesign.update(dt_hys_sec, init_high=sat, init_low=init_low, e_wrap=e_wrap)
-            res = hys_redesign.res
-            ioc = hys_redesign.ioc
-            dv_dot = hys_redesign.dv_dot
-            voc_stat_f = voc_f - dvh
-            voc_stat_r = voc_stat_f - (tb_f - tb_forr) * mon.chemistry.dvoc_dt
-            dv_hys_redesign.append(dvh)
-            res_redesign.append(res)
-            ioc_redesign.append(max(min(ioc, 40.), -40.))
-            dv_dot_redesign.append(dv_dot)
-            voc_stat_redesign.append(voc_stat_f)
-            voc_stat_redesign_r.append(voc_stat_r)
-        dv_hys_redesign_ = np.copy(h.soc)
-        res_redesign_ = np.copy(h.soc)
-        ioc_redesign_ = np.copy(h.soc)
-        dv_dot_redesign_ = np.copy(h.soc)
-        voc_stat_redesign_ = np.copy(h.soc)
-        voc_stat_redesign_r_ = np.copy(h.soc)
-        for i in range(len(h.time_ux)):
-            t_min = h.time_min[i]
-            dv_hys_redesign_[i] = np.interp(t_min, hys_time_min, dv_hys_redesign)
-            res_redesign_[i] = np.interp(t_min, hys_time_min, res_redesign)
-            ioc_redesign_[i] = np.interp(t_min, hys_time_min, ioc_redesign)
-            dv_dot_redesign_[i] = np.interp(t_min, hys_time_min, dv_dot_redesign)
-            voc_stat_redesign_[i] = np.interp(t_min, hys_time_min, voc_stat_redesign)
-            voc_stat_redesign_r_[i] = np.interp(t_min, hys_time_min, voc_stat_redesign_r)
-        voc_stat_redesign_r_chg = np.copy(voc_stat_redesign_r_)
-        voc_stat_redesign_r_dis = np.copy(voc_stat_redesign_r_)
-        dv_hys_redesign_chg = np.copy(dv_hys_redesign_)
-        dv_hys_redesign_dis = np.copy(dv_hys_redesign_)
-        res_redesign_chg = np.copy(res_redesign_)
-        res_redesign_dis = np.copy(res_redesign_)
-        for i in range(len(voc_stat_r_chg)):
-            if h.ib_f[i] > -0.5:
-                voc_stat_redesign_r_dis[i] = None
-                dv_hys_redesign_dis[i] = None
-                res_redesign_dis[i] = None
-            elif h.ib_f[i] < 0.5:
-                voc_stat_redesign_r_chg[i] = None
-                dv_hys_redesign_chg[i] = None
-                res_redesign_chg[i] = None
-        h = rf.rec_append_fields(h, 'voc_stat_redesign_r_dis', voc_stat_redesign_r_dis)
-        h = rf.rec_append_fields(h, 'voc_stat_redesign_r_chg', voc_stat_redesign_r_chg)
-        h = rf.rec_append_fields(h, 'dv_hys_redesign_dis', dv_hys_redesign_dis)
-        h = rf.rec_append_fields(h, 'dv_hys_redesign_chg', dv_hys_redesign_chg)
-        h = rf.rec_append_fields(h, 'res_redesign_dis', res_redesign_dis)
-        h = rf.rec_append_fields(h, 'res_redesign_chg', res_redesign_chg)
         h = rf.rec_append_fields(h, 'sat', sat_)
         h = rf.rec_append_fields(h, 'bms_off', bms_off_)
         h = rf.rec_append_fields(h, 'dv_hys_remodel', dv_hys_remodel_)
@@ -788,12 +689,6 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=None):
         h = rf.rec_append_fields(h, 'voc_stat_r_chg', voc_stat_r_chg)
         h = rf.rec_append_fields(h, 'voc_stat_rescaled_r_dis', voc_stat_rescaled_r_dis)
         h = rf.rec_append_fields(h, 'voc_stat_rescaled_r_chg', voc_stat_rescaled_r_chg)
-        h = rf.rec_append_fields(h, 'ioc_redesign', ioc_redesign_)
-        h = rf.rec_append_fields(h, 'dv_dot_redesign', dv_dot_redesign_)
-        h = rf.rec_append_fields(h, 'dv_hys_redesign', dv_hys_redesign_)
-        h = rf.rec_append_fields(h, 'res_redesign', res_redesign_)
-        h = rf.rec_append_fields(h, 'voc_stat_redesign', voc_stat_redesign_)
-        h = rf.rec_append_fields(h, 'voc_stat_redesign_r', voc_stat_redesign_r_)
 
     return h
 
@@ -1167,8 +1062,8 @@ def main():
 
     # User inputs (multiple input_files allowed
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/zero_soc2p2_hi_lo_bb.csv'
-    data_only = True
-    # data_only = False
+    # data_only = True
+    data_only = False
     use_mon_csv = False
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
     dt_resample = 1
