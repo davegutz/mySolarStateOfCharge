@@ -19,7 +19,6 @@ import numpy as np
 import numpy.lib.recfunctions as rf
 import matplotlib.pyplot as plt
 from Hysteresis_20220917d import Hysteresis_20220917d
-from Hysteresis_20220926 import Hysteresis_20220926
 from Battery import Battery, BatteryMonitor, is_sat, calculate_capacity
 from MonSim import replicate, save_clean_file, UserOptions
 from resample import resample
@@ -429,9 +428,6 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     plt.savefig(fig_file_name, format="png")
-
-    run_str = ''
-    ver_str = '_ver'
 
     fig_list.append(plt.figure())  # O_F 2
     plt.subplot(331)
@@ -961,10 +957,29 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, use_mo
             print("\nresampling ...", end='')
             h_20C_resamp = resample(data=hist_20C, dt_resamp=dt_resample, time_var='time',
                                 specials=[
-                                    ('falw', 0), ('dscn_fa', 0), ('ib_diff_fa', 0), ('wv_fa', 0), ('wrap_lo_fa', 0),
-                                    ('wrap_hi_fa', 0), ('ccd_fa', 0), ('ib_noa_fa', 0), ('ib_amp_fa', 0), ('vb_fa', 0),
-                                    ('tb_fa', 0), ('wrap_lo_m_fa', 0), ('wrap_hi_m_fa', 0), ('wrap_lo_n_fa', 0), ('wrap_hi_n_fa', 0),
-                                    ])
+                                    ('falw', 0),
+                                    ('dscn_fa', 0),
+                                    ('ib_diff_fa', 0),
+                                    ('ib_diff_flt', 0),
+                                    ('wv_fa', 0),
+                                    ('wrap_lo_fa', 0),
+                                    ('wrap_lo_flt', 0),
+                                    ('wrap_hi_fa', 0),
+                                    ('wrap_hi_flt', 0),
+                                    ('ccd_fa', 0),
+                                    ('ib_noa_fa', 0),
+                                    ('ib_amp_fa', 0),
+                                    ('vb_fa', 0),
+                                    ('tb_fa', 0),
+                                    ('wrap_lo_m_fa', 0),
+                                    ('wrap_lo_m_flt', 0),
+                                    ('wrap_hi_m_fa', 0),
+                                    ('wrap_hi_m_flt', 0),
+                                    ('wrap_lo_n_flt', 0),
+                                    ('wrap_lo_n_fa', 0),
+                                    ('wrap_hi_n_fa', 0),
+                                    ('wrap_hi_n_flt', 0),
+                                ])
             h_20C_resamp.dt = h_20C_resamp.time.copy()
             for i in range(len(h_20C_resamp.time)):
                 h_20C_resamp.dt[i] = h_20C_resamp.time[i] - h_20C_resamp.time[max(i-1, 0)]
@@ -1031,7 +1046,6 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, use_mon_
                                              fig_list=fig_list, cc_dif_tol=cc_dif_tol_in, time_units='sec')
         if hist_20C is not None and len(hist_20C.time) > 1:
             sim_run = None
-            plot_init_in = False
             if not terse:
                 fig_list, fig_files = overall_fault(mon_run, mon_ver, sim_ver, sim_s_ver, filename,
                                                     fig_files, plot_title=plot_title, fig_list=fig_list)

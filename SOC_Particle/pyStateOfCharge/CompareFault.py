@@ -20,7 +20,7 @@ import numpy.lib.recfunctions as rf
 import matplotlib.pyplot as plt
 from Hysteresis_20220917d import Hysteresis_20220917d
 from Battery import Battery, BatteryMonitor, is_sat
-from Battery import overall_batt, calculate_capacity, Retained
+from Battery import calculate_capacity, Retained
 from Colors import Colors
 from plot.plq import plq as plq
 from Chemistry_BMS import ib_lag
@@ -837,7 +837,6 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
         t_s_min = h.time_min[0]
         t_e_min = h.time_min[-1]
         dt_hys_min = 1.
-        hys_time_min = np.arange(t_s_min, t_e_min, dt_hys_min, dtype=float)
         h = rf.rec_append_fields(h, 'sat', sat_)
         h = rf.rec_append_fields(h, 'bms_off', bms_off_)
         h = rf.rec_append_fields(h, 'dv_hys_remodel', dv_hys_remodel_)
@@ -858,8 +857,6 @@ def look_it(x, tab, temp):
 
 if __name__ == '__main__':
     import sys
-    from DataOverModel import write_clean_file
-    from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files, precleanup_fig_files
     if sys.platform == 'darwin':
         import matplotlib
         matplotlib.use('tkagg')
@@ -871,7 +868,6 @@ if __name__ == '__main__':
     def main():
         date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
         # date_ = datetime.now().strftime("%y%m%d")
-        skip = 1
 
 
 
