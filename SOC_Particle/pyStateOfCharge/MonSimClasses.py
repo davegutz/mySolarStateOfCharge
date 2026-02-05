@@ -213,12 +213,17 @@ class Sensors:
             self.Tb_model_filt_rate_init = 0.
             self.Tb_model_init = self.mon_run.Tb_h_f[0]
             self.Tb_model_filt_init = self.mon_run.Tb_h_f[0]
-            self.e_wrap_init = self.mon_run.e_wrap[0]
+            if hasattr(self.mon_run, 'e_wrap'):
+                self.e_wrap_init = self.mon_run.e_wrap[0]
+                self.e_wrap_m_init = self.mon_run.e_wrap[0]
+                self.e_wrap_n_init = self.mon_run.e_wrap[0]
+            else:
+                self.e_wrap_init = self.mon_run.e_wrap_f[0]
+                self.e_wrap_m_init = self.mon_run.e_wrap_f[0]
+                self.e_wrap_n_init = self.mon_run.e_wrap_f[0]
             self.e_wrap_filt_init = self.mon_run.e_wrap_f[0]
-            self.e_wrap_m_init = self.mon_run.e_wrap[0]
             self.e_wrap_m_filt_init = self.mon_run.e_wrap_m_filt[0]
             self.e_wrap_m_trim_init = 0.
-            self.e_wrap_n_init = self.mon_run.e_wrap[0]
             self.e_wrap_n_filt_init = self.mon_run.e_wrap_n_filt[0]
             self.e_wrap_n_trim_init = 0.
             self.voc_soc_init = self.mon_run.voc_soc[0]

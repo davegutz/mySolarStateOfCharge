@@ -40,19 +40,19 @@ plt.rcParams['legend.fontsize'] = 'small'
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
-def compare_run_hist(data_file=None, unit_key=None, time_end=None, data_only=True, strict_overplot=False,
+def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=False, strict_overplot=False,
                      terse=False):
 
-    print(f"\ncompare_run_hist:\n{data_file=}\n{data_only=}\n{unit_key=}\n{time_end=}\n{strict_overplot=}\n{terse=}\n")
+    print(f"\ncompare_run_hist:\n{data_file=}\n{plots=}\n{unit_key=}\n{time_end=}\n{strict_overplot=}\n{terse=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     # date_ = datetime.now().strftime("%y%m%d")
 
     dfcs, mo_r, so_r, mv_r, sv_r, ssv_r =\
-        compare_run_sim(data_file=data_file, unit_key=unit_key, time_end_in=time_end, data_only=data_only,
+        compare_run_sim(data_file=data_file, unit_key=unit_key, time_end_in=time_end, plots=plots,
                         mon_str='', strict_overplot=strict_overplot, terse=terse)
     mo_h, so_h, mv_h, sv_h, ssv_h =\
-        compare_hist_sim(data_file=data_file, unit_key=unit_key, time_end_in=time_end, data_only=data_only,
+        compare_hist_sim(data_file=data_file, unit_key=unit_key, time_end_in=time_end, plots=plots,
                          use_mon_csv=True, sync_time=mo_r.time_run, strict_overplot=strict_overplot, terse=terse)
 
     # Plots
@@ -94,13 +94,13 @@ def compare_run_hist(data_file=None, unit_key=None, time_end=None, data_only=Tru
 
 def main():
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_bb.csv'
-    data_only = True
+    plots = False
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
     time_end = None
     terse = True
     strict_overplot = False
 
-    compare_run_hist(data_file=data_file, unit_key=unit_key, time_end=time_end, data_only=data_only,
+    compare_run_hist(data_file=data_file, unit_key=unit_key, time_end=time_end, plots=plots,
                      terse=terse, strict_overplot=strict_overplot)
 
 

@@ -209,7 +209,6 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     voc_dyn = d_mod.voc_f.copy()
     d_mod = rf.rec_append_fields(d_mod, 'voc_dyn', np.array(voc_dyn, dtype=float))
     ib_f = d_mod.ib_f.copy()
-    # d_mod = rf.rec_append_fields(d_mod, 'ib', np.array(ib, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_sel', np.array(ib_f, dtype=float))
     d_zero = d_mod.ib_f.copy()*0.
     d_mod = rf.rec_append_fields(d_mod, 'tweak_sclr_amp', np.array(d_zero, dtype=float))
@@ -677,10 +676,10 @@ def calc_fault(d_ra, d_mod, Battery=None):
     ib_amp_fa = np.bool_(falw & 2 ** 2)
     vb_fa = np.bool_(falw & 2 ** 1)
     tb_fa = np.bool_(falw & 2 ** 0)
-    e_wrap = d_mod.voc_soc - d_mod.voc_f
+    if not hasattr(d_mod, 'e_wrap_f'):
+        e_wrap_f = d_mod.voc_soc - d_mod.voc_f
+        d_mod = rf.rec_append_fields(d_mod, 'e_wrap_f', np.array(e_wrap_f, dtype=float))
 
-
-    d_mod = rf.rec_append_fields(d_mod, 'e_wrap', np.array(e_wrap, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'dscn_fa', np.array(dscn_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_diff_fa', np.array(ib_diff_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'wv_fa', np.array(wv_fa, dtype=float))

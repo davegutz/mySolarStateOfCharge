@@ -31,6 +31,7 @@ from datetime import datetime
 from load_data import load_data, remove_nan, remove_0T
 from local_paths import version_from_data_file, local_paths
 from CompareFault import add_stuff_f
+import numpy.lib.recfunctions as rfn
 import os
 
 import sys
@@ -44,25 +45,21 @@ plt.rcParams['legend.fontsize'] = 'small'
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
+# rename recarray elements
+def rename(ra, targ, repl):
+    try:
+        ra = rfn.rename_fields(ra, {targ: repl})
+    except ValueError:
+        # Rename
+        names = list(ra.dtype.names)
+        names[names.index(targ)] = repl
+        ra.dtype.names = tuple(names)
+    return ra
+
 #  For this battery Battleborn 100 Ah with 1.084 x capacity
 IB_BAND = 1.  # Threshold to declare charging or discharging
 TB_BAND = 25.  # Band around temperature to group data and correct.  Large value means no banding, effectively
 HYS_SCALE_20220917d = 0.3  # Original hys_remodel scalar inside photon code
-HYS_SCALE_20220926 = 1.0  # Original hys_remodel scalar inside photon code
-
-#  Rescale parameters design.  Minimal tuning attempt
-#  This didn't work because low soc response of original design is too slow
-HYS_RESCALE_CHG = 0.5  # Attempt to rescale to match voc_soc to all data
-HYS_RESCALE_DIS = 0.3  # Attempt to rescale to match voc_soc to all data
-VOC_RESET_05 = 0.  # Attempt to rescale to match voc_soc to all data
-VOC_RESET_11 = 0.  # Attempt to rescale to match voc_soc to all data
-VOC_RESET_20 = 0.  # Attempt to rescale to match voc_soc to all data
-VOC_RESET_30 = -0.03  # Attempt to rescale to match voc_soc to all data
-VOC_RESET_40 = 0.  # Attempt to rescale to match voc_soc to all data
-
-#  Redesign Hysteresis_20220917d.  Make a new Hysteresis_20220926.py with new curve
-HYS_CAP_REDESIGN = 3.6e4  # faster time constant needed
-HYS_SOC_MIN_MARG = 0.15  # add to soc_min to set thr for detecting low endpoint condition for reset of hysteresis
 
 def load_off_nominal_battery(Battery_to_add=None):
     # Load off-nominal Battery values
@@ -507,69 +504,6 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     return fig_list, fig_files
 
 
-def calc_fault(d_ra, d_mod, Battery=None):
-    falw = d_ra.falw.astype(int)
-    fltw = d_ra.fltw.astype(int)
-    dscn_fa = np.bool_(falw & 2 ** 10)
-    ib_diff_fa = np.bool_((falw & 2 ** 8) | (falw & 2 ** 9))
-    wv_fa = np.bool_(falw & 2 ** 7)
-    wrap_lo_fa = np.bool_(falw & 2 ** 6)
-    wrap_hi_fa = np.bool_(falw & 2 ** 5)
-    wrap_hi_m_fa = np.bool_(falw & 2 ** 14)
-    wrap_lo_m_fa = np.bool_(falw & 2 ** 15)
-    wrap_hi_n_fa = np.bool_(falw & 2 ** 16)
-    wrap_lo_n_fa = np.bool_(falw & 2 ** 17)
-    ccd_fa = np.bool_(falw & 2 ** 4)
-    ib_noa_fa = np.bool_(falw & 2 ** 3)
-    ib_amp_fa = np.bool_(falw & 2 ** 2)
-    vb_fa = np.bool_(falw & 2 ** 1)
-    tb_fa = np.bool_(falw & 2 ** 0)
-    e_wrap = d_mod.voc_soc - d_mod.voc_f
-    d_mod = rf.rec_append_fields(d_mod, 'e_wrap', np.array(e_wrap, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'dscn_fa', np.array(dscn_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'ib_diff_fa', np.array(ib_diff_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'wv_fa', np.array(wv_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_fa', np.array(wrap_lo_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_m_fa', np.array(wrap_lo_m_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_n_fa', np.array(wrap_lo_n_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_fa', np.array(wrap_hi_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_m_fa', np.array(wrap_hi_m_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_n_fa', np.array(wrap_hi_n_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'ccd_fa', np.array(ccd_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'ib_noa_fa', np.array(ib_noa_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'ib_amp_fa', np.array(ib_amp_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'vb_fa', np.array(vb_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'tb_fa', np.array(tb_fa, dtype=float))
-
-    try:
-        ib_diff_flt = np.bool_((fltw & 2 ** 8) | (fltw & 2 ** 9))
-        wrap_hi_flt = np.bool_(fltw & 2 ** 5)
-        wrap_lo_flt = np.bool_(fltw & 2 ** 6)
-        wrap_hi_m_flt = np.bool_(fltw & 2 ** 14)
-        wrap_lo_m_flt = np.bool_(fltw & 2 ** 15)
-        wrap_hi_n_flt = np.bool_(fltw & 2 ** 16)
-        wrap_lo_n_flt = np.bool_(fltw & 2 ** 17)
-        red_loss = np.bool_(fltw & 2 ** 7)
-        dscn_flt = np.bool_(fltw & 2 ** 10)
-        vb_flt = np.bool_(fltw & 2 ** 1)
-        tb_flt = np.bool_(fltw & 2 ** 0)
-        d_mod = rf.rec_append_fields(d_mod, 'ib_diff_flt', np.array(ib_diff_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_flt', np.array(wrap_hi_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_m_flt', np.array(wrap_hi_m_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_n_flt', np.array(wrap_hi_n_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_flt', np.array(wrap_lo_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_m_flt', np.array(wrap_lo_m_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_n_flt', np.array(wrap_lo_n_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'red_loss', np.array(red_loss, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'dscn_flt', np.array(dscn_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'vb_flt', np.array(vb_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'tb_flt', np.array(tb_flt, dtype=float))
-    except IOError:
-        pass
-
-    return d_mod
-
-
 # Fake stuff to get replicate to accept inputs and run
 def bandaid(h):
     res = np.zeros(len(h.time_ux))
@@ -784,11 +718,11 @@ def add_qcrs(hist, mon_t_=False, mon=None, qcrs=None, t_rated=None, dqdt=None):
     return hist
 
 
-def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, use_mon_csv=False, unit_key=None,
+def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv=False, unit_key=None,
                        sync_time=None, dt_resample=10, Tb_force=None, skip=1, v1_only=False):
     """Load history, reconstruct samples by linear interpolation and normalize all soc and Tb to 20C"""
 
-    print(f"\nload_hist_and_prep:\n{data_file=}\n{data_only=}\n{use_mon_csv=}\n{unit_key=}\n{dt_resample=}\n{Tb_force=}\n{skip=}\n")
+    print(f"\nload_hist_and_prep:\n{data_file=}\n{plots=}\n{use_mon_csv=}\n{unit_key=}\n{dt_resample=}\n{Tb_force=}\n{skip=}\n")
 
     # Load battery (ref)
     battery_hdr = "Battery_hdr"
@@ -912,7 +846,6 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, use_mo
         f_raw = remove_nan(f_raw)
         f_raw = remove_0T(f_raw, 'FAULTS in f_raw')
         if len(f_raw) > 0:
-
             # noinspection PyTypeChecker
             fault = add_stuff_f(f_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
                                 time_sync=sync_time, unit=unit)
@@ -933,8 +866,10 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, use_mo
         h_combo_raw = remove_0T(h_combo_raw, 'HISTORY u and h in h_combo_raw')
         print("\nhist raw:\n", h_combo_raw.dtype.names, "\n", h_combo_raw, "\n", h_combo_raw.dtype.names, "\n")
         # noinspection PyTypeChecker
+        h_combo_raw = rename(h_combo_raw, 'e_w_f', 'e_wrap_f')
         hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
                            time_sync=sync_time)
+
         hist = add_mod(hist, use_mon_csv, mon)
         hist = add_chm(hist, use_mon_csv, mon, chm)
         hist = add_qcrs(hist, mon_t_=use_mon_csv, mon=mon, qcrs=qcrs, t_rated=t_rated, dqdt=dqdt)
@@ -990,11 +925,11 @@ def load_hist_and_prep(data_file=None, time_end_in=None, data_only=False, use_mo
         return mon, sim, unit, fault, hist_20C, filename, Battery
 
 
-def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, use_mon_csv=False, unit_key=None,
+def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=False, unit_key=None,
                      sync_time=None, dt_resample=10, Tb_force=None, request_history=None, strict_overplot=False,
                      terse=False):
 
-    print(f"\ncompare_hist_sim:\n{data_file=}\n{time_end_in=}\n{data_only=}\n{use_mon_csv=}\n{unit_key=}\n{sync_time=}\n{dt_resample=}\n{Tb_force=}\n{request_history=}\n{strict_overplot=}\n{terse=}")
+    print(f"\ncompare_hist_sim:\n{data_file=}\n{time_end_in=}\n{plots=}\n{use_mon_csv=}\n{unit_key=}\n{sync_time=}\n{dt_resample=}\n{Tb_force=}\n{request_history=}\n{strict_overplot=}\n{terse=}")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
@@ -1013,7 +948,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, use_mon_
 
     # Load history, normalizing all soc and Tb to 20C
     mon_run, sim_run, unit, fault, hist_20C, filename, Battery = \
-        load_hist_and_prep(data_file=data_file, time_end_in=time_end_in, data_only=data_only, use_mon_csv=use_mon_csv,
+        load_hist_and_prep(data_file=data_file, time_end_in=time_end_in, plots=plots, use_mon_csv=use_mon_csv,
                            unit_key=unit_key, sync_time=sync_time, dt_resample=dt_resample, Tb_force=Tb_force)
 
     # File path operations
@@ -1022,7 +957,6 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, use_mon_
     path_to_temp, save_pdf_path, _ = local_paths(version)
 
     if mon_run is not None and sim_run is not None:
-
         # Replicate
         data_file_clean = path_to_temp + '/' + data_file_txt.replace('.csv', '_hist' + '.csv', 1)
         mon_file_save = data_file_clean.replace(".csv", "_rep_hist.csv")
@@ -1035,7 +969,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, data_only=False, use_mon_
         save_clean_file(mon_ver, mon_file_save, 'mon_rep_hist' + date_)
 
     # Plots
-    if not data_only:
+    if plots:
         fig_list = []
         fig_files = []
         if filename is None:
@@ -1076,8 +1010,8 @@ def main():
 
     # User inputs (multiple input_files allowed
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/zero_soc2p2_hi_lo_bb.csv'
-    # data_only = True
-    data_only = False
+    plots = True
+    # plots = False
     use_mon_csv = False
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
     dt_resample = 1
@@ -1085,11 +1019,10 @@ def main():
     request_history = 5
     strict_overplot = True
     terse = True
-
-    plots = not data_only
+    # terse = False
 
     compare_hist_sim(data_file=data_file, use_mon_csv=use_mon_csv, unit_key=unit_key, dt_resample=dt_resample,
-                     data_only=not plots, Tb_force=Tb_force, request_history=request_history, terse=terse,
+                     plots=plots, Tb_force=Tb_force, request_history=request_history, terse=terse,
                      strict_overplot=strict_overplot)
 
 

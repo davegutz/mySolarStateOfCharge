@@ -43,7 +43,7 @@ plt.rcParams['legend.fontsize'] = 'small'
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
-def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=False, Dw=0.,  use_mon_soc_=False,
+def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True, Dw=0.,  use_mon_soc_=False,
                     verbose=True, scale_in=1., slr_hys_sim=1., request_history=5, Battery=None, init_time_in=None,
                     time_shift_in=None, strict_overplot=False, terse=False, mon_str=''):
 
@@ -53,7 +53,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, data_only=F
         IB_CHARGE_NOA = False
 
     print(f"\n \
-compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_mon_soc_=}\n \
+compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{plots=}\n{use_mon_soc_=}\n \
 {IB_CHARGE_NOA=}\n{verbose=}\n{scale_in=}\n{slr_hys_sim=}\n{request_history=}\n{init_time_in=}\n{time_shift_in=}\n \
 {strict_overplot=}\n{terse=}\n{mon_str=}\n \
           ")
@@ -113,7 +113,7 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{data_only=}\n{use_
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
 
     # Plots
-    if not data_only:
+    if plots:
         fig_list = []
         fig_files = []
         dir_root_test, data_root_test = os.path.split(data_file_clean)
@@ -163,7 +163,7 @@ def main():
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\offSitHysBmsBB_soc2p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc2p2_hi_lo_chg'
     time_end_in = None
-    data_only = False
+    plots = True
     use_mon_soc_ = False
     IB_CHARGE_NOA = False
     verbose = True
@@ -224,7 +224,7 @@ def main():
     strict_overplot_in = False
     # strict_overplot_in = True
 
-    compare_run_sim(data_file=data_file, unit_key=unit_key, data_only=not plots, time_end_in=time_end_in,
+    compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end_in=time_end_in,
                     use_mon_soc_=use_mon_soc_, verbose=verbose_in, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
                     request_history=request_hist_in, init_time_in=init_time_in, time_shift_in=time_shift_in,
                     strict_overplot=strict_overplot_in, terse=terse_in)

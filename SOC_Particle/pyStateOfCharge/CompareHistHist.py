@@ -36,7 +36,7 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
 def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None, unit_key_tst=None,
-                      dt_resample=10, data_only=False):
+                      dt_resample=10, plots=True):
 
     print(f"\ncompare_hist_sim:\n{data_file_run=}\n{unit_key_run=}\n{data_file_tst=}\n{unit_key_tst=}\n{dt_resample=}\n")
 
@@ -65,7 +65,7 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
     path_to_temp, save_pdf_path, _ = local_paths(version)
 
     # Plots
-    if data_only is False:
+    if plots:
         fig_list = []
         fig_files = []
         plot_title = filename_run + filename_tst + '   ' + date_time
