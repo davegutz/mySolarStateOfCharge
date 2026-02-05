@@ -866,7 +866,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
         h_combo_raw = remove_0T(h_combo_raw, 'HISTORY u and h in h_combo_raw')
         print("\nhist raw:\n", h_combo_raw.dtype.names, "\n", h_combo_raw, "\n", h_combo_raw.dtype.names, "\n")
         # noinspection PyTypeChecker
-        h_combo_raw = rename(h_combo_raw, 'e_w_f', 'e_wrap_f')
+        h_combo_raw = rename(h_combo_raw, 'e_w_f', 'e_wrap_filt')
         hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
                            time_sync=sync_time)
 
