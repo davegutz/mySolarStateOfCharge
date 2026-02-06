@@ -272,7 +272,7 @@ lookup = {
         'faultParade': (320, modMidInit + 'Dh1000;vv4;W4;XY;Dm50;Dn0.0001;W200;Dm0;Dn0;W20;Rf;XQ240000;' + quiet + cleanup, ("Check fault, history, and summary logging", "Should flag faults but take no action", "", "", "")),
         'stepDown': (103, modMidInit + tranPrep + sd50 + 'XQ25000;' + s00 + quiet + cleanup, ("Should be normal hard discharge step", "", "", "")),
         'stepUp': (103, modMidInit + tranPrep + sc50 + 'XQ25000;' + s00 + quiet + cleanup, ("Should be normal hard charge step", "", "", "")),
-        'zero_with_pc': (95, hdwPcMidInit + zeroPrep + 'XQ25000;' + 'vv99;Xm2;XQ15000;' + quiet  + cleanup, ("Hardware zero_with_pc run", "", "", "")),
+        'zero_with_pc': (103, hdwPcMidInit + zeroPrep + 'XQ25000;' + 'vv99;Xm2;XQ15000;' + quiet  + cleanup, ("Hardware zero_with_pc run", "", "", "")),
 }
 
 macro_lookup = {
