@@ -519,7 +519,10 @@ def bandaid(h):
     sat_s = h['sat'].copy()
     chm_s = h['chm_s'].copy()
     dt_s = h['dt'].copy()
+    dv_dyn_s = h['dt'].copy()*0.
+    dv_hys_s = h['dt'].copy()*0.
     deltaq_s = h['delta_q'].copy()
+    voc_stat_s = h['voc_stat_f'].copy()
     sel = np.zeros(len(h.time_ux))
     preserving = np.ones(len(h.time_ux))
     mon_run = rf.rec_append_fields(h, 'res', res)
@@ -536,8 +539,6 @@ def bandaid(h):
     mon_run = rf.rec_append_fields(mon_run, 'vb_sel', vb_sel)
     mon_run = rf.rec_append_fields(mon_run, 'soc_s', soc_s)
     mon_run = rf.rec_append_fields(mon_run, 'sel', sel)
-    # mon_run = rf.rec_append_fields(mon_run, 'ewhi_thr', sel)
-    # mon_run = rf.rec_append_fields(mon_run, 'ewlo_thr', sel)
     mon_run = rf.rec_append_fields(mon_run, 'ccd_thr', sel)
     mon_run = rf.rec_append_fields(mon_run, 'voc_ekf', sel)
     mon_run = rf.rec_append_fields(mon_run, 'y_ekf', sel)
@@ -548,9 +549,9 @@ def bandaid(h):
     sim_run = rf.rec_append_fields(sim_run, 'sat_s', sat_s)
     sim_run = rf.rec_append_fields(sim_run, 'ib_in_s', ib_in_s)
     sim_run = rf.rec_append_fields(sim_run, 'bms_off_s', bms_off_s)
-    sim_run = rf.rec_append_fields(sim_run, 'dv_dyn_s', bms_off_s)
-    sim_run = rf.rec_append_fields(sim_run, 'dv_hys_s', bms_off_s)
-    sim_run = rf.rec_append_fields(sim_run, 'voc_stat_s', bms_off_s)
+    sim_run = rf.rec_append_fields(sim_run, 'dv_dyn_s', dv_dyn_s)
+    sim_run = rf.rec_append_fields(sim_run, 'dv_hys_s', dv_hys_s)
+    sim_run = rf.rec_append_fields(sim_run, 'voc_stat_s', voc_stat_s)
     sim_run = rf.rec_append_fields(sim_run, 'delta_q_s', deltaq_s)
     return mon_run, sim_run
 
