@@ -19,7 +19,8 @@ import numpy as np
 import numpy.lib.recfunctions as rf
 import matplotlib.pyplot as plt
 from Hysteresis_20220917d import Hysteresis_20220917d
-from Battery import Battery, BatteryMonitor, is_sat, calculate_capacity, load_off_nominal_battery
+from Battery import Battery, BatteryMonitor, is_sat, calculate_capacity, load_off_nominal_battery, \
+    apply_off_nominal_battery
 from MonSim import replicate, save_clean_file, UserOptions
 from resample import resample
 from PlotKiller import show_killer
@@ -712,17 +713,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
         print(f"load_hist_and_prep: returning battery_raw=None")
     # Override Battery with loaded values Battery_hdr/Battery_val in battery_raw
     Battery_off_dict = load_off_nominal_battery(Battery_to_add=battery_raw)
-
-    # Translate the off-nominal values imported from data stream. load battery
-    print("Over-writing pre-existing off-nominal values into Battery class structure")
-    for key in dir(Battery):
-        # print(f"{key=}:   ", end='')
-        if key.isupper() and not key.startswith('__'):
-            if key in Battery_off_dict:
-                print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
-                setattr(Battery, key, Battery_off_dict[key])
-                print(f" {getattr(Battery, key)}")
-
+    apply_off_nominal_battery(Battery, Battery_off_dict)
 
     rated_batt_cap_in = Battery.NOM_UNIT_CAP * Battery.S_CAP_MON
     rated_batt_cap_s_in = Battery.NOM_UNIT_CAP * Battery.S_CAP_SIM

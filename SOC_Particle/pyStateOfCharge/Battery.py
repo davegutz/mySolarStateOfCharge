@@ -83,6 +83,15 @@ def load_off_nominal_battery(Battery_to_add=None):
     else:
         return None
 
+def apply_off_nominal_battery(Battery_, Battery_off_dict):
+    print(f"dictionary to apply to immutable Battery class")
+    if Battery_off_dict:
+        for key in dir(Battery_):
+            if key in Battery_off_dict and key.isupper() and not key.startswith('__'):
+                print(f"Battery.{key} {getattr(Battery_, key)} --> ", end='')
+                setattr(Battery_, key, Battery_off_dict[key])
+                print("Battery.{:s} = {:8.6g}".format(key, Battery_off_dict[key]))
+
 
 class Battery(Coulombs):
     import Globals as G

@@ -17,9 +17,8 @@
 Dependencies:
     - SavedData  (structures)
 """
-from Battery import load_off_nominal_battery
+from Battery import load_off_nominal_battery, apply_off_nominal_battery
 from myFilters import LagExp
-from Battery import Battery
 from Colors import Colors
 import Chemistry_BMS
 import numpy as np
@@ -39,16 +38,6 @@ class SavedData:
         if battery is not None:
             # Scroll through all off-nominals make dictionary
             self.Battery_off_dict = load_off_nominal_battery(Battery_to_add=battery)
-
-            # print(self.Battery_off_dict)
-            # Print affected values
-            print(f"dictionary to apply to Battery class")
-            if self.Battery_off_dict:
-                for key in dir(Battery):
-                    if key in self.Battery_off_dict and key.isupper() and not key.startswith('__'):
-                        print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
-                        print("Battery.{:s} = {:8.6g}".format(key, self.Battery_off_dict[key]))
-
 
         if rap is None:
             IbLag = None

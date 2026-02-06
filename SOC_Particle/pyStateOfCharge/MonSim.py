@@ -20,10 +20,11 @@ Coulomb Counter built in."""
 from SavedData import SavedData as SavedData
 from SavedData import SavedDataSim as SavedDataSim
 from MonSimNomConfig import *  # Global config parameters.   Overwrite in your own calls for studies
-from Battery import Battery, BatteryMonitor, BatterySim, is_sat, Retained
+from Battery import BatteryMonitor, BatterySim, is_sat, Retained, apply_off_nominal_battery
 from UserOptions import UserOptions
 from dataclasses import dataclass
 from Battery import overall_batt
+from Battery import Battery as Battery
 from typing import Optional
 from TFDelay import TFDelay
 from MonSimClasses import *
@@ -122,13 +123,7 @@ def replicate(OPT: UserOptions):
 
     # Translate the off-nominal values imported from data stream
     if hasattr(OPT.mon_run, 'Battery_off_dict'):
-        print("Over-writing pre-existing off-nominal values into Battery class structure")
-        for key in dir(Battery):
-            if key.isupper() and not key.startswith('__'):
-                if key in OPT.mon_run.Battery_off_dict:
-                    print(f"Battery.{key} {getattr(Battery, key)} --> ", end='')
-                    setattr(Battery, key, OPT.mon_run.Battery_off_dict[key])
-                    print(f" {getattr(Battery, key)}")
+        apply_off_nominal_battery(Battery, OPT.mon_run.Battery_off_dict)
 
     # Instantiate sensors after above translation / over-write
     SN = Sensors(OPT, run_type=OPT.run_type)
