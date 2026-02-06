@@ -19,7 +19,7 @@ import numpy as np
 import numpy.lib.recfunctions as rf
 import matplotlib.pyplot as plt
 from Hysteresis_20220917d import Hysteresis_20220917d
-from Battery import Battery, BatteryMonitor, is_sat, calculate_capacity
+from Battery import Battery, BatteryMonitor, is_sat, calculate_capacity, load_off_nominal_battery
 from MonSim import replicate, save_clean_file, UserOptions
 from resample import resample
 from PlotKiller import show_killer
@@ -60,32 +60,6 @@ def rename(ra, targ, repl):
 IB_BAND = 1.  # Threshold to declare charging or discharging
 TB_BAND = 25.  # Band around temperature to group data and correct.  Large value means no banding, effectively
 HYS_SCALE_20220917d = 0.3  # Original hys_remodel scalar inside photon code
-
-# Load Battery
-def load_off_nominal_battery(Battery_to_add=None):
-    # Load off-nominal Battery values.  Load Battery
-    if Battery_to_add is not None:
-        # Scroll through all off-nominals make dictionary
-        Battery_off_dict = {}
-        for field_name in Battery_to_add.dtype.names:
-            print(f"field_name {field_name}  ", end='')
-            try:
-                Battery_off_dict[field_name] = Battery_to_add[field_name][0]  # Use last entry only.  Discard the rest
-            except IndexError:
-                Battery_off_dict[field_name] = Battery_to_add[field_name]
-                print(f"Battery_off field_name {field_name}   value {Battery_to_add[field_name]}")
-        # print(self.Battery_off_dict)
-        # Print affected values
-        print(f"dictionary to apply to Battery class")
-        if Battery_off_dict:
-            for key in dir(Battery_to_add):
-                if key in Battery_off_dict and key.isupper() and not key.startswith('__'):
-                    print(f"Battery.{key} {getattr(Battery_to_add, key)} --> ", end='')
-                    print("Battery.{:s} = {:8.6g}".format(key, Battery_off_dict[key]))
-        return Battery_off_dict
-    else:
-        return None
-
 
 # Calculate thresholds from global input values listed above (review these)
 def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb):

@@ -17,6 +17,7 @@
 Dependencies:
     - SavedData  (structures)
 """
+from Battery import load_off_nominal_battery
 from myFilters import LagExp
 from Battery import Battery
 from Colors import Colors
@@ -37,14 +38,8 @@ class SavedData:
         # Load off-nominal Battery values
         if battery is not None:
             # Scroll through all off-nominals make dictionary
-            self.Battery_off_dict = {}
-            for field_name in battery.dtype.names:
-                print(f"field_name {field_name}", end='')
-                try:
-                    self.Battery_off_dict[field_name] = battery[field_name][0]  # use first one, discard the rest
-                except IndexError:
-                    self.Battery_off_dict[field_name] = battery[field_name]
-                    print(f"Battery_off field_name {field_name}   value {battery[field_name]}")
+            self.Battery_off_dict = load_off_nominal_battery(Battery_to_add=battery)
+
             # print(self.Battery_off_dict)
             # Print affected values
             print(f"dictionary to apply to Battery class")
