@@ -196,7 +196,7 @@ void debug_check_99(BatteryMonitor *Mon, Sensors *Sen)
     else if ( last_call==99 )
     {
       sendTxBuf(String::format("\nRestore defaults: 'Xm, Dr,'\n"), true, true);
-      chit("Xm0,", QUEUE);      // Nominal
+      chit("Xm,", QUEUE);      // Nominal
       chit("Dr,", QUEUE);       // Nominal
     }
   }

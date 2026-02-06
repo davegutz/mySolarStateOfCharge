@@ -55,6 +55,8 @@ boolean recall_P(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             break;
 
         case ( 'f' ):  // Pf:  Print faults
+            print_battery_header();
+            print_battery_serial();
             sp.print_fault_array();
             sp.print_fault_header(&pp.pubList);
             txBuf = String::format("\nSen::\n");

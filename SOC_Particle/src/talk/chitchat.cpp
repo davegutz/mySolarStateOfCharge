@@ -393,6 +393,8 @@ void describe(BatteryMonitor *Mon, Sensors *Sen)
         switch ( letter_1 )
         {
           case ( 'd' ):  // bd: fault buffer dump
+            print_battery_header();
+            print_battery_serial();
             Serial.printf("\n");
             sp.print_history_array();
             sp.print_fault_header(&pp.pubList);

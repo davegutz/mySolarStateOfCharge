@@ -61,15 +61,16 @@ IB_BAND = 1.  # Threshold to declare charging or discharging
 TB_BAND = 25.  # Band around temperature to group data and correct.  Large value means no banding, effectively
 HYS_SCALE_20220917d = 0.3  # Original hys_remodel scalar inside photon code
 
+# Load Battery
 def load_off_nominal_battery(Battery_to_add=None):
-    # Load off-nominal Battery values
+    # Load off-nominal Battery values.  Load Battery
     if Battery_to_add is not None:
         # Scroll through all off-nominals make dictionary
         Battery_off_dict = {}
         for field_name in Battery_to_add.dtype.names:
             print(f"field_name {field_name}  ", end='')
             try:
-                Battery_off_dict[field_name] = Battery_to_add[field_name][-1]
+                Battery_off_dict[field_name] = Battery_to_add[field_name][0]  # Use last entry only.  Discard the rest
             except IndexError:
                 Battery_off_dict[field_name] = Battery_to_add[field_name]
                 print(f"Battery_off field_name {field_name}   value {Battery_to_add[field_name]}")
@@ -738,7 +739,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
     # Override Battery with loaded values Battery_hdr/Battery_val in battery_raw
     Battery_off_dict = load_off_nominal_battery(Battery_to_add=battery_raw)
 
-    # Translate the off-nominal values imported from data stream
+    # Translate the off-nominal values imported from data stream. load battery
     print("Over-writing pre-existing off-nominal values into Battery class structure")
     for key in dir(Battery):
         # print(f"{key=}:   ", end='')
@@ -808,26 +809,11 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
     t_rated = None
     dqdt = None
     if use_mon_csv is True and mon is not None:
-        chm = int(mon.chm[0])
-    else:
-        if unit_key.__contains__('bb'):
-            chm = 0
-        elif unit_key.__contains__('chg'):
-            chm = 2
-        elif unit_key.__contains__('ch'):
-            chm = 1
-        else:
-            chm = None
+        if Battery.CHEM != int(mon.chm[0]):
+            print(f"CompareHistSim::WARNING  Battery.CHEM {Battery.CHEM} not equal to transientn input chm {int(mon.chm[0])}")
+        Battery.CHEM = int(mon.chm[0])
         unit = unit_key.split('_')[-2]
-        if chm == 2:
-            rated_batt_cap_in = 102.9  # A-hr capacity of test article (output of Calibrate_exe.py)
-            t_rated = 25.
-            dqdt = 0.01
-        else:
-            rated_batt_cap_in = 108.4  # A-hr capacity of test article
-            t_rated = 25.
-            dqdt = 0.01
-    batt = BatteryMonitor(mod_code=chm)
+    batt = BatteryMonitor(mod_code=Battery.CHEM)
 
 
     # Force Tb.  This is useful for verifying calibration runs where voc(soc) schedule extracted from the run
@@ -865,14 +851,14 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
         h_combo_raw = np.unique(h_combo_raw)
         h_combo_raw = remove_nan(h_combo_raw)
         h_combo_raw = remove_0T(h_combo_raw, 'HISTORY u and h in h_combo_raw')
-        print("\nhist raw:\n", h_combo_raw.dtype.names, "\n", h_combo_raw, "\n", h_combo_raw.dtype.names, "\n")
+        # print("\nhist raw:\n", h_combo_raw.dtype.names, "\n", h_combo_raw, "\n", h_combo_raw.dtype.names, "\n")
         # noinspection PyTypeChecker
         h_combo_raw = rename(h_combo_raw, 'e_w_f', 'e_wrap_filt')
         hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
                            time_sync=sync_time)
 
         hist = add_mod(hist, use_mon_csv, mon)
-        hist = add_chm(hist, use_mon_csv, mon, chm)
+        hist = add_chm(hist, use_mon_csv, mon, Battery.CHEM)
         hist = add_qcrs(hist, mon_t_=use_mon_csv, mon=mon, qcrs=qcrs, t_rated=t_rated, dqdt=dqdt)
         hist = add_delta_q(hist)
         print("\nhist after adding stuff:\n", hist.dtype.names, "\n", hist, "\n", hist.dtype.names, "\n :hist after adding stuff\n")

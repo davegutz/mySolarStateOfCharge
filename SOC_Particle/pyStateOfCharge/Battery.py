@@ -145,6 +145,7 @@ class Battery(Coulombs):
     S_CAP_MON = None
     S_CAP_SIM = None
     RATED_TEMP = None
+    CHEM = None
 
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is

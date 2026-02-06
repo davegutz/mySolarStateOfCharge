@@ -99,7 +99,8 @@ def replicate(OPT: UserOptions):
     19. Fig 15 sim_s 2a:  vb?   Keep looking for this when run at other op conditions.  Shutdown problem.
     """
     # Options
-    print(OPT)
+    if OPT.run_type == 'RunSim':
+        print(OPT)
 
     # time
     t, dt = sync_to_mon_or_sim(OPT.mon_run, OPT.sim_run, t_mx=OPT.max_time)

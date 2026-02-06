@@ -107,17 +107,18 @@ sel_list1 = [
     'flatSitHys', 'offSitHysBmsNoiseBB', 'offSitHysBmsNoiseCH', 'offSitHysBmsNoiseCHG', 'ampHiFailSlow',
     'noaHiFailSlow', 'noaHiFailSlower', 'noaHiFailSlowest', 'vHiFail', 'vHiFailNoise', 'vHiFailH', 'vHiFailFf',
     'pulseSSH', 'tbFailMod1W', 'tbFailHdwe1W', 'tLoFailHdwe', 'DvMon', 'DvSim', 'faultParade', 'allInBBn', 'allInCHn',
-    'allInCHGn', 'stepDown', 'stepUp',
+    'allInCHGn', 'stepDown', 'stepUp', 'zero_with_pc',
     ]
 macro_sel_list = [
-    'end_early', 'modMidInit', 'modMidInitNoCc', 'modLowInitBB', 'modLowInitCH', 'modLowInitCHG',
+    'end_early', 'hdwPcMidInit', 'modMidInit', 'modMidInitNoCc', 'modLowInitBB', 'modLowInitCH', 'modLowInitCHG',
     'noisePackage', 'silentPackage', 'quiet', 'quietwait', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
     'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50', 'c00',
-    'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50',
+    'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50', 'zeroPrep'
     ]
 
 # Macro
 satInit = 'Dh;*W;*vv0;*XS;*Ca1;BZ;Ff0;DP1;HR;Rf;XD;'
+hdwPcMidInit = 'vv0;Xm2;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
 modMidInit = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
 modMidInitNoCc = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
 modLowInitBB = 'vv0;Xm247;Ca0.090;BZ;Ff0;DP1;HR;Rf;XD;'
@@ -134,6 +135,7 @@ quietwait = '<vv0;Dr;DP;D>;Dh;'
 cleanup = 'Hd;Pf;<HR;<Rf;<XD;'
 tempCleanup = 'Rf;XD; '
 time_stamp = 'XY;'
+zeroPrep = 'HR;Dh1000;W34;Fi2;Fo2;Rs;W2;vv4;W17;'
 tranPrep = 'HR;Dh1000;W2;Rs;W34;vv4;W17;'
 slowTranPrep = 'HR;vv4;W2;Rs;' + slow + 'W5;'
 slowTwitchDef = 'Rb;Rf;Sh0;Xts;Xf0.004;Mm1000;Mn-1000;Nm1000;Nn-1000;XW10000;XT10;XC2;'
@@ -270,10 +272,12 @@ lookup = {
         'faultParade': (320, modMidInit + 'Dh1000;vv4;W4;XY;Dm50;Dn0.0001;W200;Dm0;Dn0;W20;Rf;XQ240000;' + quiet + cleanup, ("Check fault, history, and summary logging", "Should flag faults but take no action", "", "", "")),
         'stepDown': (103, modMidInit + tranPrep + sd50 + 'XQ25000;' + s00 + quiet + cleanup, ("Should be normal hard discharge step", "", "", "")),
         'stepUp': (103, modMidInit + tranPrep + sc50 + 'XQ25000;' + s00 + quiet + cleanup, ("Should be normal hard charge step", "", "", "")),
+        'zero_with_pc': (95, hdwPcMidInit + zeroPrep + 'XQ25000;' + 'vv99;Xm2;XQ15000;' + quiet  + cleanup, ("Hardware zero_with_pc run", "", "", "")),
 }
 
 macro_lookup = {
         'end_early': (22, 'Y;cc;Dh1800000;*W;*vv0;*XS;*Ca1;<Hd;<Pf;', ('', '', '', '')),
+        'hdwPcMidInit': (5, hdwPcMidInit, ('', '', '', '')),
         'modMidInit': (5, modMidInit, ('', '', '', '')),
         'modLowInitBB': (5, modLowInitBB, ('', '', '', '')),
         'modLowInitCH': (5, modLowInitCH, ('', '', '', '')),
@@ -283,6 +287,7 @@ macro_lookup = {
         'cleanup': (5, cleanup, ('', '', '', '')),
         'tempCleanup': (5, tempCleanup, ('', '', '', '')),
         'tranPrep': (5, tranPrep, ('', '', '', '')),
+        'zeroPrep': (5, zeroPrep, ('', '', '', '')),
         'time_stamp': (5, time_stamp, ('', '', '', '')),
         'synced_slow': (5, synced_slow, ('', '', '', '')),
         'slowTwitchDef': (5, slowTwitchDef, ('', '', '', '')),

@@ -332,13 +332,14 @@ String Looparound::pretty_print(Sensors *Sen)
     String::format(" ib%7.3f A\n", ib_) +
     String::format(" ib_dyn%7.3f A\n", ib_dyn_) +
     String::format(" dv_dyn%7.3f V\n", dv_dyn_) +
+    String::format(" voc_soc%7.3f V\n", voc_soc_) +
     String::format(" voc%7.3f V\n", voc_) +
-    String::format(" e_wrap%7.3f V\n", e_wrap_) +
+    String::format(" e_wrap (= voc_soc-voc) %7.3f V\n", e_wrap_) +
     String::format(" e_wrap_f%7.3f V\n", e_wrap_filt_) +
-    String::format(" ewhi_slr%7.3f V\n",  ap.ewhi_slr) +
-    String::format(" ewlo_slr%7.3f V\n",  ap.ewlo_slr) +
-    String::format(" ewmin_slr%7.3f V\n",  Sen_->Flt->ewmin_slr()) +
-    String::format(" ewsat_slr%7.3f V\n", Sen_->Flt->ewsat_slr()) +
+    String::format(" ewhi_slr%7.3f\n",  ap.ewhi_slr) +
+    String::format(" ewlo_slr%7.3f\n",  ap.ewlo_slr) +
+    String::format(" ewmin_slr%7.3f\n",  Sen_->Flt->ewmin_slr()) +
+    String::format(" ewsat_slr%7.3f\n", Sen_->Flt->ewsat_slr()) +
     String::format(" ewhi_thr_base%7.3f V\n", ewhi_thr_base_) +
     String::format(" ewlo_thr_base%7.3f V\n", ewlo_thr_base_) +
     String::format(" ewhi_thr (kicked)%7.3f V\n", ewhi_thr_) +

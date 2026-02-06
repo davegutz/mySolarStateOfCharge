@@ -82,8 +82,12 @@ class Sensors:
     """Collect various sense parameters to create proper delays in data feed and connections to model"""
 
     def __init__(self, OPT, run_type=None):
-        self.mon_run = OPT.mon_run.copy()
-        self.sim_run = OPT.sim_run.copy()
+        if run_type == 'HistSim':
+            self.mon_run = OPT.mon_run.copy()
+            self.sim_run = OPT.sim_run.copy()
+        else:
+            self.mon_run = OPT.mon_run
+            self.sim_run = OPT.sim_run
         if run_type == 'RunSim':
             if hasattr(self.mon_run, 'mtb') and self.mon_run.mtb is not None:
                 self.mod_tb = self.mon_run.mtb

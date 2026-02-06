@@ -53,6 +53,8 @@ boolean recall_H(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
         break;
 
     case ( 'f' ):  // Hf: History dump faults only
+        print_battery_header();
+        print_battery_serial();
         Serial.printf("\n");
         sp.print_fault_array();
         sp.print_fault_header(&pp.pubList);

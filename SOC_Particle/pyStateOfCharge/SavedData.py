@@ -41,7 +41,7 @@ class SavedData:
             for field_name in battery.dtype.names:
                 print(f"field_name {field_name}", end='')
                 try:
-                    self.Battery_off_dict[field_name] = battery[field_name][-1]
+                    self.Battery_off_dict[field_name] = battery[field_name][0]  # use first one, discard the rest
                 except IndexError:
                     self.Battery_off_dict[field_name] = battery[field_name]
                     print(f"Battery_off field_name {field_name}   value {battery[field_name]}")
