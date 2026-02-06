@@ -98,13 +98,13 @@ def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
                 case 0:
                     hdr = ''
                 # case 1:
-                #     hdr = print_ekf_HistSim(SN, _temp, i_ekf, t, mon, calc_ekf, calc_temp)
+                #     hdr = print_ekf_HistSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf)
                 # case 2:
-                #     hdr = print_soc_HistSim(SN, i_temp, t, mon, calc_temp)
-                # case 3:
-                #     hdr = print_soc_s_HistSim(SN, i_temp, t, SN.mon_run, mon, calc_temp, sim, i_ekf, calc_ekf, SN)
+                #     hdr = print_soc_HistSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf)
+                case 3:
+                    hdr = print_soc_s_HistSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf)
                 # case 4:
-                #     hdr = print_temp_HistSim(SN, i_temp, t, mon, calc_temp, Tb, Tb_past, SN, i_ekf, calc_ekf)
+                #     hdr = print_temp_HistSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf)
                 case 5:
                     hdr = print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf)
     return hdr
@@ -314,6 +314,48 @@ def print_soc_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
           "{:14.7f}".format(SN.mon_run.Tb[i_temp]), "{:10.7f}".format(mon.Tb),
           "{:12.7f}".format(SN.mon_run.Tb_f_rate[i_temp]), "{:10.7f}".format(mon.Tb_f_rate),
          )
+    print(Colors.reset, end='')
+    return hdr
+
+# 3
+def print_soc_s_HistSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
+    global count_since_last_header
+    hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce    sa       sa_s       dt                    dt_s                  ib_in_s                     ib_dyn                     dv_hys_s            soc                    delq                            soc_s                delta_q_s                       qcrs                    Tb_f                     vb                    voc_stat               voc_stat_s            dv_hys_s              dv_dyn_s             vsat                   bms_off_s"
+    if calc_temp and count_since_last_header > HDR_SPREAD:
+        print(hdr)
+        count_since_last_header = 0
+    if G.i > 0:
+        count_since_last_header += 1
+    if mon.reset:
+        print(Colors.fg.red, end='')
+    elif mon.reset_temp:
+        print(Colors.fg.orange, end='')
+    print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
+          "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
+          "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
+          "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
+          "{:5.0f}".format(SN.sim_run.sat_s[G.i]), "{:2.0f}".format(sim.sat),
+          "{:12.4f}".format(SN.mon_run.dt[G.i]), "{:8.4f}".format(mon.dt),
+          "{:12.4f}".format(SN.sim_run.dt_s[G.i]), "{:8.4f}".format(sim.dt),
+          "{:14.5f}".format(SN.sim_run.ib_in_s[G.i]), "{:12.5f}".format(sim.ib_in),
+          "{:14.5f}".format(SN.mon_run.ib_dyn[G.i]), "{:12.5f}".format(mon.ib_dyn),
+          "{:12.5f}".format(SN.sim_run.dv_hys_s[G.i]), "{:9.5f}".format(sim.dv_hys),
+          "{:11.7f}".format(SN.mon_run.soc[G.i]), "{:8.7f}".format(mon.soc),
+          "{:16.6f}".format(SN.mon_run.delta_q[G.i]), "{:13.6f}".format(mon.delta_q),
+          "{:11.6f}".format(SN.mon_run.soc_s[G.i]), "{:9.6f}".format(sim.soc),
+          "{:15.6f}".format(SN.sim_run.delta_q_s[G.i]), "{:13.6f}".format(sim.delta_q),
+          "{:12.2f}".format(SN.mon_run.qcrs[G.i]), "{:9.2f}".format(mon.q_cap_rated_scaled),
+          "{:14.7f}".format(SN.mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
+          "{:11.5f}".format(SN.mon_run.vb_f[G.i]), "{:9.5f}".format(mon.vb),
+          "{:11.5f}".format(SN.mon_run.voc_stat_f[G.i]), "{:9.5f}".format(mon.voc_stat),
+          "{:11.5f}".format(SN.sim_run.voc_stat_s[G.i]), "{:9.5f}".format(sim.voc_stat),
+          "{:11.5f}".format(SN.sim_run.dv_hys_s[G.i]), "{:9.5f}".format(sim.dv_hys),
+          "{:11.5f}".format(SN.sim_run.dv_dyn_s[G.i]), "{:9.5f}".format(sim.dv_dyn),
+          "{:11.5f}".format(SN.mon_run.vsat[G.i]), "{:9.5f}".format(mon.vsat),
+          "{:7d}".format(bool(SN.sim_run.bms_off_s[G.i])), "{:4d}".format(sim.bms_off),
+          )
+    if G.i == 2:
+        pass
     print(Colors.reset, end='')
     return hdr
 

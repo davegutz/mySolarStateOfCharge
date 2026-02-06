@@ -40,7 +40,7 @@ def battery_size(mr, sr, scale_in_, unit_cap_rated_):
     if sr is not None and hasattr(sr, 'qcrs_s'):
         scale_sim_ = sr.qcrs_s[0] / (unit_cap_rated_*3600)
     else:
-        scale_sim_ = unit_cap_rated / unit_cap_rated_
+        scale_sim_ = scale_mon_
         if scale_in_:
             scale_sim_ *= scale_in_
     return scale_mon_, scale_sim_

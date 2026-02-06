@@ -1010,8 +1010,8 @@ def main():
 
     # User inputs (multiple input_files allowed
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/zero_soc2p2_hi_lo_bb.csv'
-    plots = True
-    # plots = False
+    # plots = True
+    plots = False
     use_mon_csv = False
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
     dt_resample = 1
@@ -1020,6 +1020,12 @@ def main():
     strict_overplot = True
     terse = True
     # terse = False
+
+    # RunSim plot selection
+    # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m  8=vb_wrap
+    request_history = 3
+    # request_hist_in = None
+
 
     compare_hist_sim(data_file=data_file, use_mon_csv=use_mon_csv, unit_key=unit_key, dt_resample=dt_resample,
                      plots=plots, Tb_force=Tb_force, request_history=request_history, terse=terse,
