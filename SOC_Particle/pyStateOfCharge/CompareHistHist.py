@@ -82,7 +82,8 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
             plot_init_in = False
             fig_list, fig_files = dom_plot(mon_run, mon_tst, sim_run, sim_tst, sim_s_tst, filename_run,
                                            fig_files, plot_title=plot_title, fig_list=fig_list,
-                                           plot_init_in=plot_init_in, run_str='_'+unit_run, ver_str='_'+unit_tst)
+                                           plot_init_in=plot_init_in, run_str='_'+unit_run, ver_str='_'+unit_tst,
+                                           run_type='HistHist')
             fig_list, fig_files = gp_plot(mon_run, mon_tst, sim_run, sim_tst, sim_s_tst, filename_run,
                                           fig_files, plot_title=plot_title, fig_list=fig_list,
                                           run_str='_'+unit_run, ver_str='_'+unit_tst)

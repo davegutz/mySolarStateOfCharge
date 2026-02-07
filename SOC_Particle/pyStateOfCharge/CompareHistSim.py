@@ -937,7 +937,8 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
                                                     fig_files, plot_title=plot_title, fig_list=fig_list)
             fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                            plot_title=plot_title, fig_list=fig_list, run_str='',
-                                           ver_str='_ver', strict_overplot=strict_overplot, terse=terse)
+                                           ver_str='_ver', strict_overplot=strict_overplot, terse=terse,
+                                           run_type='HistSim')
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
         unite_pictures_into_pdf(outputPdfName=filename+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
         cleanup_fig_files(fig_files)
@@ -961,9 +962,9 @@ def main():
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/zero_soc2p2_hi_lo_bb.csv'
-    # plots = True
-    plots = False
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/zero_with_pc_soc2p2_hi_lo_bb.csv'
+    plots = True
+    # plots = False
     use_mon_csv = False
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
     dt_resample = 1

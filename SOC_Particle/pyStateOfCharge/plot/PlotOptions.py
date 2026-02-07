@@ -32,3 +32,4 @@ class PlotOptions:
     filename: Optional[str] = ''
     plot_title: Optional[str] = ''
     strict_overplot: Optional[bool] = False
+    run_type: Optional[str] = ''

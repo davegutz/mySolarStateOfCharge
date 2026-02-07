@@ -115,7 +115,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
                                          fig_list=fig_list)
 
     fig_list, fig_files = dom_plot(mon_run, mon_test, sim_run, sim_test, sim_test, filename, fig_files,
-                                   plot_title=plot_title, fig_list=fig_list)  # all over all
+                                   plot_title=plot_title, fig_list=fig_list, run_type='RunRun')  # all over all
 
     # Copies
     precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)

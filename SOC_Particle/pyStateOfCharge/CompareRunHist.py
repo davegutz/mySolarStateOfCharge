@@ -50,10 +50,11 @@ def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=False, 
 
     dfcs, mo_r, so_r, mv_r, sv_r, ssv_r =\
         compare_run_sim(data_file=data_file, unit_key=unit_key, time_end_in=time_end, plots=plots,
-                        mon_str='', strict_overplot=strict_overplot, terse=terse)
+                        mon_str='', strict_overplot=strict_overplot, terse=terse, run_type='RunSim')
     mo_h, so_h, mv_h, sv_h, ssv_h =\
         compare_hist_sim(data_file=data_file, unit_key=unit_key, time_end_in=time_end, plots=plots,
-                         use_mon_csv=True, sync_time=mo_r.time_run, strict_overplot=strict_overplot, terse=terse)
+                         use_mon_csv=True, sync_time=mo_r.time_run, strict_overplot=strict_overplot, terse=terse,
+                         run_type='RunSim')
 
     # Plots
     if mo_r is not None and mo_h is not None:
@@ -75,7 +76,7 @@ def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=False, 
 
         fig_list, fig_files = dom_plot(mo_r, mo_h, so_r, so_h, ssv_h, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list,
-                                       run_str='_run', ver_str='_hist')  # all over all
+                                       run_str='_run', ver_str='_hist', run_type='RunHist')  # all over all
 
         # Copies
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)

@@ -46,12 +46,12 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 
 def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
-             run_str='_run', ver_str='_ver', strict_overplot=False, terse=False):
+             run_str='_run', ver_str='_ver', strict_overplot=False, terse=False, run_type=None):
     print('dom_plot', end=':  ')
     if fig_files is None:
         fig_files = []
     figOptions = PlotOptions(mr=mr, mv=mv, sr=sr, sv=sv, smv=smv, filename=filename, plot_title=plot_title,
-                             strict_overplot=strict_overplot)
+                             strict_overplot=strict_overplot, run_type=run_type)
 
     if not terse:
         # fig_list, fig_files = hist.hs_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
@@ -242,7 +242,8 @@ if __name__ == '__main__':
         fig_list, fig_files = overall_batt(mon_ver, sim_ver, filename, fig_files, plot_title=plot_title,
                                            fig_list=fig_list, suffix='_ver')  # Could be confusing because sim over mon
         fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
-                                       plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')
+                                       plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver',
+                                       run_type='RunSim')
         # fig_list, fig_files = tune_r(mon_run, mon_ver, sim_s_ver, filename, fig_files,
         #                           plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')
         unite_pictures_into_pdf(outputPdfName=filename+'_'+date_time+'.pdf',
