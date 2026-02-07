@@ -255,14 +255,18 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     plt.subplot(333)
     # mr.ib_amp_hdwe = mr.ibmh
     # mr.ib_amp_model = mr.ibmm
-    plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe', color='blue', linestyle='-')
-    plq(plt, S.mr, 'time', S.mr, 'ib_amp_model', color='red', linestyle='--')
-    plq(plt, S.mv, 'time', S.mv, 'ib_amp_model', color='black', linestyle='-.')
-    plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe_kf', color='black', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'ib_noa_hdwe', color='blue', linestyle='-.')
-    plq(plt, S.mr, 'time', S.mr, 'ib_noa_model', color='magenta', linestyle='--')
-    plq(plt, S.mv, 'time', S.mv, 'ib_noa_model', color='cyan', linestyle='-.')
-    plq(plt, S.mr, 'time', S.mr, 'ib_noa_kf', color='black', linestyle='--')
+    saved_fontsize = plt.rcParams['legend.fontsize']
+    plt.rcParams['legend.fontsize'] = '6'
+    plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe', add=-2.5, color='blue', linestyle='-')
+    plq(plt, S.mv, 'time', S.mv, 'ib_amp_hdwe', add=-2.5, color='red', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'ib_amp_model', add=-2.5, color='magenta', linestyle='-.')
+    plq(plt, S.mv, 'time', S.mv, 'ib_amp_model', add=-2.5, color='black', linestyle=':')
+    plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe_kf', add=-2.5, color='black', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'ib_noa_hdwe', add=2.5, color='blue', linestyle='-')
+    plq(plt, S.mv, 'time', S.mv, 'ib_noa_hdwe', add=2.5, color='red', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'ib_noa_model', add=2.5, color='magenta', linestyle='-.')
+    plq(plt, S.mv, 'time', S.mv, 'ib_noa_model', add=2.5, color='black', linestyle=':')
+    plq(plt, S.mr, 'time', S.mr, 'ib_noa_kf', add=2.5, color='black', linestyle='--')
     plq(plt, S.mv, 'time', S.mv, 'iscn_f', color='red', linestyle='-.')
     plq(plt, S.mr, 'time', S.mr, 'ib_sel', add=-5, color='blue', linestyle='-')
     plq(plt, S.mr, 'time', S.mr, 'ib', add=-10, color='green', linestyle='-')
@@ -271,6 +275,7 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.smv, 'time', S.smv, 'ib_in_s', add=-10, color='red', linestyle=':')
     plt.xlabel('sec')
     plt.legend(loc=3)
+    plt.rcParams['legend.fontsize'] = saved_fontsize
     plt.subplot(334)
     plq(plt, S.mr, 'time', S.mr, 'voc_f', color='blue', linestyle='-', warn=False)
     plq(plt, S.mr, 'time', S.mr, 'voc', color='blue', linestyle='-', warn=False)

@@ -586,10 +586,10 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plt.savefig(fig_file_name, format="png")
 
 
-    fig_list.append(plt.figure())  # GP 3 Tune
+    fig_list.append(plt.figure())  # GP 3 Tune CompareFault
     plt.subplot(331)
-    plt.title(plot_title + ' GP 3 Tune')
-    print('GP 3 Tune', end=':  ')
+    plt.title(plot_title + ' GP 3 Tune CompareFault')
+    print('GP 3 Tune CompareFault', end=':  ')
     mr.dv_dyn = mr.vb - mr.voc
     plq(plt, mr, 'time_ux', mr, 'dv_dyn', color='blue', linestyle='-')
     plq(plt, mv, 'time_ux', mv, 'dv_dyn', color='cyan', linestyle='--')

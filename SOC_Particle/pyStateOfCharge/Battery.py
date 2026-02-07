@@ -423,6 +423,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap_filt = 0.
         self.e_wrap_rate = 0.
         self.ib_past = 0.
+        self.vb_past = 0.
         self.dt_past = 0.
         self.ib_amp = 0.
         self.ib_amp_pst = 0.
@@ -690,6 +691,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.dv_dyn = self.dv_dyn
         self.voc_ekf = self.hx
         self.ib_past = self.ib
+        self.vb_past = self.vb
         self.dt_past = self.dt
 
         return self.vb_model_rev
@@ -1016,7 +1018,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap = self.sel_brk_hdwe.scale_select(ib_noa_hdwe, self.e_wrap_m, self.e_wrap_n)
         self.e_wrap_filt = self.sel_brk_hdwe.scale_select(ib_noa_hdwe, self.e_wrap_m_filt, self.e_wrap_n_filt)
         self.e_wrap_rate = self.sel_brk_hdwe.scale_select(ib_noa_hdwe, self.e_wrap_m_rate, self.e_wrap_n_rate)
-
 
 class BatterySim(Battery):
     """Extend Battery class to make a model"""
@@ -1354,7 +1355,10 @@ class Looparound:
         self.reset = reset
         self.dt = dt
         self.ib = ib
-        self.vb = self.Mon.vb
+        if rp.modeling_vb:
+            self.vb = self.Mon.vb_past
+        else:
+            self.vb = self.Mon.vb
         self.voc_soc = self.Mon.voc_soc
         if rp.modeling_ib:
             dt_into_ct = self.dt_past
@@ -1368,7 +1372,7 @@ class Looparound:
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(ib_into_ct, ib_dyn_init, self.reset, dt_into_ct,
                                                                self.chem.tau_ct, text=self.name)
         # print(f"{reset=} {ib=} {self.ib=} {self.ib_past=} {self.ChargeTransfer.rstate=}")
-        self.dv_dyn = (self.ib_dyn* self.chem.r_ct + ib_into_ct * self.chem.r_0)
+        self.dv_dyn = (self.ib_dyn * self.chem.r_ct + ib_into_ct * self.chem.r_0)
         self.voc = self.vb - self.dv_dyn
         self.e_wrap = self.voc_soc - self.voc
 

@@ -183,7 +183,7 @@ void print_rapid_serial(const boolean reset, Publish *pubList, Sensors *Sen, Bat
     Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate);
     Serial.printf("%s", pr.buff);
 
-  sprintf(pr.buff,  "%11.7f,%11.7f,%11.7f,%11.7f,   %11.7f,%11.7f,%2d,%11.7f,%11.7f,%11.7f,", \
+  sprintf(pr.buff,  "%11.7f,%11.7f,%11.7f,%11.7f,   %11.7f,%11.7f,%11.7f,%11.7f,%11.7f,%11.7f,", \
     Mon->vb(), Mon->ib(), Mon->ib_dyn(), Mon->dv_hys(),
     Mon->ib_charge(), Mon->voc_soc(), Mon->ib_dyn_r(), Mon->ib_dyn_T(), Mon->ib_dyn_rstate(), Mon->ib_dyn_lstate());
     Serial.printf("%s", pr.buff);
