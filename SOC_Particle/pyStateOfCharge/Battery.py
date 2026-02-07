@@ -404,6 +404,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vb_hdwe = 0.
         self.vb_hdwe_f = 0.
         self.ib_dyn = 0.
+        self.ib_dyn_in = 0.
+        self.ib_dyn_r = False
         self.ib_dyn_T = 0.
         self.ib_dyn_rstate = 0.
         self.ib_dyn_lstate = 0.
@@ -536,6 +538,9 @@ class BatteryMonitor(Battery, EKF1x1):
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
                   q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, i=None):
         self.reset = reset
+        self.vb = vb
+        self.ib_in = ib
+        self.dt = dt
         self.ib_amp_hdwe = SN.mon_run.ib_amp_hdwe[G.i]
         self.ib_amp_model = SN.ib_amp_model[G.i]
         self.ib_noa_hdwe = SN.mon_run.ib_noa_hdwe[G.i]
@@ -562,8 +567,6 @@ class BatteryMonitor(Battery, EKF1x1):
             self.chm = chem
 
         self.vsat = self.chemistry.nom_vsat + (self.Tb_f - 25.) * self.chemistry.dvoc_dt
-        self.dt = dt
-        self.ib_in = ib
         if OPT.IB_CHARGE_NOA:
             self.ib_in = self.ib_noa
         self.mod = rp.modeling
@@ -615,10 +618,11 @@ class BatteryMonitor(Battery, EKF1x1):
             ib_dc = self.ib_past
         else:
             dt_local = self.dt
-            ib_dc = self.ib
-        self.vb = vb
+            ib_dc = self.ib_past
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(ib_dc, SN.ib_dyn[G.i], reset, dt_local,
                                                                self.chemistry.tau_ct)
+        self.ib_dyn_in = self.ChargeTransfer.in_
+        self.ib_dyn_r = self.ChargeTransfer.reset
         self.ib_dyn_T = self.ChargeTransfer.dt
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state
@@ -955,14 +959,14 @@ class BatteryMonitor(Battery, EKF1x1):
             if rp.modeling_ib:
                 self.ib_noa = ib_noa
                 self.ib_noa_pst = ib_noa_pst
+                dt_local = self.dt
+                ibnoa = self.ib_noa
             else:
                 self.ib_noa = ib_noa
                 self.ib_noa_pst = ib_noa_pst
-            if rp.modeling_ib:
-                dt_local = self.dt
-            else:
                 dt_local = self.dt_past
-            self.LoopIbNoa.calculate(reset=reset, rp=rp, ib=self.ib_noa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
+                ibnoa = self.ib_noa_pst
+            self.LoopIbNoa.calculate(reset=reset, rp=rp, ib=ibnoa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
                                      dt=min(dt_local, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
                                      ib_init = SN.LoopNoa.ib_init, ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
                                      e_wrap_filt_init = SN.e_wrap_n_filt_init, e_wrap_trim_init = SN.e_wrap_n_trim_init)
@@ -978,11 +982,13 @@ class BatteryMonitor(Battery, EKF1x1):
                 self.ib_amp_pst = ib_amp_pst
                 ib_m_init = SN.LoopAmp.ib[max(G.i-2, 0)]
                 ib_dyn_m_init = SN.LoopAmp.ib_dyn[G.i]
+                ibamp = self.ib_amp
             else:
                 self.ib_amp = ib_amp
                 self.ib_amp_pst = ib_amp_pst
                 ib_m_init = SN.LoopAmp.ib[G.i]
                 ib_dyn_m_init = SN.LoopAmp.ib_dyn[G.i]
+                ibamp = self.ib_amp_pst
             self.ib_amp_hi = self.ib_amp >= Battery.HDWE_IB_HI_LO_AMP_HI
             self.ib_amp_lo = self.ib_amp <= Battery.HDWE_IB_HI_LO_AMP_LO
             self.ib_noa_hi = self.ib_noa >= Battery.HDWE_IB_HI_LO_NOA_HI
@@ -992,7 +998,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.disable_amp_fault = (self.ib_amp_hi and self.ib_noa_hi) or (self.ib_amp_lo and self.ib_noa_lo)
             # print(f"ib_amp_hi/lo, ib_noa_hi/lo = {self.ib_amp_hi} {self.ib_amp_lo} {self.ib_noa_hi} {self.ib_noa_lo}")
             self.e_wrap_m_reset = reset or self.disable_amp_fault
-            self.LoopIbAmp.calculate(reset=self.e_wrap_m_reset, rp=rp, ib=self.ib_amp,
+            self.LoopIbAmp.calculate(reset=self.e_wrap_m_reset, rp=rp, ib=ibamp,
                                      loop_gain=Battery.AMP_WRAP_TRIM_GAIN, dt=min(dt_local, Battery.F_MAX_T_WRAP),
                                      ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr, ib_init=ib_m_init,
                                      ib_dyn_init=ib_dyn_m_init, e_wrap_filt_init=SN.e_wrap_m_filt_init,
@@ -1143,10 +1149,10 @@ class BatterySim(Battery):
         if self.bms_off and self.voltage_low:
             self.ib = 0.
         self.ib_lag = self.IbLag.calculate_tau(self.ib, self.reset, self.dt, self.chemistry.ib_lag_tau)
-
         # Charge transfer dynamics
         self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, self.reset, self.dt,
                                                                self.chemistry.tau_ct)
+        self.ib_dyn_r = self.ChargeTransfer.reset
         self.ib_dyn_T = self.ChargeTransfer.dt
         self.ib_dyn_rstate = self.ChargeTransfer.rstate
         self.ib_dyn_lstate = self.ChargeTransfer.state

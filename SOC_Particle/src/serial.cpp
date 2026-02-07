@@ -161,7 +161,7 @@ void print_rapid_header(void)
   Serial.printf("chm, qcrs, qcap, sat, sel, mod, bmso,  ");
   Serial.printf("Tb_rap, Tb_f_rap, Tb_f_rate_rap,  ");
   Serial.printf("vb, ib, ib_dyn, dv_hys,   ");
-  Serial.printf("ib_charge, voc_soc, ib_dyn_T, ib_dyn_rstate, ib_dyn_lstate,    ");
+  Serial.printf("ib_charge, voc_soc, ib_dyn_r, ib_dyn_T, ib_dyn_rstate, ib_dyn_lstate,    ");
   Serial.printf("vsat, dv_dyn, voc_stat, voc_ekf,     ");
   Serial.printf("y_ekf,    ");
   Serial.printf("soc_s, soc_ekf, soc, soc_min, d_delta_q, delta_q,");
@@ -183,9 +183,9 @@ void print_rapid_serial(const boolean reset, Publish *pubList, Sensors *Sen, Bat
     Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate);
     Serial.printf("%s", pr.buff);
 
-  sprintf(pr.buff,  "%11.7f,%11.7f,%11.7f,%11.7f,   %11.7f,%11.7f,%11.7f,%11.7f,%11.7f,", \
+  sprintf(pr.buff,  "%11.7f,%11.7f,%11.7f,%11.7f,   %11.7f,%11.7f,%2d,%11.7f,%11.7f,%11.7f,", \
     Mon->vb(), Mon->ib(), Mon->ib_dyn(), Mon->dv_hys(),
-    Mon->ib_charge(), Mon->voc_soc(), Mon->ib_dyn_T(), Mon->ib_dyn_rstate(), Mon->ib_dyn_lstate());
+    Mon->ib_charge(), Mon->voc_soc(), Mon->ib_dyn_r(), Mon->ib_dyn_T(), Mon->ib_dyn_rstate(), Mon->ib_dyn_lstate());
     Serial.printf("%s", pr.buff);
 
   sprintf(pr.buff,  "%11.7f,%11.7f,%11.7f,%11.7f,  %11.7f,  %11.8f,%11.8f,%11.8f,%5.3f,%12.7f,%12.7f,", \

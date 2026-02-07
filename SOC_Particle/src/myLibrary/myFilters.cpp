@@ -431,8 +431,10 @@ LeadLagExp::~LeadLagExp() {}
 // functions
 double LeadLagExp::calculate(double in, int RESET)
 {
-  if (RESET > 0)
+  reset_ = (RESET > 0);
+  if (reset_)
   {
+    reset_ = true;
     state_ = in;
   }
   double out = LeadLagExp::rateStateCalc(in);
@@ -440,7 +442,8 @@ double LeadLagExp::calculate(double in, int RESET)
 }
 double LeadLagExp::calculate(double in, int RESET, const double T, const double tau, const double tld)
 {
-  if (RESET > 0)
+  reset_ = (RESET > 0);
+  if (reset_)
   {
     instate_ = in;
     state_ = in;
@@ -451,7 +454,8 @@ double LeadLagExp::calculate(double in, int RESET, const double T, const double 
 }
 double LeadLagExp::calculate(double in, int RESET, const double T)
 {
-  if (RESET > 0)
+  reset_ = (RESET > 0);
+  if (reset_)
   {
     instate_ = in;
     state_ = in;
@@ -497,7 +501,8 @@ RateLagExp::~RateLagExp() {}
 // functions
 double RateLagExp::calculate(double in, int RESET)
 {
-  if (RESET > 0)
+  reset_ = (RESET > 0);
+  if (reset_)
   {
     lstate_ = in;
     rstate_ = in;
@@ -507,7 +512,8 @@ double RateLagExp::calculate(double in, int RESET)
 }
 double RateLagExp::calculate(double in, int RESET, const double T)
 {
-  if (RESET > 0)
+  reset_ = (RESET > 0);
+  if (reset_)
   {
     lstate_ = in;
     rstate_ = in;
@@ -551,7 +557,8 @@ LagTustin::~LagTustin() {}
 // functions
 double LagTustin::calculate(double in, int RESET)
 {
-  if (RESET > 0)
+  reset_ = (RESET > 0);
+  if (reset_)
   {
     state_ = in;
   }
@@ -560,7 +567,8 @@ double LagTustin::calculate(double in, int RESET)
 }
 double LagTustin::calculate(double in, int RESET, const double T)
 {
-  if (RESET > 0)
+  reset_ = (RESET > 0);
+  if (reset_)
   {
     state_ = in;
   }
@@ -610,7 +618,8 @@ void LagExp::assignCoeff(double tau, double T)
 }
 double LagExp::calculate(double in, int RESET)
 {
-  if (RESET > 0)
+  reset_ = (RESET > 0);
+  if (reset_)
   {
     lstate_ = in;
     rstate_ = in;
@@ -621,7 +630,8 @@ double LagExp::calculate(double in, int RESET)
 }
 double LagExp::calculate(double in, int RESET, const double tau, const double T)
 {
-  if (RESET > 0)
+  reset_ = (RESET > 0);
+  if (reset_)
   {
     lstate_ = in;
     rstate_ = in;
@@ -634,7 +644,8 @@ double LagExp::calculate(double in, int RESET, const double tau, const double T)
 }
 double LagExp::calculate(double in, int RESET, const double tau, const double T, const double max_rate, const double  min_rate)
 {
-  if (RESET > 0)
+  reset_ = (RESET > 0);
+  if (reset_)
   {
     lstate_ = in;
     rstate_ = in;
@@ -653,7 +664,8 @@ void LagExp::rateState(double in)
 }
 void LagExp::rateStateLim(double in, int RESET, double max_rate, double min_rate)
 {
-  if ( RESET > 0 )
+  reset_ = (RESET > 0);
+  if (reset_)
   {
     rate_ = 0.;
     rstate_ = in;
@@ -688,7 +700,8 @@ void DiscreteIntegrator::newState(double newState)
 }
 double DiscreteIntegrator::calculate(double in, boolean RESET, double init_value)
 {
-  if (RESET)
+  reset_ = (RESET > 0);
+  if (reset_)
   {
     lstate_ = init_value;  rstate_ = 0.0;
   }
@@ -713,7 +726,8 @@ double DiscreteIntegrator::calculate(double in, boolean RESET, double init_value
 double DiscreteIntegrator::calculate(double in, double T, boolean RESET, double init_value)
 {
   T_ = T;
-  if (RESET)
+  reset_ = (RESET > 0);
+  if (reset_)
   {
     lstate_ = init_value;  rstate_ = 0.0;
   }
@@ -740,7 +754,8 @@ double DiscreteIntegrator::calculate(double in, double T, boolean RESET, double 
   T_ = T;
   max_ = max;;
   min_ = min;
-  if (RESET)
+  reset_ = (RESET > 0);
+  if (reset_)
   {
     lstate_ = init_value;  rstate_ = 0.0;
   }

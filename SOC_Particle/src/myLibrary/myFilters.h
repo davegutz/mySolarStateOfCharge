@@ -177,11 +177,13 @@ public:
   virtual void rateState(double in);
   virtual double rateStateCalc(double in, const double max_rate, const double min_rate);
   virtual double rateStateCalc(double in);
+  virtual boolean reset() { return reset_; };
   virtual double state(void);
   double T() { return T_; };
   double tau() { return tau_; };
   double rate() { return rate_; };
 protected:
+  boolean reset_;
   double max_;
   double min_;
   double rate_;
@@ -374,6 +376,7 @@ protected:
   double max_;
   double min_;
   double lstate_;
+  boolean reset_;
   double rstate_;
   double T_;
 };

@@ -92,6 +92,7 @@ class SavedData:
             self.time_run = 0.  # Adjust time for start of ib input
             self.voc_soc_new = None  # For studies
             self.init_time = None
+            self.ib_dyn_r = None
             self.ib_dyn_T = None
             self.ib_dyn_lstate = None
             self.ib_dyn_rstate = None
@@ -223,6 +224,10 @@ class SavedData:
                 self.ib_dyn_T = np.array(rap.ib_dyn_T[:i_end])
             else:
                 self.ib_dyn_T = self.vsat*0.
+            if hasattr(rap, 'ib_dyn_r'):
+                self.ib_dyn_r = np.bool(np.array(rap.ib_dyn_r[:i_end]))
+            else:
+                self.ib_dyn_r = np.bool(self.vsat*0.)
             if hasattr(rap, 'ib_dyn_lstate'):
                 self.ib_dyn_lstate = np.array(rap.ib_dyn_lstate[:i_end])
             else:
