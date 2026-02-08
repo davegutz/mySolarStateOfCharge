@@ -287,7 +287,8 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mv, 'time', S.mv, 'voc_stat', add=-1., color='blue', linestyle='--')
     plq(plt, S.sr, 'time', S.sr, 'voc_stat_s', add=-1., color='blue', linestyle='-.')
     plq(plt, S.smv, 'time', S.smv, 'voc_stat_s', add=-1., color='red', linestyle=':')
-    plq(plt, S.mr, 'time', S.mr, 'vb_f', add=-2., color='black', linestyle='-')
+    if S.run_type == 'HistSim':
+        plq(plt, S.mr, 'time', S.mr, 'vb_f', add=-2., color='black', linestyle='-')
     plq(plt, S.mr, 'time', S.mr, 'vb', add=-2., color='black', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'vb', add=-2., color='green', linestyle='--')
     plq(plt, S.sr, 'time', S.sr, 'vb_s', add=-2., color='red', linestyle='-.')

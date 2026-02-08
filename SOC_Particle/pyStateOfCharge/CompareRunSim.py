@@ -139,7 +139,8 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{plots=}\n{use_mon_
 
         fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list, run_str='',
-                                       ver_str='_ver', strict_overplot=strict_overplot, terse=terse)
+                                       ver_str='_ver', strict_overplot=strict_overplot, terse=terse,
+                                       run_type='RunSim')
 
         # Copies
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
@@ -183,8 +184,8 @@ def main():
     # Rf, vv4,
     # Rk,
     # vv0,
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\zero_with_pc_soc2p2_hi_lo_bb.csv'
-    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\zero_with_pc_soc3p2_hi_lo_bb.csv'
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
 
     # # gdrive = '/home/daveg/Documents/'
     # # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
@@ -195,7 +196,7 @@ def main():
     # # The following are not implemented in GUI
 
     time_end_in = None
-    # time_end_in = 15.3
+    # time_end_in = 6
 
     time_shift_in = None
     # time_shift_in = -1.811
@@ -218,8 +219,8 @@ def main():
     # plots = False
     plots = True
 
-    # terse_in = False
-    terse_in = True
+    terse_in = False
+    # terse_in = True
 
     strict_overplot_in = False
     # strict_overplot_in = True

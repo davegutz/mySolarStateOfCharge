@@ -202,9 +202,9 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.mr, 'time', S.mr, 'e_wrap', color='magenta', linestyle='-')
         if S.strict_overplot:
             plq(plt, S.mv, 'time', S.mv, 'e_wrap', color='blue', linestyle='--')
-        plq(plt, S.mr, 'time', S.mr, 'e_wrap_filt', color='magenta', linestyle='-.')
+        plq(plt, S.mr, 'time', S.mr, 'e_wrap_filt', color='red', linestyle='-.')
         if S.strict_overplot:
-            plq(plt, S.mv, 'time', S.mv, 'e_wrap_filt', color='blue', linestyle=':')
+            plq(plt, S.mv, 'time', S.mv, 'e_wrap_filt', color='orange', linestyle=':')
         plt.legend(loc=1)
         plt.subplot(223)
         plq(plt, S.mr, 'time', S.mr, 'dv_dyn', color='black', linestyle='-')
