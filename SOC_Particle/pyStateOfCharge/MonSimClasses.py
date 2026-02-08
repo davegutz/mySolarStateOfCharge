@@ -23,6 +23,7 @@ from Battery import Battery as Battery
 from KF1x1 import KF1x1VarDtxx
 from myFilters import LagExp
 from pyDAGx import myTables
+import Globals as G
 import numpy as np
 
 

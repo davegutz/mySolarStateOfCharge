@@ -209,7 +209,7 @@ def main():
 
     # RunSim plot selection
     # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m  8=vb_wrap
-    request_hist_in = 5
+    request_hist_in = 3
     # request_hist_in = None
 
     # # mon_soc_in = False # old runsim work ******************

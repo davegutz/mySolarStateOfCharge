@@ -241,7 +241,7 @@ def replicate(OPT: UserOptions):
                       soc=sim.soc, q_capacity=sim.q_capacity, rp=rp, sat_init=sat_s_init)
 
         sim.count_coulombs(OPT, SN, chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, charge_curr=sim.ib_charge, sat=False,
-                           mon_sat=mon.sat)
+                           mon_sat=mon.sat, rp=rp)
 
         # EKF
         if reset:

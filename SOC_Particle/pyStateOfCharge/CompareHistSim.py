@@ -646,7 +646,7 @@ def add_chm(hist, mon_t_=False, mon=None, chm=None):
 def add_delta_q(hist):
     delta_q = []
     for i in range(len(hist.time_ux)):
-        q_capacity = hist.qcrs[i] * (1. +hist.dqdt[i]*(hist.Tb_f[i] - Battery.RATED_TEMP))
+        q_capacity = hist.qcrs[i] * (1. + hist.dqdt[i]*(hist.Tb_f[i] - Battery.RATED_TEMP))
         delta_q.append(-q_capacity * (1. - hist.soc[i]))
     hist = rf.rec_append_fields(hist, 'delta_q', np.array(delta_q, dtype=float))
     return hist
@@ -772,10 +772,9 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
 
     unit = None
     t_rated = None
-    dqdt = None
     if use_mon_csv is True and mon is not None:
         if Battery.CHEM != int(mon.chm[0]):
-            print(f"CompareHistSim::WARNING  Battery.CHEM {Battery.CHEM} not equal to transientn input chm {int(mon.chm[0])}")
+            print(f"CompareHistSim::WARNING  Battery.CHEM {Battery.CHEM} not equal to transient input chm {int(mon.chm[0])}")
         Battery.CHEM = int(mon.chm[0])
         unit = unit_key.split('_')[-2]
     batt = BatteryMonitor(mod_code=Battery.CHEM)
@@ -824,7 +823,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
 
         hist = add_mod(hist, use_mon_csv, mon)
         hist = add_chm(hist, use_mon_csv, mon, Battery.CHEM)
-        hist = add_qcrs(hist, mon_t_=use_mon_csv, mon=mon, qcrs=qcrs, t_rated=t_rated, dqdt=dqdt)
+        hist = add_qcrs(hist, mon_t_=use_mon_csv, mon=mon, qcrs=qcrs, t_rated=t_rated, dqdt=batt.chemistry.dqdt)
         hist = add_delta_q(hist)
         print("\nhist after adding stuff:\n", hist.dtype.names, "\n", hist, "\n", hist.dtype.names, "\n :hist after adding stuff\n")
         print("\nhist convert to 20C...:", end='')
@@ -962,11 +961,11 @@ def main():
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/zero_with_pc_soc2p2_hi_lo_bb.csv'
-    plots = True
-    # plots = False
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/zero_with_pc_soc3p2_hi_lo_bb.csv'
+    # plots = True
+    plots = False
     use_mon_csv = False
-    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     dt_resample = 1
     Tb_force = None
     request_history = 5

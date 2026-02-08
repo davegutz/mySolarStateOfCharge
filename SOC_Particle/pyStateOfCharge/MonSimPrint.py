@@ -362,7 +362,7 @@ def print_soc_s_HistSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
 # 3
 def print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header
-    hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce    sa       sa_s       dt                    dt_s                  ib                         ib_in_s                       ib_s                          ib_charge_s                ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s                 ib_charge_s                 ioc_s                  soc                     d_delq                     delq                            i * dt_s * coul_eff       soc_s                 Tb_model_filt  Tb_hdwe_filt   Tb_f_s                         d_delta_q_s              delta_q_s                       qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                bms_off_s    voltage_low_s"
+    hdr = "  i  time     r       rt   rtps rk   it   ct      re   ie  ce    sa       sa_s       dt                    dt_s                  ib                         ib_in_s                       ib_s                          ib_charge_s                ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s                 ib_charge_s                 ioc_s                  soc                     d_delq                     delq                            i * dt_s * coul_eff       soc_s                 Tb_model_filt  Tb_hdwe_filt   Tb_f_s                         d_delta_q_s              delta_q_s                       qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                bms_off_s    voltage_low_s"
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -375,10 +375,10 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
         i_dt_new *= sim.chemistry.coul_eff
     if mon.reset:
         print(Colors.fg.red, end='')
-    elif mon.reset_temp:
+    if sim.reset_temp_past:
         print(Colors.fg.orange, end='')
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
-          "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
+          "{:7d}".format(mon.reset_temp), "{:4d}".format(sim.reset_temp_past), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
           "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
           "{:5.0f}".format(SN.sim_run.sat_s[G.i]), "{:2.0f}".format(sim.sat),

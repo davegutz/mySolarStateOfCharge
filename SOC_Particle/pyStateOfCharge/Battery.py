@@ -1185,7 +1185,7 @@ class BatterySim(Battery):
 
         return self.vb
 
-    def count_coulombs(self, OPT, SN, chem, reset_temp, tb_f, charge_curr, sat, mon_sat=None):
+    def count_coulombs(self, OPT, SN, chem, reset_temp, tb_f, charge_curr, sat, mon_sat=None, rp=None):
         # BatterySim
         """Coulomb counter based on true=actual capacity
         Internal resistance of battery is a loss
@@ -1223,7 +1223,7 @@ class BatterySim(Battery):
 
         # Integration can go to - 20 %
         self.q_capacity = self.calculate_capacity(self.Tb_f)
-        if not self.reset_temp_past:
+        if (rp.modeling_ib and not self.reset_temp_past) or (not rp.modeling_ib and not reset_temp):
             self.delta_q += self.d_delta_q
             self.delta_q = max(min( self.delta_q, 0.), -self.q_capacity * 1.2)
         self.q = self.q_capacity + self.delta_q
