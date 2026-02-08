@@ -1,9 +1,12 @@
-#ifndef soc3p2_h
-#define soc3p2_h
+#pragma once
+
+// Particle device:   0a10aced202194944a04c030
 
 #include "version.h"
 
-// Features config
+// deviceOS@6.2.1
+
+// Features config   xx:xx:xx:xx:xx:xx  // Todo
 #define HDWE_UNIT               "soc3p2_hi_lo" // https://console.particle.io/soc-particle-28171/devices/0a10aced202194944a04c030
 #define SOFT_SBAUD              460800      // Default Serial baud when able (don't think this does anything)
 #define HDWE_IB_HI_LO
@@ -61,4 +64,3 @@
 
 // Frame time for ADC read of thermistor
 #define TEMP_INIT_DELAY 1
-#endif

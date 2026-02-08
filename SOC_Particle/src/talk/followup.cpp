@@ -264,11 +264,11 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                 case ( 'm' ):  // Xm<>:  code for modeling level
                     if ( sp.modeling_p->success() )
                     {
-                        reset = sp.modeling() != modeling_past;
+                        reset = (sp.modeling() != modeling_past) && sp.debug()!=99;
                         if ( reset )
                         {
-                        Serial.printf("Chg...reset\n");
-                        cp.cmd_reset();
+                            Serial.printf("Xm reset\n");
+                            cp.cmd_reset();
                         }
                     }
                     break;

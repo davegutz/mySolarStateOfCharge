@@ -1,9 +1,10 @@
-#ifndef soc4p2_h
-#define soc4p2_h
-// 0a10aced202194944a04c040  old device
-// 0a10aced202194944a04c094 new one
+#pragma once
+
+// Particle device:   0a10aced202194944a04c094
+
 #include "version.h"
-// deviceOS@5.6.0
+
+// deviceOS@6.2.1
 
 // Features config           94:94:4A:04:C0:95
 #define HDWE_UNIT               "soc4p2_hi_lo"  // https://console.particle.io/soc-particle-28171/devices/0a10aced202194944a04c094
@@ -81,5 +82,3 @@
 
 // Frame time for ADC read of thermistor
 #define TEMP_INIT_DELAY 1
-
-#endif
