@@ -466,7 +466,7 @@ def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
 # 5
 def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time r    rt it     ct   rk   re ie     ce   sa       Tb_f                      vb_f                   ib_f                  ib_nh_f               ib_mh_f               ib_dyn_m              e_wrap_n_filt        e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n               e_wrap_n_filt        e_wrap_f             soc                        dt                 Tb_f                     vb_f                  ib_dyn                voc_f     voc         voc_stat_f             soc_ekf"
+    hdr = "  i   time r    rt it     ct   rk   re ie     ce   sa       Tb_f                      vb_f                   ib_f                  ib_nh_f               ib_mh_f               ib_dyn_m              e_wrap_n_filt        e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n               e_wrap_n_filt        e_wrap_filt          soc                        dt                 Tb_f                     vb_f                  ib_dyn                voc_f     voc         voc_stat_f             soc_ekf"
     if count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0

@@ -159,12 +159,12 @@ class Sensors:
             self.e_wrap_init = self.mon_run.e_wrap[0]
             self.e_wrap_filt_init = self.mon_run.e_wrap_filt[0]
             self.e_wrap_m_init = self.mon_run.e_wrap_m[0]
-            self.e_wrap_m_filt_init = self.mon_run.e_wrap_m_filt[0]
-            self.e_wrap_m_trim_init = self.mon_run.e_wrap_m_trim[0]
+            # self.e_wrap_m_filt_init = self.mon_run.e_wrap_m_filt[0]
+            # self.e_wrap_m_trim_init = self.mon_run.e_wrap_m_trim[0]
             self.e_wrap_n_init = self.mon_run.e_wrap_n[0]
-            self.e_wrap_n_filt_init = self.mon_run.e_wrap_n_filt[0]
-            self.e_wrap_n_trim_init = 0.
-            self.voc_soc_init = self.mon_run.voc_soc[0]
+            # self.e_wrap_n_filt_init = self.mon_run.e_wrap_n_filt[0]
+            # self.e_wrap_n_trim_init = 0.
+            # self.voc_soc_init = self.mon_run.voc_soc[0]
             self.vb_s_init = self.mon_run.vb[0]
             self.Tb_f_init = self.mon_run.Tb_f[0]
             self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
@@ -189,8 +189,8 @@ class Sensors:
 
         elif self.run_type == 'HistSim':
 
-            if not hasattr(self.mon_run, 'e_wrap_f'):
-                self.mon_run.e_wrap_f = np.copy(self.mon_run.e_w_f)
+            if not hasattr(self.mon_run, 'e_wrap_filt'):
+                self.mon_run.e_wrap_filt = np.copy(self.mon_run.e_w_f)
             if not hasattr(self.mon_run, 'e_wrap_m_filt'):
                 self.mon_run.e_wrap_m_filt = np.copy(self.mon_run.e_wm_f)
             if not hasattr(self.mon_run, 'e_wrap_m_trim'):
@@ -221,18 +221,18 @@ class Sensors:
             self.Tb_model_filt_init = self.mon_run.Tb_h_f[0]
             if hasattr(self.mon_run, 'e_wrap'):
                 self.e_wrap_init = self.mon_run.e_wrap[0]
-                self.e_wrap_m_init = self.mon_run.e_wrap[0]
-                self.e_wrap_n_init = self.mon_run.e_wrap[0]
+                self.e_wrap_m_init = self.mon_run.e_wrap_m[0]
+                self.e_wrap_n_init = self.mon_run.e_wrap_n[0]
             else:
-                self.e_wrap_init = self.mon_run.e_wrap_f[0]
-                self.e_wrap_m_init = self.mon_run.e_wrap_f[0]
-                self.e_wrap_n_init = self.mon_run.e_wrap_f[0]
-            self.e_wrap_filt_init = self.mon_run.e_wrap_f[0]
-            self.e_wrap_m_filt_init = self.mon_run.e_wrap_m_filt[0]
-            self.e_wrap_m_trim_init = 0.
-            self.e_wrap_n_filt_init = self.mon_run.e_wrap_n_filt[0]
-            self.e_wrap_n_trim_init = 0.
-            self.voc_soc_init = self.mon_run.voc_soc[0]
+                self.e_wrap_init = self.mon_run.e_wrap_filt[0]
+                self.e_wrap_m_init = self.mon_run.e_wrap_m_filt[0]
+                self.e_wrap_n_init = self.mon_run.e_wrap_n_filt[0]
+            self.e_wrap_filt_init = self.mon_run.e_wrap_filt[0]
+            # self.e_wrap_m_filt_init = self.mon_run.e_wrap_m_filt[0]
+            # self.e_wrap_m_trim_init = 0.
+            # self.e_wrap_n_filt_init = self.mon_run.e_wrap_n_filt[0]
+            # self.e_wrap_n_trim_init = 0.
+            # self.voc_soc_init = self.mon_run.voc_soc[0]
             self.voc_stat_init = self.mon_run.voc_stat_f[0]
             self.vb_s_init = self.mon_run.vb_f[0]
             self.Tb0 = self.mon_run.Tb_f[0]
@@ -315,7 +315,7 @@ class Sensors:
         self.ioc_s_init = self.ib_in_s_init
         self.voc_s_init = self.sim_run.voc_stat_s[0]
         self.soc_s_init = self.mon_run.soc_s[0]
-        self.hx_init = self.voc_soc_init
+        self.hx_init = self.mon_run.voc_soc[0]
         self.soc_init = self.mon_run.soc[0]
         self.x_init = self.soc_init
         self.x_prior_init = self.x_init
@@ -471,9 +471,9 @@ class Sensors:
         self.ib_in_s_init = self.ib_in_s[i]
         self.ib_dyn_s_init = self.ib_dyn_s[i]
         self.dv_dyn_s_init = self.dv_dyn_s[i]
-        self.e_wrap_m_filt_init = self.mon_run.e_wrap_m_filt[i]
-        self.e_wrap_m_trim_init = self.mon_run.e_wrap_m_trim[i]
-        self.e_wrap_n_filt_init = self.mon_run.e_wrap_n_filt[i]
+        # self.e_wrap_m_filt_init = self.mon_run.e_wrap_m_filt[i]
+        # self.e_wrap_m_trim_init = self.mon_run.e_wrap_m_trim[i]
+        # self.e_wrap_n_filt_init = self.mon_run.e_wrap_n_filt[i]
 
     def update_tb(self):
         self.Tb_past = self.Tb

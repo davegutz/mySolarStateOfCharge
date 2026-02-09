@@ -335,7 +335,7 @@ String Looparound::pretty_print(Sensors *Sen)
     String::format(" voc_soc%7.3f V\n", voc_soc_) +
     String::format(" voc%7.3f V\n", voc_) +
     String::format(" e_wrap (= voc_soc-voc) %7.3f V\n", e_wrap_) +
-    String::format(" e_wrap_f%7.3f V\n", e_wrap_filt_) +
+    String::format(" e_wrap_filt%7.3f V\n", e_wrap_filt_) +
     String::format(" ewhi_slr%7.3f\n",  ap.ewhi_slr) +
     String::format(" ewlo_slr%7.3f\n",  ap.ewlo_slr) +
     String::format(" ewmin_slr%7.3f\n",  Sen_->Flt->ewmin_slr()) +

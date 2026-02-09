@@ -963,8 +963,8 @@ def main():
 
     # User inputs (multiple input_files allowed
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/zero_with_pc_soc3p2_hi_lo_bb.csv'
-    # plots = True
-    plots = False
+    plots = True
+    # plots = False
     use_mon_csv = False
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     dt_resample = 1
