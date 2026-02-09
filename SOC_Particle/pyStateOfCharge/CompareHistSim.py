@@ -621,6 +621,7 @@ def shift_time(mr, extra_shift=0.):
             shift = mr.time[first_non_zero]
         print('shift time by', shift)
         mr.time = mr.time - shift + extra_shift
+        mr.time_e = mr.time_e - shift + extra_shift
     return mr
 
 
@@ -975,7 +976,7 @@ def main():
 
     # RunSim plot selection
     # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m  8=vb_wrap
-    request_history = 3
+    request_history = 5
     # request_hist_in = None
 
 

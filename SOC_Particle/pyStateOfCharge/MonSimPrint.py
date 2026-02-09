@@ -471,8 +471,8 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
         count_since_last_header = 0
     if G.i > 0:
         count_since_last_header += 1
-    if mon.reset:
-        print(Colors.fg.red, end='')
+    # if mon.reset:
+    #     print(Colors.fg.red, end='')
     print("{:4d}".format(G.i), "{:4.0f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:4d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:4d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
@@ -498,7 +498,7 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
           "{:11.7f}".format(SN.mon_run.z[i_ekf]), "{:10.7f}".format(mon.voc_stat_f),
           "{:11.5f}".format(SN.mon_run.soc_ekf[G.i]), "{:9.5f}".format(mon.soc_ekf),
           )
-    print(Colors.reset, end='')
+    # print(Colors.reset, end='')
     return hdr
 
 #5
