@@ -83,13 +83,14 @@ class Sensors:
     """Collect various sense parameters to create proper delays in data feed and connections to model"""
 
     def __init__(self, OPT, run_type=None):
-        if run_type == 'HistSim':
+        self.run_type = run_type
+        if self.run_type == 'HistSim':
             self.mon_run = OPT.mon_run.copy()
             self.sim_run = OPT.sim_run.copy()
         else:
             self.mon_run = OPT.mon_run
             self.sim_run = OPT.sim_run
-        if run_type == 'RunSim':
+        if self.run_type == 'RunSim':
             if hasattr(self.mon_run, 'mtb') and self.mon_run.mtb is not None:
                 self.mod_tb = self.mon_run.mtb
             else:
@@ -186,7 +187,7 @@ class Sensors:
             self.dt_temp = self.mon_run.Tt[0]
             self.ib_amp_model = self.mon_run.ib_amp_model
 
-        elif run_type == 'HistSim':
+        elif self.run_type == 'HistSim':
 
             if not hasattr(self.mon_run, 'e_wrap_f'):
                 self.mon_run.e_wrap_f = np.copy(self.mon_run.e_w_f)

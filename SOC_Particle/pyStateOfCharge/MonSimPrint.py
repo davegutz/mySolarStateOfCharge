@@ -463,19 +463,20 @@ def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     print(Colors.reset, end='')
     return hdr
 
+# 5
 def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time r    rt it     ct   re ie     ce   sa        Tb_f                     vb_f                   ib_f                  ib_nh_f               ib_mh_f               ib_dyn_m              e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n               e_wrap_n_filt        e_wrap_f             soc                        dt                 Tb_f                     vb_f                  ib_dyn                voc_f     voc         voc_stat_f             soc_ekf"
+    hdr = "  i   time r    rt it     ct   rk   re ie     ce   sa       Tb_f                      vb_f                   ib_f                  ib_nh_f               ib_mh_f               ib_dyn_m              e_wrap_n_filt        e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n               e_wrap_n_filt        e_wrap_f             soc                        dt                 Tb_f                     vb_f                  ib_dyn                voc_f     voc         voc_stat_f             soc_ekf"
     if count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
     if G.i > 0:
         count_since_last_header += 1
-    # if mon.reset:
-    #     print(Colors.fg.red, end='')
+    if mon.reset:
+        print(Colors.fg.yellow, end='')
     print("{:4d}".format(G.i), "{:4.0f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
           "{:4d}".format(mon.reset_temp), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
-          "{:4d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
+          "{:4d}".format(mon.reset_kf),  "{:4d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
           "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
           "{:14.7f}".format(SN.mon_run.Tb_f[G.i]), "{:11.7f}".format(mon.Tb_f),
           "{:11.5f}".format(SN.mon_run.vb_f[G.i]), "{:9.5f}".format(mon.vb),
@@ -483,12 +484,13 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
           "{:11.5f}".format(SN.mon_run.ib_noa_hdwe_f[G.i]), "{:9.5f}".format(mon.LoopIbNoa.ib),
           "{:11.5f}".format(SN.mon_run.ib_amp_hdwe_f[G.i]), "{:9.5f}".format(mon.LoopIbAmp.ib),
           "{:11.5f}".format(SN.mon_run.ib_dyn_m[G.i]), "{:9.5f}".format(mon.LoopIbAmp.ib_dyn),
+          "{:11.5f}".format(SN.mon_run.e_wn_f[G.i]), "{:8.5f}".format(mon.e_wrap_n_filt),
           "{:11.5f}".format(SN.mon_run.e_wm_f[G.i]), "{:8.5f}".format(mon.e_wrap_m_filt),
           "{:11.5f}".format(SN.mon_run.e_wm_t[G.i]), "{:8.5f}".format(mon.e_wrap_m_trim),
           "{:11.5f}".format(SN.mon_run.ib_noa_hdwe_f[G.i]), "{:9.5f}".format(mon.LoopIbNoa.ib),
           "{:11.5f}".format(SN.mon_run.ib_dyn_n[G.i]), "{:9.5f}".format(mon.LoopIbNoa.ib_dyn),
           "{:11.5f}".format(SN.mon_run.e_wn_f[G.i]), "{:8.5f}".format(mon.e_wrap_n_filt),
-          "{:11.5f}".format(SN.mon_run.e_wrap_f[G.i]), "{:8.5f}".format(mon.e_wrap_filt),
+          "{:11.5f}".format(SN.mon_run.e_wrap_filt[G.i]), "{:8.5f}".format(mon.e_wrap_filt),
           "{:13.7f}".format(SN.mon_run.soc[G.i]), "{:10.7f}".format(mon.soc),
           "{:11.4f}".format(SN.mon_run.dt[G.i]), "{:8.4f}".format(mon.dt),
           "{:14.7f}".format(SN.mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
@@ -498,7 +500,7 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
           "{:11.7f}".format(SN.mon_run.z[i_ekf]), "{:10.7f}".format(mon.voc_stat_f),
           "{:11.5f}".format(SN.mon_run.soc_ekf[G.i]), "{:9.5f}".format(mon.soc_ekf),
           )
-    # print(Colors.reset, end='')
+    print(Colors.reset, end='')
     return hdr
 
 #5

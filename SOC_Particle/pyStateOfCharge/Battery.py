@@ -461,7 +461,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.dt_temp = 0.
         self.sel_brk_hdwe = ScaleSelector(Battery.HDWE_IB_HI_LO_NOA_LO, Battery.HDWE_IB_HI_LO_AMP_LO,
                                           Battery.HDWE_IB_HI_LO_AMP_HI, Battery.HDWE_IB_HI_LO_NOA_HI)
-        self.reset_kf = False
+        self.reset_kf = True
         self.iscn_f = 0.
         self.frz = False
         self.wrap_hi_m_flt = False
@@ -956,7 +956,7 @@ class BatteryMonitor(Battery, EKF1x1):
 
         # Individual wrap logic
         if ib_noa is not None:
-            if rp.modeling_ib:
+            if rp.modeling_ib or SN.run_type == 'HistSim':
                 self.ib_noa = ib_noa
                 self.ib_noa_pst = ib_noa_pst
                 dt_local = self.dt
@@ -977,7 +977,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ewnhi_thr = self.LoopIbNoa.ewhi_thr
             self.ewnlo_thr = self.LoopIbNoa.ewlo_thr
         if ib_amp is not None:
-            if rp.modeling_ib:
+            if rp.modeling_ib or SN.run_type == 'HistSim':
                 self.ib_amp = ib_amp
                 self.ib_amp_pst = ib_amp_pst
                 ib_m_init = SN.LoopAmp.ib[max(G.i-2, 0)]

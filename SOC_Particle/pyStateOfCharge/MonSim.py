@@ -192,8 +192,8 @@ def replicate(OPT: UserOptions):
         # Basic reset model verification is to init to the input data
         # Tried hard not to re-implement solvers in the Python verification  tool
         # Also, BTW, did not implement signal selection or tweak logic
-        if hasattr(OPT.mon_run, 'kfres'):
-            mon.reset_kf = bool(OPT.mon_run.kfres[G.i])
+        # if hasattr(OPT.mon_run, 'kfres'):
+        #     mon.reset_kf = bool(OPT.mon_run.kfres[G.i])
         reset = None
         if OPT.run_type == 'RunSim':
             # Must call Battery logic at least twice with reset=True to initialized seeded transfer functions correctly
@@ -203,6 +203,7 @@ def replicate(OPT: UserOptions):
         elif OPT.run_type == 'HistSim':
             reset = True
         prn_soc_debug(OPT, time=now, leader="before sim init:         ", i_temp=i_temp, mon=mon, sim=sim)
+        mon.reset_kf = reset
 
         if reset:
             sim.apply_soc(OPT.mon_run.soc_s[G.i], SN.Tb_f_past, OPT.sim_run.delta_q_s[G.i])  # calculates delta_q
