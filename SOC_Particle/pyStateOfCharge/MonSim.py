@@ -133,7 +133,7 @@ def replicate(OPT: UserOptions):
 
     # Make batteries from modified class constants
     sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test)
-    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], tb_f=SN.Tb0, scale=scale_mon, tweak_test=tweak_test)
+    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], tb_f=SN.mon_run.Tb_f[0], scale=scale_mon, tweak_test=tweak_test)
     Is_sat_delay = TFDelay(in_=OPT.mon_run.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
     # Time sync
@@ -213,11 +213,11 @@ def replicate(OPT: UserOptions):
             sim.assign_tb_f(sim.Tb_f)
             sim.apply_delta_q_t(sim.delta_q, SN.Tb_f_past)
             prn_soc_debug(OPT, time=now, leader="after sm.apply_delta_q_t:", i_temp=i_temp, mon=mon, sim=sim)
-            sat_s_init = SN.voc_stat_init > OPT.mon_run.vsat[0]
+            sat_s_init = SN.voc_stat_init > OPT.mon_run.vsat[G.i]
             if OPT.sim_run is not None:
-                sat_s_init = OPT.sim_run.sat_s[0]
+                sat_s_init = OPT.sim_run.sat_s[G.i]
             sim.sat = sat_s_init
-            mon.sat = OPT.mon_run.sat[0]
+            mon.sat = OPT.mon_run.sat[G.i]
 
         if calc_temp:
             mon = SN.calc_temp_pass_2(OPT.mon_run, mon, Battery, i_temp, rp)

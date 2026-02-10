@@ -95,16 +95,16 @@ class Sensors:
                 self.mod_tb = self.mon_run.mtb
             else:
                 self.mod_tb = np.copy(self.mon_run.mod_data)
-            if self.mon_run.Tb_f is not None:
-                self.Tb0 = self.mon_run.Tb_f[0]
-                self.Tb0_s = self.mon_run.Tb_model[0]
-                self.Tb = self.mon_run.Tb[0]
-                self.Tb_f = self.mon_run.Tb_f[0]
-            else:
-                self.Tb0 = self.mon_run.Tb_f_rap[0]
-                self.Tb0_s = self.mon_run.Tb_rap[0]
-                self.Tb = self.mon_run.Tb_rap[0]
-                self.Tb_f = self.mon_run.Tb_f_rap[0]
+            # if self.mon_run.Tb_f is not None:
+            #     self.Tb0 = self.mon_run.Tb_f[0]
+            #     self.Tb0_s = self.mon_run.Tb_model[0]
+            #     self.Tb = self.mon_run.Tb[0]
+            #     self.Tb_f = self.mon_run.Tb_f[0]
+            # else:
+            self.Tb0 = self.mon_run.Tb_f_rap[0]
+            self.Tb0_s = self.mon_run.Tb_rap[0]
+            self.Tb = self.mon_run.Tb_rap[0]
+            self.Tb_f = self.mon_run.Tb_f_rap[0]
             self.lut_dTb = None
             self.dTb = 0.
             if OPT.add_Tb_in is not None:

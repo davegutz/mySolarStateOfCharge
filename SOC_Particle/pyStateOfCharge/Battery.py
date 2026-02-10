@@ -487,10 +487,10 @@ class BatteryMonitor(Battery, EKF1x1):
             self.e_wrap_m_trim = SN.mon_run.e_wrap_m_trim[0]
             self.e_wrap_n = SN.e_wrap_n_init
             self.e_wrap_n_filt = SN.mon_run.e_wrap_n_filt[0]
-            self.e_wrap_n_trim = SN.mon_run.e_wrap_n_trim[0]
+            self.e_wrap_n_trim = 0.
             self.voc_soc = SN.mon_run.voc_soc[0]
             self.voc_stat = self.voc_soc - self.e_wrap
-            self.Tb = SN.Tb0
+            self.Tb = SN.mon_run.Tb_f[0]
             self.Tb_f = SN.Tb_f_init
             self.Tb_f_rate = SN.Tb_f_rate_init
             self.Tb_rap = SN.Tb_rap_init
@@ -971,7 +971,7 @@ class BatteryMonitor(Battery, EKF1x1):
                                      dt=min(dt_local, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
                                      ib_init = SN.LoopNoa.ib_init, ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
                                      e_wrap_filt_init = SN.mon_run.e_wrap_n_filt[G.i],
-                                     e_wrap_trim_init = SN.mon_run.e_wrap_n_trim[G.i])
+                                     e_wrap_trim_init = 0.)
             self.e_wrap_n = self.LoopIbNoa.e_wrap
             self.e_wrap_n_filt = self.LoopIbNoa.e_wrap_filt
             self.e_wrap_n_rate = self.LoopIbNoa.e_wrap_rate
@@ -1059,7 +1059,7 @@ class BatterySim(Battery):
         self.dt_past = 0.
         # self.q_eps = 0.  # tiny adjustment to charge to book-keep soc_s and delta_q_s to be the same as data stream
         if SN is not None:
-            self.Tb = SN.Tb0
+            self.Tb = SN.mon_run.Tb_f[0]
             self.dv_dyn = SN.dv_dyn_s_init
             self.ib_in = SN.ib_in_s_init
             self.d_delta_q = SN.d_delta_q_s_init

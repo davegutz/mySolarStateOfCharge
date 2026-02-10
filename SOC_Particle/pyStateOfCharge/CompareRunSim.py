@@ -45,18 +45,36 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True, Dw=0.,  use_mon_soc_=False,
                     verbose=True, scale_in=1., slr_hys_sim=1., request_history=5, Battery=None, init_time_in=None,
-                    time_shift_in=None, strict_overplot=False, terse=False, mon_str=''):
+                    time_shift_in=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
+                    fig_list=None, show_killer_=True):
 
     if data_file.count('soc4p2_hi_lo'):
        IB_CHARGE_NOA = True
     else:
         IB_CHARGE_NOA = False
 
-    print(f"\n \
-compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{plots=}\n{use_mon_soc_=}\n \
-{IB_CHARGE_NOA=}\n{verbose=}\n{scale_in=}\n{slr_hys_sim=}\n{request_history=}\n{init_time_in=}\n{time_shift_in=}\n \
-{strict_overplot=}\n{terse=}\n{mon_str=}\n \
-          ")
+    print(f"\n compare_run_sim: \
+    \n{data_file=} \
+    \n{unit_key=} \
+    \n{time_end_in=} \
+    \n{plots=} \
+    \n{use_mon_soc_=} \
+    \n{IB_CHARGE_NOA=} \
+    \n{verbose=} \
+    \n{scale_in=} \
+    \n{slr_hys_sim=} \
+    \n{request_history=} \
+    \n{init_time_in=} \
+    \n{time_shift_in=} \
+    \n{strict_overplot=} \
+    \n{terse=}\n{mon_str=} \
+    \n")
+
+    if fig_files is None:
+        fig_files = []
+    if fig_list is None:
+        fig_list = []
+
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
@@ -114,8 +132,6 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{plots=}\n{use_mon_
 
     # Plots
     if plots:
-        fig_list = []
-        fig_files = []
         dir_root_test, data_root_test = os.path.split(data_file_clean)
         data_root_test = data_root_test.replace('.csv', '')
         filename = data_root_test
@@ -124,15 +140,6 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{plots=}\n{use_mon_
             fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                              fig_list=fig_list, cc_dif_tol=cc_dif_tol_in)
         if not terse:
-            # fig_list, fig_files = ekf_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
-            #                                plot_title=plot_title, fig_list=fig_list, run_str='',
-            #                                ver_str='_ver', strict_overplot=strict_overplot)
-            # fig_list, fig_files = sim_s_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
-            #                                  plot_title=plot_title, fig_list=fig_list, run_str='',
-            #                                  ver_str='_ver', strict_overplot=strict_overplot)
-            # fig_list, fig_files = off_on_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
-            #                                   plot_title=plot_title, fig_list=fig_list, run_str='',
-            #                                   ver_str='_ver', strict_overplot=strict_overplot)
             if tune_in:
                 fig_list, fig_files = gp.tune_r(mon_run, mon_ver, sim_s_ver, filename, fig_files,
                                              plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')
@@ -148,9 +155,10 @@ compare_run_sim:\n{data_file=}\n{unit_key=}\n{time_end_in=}\n{plots=}\n{use_mon_
         cleanup_fig_files(fig_files)
         plt.show(block=False)
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
-        show_killer(string, 'CompareRunSim', fig_list=fig_list)
+        if show_killer_:
+            show_killer(string, 'CompareRunSim', fig_list=fig_list)
 
-    return data_file_clean, mon_run, sim_run, mon_ver, sim_ver, sim_s_ver
+    return fig_list, fig_files
 
 
 def main():
@@ -184,7 +192,7 @@ def main():
     # Rf, vv4,
     # Rk,
     # vv0,
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\zero_with_pc_soc3p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
 
     # # gdrive = '/home/daveg/Documents/'

@@ -879,9 +879,28 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
 
 def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=False, unit_key=None,
                      sync_time=None, dt_resample=10, Tb_force=None, request_history=None, strict_overplot=False,
-                     terse=False):
+                     terse=False, fig_list=None, fig_files=None, show_killer_=True):
 
-    print(f"\ncompare_hist_sim:\n{data_file=}\n{time_end_in=}\n{plots=}\n{use_mon_csv=}\n{unit_key=}\n{sync_time=}\n{dt_resample=}\n{Tb_force=}\n{request_history=}\n{strict_overplot=}\n{terse=}")
+    print(f"\ncompare_hist_sim: \
+    \n{data_file=} \
+    \n{time_end_in=} \
+    \n{plots=} \
+    \n{use_mon_csv=} \
+    \n{unit_key=} \
+    \n{sync_time=} \
+    \n{dt_resample=} \
+    \n{Tb_force=} \
+    \n{request_history=} \
+    \n{strict_overplot=} \
+    \n{terse=} \
+    \n{fig_files=} \
+    \n{fig_list=} \
+    \n")
+
+    if fig_files is None:
+        fig_files = []
+    if fig_list is None:
+        fig_list = []
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
@@ -922,8 +941,6 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
 
     # Plots
     if plots:
-        fig_list = []
-        fig_files = []
         if filename is None:
             filename = 'none'
         plot_title = filename + '   ' + date_time
@@ -948,9 +965,10 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
             string = 'none plots kill'
         else:
             string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
-        show_killer(string, 'CompareFault', fig_list=fig_list)
+        if show_killer_:
+            show_killer(string, 'CompareFault', fig_list=fig_list)
 
-    return mon_run, sim_run, mon_ver, sim_ver, sim_s_ver
+    return fig_list, fig_files
 
 
 def main():
@@ -962,23 +980,40 @@ def main():
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/zero_with_pc_soc3p2_hi_lo_bb.csv'
-    plots = True
-    # plots = False
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc3p2_hi_lo_bb.csv'
+    plots = False
     use_mon_csv = False
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
+    sync_time = None
     dt_resample = 1
     Tb_force = None
     request_history = 5
-    strict_overplot = True
+    strict_overplot = False
+    terse = True
+
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc3p2_hi_lo_bb.csv'
+    time_end_in = None
+    plots = False
+    use_mon_csv = False
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
+    sync_time = None
+    dt_resample = 1
+    Tb_force = None
+
+
+    strict_overplot = False
+    # strict_overplot = True
+
+    plots = True
+    # plots = False
+
     terse = True
     # terse = False
 
-    # RunSim plot selection
-    # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=ekf   7=dyn_m  8=vb_wrap
+    # HistSim plot selection
+    # 3=soc_s   5=volt
     request_history = 5
-    # request_hist_in = None
-
+    # request_history = None
 
     compare_hist_sim(data_file=data_file, use_mon_csv=use_mon_csv, unit_key=unit_key, dt_resample=dt_resample,
                      plots=plots, Tb_force=Tb_force, request_history=request_history, terse=terse,

@@ -40,70 +40,83 @@ plt.rcParams['legend.fontsize'] = 'small'
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
-def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=False, strict_overplot=False,
-                     terse=False):
 
-    print(f"\ncompare_run_hist:\n{data_file=}\n{plots=}\n{unit_key=}\n{time_end=}\n{strict_overplot=}\n{terse=}\n")
+def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=True,
+                     strict_overplot=False, terse=False, use_mon_csv=False, dt_resample=10, Tb_force=None,
+                     use_mon_soc=False, verbose=True, scale=1., slr_hys_sim=1., Battery=None,
+                     init_time=None, time_shift=None, mon_str='', sync_time=None,
+                     request_history_run_sim=None, request_history_hist_sim=None):
+    print(f"\n compare_run_hist: \
+    \n{data_file=} \
+    \n{unit_key=} \
+    \n{time_end=} \
+    \n{plots=} \
+    \n{strict_overplot=} \
+    \n{terse=} \
+    \n{use_mon_csv=} \
+    \n{dt_resample=} \
+    \n{Tb_force=} \
+    \n{use_mon_soc=} \
+    \n{verbose=} \
+    \n{scale=} \
+    \n{slr_hys_sim=} \
+    \n{init_time=} \
+    \n{time_shift=} \
+    \n{mon_str=} \
+    \n{sync_time=} \
+    \n{request_history_run_sim=} \
+    \n{request_history_hist_sim=} \
+    \n ")
 
-    date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-    # date_ = datetime.now().strftime("%y%m%d")
+    fig_list, fig_files =\
+        compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end_in=time_end,
+                        use_mon_soc_=use_mon_soc, verbose=verbose, scale_in=scale, slr_hys_sim=slr_hys_sim,
+                        request_history=request_history_run_sim, init_time_in=init_time, time_shift_in=time_shift,
+                        strict_overplot=strict_overplot, terse=terse, show_killer_=False)
 
-    dfcs, mo_r, so_r, mv_r, sv_r, ssv_r =\
-        compare_run_sim(data_file=data_file, unit_key=unit_key, time_end_in=time_end, plots=plots,
-                        mon_str='', strict_overplot=strict_overplot, terse=terse, run_type='RunSim')
-    mo_h, so_h, mv_h, sv_h, ssv_h =\
-        compare_hist_sim(data_file=data_file, unit_key=unit_key, time_end_in=time_end, plots=plots,
-                         use_mon_csv=True, sync_time=mo_r.time_run, strict_overplot=strict_overplot, terse=terse,
-                         run_type='RunSim')
+    fig_list, fig_files = \
+        compare_hist_sim(data_file=data_file, use_mon_csv=use_mon_csv, unit_key=unit_key, dt_resample=dt_resample,
+                         plots=plots, Tb_force=Tb_force, request_history=request_history_hist_sim, terse=terse,
+                         strict_overplot=strict_overplot, fig_list=fig_list, fig_files=fig_files, show_killer_=True)
 
-    # Plots
-    if mo_r is not None and mo_h is not None:
-        fig_list = []
-        fig_files = []
-
-        # File path operations
-        version = version_from_data_file(data_file)
-        _, save_pdf_path, _ = local_paths(version)
-
-        (data_file_folder, _) = os.path.split(data_file)
-
-        data_root_run = dfcs.split('/')[-1].replace('.csv', '')
-        dir_root_run = data_file_folder.split('/')[-1].split('\\')[-1]
-        filename = data_root_run + '__hist'
-
-        # Plots
-        plot_title = dir_root_run + '/' + data_root_run + '   ' + date_time
-
-        fig_list, fig_files = dom_plot(mo_r, mo_h, so_r, so_h, ssv_h, filename, fig_files,
-                                       plot_title=plot_title, fig_list=fig_list,
-                                       run_str='_run', ver_str='_hist', run_type='RunHist')  # all over all
-
-        # Copies
-        precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-        unite_pictures_into_pdf(outputPdfName=filename+'-'+date_time+'.pdf', save_pdf_path=save_pdf_path,
-                                listWithImagesExtensions=["png"])
-        cleanup_fig_files(fig_files)
-        plt.show(block=False)
-        string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
-        show_killer(string, 'CompareRunRun', fig_list=fig_list)
-
-        return True
-    else:
-        tkinter.messagebox.showwarning(message="One or more sets of data missing.  See monitor window for info.")
-        return False
+    pass
 
 
 def main():
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc2p2_hi_lo_bb.csv'
-    plots = False
-    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc3p2_hi_lo_bb.csv'
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = None
-    terse = True
+    # plots = False
+    plots = True
     strict_overplot = False
+    terse = True
+    use_mon_csv = False
+    dt_resample = 1
+    Tb_force = None
+    use_mon_soc_ = False
+    verbose = True
+    use_mon_soc = False
+    scale_in = 1.0
+    slr_hys_sim = 1.0
+    init_time_in = None
+    time_shift_in = None
+    mon_str = ''
+    sync_time = None
 
-    compare_run_hist(data_file=data_file, unit_key=unit_key, time_end=time_end, plots=plots,
-                     terse=terse, strict_overplot=strict_overplot)
+    # RunSim plot selection
+    # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=ekf   7=dyn_m  8=vb_wrap
+    request_hist_run_sim = 3
+    # request_hist_run_sim = None
 
+    # HistSim plot selection
+    # 3=soc_s   5=volt
+    request_hist_hist_sim = 5
+    # request_hist_hist_sim = None
+
+    compare_run_hist(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,
+                     use_mon_soc=use_mon_soc, verbose=verbose, strict_overplot=strict_overplot, terse=terse,
+                     dt_resample=dt_resample, Tb_force=Tb_force,
+                     request_history_run_sim=request_hist_run_sim, request_history_hist_sim=request_hist_hist_sim)
 
 if __name__ == '__main__':
     main()
