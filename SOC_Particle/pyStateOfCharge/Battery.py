@@ -195,7 +195,7 @@ class Battery(Coulombs):
 
     def __init__(self, OPT=None, q_cap_rated=NOM_UNIT_CAP*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
                  dvoc=0., mod_code=0,
-                 scale_cap=1., mon=None):
+                 scale_cap=1., mon=None, str=None):
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
         etal.pdf.'  SOC-OCV curve fit './Battery State/BattleBorn Rev1.xls:Model Fit' using solver with min slope
@@ -246,7 +246,7 @@ class Battery(Coulombs):
         self.Tb = tb_f
         self.Tb_f = tb_f
         self.Tb_f_rate = None
-        self.saved = Saved('ver')  # for plots and prints
+        self.saved = Saved(str)  # for plots and prints
         self.dv_hys = 0.  # Placeholder so BatterySim can be plotted
         self.tau_hys = 0.  # Placeholder so BatterySim can be plotted
         self.dv_dyn = 0.  # Placeholder so BatterySim can be plotted
@@ -355,7 +355,7 @@ class BatteryMonitor(Battery, EKF1x1):
             pass
         q_cap_rated_scaled = q_cap_rated * scale
         Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
-                         tweak_test=tweak_test, dvoc=dvoc, mod_code=mod_code, scale_cap=scale, mon=True)
+                         tweak_test=tweak_test, dvoc=dvoc, mod_code=mod_code, scale_cap=scale, mon=True, str='ver')
 
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
@@ -1027,7 +1027,8 @@ class BatterySim(Battery):
     def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600, t_rated=25., temp_rlim=0.017,
                  scale=1., tb_f=25., tweak_test=False, mod_code=0):
         Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
-                         tweak_test=tweak_test, dvoc=OPT.add_voc_sim, mod_code=mod_code, scale_cap=scale, mon=False)
+                         tweak_test=tweak_test, dvoc=OPT.add_voc_sim, mod_code=mod_code, scale_cap=scale, mon=False,
+                         str='ver_s')
         self.chemistry = Chemistry(mod_code=mod_code, dvoc=OPT.add_voc_sim, unit=OPT.unit)
         self.chemistry.assign_all_mod(mod_code, unit=OPT.unit)
         self.lut_voc = None
