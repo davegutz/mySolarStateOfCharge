@@ -66,16 +66,13 @@ class SensorLooparound:
         self.ib = ib
         self.ib_init = self.ib[0]
         self.ib_dyn = ib_dyn
-        # self.ib_dyn_init = self.ib_dyn[0]
         self.e_wrap_trim = e_wrap_trim
-        self.e_wrap_trim_init = self.e_wrap_trim[0]
+        # self.e_wrap_trim_init = self.e_wrap_trim[0]
         self.e_wrap_filt = e_wrap_filt
         self.e_wrap_filt_init = self.e_wrap_filt[0]
 
     def update(self, i):
         self.ib_init = self.ib[max(i - 1, 0)]
-        # self.ib_dyn_init = self.ib_dyn[i]
-        self.e_wrap_trim_init = self.e_wrap_trim[i]
         self.e_wrap_filt_init = self.e_wrap_filt[i]
 
 
@@ -439,12 +436,6 @@ class Sensors:
     def update_ekf(self, i_ekf):
         self.z_init = self.z[i_ekf]
 
-    # def ib_dyn(self, ind=None):
-    #     if ind is None:
-    #         return self.ib_dyn.el(self.i)
-    #     else:
-    #         return self.ib_dyn.el(max(ind, 0))
-    #
     def update(self, i):
         self.i = min(max(i, 0), len(self.mon_run.time)-1)
 
