@@ -1060,8 +1060,8 @@ class BatterySim(Battery):
         # self.q_eps = 0.  # tiny adjustment to charge to book-keep soc_s and delta_q_s to be the same as data stream
         if SN is not None:
             self.Tb = SN.mon_run.Tb_f[0]
-            self.dv_dyn = SN.dv_dyn_s_init
-            self.ib_in = SN.ib_in_s_init
+            self.dv_dyn = SN.dv_dyn_s[0]
+            self.ib_in = SN.sim_run.ib_in_s[0]
             self.d_delta_q = SN.d_delta_q_s_init
             self.delta_q = SN.delta_q_s_init
             self.ib = SN.ib_s_init
@@ -1070,7 +1070,7 @@ class BatterySim(Battery):
             self.ioc = SN.ioc_s_init
             self.vb = SN.vb_s_init
             self.voc = SN.voc_s_init
-            self.ib_dyn = SN.ib_dyn_s_init
+            self.ib_dyn = SN.ib_dyn_s[0]
             self.soc = SN.soc_s_init
 
     def __str__(self, prefix=''):
@@ -1151,7 +1151,7 @@ class BatterySim(Battery):
             self.ib = 0.
         self.ib_lag = self.IbLag.calculate_tau(self.ib, self.reset, self.dt, self.chemistry.ib_lag_tau)
         # Charge transfer dynamics
-        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s_init, self.reset, self.dt,
+        self.ib_dyn = self.ChargeTransfer.calculate_tau_seeded(self.ib, SN.ib_dyn_s[G.i], self.reset, self.dt,
                                                                self.chemistry.tau_ct)
         self.ib_dyn_r = self.ChargeTransfer.reset
         self.ib_dyn_T = self.ChargeTransfer.dt
