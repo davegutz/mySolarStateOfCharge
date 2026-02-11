@@ -20,8 +20,8 @@ Coulomb Counter built in."""
 
 from Battery import calculate_capacity
 from Battery import Battery as Battery
-from KF1x1 import KF1x1VarDtxx
-from myFilters import LagExp
+from filter.KF1x1 import KF1x1VarDtxx
+from filter.myFilters import LagExp
 from pyDAGx import myTables
 import Globals as G
 import numpy as np

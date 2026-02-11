@@ -24,7 +24,7 @@ from Battery import calculate_capacity, Retained
 from Colors import Colors
 from plot.plq import plq as plq
 from Chemistry_BMS import ib_lag
-from myFilters import LagExp
+from filter.myFilters import LagExp
 
 # Suppress all UserWarning messages
 import warnings

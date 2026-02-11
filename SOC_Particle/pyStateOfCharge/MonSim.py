@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from Battery import overall_batt
 from Battery import Battery as Battery
 from typing import Optional
-from TFDelay import TFDelay
+from filter.TFDelay import TFDelay
 from MonSimClasses import *
 from MonSimPrint import *
 import Globals as G

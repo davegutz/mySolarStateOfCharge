@@ -22,7 +22,7 @@ Dependencies:
 from dataclasses import dataclass
 from typing import Optional
 
-from myFilters import InlineExpLag
+from filter.myFilters import InlineExpLag
 import matplotlib.pyplot as plt
 from plot.plq import plq as plq
 from Battery import Battery

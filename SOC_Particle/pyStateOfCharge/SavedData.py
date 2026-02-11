@@ -18,7 +18,7 @@ Dependencies:
     - SavedData  (structures)
 """
 from Battery import load_off_nominal_battery, apply_off_nominal_battery
-from myFilters import LagExp
+from filter.myFilters import LagExp
 from Colors import Colors
 import Chemistry_BMS
 import numpy as np

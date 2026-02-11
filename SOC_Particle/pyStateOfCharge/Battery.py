@@ -16,13 +16,13 @@
 """Define a general purpose battery model including Randles' model and SoC-VOV model."""
 
 import numpy as np
-from EKF1x1 import EKF1x1
+from filter.EKF1x1 import EKF1x1
 from Coulombs import Coulombs, Chemistry
 from Hysteresis import Hysteresis
 import matplotlib.pyplot as plt
-from TFDelay import TFDelay
-from myFilters import LagTustin, LagExp, General2Pole, RateLimit, SlidingDeadband, TustinIntegrator, RateLagExp
-from Scale import ScaleSelector
+from filter.TFDelay import TFDelay
+from filter.myFilters import LagTustin, LagExp, General2Pole, RateLimit, SlidingDeadband, TustinIntegrator, RateLagExp
+from filter.Scale import ScaleSelector
 from plot.plq import plq
 import sys
 if sys.platform == 'darwin':
