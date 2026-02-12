@@ -384,6 +384,11 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
     if use_mon_csv:
         mon, sim, fault, mon_t_file_clean, temp_mont_t_file_clean, _ = \
             load_data(data_file, 1, unit_key=unit_key, time_end_in=time_end_in, zero_zero_in=False, mon_str='hist')
+        mon = rename(mon, 'e_w_f', 'e_wrap_filt')
+        mon = rename(mon, 'e_wm_f', 'e_wrap_m_filt')
+        mon = rename(mon, 'e_wm_t', 'e_wrap_m_trim')
+        mon = rename(mon, 'e_wn_f', 'e_wrap_n_filt')
+        mon = rename(mon, 'e_wn_t', 'e_wrap_n_trim')
     else:
         mon = None
 
@@ -524,8 +529,13 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
             for i in range(len(h_20C_resamp.time)):
                 h_20C_resamp.dt[i] = h_20C_resamp.time[i] - h_20C_resamp.time[max(i-1, 0)]
 
-            # Hand fix oddities
+            # Hand fix oddities`
             mon, sim = bandaid(h_20C_resamp)
+            mon = rename(mon, 'e_w_f', 'e_wrap_filt')
+            mon = rename(mon, 'e_wm_f', 'e_wrap_m_filt')
+            mon = rename(mon, 'e_wm_t', 'e_wrap_m_trim')
+            mon = rename(mon, 'e_wn_f', 'e_wrap_n_filt')
+            mon = rename(mon, 'e_wn_t', 'e_wrap_n_trim')
 
         return mon, sim, unit, fault, hist_20C, filename, Battery
 
@@ -660,8 +670,8 @@ def main():
     plots = True
     # plots = False
 
-    # terse = True
-    terse = False
+    terse = True
+    # terse = False
 
     # HistSim plot selection
     # 3=soc_s   5=volt

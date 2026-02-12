@@ -227,8 +227,8 @@ def main():
     # plots = False
     plots = True
 
-    terse_in = False
-    # terse_in = True
+    # terse_in = False
+    terse_in = True
 
     strict_overplot_in = False
     # strict_overplot_in = True

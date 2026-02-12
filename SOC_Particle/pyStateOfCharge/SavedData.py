@@ -19,6 +19,7 @@ Dependencies:
 """
 from Battery import load_off_nominal_battery, apply_off_nominal_battery
 from filter.myFilters import LagExp
+from MonSimClasses import rename
 from Colors import Colors
 import Chemistry_BMS
 import numpy as np
@@ -416,18 +417,18 @@ class SavedData:
             self.ib_dyn_n = np.array(sel.ib_dn[:i_end])
             self.dv_dyn_n = np.array(sel.dv_dn[:i_end])
             # self.e_wrap_trim = np.array(sel.e_w_t[:i_end])
-            if hasattr(sel, 'e_wm'):
-                self.e_wrap_m = np.array(sel.e_wm[:i_end])
-            if hasattr(sel, 'e_wm_f'):
-                self.e_wrap_m_filt = np.array(sel.e_wm_f[:i_end])
-            if hasattr(sel, 'e_wm_r'):
-                self.e_wrap_m_reset = np.array(sel.e_wm_r[:i_end])
-            if hasattr(sel, 'e_wn'):
-                self.e_wrap_n = np.array(sel.e_wn[:i_end])
-            if hasattr(sel, 'e_wn_f'):
-                self.e_wrap_n_filt = np.array(sel.e_wn_f[:i_end])
-            if hasattr(sel, 'e_wm_t'):
-                self.e_wrap_m_trim = np.array(sel.e_wm_t[:i_end])
+            sel = rename(sel, 'e_wm', 'e_wrap_m')
+            self.e_wrap_m = np.array(sel.e_wrap_m[:i_end])
+            sel = rename(sel, 'e_wm_f', 'e_wrap_m_filt')
+            self.e_wrap_m_filt = np.array(sel.e_wrap_m_filt[:i_end])
+            sel = rename(sel, 'e_wm_r', 'e_wrap_m_reset')
+            self.e_wrap_m_reset = np.array(sel.e_wrap_m_reset[:i_end])
+            sel = rename(sel, 'e_wn', 'e_wrap_n')
+            self.e_wrap_n = np.array(sel.e_wrap_n[:i_end])
+            sel = rename(sel, 'e_wn_f', 'e_wrap_n_filt')
+            self.e_wrap_n_filt = np.array(sel.e_wrap_n_filt[:i_end])
+            sel = rename(sel, 'e_wm_t', 'e_wrap_m_trim')
+            self.e_wrap_m_trim = np.array(sel.e_wrap_m_trim[:i_end])
             self.e_wrap_m_trimmed = np.array(sel.ib_wrp_tr_m[:i_end])
             self.vb_model = np.array(sel.vb_m[:i_end])
             if hasattr(sel, 'vb_h'):

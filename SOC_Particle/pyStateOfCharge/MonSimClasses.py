@@ -183,17 +183,6 @@ class Sensors:
             self.ib_amp_model = self.mon_run.ib_amp_model
 
         elif self.run_type == 'HistSim':
-
-            if not hasattr(self.mon_run, 'e_wrap_filt'):
-                self.mon_run = rename(self.mon_run, 'e_w_f', 'e_wrap_filt')
-            if not hasattr(self.mon_run, 'e_wrap_m_filt'):
-                self.mon_run = rename(self.mon_run, 'e_wm_f', 'e_wrap_m_filt')
-            if not hasattr(self.mon_run, 'e_wrap_m_trim'):
-                self.mon_run = rename(self.mon_run, 'e_wm_t', 'e_wrap_m_trim')
-            if not hasattr(self.mon_run, 'e_wrap_n_filt'):
-                self.mon_run = rename(self.mon_run, 'e_wn_f', 'e_wrap_n_filt')
-            if not hasattr(self.mon_run, 'e_wrap_n_trim'):
-                self.mon_run = rename(self.mon_run, 'e_wn_t', 'e_wrap_n_trim')
             if not hasattr(self.mon_run, 'ib_dyn_m'):
                 self.mon_run.ib_dyn_m = np.copy(self.mon_run.ib_amp_hdwe_f)
             if not hasattr(self.mon_run, 'ib_dyn_n'):
