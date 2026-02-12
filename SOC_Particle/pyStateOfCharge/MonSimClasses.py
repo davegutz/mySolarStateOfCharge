@@ -21,10 +21,24 @@ Coulomb Counter built in."""
 from Battery import calculate_capacity
 from Battery import Battery as Battery
 from filter.KF1x1 import KF1x1VarDtxx
+import numpy.lib.recfunctions as rfn
 from filter.myFilters import LagExp
 from pyDAGx import myTables
 import Globals as G
 import numpy as np
+
+
+# rename recarray elements
+def rename(ra, targ, repl):
+    try:
+        ra = rfn.rename_fields(ra, {targ: repl})
+    except ValueError:
+        # Rename
+        if ra.dtype.names.__contains__(targ):
+            names = list(ra.dtype.names)
+            names[names.index(targ)] = repl
+            ra.dtype.names = tuple(names)
+    return ra
 
 
 class ProArray:
@@ -67,13 +81,10 @@ class SensorLooparound:
         self.ib_init = self.ib[0]
         self.ib_dyn = ib_dyn
         self.e_wrap_trim = e_wrap_trim
-        # self.e_wrap_trim_init = self.e_wrap_trim[0]
         self.e_wrap_filt = e_wrap_filt
-        self.e_wrap_filt_init = self.e_wrap_filt[0]
 
     def update(self, i):
         self.ib_init = self.ib[max(i - 1, 0)]
-        self.e_wrap_filt_init = self.e_wrap_filt[i]
 
 
 class Sensors:
@@ -92,12 +103,6 @@ class Sensors:
                 self.mod_tb = self.mon_run.mtb
             else:
                 self.mod_tb = np.copy(self.mon_run.mod_data)
-            # if self.mon_run.Tb_f is not None:
-            #     self.Tb0 = self.mon_run.Tb_f[0]
-            #     self.Tb0_s = self.mon_run.Tb_model[0]
-            #     self.Tb = self.mon_run.Tb[0]
-            #     self.Tb_f = self.mon_run.Tb_f[0]
-            # else:
             self.Tb0 = self.mon_run.Tb_f_rap[0]
             self.Tb0_s = self.mon_run.Tb_rap[0]
             self.Tb = self.mon_run.Tb_rap[0]
@@ -139,11 +144,9 @@ class Sensors:
             self.ib_dyn = ProArray(self.mon_run.ib_dyn, mutable=True)
             self.z = self.mon_run.z
             self.ib_in_s = self.sim_run.ib_in_s
-            self.ib_in_s_init = self.ib_in_s[0]
             self.ib_dyn_s = self.sim_run.ib_dyn_s
             self.dv_dyn_s = self.sim_run.dv_dyn_s
             self.dt_s = self.sim_run.dt_s
-            self.dv_dyn_s_init = self.dv_dyn_s[0]
             self.d_delta_q_s_init = 0.
             self.Tb_hdwe_init = self.mon_run.Tb_hdwe[0]
             self.Tb_model_init = self.mon_run.Tb_model[0]
@@ -156,12 +159,7 @@ class Sensors:
             self.e_wrap_init = self.mon_run.e_wrap[0]
             self.e_wrap_filt_init = self.mon_run.e_wrap_filt[0]
             self.e_wrap_m_init = self.mon_run.e_wrap_m[0]
-            # self.e_wrap_m_filt_init = self.mon_run.e_wrap_m_filt[0]
-            # self.e_wrap_m_trim_init = self.mon_run.e_wrap_m_trim[0]
             self.e_wrap_n_init = self.mon_run.e_wrap_n[0]
-            # self.e_wrap_n_filt_init = self.mon_run.e_wrap_n_filt[0]
-            # self.e_wrap_n_trim_init = 0.
-            # self.voc_soc_init = self.mon_run.voc_soc[0]
             self.vb_s_init = self.mon_run.vb[0]
             self.Tb_f_init = self.mon_run.Tb_f[0]
             self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
@@ -187,15 +185,15 @@ class Sensors:
         elif self.run_type == 'HistSim':
 
             if not hasattr(self.mon_run, 'e_wrap_filt'):
-                self.mon_run.e_wrap_filt = np.copy(self.mon_run.e_w_f)
+                self.mon_run = rename(self.mon_run, 'e_w_f', 'e_wrap_filt')
             if not hasattr(self.mon_run, 'e_wrap_m_filt'):
-                self.mon_run.e_wrap_m_filt = np.copy(self.mon_run.e_wm_f)
+                self.mon_run = rename(self.mon_run, 'e_wm_f', 'e_wrap_m_filt')
             if not hasattr(self.mon_run, 'e_wrap_m_trim'):
-                self.mon_run.e_wrap_m_trim = np.copy(self.mon_run.e_wm_t)
+                self.mon_run = rename(self.mon_run, 'e_wm_t', 'e_wrap_m_trim')
             if not hasattr(self.mon_run, 'e_wrap_n_filt'):
-                self.mon_run.e_wrap_n_filt = np.copy(self.mon_run.e_wn_f)
+                self.mon_run = rename(self.mon_run, 'e_wn_f', 'e_wrap_n_filt')
             if not hasattr(self.mon_run, 'e_wrap_n_trim'):
-                self.mon_run.e_wrap_n_trim = np.copy(self.mon_run.e_wm_t) * 0.
+                self.mon_run = rename(self.mon_run, 'e_wn_t', 'e_wrap_n_trim')
             if not hasattr(self.mon_run, 'ib_dyn_m'):
                 self.mon_run.ib_dyn_m = np.copy(self.mon_run.ib_amp_hdwe_f)
             if not hasattr(self.mon_run, 'ib_dyn_n'):
@@ -225,11 +223,6 @@ class Sensors:
                 self.e_wrap_m_init = self.mon_run.e_wrap_m_filt[0]
                 self.e_wrap_n_init = self.mon_run.e_wrap_n_filt[0]
             self.e_wrap_filt_init = self.mon_run.e_wrap_filt[0]
-            # self.e_wrap_m_filt_init = self.mon_run.e_wrap_m_filt[0]
-            # self.e_wrap_m_trim_init = 0.
-            # self.e_wrap_n_filt_init = self.mon_run.e_wrap_n_filt[0]
-            # self.e_wrap_n_trim_init = 0.
-            # self.voc_soc_init = self.mon_run.voc_soc[0]
             self.voc_stat_init = self.mon_run.voc_stat_f[0]
             self.vb_s_init = self.mon_run.vb_f[0]
             self.Tb0 = self.mon_run.Tb_f[0]
@@ -300,16 +293,14 @@ class Sensors:
         self.delta_q_s_init = self.delta_q_s[0]
 
         self.ib_in_s = self.sim_run.ib_in_s
-        self.ib_in_s_init = self.ib_in_s[0]
+        # self.ib_in_s_init = self.ib_in_s[0]
         if not hasattr(self, 'ib_dyn_s'):
             self.ib_dyn_s = np.copy(self.ib_in_s)
-        self.ib_dyn_s_init = self.ib_dyn_s[0]
         self.dv_dyn_s = self.sim_run.dv_dyn_s
-        self.dv_dyn_s_init = self.dv_dyn_s[0]
-        self.ib_s_init = self.ib_in_s_init
-        self.ib_fut_s_init = self.ib_in_s_init
-        self.ib_charge_s_init = self.ib_in_s_init
-        self.ioc_s_init = self.ib_in_s_init
+        self.ib_s_init = self.ib_in_s[0]
+        self.ib_fut_s_init = self.ib_in_s[0]
+        self.ib_charge_s_init = self.ib_in_s[0]
+        self.ioc_s_init = self.ib_in_s[0]
         self.voc_s_init = self.sim_run.voc_stat_s[0]
         self.soc_s_init = self.mon_run.soc_s[0]
         self.hx_init = self.mon_run.voc_soc[0]
@@ -459,12 +450,6 @@ class Sensors:
             self.iscn_f = float((self.VoVcn_f * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)
             # TODO:  implement iscn filter and scale with CURR_SCALE_DISCH (= 1. now everywhere so no worries at present)
 
-        self.ib_in_s_init = self.ib_in_s[i]
-        self.ib_dyn_s_init = self.ib_dyn_s[i]
-        self.dv_dyn_s_init = self.dv_dyn_s[i]
-        # self.e_wrap_m_filt_init = self.mon_run.e_wrap_m_filt[i]
-        # self.e_wrap_m_trim_init = self.mon_run.e_wrap_m_trim[i]
-        # self.e_wrap_n_filt_init = self.mon_run.e_wrap_n_filt[i]
 
     def update_tb(self):
         self.Tb_past = self.Tb

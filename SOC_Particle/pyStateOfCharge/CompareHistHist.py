@@ -22,7 +22,8 @@ from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files, precleanu
 from datetime import datetime
 from local_paths import version_from_data_file, local_paths
 import os
-from CompareHistSim import load_hist_and_prep, overall_fault, over_fault
+from CompareHistSim import load_hist_and_prep
+from CompareFault import overall_fault, over_fault
 
 import sys
 if sys.platform == 'darwin':

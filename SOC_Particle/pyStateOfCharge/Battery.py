@@ -476,13 +476,12 @@ class BatteryMonitor(Battery, EKF1x1):
             self.Tb_model_filt =SN.Tb_model_filt_init
             self.Tb_model_filt_rate = SN.Tb_model_filt_rate_init
             self.e_wrap = SN.e_wrap_init
-            self.e_wrap_filt = SN.e_wrap_filt_init
+            self.e_wrap_filt = SN.mon_run.e_wrap_filt[0]
             self.ib_amp_lo = False
             self.ib_noa_lo = False
             self.ib_amp_hi = False
             self.ib_noa_hi = False
             self.e_wrap_m = SN.e_wrap_m_init
-            # self.e_wrap_m_filt = SN.e_wrap_m_filt_init
             self.e_wrap_m_filt = SN.mon_run.e_wrap_m_filt[0]
             self.e_wrap_m_trim = SN.mon_run.e_wrap_m_trim[0]
             self.e_wrap_n = SN.e_wrap_n_init
@@ -969,9 +968,9 @@ class BatteryMonitor(Battery, EKF1x1):
                 ibnoa = self.ib_noa_pst
             self.LoopIbNoa.calculate(reset=reset, rp=rp, ib=ibnoa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
                                      dt=min(dt_local, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_init = SN.LoopNoa.ib_init, ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
-                                     e_wrap_filt_init = SN.mon_run.e_wrap_n_filt[G.i],
-                                     e_wrap_trim_init = 0.)
+                                     ib_init=SN.LoopNoa.ib_init, ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
+                                     e_wrap_filt_init=SN.mon_run.e_wrap_n_filt[G.i],
+                                     e_wrap_trim_init=0.)
             self.e_wrap_n = self.LoopIbNoa.e_wrap
             self.e_wrap_n_filt = self.LoopIbNoa.e_wrap_filt
             self.e_wrap_n_rate = self.LoopIbNoa.e_wrap_rate
