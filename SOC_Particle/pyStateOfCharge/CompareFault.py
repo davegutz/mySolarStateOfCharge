@@ -18,7 +18,6 @@
 import numpy as np
 import numpy.lib.recfunctions as rf
 import matplotlib.pyplot as plt
-from hysteresis.Hysteresis_20220917d import Hysteresis_20220917d
 from Battery import Battery, BatteryMonitor, is_sat
 from Battery import calculate_capacity, Retained
 from Colors import Colors
@@ -818,7 +817,6 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
 
     # Hysteresis_20220917d confirm equals data with HYS_SCALE_20220917d
     if len(h.time_ux) > 1:
-        hys_remodel = Hysteresis_20220917d(scale=HYS_SCALE_20220917d)  # Battery hysteresis model - drift of voc
         t_s_min = h.time_min[0]
         t_e_min = h.time_min[-1]
         dt_hys_min = 1.
@@ -836,23 +834,13 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
             t_sec = hys_time_min[i] * 60.
             ib = np.interp(t_sec, h.time_sec, h.ib_f)
             soc = np.interp(t_sec, h.time_sec, h.soc)
-            hys_remodel.calculate_hys(ib, soc)
-            dvh = hys_remodel.update(dt_hys_sec)
-            dv_hys_remodel.append(dvh)
-        dv_hys_remodel = np.array(dv_hys_remodel)
-        dv_hys_remodel_ = np.copy(h.soc)
         for i in range(len(h.time_ux)):
             t_min = int(float(h.time_ux[i]) / 60.)
-            if len(hys_time_min) > 0:
-                dv_hys_remodel_[i] = np.interp(t_min, hys_time_min, dv_hys_remodel)
-            else:
-                dv_hys_remodel_[i] = 0.
         t_s_min = h.time_min[0]
         t_e_min = h.time_min[-1]
         dt_hys_min = 1.
         h = rf.rec_append_fields(h, 'sat', sat_)
         h = rf.rec_append_fields(h, 'bms_off', bms_off_)
-        h = rf.rec_append_fields(h, 'dv_hys_remodel', dv_hys_remodel_)
         h = rf.rec_append_fields(h, 'voc_stat_r_dis', voc_stat_r_dis)
         h = rf.rec_append_fields(h, 'voc_stat_r_chg', voc_stat_r_chg)
         h = rf.rec_append_fields(h, 'voc_stat_rescaled_r_dis', voc_stat_rescaled_r_dis)
