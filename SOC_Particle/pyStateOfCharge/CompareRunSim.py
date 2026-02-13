@@ -22,6 +22,7 @@ import sys
 from MonSim import replicate, save_clean_file, UserOptions
 from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files, precleanup_fig_files
 from CompareFault import over_fault
+from Util import rename
 import matplotlib.pyplot as plt
 from datetime import datetime
 from load_data import load_data
@@ -117,6 +118,12 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
     if mon_run is None:
         tkinter.messagebox.showwarning(message="CompareRunSim:  Data missing.  See monitor window for info.")
         return None, None, None, None, None, None
+    else:
+        mon_run = rename(mon_run, 'e_w_f', 'e_wrap_filt')
+        mon_run = rename(mon_run, 'e_wm_f', 'e_wrap_m_filt')
+        mon_run = rename(mon_run, 'e_wm_t', 'e_wrap_m_trim')
+        mon_run = rename(mon_run, 'e_wn_f', 'e_wrap_n_filt')
+
 
     # New run
     mon_file_save = data_file_clean.replace(".csv", "_rep.csv")

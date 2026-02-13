@@ -18,16 +18,9 @@ a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 
-from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files, precleanup_fig_files
-from DataOverModel import dom_plot
 import matplotlib.pyplot as plt
-from PlotKiller import show_killer
 from CompareRunSim import compare_run_sim
 from CompareHistSim import compare_hist_sim
-from datetime import datetime
-import os
-import tkinter.messagebox
-from local_paths import version_from_data_file, local_paths
 
 import sys
 if sys.platform == 'darwin':
@@ -41,6 +34,7 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
+# noinspection PyUnusedLocal
 def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=True,
                      strict_overplot=False, terse=False, use_mon_csv=False, dt_resample=10, Tb_force=None,
                      use_mon_soc=False, verbose=True, scale=1., slr_hys_sim=1., Battery=None,
@@ -74,7 +68,7 @@ def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=True,
                         request_history=request_history_run_sim, init_time_in=init_time, time_shift_in=time_shift,
                         strict_overplot=strict_overplot, terse=terse, show_killer_=False)
 
-    fig_list, fig_files = \
+    _, _ = \
         compare_hist_sim(data_file=data_file, use_mon_csv=use_mon_csv, unit_key=unit_key, dt_resample=dt_resample,
                          plots=plots, Tb_force=Tb_force, request_history=request_history_hist_sim, terse=terse,
                          strict_overplot=strict_overplot, fig_list=fig_list, fig_files=fig_files, show_killer_=True)

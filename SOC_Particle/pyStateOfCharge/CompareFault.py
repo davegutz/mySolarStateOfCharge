@@ -18,14 +18,13 @@
 import numpy as np
 import numpy.lib.recfunctions as rf
 import matplotlib.pyplot as plt
-from Hysteresis_20220917d import Hysteresis_20220917d
+from hysteresis.Hysteresis_20220917d import Hysteresis_20220917d
 from Battery import Battery, BatteryMonitor, is_sat
 from Battery import calculate_capacity, Retained
 from Colors import Colors
 from plot.plq import plq as plq
 from Chemistry_BMS import ib_lag
 from filter.myFilters import LagExp
-from MonSimClasses import rename
 
 # Suppress all UserWarning messages
 import warnings
@@ -81,10 +80,6 @@ def add_ib_lag(data, mon):
 
 # Add schedule lookups and do some rack and stack
 def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=None, unit=None):
-    # Rename
-    d_ra = rename(d_ra, 'e_w_f', 'e_wrap_filt')
-    d_ra = rename(d_ra, 'ibmh_f', 'ib_amp_hdwe_f')
-    d_ra = rename(d_ra, 'ibnh_f', 'ib_noa_hdwe_f')
     voc_soc = []
     soc_min = []
     vsat = []

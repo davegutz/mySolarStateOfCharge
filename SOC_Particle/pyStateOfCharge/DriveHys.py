@@ -21,7 +21,7 @@ import numpy as np
 # from pyDAGx.lookup_table import LookupTable
 from pyDAGx.myTables import TableInterp2D
 from unite_pictures import cleanup_fig_files
-from Hysteresis_20220917d import Hysteresis_20220917d
+from hysteresis.Hysteresis_20220917d import Hysteresis_20220917d
 import os
 
 

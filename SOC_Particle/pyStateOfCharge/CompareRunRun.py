@@ -26,7 +26,6 @@ from datetime import datetime
 from PlotKiller import show_killer
 import os
 from load_data import load_data, calculate_master_sync
-from load_data20241006 import load_data20241006
 from local_paths import version_from_data_path, local_paths
 
 import sys
@@ -65,14 +64,9 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
 
     # Load old ref data
     data_file_run = os.path.join(data_file_folder_run, data_file_txt_run)
-    if data_file_run.__contains__('g20241006'):
-        mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
-            load_data20241006(data_file_run, 1, unit_key_run, zero_zero_in, time_end_in,
-                      rated_batt_cap=rated_batt_cap_run_in)
-    else:
-        mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
-            load_data(data_file_run, 1, unit_key_run, zero_zero_in, time_end_in,
-                      rated_batt_cap=rated_batt_cap_run_in)
+    mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
+        load_data(data_file_run, 1, unit_key_run, zero_zero_in, time_end_in,
+                  rated_batt_cap=rated_batt_cap_run_in)
 
     # Load new test data
     data_file_test = os.path.join(data_file_folder_test, data_file_txt_test)
@@ -91,7 +85,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
         sync_info_test.synchronize(master_sync_del)
         mon_test.time = sync_info_test.time_mon.copy()
         # print(f"{sync_to_ctime=}\n{sync_info_run.del_mon=}\n{sync_info_test.del_mon=}\n{master_sync_del=}\n{mon_test.time=}")
-    elif sync_to_ctime is True:
+    elif sync_to_ctime:
         cTime_0_run = mon_run.cTime[0]
         cTime_sync = cTime_0_run
         mon_run.time = mon_run.cTime - cTime_sync

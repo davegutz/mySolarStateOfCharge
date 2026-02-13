@@ -1,4 +1,27 @@
 import os
+import numpy.lib.recfunctions as rfn
+
+
+# rename array elements, either class or recarray
+def rename(ra, targ, repl):
+    try:
+        ra = rfn.rename_fields(ra, {targ: repl})
+    except ValueError:
+        # Rename
+        if ra.dtype.names.__contains__(targ):
+            names = list(ra.dtype.names)
+            names[names.index(targ)] = repl
+            ra.dtype.names = tuple(names)
+    except AttributeError:
+        if hasattr(ra, targ):
+            val = getattr(ra, targ)
+            setattr(ra, repl, val)
+            delattr(ra, targ)
+        elif hasattr(ra, repl):
+            print(f"rename: {repl} already translated")
+        else:
+            print(f"rename:  neither {targ} nor {repl} found")
+    return ra
 
 
 # Unix-like cat function

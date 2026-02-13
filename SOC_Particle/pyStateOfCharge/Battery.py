@@ -18,10 +18,10 @@
 import numpy as np
 from filter.EKF1x1 import EKF1x1
 from Coulombs import Coulombs, Chemistry
-from Hysteresis import Hysteresis
+from hysteresis.Hysteresis import Hysteresis
 import matplotlib.pyplot as plt
 from filter.TFDelay import TFDelay
-from filter.myFilters import LagTustin, LagExp, General2Pole, RateLimit, SlidingDeadband, TustinIntegrator, RateLagExp
+from filter.myFilters import LagTustin, LagExp, General2Pole, SlidingDeadband, TustinIntegrator
 from filter.Scale import ScaleSelector
 from plot.plq import plq
 import sys
@@ -94,7 +94,6 @@ def apply_off_nominal_battery(Battery_, Battery_off_dict):
 
 
 class Battery(Coulombs):
-    import Globals as G
     # Battery constants
     NOM_SYS_VOLT = 12.  # Nominal system output, V, at which the reported amps are used (12)
     mxeps_bb = 1.05  # Numerical maximum of coefficient model with scaled soc

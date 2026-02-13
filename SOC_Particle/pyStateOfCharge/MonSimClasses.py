@@ -28,19 +28,6 @@ import Globals as G
 import numpy as np
 
 
-# rename recarray elements
-def rename(ra, targ, repl):
-    try:
-        ra = rfn.rename_fields(ra, {targ: repl})
-    except ValueError:
-        # Rename
-        if ra.dtype.names.__contains__(targ):
-            names = list(ra.dtype.names)
-            names[names.index(targ)] = repl
-            ra.dtype.names = tuple(names)
-    return ra
-
-
 class ProArray:
     def __init__(self, data, mutable=False):
         # Initialize a NumPy array, marked as "internal" with a leading underscore
