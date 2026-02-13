@@ -121,13 +121,12 @@ if __name__ == '__main__':
 
 
     def main():
-        input_files = ['hist v20220926 20221006.txt', 'hist v20220926 20221006a.txt', 'hist v20220926 20221008.txt',
-                       'hist v20220926 20221010.txt', 'hist v20220926 20221011.txt']
+        input_files = []
         exclusions = [(0, 1665334404)]  # before faults
         # exclusions = [(0, 1665518004)]  # small test set for debugging
 
         # exclusions = None
-        data_file = 'data20220926.txt'
+        data_file = ''
         path_to_data = '../dataReduction'
         path_to_temp = '../dataReduction/temp'
         import os

@@ -18,7 +18,6 @@
 import numpy as np
 import numpy.lib.recfunctions as rf
 import matplotlib.pyplot as plt
-from hysteresis.Hysteresis_20220917d import Hysteresis_20220917d
 from Battery import Battery, BatteryMonitor, is_sat, calculate_capacity, load_off_nominal_battery, \
     apply_off_nominal_battery
 from MonSim import replicate, save_clean_file, UserOptions
@@ -195,49 +194,32 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=None):
     soc_r = 1. + dq / q_cap_r
     h = rf.rec_append_fields(h, 'soc_r', soc_r)
     h.voc_stat_r = h.voc_stat_f - (h.Tb_f - tb_forr) * mon.chemistry.dvoc_dt
-    h.voc_stat_rescaled_r = h.voc_stat_rescaled - (h.Tb_f - tb_forr) * mon.chemistry.dvoc_dt
 
     # delineate charging and discharging
     voc_stat_r_chg = np.copy(h.voc_stat_f)
     voc_stat_r_dis = np.copy(h.voc_stat_f)
-    voc_stat_rescaled_r_chg = np.copy(h.voc_stat_rescaled)
-    voc_stat_rescaled_r_dis = np.copy(h.voc_stat_rescaled)
     for i in range(len(voc_stat_r_chg)):
         if h.ib_f[i] > -0.5:
             voc_stat_r_dis[i] = None
-            voc_stat_rescaled_r_dis[i] = None
         elif h.ib_f[i] < 0.5:
             voc_stat_r_chg[i] = None
-            voc_stat_rescaled_r_chg[i] = None
     if len(h.time_ux) > 1:
-        hys_remodel = Hysteresis_20220917d(scale=HYS_SCALE_20220917d)  # Battery hysteresis model - drift of voc
         t_s_min = h.time_min[0]
         t_e_min = h.time_min[-1]
         dt_hys_min = 1.  # ??????????????????????????????
         dt_hys_sec = dt_hys_min * 60.
         hys_time_min = np.arange(t_s_min, t_e_min, dt_hys_min, dtype=float)
         print(f" {t_s_min=} {t_e_min=} {dt_hys_min=}  days of data = {(t_e_min-t_s_min)/(24.*60)} ", end='')
-        # Note:  Hysteresis_20220917d instantiates hysteresis state to 0. unless told otherwise
-        dv_hys_remodel = []
         for i in range(len(hys_time_min)):
             t_sec = hys_time_min[i] * 60.
             ib_f = np.interp(t_sec, h.time_sec, h.ib_f)
             soc = np.interp(t_sec, h.time_sec, h.soc)
-            hys_remodel.calculate_hys(ib_f, soc)
-            dvh = hys_remodel.update(dt_hys_sec)
-            dv_hys_remodel.append(dvh)
-        dv_hys_remodel = np.array(dv_hys_remodel)
-        dv_hys_remodel_ = np.copy(h.soc)
         for i in range(len(h.time_ux)):
             t_min = int(float(h.time_ux[i]) / 60.)
-            dv_hys_remodel_[i] = np.interp(t_min, hys_time_min, dv_hys_remodel)
         h = rf.rec_append_fields(h, 'sat', sat_)
         h = rf.rec_append_fields(h, 'bms_off', bms_off_)
-        h = rf.rec_append_fields(h, 'dv_hys_remodel', dv_hys_remodel_)
         h = rf.rec_append_fields(h, 'voc_stat_r_dis', voc_stat_r_dis)
         h = rf.rec_append_fields(h, 'voc_stat_r_chg', voc_stat_r_chg)
-        h = rf.rec_append_fields(h, 'voc_stat_rescaled_r_dis', voc_stat_rescaled_r_dis)
-        h = rf.rec_append_fields(h, 'voc_stat_rescaled_r_chg', voc_stat_rescaled_r_chg)
 
     return h
 

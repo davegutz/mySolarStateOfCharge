@@ -32,22 +32,6 @@ warnings.filterwarnings("ignore", category=UserWarning)
 #  For this battery Battleborn 100 Ah with 1.084 x capacity
 IB_BAND = 1.  # Threshold to declare charging or discharging
 TB_BAND = 25.  # Band around temperature to group data and correct
-HYS_SCALE_20220917d = 0.3  # Original hys_remodel scalar inside photon code
-HYS_SCALE_20220926 = 1.0  # Original hys_remodel scalar inside photon code
-
-#  Rescale parameters design.  Minimal tuning attempt
-#  This didn't work because low soc response of original design is too slow
-HYS_RESCALE_CHG = 0.5  # Attempt to rescale to match voc_soc to all data
-HYS_RESCALE_DIS = 0.3  # Attempt to rescale to match voc_soc to all data
-VOC_RESET_05 = 0.  # Attempt to rescale to match voc_soc to all data
-VOC_RESET_11 = 0.  # Attempt to rescale to match voc_soc to all data
-VOC_RESET_20 = 0.  # Attempt to rescale to match voc_soc to all data
-VOC_RESET_30 = -0.03  # Attempt to rescale to match voc_soc to all data
-VOC_RESET_40 = 0.  # Attempt to rescale to match voc_soc to all data
-
-#  Redesign Hysteresis_20220917d.  Make a new Hysteresis_20220926.py with new curve
-# HYS_CAP_REDESIGN = 3.6e4  # faster time constant needed
-HYS_SOC_MIN_MARG = 0.15  # add to soc_min to set thr for detecting low endpoint condition for reset of hysteresis
 
 
 # Add ib_lag = ib lagged by time constant
@@ -186,19 +170,8 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     dv_hys = d_mod.voc_f - d_mod.voc_stat_f
     d_mod = rf.rec_append_fields(d_mod, 'dv_hys', np.array(dv_hys, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'dV_hys', np.array(dv_hys, dtype=float))
-    dv_hys_unscaled = d_mod.dv_hys / HYS_SCALE_20220917d
-    d_mod = rf.rec_append_fields(d_mod, 'dv_hys_unscaled', np.array(dv_hys_unscaled, dtype=float))
     dv_hys_required = d_mod.voc_f - voc_soc + dv_hys
     d_mod = rf.rec_append_fields(d_mod, 'dv_hys_required', np.array(dv_hys_required, dtype=float))
-
-    dv_hys_rescaled = d_mod.dv_hys_unscaled
-    pos = dv_hys_rescaled >= 0
-    neg = dv_hys_rescaled < 0
-    dv_hys_rescaled[pos] *= HYS_RESCALE_CHG
-    dv_hys_rescaled[neg] *= HYS_RESCALE_DIS
-    d_mod = rf.rec_append_fields(d_mod, 'dv_hys_rescaled', np.array(dv_hys_rescaled, dtype=float))
-    voc_stat_rescaled = d_mod.voc_f - d_mod.dv_hys_rescaled
-    d_mod = rf.rec_append_fields(d_mod, 'voc_stat_rescaled', np.array(voc_stat_rescaled, dtype=float))
 
     voc_dyn = d_mod.voc_f.copy()
     d_mod = rf.rec_append_fields(d_mod, 'voc_dyn', np.array(voc_dyn, dtype=float))
@@ -336,12 +309,10 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.legend(loc=4)
         plt.subplot(337)
         plq(plt, hi, timestr, hi, 'dv_hys', color='blue', linestyle='-', marker='o', markersize='3')
-        plq(plt, hi, timestr, hi, 'dv_hys_rescaled', color='cyan', linestyle='-', marker='o', markersize='3')
         plq(plt, hi, timestr, hi, 'dv_hys_required', color='black', linestyle='--')
         plq(plt, hi, timestr, hi, 'e_wrap_filt', slr=-1, color='red', linestyle='None', marker='o', markersize='3',
             warn=False)
         plq(plt, hi, timestr, hi, 'e_wrap_filt', slr=-1, color='red', linestyle='None', marker='o', markersize='3')
-        plq(plt, hi, timestr, hi, 'dv_hys_remodel', color='lawngreen', linestyle=':', marker='x', markersize='3')
         plt.xlabel(time_units)
         plt.legend(loc=1)
         plt.subplot(338)
@@ -419,7 +390,6 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         print('f3', end=':  ')
         plt.suptitle(subtitle)
         plq(plt, hi, timestr, hi, 'dv_hys', color='blue', linestyle='-', marker='o', markersize='3')
-        plq(plt, hi, timestr, hi, 'dv_hys_rescaled', color='cyan', linestyle='-', marker='o', markersize='3')
         plq(plt, hi, timestr, hi, 'dv_hys_required', color='black', linestyle='--')
         plq(plt, hi, timestr, hi, 'e_wrap_filt', slr=-1, color='red', linestyle='None', marker='o', markersize='3',
             warn=False)
@@ -800,27 +770,21 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
     soc_r = 1. + dq / q_cap_r
     h = rf.rec_append_fields(h, 'soc_r', soc_r)
     h.voc_stat_r = h.voc_stat_f - (h.Tb_f - temp_corr) * mon.chemistry.dvoc_dt
-    h.voc_stat_rescaled_r = h.voc_stat_rescaled - (h.Tb_f - temp_corr) * mon.chemistry.dvoc_dt
 
     # delineate charging and discharging
     voc_stat_r_chg = np.copy(h.voc_stat_f)
     voc_stat_r_dis = np.copy(h.voc_stat_f)
-    voc_stat_rescaled_r_chg = np.copy(h.voc_stat_rescaled)
-    voc_stat_rescaled_r_dis = np.copy(h.voc_stat_rescaled)
     for i in range(len(voc_stat_r_chg)):
         if h.ib_f[i] > -0.5:
             voc_stat_r_dis[i] = None
-            voc_stat_rescaled_r_dis[i] = None
         elif h.ib_f[i] < 0.5:
             voc_stat_r_chg[i] = None
-            voc_stat_rescaled_r_chg[i] = None
 
-    # Hysteresis_20220917d confirm equals data with HYS_SCALE_20220917d
+    # Hysteresis
     if len(h.time_ux) > 1:
         t_s_min = h.time_min[0]
         t_e_min = h.time_min[-1]
         dt_hys_min = 1.
-        dt_hys_sec = dt_hys_min * 60.
         hys_time_min = np.arange(t_s_min, t_e_min, dt_hys_min, dtype=float)
         min_per_month = 30*24*60
         if len(hys_time_min) > 2 * min_per_month:
@@ -828,23 +792,12 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
             print("HUGE time range.  Something is wrong with time")
             print(Colors.reset)
             return None
-        # Note:  Hysteresis_20220917d instantiates hysteresis state to 0. unless told otherwise
-        dv_hys_remodel = []
         for i in range(len(hys_time_min)):
             t_sec = hys_time_min[i] * 60.
-            ib = np.interp(t_sec, h.time_sec, h.ib_f)
-            soc = np.interp(t_sec, h.time_sec, h.soc)
-        for i in range(len(h.time_ux)):
-            t_min = int(float(h.time_ux[i]) / 60.)
-        t_s_min = h.time_min[0]
-        t_e_min = h.time_min[-1]
-        dt_hys_min = 1.
         h = rf.rec_append_fields(h, 'sat', sat_)
         h = rf.rec_append_fields(h, 'bms_off', bms_off_)
         h = rf.rec_append_fields(h, 'voc_stat_r_dis', voc_stat_r_dis)
         h = rf.rec_append_fields(h, 'voc_stat_r_chg', voc_stat_r_chg)
-        h = rf.rec_append_fields(h, 'voc_stat_rescaled_r_dis', voc_stat_rescaled_r_dis)
-        h = rf.rec_append_fields(h, 'voc_stat_rescaled_r_chg', voc_stat_rescaled_r_chg)
     return h
 
 

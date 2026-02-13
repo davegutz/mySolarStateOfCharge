@@ -396,7 +396,6 @@ if __name__ == '__main__':
         skip = 1
         zero_zero_in = False
         zero_thr_in = 0.02
-        data_file_old_txt = 'EKF_Track Dr2000 v20220917.txt'; unit_key = 'pro_2022'
         hdr_key = "unit,"  # Find one instance of title
         hdr_key_sel = "unit_s,"  # Find one instance of title
         unit_key_sel = "unit_sel"
