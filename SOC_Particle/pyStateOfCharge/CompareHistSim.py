@@ -48,7 +48,6 @@ warnings.filterwarnings("ignore", category=UserWarning)
 #  For this battery Battleborn 100 Ah with 1.084 x capacity
 IB_BAND = 1.  # Threshold to declare charging or discharging
 TB_BAND = 25.  # Band around temperature to group data and correct.  Large value means no banding, effectively
-HYS_SCALE_20220917d = 0.3  # Original hys_remodel scalar inside photon code
 
 # Calculate thresholds from global input values listed above (review these)
 def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb):
