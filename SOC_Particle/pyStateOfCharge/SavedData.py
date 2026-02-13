@@ -19,7 +19,6 @@ Dependencies:
 """
 from Battery import load_off_nominal_battery, apply_off_nominal_battery
 from filter.myFilters import LagExp
-from Util import rename
 from Colors import Colors
 import Chemistry_BMS
 import numpy as np
@@ -311,7 +310,7 @@ class SavedData:
             self.ib_s = None
             self.mib = None
             self.ib_sel = None
-            self.vb_h = None
+            self.vb_hdwe = None
             self.vb_s = None
             self.mvb = None
             self.vb = self.vb
@@ -390,13 +389,13 @@ class SavedData:
             self.c_time_s = np.array(sel.c_time[:i_end]) - self.time_run
             self.user_sel = np.array(sel.user_sel[:i_end])
             self.cc_dif = np.array(sel.cc_dif[:i_end])
-            self.ib_amp_hdwe = np.array(sel.ibmh[:i_end])
-            self.ib_noa_hdwe = np.array(sel.ibnh[:i_end])
-            self.ib_amp_model = np.array(sel.ibmm[:i_end])
-            self.ib_noa_model = np.array(sel.ibnm[:i_end])
-            self.ib_model = np.array(sel.ibm[:i_end])
-            self.ib_amp_hdwe_kf = np.array(sel.ibmkf[:i_end])
-            self.ib_noa_hdwe_kf = np.array(sel.ibnkf[:i_end])
+            self.ib_amp_hdwe = np.array(sel.ib_amp_hdwe[:i_end])
+            self.ib_noa_hdwe = np.array(sel.ib_noa_hdwe[:i_end])
+            self.ib_amp_model = np.array(sel.ib_amp_model[:i_end])
+            self.ib_noa_model = np.array(sel.ib_noa_model[:i_end])
+            self.ib_model = np.array(sel.ib_model[:i_end])
+            self.ib_amp_hdwe_kf = np.array(sel.ib_amp_hdwe_kf[:i_end])
+            self.ib_noa_hdwe_kf = np.array(sel.ib_noa_hdwe_kf[:i_end])
             self.vovcn = np.array(sel.vovcn[:i_end])
             self.ib_noa_kf = np.array(sel.ib_noa_kf[:i_end])
             self.kfres = np.array(sel.kfres[:i_end])
@@ -410,28 +409,28 @@ class SavedData:
             self.ccd_fa = np.bool_(np.array(falw) & 2**4)
             self.ib_diff_flt = np.bool_((np.array(fltw) & 2**8) | (np.array(fltw) & 2**9))
             self.ib_diff_fa = np.bool_((np.array(falw) & 2**8) | (np.array(falw) & 2**9))
-            self.e_wrap = np.array(sel.e_w[:i_end])
-            self.e_wrap_filt = np.array(sel.e_w_f[:i_end])
-            self.ib_dyn_m = np.array(sel.ib_dm[:i_end])
-            self.dv_dyn_m = np.array(sel.dv_dm[:i_end])
-            self.ib_dyn_n = np.array(sel.ib_dn[:i_end])
-            self.dv_dyn_n = np.array(sel.dv_dn[:i_end])
+            self.e_wrap = np.array(sel.e_wrap[:i_end])
+            self.e_wrap_filt = np.array(sel.e_wrap_filt[:i_end])
+            self.ib_dyn_m = np.array(sel.ib_dyn_m[:i_end])
+            self.dv_dyn_m = np.array(sel.dv_dyn_m[:i_end])
+            self.ib_dyn_n = np.array(sel.ib_dyn_n[:i_end])
+            self.dv_dyn_n = np.array(sel.dv_dyn_n[:i_end])
             self.e_wrap_m = np.array(sel.e_wrap_m[:i_end])
             self.e_wrap_m_filt = np.array(sel.e_wrap_m_filt[:i_end])
             self.e_wrap_m_reset = np.array(sel.e_wrap_m_reset[:i_end])
             self.e_wrap_n = np.array(sel.e_wrap_n[:i_end])
             self.e_wrap_n_filt = np.array(sel.e_wrap_n_filt[:i_end])
             self.e_wrap_m_trim = np.array(sel.e_wrap_m_trim[:i_end])
-            self.e_wrap_m_trimmed = np.array(sel.ib_wrp_tr_m[:i_end])
-            self.vb_model = np.array(sel.vb_m[:i_end])
-            if hasattr(sel, 'vb_h'):
-                self.vb_hdwe = np.array(sel.vb_h[:i_end])
+            self.e_wrap_m_trimmed = np.array(sel.e_wrap_m_trimmed[:i_end])
+            self.vb_model = np.array(sel.vb_model[:i_end])
+            if hasattr(sel, 'vb_hdwe'):
+                self.vb_hdwe = np.array(sel.vb_hdwe[:i_end])
             else:
                 self.vb_hdwe = np.array(sel.vb[:i_end])
-            if hasattr(sel, 'vb_h_f'):
-                self.vb_hdwe_f = np.array(sel.vb_h_f[:i_end])
+            if hasattr(sel, 'vb_hdwe_f'):
+                self.vb_hdwe_f = np.array(sel.vb_hdwe_f[:i_end])
             else:
-                self.vb_hdwe_f = np.array(sel.vb_h[:i_end])
+                self.vb_hdwe_f = np.array(sel.vb_hdwe[:i_end])
             self.voc_m = np.array(sel.voc_m[:i_end])
             self.voc_soc_m = np.array(sel.voc_soc_m[:i_end])
             if hasattr(sel, 'ib_amp'):
@@ -460,7 +459,7 @@ class SavedData:
             self.ib_s = np.array(sel.ib_s[:i_end])
             self.mib = np.array(sel.mib[:i_end])
             self.ib_sel = np.array(sel.ib[:i_end])
-            self.vb_h = np.array(sel.vb_h[:i_end])
+            self.vb_hdwe = np.array(sel.vb_hdwe[:i_end])
             self.vb_s = np.array(sel.vb_s[:i_end])
             self.mvb = np.array(sel.mvb[:i_end])
             self.vb = np.array(sel.vb[:i_end])
@@ -754,8 +753,8 @@ class SavedData:
             self.Tb_model_filt = np.copy(self.Tb_f_rap)
         if self.dt_ekf is None:
             self.dt_ekf = np.copy(self.dt)
-        if self.vb_h is None:
-            self.vb_h = np.copy(self.vb)
+        if self.vb_hdwe is None:
+            self.vb_hdwe = np.copy(self.vb)
         if self.x is None:
             self.x = np.copy(self.soc_ekf)
         if self.x_prior is None:

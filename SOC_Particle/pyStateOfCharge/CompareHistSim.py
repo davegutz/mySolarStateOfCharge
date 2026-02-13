@@ -31,7 +31,7 @@ from datetime import datetime
 from load_data import load_data, remove_nan, remove_0T
 from local_paths import version_from_data_file, local_paths
 from CompareFault import add_stuff_f
-from Util import rename
+from Util import rename_all
 import os
 
 import sys
@@ -354,11 +354,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
     if use_mon_csv:
         mon, sim, fault, mon_t_file_clean, temp_mont_t_file_clean, _ = \
             load_data(data_file, 1, unit_key=unit_key, time_end_in=time_end_in, zero_zero_in=False, mon_str='hist')
-        mon =rename(mon, 'e_w_f', 'e_wrap_filt')
-        mon =rename(mon, 'e_wm_f', 'e_wrap_m_filt')
-        mon =rename(mon, 'e_wm_t', 'e_wrap_m_trim')
-        mon =rename(mon, 'e_wn_f', 'e_wrap_n_filt')
-        mon =rename(mon, 'e_wn_t', 'e_wrap_n_trim')
+        mon = rename_all(mon)
     else:
         mon = None
 
@@ -428,9 +424,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
         if len(f_raw) > 0:
             # noinspection PyTypeChecker
             # Rename
-            f_raw = rename(f_raw, 'e_w_f', 'e_wrap_filt')
-            f_raw = rename(f_raw, 'ibmh_f', 'ib_amp_hdwe_f')
-            f_raw = rename(f_raw, 'ibnh_f', 'ib_noa_hdwe_f')
+            f_raw = rename_all(f_raw)
             fault = add_stuff_f(f_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
                                 time_sync=sync_time, unit=unit)
             print("\nfault after add_stuff_f:\n", fault.dtype.names, fault, "\n")
@@ -449,10 +443,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
         h_combo_raw = remove_0T(h_combo_raw, 'HISTORY u and h in h_combo_raw')
         # print("\nhist raw:\n", h_combo_raw.dtype.names, "\n", h_combo_raw, "\n", h_combo_raw.dtype.names, "\n")
         # noinspection PyTypeChecker
-        h_combo_raw = rename(h_combo_raw, 'e_w_f', 'e_wrap_filt')
-        h_combo_raw = rename(h_combo_raw, 'e_w_f', 'e_wrap_filt')
-        h_combo_raw = rename(h_combo_raw, 'ibmh_f', 'ib_amp_hdwe_f')
-        h_combo_raw = rename(h_combo_raw, 'ibnh_f', 'ib_noa_hdwe_f')
+        h_combo_raw = rename_all(h_combo_raw)
         hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
                            time_sync=sync_time)
 
@@ -507,11 +498,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
 
             # Hand fix oddities`
             mon, sim = bandaid(h_20C_resamp)
-            mon =rename(mon, 'e_w_f', 'e_wrap_filt')
-            mon =rename(mon, 'e_wm_f', 'e_wrap_m_filt')
-            mon =rename(mon, 'e_wm_t', 'e_wrap_m_trim')
-            mon =rename(mon, 'e_wn_f', 'e_wrap_n_filt')
-            mon =rename(mon, 'e_wn_t', 'e_wrap_n_trim')
+            mon = rename_all(mon)
 
         return mon, sim, unit, fault, hist_20C, filename, Battery
 

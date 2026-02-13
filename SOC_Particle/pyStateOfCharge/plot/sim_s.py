@@ -131,7 +131,7 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
             plq(plt, S.mr, 'time', S.mr, 'voc', color='black', linestyle='--')
             plq(plt, S.mr, 'time', S.mr, 'voc_stat', color='blue', linestyle='-.')
             plq(plt, S.mr, 'time', S.mr, 'voc_soc', color='orange', linestyle=':')
-            plq(plt, S.mr, 'time', S.mr, 'vb_h', color='cyan', linestyle=':')
+            plq(plt, S.mr, 'time', S.mr, 'vb_hdwe', color='cyan', linestyle=':')
             plt.legend(loc=1)
         if not S.strict_overplot:
             plt.subplot(332)
@@ -251,8 +251,8 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.smv, 'time', S.smv, 'soc_s', add=-.2, color='black', linestyle='--')
         plt.legend(loc=1)
         plt.subplot(322)
-        if S.mr.vb_h is not None and max(S.mr.vb_h) > 1.:
-            plq(plt, S.mr, 'soc', S.mr, 'vb_h', color='magenta', linestyle=':')
+        if S.mr.vb_hdwe is not None and max(S.mr.vb_hdwe) > 1.:
+            plq(plt, S.mr, 'soc', S.mr, 'vb_hdwe', color='magenta', linestyle=':')
         plq(plt, S.mr, 'soc', S.mr, 'voc_stat', color='cyan', linestyle='-.')
         plq(plt, S.mr, 'soc', S.mr, 'voc_soc', color='blue', linestyle='-')
         plq(plt, S.mv, 'soc', S.mv, 'voc_soc', color='red', linestyle='--')
@@ -280,8 +280,8 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.smv, 'time', S.smv, 'voc_stat_s', color='orange', linestyle=':')
         plt.legend(loc=1)
         plt.subplot(325)
-        if S.mr.vb_h is not None and max(S.mr.vb_h) > 1.:
-            plq(plt, S.mr, 'time', S.mr, 'vb_h', color='magenta', linestyle='--')
+        if S.mr.vb_hdwe is not None and max(S.mr.vb_hdwe) > 1.:
+            plq(plt, S.mr, 'time', S.mr, 'vb_hdwe', color='magenta', linestyle='--')
         plq(plt, S.mr, 'time', S.mr, 'voc_stat', color='cyan', linestyle='-.')
         plq(plt, S.mr, 'time', S.mr, 'voc_soc', color='blue', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'voc_soc', color='red', linestyle='--')
@@ -316,7 +316,7 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.mv, 'soc', S.mv, 'voc_stat', color='black', linestyle='--')
         plq(plt, S.mr, 'soc', S.mr, 'voc_ekf', color='green', linestyle='-.')
         plq(plt, S.mv, 'soc', S.mv, 'voc_ekf', color='cyan', linestyle=':')
-        plq(plt, S.mr, 'soc', S.mr, 'vb_h', color='magenta', linestyle='-')
+        plq(plt, S.mr, 'soc', S.mr, 'vb_hdwe', color='magenta', linestyle='-')
         plq(plt, S.mv, 'soc', S.mv, 'vb_hdwe', color='black', linestyle='--')
         plq(plt, S.mr, 'soc', S.mr, 'voc_stat', color='red', linestyle='-.')
         plq(plt, S.smv, 'soc_s', S.smv, 'voc_stat_s', color='blue', linestyle=':')
@@ -333,7 +333,7 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.mv, 'soc', S.mv, 'voc_stat', color='black', linestyle='--')
         plq(plt, S.mr, 'soc', S.mr, 'voc_ekf', color='green', linestyle='-.')
         plq(plt, S.mv, 'soc', S.mv, 'voc_ekf', color='cyan', linestyle=':')
-        plq(plt, S.mr, 'soc', S.mr, 'vb_h', color='magenta', linestyle='-')
+        plq(plt, S.mr, 'soc', S.mr, 'vb_hdwe', color='magenta', linestyle='-')
         plq(plt, S.mv, 'soc', S.mv, 'vb_hdwe', color='black', linestyle='--')
         plq(plt, S.mr, 'soc', S.mr, 'voc_stat', color='red', linestyle='-.')
         plq(plt, S.smv, 'soc_s', S.smv, 'voc_stat_s', color='blue', linestyle=':')
@@ -346,7 +346,7 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.mv, 'time', S.mv, 'voc_stat', color='black', linestyle='--')
         plq(plt, S.mr, 'time', S.mr, 'voc_ekf', color='green', linestyle='-.')
         plq(plt, S.mv, 'time', S.mv, 'voc_ekf', color='cyan', linestyle=':')
-        plq(plt, S.mr, 'time', S.mr, 'vb_h', color='magenta', linestyle='-')
+        plq(plt, S.mr, 'time', S.mr, 'vb_hdwe', color='magenta', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'vb_hdwe', color='black', linestyle='--')
         plq(plt, S.sv, 'time', S.sv, 'voc_stat', color='red', linestyle='-.')
         plq(plt, S.smv, 'time', S.smv, 'voc_stat_s', color='blue', linestyle=':')

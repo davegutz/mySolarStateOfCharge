@@ -657,12 +657,6 @@ def calc_fault(d_ra, d_mod, Battery=None):
     ib_amp_fa = np.bool_(falw & 2 ** 2)
     vb_fa = np.bool_(falw & 2 ** 1)
     tb_fa = np.bool_(falw & 2 ** 0)
-    # if not hasattr(d_mod, 'e_wrap_filt'):
-    #     if hasattr(d_mod, 'e_w_f'):
-    #         rename(d_mod,'e_w_f', 'e_wrap_filt')
-    #     else:
-    #         e_wrap_filt = d_mod.voc_soc - d_mod.voc_f
-    #         d_mod = rf.rec_append_fields(d_mod, 'e_wrap_filt', np.array(e_wrap_filt, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'dscn_fa', np.array(dscn_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_diff_fa', np.array(ib_diff_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'wv_fa', np.array(wv_fa, dtype=float))

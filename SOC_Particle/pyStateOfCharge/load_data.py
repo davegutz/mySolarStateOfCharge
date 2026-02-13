@@ -18,7 +18,7 @@ from SavedData import SavedData, SavedDataSim
 from Battery import Battery, BatteryMonitor
 from DataOverModel import write_clean_file
 from idlelib.run import flush_stdout
-from Util import rename
+from Util import rename_all
 from resample import remove_nan
 import numpy as np
 
@@ -141,12 +141,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
                                       unit_key=unit_key_sel, skip=skip)
     if sel_file_clean and not v1_only:
         sel_raw = np.genfromtxt(sel_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-        sel_raw = rename(sel_raw, 'e_wm', 'e_wrap_m')
-        sel_raw = rename(sel_raw, 'e_wm_f', 'e_wrap_m_filt')
-        sel_raw = rename(sel_raw, 'e_wm_r', 'e_wrap_m_reset')
-        sel_raw = rename(sel_raw, 'e_wn', 'e_wrap_n')
-        sel_raw = rename(sel_raw, 'e_wn_f', 'e_wrap_n_filt')
-        sel_raw = rename(sel_raw, 'e_wm_t', 'e_wrap_m_trim')
+        sel_raw = rename_all(sel_raw)
     else:
         sel_raw = None
         print(f"load_data: returning sel_raw=None")
@@ -217,10 +212,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     if f_raw is not None:
         f_raw = np.unique(f_raw)
         f_raw = remove_nan(f_raw)
-        f_raw = rename(f_raw, 'e_w_f', 'e_wrap_filt')
-        f_raw = rename(f_raw, 'e_w_f', 'e_wrap_filt')
-        f_raw = rename(f_raw, 'ibmh_f', 'ib_amp_hdwe_f')
-        f_raw = rename(f_raw, 'ibnh_f', 'ib_noa_hdwe_f')
+        f_raw = rename_all(f_raw)
         f = add_stuff_f(f_raw, batt, ib_band=IB_BAND)
         print("\nload_data:  f:\n", f, "\n")
         f = filter_Tb(f, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap)

@@ -81,7 +81,7 @@ def sync_to_mon_or_sim(mr, sr, t_mx=None):
 
 def vb_from_raw_or_selected(use_raw, mr):
     if use_raw:
-        vb_ = mr.vb_h
+        vb_ = mr.vb_hdwe
     else:
         if hasattr(mr, 'vb_f'):
             vb_ = mr.vb_f
