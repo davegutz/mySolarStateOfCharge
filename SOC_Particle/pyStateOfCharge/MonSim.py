@@ -176,7 +176,7 @@ def replicate(OPT: UserOptions):
 
         # Get temperature data
         if hasattr(OPT.mon_run, 'time_t'):
-            if hasattr(OPT.mon_run, 'mtb') and  OPT.mon_run.mtb[G.i]>0. and G.i+1 < len(OPT.mon_run.time) :
+            if hasattr(OPT.mon_run, 'mtb') and OPT.mon_run.mtb is not None and  OPT.mon_run.mtb[G.i]>0. and G.i+1 < len(OPT.mon_run.time) :
                 calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i+1])
             else:
                 calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i])

@@ -118,7 +118,7 @@ class Sensors:
             if hasattr(self.mon_run, 'vovcm'):
                 self.KfShuntAmp = KF1x1VarDtxx(initial_position=self.mon_run.vovcm[0], initial_velocity=self.mon_run.x1m[0],
                                              dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R_STD)
-            if hasattr(self.mon_run, 'vovcn'):
+            if hasattr(self.mon_run, 'vovcn') and self.mon_run.vovcn is not None:
                 print(f"input:   KF_Q_STD {self.Battery.KF_Q_STD}  KF_R_STD {self.Battery.KF_R_STD}")
                 self.Battery.KF_Q_STD /= 1.
                 self.Battery.KF_R_STD /= 1.
@@ -411,7 +411,7 @@ class Sensors:
         self.LoopAmp.update(i)
         self.LoopNoa.update(i)
 
-        if hasattr(self.mon_run, 'kfres'):
+        if hasattr(self.mon_run, 'kfres') and self.mon_run.kfres is not None:
             self.reset_kf = bool(self.mon_run.kfres[i])
             if hasattr(self.mon_run, 'vovcm'):
                 self.VoVcm = self.mon_run.vovcm[i]

@@ -269,7 +269,7 @@ class SavedData:
             self.ibm = None
             self.ib_amp_hdwe_kf = None
             self.ibnkf = None
-            self.vovcn = None
+            # self.vovcn = None
             self.ib_noa_lo = None
             self.ib_noa_hi = None
             self.ib_noa_kf = None

@@ -320,7 +320,7 @@ def add_qcrs(hist, mon_t_=False, mon=None, qcrs=None, t_rated=None, dqdt=None):
 
 
 def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv=False, unit_key=None,
-                       sync_time=None, dt_resample=10, Tb_force=None, skip=1, v1_only=False):
+                       sync_time=None, dt_resample=10, Tb_force=None, skip=1):
     """Load history, reconstruct samples by linear interpolation and normalize all soc and Tb to 20C"""
 
     print(f"\nload_hist_and_prep:\n{data_file=}\n{plots=}\n{use_mon_csv=}\n{unit_key=}\n{dt_resample=}\n{Tb_force=}\n{skip=}\n")
@@ -330,7 +330,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
     battery_val = "Battery_val"
     battery_file_clean = write_clean_file(data_file, type_='_battery', hdr_key=battery_hdr,
                                           unit_key=battery_val, skip=skip)
-    if battery_file_clean and not v1_only:
+    if battery_file_clean:
         battery_raw = np.genfromtxt(battery_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
     else:
         battery_raw = None

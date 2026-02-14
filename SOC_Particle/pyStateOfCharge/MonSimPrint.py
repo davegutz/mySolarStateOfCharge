@@ -22,7 +22,7 @@ from datetime import datetime, timedelta
 import Globals as G
 from Colors import Colors
 count_since_last_header = 0
-kf_warning_printed = False
+vv_warning_printed = False
 HDR_SPREAD = 10
 
 def prn_soc_debug(OPT, leader="", time=None, i_temp=None, mon=None, sim=None):
@@ -110,9 +110,16 @@ def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
                     hdr = print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf)
     return hdr
 
-#7
+# 7
 def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
-    global count_since_last_header
+    global count_since_last_header, vv_warning_printed
+    if not hasattr(SN.mon_run, 'ib_amp_lo') or SN.mon_run.ib_amp_lo is None:
+        if not vv_warning_printed:
+            print(Colors.fg.red, end='')
+            print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_dyn_m_RunSim  (request_hist_in=7)\n*************\n")
+            vv_warning_printed = True
+            print(Colors.reset, end='')
+        return
     hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                           ibmh                        ibmm                  ib_amp_lo    ib_amp_hi   dis_amp_flt   dt                    ib_amp                    ib_dyn_T_m          ib_dyn_rstate_m                ib_dyn_lstate_m                      ib_dyn_m                vb                     dv_dyn_m             vb_m                      voc_m                     voc_soc               voc_soc_m                   e_wrap_m                  e_wrap_m_trim        e_wrap_trimmed_m         e_wrap_m_T           e_wrap_m_rate            e_wrap_m_reset       e_wrap_m_state         e_wrap_m_filt        ewmhi_thr            ewmlo_thr           e_wrap_m_flt   e_wrap_m_fa    disable_amp_fault      ib_amp_lo     e_wrap_m_reset  fltw   falw"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
@@ -173,8 +180,17 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     print(Colors.reset, end='')
     return hdr
 
+# 1
 def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
-    global count_since_last_header
+    global count_since_last_header, vv_warning_printed
+    if (not hasattr(SN.mon_run, 'voltage_low') or SN.mon_run.voltage_low is None) \
+            or (not hasattr(SN.mon_run, 'frz') or SN.mon_run.frz is None):
+        if not vv_warning_printed:
+            print(Colors.fg.red, end='')
+            print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_ekf_RunSim  (request_hist_in=1)\n*************\n")
+            vv_warning_printed = True
+            print(Colors.reset, end='')
+        return
     hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa        voc_stat              voc_stat_past       bms_off_past  volt_low       bms_off     frz     ib_charge              soc                    soc_ekf                x_ekf                   y_ekf                   voc_ekf                Tb_f                     x_prior                  x                        x_for_hx                 x_post                    Tb_f_rap                  tb_f_for_hx                hx                         u_ekf                   voc_stat_f            z                      z_ekf       P                              P_post                       P_prior                      H                        R                     S                    K                          f_rstate             f_lstate            f_T"
     i_ekf = max(i_ekf, 0)
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
@@ -230,14 +246,14 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
     print(Colors.reset, end='')
     return hdr
 
-#6
+# 6
 def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
-    global count_since_last_header, kf_warning_printed
+    global count_since_last_header, vv_warning_printed
     if not hasattr(SN.mon_run, 'dtm'):
-        if not kf_warning_printed:
+        if not vv_warning_printed:
             print(Colors.fg.red, end='')
-            print(f"\n**********\nNot a kf data run e.g. vv2.  Not printing print_kf_RunSim\n*************\n")
-            kf_warning_printed = True
+            print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_kf_RunSim  (request_hist_in=6)\n*************\n")
+            vv_warning_printed = True
             print(Colors.reset, end='')
         return
     hdr = "  i   time     r       rt   rk   dt               dtm              dtn              VoVcn                    VoVcnf                 x0                     ib_shunt_noa            [Fxn                                      ]    [Qn                                                                                                                ]  [Xpn                                      ]     [Ppn                                                                                                               ]   S                         [K                                                           ]   y                     [x                                         ]    [Pn                                                                                                                ]"
@@ -369,7 +385,14 @@ def print_soc_s_HistSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
 
 # 3
 def print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
-    global count_since_last_header
+    global count_since_last_header, vv_warning_printed
+    if not hasattr(SN.mon_run, 'dt_s') or SN.mon_run.dt_s is None:
+        if not vv_warning_printed:
+            print(Colors.fg.red, end='')
+            print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_soc_s_RunSim (request_hist_in=3)\n*************\n")
+            vv_warning_printed = True
+            print(Colors.reset, end='')
+        return
     hdr = "  i  time     r       rt   rtps rk   it   ct      re   ie  ce    sa       sa_s       dt                    dt_s                  ib                         ib_in_s                       ib_s                          ib_charge_s                ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s                 ib_charge_s                 ioc_s                  soc                     d_delq                     delq                            i * dt_s * coul_eff       soc_s                 Tb_model_filt  Tb_hdwe_filt   Tb_f_s                         d_delta_q_s              delta_q_s                       qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                bms_off_s    voltage_low_s"
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
@@ -438,7 +461,14 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
 
 #4
 def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
-    global count_since_last_header
+    global count_since_last_header, vv_warning_printed
+    if not hasattr(SN.mon_run, 'Tb_f_s') or SN.mon_run.Tb_f_s is None:
+        if not vv_warning_printed:
+            print(Colors.fg.red, end='')
+            print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_temp_RunSim  (request_hist_in=4)\n*************\n")
+            vv_warning_printed = True
+            print(Colors.reset, end='')
+        return
     hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce     Tt               Tb_hdwe                    Tb                         Tb_hdwe_filt               Tb_rap                     Tb_f_rap                   Tb_model                   Tb_model_filt              Tb_f                       Tb_f_s                      Tb_model_filt_rate         Tb_hdwe_filt_rate          Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
@@ -513,7 +543,14 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
 
 #5
 def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
-    global count_since_last_header
+    global count_since_last_header, vv_warning_printed
+    if not hasattr(SN.mon_run, 'ib_amp_lo') or SN.mon_run.ib_amp_lo is None:
+        if not vv_warning_printed:
+            print(Colors.fg.red, end='')
+            print(f"\n**********\nLikely a vv1 run.  Not printing print_volt_RunSim  (request_hist_in=5)\n*************\n")
+            vv_warning_printed = True
+            print(Colors.reset, end='')
+        return
     hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                          ib_charge                   ib_sel         ib                          ibmh                        ibmm                        ibnh                        ibnm                        ibh                         ib_s                 ib_amp_lo    ib_amp_hi   ib_noa_lo   ib_noa_hi dis_amp_flt    dt                  ib_amp                    ib_dyn_T_m          ib_dyn_rstate_m                ib_dyn_lstate_m                     ib_dyn_m                 vb                    vb_model               vb_hdwe               vb_hdwe_f             dv_dyn_m               e_wrap_m_T           e_wrap_m_rate          e_wrap_m_reset         e_wrap_m_state        voc                   voc_soc                e_wrap_m             e_wrap_m_filt   disable_amp_fault ib_amp_lo  ib_noa_lo  e_wrap_m_reset  e_wrap_m_trim        ib_dyn_n                 ib_dyn_T_n        dv_dyn_n               e_wrap_n             e_wrap_n_filt         ib_dyn_n                    ib_dyn                   ib_dyn_T_n           ib_dyn_rstate_n               ib_dyn_lstate_n             dv_dyn_n             e_wrap_n_T           e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt         ib                         e_wrap               e_wrap_filt          ib_dyn_r     ib_dyn_in                     ib_dyn_T                     ib_dyn_rstate                 ib_dyn_lstate                 ib_dyn                       dv_dyn                  dv_hys                  soc                     dt                Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_s            voc_stat_f             soc_ekf               y_ekf               fltw     falw"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
@@ -619,7 +656,15 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
 
 #8
 def print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
-    global count_since_last_header
+    global count_since_last_header, vv_warning_printed
+    if (not hasattr(SN.mon_run, 'voltage_low') or SN.mon_run.voltage_low is None) \
+        or (not hasattr(SN.mon_run, 'vb_functional_flt') or SN.mon_run.vb_functional_flt is None):
+        if not vv_warning_printed:
+            print(Colors.fg.red, end='')
+            print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_vb_wrap_RunSim  (request_hist_in=8)\n*************\n")
+            vv_warning_printed = True
+            print(Colors.reset, end='')
+        return
     hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      bms_off     voltage_low   bms_off_s   voltage_low_s  dt                vb                           ib_amp                      vb_m                      voc_m                   voc_soc_m                 voc_soc                   e_wrap_m                  e_wrap_trim          e_wrap_trimmed         e_wrap_m_filt      ib_diff    wrap_m_and_n_fa    wrap_lo_m_fa       wrap_lo_n_fa       wrap_lo_fa         wrap_hi_m_fa       wrap_hi_n_fa       wrap_hi_fa         vb_functional_flt  vb_functional_fa   ib_is_functional   wrap_vb_faj        ib_quiet          ib_really_quiet"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)

@@ -96,10 +96,10 @@ class SyncInfo:
 
 # Load from files
 def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_batt_cap=Battery.NOM_UNIT_CAP,
-              legacy=False, v1_only=False, zero_thr_in=0.02, init_time_in=None, time_shift_in=None, mon_str=''):
+              legacy=False, zero_thr_in=0.02, init_time_in=None, time_shift_in=None, mon_str=''):
 
     print(f"load_data: \n{path_to_data=}\n{skip=}\n{unit_key=}\n{zero_zero_in=}\n{time_end_in=}\n{rated_batt_cap=}\n"
-          f"{legacy=}\n{v1_only=}\n{init_time_in=}\n{time_shift_in=}\n")
+          f"{legacy=}\n{init_time_in=}\n{time_shift_in=}\n")
 
     battery_hdr = "Battery_hdr"
     battery_val = "Battery_val"
@@ -130,7 +130,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     # Load battery (ref)
     battery_file_clean = write_clean_file(path_to_data, type_='_battery', hdr_key=battery_hdr,
                                           unit_key=battery_val, skip=skip)
-    if battery_file_clean and not v1_only:
+    if battery_file_clean:
         battery_raw = np.genfromtxt(battery_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
     else:
         battery_raw = None
@@ -139,7 +139,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     # Load sel (ref)
     sel_file_clean = write_clean_file(path_to_data, type_='_sel', hdr_key=hdr_key_sel,
                                       unit_key=unit_key_sel, skip=skip)
-    if sel_file_clean and not v1_only:
+    if sel_file_clean:
         sel_raw = np.genfromtxt(sel_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
         sel_raw = rename_all(sel_raw)
     else:
@@ -149,7 +149,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     # Load temp (ref)
     temp_file_clean = write_clean_file(path_to_data, type_='_temp', hdr_key=hdr_key_temp,
                                        unit_key=unit_key_temp, skip=skip)
-    if temp_file_clean and not v1_only:
+    if temp_file_clean:
         temp_raw = np.genfromtxt(temp_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
     else:
         temp_raw = None
@@ -158,7 +158,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     # Load ekf (ref)
     ekf_file_clean = write_clean_file(path_to_data, type_='_ekf', hdr_key=hdr_key_ekf,
                                       unit_key=unit_key_ekf, skip=skip)
-    if ekf_file_clean and not v1_only:
+    if ekf_file_clean:
         ekf_raw = np.genfromtxt(ekf_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
     else:
         ekf_raw = None
@@ -167,7 +167,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     # Load shunt (ref)
     shunt_file_clean = write_clean_file(path_to_data, type_='_shunt', hdr_key=hdr_key_shunt,
                                       unit_key=unit_key_shunt, skip=skip)
-    if shunt_file_clean and not v1_only:
+    if shunt_file_clean:
         shunt_raw = np.genfromtxt(shunt_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
     else:
         shunt_raw = None
@@ -189,7 +189,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     # Load sim _s v24 portion of real-time run (ref)
     data_file_sim_clean = write_clean_file(path_to_data, type_='_sim', hdr_key=hdr_key_sim,
                                            unit_key=unit_key_sim, skip=skip)
-    if data_file_sim_clean and not v1_only:
+    if data_file_sim_clean:
         sim_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
         sim = SavedDataSim(time_run=mon.time_run, data=sim_raw, time_end=time_end_in)
     else:
@@ -204,7 +204,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     # Load fault
     temp_flt_file_clean = write_clean_file(path_to_data, type_='_flt', hdr_key='fltb',
                                            unit_key='unit_f', skip=skip, comment_str='---')
-    if temp_flt_file_clean and not v1_only:
+    if temp_flt_file_clean:
         f_raw = np.genfromtxt(temp_flt_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
     else:
         print("data from", temp_flt_file, "empty after loading")
@@ -232,9 +232,8 @@ def main():
     time_end_in = None
     rated_batt_cap = 108.4
     legacy = False
-    v1_only = False
     load_data(path_to_data=path_to_data, skip=skip, unit_key=unit_key, zero_zero_in=zero_zero_in,
-              time_end_in=time_end_in, rated_batt_cap=rated_batt_cap, legacy=legacy, v1_only=v1_only)
+              time_end_in=time_end_in, rated_batt_cap=rated_batt_cap, legacy=legacy)
 
 
 if __name__ == '__main__':
