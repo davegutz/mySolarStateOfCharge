@@ -155,8 +155,8 @@ def replicate(OPT: UserOptions):
     sat_s_init = None
 
     # Print debug information
-    if OPT.request_history is not None and OPT.request_history > 0:
-        hdr = print_hist(OPT, SN, i_temp, i_ekf, t, mon, True, True, sim)
+    # if OPT.request_history is not None and OPT.request_history > 0:
+    #     hdr = print_hist(OPT, SN, i_temp, i_ekf, t, mon, True, True, sim)
 
     # Top of time loop
     while G.i < t_len-1:

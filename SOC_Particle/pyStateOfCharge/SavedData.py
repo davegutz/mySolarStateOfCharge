@@ -914,6 +914,7 @@ class SavedDataSim:
             self.ib_dyn_s_lstate = None
             self.bms_off_s = False
             self.voltage_low_s = False
+            pass
         else:
             self.i = 0
             self.cTime = np.array(data.c_time)
