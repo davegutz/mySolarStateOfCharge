@@ -226,7 +226,7 @@ void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, co
 // print ekf for data collection
 void print_ekf_header(void)
 {
-  Serial.printf("unit_e,c_time,T_e,Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_,");
+  Serial.printf("unit_e,c_time_e,T_e,Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_,");
   Serial.printf("x_prior_, P_prior_, x_post_, P_post_, hx_, H_, frz_, tb_f_hx_, x_for_hx_,");
   Serial.printf("  voc_stat_T, voc_stat_tau, voc_stat_rstate, voc_stat_lstate,");
   Serial.printf("\n");
@@ -252,7 +252,7 @@ void print_ekf_header(void)
 // Print shunt logic data
 void print_shunt_header(Sensors *Sen)
 {
-  Serial.printf("unit_shunt,c_time,reset,kfres,vovcm,vovcmkf,vovcn,vovcnkf,iscm,ibmkf,iscn,ibnkf,  ");
+  Serial.printf("unit_shunt,c_time_shunt,reset,kfres,vovcm,vovcmkf,vovcn,vovcnkf,iscm,ibmkf,iscn,ibnkf,  ");
 
   Sen->ShuntAmp->print_serial_header('m');
   Sen->ShuntNoAmp->print_serial_header('n');
@@ -315,7 +315,7 @@ void KalmanFilter::print_serial()
 // TODO:  delete the _T, _tau, _rstate, _lstate stuff
 void print_signal_sel_header(void)
 {
-  Serial.printf("unit_s,c_time,reset,resaf,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,  kfres,vovcm,vovcn,ibmkf,ibnkf,  ib_diff, ib_diff_f,");
+  Serial.printf("unit_s,c_time_sel,reset,resaf,user_sel,   cc_dif,  ibmh,ibnh,ibmm,ibnm,ibm,  kfres,vovcm,vovcn,ibmkf,ibnkf,  ib_diff, ib_diff_f,");
   Serial.printf("  vr,voc_soc,e_w,e_w_f,ib_dm,dv_dm,e_wm,e_wm_r,e_wm_f,ib_dn,dv_dn,e_wn,e_wn_f,e_wm_t,");
   Serial.printf("  ib_sel_stat,ib_choice,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_h,vb_s,mvb,vb,  mtb,Tb_fa, ");
   Serial.printf("  ib_rate, ib_quiet, ib_really_quiet, tb_sel, ccd_thr, ewmhi_thr, ewmlo_thr, ewnhi_thr, ewnlo_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf_f,ib_dec,");
@@ -408,7 +408,7 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
 // print sim for data collection
 void print_sim_header(void)
 {
-  Serial.printf("unit_m,  c_time,      dt_s, chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, ");
+  Serial.printf("unit_m,  c_time_sim,      dt_s, chm_s, qcrs_s, bmso_s, Tb_f_s, vsat_s, voc_stat_s, ");
   Serial.printf("dv_dyn_s, vb_s, ib_s, ib_dyn_s, dv_hys_s, ib_in_s, ib_charge_s, ioc_s, ");
   Serial.printf("sat_s, dq_s, q_cap_s, soc_s, reset_s, ddq_s, ");
   Serial.printf("ib_dyn_s_T, ib_dyn_s_tau, ib_dyn_s_rstate, ib_dyn_s_lstate, ");
@@ -450,7 +450,7 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
 // print temperatures for data collection
 void print_temp_header(void)
 {
- Serial.printf("unit_t, c_time, T_t, Tb_hdw, Tb_mod, Tb, reset_temp,  Tb_hdwe_filt, Tb_model_filt,Tb_f,  Tb_hdwe_filt_rate, Tb_model_filt_rate, Tb_f_rate,\n");
+ Serial.printf("unit_t, c_time_t, T_t, Tb_hdw, Tb_mod, Tb, reset_temp_t,  Tb_hdwe_filt, Tb_model_filt,Tb_f,  Tb_hdwe_filt_rate, Tb_model_filt_rate, Tb_f_rate,\n");
 }
 void print_temp_serial(const boolean reset, Sensors *Sen)
 {

@@ -176,10 +176,13 @@ def replicate(OPT: UserOptions):
 
         # Get temperature data
         if hasattr(OPT.mon_run, 'time_t'):
-            if hasattr(OPT.mon_run, 'mtb') and OPT.mon_run.mtb is not None and  OPT.mon_run.mtb[G.i]>0. and G.i+1 < len(OPT.mon_run.time) :
-                calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i+1])
+            if hasattr(OPT.mon_run, 'mtb') and OPT.mon_run.mtb is not None \
+                    and  OPT.mon_run.mtb[G.i]>0. and G.i+1 < len(OPT.mon_run.time) :
+                calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and \
+                            (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i+1])
             else:
-                calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i])
+                calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and \
+                            (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i])
         else:
             calc_temp = True
         if calc_temp:
@@ -311,7 +314,7 @@ def replicate(OPT: UserOptions):
 
         # Break if data integrity questionable
         if SN.mon_run.skip_ekf[i_ekf] or SN.mon_run.skip_temp[i_temp] or SN.mon_run.skip_sel[G.i] \
-                or SN.mon_run.skip_rap[G.i] or SN.sim_run.skip_sim[G.i]:
+                or SN.mon_run.skip_mon[G.i] or SN.sim_run.skip_sim[G.i]:
             print(f"Broke early due to skip in one of the data files")
             break
 
@@ -349,7 +352,7 @@ def replicate(OPT: UserOptions):
     if OPT.request_history is not None and OPT.request_history > 0:
         print(hdr)
     if SN.mon_run.skip_ekf[i_ekf] or SN.mon_run.skip_temp[i_temp] or SN.mon_run.skip_sel[G.i] or \
-            SN.mon_run.skip_rap[G.i] or SN.sim_run.skip_sim[G.i]:
+            SN.mon_run.skip_mon[G.i] or SN.sim_run.skip_sim[G.i]:
         print(f"\n\n************** Data integrity degraded by skip.  A digit could have been inserted anywhere in data.  Break.")
         print("   now {:5.3f}".format(now),
               "   time_end {:5.3f}\n\n".format(t[-1]),

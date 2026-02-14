@@ -285,11 +285,6 @@ class Sensors:
         self.x_prior_init = self.x_init
         self.soc_ekf_init = self.soc_init
         self.z_init = self.hx_init
-        # self.skip_ekf = np.bool(np.zeros(len(self.dv_dyn_s)))
-        # self.skip_temp = np.bool(np.zeros(len(self.dv_dyn_s)))
-        # self.skip_sel = np.bool(np.zeros(len(self.dv_dyn_s)))
-        # self.skip_rap = np.bool(np.zeros(len(self.dv_dyn_s)))
-        # self.skip_sim = np.bool(np.zeros(len(self.dv_dyn_s)))
 
         self.VoVcm = 0.
         self.VoVcm_f = 0.
