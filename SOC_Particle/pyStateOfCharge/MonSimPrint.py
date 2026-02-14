@@ -386,7 +386,7 @@ def print_soc_s_HistSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
 # 3
 def print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header, vv_warning_printed
-    if not hasattr(SN.mon_run, 'ib_charge_s') or SN.mon_run.ib_charge_s is None:
+    if not hasattr(SN.sim_run, 'ib_charge_s') or SN.sim_run.ib_charge_s is None:
         if not vv_warning_printed:
             print(Colors.fg.red, end='')
             print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_soc_s_RunSim (request_hist_in=3)\n*************\n")
