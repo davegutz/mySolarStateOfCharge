@@ -6,7 +6,7 @@
 
 // deviceOS@6.2.1
 
-// Features config   xx:xx:xx:xx:xx:xx  // Todo
+// Features config:             94:94:4A:04:C0:31
 #define HDWE_UNIT               "soc3p2_hi_lo" // https://console.particle.io/soc-particle-28171/devices/0a10aced202194944a04c030
 #define SOFT_SBAUD              460800      // Default Serial baud when able (don't think this does anything)
 #define HDWE_IB_HI_LO

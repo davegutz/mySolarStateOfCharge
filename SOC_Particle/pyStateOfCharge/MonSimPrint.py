@@ -134,7 +134,7 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
           "{:7d}".format(bool(SN.mon_run.reset[G.i])),
-          "{:7d}".format(bool(SN.mon_run.reset_temp[G.i])),
+          "{:7d}".format(bool(SN.mon_run.reset_temp[i_temp])),
           "{:14d}".format(bool(SN.mon_run.reset_all_faults[G.i])),
           "{:15d}".format(bool(SN.mon_run.soft_reset[G.i])),
           "{:15d}".format(bool(SN.mon_run.soft_reset_sim[G.i])),
@@ -252,7 +252,7 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     if not hasattr(SN.mon_run, 'dtm'):
         if not vv_warning_printed:
             print(Colors.fg.red, end='')
-            print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_kf_RunSim  (request_hist_in=6)\n*************\n")
+            print(f"\n**********\nLikely a vv1 or vv3-vv4 run.  Not printing print_kf_RunSim  (request_hist_in=6)\n*************\n")
             vv_warning_printed = True
             print(Colors.reset, end='')
         return
@@ -451,8 +451,8 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
           "{:11.5f}".format(SN.sim_run.dv_hys_s[G.i]), "{:9.5f}".format(sim.dv_hys),
           "{:11.5f}".format(SN.sim_run.dv_dyn_s[G.i]), "{:9.5f}".format(sim.dv_dyn),
           "{:11.5f}".format(SN.mon_run.vsat[G.i]), "{:9.5f}".format(mon.vsat),
-          "{:7d}".format(SN.sim_run.bms_off_s[G.i]), "{:4d}".format(sim.bms_off),
-          "{:7d}".format(SN.sim_run.voltage_low_s[G.i]), "{:4d}".format(sim.voltage_low),
+          "{:7d}".format(bool(SN.sim_run.bms_off_s[G.i])), "{:4d}".format(sim.bms_off),
+          "{:7d}".format(bool(SN.sim_run.voltage_low_s[G.i])), "{:4d}".format(sim.voltage_low),
           )
     if G.i == 2:
         pass
@@ -462,7 +462,7 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
 #4
 def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header, vv_warning_printed
-    if not hasattr(SN.mon_run, 'Tb_f_s') or SN.mon_run.Tb_f_s is None:
+    if not hasattr(SN.sim_run, 'Tb_f_s') or SN.sim_run.Tb_f_s is None:
         if not vv_warning_printed:
             print(Colors.fg.red, end='')
             print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_temp_RunSim  (request_hist_in=4)\n*************\n")
@@ -565,7 +565,7 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
           "{:7d}".format(bool(SN.mon_run.reset[G.i])),
-          "{:7d}".format(bool(SN.mon_run.reset_temp[G.i])),
+          "{:7d}".format(bool(SN.mon_run.reset_temp[i_temp])),
           "{:14d}".format(bool(SN.mon_run.reset_all_faults[G.i])),
           "{:15d}".format(bool(SN.mon_run.soft_reset[G.i])),
           "{:15d}".format(bool(SN.mon_run.soft_reset_sim[G.i])),
@@ -654,18 +654,17 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     print(Colors.reset, end='')
     return hdr
 
-#8
+# 8
 def print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header, vv_warning_printed
-    if (not hasattr(SN.mon_run, 'voltage_low') or SN.mon_run.voltage_low is None) \
-        or (not hasattr(SN.mon_run, 'vb_functional_flt') or SN.mon_run.vb_functional_flt is None):
+    if not hasattr(SN.mon_run, 'voltage_low') or SN.mon_run.voltage_low is None:
         if not vv_warning_printed:
             print(Colors.fg.red, end='')
             print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_vb_wrap_RunSim  (request_hist_in=8)\n*************\n")
             vv_warning_printed = True
             print(Colors.reset, end='')
         return
-    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      bms_off     voltage_low   bms_off_s   voltage_low_s  dt                vb                           ib_amp                      vb_m                      voc_m                   voc_soc_m                 voc_soc                   e_wrap_m                  e_wrap_trim          e_wrap_trimmed         e_wrap_m_filt      ib_diff    wrap_m_and_n_fa    wrap_lo_m_fa       wrap_lo_n_fa       wrap_lo_fa         wrap_hi_m_fa       wrap_hi_n_fa       wrap_hi_fa         vb_functional_flt  vb_functional_fa   ib_is_functional   wrap_vb_faj        ib_quiet          ib_really_quiet"
+    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      bms_off     voltage_low   bms_off_s   voltage_low_s  dt                vb                           ib_amp                      vb_m                      voc_m                   voc_soc_m                 voc_soc                   e_wrap_m                  e_wrap_trim          e_wrap_trimmed         e_wrap_m_filt      ib_diff    wrap_m_and_n_fa    wrap_lo_m_fa       wrap_lo_n_fa       wrap_lo_fa         wrap_hi_m_fa       wrap_hi_n_fa       wrap_hi_fa         ib_is_functional   wrap_vb_faj        ib_quiet          ib_really_quiet"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -680,7 +679,7 @@ def print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:4d}".format(calc_temp),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
           "{:7d}".format(bool(SN.mon_run.reset[G.i])),
-          "{:7d}".format(bool(SN.mon_run.reset_temp[G.i])),
+          "{:7d}".format(bool(SN.mon_run.reset_temp[i_temp])),
           "{:14d}".format(bool(SN.mon_run.reset_all_faults[G.i])),
           "{:15d}".format(bool(SN.mon_run.soft_reset[G.i])),
           "{:15d}".format(bool(SN.mon_run.soft_reset_sim[G.i])),
@@ -710,8 +709,6 @@ def print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:18d}".format(SN.mon_run.wrap_hi_m_fa[G.i]),
           "{:18d}".format(SN.mon_run.wrap_hi_n_fa[G.i]),
           "{:18d}".format(SN.mon_run.wrap_hi_fa[G.i]),
-          "{:18d}".format(SN.mon_run.vb_functional_flt[G.i]),
-          "{:18d}".format(SN.mon_run.vb_functional_fa[G.i]),
           "{:18d}".format(SN.mon_run.ib_is_functional[G.i]),
           "{:18d}".format(SN.mon_run.wv_fa[G.i]),
           "{:18d}".format(bool(SN.mon_run.ib_quiet[G.i])),
@@ -733,7 +730,7 @@ def save_clean_file(mon_ver, csv_file, unit_key):
             dt_dt = timedelta(seconds=mon_ver.time[i]-mon_ver.time[0])
             time_stamp = date_time_start + dt_dt
             s += time_stamp.strftime("%Y-%m-%dT%H:%M:%S,")
-            s += "{:7.4f},".format(mon_ver.time[i] + mon_ver.time_run)
+            s += "{:7.4f},".format(mon_ver.time[i] + mon_ver.time_run_start)
             s += "{:7.4f},".format(mon_ver.dt[i])
             s += "{:1.0f},".format(mon_ver.sat[i])
             s += "{:1.0f},".format(mon_ver.sel[i])

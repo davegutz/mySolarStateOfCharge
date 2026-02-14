@@ -151,6 +151,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
                                        unit_key=unit_key_temp, skip=skip)
     if temp_file_clean:
         temp_raw = np.genfromtxt(temp_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+        temp_raw = rename_all(temp_raw)
     else:
         temp_raw = None
         print(f"load_data: returning temp_raw=None")
@@ -160,6 +161,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
                                       unit_key=unit_key_ekf, skip=skip)
     if ekf_file_clean:
         ekf_raw = np.genfromtxt(ekf_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+        ekf_raw = rename_all(ekf_raw)
     else:
         ekf_raw = None
         print(f"load_data: returning ekf_raw=None")
@@ -176,14 +178,14 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     mon = SavedData(battery=battery_raw, rap=mon_raw, sel=sel_raw, ekf=ekf_raw, temp=temp_raw, shunt=shunt_raw,
                     time_end=time_end_in, zero_zero=zero_zero_in, zero_thr=zero_thr_in, sync_cTime=sync,
                     init_time_in=init_time_in, time_shift_in=time_shift_in, str_=mon_str)
-    if mon.chm is not None:
-        chm = int(mon.chm[-1])
-    elif path_to_data.__contains__('bb'):
-        chm = 0
-    elif path_to_data.__contains__('ch'):
-        chm = 1
-    else:
-        chm = None
+    # if mon.chm is not None:
+    #     chm = int(mon.chm[-1])
+    # elif path_to_data.__contains__('bb'):
+    #     chm = 0
+    # elif path_to_data.__contains__('ch'):
+    #     chm = 1
+    # else:
+    #     chm = None
     batt = BatteryMonitor()
 
     # Load sim _s v24 portion of real-time run (ref)
@@ -191,11 +193,13 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
                                            unit_key=unit_key_sim, skip=skip)
     if data_file_sim_clean:
         sim_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-        sim = SavedDataSim(time_run=mon.time_run, data=sim_raw, time_end=time_end_in)
+        sim_raw = rename_all(sim_raw)
+        sim = SavedDataSim(time_run_start=mon.time_run_start, data=sim_raw, time_end=time_end_in)
     else:
         sim_raw = None
-        sim = SavedDataSim(time_run=mon.time_run, data=sim_raw, time_end=time_end_in, fake=True, mon_for_fake=mon,
-                           str_='run_s')
+        sim = SavedDataSim(time_run_start=mon.time_run_start, data=sim_raw, time_end=time_end_in, fake=True,
+                           mon_for_fake=mon, str_='run_s')
+        sim = rename_all(sim)
         print(f"load_data: returning sim=None")
 
     # Calculate sync information

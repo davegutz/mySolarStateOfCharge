@@ -137,12 +137,12 @@ def replicate(OPT: UserOptions):
     Is_sat_delay = TFDelay(in_=OPT.mon_run.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
     # Time sync
-    if hasattr(OPT.mon_run, 'time_run'):
-        mon.saved.time_run = OPT.mon_run.time_run
-        sim.saved_s.time_run = OPT.mon_run.time_run
+    if hasattr(OPT.mon_run, 'time_run_start'):
+        mon.saved.time_run_start = OPT.mon_run.time_run_start
+        sim.saved_s.time_run_start = OPT.mon_run.time_run_start
     else:
-        mon.saved.time_run = 0.
-        sim.saved_s.time_run = 0.
+        mon.saved.time_run_start = 0.
+        sim.saved_s.time_run_start = 0.
 
     # time loop initialization
     now = t[0]
@@ -426,7 +426,7 @@ if __name__ == '__main__':
                                                unit_key=unit_key_sim, skip=skip)
         if data_file_sim_clean:
             sim_run_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-            sim_run = SavedDataSim(time_run=mon_run.time_run, data=sim_run_raw, time_end=time_end)
+            sim_run = SavedDataSim(time_run_start=mon_run.time_run_start, data=sim_run_raw, time_end=time_end)
         else:
             sim_run = None
 

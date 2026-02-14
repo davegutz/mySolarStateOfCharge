@@ -499,6 +499,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
             # Hand fix oddities`
             mon, sim = bandaid(h_20C_resamp)
             mon = rename_all(mon)
+            sim = rename_all(sim)
 
         return mon, sim, unit, fault, hist_20C, filename, Battery
 

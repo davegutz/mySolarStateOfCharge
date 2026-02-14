@@ -122,7 +122,7 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
                     if line.__contains__(hdr_key):
                         if have_header_str is None:
                             have_header_str = True  # write one title only
-                            output.write('skip,' + line)
+                            output.write('skip' + type_ + ',' + line)
                             num_fields = line.count(',')  # first line with hdr_key defines number of fields
             except IOError:
                 print("DataOverModel381:", line)  # last line
@@ -218,7 +218,7 @@ if __name__ == '__main__':
         mon_run = SavedData(mon_run_raw, time_end, zero_zero=zero_zero_in, str_='')
         try:
             sim_run_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-            sim_run = SavedDataSim(mon_run.time_run, sim_run_raw, time_end, str_='_s')
+            sim_run = SavedDataSim(mon_run.time_run_start, sim_run_raw, time_end, str_='_s')
         except IOError:
             sim_run = None
 

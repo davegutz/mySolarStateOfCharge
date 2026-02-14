@@ -89,7 +89,7 @@ class SavedData:
             self.soc_s = None  # Simulated state of charge, fraction
             self.soc_ekf = None  # Solved state of charge, fraction
             self.soc = None  # Coulomb Counter fraction of saturation charge (q_capacity_) available (0-1)
-            self.time_run = 0.  # Adjust time for start of ib input
+            self.time_run_start = 0.  # Adjust time for start of ib input
             self.voc_soc_new = None  # For studies
             self.init_time = None
             self.ib_dyn_r = None
@@ -97,7 +97,7 @@ class SavedData:
             self.ib_dyn_lstate = None
             self.ib_dyn_rstate = None
         else:
-            self.skip_rap = np.bool(np.array(rap.skip))
+            self.skip_rap = np.bool(np.array(rap.skip_mon))
             self.i = 0
             self.cTime = np.array(rap.cTime)
             self.time = np.array(rap.cTime)
@@ -133,8 +133,8 @@ class SavedData:
                         self.zero_end = 0
                 except IOError:
                     self.zero_end = 0
-            self.time_run = self.time[self.zero_end]
-            self.time -= self.time_run
+            self.time_run_start = self.time[self.zero_end]
+            self.time -= self.time_run_start
             self.time_min = self.time / 60.
             self.time_day = self.time / 3600. / 24.
 
@@ -149,8 +149,8 @@ class SavedData:
                     print(Colors.reset, end='')
                     exit(0)
                 if temp is not None:
-                    time_t = np.atleast_1d(np.array(np.array(temp.c_time) - self.time_run))
-                    Tt = np.atleast_1d(np.array(temp.T_t))
+                    time_t = np.atleast_1d(np.array(np.array(temp.c_time) - self.time_run_start))
+                    Tt = np.atleast_1d(np.array(temp.Tt))
                     if len(Tt) <= 1:
                         print(Colors.fg.red, end='')
                         print(f"\n**********\nRun too short, length Tt = {len(Tt)} for {self.time[-1]} s run.  Need at least 2 samples (asynchronous so time not definitive).\n*************\n")
@@ -161,32 +161,34 @@ class SavedData:
                 else:
                     i_end = len(self.time)
                 if sel is not None:
-                    self.c_time_s = np.array(sel.c_time) - self.time_run
+                    self.c_time_s = np.array(sel.c_time) - self.time_run_start
                     i_end = min(i_end, len(self.c_time_s))
                 if ekf is not None:
-                    self.time_e = np.array(np.atleast_1d(ekf.c_time) - self.time_run)
+                    self.time_e = np.array(np.atleast_1d(ekf.c_time) - self.time_run_start)
                 if shunt is not None:
-                    self.c_time_shunt = np.array(np.atleast_1d(shunt.c_time) - self.time_run)
+                    self.c_time_shunt = np.array(np.atleast_1d(shunt.c_time) - self.time_run_start)
                     i_end = min(i_end, len(self.c_time_shunt))
             else:
                 if temp is not None:
-                    time_t = np.atleast_1d(np.array(np.array(temp.c_time) - self.time_run))
+                    time_t = np.atleast_1d(np.array(np.array(temp.c_time) - self.time_run_start))
                     Tt = np.atleast_1d(np.array(temp.T_t))
                     i_end = np.where(self.time <= time_end)[0][-1] + 1
                 else:
                     i_end = len(self.time)
                 if sel is not None:
-                    self.c_time_s = np.array(sel.c_time) - self.time_run
+                    self.c_time_s = np.array(sel.c_time) - self.time_run_start
                     i_end_sel = np.where(self.c_time_s <= time_end)[0][-1] + 1
                     i_end = np.minimum(i_end, i_end_sel)
                     self.zero_end = np.minimum(self.zero_end, i_end-1)
                 if ekf is not None:
-                    self.time_e = np.array(np.atleast_1d(ekf.c_time) - self.time_run)
+                    self.time_e = np.array(np.atleast_1d(ekf.c_time) - self.time_run_start)
                 if shunt is not None:
-                    self.c_time_shunt = np.array(shunt.c_time) - self.time_run
+                    self.c_time_shunt = np.array(shunt.c_time) - self.time_run_start
                     i_end_shunt = np.where(self.c_time_shunt <= time_end)[0][-1] + 1
                     i_end = np.minimum(i_end, i_end_shunt)
                     self.zero_end = np.minimum(self.zero_end, i_end-1)
+
+
             self.cTime = self.cTime[:i_end]
             self.dt = np.array(rap.dt[:i_end])
             self.time = np.array(self.time[:i_end])
@@ -256,183 +258,23 @@ class SavedData:
             self.soc_ekf = np.array(rap.soc_ekf[:i_end])
             self.soc = np.array(rap.soc[:i_end])
             self.voc_soc_new = None
-        if sel is None:
-            self.skip_sel = None
-            self.c_time_s = None
-            self.user_sel = None
-            self.cc_dif = None
-            self.ccd_fa = None
-            self.ib_amp_hdwe = None
-            self.ib_noa_hdwe = None
-            self.ib_amp_model = None
-            self.ib_noa_model = None
-            self.ibm = None
-            self.ib_amp_hdwe_kf = None
-            self.ibnkf = None
-            # self.vovcn = None
-            self.ib_noa_lo = None
-            self.ib_noa_hi = None
-            self.ib_noa_kf = None
-            self.kfres = None
-            self.x1n = None
-            self.ib_amp_lo = None
-            self.ib_amp_hi = None
-            self.ib_diff = None
-            self.ib_diff_f = None
-            self.ib_diff_flt = None
-            self.ib_diff_fa = None
-            self.e_wrap = None
-            self.e_wrap_filt = None
-            self.e_wrap_trim = None
-            self.ib_dyn_m = None
-            self.dv_dyn_m = None
-            self.ib_dyn_n = None
-            self.dv_dyn_n = None
-            self.fltw = None
-            self.falw = None
-            self.dispw = None
-            self.e_wrap_m = None
-            self.e_wrap_m_filt = None
-            self.e_wrap_m_trim = None
-            self.e_wrap_m_trimmed = None
-            self.e_wrap_m_reset = None
-            self.ib_amp = None
-            self.e_wrap_n = None
-            self.e_wrap_n_filt = None
-            self.e_wrap_n_trim = None
-            self.wrap_hi_flt = None
-            self.wrap_hi_m_flt = None
-            self.wrap_hi_n_flt = None
-            self.wrap_lo_flt = None
-            self.wrap_lo_m_flt = None
-            self.wrap_lo_n_flt = None
-            self.red_loss = None
-            self.wrap_hi_fa = None
-            self.wrap_hi_m_fa = None
-            self.wrap_hi_n_fa = None
-            self.wrap_lo_fa = None
-            self.wrap_lo_m_fa = None
-            self.wrap_lo_n_fa = None
-            self.wv_fa = None
-            self.ib_sel_stat = None
-            self.ib_choice = None
-            self.ib_h = None
-            self.ib_s = None
-            self.mib = None
-            self.ib_sel = None
-            self.vb_hdwe = None
-            self.vb_s = None
-            self.mvb = None
-            self.vb = self.vb
-            self.Tb_h = None
-            self.Tb_s = None
-            self.mtb = None
-            self.Tb_fa = None
-            self.vb_sel = None
-            self.ib_rate = None
-            self.ib_quiet = None
-            self.ib_really_quiet = None
-            self.dscn_flt = None
-            self.dscn_fa = None
-            self.vb_flt = None
-            self.vb_fa = None
-            self.tb_sel = None
-            self.tb_flt = None
-            self.tb_fa = None
-            self.ccd_thr = None
-            self.ewmhi_thr = None
-            self.ewmlo_thr = None
-            self.ewnhi_thr = None
-            self.ewnlo_thr = None
-            self.ewhm_thr = None
-            self.ewlm_thr = None
-            self.ibd_thr = None
-            self.ibq_thr = None
-            self.preserving = None
-            self.y_ekf_f = None
-            self.ib_dec = None
-            self.ib_dyn_T_m = None
-            self.ib_dyn_tau_m = None
-            self.ib_dyn_rstate_m = None
-            self.ib_dyn_lstate_m = None
-            self.ib_dyn_T_n = None
-            self.ib_dyn_tau_n = None
-            self.ib_dyn_rstate_n = None
-            self.ib_dyn_lstate_n = None
-            self.ib_wrp_T_m = None
-            self.ib_wrp_tau_m = None
-            self.ib_wrp_T_n = None
-            self.ib_wrp_tau_n = None
-            self.disable_amp_fault = None
-            self.vr = None
-            self.ib_wrp_rate_n = None
-            self.ib_wrp_state_n = None
-            self.ib_wrp_reset_m = None
-            self.ib_wrp_rate_m = None
-            self.ib_wrp_state_m = None
-            self.vb_functional_flt = None
-            self.vb_functional_fa = None
-            self.wrap_m_and_n_fa = None
-            self.ib_is_functional = None
-            self.voltage_low = None
-            self.vb_model = None
-            self.vb_hdwe = None
-            self.vb_hdwe_f = None
-            self.time_long = None
-            self.accy = None
-            self.off = None
-            self.SAT = None
-            self.flt_ekf = None
-            self.flt_tb = None
-            self.fail_vb = None
-            self.fail_ibm = None
-            self.fail_ib = None
-            self.red_loss = None
-            self.diff_ib = None
-            self.conn = None
 
+
+
+        if sel is None:
+            pass
         else:
-            falw = np.array(sel.falw[:i_end], dtype=np.uint32)
-            fltw = np.array(sel.fltw[:i_end], dtype=np.uint32)
-            dispw = np.array(sel.dispw[:i_end], dtype=np.uint32)
-            self.skip_sel = np.array(np.bool(sel.skip[:i_end]))
-            self.c_time_s = np.array(sel.c_time[:i_end]) - self.time_run
-            self.user_sel = np.array(sel.user_sel[:i_end])
-            self.cc_dif = np.array(sel.cc_dif[:i_end])
-            self.ib_amp_hdwe = np.array(sel.ib_amp_hdwe[:i_end])
-            self.ib_noa_hdwe = np.array(sel.ib_noa_hdwe[:i_end])
-            self.ib_amp_model = np.array(sel.ib_amp_model[:i_end])
-            self.ib_noa_model = np.array(sel.ib_noa_model[:i_end])
-            self.ib_model = np.array(sel.ib_model[:i_end])
-            self.ib_amp_hdwe_kf = np.array(sel.ib_amp_hdwe_kf[:i_end])
-            self.ib_noa_hdwe_kf = np.array(sel.ib_noa_hdwe_kf[:i_end])
-            self.vovcn = np.array(sel.vovcn[:i_end])
-            self.ib_noa_kf = np.array(sel.ib_noa_kf[:i_end])
-            self.kfres = np.array(sel.kfres[:i_end])
-            self.x1n = np.array(sel.x1n[:i_end])
-            self.ib_noa_lo = np.array(sel.ib_noa_lo[:i_end])
-            self.ib_noa_hi = np.array(sel.ib_noa_hi[:i_end])
-            self.ib_amp_lo = np.array(sel.ib_amp_lo[:i_end])
-            self.ib_amp_hi = np.array(sel.ib_amp_hi[:i_end])
-            self.ib_diff = np.array(sel.ib_diff[:i_end])
-            self.ib_diff_f = np.array(sel.ib_diff_f[:i_end])
+            # Load
+            self.assign_all_from(sel, i_end)
+            # Specials
+            falw = np.array(sel.falw, dtype=np.uint32)
+            fltw = np.array(sel.fltw, dtype=np.uint32)
+            dispw = np.array(sel.dispw, dtype=np.uint32)
+            self.skip_sel = np.array(np.bool(self.skip_sel))
+            self.c_time_s = np.array(sel.c_time) - self.time_run_start
             self.ccd_fa = np.bool_(np.array(falw) & 2**4)
             self.ib_diff_flt = np.bool_((np.array(fltw) & 2**8) | (np.array(fltw) & 2**9))
             self.ib_diff_fa = np.bool_((np.array(falw) & 2**8) | (np.array(falw) & 2**9))
-            self.e_wrap = np.array(sel.e_wrap[:i_end])
-            self.e_wrap_filt = np.array(sel.e_wrap_filt[:i_end])
-            self.ib_dyn_m = np.array(sel.ib_dyn_m[:i_end])
-            self.dv_dyn_m = np.array(sel.dv_dyn_m[:i_end])
-            self.ib_dyn_n = np.array(sel.ib_dyn_n[:i_end])
-            self.dv_dyn_n = np.array(sel.dv_dyn_n[:i_end])
-            self.e_wrap_m = np.array(sel.e_wrap_m[:i_end])
-            self.e_wrap_m_filt = np.array(sel.e_wrap_m_filt[:i_end])
-            self.e_wrap_m_reset = np.array(sel.e_wrap_m_reset[:i_end])
-            self.e_wrap_n = np.array(sel.e_wrap_n[:i_end])
-            self.e_wrap_n_filt = np.array(sel.e_wrap_n_filt[:i_end])
-            self.e_wrap_m_trim = np.array(sel.e_wrap_m_trim[:i_end])
-            self.e_wrap_m_trimmed = np.array(sel.e_wrap_m_trimmed[:i_end])
-            self.vb_model = np.array(sel.vb_model[:i_end])
             if hasattr(sel, 'vb_hdwe'):
                 self.vb_hdwe = np.array(sel.vb_hdwe[:i_end])
             else:
@@ -441,10 +283,6 @@ class SavedData:
                 self.vb_hdwe_f = np.array(sel.vb_hdwe_f[:i_end])
             else:
                 self.vb_hdwe_f = np.array(sel.vb_hdwe[:i_end])
-            self.voc_m = np.array(sel.voc_m[:i_end])
-            self.voc_soc_m = np.array(sel.voc_soc_m[:i_end])
-            if hasattr(sel, 'ib_amp'):
-                self.ib_amp = np.array(sel.ib_amp[:i_end])
             self.wrap_hi_flt = np.bool_(np.array(fltw) & 2**5)
             self.wrap_lo_flt = np.bool_(np.array(fltw) & 2**6)
             self.wrap_hi_m_flt = np.bool_(np.array(fltw) & 2**14)
@@ -463,22 +301,7 @@ class SavedData:
             self.wrap_hi_n_fa = np.bool_(np.array(falw) & 2**16)
             self.wrap_lo_n_fa = np.bool_(np.array(falw) & 2**17)
             self.wrap_m_and_n_fa = (self.wrap_lo_n_fa & self.wrap_lo_m_fa) | (self.wrap_hi_n_fa & self.wrap_hi_m_fa)
-            self.ib_sel_stat = np.array(sel.ib_sel_stat[:i_end])
-            self.ib_choice = np.array(sel.ib_choice[:i_end])
-            self.ib_h = np.array(sel.ib_h[:i_end])
-            self.ib_s = np.array(sel.ib_s[:i_end])
-            self.mib = np.array(sel.mib[:i_end])
             self.ib_sel = np.array(sel.ib[:i_end])
-            self.vb_hdwe = np.array(sel.vb_hdwe[:i_end])
-            self.vb_s = np.array(sel.vb_s[:i_end])
-            self.mvb = np.array(sel.mvb[:i_end])
-            self.vb = np.array(sel.vb[:i_end])
-            self.mtb = np.array(sel.mtb[:i_end])
-            self.Tb_fa = np.array(sel.Tb_fa[:i_end])
-            self.vb_sel = np.array(sel.vb_sel[:i_end])
-            self.ib_rate = np.array(sel.ib_rate[:i_end])
-            self.ib_quiet = np.array(sel.ib_quiet[:i_end])
-            self.ib_really_quiet = np.array(sel.ib_really_quiet[:i_end])
 
             """    String::format("1 wnl     %d  %d 'Fo ^'\n", wrap_lo_n_flt(), wrap_lo_n_fa()) +
                 String::format("0 wnh     %d  %d 'Fi ^'\n", wrap_hi_n_flt(), wrap_hi_n_fa()) +
@@ -504,7 +327,6 @@ class SavedData:
             self.dscn_fa = np.bool_(np.array(falw) & 2**10)
             self.vb_flt = np.bool_(np.array(fltw) & 2**1)
             self.vb_fa = np.bool_(np.array(falw) & 2**1)
-            self.tb_sel = np.array(sel.tb_sel[:i_end])
             self.tb_flt = np.bool_(np.array(fltw) & 2**0)
             self.tb_fa = np.bool_(np.array(falw) & 2**0)
             # Displays
@@ -520,144 +342,32 @@ class SavedData:
             self.red_loss = np.bool_(np.array(dispw) & 2**2)
             self.diff_ib = np.bool_(np.array(dispw) & 2**1)
             self.conn = np.bool_(np.array(dispw) & 2**0)
-            #enum  dispw {conn = 0, diff_ib = 1, red_loss = 2, fail_ib = 3, fail_ibm = 4, fail_vb = 5, flt_tb = 6, flt_ekf = 7, SAT = 8, off = 9, accy = 10, time_long = 11, Count};
+            #enum  dispw {conn = 0, diff_ib = 1, red_loss = 2, fail_ib = 3, fail_ibm = 4, fail_vb = 5, flt_tb = 6, flt_ekf = 7, SAT = 8, off = 9, accy = 10, time_long = 11, Count};            self.wrap_m_and_n_fa = np.bool_(np.array(sel.wrap_m_and_n_fa[:i_end]))
+            self.ib_is_functional = np.bool_(np.array(self.ib_is_functional))
 
-            self.ccd_thr = np.array(sel.ccd_thr[:i_end])
-            self.ewmhi_thr = np.array(sel.ewmhi_thr[:i_end])
-            self.ewmlo_thr = np.array(sel.ewmlo_thr[:i_end])
-            self.ewnhi_thr = np.array(sel.ewnhi_thr[:i_end])
-            self.ewnlo_thr = np.array(sel.ewnlo_thr[:i_end])
-            self.ibd_thr = np.array(sel.ibd_thr[:i_end])
-            self.ibq_thr = np.array(sel.ibq_thr[:i_end])
-            self.preserving = np.array(sel.preserving[:i_end])
-            if hasattr(sel, 'y_ekf_f'):
-                self.y_ekf_f = np.array(sel.y_ekf_f[:i_end])
-            if hasattr(sel, 'ib_dec'):
-                self.ib_dec = np.array(sel.ib_dec[:i_end])
-            self.ib_dyn_T_m = np.array(sel.ib_dyn_T_m[:i_end])
-            self.ib_dyn_rstate_m = np.array(sel.ib_dyn_rstate_m[:i_end])
-            self.ib_dyn_lstate_m = np.array(sel.ib_dyn_lstate_m[:i_end])
-            self.ib_dyn_tau_m = np.array(sel.ib_dyn_tau_m[:i_end])
-            self.ib_dyn_T_n = np.array(sel.ib_dyn_T_n[:i_end])
-            self.ib_dyn_rstate_n = np.array(sel.ib_dyn_rstate_n[:i_end])
-            self.ib_dyn_lstate_n = np.array(sel.ib_dyn_lstate_n[:i_end])
-            self.ib_dyn_tau_n = np.array(sel.ib_dyn_tau_n[:i_end])
-            self.ib_wrp_T_m = np.array(sel.ib_wrp_T_m[:i_end])
-            self.ib_wrp_rate_m = np.array(sel.ib_wrp_rate_m[:i_end])
-            self.ib_wrp_reset_m = np.array(sel.ib_wrp_reset_m[:i_end])
-            self.ib_wrp_state_m = np.array(sel.ib_wrp_state_m[:i_end])
-            self.ib_wrp_tau_m = np.array(sel.ib_wrp_tau_m[:i_end])
-            self.ib_wrp_T_n = np.array(sel.ib_wrp_T_n[:i_end])
-            self.ib_wrp_rate_n = np.array(sel.ib_wrp_rate_n[:i_end])
-            self.ib_wrp_state_n = np.array(sel.ib_wrp_state_n[:i_end])
-            self.ib_wrp_tau_n = np.array(sel.ib_wrp_tau_n[:i_end])
-            self.disable_amp_fault = np.array(sel.disable_amp_fault[:i_end])
-            if hasattr(sel, 'vr'):
-                self.vr = np.array(sel.vr[:i_end])
-            self.wrap_m_and_n_fa = np.bool_(np.array(sel.wrap_m_and_n_fa[:i_end]))
-            self.ib_is_functional = np.bool_(np.array(sel.ib_is_functional[:i_end]))
-            self.voltage_low = np.bool_(np.array(sel.v_low[:i_end]))
         if shunt is None:
             pass
-            # self.i = 0
-            # self.Vcm = None
-            # self.Vom = None
-            # self.VoVcm = None
-            # self.Vcn = None
-            # self.Von = None
-            # self.VoVcn = None
-            # self.Tbv = None
-            # self.Vbv = None
         else:
+            #Load
             self.assign_all_from(shunt, i_end)
             # Special handling
-            self.c_time_shunt = np.array(shunt.c_time[:i_end]) - self.time_run
+            self.c_time_shunt = np.array(shunt.c_time[:i_end]) - self.time_run_start
 
         if ekf is None:
-            self.skip_e = None
-            self.time_e = None
-            self.dt_ekf = None
-            self.Fx = None
-            self.Bu = None
-            self.Q = None
-            self.R = None
-            self.P = None
-            self.S = None
-            self.K = None
-            self.u = None
-            self.x = None
-            self.y = None
-            self.z = None
-            self.x_prior = None
-            self.frz = None
-            self.P_prior = None
-            self.x_post = None
-            self.P_post = None
-            self.hx = None
-            self.H = None
-            self.tb_f_for_hx = None
-            self.x_for_hx = None
-            self.voc_stat_f_a = None
-            self.voc_stat_f_b = None
-            self.voc_stat_f_b = None
-            self.voc_stat_f_T = None
-            self.voc_stat_f_tau = None
-            self.voc_stat_f_rstate = None
-            self.voc_stat_f_lstate = None
+            pass
         else:
-            self.skip_e = np.bool(np.atleast_1d(ekf.skip)[:i_end])
-            self.time_e = np.array(np.atleast_1d(ekf.c_time)[:i_end] - self.time_run)
-            self.dt_ekf = np.array(np.atleast_1d(ekf.dt)[:i_end])
-            self.Fx = np.array(np.atleast_1d(ekf.Fx_)[:i_end])
-            self.Bu = np.array(np.atleast_1d(ekf.Bu_)[:i_end])
-            self.Q = np.array(np.atleast_1d(ekf.Q_)[:i_end])
-            self.R = np.array(np.atleast_1d(ekf.R_)[:i_end])
-            self.P = np.array(np.atleast_1d(ekf.P_)[:i_end])
-            self.S = np.array(np.atleast_1d(ekf.S_)[:i_end])
-            self.K = np.array(np.atleast_1d(ekf.K_)[:i_end])
-            self.u = np.array(np.atleast_1d(ekf.u_)[:i_end])
-            self.x = np.array(np.atleast_1d(ekf.x_)[:i_end])
-            self.y = np.array(np.atleast_1d(ekf.y_)[:i_end])
-            self.z = np.array(np.atleast_1d(ekf.z_)[:i_end])
-            self.x_prior = np.array(np.atleast_1d(ekf.x_prior_)[:i_end])
-            self.frz = np.array(np.bool(np.atleast_1d(ekf.frz_)[:i_end]))
-            self.P_prior = np.array(np.atleast_1d(ekf.P_prior_)[:i_end])
-            self.x_post = np.array(np.atleast_1d(ekf.x_post_)[:i_end])
-            self.P_post = np.array(np.atleast_1d(ekf.P_post_)[:i_end])
-            self.hx = np.array(np.atleast_1d(ekf.hx_)[:i_end])
-            self.H = np.array(np.atleast_1d(ekf.H_)[:i_end])
-            self.tb_f_for_hx = np.array(np.atleast_1d(ekf.tb_f_hx_)[:i_end])
-            self.x_for_hx = np.array(np.atleast_1d(ekf.x_for_hx_)[:i_end])
-            self.voc_stat_f_rstate = np.array(np.atleast_1d(ekf.voc_stat_rstate)[:i_end])
-            self.voc_stat_f_lstate = np.array(np.atleast_1d(ekf.voc_stat_lstate)[:i_end])
-            self.voc_stat_f_T = np.array(np.atleast_1d(ekf.voc_stat_T)[:i_end])
-            self.voc_stat_f_tau = np.array(np.atleast_1d(ekf.voc_stat_tau)[:i_end])
+            # Load
+            self.assign_all_from_frame(ekf, i_end)
+            # Special handling
+            self.time_e = np.array(np.atleast_1d(ekf.c_time)[:i_end] - self.time_run_start)
+
         if temp is None:
-            self.skip_t = None
-            self.time_t = None
-            self.T_t = None
-            self.Tb_hdwe = None
-            self.Tb_model = None
-            self.Tb = None
-            self.Tb_f = None
-            self.Tb_f_rate = None
-            self.Tb_hdwe_filt = None
-            self.Tb_model_filt = None
-            self.Tb_hdwe_filt_rate = None
-            self.Tb_model_filt_rate = None
+            pass
         else:
-            self.skip_t = np.array(np.bool(np.atleast_1d(temp.skip)[:i_end]))
-            self.time_t = np.array(np.atleast_1d(temp.c_time)[:i_end]) - self.time_run
-            self.Tt = np.array(np.atleast_1d(temp.T_t)[:i_end])
-            self.Tb_hdwe = np.array(np.atleast_1d(temp.Tb_hdw)[:i_end])
-            self.Tb = np.array(np.atleast_1d(temp.Tb)[:i_end])
-            self.Tb_f = np.array(np.atleast_1d(temp.Tb_f)[:i_end])
-            self.Tb_f_rate = np.array(np.atleast_1d(temp.Tb_f_rate)[:i_end])
-            self.Tb_model = np.array(np.atleast_1d(temp.Tb_mod)[:i_end])
-            self.Tb_hdwe_filt = np.array(np.atleast_1d(temp.Tb_hdwe_filt)[:i_end])
-            self.Tb_model_filt = np.array(np.atleast_1d(temp.Tb_model_filt)[:i_end])
-            self.Tb_hdwe_filt_rate = np.array(np.atleast_1d(temp.Tb_hdwe_filt_rate)[:i_end])
-            self.Tb_model_filt_rate = np.array(np.atleast_1d(temp.Tb_model_filt_rate)[:i_end])
+            # Load
+            self.assign_all_from_frame(temp, i_end)
+            # Specials
+            self.time_t = np.array(np.atleast_1d(temp.c_time)[:i_end]) - self.time_run_start
 
         # Workarounds for incomplete data sets e.g. vv1, vv2, vv3
         if self.dv_dyn_m is None:
@@ -836,6 +546,18 @@ class SavedData:
             else:
                 setattr(self, name, getattr(x, name)[:i_end])
 
+    def assign_all_from_frame(self, x=None, i_end=None):
+        """
+        Iterates over members of a dataset x, assigns values to numpy.ndarray members
+        """
+        # self.Fx = np.array(np.atleast_1d(ekf.Fx_)[:i_end])
+
+        for name in list(x.dtype.names):
+            if i_end is None:
+                setattr(self, name, np.array(np.atleast_1d(x[name])))
+            else:
+                setattr(self, name, np.array(np.atleast_1d(getattr(x, name)[:i_end])))
+
     def truncate(self, i_end=None, key_attr='time'):
         """
         Iterates over members of a self, assigns values to numpy.ndarray members
@@ -875,93 +597,27 @@ class SavedData:
 
 
 class SavedDataSim:
-    def __init__(self, time_run, data=None, time_end=None, fake=False, mon_for_fake=None, str_=None):
+    def __init__(self, time_run_start, data=None, time_end=None, fake=False, mon_for_fake=None, str_=None):
         self.str = str_
         if data is None:
-            self.skip_s = None
-            self.i = 0
-            self.time = None
-            self.time_min = None
-            self.time_day = None
-            self.unit = None  # text title
-            self.cTime = None  # Control time, s
-            self.dt_s = None
-            self.chm_s = None
-            self.qcrs_s = None  # Unit capacity rated scaled, Coulombs
-            self.qcap_s = None  # Unit capacity rated scaled, Coulombs
-            self.bms_off_s = None
-            self.nS_s = None
-            self.Tb_f_s = None
-            self.vsat_s = None
-            self.voc_s = None
-            self.voc_stat_s = None
-            self.dv_dyn_s = None
-            self.dv_hys_s = None
-            self.vb_s = None
-            self.ib_in_s = None
-            self.ib_charge_s = None
-            self.ioc_s = None
-            self.ib_s = None
-            self.ib_dyn_s = None
-            self.sat_s = None
-            self.delta_q_s = None
-            self.soc_s = None
-            self.reset_s = None
-            self.d_delta_q_s = None
-            self.ib_dyn_s_T = None
-            self.ib_dyn_s_tau = None
-            self.ib_dyn_s_rstate = None
-            self.ib_dyn_s_lstate = None
-            self.bms_off_s = False
-            self.voltage_low_s = False
             pass
         else:
-            self.i = 0
             self.cTime = np.array(data.c_time)
-            self.time = np.array(data.c_time) - time_run
-            # Truncate
+            self.time = self.cTime  - time_run_start
             if time_end is None:
                 i_end = len(self.time)
             else:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
-            self.cTime = self.cTime[:i_end]
-            self.time = self.time[:i_end]
-            self.skip_s =  np.bool(data.skip[:i_end])
-            self.dt_s = data.dt_s[:i_end]
             self.time_min = self.time / 60.
             self.time_day = self.time / 3600. / 24.
+            self.i = 0
+            self.assign_all_from(data, i_end)
 
-            self.chm_s = data.chm_s[:i_end]
-            if hasattr(data, 'qcrs_s'):
-                self.qcrs_s = data.qcrs_s[:i_end]
-            if hasattr(data, 'nS_s'):
-                self.nS_s = np.array(data.nS_s[:i_end])
-            else:
-                self.nS_s = np.array(data.bmso_s[:i_end]) * 0 + 1
-            self.Tb_f_s = data.Tb_f_s[:i_end]
-            self.vb_s = data.vb_s[:i_end]
-            self.vsat_s = data.vsat_s[:i_end]
-            self.voc_stat_s = data.voc_stat_s[:i_end]
-            self.dv_dyn_s = data.dv_dyn_s[:i_end]
+            # Auxiliary parameters
             self.voc_s = self.vb_s - self.dv_dyn_s
-            self.dv_hys_s = data.dv_hys_s[:i_end]
-            self.ib_s = data.ib_s[:i_end]
-            self.ib_dyn_s = data.ib_dyn_s[:i_end]
-            self.ib_in_s = data.ib_in_s[:i_end]
-            self.ib_charge_s = data.ib_charge_s[:i_end]
-            self.ioc_s = data.ioc_s[:i_end]
-            self.sat_s = data.sat_s[:i_end]
-            self.delta_q_s = data.dq_s[:i_end]
-            self.qcap_s = data.q_cap_s[:i_end]
-            self.soc_s = data.soc_s[:i_end]
-            self.reset_s = data.reset_s[:i_end]
-            self.d_delta_q_s = data.ddq_s[:i_end]
-            self.ib_dyn_s_T = data.ib_dyn_s_T[:i_end]
-            self.ib_dyn_s_tau = data.ib_dyn_s_tau[:i_end]
-            self.ib_dyn_s_rstate = data.ib_dyn_s_rstate[:i_end]
-            self.ib_dyn_s_lstate = data.ib_dyn_s_lstate[:i_end]
-            self.bms_off_s = np.bool(np.array(data.bmso_s[:i_end]))
-            self.voltage_low_s = np.bool(np.array(data.vlow_s[:i_end]))
+
+            # Truncate
+            self.truncate(i_end=i_end)
 
         if fake:
             self.ib_in_s = np.copy(mon_for_fake.ib)
@@ -980,6 +636,35 @@ class SavedDataSim:
             self.dt_s = np.copy(mon_for_fake.dt)
             self.bms_off_s = np.copy(mon_for_fake.bms_off)
             self.mod_tb = np.bool(np.copy(mon_for_fake.mod_data))
+
+    def assign_all_from(self, x=None, i_end=None):
+        """
+        Iterates over members of a dataset x, assigns values to numpy.ndarray members
+        """
+        for name in list(x.dtype.names):
+            if i_end is None:
+                setattr(self, name, x[name])
+            else:
+                setattr(self, name, getattr(x, name)[:i_end])
+
+    def truncate(self, i_end=None, key_attr='time'):
+        """
+        Iterates over members of a self, assigns values to numpy.ndarray members
+        up to i_end.
+        """
+        for attr_name in dir(self):
+            # Filter out built-in attributes and methods
+            if not attr_name.startswith('__') and not callable(getattr(self, attr_name)):
+                member = getattr(self, attr_name)
+                if isinstance(member, np.ndarray):
+                    # Ensure the slice doesn't exceed the bounds of rap_self.ib
+                    end_index = min(i_end, len(getattr(self, key_attr)))
+
+                    # Assign the slice to the numpy.ndarray member
+                    # If the target array has a different shape, direct assignment
+                    # might fail or reshape the array. Using np.array() ensures
+                    # a new array is created with the correct slice.
+                    setattr(self, attr_name, getattr(self, attr_name)[:end_index])
 
     def __str__(self):
         s = "{},".format(self.unit[self.i])

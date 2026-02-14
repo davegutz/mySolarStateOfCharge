@@ -1415,7 +1415,7 @@ class Saved:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
     def __init__(self, str=None):
         self.str = str
-        self.time_run = None
+        self.time_run_start = None
         self.time = []
         self.time_min = []
         self.time_day = []
@@ -1922,7 +1922,7 @@ class SavedS:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
     def __init__(self, str=None):
         self.str = str
-        self.time_run = None
+        self.time_run_start = None
         self.time = []
         self.time_min = []
         self.time_day = []

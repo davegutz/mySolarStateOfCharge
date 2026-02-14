@@ -257,12 +257,12 @@ class Sensors:
         else:
             self.delta_q = self.mon_run.delta_q
         if not hasattr(self.sim_run, 'qcap_s'):
-            self.q_cap_s = calculate_capacity(q_cap_rated_scaled=self.mon_run.qcrs_s, dqdt=self.mon_run.dqdt, tb_f=self.Tb_f,
+            self.qcap_s = calculate_capacity(q_cap_rated_scaled=self.mon_run.qcrs_s, dqdt=self.mon_run.dqdt, tb_f=self.Tb_f,
                                               t_rated=self.mon_run.t_rated)
         else:
-            self.q_cap_s = self.sim_run.qcap_s
+            self.qcap_s = self.sim_run.qcap_s
         if not hasattr(self.sim_run, 'delta_q_s'):
-            self.delta_q_s = -self.q_cap_s * (1. - self.mon_run.soc_s)
+            self.delta_q_s = -self.qcap_s * (1. - self.mon_run.soc_s)
         else:
             self.delta_q_s = self.sim_run.delta_q_s
         self.d_delta_q_s_init = 0.
