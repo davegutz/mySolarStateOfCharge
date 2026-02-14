@@ -270,18 +270,13 @@ class SavedData:
             falw = np.array(sel.falw, dtype=np.uint32)
             fltw = np.array(sel.fltw, dtype=np.uint32)
             dispw = np.array(sel.dispw, dtype=np.uint32)
-            self.skip_sel = np.array(np.bool(self.skip_sel))
             self.c_time_s = np.array(sel.c_time) - self.time_run_start
             self.ccd_fa = np.bool_(np.array(falw) & 2**4)
             self.ib_diff_flt = np.bool_((np.array(fltw) & 2**8) | (np.array(fltw) & 2**9))
             self.ib_diff_fa = np.bool_((np.array(falw) & 2**8) | (np.array(falw) & 2**9))
-            if hasattr(sel, 'vb_hdwe'):
-                self.vb_hdwe = np.array(sel.vb_hdwe[:i_end])
-            else:
+            if not hasattr(sel, 'vb_hdwe'):
                 self.vb_hdwe = np.array(sel.vb[:i_end])
-            if hasattr(sel, 'vb_hdwe_f'):
-                self.vb_hdwe_f = np.array(sel.vb_hdwe_f[:i_end])
-            else:
+            if not hasattr(sel, 'vb_hdwe_f'):
                 self.vb_hdwe_f = np.array(sel.vb_hdwe[:i_end])
             self.wrap_hi_flt = np.bool_(np.array(fltw) & 2**5)
             self.wrap_lo_flt = np.bool_(np.array(fltw) & 2**6)
@@ -302,34 +297,12 @@ class SavedData:
             self.wrap_lo_n_fa = np.bool_(np.array(falw) & 2**17)
             self.wrap_m_and_n_fa = (self.wrap_lo_n_fa & self.wrap_lo_m_fa) | (self.wrap_hi_n_fa & self.wrap_hi_m_fa)
             self.ib_sel = np.array(sel.ib[:i_end])
-
-            """    String::format("1 wnl     %d  %d 'Fo ^'\n", wrap_lo_n_flt(), wrap_lo_n_fa()) +
-                String::format("0 wnh     %d  %d 'Fi ^'\n", wrap_hi_n_flt(), wrap_hi_n_fa()) +
-                String::format("F wml     %d  %d 'Fo ^'\n", wrap_lo_m_flt(), wrap_lo_m_fa()) +
-                String::format("E wmh     %d  %d 'Fi ^'\n", wrap_hi_m_flt(), wrap_hi_m_fa()) +
-                String::format("D vc      %d  %d 'FI 1'\n", vc_flt(), vc_fa()) +
-                String::format("C bare n  %d  x \n", ib_noa_bare()) +
-                String::format("B bare m  %d  x \n", ib_amp_bare()) +
-                String::format("A ib_dsc  %d  %d 'Fq v'\n", ib_dscn_flt(), ib_dscn_fa()) +
-                String::format("9 ibd_lo  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_lo_flt(), ib_diff_lo_fa()) +
-                String::format("8 ibd_hi  %d  %d 'Fd ^  *SA/*SB'\n", ib_diff_hi_flt(), ib_diff_hi_fa()) +
-                String::format("7 red wv  %d  %d   'Fd, Fi/Fo ^'\n",  red_loss(), wrap_vb_fa()) +
-                String::format("6 wl      %d  %d 'Fo ^'\n", wrap_lo_flt(), wrap_lo_fa()) +
-                String::format("5 wh      %d  %d 'Fi ^'\n", wrap_hi_flt(), wrap_hi_fa()) +
-                String::format("4 vc | cc_dif %d  %d 'x Fc ^'\n", vc_fa(), cc_diff_fa()) +
-                String::format("3 ib n    %d  %d 'FI 1'\n", ib_noa_flt(), ib_noa_fa()) +
-                String::format("2 ib m    %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa()) +
-                String::format("1 vb      %d  %d 'Fv 1  *SV, *Dc/*Dv'.", vb_flt(), vb_fa()) +  String::format("  bms_off %d\n", Mon->bms_off()) +
-                String::format("0 tb      %d  %d 'Ft 1'\n  ", tb_flt(), tb_fa()) +
-                String::format("    Fault  Fail'\n");
-            """
             self.dscn_flt = np.bool_(np.array(fltw) & 2**10)
             self.dscn_fa = np.bool_(np.array(falw) & 2**10)
             self.vb_flt = np.bool_(np.array(fltw) & 2**1)
             self.vb_fa = np.bool_(np.array(falw) & 2**1)
             self.tb_flt = np.bool_(np.array(fltw) & 2**0)
             self.tb_fa = np.bool_(np.array(falw) & 2**0)
-            # Displays
             self.time_long = np.bool_(np.array(dispw) & 2**11)
             self.accy = np.bool_(np.array(dispw) & 2**10)
             self.off = np.bool_(np.array(dispw) & 2**9)
@@ -342,7 +315,6 @@ class SavedData:
             self.red_loss = np.bool_(np.array(dispw) & 2**2)
             self.diff_ib = np.bool_(np.array(dispw) & 2**1)
             self.conn = np.bool_(np.array(dispw) & 2**0)
-            #enum  dispw {conn = 0, diff_ib = 1, red_loss = 2, fail_ib = 3, fail_ibm = 4, fail_vb = 5, flt_tb = 6, flt_ekf = 7, SAT = 8, off = 9, accy = 10, time_long = 11, Count};            self.wrap_m_and_n_fa = np.bool_(np.array(sel.wrap_m_and_n_fa[:i_end]))
             self.ib_is_functional = np.bool_(np.array(self.ib_is_functional))
 
         if shunt is None:

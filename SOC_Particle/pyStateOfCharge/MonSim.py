@@ -310,7 +310,9 @@ def replicate(OPT: UserOptions):
         mon.assign_soc_s(sim.soc)
 
         # Break if data integrity questionable
-        if SN.skip_e[i_ekf] or SN.skip_t[i_temp] or SN.skip_sel[G.i] or SN.skip_rap[G.i] or SN.skip_s[G.i]:
+        if SN.mon_run.skip_ekf[i_ekf] or SN.mon_run.skip_temp[i_temp] or SN.mon_run.skip_sel[G.i] \
+                or SN.mon_run.skip_rap[G.i] or SN.sim_run.skip_sim[G.i]:
+            print(f"Broke early due to skip in one of the data files")
             break
 
         # Save plot info
@@ -346,7 +348,8 @@ def replicate(OPT: UserOptions):
     # Final hdr print
     if OPT.request_history is not None and OPT.request_history > 0:
         print(hdr)
-    if SN.skip_e[i_ekf] or SN.skip_t[i_temp] or SN.skip_sel[G.i] or SN.skip_rap[G.i] or SN.skip_s[G.i]:
+    if SN.mon_run.skip_ekf[i_ekf] or SN.mon_run.skip_temp[i_temp] or SN.mon_run.skip_sel[G.i] or \
+            SN.mon_run.skip_rap[G.i] or SN.sim_run.skip_sim[G.i]:
         print(f"\n\n************** Data integrity degraded by skip.  A digit could have been inserted anywhere in data.  Break.")
         print("   now {:5.3f}".format(now),
               "   time_end {:5.3f}\n\n".format(t[-1]),

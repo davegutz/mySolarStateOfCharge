@@ -81,7 +81,7 @@ def rename_all(ra_or_cl):
     ra_or_cl = rename(ra_or_cl, 'voc_stat_lstate', 'voc_stat_f_lstate')
     ra_or_cl = rename(ra_or_cl, 'voc_stat_T', 'voc_stat_f_T')
     ra_or_cl = rename(ra_or_cl, 'voc_stat_tau', 'voc_stat_f_tau')
-    ra_or_cl = rename(ra_or_cl, 'skip', 'skip_t')
+    ra_or_cl = rename(ra_or_cl, 'skip', 'skip_temp')
     ra_or_cl = rename(ra_or_cl, 'T_t', 'Tt')
     ra_or_cl = rename(ra_or_cl, 'Tb_hdw', 'Tb_hdwe')
     ra_or_cl = rename(ra_or_cl, 'Tb_mod', 'Tb_model')
