@@ -22,6 +22,7 @@ from datetime import datetime, timedelta
 import Globals as G
 from Colors import Colors
 count_since_last_header = 0
+kf_warning_printed = False
 HDR_SPREAD = 10
 
 def prn_soc_debug(OPT, leader="", time=None, i_temp=None, mon=None, sim=None):
@@ -231,7 +232,14 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
 
 #6
 def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
-    global count_since_last_header
+    global count_since_last_header, kf_warning_printed
+    if not hasattr(SN.mon_run, 'dtm'):
+        if not kf_warning_printed:
+            print(Colors.fg.red, end='')
+            print(f"\n**********\nNot a kf data run e.g. vv2.  Not printing print_kf_RunSim\n*************\n")
+            kf_warning_printed = True
+            print(Colors.reset, end='')
+        return
     hdr = "  i   time     r       rt   rk   dt               dtm              dtn              VoVcn                    VoVcnf                 x0                     ib_shunt_noa            [Fxn                                      ]    [Qn                                                                                                                ]  [Xpn                                      ]     [Ppn                                                                                                               ]   S                         [K                                                           ]   y                     [x                                         ]    [Pn                                                                                                                ]"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)

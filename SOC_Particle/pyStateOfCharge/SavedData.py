@@ -143,9 +143,19 @@ class SavedData:
             i_end_sel =  None
             i_end_shunt = None
             if time_end is None:
+                if temp is None:
+                    print(Colors.fg.red, end='')
+                    print(f"\n**********\nRun too short, no temp.csv data for {self.time[-1]} s run\n*************\n")
+                    print(Colors.reset, end='')
+                    exit(0)
                 if temp is not None:
                     time_t = np.atleast_1d(np.array(np.array(temp.c_time) - self.time_run))
                     Tt = np.atleast_1d(np.array(temp.T_t))
+                    if len(Tt) <= 1:
+                        print(Colors.fg.red, end='')
+                        print(f"\n**********\nRun too short, length Tt = {len(Tt)} for {self.time[-1]} s run.  Need at least 2 samples (asynchronous so time not definitive).\n*************\n")
+                        print(Colors.reset, end='')
+                        exit(0)
                     time_end = time_t[-1] + Tt[-1]
                     i_end = np.where(self.time <= time_end)[0][-1] + 1
                 else:
@@ -548,15 +558,16 @@ class SavedData:
             self.ib_is_functional = np.bool_(np.array(sel.ib_is_functional[:i_end]))
             self.voltage_low = np.bool_(np.array(sel.v_low[:i_end]))
         if shunt is None:
-            self.i = 0
-            self.Vcm = None
-            self.Vom = None
-            self.VoVcm = None
-            self.Vcn = None
-            self.Von = None
-            self.VoVcn = None
-            self.Tbv = None
-            self.Vbv = None
+            pass
+            # self.i = 0
+            # self.Vcm = None
+            # self.Vom = None
+            # self.VoVcm = None
+            # self.Vcn = None
+            # self.Von = None
+            # self.VoVcn = None
+            # self.Tbv = None
+            # self.Vbv = None
         else:
             self.assign_all_from(shunt, i_end)
             # Special handling
