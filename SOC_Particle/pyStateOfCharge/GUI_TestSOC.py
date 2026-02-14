@@ -678,7 +678,8 @@ def compare_hist_hist_choose():
                 # master.withdraw()
                 compare_hist_hist(data_file_run=run_path, unit_key_run=ref_key,
                                   data_file_tst=testpath, unit_key_tst=test_key,
-                                  dt_resample=30.)
+                                  dt_resample=30., strict_overplot=strict_overplot.get(),
+                                  terse=terse.get())
                 # master.deiconify()
             else:
                 tk.messagebox.showerror(message='key not found in' + testpath)
@@ -746,7 +747,8 @@ def compare_run():
         print('GUI_TestSOC compare_run:  Test', Test.file_path, Test.key)
         keys = [(Ref.file_txt, Ref.key), (Test.file_txt, Test.key)]
         # master.withdraw()
-        compare_run_run(keys=keys, data_file_folder_run=Ref.version_path, data_file_folder_test=Test.version_path)
+        compare_run_run(keys=keys, data_file_folder_run=Ref.version_path, data_file_folder_test=Test.version_path,
+                        strict_overplot=strict_overplot.get(), terse=terse.get())
 
         # master.deiconify()
 
@@ -758,7 +760,8 @@ def compare_run_to_hist():
     update_data_buttons()
     if modeling.get():
         print('compare_hist_to_sim.  save_pdf_path', os.path.join(Test.version_path, './figures'))
-        compare_run_hist(data_file=Test.file_path, unit_key=Test.key)
+        compare_run_hist(data_file=Test.file_path, unit_key=Test.key, strict_overplot=strict_overplot.get(),
+                        terse=terse.get())
     else:
         print('not possible')
 
@@ -802,7 +805,8 @@ def compare_run_sim_choose():
         for testpath in testpaths:
             test_folder_path, test_parent, basename, test_txt, key = contain_all(testpath)
             if key != '':
-                compare_run_sim(data_file=testpath, unit_key=key, strict_overplot=True)
+                compare_run_sim(data_file=testpath, unit_key=key, strict_overplot=strict_overplot.get(),
+                        terse=terse.get())
             else:
                 tk.messagebox.showerror(message='key not found in' + testpath)
         update_data_buttons()

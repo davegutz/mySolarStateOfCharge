@@ -246,7 +246,7 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:9.4f}".format(SN.mon_run.dtm[G.i]), "{:5.4f}".format(SN.KfShuntAmp.dt),
           "{:9.4f}".format(SN.mon_run.dtn[G.i]), "{:5.4f}".format(SN.KfShuntNoa.dt),
           "{:12.7f}".format(SN.mon_run.vovcn[G.i]), "{:11.7f}".format(SN.VoVcn),
-          "{:11.6f}".format(SN.mon_run.vovcnf[G.i]), "{:10.6f}".format(SN.VoVcn_f),
+          "{:11.6f}".format(SN.mon_run.vovcnkf[G.i]), "{:10.6f}".format(SN.VoVcn_f),
           "{:11.6f}".format(SN.mon_run.x0n[G.i]), "{:10.6f}".format(SN.KfShuntNoa.x[0][0]),
           "{:11.6f}".format(SN.mon_run.iscn[G.i]), "{:10.6f}".format(SN.iscn),
           "{:8.1f}".format(SN.mon_run.Fx00n[G.i]), "{:3.1f}".format(SN.KfShuntNoa.Fx[0][0]),

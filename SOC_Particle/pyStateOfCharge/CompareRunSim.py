@@ -195,7 +195,7 @@ def main():
     # Rf, vv4,
     # Rk,
     # vv0,
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc3p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\shunt_test_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
 
     # # gdrive = '/home/daveg/Documents/'
@@ -219,19 +219,19 @@ def main():
     scale_in = 1.0
 
     # RunSim plot selection
-    # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=ekf   7=dyn_m  8=vb_wrap
-    request_hist_in = 3
+    # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m  8=vb_wrap
+    request_hist_in = 6
     # request_hist_in = None
 
     # # mon_soc_in = False # old runsim work ******************
     use_mon_soc_ = False
     # use_mon_soc_ = True
 
-    # plots = False
-    plots = True
+    plots = False
+    # plots = True
 
-    # terse_in = False
-    terse_in = True
+    terse_in = False
+    # terse_in = True
 
     strict_overplot_in = False
     # strict_overplot_in = True
