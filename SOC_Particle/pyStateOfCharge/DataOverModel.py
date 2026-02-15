@@ -106,7 +106,7 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
     (path, basename) = os.path.split(path_to_data)
     version = version_from_data_file(path_to_data)
     (path_to_temp, save_pdf_path, _) = local_paths(version)
-    csv_file = path_to_temp+'/'+basename.replace('.csv', type_ + '.csv', 1)
+    csv_file = path_to_temp+'/'+basename.replace('.csv', type_ + '_' + unit_key + '.csv', 1)
     # Header
     have_header_str = None
     num_fields = 0

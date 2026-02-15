@@ -83,8 +83,8 @@ def main():
     # plots = False
     plots = True
     strict_overplot = False
-    # terse = True
-    terse = False
+    terse = True
+    # terse = False
     use_mon_csv = False
     dt_resample = 1
     Tb_force = None

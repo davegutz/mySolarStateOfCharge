@@ -360,7 +360,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
 
     # Load summaries
     s_raw = None
-    temp_sum_file_clean = write_clean_file(data_file, type_='_summ', hdr_key='fltb', unit_key='unit_u',
+    temp_sum_file_clean = write_clean_file(data_file, type_='_flt', hdr_key='fltb', unit_key='unit_u',
                                            skip=1, comment_str='---')
     if temp_sum_file_clean:
         s_raw = np.genfromtxt(temp_sum_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
@@ -369,7 +369,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
 
     # Load history
     h_raw = None
-    temp_hist_file_clean = write_clean_file(data_file, type_='_hist', hdr_key='fltb', unit_key='unit_h',
+    temp_hist_file_clean = write_clean_file(data_file, type_='_flt', hdr_key='fltb', unit_key='unit_h',
                                             skip=1, comment_str='---')
     if temp_hist_file_clean:
         h_raw = np.genfromtxt(temp_hist_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)

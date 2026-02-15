@@ -168,6 +168,8 @@ class Sensors:
             self.dt_temp_fut = self.mon_run.Tt[1]
             self.dt_temp = self.mon_run.Tt[0]
             self.ib_amp_model = self.mon_run.ib_amp_model
+            self.voc_stat_f_lstate = self.mon_run.voc_stat_f_lstate
+            self.voc_stat_f_lstate_init = self.voc_stat_f_lstate[0]
 
         elif self.run_type == 'HistSim':
             if not hasattr(self.mon_run, 'ib_dyn_m'):
@@ -238,9 +240,10 @@ class Sensors:
             self.vb_init = self.mon_run.vb_f[0]
             self.ib_amp_model = self.mon_run.ib_amp_hdwe_f
             self.ib_noa_model = self.mon_run.ib_noa_hdwe_f
-
             self.z = self.mon_run.z
             self.z_init = self.z[0]
+            self.voc_stat_f_lstate = self.mon_run.voc_stat_f_lstate
+            self.voc_stat_f_lstate_init = self.voc_stat_f_lstate[0]
 
         self.i = 0
         self.sat_init = self.mon_run.sat[0]
@@ -284,7 +287,6 @@ class Sensors:
         self.x_init = self.soc_init
         self.x_prior_init = self.x_init
         self.soc_ekf_init = self.soc_init
-        # self.z_init = self.hx_init
         self.z_init = self.mon_run.z[0]
 
         self.VoVcm = 0.
@@ -398,6 +400,7 @@ class Sensors:
 
     def update_ekf(self, i_ekf):
         self.z_init = self.z[i_ekf]
+        self.voc_stat_f_lstate_init = self.voc_stat_f_lstate[i_ekf]
 
     def update(self, i):
         self.i = min(max(i, 0), len(self.mon_run.time)-1)

@@ -511,7 +511,6 @@ class BatteryMonitor(Battery, EKF1x1):
             self.x_prior = SN.x_prior_init
             self.soc_ekf = SN.soc_ekf_init
             self.z = SN.z_init
-            # self.z = SN.z_init
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -793,7 +792,6 @@ class BatteryMonitor(Battery, EKF1x1):
             self.x_post = mr.x_post[i_ekf]
         else:
             self.x_post = self.x
-        print(f"i_ekf {i_ekf} xpost {mr.x_post[i_ekf]} {self.x_post} x {mr.x[i_ekf]} {self.x}")
 
         if hasattr(mr, 'tb_f_for_hx'):
             try:

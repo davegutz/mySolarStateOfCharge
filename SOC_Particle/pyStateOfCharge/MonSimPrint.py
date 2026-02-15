@@ -651,7 +651,7 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:11.5f}".format(SN.sim_run.voc_stat_s[G.i]), "{:9.5f}".format(sim.voc_stat),
           "{:11.5f}".format(SN.mon_run.z[i_ekf]), "{:9.5f}".format(mon.voc_stat_f),
           "{:11.5f}".format(SN.mon_run.soc_ekf[G.i]), "{:9.5f}".format(mon.soc_ekf),
-          "{:11.5f}".format(SN.mon_run.y[G.i]), "{:9.5f}".format(mon.y),
+          "{:11.5f}".format(SN.mon_run.y_ekf[G.i]), "{:9.5f}".format(mon.y),
           "{:8d}".format(SN.mon_run.fltw[G.i]), "{:4d}".format(SN.mon_run.falw[G.i]),
           )
     print(Colors.reset, end='')

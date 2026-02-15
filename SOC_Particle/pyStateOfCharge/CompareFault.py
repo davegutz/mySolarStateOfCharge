@@ -195,6 +195,14 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     d_mod = rf.rec_append_fields(d_mod, 'P', np.array(P, dtype=float))
     z = d_mod.voc_stat_f.copy()
     d_mod = rf.rec_append_fields(d_mod, 'z', np.array(z, dtype=float))
+    x = d_mod.soc_ekf.copy()
+    d_mod = rf.rec_append_fields(d_mod, 'x', np.array(z, dtype=float))
+    x_prior = d_mod.soc_ekf.copy()
+    d_mod = rf.rec_append_fields(d_mod, 'x_prior', np.array(z, dtype=float))
+    x_post = d_mod.soc_ekf.copy()
+    d_mod = rf.rec_append_fields(d_mod, 'x_post', np.array(z, dtype=float))
+    voc_stat_f_lstate = d_mod.voc_stat_f.copy()
+    d_mod = rf.rec_append_fields(d_mod, 'voc_stat_f_lstate', np.array(z, dtype=float))
 
     return d_mod
 
