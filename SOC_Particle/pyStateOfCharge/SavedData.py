@@ -109,7 +109,12 @@ class SavedData:
             else:
                 if temp is not None:
                     time_t = np.atleast_1d(np.array(np.array(temp.c_time_t) - self.time_run_start))
-                    Tt = np.atleast_1d(np.array(temp.T_t))
+                    Tt = np.atleast_1d(np.array(temp.Tt))
+                    if len(Tt) <= 1:
+                        print(Colors.fg.red, end='')
+                        print(f"\n**********\nRun too short, length Tt = {len(Tt)} for {self.time[-1]} s run.  Need at least 2 samples (asynchronous so time not definitive).\n*************\n")
+                        print(Colors.reset, end='')
+                        exit(0)
                     i_end = np.where(self.time <= time_end)[0][-1] + 1
                 else:
                     i_end = len(self.time)

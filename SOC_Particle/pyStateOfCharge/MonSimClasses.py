@@ -284,7 +284,8 @@ class Sensors:
         self.x_init = self.soc_init
         self.x_prior_init = self.x_init
         self.soc_ekf_init = self.soc_init
-        self.z_init = self.hx_init
+        # self.z_init = self.hx_init
+        self.z_init = self.mon_run.z[0]
 
         self.VoVcm = 0.
         self.VoVcm_f = 0.

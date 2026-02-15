@@ -290,7 +290,7 @@ def replicate(OPT: UserOptions):
             calc_ekf = True
         else:
             calc_ekf = False
-        SN.update_ekf(i_ekf)
+        SN.update_ekf(max(i_ekf, 0))
 
         if reset_ekf and calc_ekf:
             mon.init_soc_ekf(OPT.mon_run, G.i, i_ekf)  # when modeling (assumed in python) ekf wants to equal model

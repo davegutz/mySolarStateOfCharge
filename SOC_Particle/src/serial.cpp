@@ -188,7 +188,7 @@ void print_rapid_serial(const boolean reset, Publish *pubList, Sensors *Sen, Bat
     Mon->ib_charge(), Mon->voc_soc(), Mon->ib_dyn_r(), Mon->ib_dyn_T(), Mon->ib_dyn_rstate(), Mon->ib_dyn_lstate());
     Serial.printf("%s", pr.buff);
 
-  sprintf(pr.buff,  "%11.7f,%11.7f,%11.7f,%11.7f,  %11.7f,  %11.8f,%11.8f,%11.8f,%5.3f,%12.7f,%12.7f,", \
+  sprintf(pr.buff,  "%11.9f,%11.9f,%11.9f,%11.7f,  %11.7f,  %11.9f,%11.9f,%11.9f,%5.3f,%12.7f,%12.7f,", \
     Mon->vsat(), Mon->dv_dyn(), Mon->voc_stat(), Mon->hx(),
     Mon->y_ekf(),
     Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc(), Mon->soc_min(), Mon->d_delta_q(), Mon->delta_q());
@@ -236,10 +236,10 @@ void print_ekf_header(void)
   // if ( dt_ekf_ == 0. ) return;
   double eTime = double(now_ekf_)/1000.;
 
-  Serial.printf("unit_ekf,%13.4f,%8.4f,%13.10f,%13.10f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%11.8g,%10.7g,%10.7g,",
+  Serial.printf("unit_ekf,%13.4f,%8.4f,%13.10f,%13.10f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%11.9g,%10.7g,%10.7g,",
     eTime, dt_ekf_, Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_);
 
-  Serial.printf("%11.8g,%10.7g,%11.8g,%10.7g,%10.7g,%10.7g,%d,%11.8f,%11.8f,",
+  Serial.printf("%11.9g,%10.7g,%11.9g,%10.7g,%10.7g,%10.7g,%d,%11.8f,%11.9f,",
     x_prior_, P_prior_, x_post_, P_post_, hx_, H_, freeze_, Tb_f_for_hx_, x_for_hx_);
 
   Serial.printf("%9.6f,%9.6f,%9.6f,%9.6f,",
@@ -430,7 +430,7 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
             Sim->dv_dyn(), Sim->vb(), Sim->ib_s(), Sim->ib_dyn(), Sim->dv_hys(), Sim->ib_in(), Sim->ib_charge(), Sim->ioc());
         Serial.printf("%s", pr.buff);
 
-        sprintf(pr.buff, " %d,  %9.4f, %10.4f,  %11.8f, %d, %7.6f,",
+        sprintf(pr.buff, " %d,  %9.4f, %10.4f,  %11.9f, %d, %7.6f,",
             Sim->saturated(), Sim->delta_q(), Sim->q_capacity(), Sim->soc(), reset_temp, Sim->d_delta_q_s());
         Serial.printf("%s", pr.buff);
 

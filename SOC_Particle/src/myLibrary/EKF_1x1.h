@@ -38,9 +38,9 @@ public:
   void print_ekf_serial(BatteryMonitor *Mon);
   double Tb_f_for_hx() { return ( Tb_f_for_hx_); };
   void update_ekf(const double z, double x_min, double x_max);
-  double x_ekf() { return ( x_ ); };
+  double x() { return ( x_ ); };
   double x_f_for_hx() { return ( x_for_hx_); };
-  double z_ekf() { return ( z_ ); };
+  double z() { return ( z_ ); };
   void init_ekf(double soc, double Pinit);
 protected:
   double Fx_; // State transition

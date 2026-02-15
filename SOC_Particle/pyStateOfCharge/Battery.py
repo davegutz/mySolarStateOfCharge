@@ -328,11 +328,12 @@ class Battery(Coulombs):
                        self.chemistry.lookup_voc(soc_lim, tb_f)) / 0.01
         return dv_dsoc
 
-    def calc_soc_voc(self, soc, tb_f):
+    def calc_soc_voc(self, soc, tb_f, printit=False):
         """SOC-OCV curve fit method per Zhang, etal """
         dv_dsoc = self.calc_h_jacobian(soc, tb_f)
-        voc = self.chemistry.lookup_voc(soc, tb_f)
-        # print("soc=", soc, "tb_f=", tb_f, "dvoc=", self.dvoc, "voc=", voc)
+        voc = self.chemistry.lookup_voc(soc, tb_f, printit=printit)
+        if printit:
+            print("soc=", soc, "tb_f=", tb_f, "dvoc=", self.dvoc, "voc=", voc)
         return voc, dv_dsoc
 
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
@@ -509,8 +510,8 @@ class BatteryMonitor(Battery, EKF1x1):
             self.x = SN.x_init
             self.x_prior = SN.x_prior_init
             self.soc_ekf = SN.soc_ekf_init
-            self.z_ekf = SN.z_init
             self.z = SN.z_init
+            # self.z = SN.z_init
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -559,8 +560,8 @@ class BatteryMonitor(Battery, EKF1x1):
         else:
             self.ib_amp = self.ib_amp_hdwe
             self.ib_noa = self.ib_noa_hdwe
-            self.ib_amp_pst = SN.mon_run.ib_amp_hdwe[max(G.i - 1, 0)]
-            self.ib_noa_pst = SN.mon_run.ib_noa_hdwe[max(G.i - 1, 0)]
+            self.ib_amp_pst = SN.mon_run.ib_amp_hdwe[max(G.i-1, 0)]
+            self.ib_noa_pst = SN.mon_run.ib_noa_hdwe[max(G.i-1, 0)]
         self.ib_hdwe = SN.mon_run.ib_h[G.i]
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, unit=self.unit)
@@ -737,7 +738,7 @@ class BatteryMonitor(Battery, EKF1x1):
         x_lim = max(min(self.x, 1.), 0.)
         self.x_for_hx = x_lim
         self.tb_f_for_hx = self.Tb_f_rap
-        self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.Tb_f_rap)
+        self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.tb_f_for_hx, printit=False)
         # Jacobian of measurement function
         self.H = self.dv_dsoc
         return self.hx, self.H, self.tb_f_for_hx, self.x_for_hx
@@ -784,17 +785,15 @@ class BatteryMonitor(Battery, EKF1x1):
         else:
             self.dt_eframe = mr.dt[i] * Battery.EKF_EFRAME_MULT
 
-        self.x = mr.soc_ekf[i]
+        self.x = mr.x[i_ekf]
 
-        if hasattr(mr, 'x_prior'):
-            self.x_prior = mr.x_prior[i_ekf]
-        else:
-            self.x_prior = self.x
+        self.x_prior = mr.x_prior[i_ekf]
 
         if hasattr(mr, 'x_post'):
             self.x_post = mr.x_post[i_ekf]
         else:
             self.x_post = self.x
+        print(f"i_ekf {i_ekf} xpost {mr.x_post[i_ekf]} {self.x_post} x {mr.x[i_ekf]} {self.x}")
 
         if hasattr(mr, 'tb_f_for_hx'):
             try:
@@ -864,7 +863,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.y_ekf.append(self.y_ekf)
         self.saved.y_filt.append(self.y_filt)
         self.saved.y_filt2.append(self.y_filt2)
-        self.saved.z_ekf.append(self.z_ekf)
+        self.saved.z.append(self.z)
         self.saved.x_prior.append(self.x_prior)
         self.saved.P_prior.append(self.P_prior)
         self.saved.x_post.append(self.x_post)
@@ -1468,7 +1467,7 @@ class Saved:
         self.y_ekf = []
         self.y_filt = []
         self.y_filt2 = []
-        self.z_ekf = []
+        self.z = []
         self.x_prior = []
         self.P_prior = []
         self.x_post = []
@@ -1664,7 +1663,7 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=4)
         plt.subplot(332)
         plq(plt, mv, 'time', mv, 'hx', color='cyan', linestyle='-')
-        plq(plt, mv, 'time', mv, 'z_ekf', color='black', linestyle='--')
+        plq(plt, mv, 'time', mv, 'z', color='black', linestyle='--')
         plt.legend(loc=4)
         plt.subplot(333)
         plq(plt, mv, 'time', mv, 'y_ekf', color='green', linestyle='-')
@@ -1874,8 +1873,8 @@ def overall_batt(mv, sv, filename,
         plt.subplot(332)
         plq(plt, mv, 'time', mv, 'Nonehx', color='green', linestyle='-')
         plq(plt, mv1, 'time', mv1, 'hx', color='black', linestyle='--')
-        plq(plt, mv, 'time', mv, 'Nonez_ekf', color='magenta', linestyle='-.')
-        plq(plt, mv1, 'time', mv1, 'z_ekf', color='blue', linestyle=':')
+        plq(plt, mv, 'time', mv, 'Nonez', color='magenta', linestyle='-.')
+        plq(plt, mv1, 'time', mv1, 'z', color='blue', linestyle=':')
         plt.legend(loc=4)
         plt.subplot(333)
         plq(plt, mv, 'time', mv, 'Noney_ekf', color='green', linestyle='-')

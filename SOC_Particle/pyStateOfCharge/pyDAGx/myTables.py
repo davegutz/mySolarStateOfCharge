@@ -115,7 +115,7 @@ class Iterate:
         return self.e
 
 
-def binsearch(x_, v_, n):
+def binsearch(x_, v_, n, printit=False):
     # Initialize to high and low
     low = 0
     high = n - 1
@@ -135,6 +135,8 @@ def binsearch(x_, v_, n):
             else:
                 low = mid
         dx = (x_ - v_[low]) / (v_[high] - v_[low])
+        if printit:
+            print(f"binsearch:  x {x_} high {high} low {low} vhi {v_[high]} vlo {v_[low]} dx {dx}")
     return high, low, dx
 
 
@@ -171,10 +173,10 @@ class TableInterp1D:
         self.v = v_
 
     # Interpolation
-    def interp(self, x_):
+    def interp(self, x_, printit=False):
         if self.n < 1:
             return self.v[0]
-        high, low, dx = binsearch(x_, self.x, self.n)  # clips
+        high, low, dx = binsearch(x_, self.x, self.n, printit=printit)  # clips
         r_val = self.v[low] + dx * (self.v[high] - self.v[low])
         return float(r_val)
 
@@ -228,16 +230,19 @@ class TableInterp2D:
             if not isMonotonic(self.v[j*self.n:j*self.n+self.n]):
                 self.is_monotonic = False
 
-    def interp(self, x_, y_):
+    def interp(self, x_, y_, printit=False):
         if self.n < 1 or self.m < 1:
             return self.v[0]
-        high1, low1, dx1 = binsearch(x_, self.x, self.n)
-        high2, low2, dx2 = binsearch(y_, self.y, self.m)
+        high1, low1, dx1 = binsearch(x_, self.x, self.n, printit=printit)
+        high2, low2, dx2 = binsearch(y_, self.y, self.m, printit=printit)
         temp1 = low2 * self.n + low1
         temp2 = high2 * self.n + low1
         r0 = self.v[temp1] + dx1 * (self.v[low2*self.n + high1] - self.v[temp1])
         r1 = self.v[temp2] + dx1 * (self.v[high2*self.n + high1] - self.v[temp2])
-        return float(r0 + dx2 * (r1 - r0)) + self.Dw
+        result = float(r0 + dx2 * (r1 - r0)) + self.Dw
+        if printit:
+            print(f"x {x_} y {y_} high1 {high1} high2 {high2} low1 {low1} low2 {low2} temp1 {temp1} temp2 {temp2} dx1 {dx1} dx2 {dx2} r0 {r0} t1 {r1} result {result}")
+        return result
 
     # Reverse interpolation
     def r_interp(self, t_, y_, verbose=False):

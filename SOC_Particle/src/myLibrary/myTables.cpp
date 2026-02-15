@@ -2,6 +2,8 @@
 #include "myTables.h"
 #include "math.h"
 #include "../constants.h"
+#include "../parameters.h"
+extern SavedPars sp; // Various parameters to be static at system level and saved through power cycle
 
 // Global variables
 extern char buffer[256];
@@ -19,12 +21,12 @@ extern char buffer[256];
 *                      16-Aug-93   Pointers.
 *   Inputs:
 *       Name        Type        Length      Definition
-*       x           float      1           Input to vector.
+*       x           double      1           Input to vector.
 *       n           int         1           Size of vector.
-*       v           float      n           Vector.
+*       v           double      n           Vector.
 *   Outputs:
 *       Name        Type        Length      Definition
-*       *dx         float      1           Fraction of range for x.
+*       *dx         double      1           Fraction of range for x.
 *       *low        int         1           Current low end of range.
 *       *high       int         1           Current high end of range.
 *   Hardware dependencies:  ANSI C.
@@ -32,7 +34,7 @@ extern char buffer[256];
 *   Global variables used:  None.
 *   Functions called:   None.
 */
-void binsearch(float x, float *v, int n, int *high, int *low, float *dx)
+void binsearch(double x, double *v, int n, int *high, int *low, double *dx)
 {
   int mid;
 
@@ -64,6 +66,8 @@ void binsearch(float x, float *v, int n, int *high, int *low, float *dx)
         *low = mid;
     }
     *dx = (x - *(v + *low)) / (*(v + *high) - *(v + *low));
+    if ( sp.debug()==93 )
+        Serial.printf("binsearch: x %19.15f high %d low %d v[high] %19.15f v[low] %19.15f dx %19.15f\n", x, *high, *low, *(v + *high), *(v + *low), *dx);
   }
 } /* End binsearch    */
 
@@ -78,23 +82,23 @@ void binsearch(float x, float *v, int n, int *high, int *low, float *dx)
 *   Inputs:
 *       Name        Type        Length      Definition
 *       n           int         1           Number of points.
-*       x           float      1           Independent variable.
-*       v           float      n           Breakpoint table.
-*       y           float      n           Table data.
+*       x           double      1           Independent variable.
+*       v           double      n           Breakpoint table.
+*       y           double      n           Table data.
 *   Outputs:
 *       Name        Type        Length      Definition
-*       tab1        float      1           Result of table lookup.
+*       tab1        double      1           Result of table lookup.
 *   Hardware dependencies:  ANSI C.
 *   Header needed in scope of caller:   None.
 *   Global variables used:  None.
 *   Functions called:   binsearch.
 */
-float tab1(float x, float *v, float *y, int n)
+double tab1(double x, double *v, double *y, int n)
 {
-  float dx;
+  double dx;
   int high, low;
-  void binsearch(float x, float *v, int n, int *high,
-                 int *low, float *dx);
+  void binsearch(double x, double *v, int n, int *high,
+                 int *low, double *dx);
   if (n < 1)
     return y[0];
   binsearch(x, v, n, &high, &low, &dx);
@@ -112,12 +116,12 @@ float tab1(float x, float *v, float *y, int n)
 *   Outputs:
 *       tab1        Result of table lookup
 */
-float tab1clip(float x, float *v, float *y, int n)
+double tab1clip(double x, double *v, double *y, int n)
 {
-  float dx;
+  double dx;
   int high, low;
-  void binsearch(float x, float *v, int n, int *high,
-                 int *low, float *dx);
+  void binsearch(double x, double *v, int n, int *high,
+                 int *low, double *dx);
   if (n < 1)
     return y[0];
   binsearch(x, v, n, &high, &low, &dx);
@@ -134,26 +138,26 @@ float tab1clip(float x, float *v, float *y, int n)
 *       Name        Type        Length      Definition
 *       n1          int         1           Number of ind var #1 brkpts.
 *       n2          int         1           Number of ind var #2 brkpts.
-*       x1          float      1           Independent variable #1.
-*       x2          float      1           Independent variable #2.
-*       v1          float      n1          Breakpoints for var #1.
-*       v2          float      n2          Breakpoints for var #2.
-*       y           float      n1*n2       Table data.
+*       x1          double      1           Independent variable #1.
+*       x2          double      1           Independent variable #2.
+*       v1          double      n1          Breakpoints for var #1.
+*       v2          double      n2          Breakpoints for var #2.
+*       y           double      n1*n2       Table data.
 *   Outputs:
 *       Name        Type        Length      Definition
-*       tab2        float      1           Result of table lookup.
+*       tab2        double      1           Result of table lookup.
 *   Hardware dependencies:  ANSI C.
 *   Header needed in scope of caller:   None.
 *   Global variables used:  None.
 *   Functions called:   binsearch (natively clipping)
 */
-float tab2(float x1, float x2, float *v1, float *v2, float *y, int n1,
+double tab2(double x1, double x2, double *v1, double *v2, double *y, int n1,
             int n2)
 {
-  float dx1, dx2, r0, r1;
+  double dx1, dx2, r0, r1;
   int high1, high2, low1, low2, temp1, temp2;
-  void binsearch(float x, float *v, int n, int *high,
-                 int *low, float *dx);
+  void binsearch(double x, double *v, int n, int *high,
+                 int *low, double *dx);
   if (n1 < 1 || n2 < 1)
     return y[0];
   binsearch(x1, v1, n1, &high1, &low1, &dx1);  // clips
@@ -162,17 +166,21 @@ float tab2(float x1, float x2, float *v1, float *v2, float *y, int n1,
   temp2 = high2 * n1 + low1;
   r0 = *(y + temp1) + dx1 * (*(y + low2 * n1 + high1) - *(y + temp1));
   r1 = *(y + temp2) + dx1 * (*(y + high2 * n1 + high1) - *(y + temp2));
-  return r0 + dx2 * (r1 - r0);
+  double result = r0 + dx2 * (r1 - r0);
+  if ( sp.debug()==93 )
+    Serial.printf("tab2: x %7.3f y %7.3f high1 %d high2 %d low1 %d low2 %d  temp1 %d temp2 %d dx1 %17.15f dx2 %17.15f r0 %17.15f r1 %17.15f result %19.15f\n", \
+        x1, x2, high1, high2, low1, low2, temp1, temp2, dx1, dx2, r0, r1, result);
+  return result;
 } /* End tab2 */
 
 // class TableInterp
 // constructors
 TableInterp::TableInterp()
     : n1_(0) {}
-TableInterp::TableInterp(const unsigned int n, float x[])
+TableInterp::TableInterp(const unsigned int n, double x[])
     : n1_(n)
 {
-  x_ = new float[n1_];
+  x_ = new double[n1_];
   for (unsigned int i = 0; i < n1_; i++)
   {
     x_[i] = x[i];
@@ -185,7 +193,7 @@ TableInterp::~TableInterp()
 }
 // operators
 // functions
-float TableInterp::interp(void)
+double TableInterp::interp(void)
 {
   return (-999.);
 }
@@ -213,10 +221,10 @@ void TableInterp::pretty_print(void)
 // 1-D Interpolation Table Lookup
 // constructors
 TableInterp1D::TableInterp1D() : TableInterp() {}
-TableInterp1D::TableInterp1D(const unsigned int n, float x[], float v[])
+TableInterp1D::TableInterp1D(const unsigned int n, double x[], double v[])
     : TableInterp(n, x)
 {
-  v_ = new float[n1_];
+  v_ = new double[n1_];
   for (unsigned int i = 0; i < n1_; i++)
   {
     v_[i] = v[i];
@@ -228,7 +236,7 @@ TableInterp1D::~TableInterp1D()
 }
 // operators
 // functions
-float TableInterp1D::interp(float x)
+double TableInterp1D::interp(double x)
 {
   return (tab1(x, x_, v_, n1_));
 }
@@ -236,10 +244,10 @@ float TableInterp1D::interp(float x)
 // 1-D Interpolation Table Lookup
 // constructors
 TableInterp1Dclip::TableInterp1Dclip() : TableInterp() {}
-TableInterp1Dclip::TableInterp1Dclip(const unsigned int n, float x[], float v[])
+TableInterp1Dclip::TableInterp1Dclip(const unsigned int n, double x[], double v[])
     : TableInterp(n, x)
 {
-  v_ = new float[n1_];
+  v_ = new double[n1_];
   for (unsigned int i = 0; i < n1_; i++)
   {
     v_[i] = v[i];
@@ -251,7 +259,7 @@ TableInterp1Dclip::~TableInterp1Dclip()
 }
 // operators
 // functions
-float TableInterp1Dclip::interp(float x)
+double TableInterp1Dclip::interp(double x)
 {
   return (tab1(x, x_, v_, n1_));
 }
@@ -268,17 +276,17 @@ v = {v11, v12, ...v1n, v21, v22, ...v2n, ...............  vm1, vm2, ...vmn}
 */
 // constructors
 TableInterp2D::TableInterp2D() : TableInterp() {}
-TableInterp2D::TableInterp2D(const unsigned int n, const unsigned int m, float x[],
-                             float y[], float v[])
+TableInterp2D::TableInterp2D(const unsigned int n, const unsigned int m, double x[],
+                             double y[], double v[])
     : TableInterp(n, x), dx_(0.), dy_(0.), dz_(0.)
 {
   n2_ = m;
-  y_ = new float[n2_];
+  y_ = new double[n2_];
   for (unsigned int j = 0; j < n2_; j++)
   {
     y_[j] = y[j];
   }
-  v_ = new float[n1_ * n2_];
+  v_ = new double[n1_ * n2_];
   for (unsigned int i = 0; i < n1_; i++)
     for (unsigned int j = 0; j < n2_; j++)
     {
@@ -292,17 +300,17 @@ TableInterp2D::~TableInterp2D()
 }
 // operators
 // functions
-float TableInterp2D::interp(float x, float y)
+double TableInterp2D::interp(double x, double y)
 {
   return (tab2(x + dx_, y + dy_, x_, y_, v_, n1_, n2_) + dz_);  // clips
 }
-//tab2(float x1, float x2, float *v1, float *v2, float *y, int n1, int n2);
+//tab2(double x1, double x2, double *v1, double *v2, double *y, int n1, int n2);
 /*
-static float  xTbl[6]  =
+static double  xTbl[6]  =
   {-4.7, -1.88, -1.41, -.94, -.47, 4.7};
-static float   yTbl[4]   =
+static double   yTbl[4]   =
   {0., 10000., 20000., 30000.};
-static float  vTbl[24]  =
+static double  vTbl[24]  =
   {5.5, 3.5, 3.0, 2.5,
    5.5, 3.5, 3.0, 2.5,
    5.5, 3.5, 3.0, 5.5,
@@ -310,8 +318,8 @@ static float  vTbl[24]  =
    5.5, 5.5, 5.5, 5.5,
    5.5, 5.5, 5.5, 5.5};
     val = tab2(xDR_ven, fxven, xTbl, yTbl, vTbl,
-    sizeof(xTbl)/sizeof(float),
-    sizeof(yTbl)/sizeof(float)) * 100. / 4.7;
+    sizeof(xTbl)/sizeof(double),
+    sizeof(yTbl)/sizeof(double)) * 100. / 4.7;
 */
 
 void TableInterp2D::pretty_print()

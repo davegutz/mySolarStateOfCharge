@@ -78,16 +78,16 @@ public:
   void assign_BB();   // Battleborn assignment
   void assign_CH();   // CHINS assignment
   void assign_all_chm();  // Assignment executive
-  void assign_hys(const int _n_h, const int _m_h, float *x, float *y, float *t, float *s,
-    float *tx, float *tn); // Worker bee Hys
-  void assign_soc_min(const int _n_n, float *x, float *t);  // Worker bee SOC_MIN
-  void assign_voc_soc(const int _n_s, const int _m_t, float *x, float *y, float *t); // Worker bee VOC_SOC
+  void assign_hys(const int _n_h, const int _m_h, double *x, double *y, double *t, double *s,
+    double *tx, double *tn); // Worker bee Hys
+  void assign_soc_min(const int _n_n, double *x, double *t);  // Worker bee SOC_MIN
+  void assign_voc_soc(const int _n_s, const int _m_t, double *x, double *y, double *t); // Worker bee VOC_SOC
   String decode(const uint8_t mod);
-  float lookup_voc(const float soc, const double tb_f);
+  double lookup_voc(const double soc, const double tb_f);
   void pretty_print();
-  void put_dx_voc(const float dx_voc) { voc_T_->put_dx(dx_voc); }
-  void put_dy_voc(const float dy_voc) { voc_T_->put_dy(dy_voc); }
-  void put_dz_voc(const float dz_voc) { voc_T_->put_dz(dz_voc); }
+  void put_dx_voc(const double dx_voc) { voc_T_->put_dx(dx_voc); }
+  void put_dy_voc(const double dy_voc) { voc_T_->put_dy(dy_voc); }
+  void put_dz_voc(const double dz_voc) { voc_T_->put_dz(dz_voc); }
 
 };
 

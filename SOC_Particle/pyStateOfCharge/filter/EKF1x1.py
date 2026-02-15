@@ -37,7 +37,7 @@ class EKF1x1:
         self.x = 0.  # Kalman state variable
         self.y_ekf = 0.  # Residual z-hx
         self.y_ekf_f = 0.  # Residual filtered z-hx
-        self.z_ekf = 0.  # Observation of state x
+        self.z = 0.  # Observation of state x
         self.x_prior = self.x
         self.P_prior = self.P
         self.x_post = self.x
@@ -53,7 +53,7 @@ class EKF1x1:
         s += "  Inputs:\n"
         s += "  reset = {:2d}\n".format(self.reset)
         s += "  freeze = {:7.3f}\n".format(self.freeze)
-        s += "  z = {:10.6g}\n".format(self.z_ekf)
+        s += "  z = {:10.6g}\n".format(self.z)
         s += "  Fx = {:13.10g}\n".format(self.Fx)
         s += "  Bu = {:13.10g}\n".format(self.Bu)
         s += "  R = {:10.6g}\n".format(self.R)
@@ -98,7 +98,9 @@ class EKF1x1:
         self.Fx, self.Bu = self.ekf_predict()
         if not self.reset:
             if not self.freeze:
+                # print("                                                                                                                                                                                                                                                      x = Fx* {:13.8f}".format(self.x), end='')
                 self.x = self.Fx*self.x + self.Bu*self.u_ekf
+                # print("= {:13.8f}".format(self.x))
             self.P = self.Fx * self.P * self.Fx + self.Q
             self.x_prior = self.x
             self.P_prior = self.P
@@ -121,13 +123,13 @@ class EKF1x1:
         """
         if not self.reset:
             self.hx, self.H, self.tb_f_for_hx, self.x_for_hx = self.ekf_update()
-        self.z_ekf = z
+        self.z = z
         if not self.reset:
             pht = self.P * self.H
             self.S = self.H * pht + self.R
             if abs(self.S) > 1e-12:
                 self.K = pht / self.S  # using last-good-value if S=0
-            self.y_ekf = self.z_ekf - self.hx
+            self.y_ekf = self.z - self.hx
         if not self.reset and not self.freeze:
             self.x = max(min(self.x + self.K*self.y_ekf, x_max), x_min)
         i_kh = 1 - self.K*self.H
@@ -135,6 +137,7 @@ class EKF1x1:
             i_kh = 1.
         self.P *= i_kh
         self.x_post = self.x
+        # print(f"update_ekf x_post {self.x_post}")
         self.P_post = self.P
 
     def h_jacobian(self, x):

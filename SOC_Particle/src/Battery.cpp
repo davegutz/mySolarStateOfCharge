@@ -305,7 +305,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const bo
             predict_ekf(ddq_dt, freeze);  // u = d(dq)/dt
             update_ekf(voc_stat_f_, 0., 1.);  // z = _f, estimated = voc_filtered = hx, predicted = est past
         }
-        soc_ekf_ = x_ekf();  // x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
+        soc_ekf_ = x();  // x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
         q_ekf_ = soc_ekf_ * q_capacity_;
         delta_q_ekf_ = q_ekf_ - q_capacity_;
         y_filt_ = y_filt->calculate(y_, reset_temp, min(dt_ekf_, EKF_T_RESET));
@@ -415,6 +415,8 @@ void BatteryMonitor::ekf_update(double *hx, double *H, double *x, double *tb)
     // Measurement function hx(x), x=soc ideal capacitor
     float x_lim = max(min(x_, 1.0), 0.0);
     *hx = Battery::calc_soc_voc(x_lim, tb_f_, &dv_dsoc_);
+    if ( sp.debug()==93 )
+        Serial.printf("BatteryMonitor::ekf_update: x_ %15.12f tb_f_ %9.5g hx %19.15f********\n*******\n*******\n*****************\n", x_, tb_f_, *hx);
     // Jacodian of measurement function
     *H = dv_dsoc_;
     *x = x_;

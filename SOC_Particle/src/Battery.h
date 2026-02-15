@@ -67,7 +67,7 @@ const float EKF_T_RESET = (EKF_T_CONV/2.); // EKF reset retest time, sec ('up 1,
 #define WN_Y_FILT       0.1       // EKF y-filter-2 natural frequency, r/s (0.1)
 #define ZETA_Y_FILT     0.9       // EKF y-fiter-2 damping factor (0.9)
 #define TMAX_FILT       3.        // Maximum y-filter-2 sample time, s (3.)
-#define SOLV_ERR        1e-6      // EKF initialization solver error bound, V (1e-6)
+#define SOLV_ERR        1e-9      // EKF initialization solver error bound, V (1e-6)
 #define SOLV_MAX_COUNTS 30        // EKF initialization solver max iters (30)
 #define SOLV_SUCC_COUNTS 6        // EKF initialization solver iters to switch from successive approximation to Newton-Rapheson (6)
 #define SOLV_MAX_STEP   0.2       // EKF initialization solver max step size of soc, fraction (0.2)

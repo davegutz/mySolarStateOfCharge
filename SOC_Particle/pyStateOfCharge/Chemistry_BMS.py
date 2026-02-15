@@ -310,8 +310,11 @@ class Chemistry(BMS):
         self.lu_x_hys = myTables.TableInterp1D(t_soc1, t_dv_max1)
         self.lu_n_hys = myTables.TableInterp1D(t_soc1, t_dv_min1)
 
-    def lookup_voc(self, soc_, temp_c_):
-        return self.lut_voc_soc.interp(soc_, temp_c_) + self.dvoc
+    def lookup_voc(self, soc_, temp_c_, printit=False):
+        result = self.lut_voc_soc.interp(soc_, temp_c_, printit=printit) + self.dvoc
+        if printit:
+            print(f"lookup_voc soc_ {soc_} temp_c_ {temp_c_} dvoc {self.dvoc} result {result}")
+        return result
 
     def __str__(self, prefix=''):
         s = prefix + "Chemistry:\n"
