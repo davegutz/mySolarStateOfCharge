@@ -354,10 +354,10 @@ class SavedData:
             self.x_prior = np.copy(self.soc_ekf)
         if self.x_post is None:
             self.x_post = np.copy(self.soc_ekf)
-        if self.y_ekf is None:
-            self.y_ekf = np.copy(self.voc_stat) * 0.
-        if self.y_ekf_f is None:
-            self.y_ekf_f = np.copy(self.voc_stat) * 0.
+        if self.y is None:
+            self.y = np.copy(self.voc_stat) * 0.
+        if self.y_f is None:
+            self.y_f = np.copy(self.voc_stat) * 0.
         if self.z is None:
             self.z = np.copy(self.voc_stat)
         if self.H is None:
@@ -458,7 +458,7 @@ class SavedData:
         s += "{:5.2f},".format(self.dv_dyn[self.i])
         s += "{:5.2f},".format(self.voc_stat[self.i])
         s += "{:5.2f},".format(self.voc_ekf[self.i])
-        s += "{:10.6f},".format(self.y_ekf[self.i])
+        s += "{:10.6f},".format(self.y[self.i])
         s += "{:7.3f},".format(self.soc_s[self.i])
         s += "{:5.3f},".format(self.soc_ekf[self.i])
         s += "{:5.3f},".format(self.soc[self.i])

@@ -296,7 +296,8 @@ def replicate(OPT: UserOptions):
             mon.init_soc_ekf(OPT.mon_run, G.i, i_ekf)  # when modeling (assumed in python) ekf wants to equal model
 
         # Monitor calculate
-        mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, OPT, rp=rp, reset_ekf=reset_ekf, i=G.i)
+        mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, OPT, rp=rp, reset_ekf=reset_ekf, i=G.i,
+                      i_ekf=i_ekf)
         ib_charge = mon.ib_charge
 
         if OPT.use_sat_mon:

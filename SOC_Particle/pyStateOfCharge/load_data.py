@@ -106,7 +106,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     hdr_key_rap = "unit_rap,"  # Find one instance of title
     hdr_key_sel = "unit_s,"  # Find one instance of title
     unit_key_sel = "unit_sel"
-    hdr_key_ekf = "unit_e,"  # Find one instance of title
+    hdr_key = "unit_e,"  # Find one instance of title
     unit_key_ekf = "unit_ekf"
     hdr_key_sim = "unit_m,"  # Find one instance of title
     unit_key_sim = "unit_sim"
@@ -157,7 +157,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         print(f"load_data: returning temp_raw=None")
 
     # Load ekf (ref)
-    ekf_file_clean = write_clean_file(path_to_data, type_='_ekf', hdr_key=hdr_key_ekf,
+    ekf_file_clean = write_clean_file(path_to_data, type_='_ekf', hdr_key=hdr_key,
                                       unit_key=unit_key_ekf, skip=skip)
     if ekf_file_clean:
         ekf_raw = np.genfromtxt(ekf_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)

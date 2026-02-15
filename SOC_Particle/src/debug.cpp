@@ -50,7 +50,7 @@ void debug_12(BatteryMonitor *Mon, Sensors *Sen)
   Mon->ib(), Sen->Sim->ib(),
   Mon->vb(), Sen->Sim->vb(),
   Mon->voc(), Sen->Sim->voc_stat(), Sen->Sim->voc(),
-  Mon->K_ekf(), Mon->y_ekf(),
+  Mon->K_ekf(), Mon->y(),
   Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc());
 }
 

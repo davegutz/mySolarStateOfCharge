@@ -228,11 +228,11 @@ def main():
     use_mon_soc_ = False
     # use_mon_soc_ = True
 
-    plots = False
-    # plots = True
+    # plots = False
+    plots = True
 
-    # terse_in = False
-    terse_in = True
+    terse_in = False
+    # terse_in = True
 
     strict_overplot_in = False
     # strict_overplot_in = True

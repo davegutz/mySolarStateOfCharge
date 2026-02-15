@@ -200,8 +200,8 @@ public:
   float vb_model_rev() { return vb_model_rev_; };
   float voc_dead() { return voc_dead_; };
   float voc_stat_f() { return voc_stat_f_; };
-  double y_ekf() { return y_; };
-  double y_ekf_filt() { return y_filt_; };
+  double y() { return y_; };
+  double y_filt() { return y_filt_; };
   double delta_q_ekf_;         // Charge deficit represented by charge calculated by ekf, C
   float vocStatFilt_rstate() { return VocStatFilt->rstate(); };
   float vocStatFilt_lstate() { return VocStatFilt->lstate(); };
@@ -211,7 +211,7 @@ public:
   float vocStatFilt_T() { return VocStatFilt->T(); };
   float vocStatFilt_tau() { return VocStatFilt->tau(); };
 protected:
-  LagTustin *y_filt = new LagTustin(2., WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
+  LagTustin *Yfilt = new LagTustin(2., WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
   SlidingDeadband *SdVb_;  // Sliding deadband filter for Vb
   TFDelay *EKF_converged;  // Time persistence
   Iterator *ice_;      // Iteration control for EKF solver

@@ -35,8 +35,8 @@ class EKF1x1:
         self.hx = 0.  # Output of observation function h(x)
         self.u_ekf = 0.  # Control input
         self.x = 0.  # Kalman state variable
-        self.y_ekf = 0.  # Residual z-hx
-        self.y_ekf_f = 0.  # Residual filtered z-hx
+        self.y = 0.  # Residual z-hx
+        self.y_f = 0.  # Residual filtered z-hx
         self.z = 0.  # Observation of state x
         self.x_prior = self.x
         self.P_prior = self.P
@@ -65,7 +65,7 @@ class EKF1x1:
         s += "  x_for_hx = {:10.8}\n".format(self.x_for_hx)
         s += "  x_post   = {:10.8g}\n".format(self.x_post)
         s += "  hx = {:10.6g}\n".format(self.hx)
-        s += "  y  = {:10.6g}\n".format(self.y_ekf)
+        s += "  y  = {:10.6g}\n".format(self.y)
         s += "  P  = {:10.6g}\n".format(self.P)
         s += "  K  = {:10.6g}\n".format(self.K)
         s += "  S  = {:10.6g}\n".format(self.S)
@@ -129,9 +129,9 @@ class EKF1x1:
             self.S = self.H * pht + self.R
             if abs(self.S) > 1e-12:
                 self.K = pht / self.S  # using last-good-value if S=0
-            self.y_ekf = self.z - self.hx
+            self.y = self.z - self.hx
         if not self.reset and not self.freeze:
-            self.x = max(min(self.x + self.K*self.y_ekf, x_max), x_min)
+            self.x = max(min(self.x + self.K*self.y, x_max), x_min)
         i_kh = 1 - self.K*self.H
         if self.freeze:
             i_kh = 1.

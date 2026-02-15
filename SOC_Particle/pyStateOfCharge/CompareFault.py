@@ -731,7 +731,7 @@ def bandaid(h, chm_in=0):
     mon_run = rf.rec_append_fields(mon_run, 'ewlo_thr', sel)
     mon_run = rf.rec_append_fields(mon_run, 'ccd_thr', sel)
     mon_run = rf.rec_append_fields(mon_run, 'voc_ekf', sel)
-    mon_run = rf.rec_append_fields(mon_run, 'y_ekf', sel)
+    mon_run = rf.rec_append_fields(mon_run, 'y', sel)
     sim_run = np.array(np.zeros(len(h.time_ux), dtype=[('time_ux', '<i4')])).view(np.recarray)
     sim_run.time_ux = mon_run.time_ux.copy()
     sim_run = rf.rec_append_fields(sim_run, 'chm_s', chm_s)

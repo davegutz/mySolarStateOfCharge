@@ -537,7 +537,7 @@ class BatteryMonitor(Battery, EKF1x1):
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
-                  q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, i=None):
+                  q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, i=None, i_ekf=None):
         self.reset = reset
         self.vb = vb
         self.ib_in = ib
@@ -651,8 +651,8 @@ class BatteryMonitor(Battery, EKF1x1):
             self.Q = Battery.EKF_Q_SD_NORM**2  # override
             self.R = Battery.EKF_R_SD_NORM**2  # override
             self.voc_stat_f =\
-                self.voc_stat_filt.calculate_tau_seeded(self.voc_stat_ekf, SN.z_init, self.reset_ekf, self.dt_eframe,
-                                                        self.VOC_STAT_FILT)
+                self.voc_stat_filt.calculate_tau_seeded(self.voc_stat_ekf, SN.mon_run.voc_stat_f_lstate[i_ekf],
+                                                        self.reset_ekf, self.dt_eframe, self.VOC_STAT_FILT)
             self.voc_stat_f_rstate = self.voc_stat_filt.rstate
             self.voc_stat_f_lstate = self.voc_stat_filt.state
             self.voc_stat_f_tau = self.voc_stat_filt.tau
@@ -662,9 +662,9 @@ class BatteryMonitor(Battery, EKF1x1):
             self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1.)  # z = voc, voc_filtered = hx
             self.soc_ekf = self.x  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
             self.q_ekf = self.soc_ekf * self.q_capacity
-            self.y_filt = self.y_filt_lag.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.EKF_T_RESET),
+            self.y_filt = self.y_filt_lag.calculate(in_=self.y, dt=min(self.dt_eframe, Battery.EKF_T_RESET),
                                                     reset=self.reset_ekf)
-            self.y_filt2 = self.y_filt_2Ord.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.TMAX_FILT),
+            self.y_filt2 = self.y_filt_2Ord.calculate(in_=self.y, dt=min(self.dt_eframe, Battery.TMAX_FILT),
                                                       reset=self.reset_ekf)
             # EKF convergence
             conv = abs(self.y_filt) < Battery.EKF_CONV
@@ -745,7 +745,7 @@ class BatteryMonitor(Battery, EKF1x1):
 
     def init_soc_ekf(self, mr, i, i_ekf):
         self.soc_ekf = mr.soc_ekf[i]
-        self.y_ekf = mr.y_ekf[i]
+        self.y = mr.y[i_ekf]
         self.init_ekf(mr.soc_ekf[i], 0.0)
         self.q_ekf = self.soc * self.q_capacity
         self.P = mr.P[i_ekf]
@@ -860,7 +860,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.hx.append(self.hx)
         self.saved.u_ekf.append(self.u_ekf)
         self.saved.x_ekf.append(self.x)
-        self.saved.y_ekf.append(self.y_ekf)
+        self.saved.y.append(self.y)
         self.saved.y_filt.append(self.y_filt)
         self.saved.y_filt2.append(self.y_filt2)
         self.saved.z.append(self.z)
@@ -1464,7 +1464,7 @@ class Saved:
         self.hx = []
         self.u_ekf = []
         self.x_ekf = []
-        self.y_ekf = []
+        self.y = []
         self.y_filt = []
         self.y_filt2 = []
         self.z = []
@@ -1496,7 +1496,7 @@ class Saved:
         self.voc_stat = []  # Monitor Static bank open circuit voltage, V
         self.voc = []  # Monitor Static bank open circuit voltage, V
         self.voc_ekf = []  # Monitor bank solved static open circuit voltage, V
-        self.y_ekf = []  # Monitor single battery solver error, V
+        self.y = []  # Monitor single battery solver error, V
         self.y_filt = []  # Filtered EKF y residual value, V
         self.y_filt2 = []  # Filtered EKF y residual value, V
         self.soc_s = []  # Simulated state of charge, fraction
@@ -1666,7 +1666,7 @@ def overall_batt(mv, sv, filename,
         plq(plt, mv, 'time', mv, 'z', color='black', linestyle='--')
         plt.legend(loc=4)
         plt.subplot(333)
-        plq(plt, mv, 'time', mv, 'y_ekf', color='green', linestyle='-')
+        plq(plt, mv, 'time', mv, 'y', color='green', linestyle='-')
         plq(plt, mv, 'time', mv, 'y_filt', color='black', linestyle='--')
         plq(plt, mv, 'time', mv, 'y_filt2', color='cyan', linestyle='-.')
         plt.legend(loc=4)
@@ -1877,8 +1877,8 @@ def overall_batt(mv, sv, filename,
         plq(plt, mv1, 'time', mv1, 'z', color='blue', linestyle=':')
         plt.legend(loc=4)
         plt.subplot(333)
-        plq(plt, mv, 'time', mv, 'Noney_ekf', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'y_ekf', color='black', linestyle='--')
+        plq(plt, mv, 'time', mv, 'Noney', color='green', linestyle='-')
+        plq(plt, mv1, 'time', mv1, 'y', color='black', linestyle='--')
         plq(plt, mv, 'time', mv, 'Noney_filt2', color='magenta', linestyle='-.')
         plq(plt, mv1, 'time', mv1, 'y_filt2', color='blue', linestyle=':')
         plt.legend(loc=4)
