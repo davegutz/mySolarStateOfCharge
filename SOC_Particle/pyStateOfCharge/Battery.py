@@ -468,6 +468,10 @@ class BatteryMonitor(Battery, EKF1x1):
         self.wrap_hi_m_fa = False
         self.wrap_lo_m_flt = False
         self.wrap_lo_m_fa = False
+        self.wrap_hi_n_flt = False
+        self.wrap_hi_n_fa = False
+        self.wrap_lo_n_flt = False
+        self.wrap_lo_n_fa = False
 
         if SN is not None:
             self.Tb_hdwe = SN.Tb_hdwe_init
@@ -973,6 +977,10 @@ class BatteryMonitor(Battery, EKF1x1):
             self.e_wrap_n_trim = self.LoopIbNoa.e_wrap_trim
             self.ewnhi_thr = self.LoopIbNoa.ewhi_thr
             self.ewnlo_thr = self.LoopIbNoa.ewlo_thr
+            self.wrap_hi_n_flt = self.LoopIbNoa.hi_fault
+            self.wrap_hi_n_fa = self.LoopIbNoa.hi_fail
+            self.wrap_lo_n_flt = self.LoopIbNoa.lo_fault
+            self.wrap_lo_n_fa = self.LoopIbNoa.lo_fail
         if ib_amp is not None:
             if rp.modeling_ib or SN.run_type == 'HistSim':
                 self.ib_amp = ib_amp

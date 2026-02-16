@@ -127,8 +127,10 @@ void print_battery_header()
   Serial.printf("Battery_hdr, HDWE_IB_HI_LO, HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI, IB_ABS_MAX_NOA, IB_ABS_MAX_AMP, KF_Q_STD, KF_R_STD,");
   Serial.printf("SHUNT_AMP_GAIN, CURR_BIAS_AMP, SHUNT_NOA_GAIN, CURR_BIAS_NOA, NS, NP, CURR_SCALE_DISCH, HYS_SCALE, dc_dc_on,");
   Serial.printf("EWLO_TRM_SLR, EWHI_TRM_SLR, WRAP_HI_AMP, WRAP_LO_AMP, WRAP_HI_NOA, WRAP_LO_NOA, EWHI_SLR, EWLO_SLR,");
-  Serial.printf("IBATT_DISAGREE_THRESH, IB_DIFF_SLR, NOM_UNIT_CAP, S_CAP_MON, S_CAP_SIM, RATED_TEMP,CHEM,");
+  Serial.printf("IBATT_DISAGREE_THRESH, IB_DIFF_SLR, NOM_UNIT_CAP, S_CAP_MON, S_CAP_SIM, RATED_TEMP, CHEM,");
+  Serial.printf("WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR, WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_MOD_C_RATE, WRAP_SOC_MOD_OFF,");
   Serial.printf("\n");
+
 }
 
 void print_battery_serial()
@@ -149,6 +151,9 @@ void print_battery_serial()
 
   Serial.printf("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%d,",
     IBATT_DISAGREE_THRESH, ap.ib_diff_slr, NOM_UNIT_CAP, sp.s_cap_mon_z, sp.s_cap_sim_z, RATED_TEMP, CHEM);
+
+  Serial.printf("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+    WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR, WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_MOD_C_RATE, WRAP_SOC_MOD_OFF);
 
   Serial.printf("\n");
 }
