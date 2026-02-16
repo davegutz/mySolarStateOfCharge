@@ -129,6 +129,13 @@ def main():
     data_file_folder_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20241006'
     data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a'
     sync_to_ctime = False
+
+    keys = [('rapidTweakRegression_soc3p2_hi_lo_bb.csv', 'g20250612a_soc3p2_hi_lo_bb'),
+            ('rapidTweakRegression_soc2p2_hi_lo_bb.csv', 'g20250612a_soc2p2_hi_lo_bb')]
+    data_file_folder_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a'
+    data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a'
+    sync_to_ctime = True
+
     compare_run_run(keys=keys, data_file_folder_run=data_file_folder_run, data_file_folder_test=data_file_folder_test,
                     sync_to_ctime=sync_to_ctime)
 

@@ -144,8 +144,8 @@ def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.smv, 'time', S.smv, 'sat_s', add=2, color='red', linestyle=':')
         plt.legend(loc=2)
         plt.subplot(325)
-        ymax = max([max(sublist) for sublist in [S.mr.Tb_rap, S.mr.Tb, S.mv.Tb, S.smv.Tb_s, S.mr.Tb_f, S.mr.Tb_f, S.smv.Tb_f_s]])
-        ymin = min([min(sublist) for sublist in [S.mr.Tb_rap, S.mr.Tb, S.mv.Tb, S.smv.Tb_s, S.mr.Tb_f, S.mr.Tb_f, S.smv.Tb_f_s]])
+        ymax = max([max(sublist) for sublist in [S.mr.Tb_rap, S.mr.Tb, S.mv.Tb, S.mr.Tb_f, S.mr.Tb_f, S.smv.Tb_f_s]])
+        ymin = min([min(sublist) for sublist in [S.mr.Tb_rap, S.mr.Tb, S.mv.Tb, S.mr.Tb_f, S.mr.Tb_f, S.smv.Tb_f_s]])
         ymin_int = int(ymin)
         f_add = 2
         f_add_str = str(f_add)
