@@ -25,7 +25,7 @@ class Coulombs:
     """Coulomb Counting"""
 
     def __init__(self, OPT=None, q_cap_rated=None, q_cap_rated_scaled=None, t_rated=None, tweak_test=False, mod_code=0,
-                 dvoc=0.):
+                 dvoc=0., Dw=0.):
         if OPT is not None and hasattr(OPT, 'unit'):
             unit = OPT.unit
         else:
@@ -46,7 +46,7 @@ class Coulombs:
         self.tweak_test = tweak_test
         self.reset = False
         self.tb_f = 0.
-        self.chemistry = Chemistry(mod_code=mod_code, dvoc=dvoc, unit=unit)
+        self.chemistry = Chemistry(mod_code=mod_code, dvoc=dvoc, unit=unit, Dw=Dw)
         self.chemistry.assign_all_mod(mod_code, unit=unit)
 
     def __str__(self, prefix=''):

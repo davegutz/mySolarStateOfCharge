@@ -36,7 +36,7 @@ import Globals as G
 class Retained:
 
     def __init__(self):
-        self.cutback_gain_scalar = 1.
+        self.cutback_gain_scalar = Battery.sp_cutback_gain_slr_z
         self.delta_q = 0.
         self.modeling = 0
         self.modeling_ib = False
@@ -67,7 +67,7 @@ def load_off_nominal_battery(Battery_to_add=None):
         for field_name in Battery_to_add.dtype.names:
             print(f"field_name {field_name}  ", end='')
             try:
-                Battery_off_dict[field_name] = Battery_to_add[field_name][0]  # Use last entry only.  Discard the rest
+                Battery_off_dict[field_name] = Battery_to_add[field_name][0]  # Use first entry only.  Discard the rest
             except IndexError:
                 Battery_off_dict[field_name] = Battery_to_add[field_name]
                 print(f"Battery_off field_name {field_name}   value {Battery_to_add[field_name]}")
@@ -76,7 +76,7 @@ def load_off_nominal_battery(Battery_to_add=None):
         print(f"dictionary to apply to Battery class")
         if Battery_off_dict:
             for key in dir(Battery_to_add):
-                if key in Battery_off_dict and key.isupper() and not key.startswith('__'):
+                if key in Battery_off_dict and not key.startswith('__'):
                     print(f"Battery.{key} {getattr(Battery_to_add, key)} --> ", end='')
                     print("Battery.{:s} = {:8.6g}".format(key, Battery_off_dict[key]))
         return Battery_off_dict
@@ -86,8 +86,17 @@ def load_off_nominal_battery(Battery_to_add=None):
 def apply_off_nominal_battery(Battery_, Battery_off_dict):
     print(f"dictionary to apply to immutable Battery class")
     if Battery_off_dict:
+        # Check exist
+        for key in Battery_off_dict:
+            if not np.isnan(Battery_off_dict[key]):
+                if not key.startswith('__')  and  key in dir(Battery_):
+                    print(f"Battery.{key} = {getattr(Battery_, key)} to be replaced")
+                else:
+                    print(f"{key} MISSING  *****************")
+                    exit(1)
+        # Make translation
         for key in dir(Battery_):
-            if key in Battery_off_dict and key.isupper() and not key.startswith('__'):
+            if key in Battery_off_dict and not key.startswith('__'):
                 print(f"Battery.{key} {getattr(Battery_, key)} --> ", end='')
                 setattr(Battery_, key, Battery_off_dict[key])
                 print("Battery.{:s} = {:8.6g}".format(key, Battery_off_dict[key]))
@@ -114,7 +123,7 @@ class Battery(Coulombs):
     IMAX_NUM = 100000.  # Overflow protection since ib past value used
     HYS_SOC_MIN_MARG = 0.15  # Add to soc_min to set thr for detecting low endpoint condition for reset of hysteresis
     HYS_IB_THR = 1.  # Ignore reset if opposite situation exists
-    HYS_SCALE = 1.  # Used to disable hysteresis from sim on the app
+    ap_hys_scale = 1.  # Used to disable hysteresis from sim on the app
     IB_MIN_UP = 0.2  # Min up charge current for come alive, BMS logic, and fault
     cp_eframe_mult = 20  # Run EKF 20 times slower than Coulomb Counter
     VB_DC_DC = 13.5  # Estimated dc-dc charger, V
@@ -138,7 +147,7 @@ class Battery(Coulombs):
     WRAP_LO_AMP = -4.  # Wrap high voltage threshold amplified, A (-4)
     WRAP_HI_NOA = 6.4  # Wrap high voltage threshold non-amplified, A(32)
     WRAP_LO_NOA = -8.  # Wrap high voltage threshold non-amplified, A (-40)
-    HDWE_IB_HI_LO = 1.  # Type of selection logic philosophy. Only True is implemented and debugged now
+    hdwe_ib_hi_lo = 1.  # Type of selection logic philosophy. Only True is implemented and debugged now
     HDWE_IB_HI_LO_NOA_LO = -11. # Fully NOA unit discharge transition, A (-11, soc4p2)
     HDWE_IB_HI_LO_AMP_LO = -10. # Fully NOA unit discharge transition, A (-10, soc4p2)
     HDWE_IB_HI_LO_AMP_HI = 10.  # Fully NOA unit charge transition, A (10, soc4p2)
@@ -161,25 +170,37 @@ class Battery(Coulombs):
     DISAB_LO_SET = 0.4  # Disable lo=amp wrap fault set persistence, s (0.4)
     DISAB_LO_RESET = 0.8  # Disable lo=amp wrap fault reset persistence, s (0.8)
     SHUNT_AMP_GAIN = 1.  # hdwe gain, A/V
-    CURR_BIAS_AMP = 0.  # hdwe bias, A
     SHUNT_NOA_GAIN = 1.  # hdwe gain, A/V
-    CURR_BIAS_NOA = 0.  # hdwe bias, A
     NS = 1  # Number serial batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
     NP = 1  # Number parallel batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
     KF_Q_STD = 0.0003  # Shunt KF process uncertainty
     KF_R_STD = 0.1000  # Shunt KF state uncertainty
-    dc_dc_on = 0.  # Truck charging
-    EWLO_TRM_SLR = 0.75
-    EWHI_TRM_SLR = 0.75
+    ap_dc_dc_on = None  # Truck charging
+    EWLO_TRM_SLR = None
+    EWHI_TRM_SLR = None
     EWHI_SLR = 1.
     EWLO_SLR = 1.
     IBATT_DISAGREE_THRESH = None
     IB_DIFF_SLR = None
     NOM_UNIT_CAP = 108.4  # Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah
-    S_CAP_MON = None
-    S_CAP_SIM = None
+    sp_s_cap_mon_z = None
+    sp_s_cap_sim_z = None
     RATED_TEMP = None
     CHEM = None
+    skip_battery = None
+    sp_ib_disch_slr_z = None
+    ap_ewhi_slr = None
+    ap_ewlo_slr = None
+    ap_cc_diff_slr = None
+    ap_ib_diff_slr = None
+    ap_ib_quiet_slr = None
+    ap_disab_ib_fa = None
+    ap_disab_tb_fa = None
+    ap_disab_vb_fa = None
+    sp_cutback_gain_slr_z = None
+    ap_dv_voc_soc = None
+    ap_ds_voc_soc = None
+    sp_Dw_z = None
 
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
@@ -202,7 +223,8 @@ class Battery(Coulombs):
         so equation error when soc<=0 to match data.    See Battery.h
         """
         # Parents
-        Coulombs.__init__(self, OPT, q_cap_rated,  q_cap_rated, t_rated, temp_rlim, tweak_test, dvoc=dvoc)
+        Coulombs.__init__(self, OPT, q_cap_rated,  q_cap_rated, t_rated, temp_rlim, tweak_test, dvoc=dvoc,
+                          Dw=Battery.sp_Dw_z)
 
         # Defaults
         self.chem = mod_code
@@ -1039,8 +1061,7 @@ class BatterySim(Battery):
         # self.sat_ib_null = 0.1*Battery.NOM_UNIT_CAP  # Current cutback value for voc=vsat, A
         self.sat_ib_null = 0.  # Current cutback value for soc=1, A
         # self.sat_cutback_gain = 4.8  # Gain to retard ib when voc exceeds vsat, dimensionless
-        self.sat_cutback_gain = 1000.*OPT.slr_cutback_gain  # Gain to retard ib when soc approaches 1, dimensionless
-        self.add_s_voc_soc = OPT.add_s_voc_soc
+        self.sat_cutback_gain = 1000.*Battery.sp_cutback_gain_slr_z  # Gain to retard ib when soc approaches 1, dimensionless
         self.model_cutback = False  # Indicate current being limited on saturation cutback, T = cutback limited
         self.model_saturated = False  # Indicator of maximal cutback, T = cutback saturated
         self.ib_sat = 0.5  # Threshold to declare saturation.  This regeneratively slows down charging so if too
@@ -1048,7 +1069,7 @@ class BatterySim(Battery):
         self.s_cap = scale  # Rated capacity scalar
         if scale is not None:
             self.apply_cap_scale(scale)
-        self.hys = Hysteresis(scale=OPT.slr_hys_sim*Battery.HYS_SCALE, dv_hys=OPT.mon_run.dv_hys[0], scale_cap=OPT.slr_hys_cap_sim, slr_cap_chg=OPT.slr_cap_chg,
+        self.hys = Hysteresis(scale=OPT.slr_hys_sim*Battery.ap_hys_scale, dv_hys=OPT.mon_run.dv_hys[0], scale_cap=OPT.slr_hys_cap_sim, slr_cap_chg=OPT.slr_cap_chg,
                               slr_cap_dis=OPT.slr_cap_dis, slr_hys_chg=OPT.slr_hys_chg, slr_hys_dis=OPT.slr_hys_dis, chem=self.chem,
                               chemistry=self.chemistry)  # Battery hysteresis model - drift of voc
         self.tweak_test = tweak_test
@@ -1124,6 +1145,7 @@ class BatterySim(Battery):
 
         # VOC-OCV model
         self.voc_stat, self.dv_dsoc = self.calc_soc_voc(soc + Battery.D_SOC_S, self.Tb_f)
+        self.voc_stat += Battery.ap_dv_voc_soc
         # slightly beyond but don't windup
         self.voc_stat = min(self.voc_stat + (soc - soc_lim) * self.dv_dsoc, self.vsat * 1.2)
 
@@ -1163,7 +1185,7 @@ class BatterySim(Battery):
         self.ib_dyn_lstate = self.ChargeTransfer.state
         self.vb = self.voc + self.ib_dyn*self.chemistry.r_ct + self.ib*self.chemistry.r_0
         if self.bms_off:
-            if Battery.dc_dc_on:
+            if Battery.ap_dc_dc_on:
                 self.vb = Battery.VB_DC_DC
             else:
                 self.vb = 0.
@@ -1171,8 +1193,8 @@ class BatterySim(Battery):
 
         # Saturation logic, both full and empty
         self.vsat = sat_voc(self.Tb_f, self.chemistry.rated_temp, self.chemistry.nom_vsat, self.chemistry.dvoc_dt)
-        self.sat_ib_max = (self.sat_ib_null + (1 - self.soc - self.add_s_voc_soc) * self.sat_cutback_gain *
-                           rp.cutback_gain_scalar)
+        self.sat_ib_max = (self.sat_ib_null + (1 - self.soc - Battery.ap_ds_voc_soc) * self.sat_cutback_gain
+                           * Battery.sp_cutback_gain_slr_z)
         if rp.tweak_test or (not rp.modeling_ib):
             self.sat_ib_max = ib_charge_fut
         self.ib_fut = min(ib_charge_fut, self.sat_ib_max)  # the feedback of self.ib
@@ -1396,9 +1418,9 @@ class Looparound:
         self.e_wrap_rate = self.WrapErrFilt.rate
 
         # Thresholds. Scalars are calculated by Flt->wrap_scalars()
-        self.ewhi_thr_base = self.Mon.chemistry.r_ss * self.wrap_hi_amp * Battery.EWHI_SLR
+        self.ewhi_thr_base = self.Mon.chemistry.r_ss * self.wrap_hi_amp * Battery.ap_ewhi_slr
         self.ewhi_thr = self.ewhi_thr_base * ewsat_slr * ewmin_slr
-        self.ewlo_thr_base = self.Mon.chemistry.r_ss * self.wrap_lo_amp * Battery.EWLO_SLR
+        self.ewlo_thr_base = self.Mon.chemistry.r_ss * self.wrap_lo_amp * Battery.ap_ewlo_slr
         self.ewlo_thr = self.ewlo_thr_base * ewsat_slr * ewmin_slr
 
         # sat logic screens out voc jump when ib>0 when saturated

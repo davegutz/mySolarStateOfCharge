@@ -76,8 +76,7 @@ def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb):
         cc_diff_empty_sclr_ = CC_DIFF_LO_SOC_SCLR
     else:
         cc_diff_empty_sclr_ = 1.
-    cc_diff_sclr_ = 1.  # ram adjusts during data collection
-    cc_diff_thr = CC_DIFF_SOC_DIS_THRESH * cc_diff_sclr_ * cc_diff_empty_sclr_
+    cc_diff_thr = CC_DIFF_SOC_DIS_THRESH * Battery.ap_cc_diff_slr * cc_diff_empty_sclr_
 
     # wrap
     if soc >= WRAP_SOC_HI_OFF:
@@ -339,13 +338,13 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
     Battery_off_dict = load_off_nominal_battery(Battery_to_add=battery_raw)
     apply_off_nominal_battery(Battery, Battery_off_dict)
 
-    rated_batt_cap_in = Battery.NOM_UNIT_CAP * Battery.S_CAP_MON
-    rated_batt_cap_s_in = Battery.NOM_UNIT_CAP * Battery.S_CAP_SIM
+    rated_batt_cap_in = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_mon_z
+    rated_batt_cap_s_in = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_sim_z
     qcrs = rated_batt_cap_in * 3600.
 
 
     # Save these
-    rated_batt_cap_in = Battery.NOM_UNIT_CAP * Battery.S_CAP_MON
+    rated_batt_cap_in = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_mon_z
     # Reconstruction of soc using subsampled data is poor.  Drive everything with soc from Monitor
     dvoc_mon_in = 0.
 
@@ -426,7 +425,8 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
             # Rename
             f_raw = rename_all(f_raw)
             fault = add_stuff_f(f_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
-                                time_sync=sync_time, unit=unit)
+                                time_sync=sync_time, unit=unit, ap_ib_diff_slr=mon.Battery_off_dict['ap_ib_diff_slr'],
+                                ap_ib_quiet_slr=mon.Battery_off_dict['ap_ib_quiet_slr'])
             print("\nfault after add_stuff_f:\n", fault.dtype.names, fault, "\n")
             fault = filter_Tb(fault, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap_in)  # tb_band=100 disables banding
         else:
@@ -445,7 +445,8 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
         # noinspection PyTypeChecker
         h_combo_raw = rename_all(h_combo_raw)
         hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
-                           time_sync=sync_time)
+                           time_sync=sync_time, ap_ib_diff_slr=mon.Battery_off_dict['ap_ib_diff_slr'],
+                           ap_ib_quiet_slr=mon.Battery_off_dict['ap_ib_quiet_slr'])
 
         hist = add_mod(hist, use_mon_csv, mon)
         hist = add_chm(hist, use_mon_csv, mon, Battery.CHEM)

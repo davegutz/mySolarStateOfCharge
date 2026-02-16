@@ -87,7 +87,6 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
     tune_in = False
     cc_dif_tol_in = 0.2
     legacy_in = False
-    add_s_voc_soc_in = 0.
     use_vb_raw = False
     dvoc_sim_in = 0.
     dvoc_mon_in = Dw
@@ -126,9 +125,8 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
     replicateOptions = UserOptions(mon_run=mon_run, sim_run=sim_run, run_type='RunSim', init_time=mon_run.init_time,
                                    use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in, use_vb_raw=use_vb_raw,
                                    add_voc_sim=dvoc_sim_in, add_voc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
-                                   add_s_voc_soc=add_s_voc_soc_in, verbose=verbose, scale_in=scale_in,
-                                   slr_hys_sim=s_hys_sim_in, request_history=request_history,
-                                   IB_CHARGE_NOA=IB_CHARGE_NOA)
+                                   verbose=verbose, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
+                                   request_history=request_history, IB_CHARGE_NOA=IB_CHARGE_NOA)
     mon_ver, sim_ver, sim_s_ver, mon, sim, Battery = replicate(replicateOptions)
     pass
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
@@ -196,8 +194,8 @@ def main():
     # Rk,
     # vv0,
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\shunt_test_soc3p2_hi_lo_bb.csv'
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc3p2_hi_lo_bb.csv'
-    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_bb.csv'
+    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 
     # # gdrive = '/home/daveg/Documents/'
     # # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
@@ -221,18 +219,18 @@ def main():
 
     # RunSim plot selection
     # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=kf   7=dyn_m  8=vb_wrap
-    request_hist_in = 1
+    request_hist_in = 5
     # request_hist_in = None
 
     # # mon_soc_in = False # old runsim work ******************
     use_mon_soc_ = False
     # use_mon_soc_ = True
 
-    plots = False
-    # plots = True
+    # plots = False
+    plots = True
 
-    terse_in = False
-    # terse_in = True
+    # terse_in = False
+    terse_in = True
 
     strict_overplot_in = False
     # strict_overplot_in = True

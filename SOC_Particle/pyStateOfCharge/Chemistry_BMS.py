@@ -51,7 +51,7 @@ class BMS:
 
 class Chemistry(BMS):
     """Properties of battery"""
-    def __init__(self, mod_code=0, dvoc=0., unit=None):
+    def __init__(self, mod_code=0, dvoc=0., unit=None, Dw=0.):
         BMS.__init__(self)
         self.rated_temp = 0.  # Temperature at NOM_UNIT_CAP, deg C
         self.coul_eff = 0.  # Coulombic efficiency - the fraction of charging input that gets\
@@ -84,7 +84,7 @@ class Chemistry(BMS):
         self.lu_n_hys = None
         self.assign_all_mod(mod_code=mod_code, unit=unit)
         self.ib_lag_tau = IB_LAG_BB
-        self.Dw = 0.  # Adjust voc(soc)
+        self.Dw = Dw  # Adjust voc(soc)
 
     # Assign chemistry, anytime
     def assign_all_mod(self, mod_code=0, unit=None):

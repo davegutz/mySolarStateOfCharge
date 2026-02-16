@@ -265,7 +265,7 @@ Looparound::Looparound(BatteryMonitor *Mon, Sensors *Sen, const float wrap_hi_am
 }
 
 // Update the loop
-void Looparound::calculate(const boolean reset, const float ib, Sensors *Sen)
+void Looparound::calculate(const boolean reset, const boolean disable_fault, const float ib, Sensors *Sen)
 {
   reset_ = reset || Sen_->Flt->reset_all_faults();
   ib_ = ib;
@@ -315,10 +315,13 @@ void Looparound::calculate(const boolean reset, const float ib, Sensors *Sen)
   // wrap_hi and wrap_lo don't latch because need them available to check next ib sensor selection for dual ib sensor
   // wrap_vb latches because vb is single sensor  faultAssign( (e_wrap_filt_ >= ewhi_thr_ && !Mon->sat()), WRAP_HI_FLT);
 
-  hi_fault_ = e_wrap_filt_ >= ewhi_thr_;
-  hi_fail_ = WrapHi_->calculate(hi_fault_, WRAP_HI_S, WRAP_HI_R, Sen_->T, reset_) && !Sen_->Flt->vb_fa();  // not latched
-  lo_fault_ = e_wrap_filt_ <= ewlo_thr_;
-  lo_fail_ = WrapLo_->calculate(lo_fault_, WRAP_LO_S, WRAP_LO_R, Sen_->T, reset_) && !Sen_->Flt->vb_fa();  // not latched
+  hi_fault_ = (e_wrap_filt_ >= ewhi_thr_) && !disable_fault;
+  if ( !disable_fault )  // freeze fail
+    hi_fail_ = WrapHi_->calculate(hi_fault_, WRAP_HI_S, WRAP_HI_R, Sen_->T, reset_) && !Sen_->Flt->vb_fa();  // not latched
+
+  lo_fault_ = (e_wrap_filt_ <= ewlo_thr_) && !disable_fault;
+  if ( !disable_fault )  // freeze fail
+    lo_fail_ = WrapLo_->calculate(lo_fault_, WRAP_LO_S, WRAP_LO_R, Sen_->T, reset_) && !Sen_->Flt->vb_fa();  // not latched
 
   if ( sp.debug()==71 ) Serial.printf("ib%7.3f reset%d ewlo_thr/e_wrap_filt/ewhi_thr  %7.3f/%7.3f/%7.3f trim%7.3f vb_fa %d lo_fault/fail %d/%d hi_fault/fail %d/%d\n",
    ib_, reset_, ewlo_thr_, e_wrap_filt_, ewhi_thr_, e_wrap_trim_, Sen_->Flt->vb_fa(), lo_fault_, lo_fail_, hi_fault_, hi_fail_);
@@ -606,9 +609,8 @@ void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
 
   // HI_LO-Only Logic
   #ifdef HDWE_IB_HI_LO
-    LoopIbNoa->calculate(reset_loc, Sen->ib_noa(), Sen);
-    boolean ib_amp_reset = reset_loc || disable_amp_fault_;
-    LoopIbAmp->calculate(ib_amp_reset, Sen->ib_amp(), Sen);
+    LoopIbNoa->calculate(reset_loc, false, Sen->ib_noa(), Sen);
+    LoopIbAmp->calculate(reset_loc, disable_amp_fault_, Sen->ib_amp(), Sen);
     faultAssign( LoopIbAmp->hi_fault(), WRAP_HI_M_FLT);
     failAssign( LoopIbAmp->hi_fail(), WRAP_HI_M_FA);  // WRAP_HI_M_FA not latched
     faultAssign( LoopIbAmp->lo_fault(), WRAP_LO_M_FLT);
@@ -1233,10 +1235,6 @@ void Fault::wrap_scalars(BatteryMonitor *Mon)
     ewsat_slr_ = 1.;
     ewmin_slr_ = 1.;
   }
-  // ewhi_thr_base_ = Mon->r_ss() * WRAP_HI_A * ap.ewhi_slr;
-  // ewhi_thr_ = ewhi_thr_base_ * ewsat_slr_ * ewmin_slr_;
-  // ewlo_thr_base_ = Mon->r_ss() * WRAP_LO_A * ap.ewlo_slr;
-  // ewlo_thr_ = ewlo_thr_base_ * ewsat_slr_ * ewmin_slr_;
 }
 
 
@@ -1413,7 +1411,6 @@ void Sensors::select_temp(BatteryMonitor *Mon)
     {
       Tb = NOMINAL_TB + Tb_noise() + ap.Tb_bias_model;
       Tb_model = Tb;
-      // Tb_f = NOMINAL_TB + ap.Tb_bias_model;  // Simplifying assumption that Tb_f perfectly quiet - so don't have to make model of filter
       Tb_f = Tb_model_filt;
       Tb_f_rate = Tb_model_filt_rate;
     }

@@ -178,14 +178,6 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     mon = SavedData(battery=battery_raw, rap=mon_raw, sel=sel_raw, ekf=ekf_raw, temp=temp_raw, shunt=shunt_raw,
                     time_end=time_end_in, zero_zero=zero_zero_in, zero_thr=zero_thr_in, sync_cTime=sync,
                     init_time_in=init_time_in, time_shift_in=time_shift_in, str_=mon_str)
-    # if mon.chm is not None:
-    #     chm = int(mon.chm[-1])
-    # elif path_to_data.__contains__('bb'):
-    #     chm = 0
-    # elif path_to_data.__contains__('ch'):
-    #     chm = 1
-    # else:
-    #     chm = None
     batt = BatteryMonitor()
 
     # Load sim _s v24 portion of real-time run (ref)
@@ -217,7 +209,8 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         f_raw = np.unique(f_raw)
         f_raw = remove_nan(f_raw)
         f_raw = rename_all(f_raw)
-        f = add_stuff_f(f_raw, batt, ib_band=IB_BAND)
+        f = add_stuff_f(f_raw, batt, ib_band=IB_BAND, ap_ib_diff_slr=mon.Battery_off_dict['ap_ib_diff_slr'],
+                        ap_ib_quiet_slr=mon.Battery_off_dict['ap_ib_quiet_slr'])
         print("\nload_data:  f:\n", f, "\n")
         f = filter_Tb(f, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap)
         f.str = ''

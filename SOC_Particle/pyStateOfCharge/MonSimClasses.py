@@ -421,9 +421,9 @@ class Sensors:
             self.KfShuntNoa.calculate(reset=self.reset_kf, dt=self.mon_run.ib_dyn_T_n[i], in_=self.VoVcn)
             self.VoVcn_f, _ = self.KfShuntNoa.get_state()
             self.VoVcn_f = float(self.VoVcn_f)
-            self.iscn = float((self.VoVcn * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)
-            self.iscn_f = float((self.VoVcn_f * Battery.SHUNT_NOA_GAIN + Battery.CURR_BIAS_NOA) / Battery.NP)
-            # TODO:  implement iscn filter and scale with CURR_SCALE_DISCH (= 1. now everywhere so no worries at present)
+            self.iscn = float((self.VoVcn * Battery.SHUNT_NOA_GAIN) / Battery.NP)
+            self.iscn_f = float((self.VoVcn_f * Battery.SHUNT_NOA_GAIN) / Battery.NP)
+            # TODO:  implement iscn filter and scale with sp_ib_disch_slr_z (= 1. now everywhere so no worries at present)
 
 
     def update_tb(self):

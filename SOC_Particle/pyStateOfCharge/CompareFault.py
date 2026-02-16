@@ -62,7 +62,8 @@ def add_ib_lag(data, mon):
 
 
 # Add schedule lookups and do some rack and stack
-def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=None, unit=None):
+def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=None, unit=None, ap_ib_diff_slr=1.,
+                ap_ib_quiet_slr=1.):
     voc_soc = []
     soc_min = []
     vsat = []
@@ -94,7 +95,8 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
         voc_soc.append(mon.chemistry.lookup_voc(d_ra.soc[i], d_ra.Tb_f[i]) + Dw)
         BB = BatteryMonitor(OPT=None)
         cc_diff_thr_, ewhi_thr_, ewlo_thr_, ib_diff_thr_, ib_quiet_thr_ = \
-            fault_thr_bb(Tb_f, soc, voc_soc[i], voc_stat_f, C_rate, BB)
+            fault_thr_bb(Tb_f, soc, voc_soc[i], voc_stat_f, C_rate, BB, ap_ib_diff_slr=ap_ib_diff_slr,
+                         ap_ib_quiet_slr=ap_ib_quiet_slr)
         ib_f_ = d_ra.ib_f[i]
         tb_f_ = d_ra.Tb_f[i]
         vb_f_ = d_ra.vb_f[i]
@@ -208,7 +210,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
 
 
 # Calculate thresholds from global input values listed above (review these)
-def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb):
+def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb, ap_ib_diff_slr=1., ap_ib_quiet_slr=1.):
     # There is no fault logic in the python code, so hard code it here
     WRAP_HI_A = 32.  # Wrap high voltage threshold, A (32 after testing; 16=0.2v)
     WRAP_LO_A = -32.  # Wrap high voltage threshold, A (-32, -20 too small on truck -16=-0.2v)
@@ -257,12 +259,10 @@ def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb):
     ewlo_thr = bb.chemistry.r_ss * WRAP_LO_A * ewlo_sclr_ * ewsat_sclr_ * ewmin_sclr_
 
     # ib_diff
-    ib_diff_sclr_ = 1.  # ram adjusts during data collection
-    ib_diff_thr = IBATT_DISAGREE_THRESH * ib_diff_sclr_
+    ib_diff_thr = IBATT_DISAGREE_THRESH * ap_ib_diff_slr
 
     # ib_quiet
-    ib_quiet_sclr_ = 1.  # ram adjusts during data collection
-    ib_quiet_thr = QUIET_A * ib_quiet_sclr_
+    ib_quiet_thr = QUIET_A * ap_ib_quiet_slr
 
     return cc_diff_thr, ewhi_thr, ewlo_thr, ib_diff_thr, ib_quiet_thr
 

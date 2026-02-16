@@ -54,7 +54,6 @@ class UserOptions:
     slr_r_ss: Optional[float] = 1.  # Scalar on equivalent battery resistance state-space charge transfer
     # TODO: when is ss used versus ct
     slr_tauct_sim: Optional[float] = 1.  # Scalar on Randles charge transfer function time constant in ModelSim
-    add_s_voc_soc: Optional[float] = 0.  # Adder to SOC input of voc_soc table lookup of voc from soc
     add_voc_sim: Optional[float] = 0.  # Adder to BatterySim voc table outputs (should match dvoc of Chemistry_BMS.cpp)
     add_voc_mon: Optional[float] = 0.  # Adder to BatteryMonitor voc table outputs (should match dvoc of
     # Chemistry_BMS.cpp)

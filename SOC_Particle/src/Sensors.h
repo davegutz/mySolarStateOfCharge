@@ -241,7 +241,7 @@ public:
   Looparound(BatteryMonitor *Mon, Sensors *Sen, const float wrap_hi_amp, const float wrap_lo_amp, const double wrap_trim_gain,
     const float imax, const float imin, const float err_max);
   ~Looparound();
-  void calculate(const boolean reset, const float ib, Sensors *Sen);
+  void calculate(const boolean reset, const boolean disable_fault, const float ib, Sensors *Sen);
   float dv_dyn() { return dv_dyn_; };
   float e_wrap() { return e_wrap_; };
   float e_wrap_filt() { return e_wrap_filt_; };
