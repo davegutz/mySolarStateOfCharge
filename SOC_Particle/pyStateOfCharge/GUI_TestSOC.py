@@ -72,13 +72,13 @@ def_dict = {
     'test': {
         "version": "g20240331",
         "unit": "pro2p2",
-        "battery": "chg",
+        "battery": "bb",
         'dataReduction_folder': default_dr,
     },
     'ref': {
         "version": "g20240331",
         "unit": "pro0p",
-        "battery": "chg",
+        "battery": "bb",
         'dataReduction_folder': default_dr,
     },
     'others': {
@@ -96,21 +96,21 @@ unit_list = [
     'pro0p', 'pro1a', 'pro2p2', 'pro2p2_hi_lo', 'pro3p2', 'pro3p2_hi_lo', 'pro4p2', 'soc0p', 'soc1a', 'soc2p2_hi_lo',
     'soc3p2_hi_lo', 'soc4p2_hi_lo',
     ]
-battery_list = ['bb', 'ch', 'chg']
+battery_list = ['bb', 'chg']
 sel_list = [
-    'custom', 'init1', 'saveAdjusts', 'ampHiFail', 'noaHiFail', 'rapidTweakRegression', 'allIn', 'allInBB', 'allInCH',
-    'allInCHG', 'allProto', 'pulseSS', 'rapidTweakRegressionH0', 'offLowSoc', 'offSitHysBmsBB', 'offSitHysBmsCH',
+    'custom', 'init1', 'saveAdjusts', 'ampHiFail', 'noaHiFail', 'rapidTweakRegression', 'allIn', 'allInBB',
+    'allInCHG', 'allProto', 'pulseSoft', 'pulseHard', 'rapidTweakRegressionH0', 'offLowSoc', 'offSitHysBmsBB',
     'offSitHysBmsCHG', 'triTweakDisch', 'ampHiFailFf', 'ampLoFail', 'noaLoFail', 'ampHiFailNoise', 'noaHiFailNoise',
-    'rapidTweakRegression40C', 'slowTweakRegression', 'satSitBB', 'satSitCH', 'satSitCHG',
+    'rapidTweakRegression40C', 'slowTweakRegression', 'satSitBB', 'satSitCHG',
     ]
 sel_list1 = [
-    'flatSitHys', 'offSitHysBmsNoiseBB', 'offSitHysBmsNoiseCH', 'offSitHysBmsNoiseCHG', 'ampHiFailSlow',
+    'flatSitHys', 'offSitHysBmsNoiseBB', 'offSitHysBmsNoiseCHG', 'ampHiFailSlow',
     'noaHiFailSlow', 'noaHiFailSlower', 'noaHiFailSlowest', 'vHiFail', 'vHiFailNoise', 'vHiFailH', 'vHiFailFf',
-    'pulseSSH', 'tbFailMod1W', 'tbFailHdwe1W', 'tLoFailHdwe', 'DvMon', 'DvSim', 'faultParade', 'allInBBn', 'allInCHn',
+    'pulseHard', 'tbFailMod1W', 'tbFailHdwe1W', 'tLoFailHdwe', 'DvMon', 'DvSim', 'faultParade', 'allInBBn', 'allInCHn',
     'allInCHGn', 'stepDown', 'stepUp', 'zero_with_pc',
     ]
 macro_sel_list = [
-    'end_early', 'hdwNoVbPcMidInit', 'modMidInit', 'modMidInitNoCc', 'modLowInitBB', 'modLowInitCH', 'modLowInitCHG',
+    'end_early', 'hdwNoVbPcMidInit', 'modMidInit', 'modMidInitNoCc', 'modLowInitBB', 'modLowInitCHG',
     'noisePackage', 'silentPackage', 'quiet', 'quietwait', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
     'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50', 'c00',
     'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50', 'zeroPrepHdweNoVb', 'zero_set_hdwe_no_Vb',
@@ -122,12 +122,12 @@ hdwNoVbPcMidInit = 'vv0;Xm2;Ca0.50;BZ;Ff0;W20;DP1;HR;Rf;XD;'
 modMidInit = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
 modMidInitNoCc = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
 modLowInitBB = 'vv0;Xm247;Ca0.090;BZ;Ff0;DP1;HR;Rf;XD;'
-modLowInitCH = 'vv0;Xm247;Ca0.103;BZ;Ff0;DP1;HR;Rf;XD;'
 modLowInitCHG = 'vv0;Xm247;Ca-0.004;BZ;Ff0;DP1;HR;Rf;XD;'
 modLowInitGen = 'vv0;Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;XD;'
 noisePackage = 'DT.05;DV0.3;DM.75;DN6;'
 silentPackage = 'DT0;DV0;DM0;DN0;'
 synced_slow = 'Dr400;D>400;Dq400;ED1;DP1;'
+synced_slow_pulse = 'Dr800;D>800;Dq800;ED1;DP1;'
 # slow = 'Dr400;D>400;DP1;'
 slow = synced_slow
 quiet = 'vv0;Dr;Dq;DP;D>;Dh;'
@@ -174,7 +174,8 @@ lookup = {
                     slow + 'Dh4000;' +
                     'cc;' + modMidInit + slowTranPrep + c50 + 'XQ25000;' + c00 + tempCleanup +      # 1 ampHiFail 0
                     '  Rs;W4;Xp10;'   +                                                           # 2 rapidTweakRegression 62
-                    '  Rs;W4;vv4;W4;Xp7;  ' +                                                            # 3 pulseSS  251
+                    '  Rs;W4;vv4;W4;Xp7;  ' +                                                            # 3 pulseSoft  251
+                    '  Rs;W4;vv4;W4;Xp8;  ' +                                                            # 3 pulseHard  251
                     '  Rs;W4;Xp13;  ' +                                                           # 4 triTweakDisch  269
                     modMidInit + slowTranPrep + 'Ff1;' + c50 + 'XQ40000;' + c00 + tempCleanup +     # 5 ampHiFailFf 465
                     modMidInit + slowTranPrep + cm50 + 'XQ50000;' + c00 + tempCleanup +     # 6 ampLoFail    543
@@ -198,28 +199,10 @@ lookup = {
                     'Xm247;Ca0.9962;' + fastTwitchDef + 'Xa17;' + slowTranPrep + 'XR;XQ600000;' + 'Xa0;' +  # satSitBB
                     quiet + cleanup,
                     ('All the best transients BB', "Must have same 'vv*' throughout", "")),
-        'allInCH': (1200,
-                    slow + 'Dh4000;' +
-                    modLowInitCH + slowTwitchDef + 'Xa-324;' + slowTranPrep + twitch + 'XQ568000;' + 'Xa0;' +  # offSitHysBmsCH
-                    'Xm247;Ca0.9920;' + fastTwitchDef + 'Xa17;' + slowTranPrep + 'XR;XQ600000;' + 'Xa0;' +  # satSitCH
-                    quiet + cleanup,
-                    ('All the best transients CH', "Must have same 'vv*' throughout", "")),
-        'allInCHG': (1200,
-                     slow + 'Dh4000;' +
-                     modLowInitCHG + slowTwitchDef + 'Xa-324;' + slowTranPrep + twitch + 'XQ568000;' + 'Xa0;' +  # offSitHysBmsCHG
-                     'Xm247;Ca0.9920;' + fastTwitchDef + 'Xa17;' + slowTranPrep + 'XR;XQ600000;' + 'Xa0;' +  # satSitCHG
-                     quiet + cleanup,
-                     ('All the best transients CHG', "Must have same 'vv*' throughout", "")),
         'allInBBn': (690,
                      slow + 'Dh4000;' +
                      modMidInit + slowTranPrep + noisePackage + c50 + 'XQ25000;' + c00 + silentPackage + tempCleanup +  # 1 ampHiFailNoise 0
                      modLowInitBB + slowTwitchDef + 'Xa-162;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage +  # 1 offSitHysBmsNoiseCHG 70
-                     quiet + cleanup,
-                     ('All the best transients CHG noise', "Must have same 'vv*' throughout", "")),
-        'allInCHn': (690,
-                     slow + 'Dh4000;' +
-                     modMidInit + slowTranPrep + noisePackage + c50 + 'XQ25000;' + c00 + silentPackage + tempCleanup +  # 1 ampHiFailNoise 0
-                     modLowInitCH + slowTwitchDef + 'Xa-324;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage +  # 1 offSitHysBmsNoiseCHG 70
                      quiet + cleanup,
                      ('All the best transients CHG noise', "Must have same 'vv*' throughout", "")),
         'allInCHGn': (690,
@@ -232,11 +215,11 @@ lookup = {
         'noaHiFail': (110, modMidInit + tranPrep + d50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp. With ib_diff only nothing changes then should isolate to the noa by wrap and choose amp.", "'diff' will be displayed then ib_fail due to wrap of noa", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen).", "Loss of ib set 'accy' because loss of current sensing at high currents.")),
         'rapidTweakRegression': (205, slow + 'Rs;W4;Xp10;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'allProto': (552, modMidInit + tranPrep + c50 + 'XQ25000;' + c00 + tempCleanup + '  Rs;W4;Xp10;  Rs;W4;Xp13;  ' + modMidInitNoCc + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ('Proto multi', "Must have same 'vv*' throughout", "No 'HR' either")),
-        'pulseSS': (50, synced_slow + 'XS;Dm0;Dn0;vv0;Xm255;Ca.5;Pm;W2;Rs;W10;vv4;W2;' + 'Rs;W20;Xp7;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
+        'pulseSoft': (75, synced_slow_pulse + 'XS;Dm0;Dn0;vv0;Xm255;Ca.5;Pm;W2;Rs;W20;vv4;W10;' + 'Xp7;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a current sensor pulse.  Look at plots for good overlay. e_wrap should be nearly flat after a pulse response.", "This is the shortest of all tests.  Also useful for quick check tests.", "")),
+        'pulseHard': (75, synced_slow_pulse + 'XS;Dm0;Dn0;vv0;Xm255;Ca.5;Pm;W2;Rs;W20;vv4;W10;' + 'Xp8;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hardware current pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Also useful for quick check tests.", "")),
         'rapidTweakRegressionH0': (205, 'Sh0;' + slow + 'Rs;W4;Xp10;Pf;W2;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'No hysteresis. Best test for seeing time skews and checking fault logic for false trips', 'Tease out cause of e_wrap faults.  e_wrap MUST be flat!', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'offLowSoc': (85, modLowInitGen + tranPrep  + vm12 + 'XQ55000;' + dv0 + quiet + cleanup, ('Test for clean faults on shutoff.',)),
         'offSitHysBmsBB': (800, modLowInitBB + slowTwitchDef + 'Xa-162;' + tranPrep + twitch + 'XQ568000;' + 'Pf;W2;Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
-        'offSitHysBmsCH': (800, modLowInitCH + slowTwitchDef + 'Xa-324;' + tranPrep + twitch + 'XQ568000;' + 'Pf;W2;Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
         'offSitHysBmsCHG': (800, modLowInitCHG + slowTwitchDef + 'Xa-324;' + tranPrep + twitch + 'XQ568000;' + 'Pf;W2;Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
         'triTweakDisch': (205, slow + 'Rs;W4;Xp13;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'ampHiFailFf': (122, modMidInit + tranPrep + 'Ff1;' + c50 + 'XQ40000;' + c00 + quiet + cleanup, ("Should detect but not switch amp current failure. (See 'diff' and current!=0 on display).", "Run about 60s. Start by looking at 'Ult 1'. No fault record (keeps recording).  Verify that on Fig 3 the e_wrap goes through a threshold ~0.4 without change of 'ib_sel_stat'", "This show when deploy with Fake Faults (Ff) don't throw false trips (it happened)", "ib_amp limited by max range e.g. 12.6.  ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
@@ -247,11 +230,9 @@ lookup = {
         'rapidTweakRegression40C': (200, 'D^15;' + slow + 'Rs;W4;Xp10;' + quiet + cleanup, ("Should run three very large current discharge/recharge cycles without fault", "Self-terminates", 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'slowTweakRegression': (682, 'Rs;W10;vv4;' + 'Rs;W4;Xp11' + quiet + cleanup, ("Should run one very large slow (~15 min) current discharge/recharge cycle without fault.   It will take 60 seconds to start changing current.", 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'satSitBB': (656, 'Xm247;Ca0.9962;' + fastTwitchDef + 'Xa17;' + tranPrep + 'XR;XQ600000;' + 'Xa0;' + quiet + cleanup, ("Should run one saturation and de-saturation event without fault.   Takes about 15 minutes.", "operate around saturation, starting below, go above, come back down. Tune Ca to start just below vsat",)),
-        'satSitCH': (656, 'Xm247;Ca0.9920;' + fastTwitchDef + 'Xa17;' + tranPrep + 'XR;XQ600000;' + 'Xa0;' + quiet + cleanup, ("Should run one saturation and de-saturation event without fault.   Takes about 15 minutes.", "operate around saturation, starting below, go above, come back down. Tune Ca to start just below vsat",)),
         'satSitCHG': (656, 'Xm247;Ca0.986;' + fastTwitchDef + 'Xa17;' + tranPrep + 'XR;XQ600000;' + 'Xa0;' + quiet + cleanup, ("Should run one saturation and de-saturation event without fault.   Takes about 15 minutes.", "operate around saturation, starting below, go above, come back down. Tune Ca to start just below vsat",)),
         'flatSitHys': (680, 'Xm247;Ca0.9;Rb;Rf;Xts;Xa-81;Xf0.004;XW10000;XT10;XC2;W1;' + tranPrep + 'XR;XQ580000;Xa0;Xb0;' + quiet + cleanup, ("Operate around 0.9.  For CHINS, will check EKF with flat voc(soc).   Takes about 10 minutes.", "Make sure EKF soc (soc_ekf) tracks actual soc without wandering.")),
         'offSitHysBmsNoiseBB': (667, modLowInitBB + slowTwitchDef + 'Xa-162;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage + quiet + cleanup, ("Stress test with 2x normal Vb noise DV0.10.  Takes about 10 minutes.", "operate around saturation, starting above, go below, come back up. Tune Ca to start just above vsat. Go low enough to exercise hys reset ", "Make sure comes back on.", "It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shutoff.")),
-        'offSitHysBmsNoiseCH': (667, modLowInitCH + slowTwitchDef + 'Xa-324;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage + quiet + cleanup, ("Stress test with 2x normal Vb noise DV0.10.  Takes about 10 minutes.", "operate around saturation, starting above, go below, come back up. Tune Ca to start just above vsat. Go low enough to exercise hys reset ", "Make sure comes back on.", "It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shutoff.")),
         'offSitHysBmsNoiseCHG': (667, modLowInitCHG + slowTwitchDef + 'Xa-324;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage + quiet + cleanup, ("Stress test with 2x normal Vb noise DV0.10.  Takes about 10 minutes.", "operate around saturation, starting above, go below, come back up. Tune Ca to start just above vsat. Go low enough to exercise hys reset ", "Make sure comes back on.", "It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shutoff.")),
         # 'ampHiFailSlow': (515, modMidInit + tranPrep + c10 + 'Fi4,Fc0.0006;Fd0.5;XQ400000;' + c00 + quiet + cleanup, ("Active Standby Should detect and switch amp current failure. Will be slow (~6 min) detection as it waits for the EKF to wind up to produce a cc_diff fault.", "Will display “diff” on display due to 6 A difference before switch (not cc_diff).", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see cc_diff_fa")),
         # 'noaHiFailSlow': (515, modMidInit + tranPrep + d10 + 'Fc0.0006;Fd0.5;XQ400000;' + c00 + quiet + cleanup, ("Active Standby Should detect and switch amp current failure. Will be slow (~6 min) detection as it waits for the EKF to wind up to produce a cc_diff fault.", "Will display “diff” on display due to 6 A difference before switch (not cc_diff).", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see cc_diff_fa")),
@@ -281,7 +262,6 @@ macro_lookup = {
         'hdwNoVbPcMidInit': (5, hdwNoVbPcMidInit, ('', '', '', '')),
         'modMidInit': (5, modMidInit, ('', '', '', '')),
         'modLowInitBB': (5, modLowInitBB, ('', '', '', '')),
-        'modLowInitCH': (5, modLowInitCH, ('', '', '', '')),
         'noisePackage': (5, noisePackage, ('', '', '', '')),
         'silentPackage': (5, silentPackage, ('', '', '', '')),
         'quiet': (5, quiet, ('', '', '', '')),

@@ -360,6 +360,14 @@ def replicate(OPT: UserOptions):
             print("   now {:5.3f}".format(now),
                   "   time_end {:5.3f}\n\n".format(t[-1]),
                   )
+            print("at time {:5.3f}\n".format(now),
+                  f"skip_ekf {bool(SN.mon_run.skip_ekf[i_ekf])}\n"
+                  f"skip_temp {bool(SN.mon_run.skip_temp[i_temp])}\n"
+                  f"skip_sel {bool(SN.mon_run.skip_sel[G.i])}\n"
+                  f"skip_mon {bool(SN.mon_run.skip_mon[G.i])}\n"
+                  f"skip_sim {bool(SN.sim_run.skip_sim[G.i])}\n"
+                  f"")
+            exit(1)
 
     # Data
     if OPT.verbose:
