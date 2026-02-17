@@ -1,5 +1,5 @@
 # BatteryEKF - general purpose battery class for embedded EKF
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -85,14 +85,16 @@ class Coulombs:
         self.q_cap_rated_scaled = scale * self.q_cap_rated
         self.q_capacity = self.calculate_capacity(tb_f=self.Tb_f)
         self.q = self.delta_q + self.q_capacity  # preserve self.delta_q, deficit since last saturation(like real life)
-        self.soc = self.q / self.q_capacity
+        if self.q_capacity != 0. and self.q_capacity is not None:
+            self.soc = self.q / self.q_capacity
         self.resetting = True  # momentarily turn off saturation check
 
     # Memory set, adjust bookkeeping as needed.delta_q, capacity, temp preserved void
     def apply_delta_q_brief(self, delta_q):
         self.delta_q = delta_q
         self.q = self.delta_q + self.q_capacity
-        self.soc = self.q / self.q_capacity
+        if self.q_capacity != 0. and self.q_capacity is not None:
+            self.soc = self.q / self.q_capacity
         self.resetting = True  # momentarily turn off saturation check
 
     def apply_delta_q_t(self, delta_q, tb_f):
@@ -100,7 +102,8 @@ class Coulombs:
         self.tb_f = tb_f
         self.q_capacity = self.calculate_capacity(tb_f=self.tb_f)
         self.q = self.q_capacity + self.delta_q
-        self.soc = self.q / self.q_capacity
+        if self.q_capacity != 0. and self.q_capacity is not None:
+            self.soc = self.q / self.q_capacity
         self.resetting = True
 
     def apply_soc(self, soc, tb_f, delta_q):
@@ -177,7 +180,8 @@ class Coulombs:
                     pass
 
         # Normalize
-        self.soc = self.q / self.q_capacity
+        if self.q_capacity != 0. and self.q_capacity is not None:
+            self.soc = self.q / self.q_capacity
         self.soc_min = self.chemistry.lut_min_soc.interp(self.tb_f)
         self.q_min = self.soc_min * self.q_capacity
 

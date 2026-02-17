@@ -1,5 +1,5 @@
 # CompareRunHist.py:  combine a CompareRunSim with CompareHistSim
-# Copyright (C) 2024 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -76,42 +76,31 @@ def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=True,
     pass
 
 
-def main():
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc3p2_hi_lo_bb.csv'
-    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
+def main():  # Example usage:  ok 20260217
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseHard_soc2p2_hi_lo_bb.csv'
+    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
     time_end = None
-    # plots = False
     plots = True
-    strict_overplot = False
+    strict_overplot = True
     terse = True
-    # terse = False
     use_mon_csv = False
-    dt_resample = 1
+    dt_resample = 10
     Tb_force = None
-    use_mon_soc_ = False
-    verbose = True
     use_mon_soc = False
-    scale_in = 1.0
+    verbose = True
+    scale = 1.0
     slr_hys_sim = 1.0
-    init_time_in = None
-    time_shift_in = None
+    init_time = None
+    time_shift = None
     mon_str = ''
     sync_time = None
-
-    # RunSim plot selection
-    # 1=ekf   2=soc  3=soc_s  4=temp   5=volt  6=ekf   7=dyn_m  8=vb_wrap
-    request_hist_run_sim = 3
-    # request_hist_run_sim = None
-
-    # HistSim plot selection
-    # 3=soc_s   5=volt
-    request_hist_hist_sim = 5
-    # request_hist_hist_sim = None
+    request_history_run_sim = None
+    request_history_hist_sim = None
 
     compare_run_hist(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,
                      use_mon_soc=use_mon_soc, verbose=verbose, strict_overplot=strict_overplot, terse=terse,
                      dt_resample=dt_resample, Tb_force=Tb_force,
-                     request_history_run_sim=request_hist_run_sim, request_history_hist_sim=request_hist_hist_sim)
+                     request_history_run_sim=request_history_run_sim, request_history_hist_sim=request_history_hist_sim)
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage.  Ran ok 202602xx
     main()

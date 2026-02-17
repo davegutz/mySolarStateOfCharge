@@ -1,5 +1,5 @@
 # CompareHistSim.py:  load fault, hist, summ data and compare to simulation.
-# Copyright (C) 2024 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -48,9 +48,9 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
     sim_s_tst = None
 
     # Load history, normalizing all soc and Tb to 20C
-    mon_run, sim_run, unit_run, fault_run, hist_20C_run, filename_run = \
+    mon_run, sim_run, unit_run, fault_run, hist_20C_run, filename_run, Battery_run = \
         load_hist_and_prep(data_file=data_file_run, unit_key=unit_key_run, dt_resample=dt_resample)
-    mon_tst, sim_tst, unit_tst, fault_tst, hist_20C_tst, filename_tst = \
+    mon_tst, sim_tst, unit_tst, fault_tst, hist_20C_tst, filename_tst, Battery_tst = \
         load_hist_and_prep(data_file=data_file_tst, unit_key=unit_key_tst, dt_resample=dt_resample)
 
     # Synchronize
@@ -81,21 +81,11 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
         if hist_20C_run is not None and len(hist_20C_run.time) > 1:
             sim_run = None
             plot_init_in = False
-            fig_list, fig_files = dom_plot(mon_run, mon_tst, sim_run, sim_tst, sim_s_tst, filename_run,
-                                           fig_files, plot_title=plot_title, fig_list=fig_list,
-                                           plot_init_in=plot_init_in, run_str='_'+unit_run, ver_str='_'+unit_tst,
-                                           run_type='HistHist')
-            fig_list, fig_files = gp_plot(mon_run, mon_tst, sim_run, sim_tst, sim_s_tst, filename_run,
-                                          fig_files, plot_title=plot_title, fig_list=fig_list,
-                                          run_str='_'+unit_run, ver_str='_'+unit_tst)
-            fig_list, fig_files = off_on_plot(mon_run, mon_tst, sim_run, sim_tst, sim_s_tst, filename_run,
-                                              fig_files, plot_title=plot_title, fig_list=fig_list,
-                                              run_str='_'+unit_run, ver_str='_'+unit_tst)
+            fig_list, fig_files = dom_plot(mon_run, mon_tst, sim_run, sim_tst, sim_s_tst, filename_run, fig_files,
+                                           plot_title=plot_title, fig_list=fig_list, run_str='_'+unit_run,
+                                           ver_str='_'+unit_tst, run_type='HistHist')
             fig_list, fig_files = overall_fault(mon_run, mon_tst, sim_tst, sim_s_tst, filename_run,
                                                 fig_files, plot_title=plot_title, fig_list=fig_list)
-            fig_list, fig_files = tune_r(mon_run, mon_tst, sim_s_tst, filename_run,
-                                         fig_files, plot_title=plot_title, fig_list=fig_list,
-                                         run_str='_'+unit_run, ver_str='_'+unit_tst)
 
         precleanup_fig_files(output_pdf_name=filename_run, path_to_pdfs=save_pdf_path)
         unite_pictures_into_pdf(outputPdfName=filename_run+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
@@ -111,10 +101,10 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
 def main():
 
     # User inputs (multiple input_files allowed
-    data_file_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20240331/soc0p hist 2024_06_25.csv'
-    unit_key_run = 'g20240331_soc0p_ch'
-    data_file_tst = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20240331/soc3p2 hist 2024_06_25.csv'
-    unit_key_tst = 'g20240331_soc3p2_ch'
+    data_file_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseHard_soc2p2_hi_lo_bb.csv'
+    unit_key_run = 'g20250612a_soc2p2_bb'
+    data_file_tst = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseHard_soc2p2_hi_lo_bb.csv'
+    unit_key_tst = 'g20250612a_soc2p2_bb'
     dt_resample = 10
 
     # Do this when running compare_hist_sim on run that schedule extracted assuming constant Tb
@@ -125,5 +115,5 @@ def main():
                       dt_resample=dt_resample)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     main()

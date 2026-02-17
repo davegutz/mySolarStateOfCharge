@@ -41,7 +41,7 @@ class SavedDataSweep:
             self.assign_all_from(x)
 
             # Special handling
-            self.skip_x = np.bool(np.array(x.skip))
+            self.skip_x = np.bool(np.array(x.skip_shunt))
             self.i = 0
             try:
                 self.time = np.array(x.time)
@@ -100,12 +100,12 @@ def load_data(path_to_data, time_end_in):
 
     print(f"load_data_KF1x1_test: \n{path_to_data=}\n{time_end_in=}\n")
 
-    hdr_key_x = "u_cx,"  # Find one self of title
-    unit_key_x = "cx_u"
+    hdr_key_x = "unit_shunt,"  # Find one self of title
+    unit_key_x = "shunt_unit"
 
     data_file_clean = write_clean_file(path_to_data, type_='_shunt', hdr_key=hdr_key_x, unit_key=unit_key_x)
     if data_file_clean is None:
-        return None, None, None, None, None, None
+        return None, None
     import numpy as np
     if data_file_clean is not None:
         mon_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
@@ -257,7 +257,7 @@ class Wave:
             steady_only = True
 
 
-# Example Usage:
+# Example Usage:  Ran ok on 20260217
 if __name__ == "__main__":
     import numpy as np
     import matplotlib.pyplot as plt
@@ -278,7 +278,7 @@ if __name__ == "__main__":
     2.  Press Cx16000 to collect ss data for 60s
     3.  After 60 s press Sweep then OK.  When it reaches 5.0 Hz again press OK to stop then VCO OK to go back steady
     """
-    data_file = './noise_study/sweepchirp4_soc2p2_hi_lo_chg.csv'  # Cx46000, new base 20251231
+    data_file = 'C:/Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/pyStateOfCharge/noise_study/sweepchirp4_soc2p2_hi_lo_chg.csv'  # Cx46000, new base 20251231
     doing_doe = True  # Toggle this to see various kf implemented in python
     cutoff_freq_hz = 0.05  # hpf
     # The best design of filter

@@ -1,5 +1,5 @@
 # LivePlotExample:  develop real time potting
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -89,7 +89,7 @@ def liven_plotter(x, y, linen, fig, labels=None, subplot=111, ax=None, y_label='
     return linen, ax
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     import numpy as np
 
     def main():

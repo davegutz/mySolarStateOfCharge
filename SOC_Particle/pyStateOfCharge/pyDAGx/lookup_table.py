@@ -568,7 +568,7 @@ def main():
     crosscheck3d()
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     import sys
     import doctest
     doctest.testmod(sys.modules['__main__'])

@@ -1,5 +1,5 @@
 # GP_batteryEKF - general purpose battery class for EKF use
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -169,7 +169,10 @@ def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None):
     elif hasattr(S.mr, 'voc_d'):
         S.mr.dv = np.array(S.mr.voc_soc) - np.array(S.mr.voc_d)
     plq(plt, S.mr, 'soc', S.mr, 'dv', add=13, color='blue', linestyle='-')
-    S.mv.dv = np.array(S.mv.voc_soc) - np.array(S.mv.voc)
+    if hasattr(S.mv, 'voc'):
+        S.mv.dv = np.array(S.mv.voc_soc) - np.array(S.mv.voc)
+    elif hasattr(S.mv, 'voc_stat_f'):
+        S.mv.dv = np.array(S.mv.voc_soc) - np.array(S.mv.voc_stat_f)
     plq(plt, S.mv, 'soc', S.mv, 'dv', add=+13, color='orange', linestyle='--')
     plt.legend(loc=1)
     plt.subplot(326)
@@ -180,7 +183,10 @@ def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mr, 'time', S.mr, 'voc_soc', color='red', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'voc_soc', color='orange', linestyle='--')
     plq(plt, S.mr, 'time', S.mr, 'dv', add=13, color='blue', linestyle='-')
-    S.mv.dv = np.array(S.mv.voc_soc) - np.array(S.mv.voc)
+    if hasattr(S.mv, 'voc'):
+        S.mv.dv = np.array(S.mv.voc_soc) - np.array(S.mv.voc)
+    elif hasattr(S.mv, 'voc_stat_f'):
+        S.mv.dv = np.array(S.mv.voc_soc) - np.array(S.mv.voc_stat_f)
     plq(plt, S.mv, 'time', S.mv, 'dv', add=+13, color='orange', linestyle='--')
     plt.legend(loc=1)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"

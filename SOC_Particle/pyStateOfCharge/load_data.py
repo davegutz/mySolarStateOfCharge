@@ -1,5 +1,5 @@
 # MonSim:  Monitor and Simulator replication of Particle Photon Application
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -219,19 +219,3 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         print(f"load_data: returning f=None")
 
     return mon, sim, f, data_file_clean, temp_flt_file_clean, sync_info
-
-
-def main():
-    path_to_data = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\kfProto_soc2p2_hi_lo_chg.csv'
-    skip = 1
-    unit_key='g20250612a_soc2p2_hi_lo_chg'
-    zero_zero_in = False
-    time_end_in = None
-    rated_batt_cap = 108.4
-    legacy = False
-    load_data(path_to_data=path_to_data, skip=skip, unit_key=unit_key, zero_zero_in=zero_zero_in,
-              time_end_in=time_end_in, rated_batt_cap=rated_batt_cap, legacy=legacy)
-
-
-if __name__ == '__main__':
-    main()

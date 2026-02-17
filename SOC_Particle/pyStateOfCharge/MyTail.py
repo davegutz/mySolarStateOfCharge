@@ -193,7 +193,7 @@ def write_to_out_path(_input):
     of.write(_input)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     import tkinter as tk
     import time
     import platform

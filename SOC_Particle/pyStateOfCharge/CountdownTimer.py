@@ -1,5 +1,5 @@
 # CountdownTimer: class to display a non-blocking countdown timer
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -167,7 +167,7 @@ def stay_awake(up_set_min=3.):
     print(f"stay_awake: ending\n")
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     root = tk.Tk()
     tk.Label(root, text="Try timer variations").pack()
     tk.Button(root, text="Timer", command=start_timer).pack()

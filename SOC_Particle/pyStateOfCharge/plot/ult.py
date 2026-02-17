@@ -32,12 +32,12 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     plt.title(S.plot_title + ' Ult 1')
     plt.rcParams['legend.fontsize'] = 6
     print('Ult 1', end=':  ')
-    if all(S.mr.mib == 0):
+    if (hasattr(S.mr, 'mib') and all(S.mr.mib == 0)) or (hasattr(S.mr, 'mod_data') and all(S.mr.mod_data < 64)):
         plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe', color='green', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'ib_amp_hdwe', color='red', linestyle='--', warn=False)
         plq(plt, S.mr, 'time', S.mr, 'ib_noa_hdwe', color='blue', linestyle='-.')
         plq(plt, S.mv, 'time', S.mv, 'ib_noa_hdwe', color='orange', linestyle=':', warn=False)
-    elif all(S.mr.mod >= 255.) or (not (S.strict_overplot) and not(S.run_type == 'HistSim')):
+    elif (hasattr(S.mr, 'mod') and all(S.mr.mod >= 255.)) or (not (S.strict_overplot) and not(S.run_type == 'HistSim')):
         plq(plt, S.mr, 'time', S.mr, 'ib_amp_model', add=1., color='green', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'ib_amp_model', add=1., color='red', linestyle='--', warn=False)
         plq(plt, S.mr, 'time', S.mr, 'ib_noa_model', add=1., color='blue', linestyle='-.')
@@ -155,12 +155,10 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mv, 'time', S.mv, 'bms_off', add=+4, color='red', linestyle='--')
     if S.sr is not None:
         plq(plt, S.sr, 'time', S.sr, 'bms_off_s', add=+4, color='blue', linestyle='-.')
-    if hasattr(S.mr, 'mod_data'):
+    if hasattr(S.mr, 'mod_data') and hasattr(S.mv, 'mod_data'):
         mod_min = min(min(S.mr.mod_data), min(S.mv.mod_data))
-    else:
-        mod_min = min(S.mv.mod_data)
-    plq(plt, S.mr, 'time', S.mr, 'mod_data', add=-mod_min, color='green', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'mod_data', add=-mod_min, color='red', linestyle='--')
+        plq(plt, S.mr, 'time', S.mr, 'mod_data', add=-mod_min, color='green', linestyle='-')
+        plq(plt, S.mv, 'time', S.mv, 'mod_data', add=-mod_min, color='red', linestyle='--')
     if S.smv is not None:
         if hasattr(S.smv, 'bmso_s'):
             plq(plt, S.smv, 'time', S.smv, 'bmso_s', add=+4, color='orange', linestyle=':')

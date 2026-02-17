@@ -1,5 +1,5 @@
 # BatteryKF - general purpose battery class for embedded KF
-# Copyright (C) 2021 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -18,8 +18,8 @@ kf_update methods in the parent."""
 
 global mon_run
 from load_data import write_clean_file
-from myFilters import General2Pole, LagExp
-from KF1x1 import KF1x1VarDt
+from filter.myFilters import General2Pole, LagExp
+from filter.KF1x1 import KF1x1VarDt
 from itertools import pairwise
 
 def plot_1(plt=None, mr=None, mv=None, title=None):
@@ -349,7 +349,7 @@ class SavedData:
             self.assign_all_from(x)
 
             # Special handling
-            self.skip_x = np.bool(np.array(x.skip))
+            self.skip_x = np.bool(np.array(x.skip_shunt))
             self.i = 0
             try:
                 self.time = np.array(x.time)
@@ -436,7 +436,7 @@ class Saved:
         self.VoVcn_filt = []
 
 
-# Example Usage:
+# Example Usage:  ran ok 20260217
 if __name__ == "__main__":
     """
     Test setup:  FY6900 Dominty Function Generator.  FY6900 CH 1 connected across shunt leads.
@@ -496,7 +496,7 @@ if __name__ == "__main__":
     2.  Press Cx16000 to collect ss data for 60s
     3.  After 60 s press Sweep then OK.  When it reaches 5.0 Hz again press OK to stop then VCO OK to go back steady
     """
-    data_file = './noise_study/sweepchirp3_soc2p2_hi_lo_chg.csv'  # Cx46000, new base 20251231
+    data_file = 'C:/Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/pyStateOfCharge/noise_study/sweepchirp3_soc2p2_hi_lo_chg.csv'  # Cx46000, new base 20251231
     doing_doe = True  # Toggle this to see various kf implemented in python
     cutoff_freq_hz = 0.05  # hpf
     Qstd = 0.0003  # Standard deviation of acceleration noise
@@ -513,7 +513,6 @@ if __name__ == "__main__":
     2.  Press Cx16000 to collect ss data for 60s
     3.  After 60 s press Sweep then OK.  When it reaches 5.0 Hz again press OK to stop then VCO OK to go back steady
     """
-    data_file = './noise_study/sweepchirp4_soc2p2_hi_lo_chg.csv'  # Cx46000, new base 20251231
     doing_doe = True  # Toggle this to see various kf implemented in python
     cutoff_freq_hz = 0.05  # hpf
     # The best design of filter

@@ -1,5 +1,5 @@
 # GenerateDV_Data:  Simulate v1 on a long term charge discharge cycle
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public

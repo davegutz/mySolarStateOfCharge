@@ -1,5 +1,5 @@
 # Table utility
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -302,8 +302,7 @@ class TableInterp2D:
         s += "]\n"
         return s
 
-
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage: ran ok 20260217
     import sys
     import doctest
     import numpy as np

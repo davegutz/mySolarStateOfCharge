@@ -1,5 +1,5 @@
 # Chemistry_BMS - battery chemical and Battery Management System (BMS) properties
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -19,8 +19,6 @@ from pyDAGx import myTables
 
 
 # tentative values lags
-# IB_LAG_BB = 25.*25.*3
-# IB_LAG_CH = 25.*25.*3
 IB_LAG_BB = 180.
 IB_LAG_CH = 180.
 

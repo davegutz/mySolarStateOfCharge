@@ -5,7 +5,7 @@
 #  'python3 wcp
 #
 #  2023-Jun-15  Dave Gutz   Create
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -127,7 +127,7 @@ def wcp(filepaths=None, silent=False, supported='*'):
             print("did not find '{:s}' in {:s}".format(source, filepath))
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage.  Ran ok 202602178
     def main():
         wcp()
 

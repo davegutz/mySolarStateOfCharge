@@ -1,5 +1,5 @@
 # Battery - general purpose battery class for modeling
-# Copyright (C) 2024 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public

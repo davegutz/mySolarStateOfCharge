@@ -1,5 +1,5 @@
 # Resample a numpy array (add points by interpolation)
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -114,61 +114,3 @@ def resample(data, dt_resamp, time_var, specials=None, make_time_float=True):
                 resamp = rf.rec_append_fields(resamp, var_name, np.array(new_var, dtype=int))
 
     return resamp
-
-
-if __name__ == '__main__':
-    from DataOverModel import write_clean_file
-
-
-    def main():
-        input_files = []
-        exclusions = [(0, 1665334404)]  # before faults
-        # exclusions = [(0, 1665518004)]  # small test set for debugging
-
-        # exclusions = None
-        data_file = ''
-        path_to_data = '../dataReduction'
-        path_to_temp = '../dataReduction/temp'
-        import os
-        if not os.path.isdir(path_to_temp):
-            os.mkdir(path_to_temp)
-
-        # cat files
-        cat(data_file, input_files, in_path=path_to_data, out_path=path_to_temp)
-
-        # Load mon v4 (old)
-        data_file_clean = write_clean_file(data_file, type_='', hdr_key='hist', unit_key='unit_f', comment_str='---')
-        if not data_file_clean:
-            print("data from", data_file, "empty after loading")
-            exit(1)
-
-        # load
-        raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-
-        # Sort unique
-        raw = np.unique(raw)
-
-        # Rack and stack
-        raw = remove_nan(raw)
-        if exclusions:
-            for i in range(len(exclusions)):
-                # noinspection PyUnresolvedReferences
-                test_res0 = np.where(raw.time < exclusions[i][0])
-                test_res1 = np.where(raw.time > exclusions[i][1])
-                raw = raw[np.hstack((test_res0, test_res1))[0]]
-
-        print("raw data")
-        print(raw)
-
-        # Now do the resample
-        # noinspection PyUnresolvedReferences
-        dt_raw = raw.time[1] - raw.time[0]
-        dt = 0.1
-        resamp = resample(data=raw, dt_resamp=dt, specials=[('falw', 0)], time_var='time')
-
-        print("resamp")
-        print(resamp)
-        print("raw time range", raw['time'][0], '-', raw['time'][-1], "length=", len(raw), "dt=", dt_raw)
-        print("resamp time range", resamp['time'][0], '-', resamp['time'][-1], "length=", len(resamp), "dt=", dt)
-
-    main()

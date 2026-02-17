@@ -1,5 +1,5 @@
 # MonSim:  Monitor and Simulator replication of Particle Photon Application
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -542,7 +542,10 @@ def overall_fault(mr, mv, sv, smv, filename, fig_files=None, plot_title=None, fi
     plt.subplot(338)
     plq(plt, mr, 'time', mr, 'e_wrap', color='black', linestyle='-')
     plq(plt, mr, 'time', mr, 'e_wrap_filt', color='black', linestyle='-')
-    mv.e_wrap = np.array(mv.voc_soc) - np.array(mv.voc_stat)
+    if hasattr(mv, 'voc_stat'):
+        mv.e_wrap = np.array(mv.voc_soc) - np.array(mv.voc_stat)
+    else:
+        mv.e_wrap = np.array(mv.voc_soc) - np.array(mv.voc_stat_f)
     mr.cc_dif = np.array(mr.soc_ekf) - np.array(mr.soc)
     mv.cc_dif = np.array(mv.soc_ekf) - np.array(mv.soc)
     plq(plt, mv, 'time', mv, 'e_wrap', color='cyan', linestyle='--')
@@ -809,22 +812,3 @@ def look_it(x, tab, temp):
     for i in range(len(x)):
         voc[i] = tab.interp(x[i], temp)
     return voc
-
-
-if __name__ == '__main__':
-    import sys
-    if sys.platform == 'darwin':
-        import matplotlib
-        matplotlib.use('tkagg')
-    plt.rcParams['axes.grid'] = True
-    plt.rcParams['legend.fontsize'] = 'small'
-    from datetime import datetime
-
-
-    def main():
-        date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-        # date_ = datetime.now().strftime("%y%m%d")
-
-
-
-    main()

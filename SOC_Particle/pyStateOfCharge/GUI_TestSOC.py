@@ -8,7 +8,7 @@
 #  python3 GUI_TestSOC.py
 #
 #  2023-Jun-15  Dave Gutz   Create
-# Copyright (C) 2024 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -1339,7 +1339,7 @@ def update_data_buttons():
     start_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     import os
     import tkinter as tk
     from tkinter import ttk

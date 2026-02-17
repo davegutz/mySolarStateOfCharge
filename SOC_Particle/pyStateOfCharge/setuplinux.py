@@ -1,6 +1,6 @@
 #  setuplinux:  script to make desktop shortcut
 #  2023-Jun-02  Dave Gutz   Create
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public

@@ -1,5 +1,5 @@
 # MonSim:  Monitor and Simulator replication of Particle Photon Application
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,11 @@ plt.rcParams['legend.fontsize'] = 'small'
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
+# def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True, Dw=0.,  use_mon_soc_=False,
+#                     verbose=True, scale_in=1., slr_hys_sim=1., request_history=5, Battery=None, init_time_in=None,
+#                     time_shift_in=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
+#                     fig_list=None, show_killer_=True):
+
 def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=None, sync_to_ctime=False):
 
     print(f"\ncompare_run_run:\n{keys=}\n{data_file_folder_run=}\n{data_file_folder_test=}\n{sync_to_ctime=}\n")
@@ -65,14 +70,12 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     # Load old ref data
     data_file_run = os.path.join(data_file_folder_run, data_file_txt_run)
     mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
-        load_data(data_file_run, 1, unit_key_run, zero_zero_in, time_end_in,
-                  rated_batt_cap=rated_batt_cap_run_in)
+        load_data(data_file_run, 1, unit_key_run, zero_zero_in, time_end_in)
 
     # Load new test data
     data_file_test = os.path.join(data_file_folder_test, data_file_txt_test)
     mon_test, sim_test, f_test, data_file_ver_clean, temp_flt_file_ver_clean, sync_info_test = \
-        load_data(data_file_test, 1, unit_key_test, zero_zero_in, time_end_in,
-                  rated_batt_cap=rated_batt_cap_test_in)
+        load_data(data_file_test, 1, unit_key_test, zero_zero_in, time_end_in)
 
     # Synchronize
     # Time since beginning of data to sync pulses
@@ -124,12 +127,6 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
 
 
 def main():
-    keys = [('rapidTweakRegression_pro2p2_hi_lo_chg.csv', 'g20241006_pro2p2_hi_lo_chg'),
-            ('rapidTweakRegression_soc2p2_hi_lo_chg.csv', 'g20250612a_soc2p2_hi_lo_chg')]
-    data_file_folder_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20241006'
-    data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a'
-    sync_to_ctime = False
-
     keys = [('rapidTweakRegression_soc3p2_hi_lo_bb.csv', 'g20250612a_soc3p2_hi_lo_bb'),
             ('rapidTweakRegression_soc2p2_hi_lo_bb.csv', 'g20250612a_soc2p2_hi_lo_bb')]
     data_file_folder_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a'
@@ -140,5 +137,5 @@ def main():
                     sync_to_ctime=sync_to_ctime)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage.  Ran ok 202602xx
     main()

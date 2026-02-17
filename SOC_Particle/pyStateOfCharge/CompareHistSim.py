@@ -1,5 +1,5 @@
 # CompareHistSim.py:  load fault, hist, summ data and compare to simulation.
-# Copyright (C) 2024 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -394,7 +394,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
     elif temp_sum_file_clean is not None:
         filename = os.path.split(temp_sum_file_clean)[1].replace('.csv', '_') + os.path.split(__file__)[1].split('.')[0]
 
-    unit = None
+    unit = ''
     t_rated = None
     if use_mon_csv is True and mon is not None:
         if Battery.CHEM != int(mon.chm[0]):
@@ -425,8 +425,8 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
             # Rename
             f_raw = rename_all(f_raw)
             fault = add_stuff_f(f_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
-                                time_sync=sync_time, unit=unit, ap_ib_diff_slr=mon.Battery_off_dict['ap_ib_diff_slr'],
-                                ap_ib_quiet_slr=mon.Battery_off_dict['ap_ib_quiet_slr'])
+                                time_sync=sync_time, unit=unit, ap_ib_diff_slr=Battery_off_dict['ap_ib_diff_slr'],
+                                ap_ib_quiet_slr=Battery_off_dict['ap_ib_quiet_slr'])
             print("\nfault after add_stuff_f:\n", fault.dtype.names, fault, "\n")
             fault = filter_Tb(fault, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap_in)  # tb_band=100 disables banding
         else:
@@ -435,7 +435,6 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
     # sums and history
     h_combo_raw = hstack2((h_raw, s_raw))
     if h_combo_raw is None:
-        # return mon, sim, unit, fault, hist_20C, filename, Battery
         return None, None, unit, None, None, filename, Battery
     else:
         h_combo_raw = np.unique(h_combo_raw)
@@ -445,8 +444,8 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
         # noinspection PyTypeChecker
         h_combo_raw = rename_all(h_combo_raw)
         hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
-                           time_sync=sync_time, ap_ib_diff_slr=mon.Battery_off_dict['ap_ib_diff_slr'],
-                           ap_ib_quiet_slr=mon.Battery_off_dict['ap_ib_quiet_slr'])
+                           time_sync=sync_time, ap_ib_diff_slr=Battery_off_dict['ap_ib_diff_slr'],
+                           ap_ib_quiet_slr=Battery_off_dict['ap_ib_quiet_slr'])
 
         hist = add_mod(hist, use_mon_csv, mon)
         hist = add_chm(hist, use_mon_csv, mon, Battery.CHEM)
@@ -523,6 +522,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
     \n{terse=} \
     \n{fig_files=} \
     \n{fig_list=} \
+    \n{show_killer_=} \
     \n")
 
     if fig_files is None:
@@ -599,7 +599,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
     return fig_list, fig_files
 
 
-def main():
+def main():  # Sample usage. OK on 20260217
 
     import sys
     if sys.platform == 'linux':
@@ -608,45 +608,24 @@ def main():
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc3p2_hi_lo_bb.csv'
-    plots = False
-    use_mon_csv = False
-    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
-    sync_time = None
-    dt_resample = 1
-    Tb_force = None
-    request_history = 5
-    strict_overplot = False
-    terse = True
-
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiFail_soc3p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseHard_soc2p2_hi_lo_bb.csv'
     time_end_in = None
-    plots = False
-    use_mon_csv = False
-    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
+    plots = True
+    use_mon_csv = True
+    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
     sync_time = None
     dt_resample = 1
     Tb_force = None
-
-
-    strict_overplot = False
-    # strict_overplot = True
-
-    plots = True
-    # plots = False
-
+    request_history = None
+    strict_overplot = True
     terse = True
-    # terse = False
-
-    # HistSim plot selection
-    # 3=soc_s   5=volt
-    request_history = 5
-    # request_history = None
+    fig_files = None
+    fig_list = None
 
     compare_hist_sim(data_file=data_file, use_mon_csv=use_mon_csv, unit_key=unit_key, dt_resample=dt_resample,
                      plots=plots, Tb_force=Tb_force, request_history=request_history, terse=terse,
                      strict_overplot=strict_overplot)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     main()

@@ -1,6 +1,6 @@
 # ReGaugeVocSoc:  Input measured voc_stat and original tablular t_voc_soc and produce new t_voc_soc with q=0 at soc=0
 # for temp_c = Battery.RATED_TEMP
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -216,7 +216,7 @@ def overall():
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage. Did not run on 20260217.  Useful for concepts only
     import sys
     from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files, precleanup_fig_files
     import matplotlib.pyplot as plt

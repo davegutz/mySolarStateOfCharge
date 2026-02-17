@@ -1257,7 +1257,8 @@ class BatterySim(Battery):
         self.q = self.q_capacity + self.delta_q
 
         # Normalize
-        self.soc = self.q / self.q_capacity
+        if self.q_capacity != 0. and self.q_capacity is not None:
+            self.soc = self.q / self.q_capacity
         self.soc_min = self.chemistry.lut_min_soc.interp(self.Tb_f)
         self.q_min = self.soc_min * self.q_capacity
 

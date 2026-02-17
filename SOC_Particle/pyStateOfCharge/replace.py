@@ -5,7 +5,7 @@
 #  'python3 replace
 #
 #  2023-Jun-20  Dave Gutz   Create
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -126,7 +126,7 @@ def replace(filepaths=None, silent=False, supported='*'):
             print(filepath, 'not found')
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     def main():
         replace()
 

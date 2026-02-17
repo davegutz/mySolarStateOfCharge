@@ -1,6 +1,6 @@
 # PlotKiller: class called after plt.show to block and take input from user to then close all plots.  Viewable
 # on taskbar.
-# Copyright (C) 2023 Dave Gutz
+# Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -106,7 +106,7 @@ def simple_plot2():
     show_and_kill('close plots?', 'sp2')
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     root = tk.Tk()
     tk.Label(root, text="Try opening multiple plots then killing").pack()
     tk.Button(root, text="plot 1", command=simple_plot1).pack()
