@@ -122,7 +122,7 @@ public:
   // functions
   boolean bare_shunt() { return ( bare_shunt_ ); };
   void dscn_cmd(const boolean cmd) { dscn_cmd_ = cmd; };
-  unsigned long long dt() { return sample_time_ - sample_time_z_; };
+  unsigned long long dt_ms() { return sample_time_ - sample_time_z_; }; // ms
   void convert(const boolean disconnect, const boolean reset, Sensors *Sen);
   float get_v() { return KF_->get_v(); };
   float Ishunt_cal() { return Ishunt_cal_; };
@@ -165,8 +165,8 @@ protected:
   float *sp_ib_bias_;   // Global bias, A
   float *sp_ib_scale_;  // Global scale, A
   boolean reset_;       // Status of reset command input
-  unsigned long long sample_time_;   // Exact moment of hardware sample
-  unsigned long long sample_time_z_; // Exact moment of past hardware sample
+  unsigned long long sample_time_;   // Exact moment of hardware sample, ms
+  unsigned long long sample_time_z_; // Exact moment of past hardware sample, ms
   boolean dscn_cmd_;    // User command to ignore hardware, T=ignore
   uint8_t vc_pin_;      // Common voltage pin, for !HDWE_ADS1013_AMP_NOA
   uint8_t vo_pin_;      // Output voltage pin, for !HDWE_ADS1013_AMP_NOA
@@ -597,7 +597,7 @@ public:
   double control_time;        // Decimal time, seconds since 1/1/2021
   boolean display;            // Use display
   boolean bms_off;            // Calculated by BatteryMonitor, battery off, low voltage, switched by battery management system?
-  unsigned long long dt_ib(void) { return dt_ib_; };
+  unsigned long long dt_ib(void) { return dt_ib_; }; // ms since last update of selected Ib sample
   void select_temp(BatteryMonitor *Mon);  // Make final signal selection
   void select_volt_and_current(BatteryMonitor *Mon);  // Make final signal selection
   float ib() { return Ib / sp.nP(); };                            // Battery unit current, A

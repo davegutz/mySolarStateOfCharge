@@ -219,7 +219,7 @@ void Shunt::sample_combine()
 void Shunt::sample_filter_kf(const boolean reset_kf)
 {
   if ( using_kf_ )
-    vshunt_kf_ = KF_->calculate(reset_kf, dt()/1000., Vo_Vc_);
+    vshunt_kf_ = KF_->calculate(reset_kf, dt_ms()/1000., Vo_Vc_);
   else
     vshunt_kf_ = Vo_Vc_;
 
@@ -1305,7 +1305,7 @@ void Sensors::ib_choose_active_standby()
     Ib_hdwe_kf = Ib_amp_hdwe_kf;
     Ib_hdwe_model = Ib_amp_model;
     sample_time_ib_hdwe_ = ShuntAmp->sample_time();
-    dt_ib_hdwe_ = ShuntAmp->dt();
+    dt_ib_hdwe_ = ShuntAmp->dt_ms();
   }
   else if ( Flt->ib_sel_stat()==-1 )
   {
@@ -1314,7 +1314,7 @@ void Sensors::ib_choose_active_standby()
     Ib_hdwe_kf = Ib_noa_hdwe_kf;
     Ib_hdwe_model = Ib_noa_model;
     sample_time_ib_hdwe_ = ShuntNoAmp->sample_time();
-    dt_ib_hdwe_ = ShuntNoAmp->dt();
+    dt_ib_hdwe_ = ShuntNoAmp->dt_ms();
   }
   else
   {
@@ -1339,7 +1339,7 @@ void Sensors::ib_choose_hi_lo()
     Ib_hdwe_kf = scale_select(Ib_noa_hdwe, sel_brk_hdwe, Ib_amp_hdwe_kf, Ib_noa_hdwe_kf, &sel_stat);
     Ib_hdwe_model = scale_select(Ib_noa_model, sel_brk_hdwe, Ib_amp_model, Ib_noa_model, &sel_stat);
     sample_time_ib_hdwe_ = ShuntNoAmp->sample_time();
-    dt_ib_hdwe_ = ShuntNoAmp->dt();
+    dt_ib_hdwe_ = ShuntNoAmp->dt_ms();
     Flt->ib_sel_stat(sel_stat);
   }
   else if ( Flt->ib_choice()==UsingNoa )
@@ -1349,7 +1349,7 @@ void Sensors::ib_choose_hi_lo()
     Ib_hdwe_kf = Ib_noa_hdwe_kf;
     Ib_hdwe_model = Ib_noa_model;
     sample_time_ib_hdwe_ = ShuntNoAmp->sample_time();
-    dt_ib_hdwe_ = ShuntNoAmp->dt();
+    dt_ib_hdwe_ = ShuntNoAmp->dt_ms();
     Flt->ib_sel_stat(-1);
   }
   else if ( Flt->ib_choice()==UsingAmp )
@@ -1359,7 +1359,7 @@ void Sensors::ib_choose_hi_lo()
     Ib_hdwe_kf = Ib_amp_hdwe_kf;
     Ib_hdwe_model = Ib_amp_model;
     sample_time_ib_hdwe_ = ShuntAmp->sample_time();
-    dt_ib_hdwe_ = ShuntAmp->dt();
+    dt_ib_hdwe_ = ShuntAmp->dt_ms();
     Flt->ib_sel_stat(1);
   }
   else
@@ -1508,7 +1508,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
   }
   Ib_amp_rms = IbAmpRMS->update(Ib_amp);
   Ib_noa_rms = IbNoaRMS->update(Ib_noa);
-  T =  double(dt_ib_)/1000.;
+  T =  double(dt_ib_)/1000.;  // s
   now = sample_time_ib_ - inst_millis_ + inst_time_*1000;
   Log.info("    select_volt_and_current now:  now,%lld, cTime,%7.3f,", now, double(now)/1000.);
 

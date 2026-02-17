@@ -113,7 +113,7 @@ public:
   float C_rate() { return ib_ / NOM_UNIT_CAP; }
   String decode(const uint8_t mod);
   float dqdt() { return chem_.dqdt; };
-  float dt() { return dt_; };
+  float dt() { return dt_; };  // s
   float dv_dsoc() { return dv_dsoc_; };
   float dv_dyn() { return dv_dyn_; };
   float dv_hys() { return dv_hys_; };
