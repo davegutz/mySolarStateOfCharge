@@ -71,11 +71,17 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     data_file_run = os.path.join(data_file_folder_run, data_file_txt_run)
     mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
         load_data(data_file_run, 1, unit_key_run, zero_zero_in, time_end_in)
+    mon_run.str = 'r1'
+    sim_run.str = 's1'
+    f_run.str = 'f1'
 
     # Load new test data
     data_file_test = os.path.join(data_file_folder_test, data_file_txt_test)
     mon_test, sim_test, f_test, data_file_ver_clean, temp_flt_file_ver_clean, sync_info_test = \
         load_data(data_file_test, 1, unit_key_test, zero_zero_in, time_end_in)
+    mon_test.str = 'r2'
+    sim_test.str = 's2'
+    f_test.str = 'f2'
 
     # Synchronize
     # Time since beginning of data to sync pulses
@@ -129,6 +135,11 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
 def main():
     keys = [('rapidTweakRegression_soc3p2_hi_lo_bb.csv', 'g20250612a_soc3p2_hi_lo_bb'),
             ('rapidTweakRegression_soc2p2_hi_lo_bb.csv', 'g20250612a_soc2p2_hi_lo_bb')]
+    import sys
+    if sys.platform == 'linux':
+        gdrive = '/home/daveg/gdrive/'
+    else:
+        gdrive = 'G:/My Drive/'
     data_file_folder_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a'
     data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a'
     sync_to_ctime = True
@@ -137,5 +148,5 @@ def main():
                     sync_to_ctime=sync_to_ctime)
 
 
-if __name__ == '__main__':  # Example usage.  Ran ok 202602xx
+if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     main()

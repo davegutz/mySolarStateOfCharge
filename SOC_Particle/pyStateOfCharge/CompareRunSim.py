@@ -162,7 +162,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
     return fig_list, fig_files
 
 
-def main():
+def main():  # Example usage.  ok on 20260217
 
     import sys
     if sys.platform == 'linux':
@@ -194,7 +194,7 @@ def main():
     # Rk,
     # vv0,
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\shunt_test_soc3p2_hi_lo_bb.csv'
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseSS_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 
     # # gdrive = '/home/daveg/Documents/'
@@ -247,5 +247,5 @@ def main():
 #
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  #
     main()

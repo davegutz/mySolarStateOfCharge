@@ -119,6 +119,7 @@ macro_sel_list = [
 # Macro
 satInit = 'Dh;*W;*vv0;*XS;*Ca1;BZ;Ff0;DP1;HR;Rf;XD;'
 hdwNoVbPcMidInit = 'vv0;Xm2;Ca0.50;BZ;Ff0;W20;DP1;HR;Rf;XD;'
+modHiInit = 'vv0;Xm247;Ca0.95;BZ;Ff0;DP1;HR;Rf;XD;'
 modMidInit = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
 modMidInitNoCc = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
 modLowInitBB = 'vv0;Xm247;Ca0.090;BZ;Ff0;DP1;HR;Rf;XD;'
@@ -260,6 +261,7 @@ lookup = {
 macro_lookup = {
         'end_early': (22, 'Y;cc;Dh1800000;*W;*vv0;*XS;*Ca1;<Hd;<Pf;', ('', '', '', '')),
         'hdwNoVbPcMidInit': (5, hdwNoVbPcMidInit, ('', '', '', '')),
+        'modHiInit': (5, modHiInit, ('', '', '', '')),
         'modMidInit': (5, modMidInit, ('', '', '', '')),
         'modLowInitBB': (5, modLowInitBB, ('', '', '', '')),
         'noisePackage': (5, noisePackage, ('', '', '', '')),

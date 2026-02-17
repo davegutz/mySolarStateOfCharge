@@ -50,8 +50,10 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
     # Load history, normalizing all soc and Tb to 20C
     mon_run, sim_run, unit_run, fault_run, hist_20C_run, filename_run, Battery_run = \
         load_hist_and_prep(data_file=data_file_run, unit_key=unit_key_run, dt_resample=dt_resample)
+    mon_run.str = 'h1'
     mon_tst, sim_tst, unit_tst, fault_tst, hist_20C_tst, filename_tst, Battery_tst = \
         load_hist_and_prep(data_file=data_file_tst, unit_key=unit_key_tst, dt_resample=dt_resample)
+    mon_tst.str = 'h2'
 
     # Synchronize
     d_time = mon_tst.time_ux[0] - mon_run.time_ux[0]
@@ -101,10 +103,10 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
 def main():
 
     # User inputs (multiple input_files allowed
-    data_file_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseHard_soc2p2_hi_lo_bb.csv'
+    data_file_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_bb.csv'
     unit_key_run = 'g20250612a_soc2p2_bb'
-    data_file_tst = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseHard_soc2p2_hi_lo_bb.csv'
-    unit_key_tst = 'g20250612a_soc2p2_bb'
+    data_file_tst = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc3p2_hi_lo_bb.csv'
+    unit_key_tst = 'g20250612a_soc3p2_bb'
     dt_resample = 10
 
     # Do this when running compare_hist_sim on run that schedule extracted assuming constant Tb

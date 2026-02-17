@@ -608,7 +608,7 @@ def main():  # Sample usage. OK on 20260217
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseHard_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_bb.csv'
     time_end_in = None
     plots = True
     use_mon_csv = True

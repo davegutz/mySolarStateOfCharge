@@ -77,7 +77,7 @@ def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=True,
 
 
 def main():  # Example usage:  ok 20260217
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\pulseHard_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
     time_end = None
     plots = True
