@@ -1,0 +1,203 @@
+❯ Look at the whole application that runs from SOC_Particle.ino.  Are there obvious large wastes of memory and throughput?   Are there serious     
+   style issues?                                                                                                                                   
+
+● Explore(Explore full codebase structure)
+  ⎿  Done (40 tool uses · 86.6k tokens · 3m 16s)                                                                                             
+  (ctrl+o to expand)                                                                                                                         
+                                                                                                                                             
+● Let me read some key files directly to verify and add specifics to this analysis.                                                                     
+● Read 2 files (ctrl+o to expand)                                                                                                                  
+                                    
+● Let me read a few more critical files to quantify the biggest issues.                                                                            
+                                                                                                                                                   
+● Searched for 1 pattern, read 4 files (ctrl+o to expand)                                                                                          
+                                                                                                                                                   
+● Now I have enough to give you a thorough review. Let me compile the findings.                                                                    
+                                                                                                                                                   
+● Read 1 file (ctrl+o to expand)                                                                                                                   
+                                                                                                                                                   
+● SOC_Particle.cpp is just the build system's generated translation of the .ino — not a real second file. Good. Here is the full review:                                                                                                                                                              
+  ---                                                                                                                                                Code Review: Memory, Throughput, and Style                                                                                                                                                                                                                                                            The application is sophisticated and well-structured for its purpose. The issues below are ordered by significance.                                                                                                                                                                                 
+  ---
+  Memory
+
+  1. mySum[NSUM] dominates volatile SRAM (LARGE)
+
+  // constants.h:119
+  #define NSUM 2400
+  // SOC_Particle.ino:101
+  Flt_st mySum[NSUM];
+
+  Flt_st is 48 bytes (4 + 16×2 + 3×4 = 48). At NSUM=2400, this is 115,200 bytes — essentially the entire 119,852-byte data section. The compile    
+  stats confirm this:
+
+  text    data     bss     dec
+  292998  119852   10306  423168
+
+  The comments already warn that NSUM > ~2845 causes compile errors or SOS bus faults, meaning you're right at the edge. The 50-day rolling window 
+  is useful, but every increment of NSUM costs 48 bytes of SRAM that can never be reclaimed.
+
+  No obvious fix without changing the feature, but worth knowing this is the single biggest consumer.
+
+  2. String objects in CommandPars — heap fragmentation risk (MODERATE)
+
+  // command.h:55-61
+  String ctl_str, cmd_str, inp_str, last_str, queue_str, soon_str, asap_str;
+
+  Seven String objects that grow and shrink with command input. On a Cortex-M33 heap this causes fragmentation. Command strings are short
+  (typically under 32 chars). Fixed-size char[] buffers would eliminate this entirely and are equally readable.
+
+  3. hm_string = String(buffer) every 100ms loop (MINOR)
+
+  // SOC_Particle.ino:302
+  hm_string = String(buffer);
+
+  Constructs and destroys a heap-allocated String every loop iteration. hm_string is declared as String hm_string = "00:00" globally. Since buffer 
+  is already a char[32], either use it directly or change hm_string to char hm_string[8] and strncpy.
+
+  4. const String unit as a global (MINOR)
+
+  // constants.h:71
+  const String unit = version + "_" + HDWE_UNIT;
+
+  Three String concatenations at startup, result lives on the heap for the entire lifetime. This could be a constexpr char[] or at worst a static  
+  char[] filled once.
+
+  5. double arithmetic on a single-precision FPU (MODERATE — throughput/code size)
+
+  The Photon2 (Cortex-M33) has a single-precision FPU only. All double operations are software-emulated (~10× slower, larger code). The codebase   
+  mixes double and float throughout. Filter parameters, Kalman state variables, and timing calculations frequently use double. Literal constants   
+  like 0.5, 0.80, 22.0 without f suffix are double by default. The impact on the 100ms sensor loop is real.
+
+  ---
+  Throughput
+
+  6. Log.info(...) called on every hot path (MODERATE)
+
+  // loop(), every 100ms:
+  Log.info("ino:  temp_load_and_filter");
+  Log.info("ino:  print_temp_serial");
+  Log.info("Read shunt");
+  Log.info("ino:  read");
+  Log.info("ino:  sense_synth_select");
+  Log.info("ino:  assign_publist ReadSensors->now()=%lld", ...);
+  Log.info("ino:  print_rapid_data");
+  Log.info("end read");
+  Log.info("ino:  end loop\n\n\n");
+
+  That's 9+ Log.info calls per 100ms cycle. Each call goes through the Particle logging subsystem (level check, timestamp, formatting, UART). In   
+  normal deployed operation these should be compiled out or gated. The SOFT_DEPLOY_PHOTON macro silences serial debug prints but does not suppress 
+  Log.info.
+
+  7. System.millis() called 8+ times per loop (MINOR)
+
+  // loop() — these are not the same captured value:
+  now = (unsigned long long) System.millis();
+  ReadTemp->update(System.millis(), reset);
+  ReadSensors->update(System.millis(), reset);
+  Talk->update(System.millis(), reset);
+  ControlSync->update(System.millis(), reset);
+  DisplayUserSync->update(System.millis(), reset);
+  Summarize->update(System.millis(), reset);
+  start_reset = System.millis();  // in soft-reset block
+
+  now is captured at the top but then fresh System.millis() is passed to each Sync::update(). This is intentional for accuracy, but it means each  
+  Sync object sees a slightly different timestamp. Using the one captured now for all of them would be consistent and save 6 system calls.
+
+  8. chitter()/chatter()/describe() called every loop unconditionally (MINOR)
+
+  // SOC_Particle.ino:438-440
+  chitter(chitchat, Mon, Sen);
+  chatter();
+  describe(Mon, Sen);
+
+  These run every loop iteration (~100ms), not just when chitchat is true. The chitchat flag gates queue building but the functions themselves     
+  still execute. With an empty queue this is cheap, but the call overhead and conditional checking inside three functions on every pass is
+  non-zero.
+
+  ---
+  Style
+
+  9. Dead-code archaeology in command.h::pretty_print() (MODERATE)
+
+  command.h lines 143–200 contain three commented-out but functionally identical implementations of pretty_print(), each annotated with their      
+  memory footprint. The active one is at the bottom. This is useful development history but is significant noise in a header file:
+
+  // First version - Serial.printf (commented)
+  // Second version - sprintf/sendTxBuf (commented)
+  // Third version - String::format/sendTxBuf (active)
+
+  These should be deleted; git history preserves the evolution.
+
+  10. Bogus Tb_union definition (STYLE)
+
+  // command.h:32-35
+  typedef union {
+      float t_c;
+      boolean ready;
+  } Tb_union;
+
+  A float and a boolean in a union. These are not type-punned anywhere — cp.tb_info.t_c and cp.tb_info.ready are accessed by name. Making this a   
+  proper struct would remove the type-punning appearance and the implicit assumption that sizeof(float) >= sizeof(boolean).
+
+  11. Empty placeholder block (MINOR)
+
+  // SOC_Particle.ino:433
+  if ( control ){} // placeholder
+
+  The control Sync fires every 100ms (same period as read). Either the block has a future purpose and should have a comment explaining what, or it 
+  should be removed along with the ControlSync allocation.
+
+  12. Inconsistent spacing in conditionals (MINOR)
+
+  The codebase uses if ( condition ) (spaces inside parens) in most places — fine as a style choice. But there are occasional departures. The      
+  bigger issue is the .ino-style function declarations mixed with proper C++ class code without a clear style guide.
+
+  13. unsigned long long vs uint64_t (MINOR)
+
+  unsigned long long is used throughout for timing (millis_flip, last_sync, elapsed, now, etc.). uint64_t from <stdint.h> is more portable, more   
+  self-documenting, and what the rest of the Particle embedded world uses.
+
+  14. double(Sen->now/1000) integer-division bug risk (SUBTLE)
+
+  // SOC_Particle.ino:299
+  Sen->control_time = double(Sen->now/1000);
+
+  Sen->now is unsigned long long. The division /1000 is integer division done before the cast to double, losing sub-second precision. If
+  millisecond accuracy matters here, it should be double(Sen->now)/1000.0.
+
+  ---
+  Summary Table
+
+  ┌────────────────────────────────────┬──────────────────┬───────────────────┐
+  │               Issue                │     Category     │     Severity      │
+  ├────────────────────────────────────┼──────────────────┼───────────────────┤
+  │ mySum[2400] = ~115 KB SRAM         │ Memory           │ Major (by design) │
+  ├────────────────────────────────────┼──────────────────┼───────────────────┤
+  │ 7 String in CommandPars            │ Memory/heap      │ Moderate          │
+  ├────────────────────────────────────┼──────────────────┼───────────────────┤
+  │ Log.info 9×/100ms loop             │ Throughput       │ Moderate          │
+  ├────────────────────────────────────┼──────────────────┼───────────────────┤
+  │ double on single-prec FPU          │ Throughput/size  │ Moderate          │
+  ├────────────────────────────────────┼──────────────────┼───────────────────┤
+  │ Dead-code comments in pretty_print │ Style            │ Moderate          │
+  ├────────────────────────────────────┼──────────────────┼───────────────────┤
+  │ hm_string = String(buffer) in loop │ Memory churn     │ Minor             │
+  ├────────────────────────────────────┼──────────────────┼───────────────────┤
+  │ 8× System.millis() per loop        │ Throughput       │ Minor             │
+  ├────────────────────────────────────┼──────────────────┼───────────────────┤
+  │ Empty if (control) {} block        │ Style            │ Minor             │
+  ├────────────────────────────────────┼──────────────────┼───────────────────┤
+  │ Tb_union should be struct          │ Style            │ Minor             │
+  ├────────────────────────────────────┼──────────────────┼───────────────────┤
+  │ String unit global                 │ Memory           │ Minor             │
+  ├────────────────────────────────────┼──────────────────┼───────────────────┤
+  │ now/1000 integer division          │ Correctness risk │ Worth checking    │
+  └────────────────────────────────────┴──────────────────┴───────────────────┘
+
+  The codebase is otherwise coherent — the architecture is intentional, the naming conventions are consistent (if dense), and the #ifdef hardware  
+  abstraction is handled well. The dominant memory issue (mySum) is architectural and already understood. The most impactful quick wins are:       
+  replacing String in CommandPars with fixed char[] buffers, suppressing or removing the Log.info calls in the hot path, auditing double vs float  
+  in filters, and cleaning up command.h::pretty_print.
+
+✻ Cogitated for 5m 31s
