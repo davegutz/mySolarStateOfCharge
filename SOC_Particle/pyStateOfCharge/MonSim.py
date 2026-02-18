@@ -242,10 +242,10 @@ def replicate(OPT: UserOptions):
             _chm_s = OPT.Bsim
 
         sim.calculate(_chm_s, None, ib_in_s, SN.dt_s[G.i], reset, None, None, SN, OPT,
-                      soc=sim.soc, q_capacity=sim.q_capacity, rp=rp, sat_init=sat_s_init)
+                      soc=sim.soc, q_capacity=sim.q_capacity, rp=rp, saturated_init=sat_s_init)
 
         sim.count_coulombs(OPT, SN, chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, charge_curr=sim.ib_charge, sat=False,
-                           mon_sat=mon.sat, rp=rp)
+                           saturated=False, mon_sat=mon.sat, rp=rp)
 
         # EKF
         if reset:
@@ -301,14 +301,16 @@ def replicate(OPT: UserOptions):
         ib_charge = mon.ib_charge
 
         if OPT.use_sat_mon:
-            saturated = OPT.mon_run.sat[G.i]
+            sat = OPT.mon_run.sat[G.i]
+            saturated = OPT.mon_run.saturated[G.i]
         else:
             sat = is_sat(SN.Tb_f_past, mon.chemistry.rated_temp, mon.voc_dead, mon.soc, mon.chemistry.nom_vsat,
                          mon.chemistry.dvoc_dt, mon.chemistry.low_t)
             saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
 
         # Monitor count Coulumbs
-        mon.count_coulombs(OPT, chem=_chm_m, dt=T, reset=reset, tb_f=SN.Tb_f_past, charge_curr=ib_charge, sat=saturated)
+        mon.count_coulombs(OPT, chem=_chm_m, dt=T, reset=reset, tb_f=SN.Tb_f_past, charge_curr=ib_charge, sat=sat,
+                           saturated=saturated)
         prn_soc_debug(OPT, time=now, leader="after mn.count_coulombs: ", i_temp=i_temp, mon=mon, sim=sim)
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
         mon.assign_soc_s(sim.soc)

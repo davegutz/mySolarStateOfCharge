@@ -365,7 +365,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.legend(loc=1)
         plt.subplot(122)
         plq(plt, hi, timestr, hi, 'bms_off', add=22, color='blue', linestyle='-', marker='h', markersize='3')
-        plq(plt, hi, timestr, hi, 'sat', add=20, color='red', linestyle='-', marker='s', markersize='3')
+        plq(plt, hi, timestr, hi, 'saturated', add=20, color='red', linestyle='-', marker='s', markersize='3')
         plq(plt, hi, timestr, hi, 'dscn_fa', add=18, color='black', linestyle='-', marker='o', markersize='3')
         plq(plt, hi, timestr, hi, 'ib_diff_fa', add=16, color='blue', linestyle='-', marker='^', markersize='3')
         plq(plt, hi, timestr, hi, 'wv_fa', add=14, color='cyan', linestyle='-', marker='s', markersize='3')
@@ -426,7 +426,8 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plq(plt, hi, timestr, hi, 'ib_diff_thr', slr=-1, color='red', linestyle='-.')
     plt.legend(loc=1)
     plt.subplot(332)
-    plq(plt, hi, timestr, hi, 'sat', add=2, color='magenta', linestyle='-')
+    plq(plt, hi, timestr, hi, 'sat', add=2, color='cyan', linestyle='-')
+    plq(plt, hi, timestr, hi, 'saturated', add=2, color='magenta', linestyle='--')
     plt.legend(loc=1)
     plt.subplot(333)
     plq(plt, hi, timestr, hi, 'vb_f', color='green', linestyle='-')
@@ -720,7 +721,7 @@ def bandaid(h, chm_in=0):
     ib_in_s = h['ib'].copy()
     soc_s = h['soc'].copy()
     bms_off_s = h['bms_off'].copy()
-    sat_s = h['sat'].copy()
+    sat_s = h['saturated'].copy()
     chm = np.ones(len(h.time_ux))*chm_in
     sel = np.zeros(len(h.time_ux))
     preserving = np.ones(len(h.time_ux))
@@ -758,10 +759,10 @@ def bandaid(h, chm_in=0):
 def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
     h = raw[abs(raw.Tb_f - temp_corr) < tb_band]
 
-    sat_ = np.copy(h.Tb_f)
+    saturated_ = np.copy(h.Tb_f)
     bms_off_ = np.copy(h.Tb_f)
     for i in range(len(h.Tb_f)):
-        sat_[i] = is_sat(h.Tb_f[i], mon.chemistry.rated_temp, h.voc_f[i], h.soc[i], mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt,
+        saturated_[i] = is_sat(h.Tb_f[i], mon.chemistry.rated_temp, h.voc_f[i], h.soc[i], mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt,
                          mon.chemistry.low_t)
         bms_off_[i] = (h.Tb_f[i] < mon.chemistry.low_t) or ((h.voc_stat_f[i] < 10.5) and (h.ib_f[i] < Battery.IB_MIN_UP))
 
@@ -799,7 +800,8 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
             return None
         for i in range(len(hys_time_min)):
             t_sec = hys_time_min[i] * 60.
-        h = rf.rec_append_fields(h, 'sat', sat_)
+        h = rf.rec_append_fields(h, 'sat', saturated_)
+        h = rf.rec_append_fields(h, 'saturated', saturated_)
         h = rf.rec_append_fields(h, 'bms_off', bms_off_)
         h = rf.rec_append_fields(h, 'voc_stat_r_dis', voc_stat_r_dis)
         h = rf.rec_append_fields(h, 'voc_stat_r_chg', voc_stat_r_chg)

@@ -281,7 +281,7 @@ class Battery(Coulombs):
         self.sel = 0
         self.tweak_test = tweak_test
         self.ib_lag = 0.
-        self.IbLag = LagExp(1., 1., -100., 100.)  # Lag to be run on sat to produce ib_lag.  T and tau set at run time
+        self.IbLag = LagExp(1., 1., -100., 100.)  # Lag to be run on saturation to produce ib_lag.  T and tau set at run time
         self.voc_soc = None
         self.voc_soc_new = 0.
         self.scale_cap = scale_cap
@@ -359,7 +359,7 @@ class Battery(Coulombs):
         return voc, dv_dsoc
 
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
-                  q_capacity=None, rp=None, reset_ekf=None, soc=None, sat_init=None):
+                  q_capacity=None, rp=None, reset_ekf=None, soc=None, saturated_init=None):
         # Battery
         raise NotImplementedError
 
@@ -399,7 +399,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.R = Battery.EKF_R_SD_NORM * Battery.EKF_R_SD_NORM  # EKF state uncertainty
         self.soc_s = 0.  # Model information
         self.EKF_converged = TFDelay(False, Battery.EKF_T_CONV, Battery.EKF_T_RESET, Battery.EKF_NOM_DT)
-        self.voc_stat_filt = LagExp(self.EKF_NOM_DT, self.VOC_STAT_FILT, self.VB_MIN, self.VB_MAX)  # Lag to be run on sat to produce ib_lag.  T and tau set at run time
+        self.voc_stat_filt = LagExp(self.EKF_NOM_DT, self.VOC_STAT_FILT, self.VB_MIN, self.VB_MAX)  # Lag to be run on saturation to produce ib_lag.  T and tau set at run time
         self.y_filt_lag = LagTustin(0.1, Battery.TAU_Y_FILT, Battery.MIN_Y_FILT, Battery.MAX_Y_FILT)
         self.WrapErrFilt = LagTustin(0.1, Battery.WRAP_ERR_FILT, -Battery.MAX_WRAP_ERR_FILT, Battery.MAX_WRAP_ERR_FILT)
         self.y_filt = 0.
@@ -530,6 +530,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.soc = SN.soc_init
             self.reset = True
             self.sat = SN.sat_init
+            self.saturated = SN.saturated_init
             self.reset_ekf = True
             self.init_soc_ekf(ref,  0, 0)
             self.voc_ekf = SN.hx_init
@@ -562,7 +563,7 @@ class BatteryMonitor(Battery, EKF1x1):
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
-                  q_capacity=None, rp=None, soc=None, sat_init=None, reset_ekf=None, i=None, i_ekf=None):
+                  q_capacity=None, rp=None, soc=None, saturated_init=None, reset_ekf=None, i=None, i_ekf=None):
         self.reset = reset
         self.vb = vb
         self.ib_in = ib
@@ -746,7 +747,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.amp_hrs_remaining_wt = 0.
         return self.tcharge
 
-    # def count_coulombs(self, dt=0., reset=False, tb_f=25., charge_curr=0., sat=True):
+    # def count_coulombs(self, dt=0., ...):
     #     raise NotImplementedError
 
     def converged_ekf(self):
@@ -910,6 +911,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.vsat.append(self.vsat)
         self.saved.voc_ekf.append(self.voc_ekf)
         self.saved.sat.append(int(self.sat))
+        self.saved.saturated.append(int(self.saturated))
         self.saved.sel.append(self.sel)
         self.saved.mod_data.append(self.mod)
         self.saved.soc_s.append(self.soc_s)
@@ -1080,7 +1082,7 @@ class BatterySim(Battery):
         self.ib_charge = 0.  # Charge current, A
         self.saved_s = SavedS('ver_s')  # for plots and prints
         self.ib_fut = 0.  # Future value of limited current, A
-        self.reset_temp_past = self.sat
+        self.reset_temp_past = self.model_saturated
         self.dt_past = 0.
         # self.q_eps = 0.  # tiny adjustment to charge to book-keep soc_s and delta_q_s to be the same as data stream
         if SN is not None:
@@ -1128,7 +1130,7 @@ class BatterySim(Battery):
 
     # BatterySim::calculate()
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
-                  q_capacity=None, rp=None, reset_ekf=None, soc=None, sat_init=None):
+                  q_capacity=None, rp=None, reset_ekf=None, soc=None, saturated_init=None):
         self.reset = reset
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)
@@ -1153,7 +1155,7 @@ class BatterySim(Battery):
         self.hys.calculate_hys(ib, self.soc, self.chm)
         init_low = self.bms_off or (self.soc < (self.soc_min + Battery.HYS_SOC_MIN_MARG) and
                                     self.ib > Battery.HYS_IB_THR)
-        self.dv_hys, self.tau_hys = self.hys.update(self.dt, init_high=self.sat, init_low=init_low, e_wrap=0.,
+        self.dv_hys, self.tau_hys = self.hys.update(self.dt, init_high=self.model_saturated, init_low=init_low, e_wrap=0.,
                                                     chem=self.chm)
         self.voc = self.voc_stat + self.dv_hys
         self.voc_soc = self.voc_stat
@@ -1206,14 +1208,13 @@ class BatterySim(Battery):
                 self.ib_charge = 0.  # empty
         self.model_cutback = (self.voc_stat > self.vsat) & (self.ib_fut == self.sat_ib_max)
         self.model_saturated = self.model_cutback & (self.ib_fut < self.ib_sat)
-        if self.reset and sat_init is not None:
-            self.model_saturated = sat_init
-            self.sat = sat_init
+        if self.reset and saturated_init is not None:
+            self.model_saturated = saturated_init
         self.sat = self.model_saturated
 
         return self.vb
 
-    def count_coulombs(self, OPT, SN, chem, reset_temp, tb_f, charge_curr, sat, mon_sat=None, rp=None):
+    def count_coulombs(self, OPT, SN, chem, reset_temp, tb_f, charge_curr, sat, saturated, mon_sat=None, rp=None):
         # BatterySim
         """Coulomb counter based on true=actual capacity
         Internal resistance of battery is a loss
@@ -1508,6 +1509,7 @@ class Saved:
         self.ib = []  # Bank current, A
         self.vb = []  # Bank voltage, V
         self.sat = []  # Indication that battery is saturated, T=saturated
+        self.saturated = []  # Confirmation that battery is saturated, T=saturation confirmed
         self.sel = []  # Current source selection, 0=amp, 1=no amp
         self.mod_data = []  # Configuration control code, 0=all hardware, 7=all simulated, +8 tweak test
         self.Tb = []  # Battery bank temperature, deg C

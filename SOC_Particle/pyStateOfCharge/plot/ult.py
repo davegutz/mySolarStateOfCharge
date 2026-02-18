@@ -155,7 +155,7 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mv, 'time', S.mv, 'bms_off', add=+4, color='red', linestyle='--')
     if S.sr is not None:
         plq(plt, S.sr, 'time', S.sr, 'bms_off_s', add=+4, color='blue', linestyle='-.')
-    if hasattr(S.mr, 'mod_data') and hasattr(S.mv, 'mod_data'):
+    if S.run_type != 'HistSim' and hasattr(S.mr, 'mod_data') and hasattr(S.mv, 'mod_data'):
         mod_min = min(min(S.mr.mod_data), min(S.mv.mod_data))
         plq(plt, S.mr, 'time', S.mr, 'mod_data', add=-mod_min, color='green', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'mod_data', add=-mod_min, color='red', linestyle='--')
@@ -164,8 +164,10 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
             plq(plt, S.smv, 'time', S.smv, 'bmso_s', add=+4, color='orange', linestyle=':')
         elif hasattr(S.smv, 'bms_off_s'):
             plq(plt, S.smv, 'time', S.smv, 'bms_off_s', add=+4, color='orange', linestyle=':')
-    plq(plt, S.mr, 'time', S.mr, 'sat', add=+2, color='green', linestyle='-')
+    plq(plt, S.mr, 'time', S.mr, 'sat', add=+2, color='blue', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'sat', add=+2, color='red', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'saturated', add=+2, color='black', linestyle='-.')
+    plq(plt, S.mv, 'time', S.mv, 'saturated', add=+2, color='orange', linestyle=':')
     plq(plt, S.mr, 'time', S.mr, 'sel', color='black', linestyle='-.')
     plq(plt, S.mv, 'time', S.mv, 'sel', color='blue', linestyle=':')
     plq(plt, S.mr, 'time', S.mr, 'ib_choice', add=-2, color='green', linestyle='-')

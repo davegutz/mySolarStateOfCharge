@@ -206,7 +206,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.calc1:  "); debug_m1(Mon, Sen);}
   #endif
-  Mon->count_coulombs(Sen, true, 0., Mon->is_sat(true));
+  Mon->count_coulombs(Sen, true, 0., Mon->is_sat(true), Mon->is_sat(true));
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.c_c1:  "); debug_m1(Mon, Sen);}
   #endif
@@ -214,7 +214,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.calc2:  "); debug_m1(Mon, Sen);}
   #endif
-  Mon->count_coulombs(Sen, true, 0., Mon->is_sat(true));
+  Mon->count_coulombs(Sen, true, 0., Mon->is_sat(true), Mon->is_sat(true));  // Call again because sat is a UBC
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("M.c_c2:  "); debug_m1(Mon, Sen);}
   #endif
@@ -265,12 +265,11 @@ void  monitor(const boolean reset, const boolean reset_temp, const boolean reset
   Mon->calculate(Sen, reset_temp, reset_ekf);
 
   // Debounce saturation calculation done in ekf using voc model
-  boolean sat = Mon->is_sat(reset);
-  Sen->saturated = Is_sat_delay->calculate(sat, T_SAT*ap.s_t_sat, T_DESAT*ap.s_t_sat, min(Sen->T, T_SAT/2.), reset);
+  Sen->sat = Mon->is_sat(reset);
+  Sen->saturated = Is_sat_delay->calculate(Sen->sat, T_SAT*ap.s_t_sat, T_DESAT*ap.s_t_sat, min(Sen->T, T_SAT/2.), reset);
 
   // Memory store
-  // Initialize to ekf when not saturated
-  Mon->count_coulombs(Sen, reset_temp, Mon->ib_charge(), Sen->saturated);
+  Mon->count_coulombs(Sen, reset_temp, Mon->ib_charge(), Sen->sat, Sen->saturated);
 
   // Charge charge time for display
   Mon->calc_charge_time(Mon->q(), Mon->q_capacity(), Sen->ib(), Mon->soc());

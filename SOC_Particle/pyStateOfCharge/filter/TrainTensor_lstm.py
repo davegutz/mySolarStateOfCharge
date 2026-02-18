@@ -426,7 +426,7 @@ def train_tensor_lstm():
     # train_file = ".//temp//dv_20230831_soc0p_ch_clip_clean.csv"
     # validate_file = ".//temp//dv_validate_soc0p_ch_clip_clean.csv"
     # test_file = ".//temp//dv_test_soc0p_ch_clean.csv"
-    params = ['Tb', 'ib', 'soc', 'sat', 'ib_lag', 'dv_hys_old', 'dv']
+    params = ['Tb', 'ib', 'soc', 'saturated', 'ib_lag', 'dv_hys_old', 'dv']
     fit_mae = True
     use_many = True
     scale_in = (50., 10., 1., 0.25)

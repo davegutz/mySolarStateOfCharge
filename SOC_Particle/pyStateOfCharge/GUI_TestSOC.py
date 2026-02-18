@@ -98,9 +98,9 @@ unit_list = [
     ]
 battery_list = ['bb', 'chg']
 sel_list = [
-    'custom', 'init1', 'saveAdjusts', 'ampHiFail', 'noaHiFail', 'rapidTweakRegression', 'allIn', 'allInBB',
+    'custom', 'init1', 'saveAdjusts', 'ampHiFail', 'ampHiEmptFail', 'noaHiFail', 'rapidTweakRegression', 'allIn', 'allInBB',
     'allInCHG', 'allProto', 'pulseSoft', 'pulseHard', 'rapidTweakRegressionH0', 'offLowSoc', 'offSitHysBmsBB',
-    'offSitHysBmsCHG', 'triTweakDisch', 'ampHiFailFf', 'ampLoFail', 'noaLoFail', 'ampHiFailNoise', 'noaHiFailNoise',
+    'offSitHysBmsCHG', 'triTweakDisch', 'ampHiFailFf', 'ampLoFail', 'ampLoFullFail', 'noaLoFail', 'noaLoFullFail', 'ampHiFailNoise', 'noaHiFailNoise',
     'rapidTweakRegression40C', 'slowTweakRegression', 'satSitBB', 'satSitCHG',
     ]
 sel_list1 = [
@@ -110,7 +110,7 @@ sel_list1 = [
     'allInCHGn', 'stepDown', 'stepUp', 'zero_with_pc',
     ]
 macro_sel_list = [
-    'end_early', 'hdwNoVbPcMidInit', 'modMidInit', 'modMidInitNoCc', 'modLowInitBB', 'modLowInitCHG',
+    'end_early', 'hdwNoVbPcMidInit', 'modHalfInit', 'modHiInit', 'modHalfInitNoCc', 'modEmptInitBB', 'modEmptInitCHG',
     'noisePackage', 'silentPackage', 'quiet', 'quietwait', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
     'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50', 'c00',
     'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50', 'zeroPrepHdweNoVb', 'zero_set_hdwe_no_Vb',
@@ -119,12 +119,13 @@ macro_sel_list = [
 # Macro
 satInit = 'Dh;*W;*vv0;*XS;*Ca1;BZ;Ff0;DP1;HR;Rf;XD;'
 hdwNoVbPcMidInit = 'vv0;Xm2;Ca0.50;BZ;Ff0;W20;DP1;HR;Rf;XD;'
-modHiInit = 'vv0;Xm247;Ca0.95;BZ;Ff0;DP1;HR;Rf;XD;'
-modMidInit = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
-modMidInitNoCc = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
-modLowInitBB = 'vv0;Xm247;Ca0.090;BZ;Ff0;DP1;HR;Rf;XD;'
-modLowInitCHG = 'vv0;Xm247;Ca-0.004;BZ;Ff0;DP1;HR;Rf;XD;'
-modLowInitGen = 'vv0;Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;XD;'
+modFullInit = 'vv0;Xm247;Ca0.995;BZ;Ff0;DP1;HR;Rf;XD;'
+modLoInit = 'vv0;Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;XD;'
+modHalfInit = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
+modHalfInitNoCc = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
+modEmptInitBB = 'vv0;Xm247;Ca0.090;BZ;Ff0;DP1;HR;Rf;XD;'
+modEmptInitCHG = 'vv0;Xm247;Ca-0.004;BZ;Ff0;DP1;HR;Rf;XD;'
+modEmptInitGen = 'vv0;Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;XD;'
 noisePackage = 'DT.05;DV0.3;DM.75;DN6;'
 silentPackage = 'DT0;DV0;DM0;DN0;'
 synced_slow = 'Dr400;D>400;Dq400;ED1;DP1;'
@@ -173,97 +174,101 @@ lookup = {
         'custom': (72, 'XQ60000;', ("For general purpose data collection", "'save data' will present a choice of file name", "")),
         'allIn':   (3790,
                     slow + 'Dh4000;' +
-                    'cc;' + modMidInit + slowTranPrep + c50 + 'XQ25000;' + c00 + tempCleanup +      # 1 ampHiFail 0
+                    'cc;' + modHalfInit + slowTranPrep + c50 + 'XQ25000;' + c00 + tempCleanup +      # 1 ampHiFail 0
                     '  Rs;W4;Xp10;'   +                                                           # 2 rapidTweakRegression 62
                     '  Rs;W4;vv4;W4;Xp7;  ' +                                                            # 3 pulseSoft  251
                     '  Rs;W4;vv4;W4;Xp8;  ' +                                                            # 3 pulseHard  251
                     '  Rs;W4;Xp13;  ' +                                                           # 4 triTweakDisch  269
-                    modMidInit + slowTranPrep + 'Ff1;' + c50 + 'XQ40000;' + c00 + tempCleanup +     # 5 ampHiFailFf 465
-                    modMidInit + slowTranPrep + cm50 + 'XQ50000;' + c00 + tempCleanup +     # 6 ampLoFail    543
+                    modHalfInit + slowTranPrep + 'Ff1;' + c50 + 'XQ40000;' + c00 + tempCleanup +     # 5 ampHiFailFf 465
+                    modHalfInit + slowTranPrep + cm50 + 'XQ50000;' + c00 + tempCleanup +     # 6 ampLoFail    543
                     '  D^15;Rs;W4;Xp10; ' +                                                       # 7 rapidTweakRegression40C  630
                     '  Rs;W4;Xp11;  ' +                                                           # 8 slowTweakRegression  880
                     'Xm247;Ca0.9;Rb;Rf;Xts;Xa-81;Xf0.004;XW10000;XT10;XC2;W1;HR;vv4;W;Rs;XR;XQ580000;Xa0;Xb0;' + tempCleanup +  # 9 flatSitHys   1466
-                    modMidInit + slowTranPrep + c08 + 'Fc0.001;Fd0.5;XQ400000;' + c00 + tempCleanup +    # 10 ampHiFailSlow  2043
-                    modMidInit + slowTranPrep + 'XY;Dv0.82;XQ60000;' + 'Dv0;' + tempCleanup +     # 11 vHiFail  2480
-                    modMidInit + slowTranPrep + 'Xv.002;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + tempCleanup +       # 12 tbFailMod  2560
-                    modMidInit + 'Xm246;' + slowTranPrep + 'Xv.002;W10;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + tempCleanup +  # 13 tbFailHdwe   2684
-                    modMidInit + slowTranPrep + 'XY;Dw-0.8;Dn0.0001;XQ120000;Dw0;' + tempCleanup +  # 14 DvMon  2798
-                    modMidInit + slowTranPrep + 'XY;Dy-0.8;Dn0.0001;XQ120000;Dy0;' +  # 15 DvSim  2936
-                    modMidInit + slowTranPrep + d50 + 'XQ25000;' + c00 + tempCleanup +      # 16 noaHiFail 3006
-                    modMidInit + slowTranPrep + d06 + 'Fc0.004;Fd0.5;XQ400000;' + c00 + tempCleanup +    # 17 noaHiFailSlow  3476
-                    modMidInit + slowTranPrep + cm50 + 'XQ50000;' + c00 + tempCleanup +     # 18 ampLoFail     3553
+                    modHalfInit + slowTranPrep + c08 + 'Fc0.001;Fd0.5;XQ400000;' + c00 + tempCleanup +    # 10 ampHiFailSlow  2043
+                    modHalfInit + slowTranPrep + 'XY;Dv0.82;XQ60000;' + 'Dv0;' + tempCleanup +     # 11 vHiFail  2480
+                    modHalfInit + slowTranPrep + 'Xv.002;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + tempCleanup +       # 12 tbFailMod  2560
+                    modHalfInit + 'Xm246;' + slowTranPrep + 'Xv.002;W10;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + tempCleanup +  # 13 tbFailHdwe   2684
+                    modHalfInit + slowTranPrep + 'XY;Dw-0.8;Dn0.0001;XQ120000;Dw0;' + tempCleanup +  # 14 DvMon  2798
+                    modHalfInit + slowTranPrep + 'XY;Dy-0.8;Dn0.0001;XQ120000;Dy0;' +  # 15 DvSim  2936
+                    modHalfInit + slowTranPrep + d50 + 'XQ25000;' + c00 + tempCleanup +      # 16 noaHiFail 3006
+                    modHalfInit + slowTranPrep + d06 + 'Fc0.004;Fd0.5;XQ400000;' + c00 + tempCleanup +    # 17 noaHiFailSlow  3476
+                    modHalfInit + slowTranPrep + cm50 + 'XQ50000;' + c00 + tempCleanup +     # 18 ampLoFail     3553
                     quiet + cleanup,
                     ('All the best transients', "Must have same 'vv*' throughout", "")),
         'allInBB': (1200,
                     slow + 'Dh4000;' +
-                    modLowInitBB + slowTwitchDef + 'Xa-162;' + slowTranPrep + twitch + 'XQ568000;' + 'Xa0;' + tempCleanup +  # offSitHysBmsBB
+                    modEmptInitBB + slowTwitchDef + 'Xa-162;' + slowTranPrep + twitch + 'XQ568000;' + 'Xa0;' + tempCleanup +  # offSitHysBmsBB
                     'Xm247;Ca0.9962;' + fastTwitchDef + 'Xa17;' + slowTranPrep + 'XR;XQ600000;' + 'Xa0;' +  # satSitBB
                     quiet + cleanup,
                     ('All the best transients BB', "Must have same 'vv*' throughout", "")),
         'allInBBn': (690,
                      slow + 'Dh4000;' +
-                     modMidInit + slowTranPrep + noisePackage + c50 + 'XQ25000;' + c00 + silentPackage + tempCleanup +  # 1 ampHiFailNoise 0
-                     modLowInitBB + slowTwitchDef + 'Xa-162;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage +  # 1 offSitHysBmsNoiseCHG 70
+                     modHalfInit + slowTranPrep + noisePackage + c50 + 'XQ25000;' + c00 + silentPackage + tempCleanup +  # 1 ampHiFailNoise 0
+                     modEmptInitBB + slowTwitchDef + 'Xa-162;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage +  # 1 offSitHysBmsNoiseCHG 70
                      quiet + cleanup,
                      ('All the best transients CHG noise', "Must have same 'vv*' throughout", "")),
         'allInCHGn': (690,
                       slow + 'Dh4000;' +
-                      modMidInit + slowTranPrep + noisePackage + c50 + 'XQ25000;' + c00 + silentPackage + tempCleanup +  # 1 ampHiFailNoise 0
-                      modLowInitCHG + slowTwitchDef + 'Xa-324;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage +  # 1 offSitHysBmsNoiseCHG 70
+                      modHalfInit + slowTranPrep + noisePackage + c50 + 'XQ25000;' + c00 + silentPackage + tempCleanup +  # 1 ampHiFailNoise 0
+                      modEmptInitCHG + slowTwitchDef + 'Xa-324;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage +  # 1 offSitHysBmsNoiseCHG 70
                       quiet + cleanup,
                       ('All the best transients CHG noise', "Must have same 'vv*' throughout", "")),
-        'ampHiFail': (110, modMidInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
-        'noaHiFail': (110, modMidInit + tranPrep + d50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp. With ib_diff only nothing changes then should isolate to the noa by wrap and choose amp.", "'diff' will be displayed then ib_fail due to wrap of noa", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen).", "Loss of ib set 'accy' because loss of current sensing at high currents.")),
+        'ampHiFail': (118, modHalfInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
+        'ampHiEmptFail': (118, modLoInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
+        'noaHiFail': (118, modHalfInit + tranPrep + d50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp. With ib_diff only nothing changes then should isolate to the noa by wrap and choose amp.", "'diff' will be displayed then ib_fail due to wrap of noa", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen).", "Loss of ib set 'accy' because loss of current sensing at high currents.")),
         'rapidTweakRegression': (205, slow + 'Rs;W4;Xp10;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
-        'allProto': (552, modMidInit + tranPrep + c50 + 'XQ25000;' + c00 + tempCleanup + '  Rs;W4;Xp10;  Rs;W4;Xp13;  ' + modMidInitNoCc + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ('Proto multi', "Must have same 'vv*' throughout", "No 'HR' either")),
+        'allProto': (552, modHalfInit + tranPrep + c50 + 'XQ25000;' + c00 + tempCleanup + '  Rs;W4;Xp10;  Rs;W4;Xp13;  ' + modHalfInitNoCc + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ('Proto multi', "Must have same 'vv*' throughout", "No 'HR' either")),
         'pulseSoft': (75, synced_slow_pulse + 'XS;Dm0;Dn0;vv0;Xm255;Ca.5;Pm;W2;Rs;W20;vv4;W10;' + 'Xp7;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a current sensor pulse.  Look at plots for good overlay. e_wrap should be nearly flat after a pulse response.", "This is the shortest of all tests.  Also useful for quick check tests.", "")),
         'pulseHard': (75, synced_slow_pulse + 'XS;Dm0;Dn0;vv0;Xm255;Ca.5;Pm;W2;Rs;W20;vv4;W10;' + 'Xp8;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hardware current pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Also useful for quick check tests.", "")),
         'rapidTweakRegressionH0': (205, 'Sh0;' + slow + 'Rs;W4;Xp10;Pf;W2;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'No hysteresis. Best test for seeing time skews and checking fault logic for false trips', 'Tease out cause of e_wrap faults.  e_wrap MUST be flat!', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
-        'offLowSoc': (85, modLowInitGen + tranPrep  + vm12 + 'XQ55000;' + dv0 + quiet + cleanup, ('Test for clean faults on shutoff.',)),
-        'offSitHysBmsBB': (800, modLowInitBB + slowTwitchDef + 'Xa-162;' + tranPrep + twitch + 'XQ568000;' + 'Pf;W2;Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
-        'offSitHysBmsCHG': (800, modLowInitCHG + slowTwitchDef + 'Xa-324;' + tranPrep + twitch + 'XQ568000;' + 'Pf;W2;Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
+        'offLowSoc': (85, modEmptInitGen + tranPrep  + vm12 + 'XQ55000;' + dv0 + quiet + cleanup, ('Test for clean faults on shutoff.',)),
+        'offSitHysBmsBB': (800, modEmptInitBB + slowTwitchDef + 'Xa-162;' + tranPrep + twitch + 'XQ568000;' + 'Pf;W2;Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
+        'offSitHysBmsCHG': (800, modEmptInitCHG + slowTwitchDef + 'Xa-324;' + tranPrep + twitch + 'XQ568000;' + 'Pf;W2;Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
         'triTweakDisch': (205, slow + 'Rs;W4;Xp13;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
-        'ampHiFailFf': (122, modMidInit + tranPrep + 'Ff1;' + c50 + 'XQ40000;' + c00 + quiet + cleanup, ("Should detect but not switch amp current failure. (See 'diff' and current!=0 on display).", "Run about 60s. Start by looking at 'Ult 1'. No fault record (keeps recording).  Verify that on Fig 3 the e_wrap goes through a threshold ~0.4 without change of 'ib_sel_stat'", "This show when deploy with Fake Faults (Ff) don't throw false trips (it happened)", "ib_amp limited by max range e.g. 12.6.  ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
-        'ampLoFail': (150, modMidInit + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
-        'noaLoFail': (128, modMidInit + tranPrep + dm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
-        'ampHiFailNoise': (107, modMidInit + tranPrep + noisePackage + c50 + 'XQ25000;' + c00 + silentPackage + quiet + cleanup, ("Noisy ampHiFail.  Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
-        'noaHiFailNoise': (107, modMidInit + tranPrep + noisePackage + d50 + 'XQ25000;' + c00 + silentPackage + quiet + cleanup, ("Noisy ampHiFail.  Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
+        'ampHiFailFf': (122, modHalfInit + tranPrep + 'Ff1;' + c50 + 'XQ40000;' + c00 + quiet + cleanup, ("Should detect but not switch amp current failure. (See 'diff' and current!=0 on display).", "Run about 60s. Start by looking at 'Ult 1'. No fault record (keeps recording).  Verify that on Fig 3 the e_wrap goes through a threshold ~0.4 without change of 'ib_sel_stat'", "This show when deploy with Fake Faults (Ff) don't throw false trips (it happened)", "ib_amp limited by max range e.g. 12.6.  ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
+        'ampLoFail': (150, modHalfInit + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
+        'ampLoFullFail': (150, modFullInit + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
+        'noaLoFail': (144, modHalfInit + tranPrep + dm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
+        'noaLoFullFail': (144, modFullInit + tranPrep + dm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Race with SAT logic to detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display.", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
+        'ampHiFailNoise': (107, modHalfInit + tranPrep + noisePackage + c50 + 'XQ25000;' + c00 + silentPackage + quiet + cleanup, ("Noisy ampHiFail.  Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
+        'noaHiFailNoise': (107, modHalfInit + tranPrep + noisePackage + d50 + 'XQ25000;' + c00 + silentPackage + quiet + cleanup, ("Noisy ampHiFail.  Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
         'rapidTweakRegression40C': (200, 'D^15;' + slow + 'Rs;W4;Xp10;' + quiet + cleanup, ("Should run three very large current discharge/recharge cycles without fault", "Self-terminates", 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'slowTweakRegression': (682, 'Rs;W10;vv4;' + 'Rs;W4;Xp11' + quiet + cleanup, ("Should run one very large slow (~15 min) current discharge/recharge cycle without fault.   It will take 60 seconds to start changing current.", 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'satSitBB': (656, 'Xm247;Ca0.9962;' + fastTwitchDef + 'Xa17;' + tranPrep + 'XR;XQ600000;' + 'Xa0;' + quiet + cleanup, ("Should run one saturation and de-saturation event without fault.   Takes about 15 minutes.", "operate around saturation, starting below, go above, come back down. Tune Ca to start just below vsat",)),
         'satSitCHG': (656, 'Xm247;Ca0.986;' + fastTwitchDef + 'Xa17;' + tranPrep + 'XR;XQ600000;' + 'Xa0;' + quiet + cleanup, ("Should run one saturation and de-saturation event without fault.   Takes about 15 minutes.", "operate around saturation, starting below, go above, come back down. Tune Ca to start just below vsat",)),
         'flatSitHys': (680, 'Xm247;Ca0.9;Rb;Rf;Xts;Xa-81;Xf0.004;XW10000;XT10;XC2;W1;' + tranPrep + 'XR;XQ580000;Xa0;Xb0;' + quiet + cleanup, ("Operate around 0.9.  For CHINS, will check EKF with flat voc(soc).   Takes about 10 minutes.", "Make sure EKF soc (soc_ekf) tracks actual soc without wandering.")),
-        'offSitHysBmsNoiseBB': (667, modLowInitBB + slowTwitchDef + 'Xa-162;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage + quiet + cleanup, ("Stress test with 2x normal Vb noise DV0.10.  Takes about 10 minutes.", "operate around saturation, starting above, go below, come back up. Tune Ca to start just above vsat. Go low enough to exercise hys reset ", "Make sure comes back on.", "It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shutoff.")),
-        'offSitHysBmsNoiseCHG': (667, modLowInitCHG + slowTwitchDef + 'Xa-324;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage + quiet + cleanup, ("Stress test with 2x normal Vb noise DV0.10.  Takes about 10 minutes.", "operate around saturation, starting above, go below, come back up. Tune Ca to start just above vsat. Go low enough to exercise hys reset ", "Make sure comes back on.", "It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shutoff.")),
-        # 'ampHiFailSlow': (515, modMidInit + tranPrep + c10 + 'Fi4,Fc0.0006;Fd0.5;XQ400000;' + c00 + quiet + cleanup, ("Active Standby Should detect and switch amp current failure. Will be slow (~6 min) detection as it waits for the EKF to wind up to produce a cc_diff fault.", "Will display “diff” on display due to 6 A difference before switch (not cc_diff).", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see cc_diff_fa")),
-        # 'noaHiFailSlow': (515, modMidInit + tranPrep + d10 + 'Fc0.0006;Fd0.5;XQ400000;' + c00 + quiet + cleanup, ("Active Standby Should detect and switch amp current failure. Will be slow (~6 min) detection as it waits for the EKF to wind up to produce a cc_diff fault.", "Will display “diff” on display due to 6 A difference before switch (not cc_diff).", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see cc_diff_fa")),
+        'offSitHysBmsNoiseBB': (667, modEmptInitBB + slowTwitchDef + 'Xa-162;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage + quiet + cleanup, ("Stress test with 2x normal Vb noise DV0.10.  Takes about 10 minutes.", "operate around saturation, starting above, go below, come back up. Tune Ca to start just above vsat. Go low enough to exercise hys reset ", "Make sure comes back on.", "It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shutoff.")),
+        'offSitHysBmsNoiseCHG': (667, modEmptInitCHG + slowTwitchDef + 'Xa-324;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage + quiet + cleanup, ("Stress test with 2x normal Vb noise DV0.10.  Takes about 10 minutes.", "operate around saturation, starting above, go below, come back up. Tune Ca to start just above vsat. Go low enough to exercise hys reset ", "Make sure comes back on.", "It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shutoff.")),
+        # 'ampHiFailSlow': (515, modHalfInit + tranPrep + c10 + 'Fi4,Fc0.0006;Fd0.5;XQ400000;' + c00 + quiet + cleanup, ("Active Standby Should detect and switch amp current failure. Will be slow (~6 min) detection as it waits for the EKF to wind up to produce a cc_diff fault.", "Will display “diff” on display due to 6 A difference before switch (not cc_diff).", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see cc_diff_fa")),
+        # 'noaHiFailSlow': (515, modHalfInit + tranPrep + d10 + 'Fc0.0006;Fd0.5;XQ400000;' + c00 + quiet + cleanup, ("Active Standby Should detect and switch amp current failure. Will be slow (~6 min) detection as it waits for the EKF to wind up to produce a cc_diff fault.", "Will display “diff” on display due to 6 A difference before switch (not cc_diff).", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see cc_diff_fa")),
         # TODO for all volatile and saved parameters in Battery.csv:  'tranPrep' no 'vv' statment.  'stream' starts data incl 'vv'.  All adjusts before 'stream'
-        'ampHiFailSlow': (515, modMidInit + 'Fi3;Fc0.0006;Fd0.5;' + tranPrep + c10 + 'XQ400000;' + c00 + quiet + cleanup, ("10A bias on amp, disable wrap, noa in range at 0A and reflects battery state. Artificially tight cc_diff threshold.  Will detect diff but no wrap. Will be slow (~6 min) cc_diff detection as it waits for the EKF to wind up to produce a cc_diff fault and complete isolation and switch to noa.", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see that cc_diff_fa does set")),
-        'noaHiFailSlow': (515, modMidInit+ 'Fc0.0006;' + tranPrep + d20 + 'XQ400000;' + c00 + quiet + cleanup, ("20A bias on noa, amp in range at 0A and reflects battery state. Artificially tight cc_diff threshold. Will detect and switch noa current failure due to wrap+diff. Once wrap trips diff won't be displayed. Cannnot ever produce a cc_diff fault because amp still used.", "Will display “diff” due to 20A difference.", "EKF won't move because fed by amp.", "Run for 6  minutes to verify not cc_diff_fa")),
-        'noaHiFailSlower': (515, modMidInit+ 'Fc0.0006;' + tranPrep + d08 + 'XQ400000;' + c00 + quiet + cleanup, ("8A bias on noa, amp in range at 0A and reflects battery state.  Artificially tight cc_diff threshold. Will detect and switch noa current failure due to wrap+diff. Once wrap trips diff won't be displayed. Cannnot ever produce a cc_diff fault.", "Will display “diff” due to 6 A difference..", "EKF won't move because fed by amp.", "Run for 6  minutes to see potential cc_diff_fa")),
-        'noaHiFailSlowest': (515, modMidInit+ 'Fc0.0006;' + tranPrep + d05 + 'XQ400000;' + c00 + quiet + cleanup, ("5A bias on noa, amp in range at 0A and reflects battery state. Artificially tight cc_diff threshold. Not enough current to trip the noa wrap.  Cannnot ever produce a cc_diff fault because amp still used.", "Will display “diff” due to 5 A difference..", "EKF won't move because fed by amp.", "Run for 6  minutes to see potential cc_diff_fa")),
-        'vHiFail': (138, modMidInit + tranPrep + 'XY;Dv0.82;XQ60000;' + dv0 + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
-        'vHiFailNoise': (138, modMidInit + noisePackage + tranPrep + 'XY;Dv0.82;XQ60000;' + dv0 + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
-        'vHiFailH': (84, modMidInit + tranPrep + 'SH.3;W10;' + 'XY;Dv0.82;XQ30000;' + dv0 + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION.  Initial BB shift will be limited by hys table")),
-        'vHiFailFf': (138, modMidInit + tranPrep + 'Ff1;XY;Dv0.8;XQ60000;' + dv0 + quiet + cleanup, ("Run for about 1 minute.", "Should detect voltage failure (see DOM1) but not display anything on display.", "Usually shows SAT.")),
+        'ampHiFailSlow': (515, modHalfInit + 'Fi3;Fc0.0006;Fd0.5;' + tranPrep + c10 + 'XQ400000;' + c00 + quiet + cleanup, ("10A bias on amp, disable wrap, noa in range at 0A and reflects battery state. Artificially tight cc_diff threshold.  Will detect diff but no wrap. Will be slow (~6 min) cc_diff detection as it waits for the EKF to wind up to produce a cc_diff fault and complete isolation and switch to noa.", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see that cc_diff_fa does set")),
+        'noaHiFailSlow': (515, modHalfInit+ 'Fc0.0006;' + tranPrep + d20 + 'XQ400000;' + c00 + quiet + cleanup, ("20A bias on noa, amp in range at 0A and reflects battery state. Artificially tight cc_diff threshold. Will detect and switch noa current failure due to wrap+diff. Once wrap trips diff won't be displayed. Cannnot ever produce a cc_diff fault because amp still used.", "Will display “diff” due to 20A difference.", "EKF won't move because fed by amp.", "Run for 6  minutes to verify not cc_diff_fa")),
+        'noaHiFailSlower': (515, modHalfInit+ 'Fc0.0006;' + tranPrep + d08 + 'XQ400000;' + c00 + quiet + cleanup, ("8A bias on noa, amp in range at 0A and reflects battery state.  Artificially tight cc_diff threshold. Will detect and switch noa current failure due to wrap+diff. Once wrap trips diff won't be displayed. Cannnot ever produce a cc_diff fault.", "Will display “diff” due to 6 A difference..", "EKF won't move because fed by amp.", "Run for 6  minutes to see potential cc_diff_fa")),
+        'noaHiFailSlowest': (515, modHalfInit+ 'Fc0.0006;' + tranPrep + d05 + 'XQ400000;' + c00 + quiet + cleanup, ("5A bias on noa, amp in range at 0A and reflects battery state. Artificially tight cc_diff threshold. Not enough current to trip the noa wrap.  Cannnot ever produce a cc_diff fault because amp still used.", "Will display “diff” due to 5 A difference..", "EKF won't move because fed by amp.", "Run for 6  minutes to see potential cc_diff_fa")),
+        'vHiFail': (138, modHalfInit + tranPrep + 'XY;Dv0.82;XQ60000;' + dv0 + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
+        'vHiFailNoise': (138, modHalfInit + noisePackage + tranPrep + 'XY;Dv0.82;XQ60000;' + dv0 + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
+        'vHiFailH': (84, modHalfInit + tranPrep + 'SH.3;W10;' + 'XY;Dv0.82;XQ30000;' + dv0 + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION.  Initial BB shift will be limited by hys table")),
+        'vHiFailFf': (138, modHalfInit + tranPrep + 'Ff1;XY;Dv0.8;XQ60000;' + dv0 + quiet + cleanup, ("Run for about 1 minute.", "Should detect voltage failure (see DOM1) but not display anything on display.", "Usually shows SAT.")),
         'pulseSSH': (25, synced_slow + 'Xp8;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
-        'tbFailMod1W': (136, modMidInit + tranPrep + 'Xv.002;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + quiet + cleanup, ("Run for 80 sec.   Plot Ult 1 Fig 4 should show Tb was detected as fault but not failed.",)),
-        'tbFailHdwe1W': (136, modMidInit + 'Xm246;' + tranPrep + 'Xv.002;W10;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + quiet + cleanup, ("Run for 80 sec.   Plot Ult 1 Fig 4 should show Tb was detected as failed.", "")),
-        'tLoFailHdwe': (185, modMidInit + 'Xm230;' + tranPrep + 'XY;Dt-113;XQ120000;' + 'Dt0;Rf;W50;' + cleanup + '<W50;' + quietwait + '<Pf;', ("Simulates open thermistor.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
-        'DvMon': (152, modMidInit + tranPrep + 'XY;Dw-0.8;Dn0.0001;XQ120000;Dw0;Rf;W50;' + quiet + cleanup, ("Should detect and switch voltage failure and use vb_model", "'*fail' will be displayed.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'redl' flashing on display even after fault cleared automatically (lost redundancy).", "Run for 2 min to confirm no cc_diff_fa")),
-        'DvSim': (152, modMidInit + tranPrep + 'XY;Dy-0.8;Dn0.0001;XQ120000;Dy0;Rf;W50;' + quiet + cleanup, ("Should detect and switch voltage failure and use vb_model", "'*fail' will be displayed.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'redl' flashing on display even after fault cleared automatically (lost redundancy).", "Run for 2 min to confirm no cc_diff_fa")),
-        'faultParade': (320, modMidInit + 'Dh1000;vv4;W4;XY;Dm50;Dn0.0001;W200;Dm0;Dn0;W20;Rf;XQ240000;' + quiet + cleanup, ("Check fault, history, and summary logging", "Should flag faults but take no action", "", "", "")),
-        'stepDown': (103, modMidInit + tranPrep + sd50 + 'XQ25000;' + s00 + quiet + cleanup, ("Should be normal hard discharge step", "", "", "")),
-        'stepUp': (103, modMidInit + tranPrep + sc50 + 'XQ25000;' + s00 + quiet + cleanup, ("Should be normal hard charge step", "", "", "")),
+        'tbFailMod1W': (136, modHalfInit + tranPrep + 'Xv.002;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + quiet + cleanup, ("Run for 80 sec.   Plot Ult 1 Fig 4 should show Tb was detected as fault but not failed.",)),
+        'tbFailHdwe1W': (136, modHalfInit + 'Xm246;' + tranPrep + 'Xv.002;W10;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + quiet + cleanup, ("Run for 80 sec.   Plot Ult 1 Fig 4 should show Tb was detected as failed.", "")),
+        'tLoFailHdwe': (185, modHalfInit + 'Xm230;' + tranPrep + 'XY;Dt-113;XQ120000;' + 'Dt0;Rf;W50;' + cleanup + '<W50;' + quietwait + '<Pf;', ("Simulates open thermistor.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
+        'DvMon': (152, modHalfInit + tranPrep + 'XY;Dw-0.8;Dn0.0001;XQ120000;Dw0;Rf;W50;' + quiet + cleanup, ("Should detect and switch voltage failure and use vb_model", "'*fail' will be displayed.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'redl' flashing on display even after fault cleared automatically (lost redundancy).", "Run for 2 min to confirm no cc_diff_fa")),
+        'DvSim': (152, modHalfInit + tranPrep + 'XY;Dy-0.8;Dn0.0001;XQ120000;Dy0;Rf;W50;' + quiet + cleanup, ("Should detect and switch voltage failure and use vb_model", "'*fail' will be displayed.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'redl' flashing on display even after fault cleared automatically (lost redundancy).", "Run for 2 min to confirm no cc_diff_fa")),
+        'faultParade': (320, modHalfInit + 'Dh1000;vv4;W4;XY;Dm50;Dn0.0001;W200;Dm0;Dn0;W20;Rf;XQ240000;' + quiet + cleanup, ("Check fault, history, and summary logging", "Should flag faults but take no action", "", "", "")),
+        'stepDown': (103, modHalfInit + tranPrep + sd50 + 'XQ25000;' + s00 + quiet + cleanup, ("Should be normal hard discharge step", "", "", "")),
+        'stepUp': (103, modHalfInit + tranPrep + sc50 + 'XQ25000;' + s00 + quiet + cleanup, ("Should be normal hard charge step", "", "", "")),
         'zero_with_pc': (113, hdwNoVbPcMidInit + zeroPrepHdweNoVb + 'vv4;W17;' + 'XQ25000;' + 'vv99;Xm2;XQ15000;' + quiet  + cleanup, ("Hardware zero_with_pc run", "", "", "")),
         }
 
 macro_lookup = {
         'end_early': (22, 'Y;cc;Dh1800000;*W;*vv0;*XS;*Ca1;<Hd;<Pf;', ('', '', '', '')),
         'hdwNoVbPcMidInit': (5, hdwNoVbPcMidInit, ('', '', '', '')),
-        'modHiInit': (5, modHiInit, ('', '', '', '')),
-        'modMidInit': (5, modMidInit, ('', '', '', '')),
-        'modLowInitBB': (5, modLowInitBB, ('', '', '', '')),
+        'modFullInit': (5, modFullInit, ('', '', '', '')),
+        'modLoInit': (5, modLoInit, ('', '', '', '')),
+        'modHalfInit': (5, modHalfInit, ('', '', '', '')),
+        'modEmptInitBB': (5, modEmptInitBB, ('', '', '', '')),
         'noisePackage': (5, noisePackage, ('', '', '', '')),
         'silentPackage': (5, silentPackage, ('', '', '', '')),
         'quiet': (5, quiet, ('', '', '', '')),

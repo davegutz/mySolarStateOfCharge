@@ -169,9 +169,8 @@ void print_battery_serial()
 // Print primary data
 void print_rapid_header(void)
 {
-  Serial.printf ("unit_rap, hm, cTime, dt,       ");
-  Serial.printf("reset, reset_temp, soft_reset, soft_reset_sim, reset_all_faults, ekf_reset, kf_reset, init_mon, init_sim,   ");
-  Serial.printf("chm, qcrs, qcap, sat, sel, mod, bmso,  ");
+  Serial.printf ("unit_rap, hm, cTime, dt, reset, reset_temp, soft_reset, soft_reset_sim, reset_all_faults, ekf_reset, kf_reset, init_mon, init_sim,   ");
+  Serial.printf("chm, qcrs, qcap, sat, saturated, sel, mod, bmso,  ");
   Serial.printf("Tb_rap, Tb_f_rap, Tb_f_rate_rap,  ");
   Serial.printf("vb, ib, ib_dyn, dv_hys,   ");
   Serial.printf("ib_charge, voc_soc, ib_dyn_r, ib_dyn_T, ib_dyn_rstate, ib_dyn_lstate,    ");
@@ -190,8 +189,8 @@ void print_rapid_serial(const boolean reset, Publish *pubList, Sensors *Sen, Bat
     cp.kf_reset_print, Mon->initializing(), Sen->Sim->initializing());
     Serial.printf("%s", pr.buff);
 
-  sprintf(pr.buff,  "%d,%10.4f,%10.4f,%2d,%2d,%2d,%2d,   %11.8f,%11.8f,%11.8f,  ", \
-    CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(), pubList->sat, sp.ib_force(), sp.modeling(), Mon->bms_off(),
+  sprintf(pr.buff,  "%d,%10.4f,%10.4f,%2d,%2d,%2d,%2d,%2d,   %11.8f,%11.8f,%11.8f,  ", \
+    CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(), pubList->sat, pubList->saturated, sp.ib_force(), sp.modeling(), Mon->bms_off(),
     Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate);
     Serial.printf("%s", pr.buff);
 

@@ -44,9 +44,10 @@ warnings.filterwarnings("ignore", category=UserWarning)
 #                     time_shift_in=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
 #                     fig_list=None, show_killer_=True):
 
-def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=None, sync_to_ctime=False):
+def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=None, sync_to_ctime=False,
+                    terse=False):
 
-    print(f"\ncompare_run_run:\n{keys=}\n{data_file_folder_run=}\n{data_file_folder_test=}\n{sync_to_ctime=}\n")
+    print(f"\ncompare_run_run:\n{keys=}\n{data_file_folder_run=}\n{data_file_folder_test=}\n{sync_to_ctime=}\n{terse=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     # date_ = datetime.now().strftime("%y%m%d")
@@ -71,6 +72,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     data_file_run = os.path.join(data_file_folder_run, data_file_txt_run)
     mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
         load_data(data_file_run, 1, unit_key_run, zero_zero_in, time_end_in)
+    sim_s_run = None
     mon_run.str = 'r1'
     sim_run.str = 's1'
     f_run.str = 'f1'
@@ -79,6 +81,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     data_file_test = os.path.join(data_file_folder_test, data_file_txt_test)
     mon_test, sim_test, f_test, data_file_ver_clean, temp_flt_file_ver_clean, sync_info_test = \
         load_data(data_file_test, 1, unit_key_test, zero_zero_in, time_end_in)
+    sim_s_test = None
     mon_test.str = 'r2'
     sim_test.str = 's2'
     f_test.str = 'f2'
@@ -117,8 +120,8 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
         fig_list, fig_files = over_fault(f_run, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                          fig_list=fig_list)
 
-    fig_list, fig_files = dom_plot(mon_run, mon_test, sim_run, sim_test, sim_test, filename, fig_files,
-                                   plot_title=plot_title, fig_list=fig_list, run_type='RunRun')  # all over all
+    fig_list, fig_files = dom_plot(mon_run, mon_test, sim_run, sim_test, sim_s_run, sim_s_test, filename, fig_files,
+                                   plot_title=plot_title, fig_list=fig_list, run_type='RunRun', terse=terse)  # all over all
 
     # Copies
     precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
@@ -133,8 +136,8 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
 
 
 def main():
-    keys = [('rapidTweakRegression_soc3p2_hi_lo_bb.csv', 'g20250612a_soc3p2_hi_lo_bb'),
-            ('rapidTweakRegression_soc2p2_hi_lo_bb.csv', 'g20250612a_soc2p2_hi_lo_bb')]
+    keys=[('noaLoFullFail_soc3p2_hi_lo_bb.csv', 'g20250612a_soc3p2_hi_lo_bb'), ('noaLoFullFail_soc2p2_hi_lo_bb.csv', 'g20250612a_soc2p2_hi_lo_bb')]
+
     import sys
     if sys.platform == 'linux':
         gdrive = '/home/daveg/gdrive/'
@@ -143,9 +146,10 @@ def main():
     data_file_folder_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a'
     data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a'
     sync_to_ctime = True
+    terse = False
 
     compare_run_run(keys=keys, data_file_folder_run=data_file_folder_run, data_file_folder_test=data_file_folder_test,
-                    sync_to_ctime=sync_to_ctime)
+                    sync_to_ctime=sync_to_ctime, terse=terse)
 
 
 if __name__ == '__main__':  # Example usage.  Ran ok 20260217

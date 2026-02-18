@@ -13,6 +13,7 @@ struct Publish
   float Ib;
   float Voc;
   boolean sat;
+  boolean saturated;
   float tcharge;
   float Amp_hrs_remaining_ekf;
   float Amp_hrs_remaining_soc;

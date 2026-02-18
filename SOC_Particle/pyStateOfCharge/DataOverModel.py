@@ -45,12 +45,12 @@ if sys.platform == 'darwin':
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
-def dom_plot(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
+def dom_plot(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
              run_str='_run', ver_str='_ver', strict_overplot=False, terse=False, run_type=None):
     print('dom_plot', end=':  ')
     if fig_files is None:
         fig_files = []
-    figOptions = PlotOptions(mr=mr, mv=mv, sr=sr, sv=sv, smv=smv, filename=filename, plot_title=plot_title,
+    figOptions = PlotOptions(mr=mr, mv=mv, sr=sr, sv=sv, smr=smr, smv=smv, filename=filename, plot_title=plot_title,
                              strict_overplot=strict_overplot, run_type=run_type)
 
     if not terse:

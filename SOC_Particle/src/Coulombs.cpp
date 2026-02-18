@@ -162,7 +162,8 @@ Outputs:
   soc_min_        Estimated soc where battery BMS will shutoff current, fraction
   q_min_          Estimated charge at low voltage shutdown, C\
 */
-float Coulombs::count_coulombs(Sensors *Sen, const boolean reset_temp, const float charge_curr, const boolean sat)
+float Coulombs::count_coulombs(Sensors *Sen, const boolean reset_temp, const float charge_curr, const boolean sat,
+  const boolean saturated)
 {
     // Inputs
     dt_ = Sen->T;
@@ -177,6 +178,7 @@ float Coulombs::count_coulombs(Sensors *Sen, const boolean reset_temp, const flo
     // d_delta_q_ -= chem_.dqdt*q_capacity_*tb_f_rate_*dt_;
     d_delta_q_inf = d_delta_q_;
     sat_ = sat;
+    saturated_ = saturated;
 
     // Saturation.   Goal is to set q_capacity and hold it so remember last saturation status.
     if ( sat )

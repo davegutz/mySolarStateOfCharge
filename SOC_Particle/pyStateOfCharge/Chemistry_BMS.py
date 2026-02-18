@@ -190,7 +190,7 @@ class Chemistry(BMS):
         self.nom_vsat = 13.85 - 0.05  # Saturation threshold at temperature, deg C (13.85 - 0.05 HDB_VB)
         self.r_ss = self.r_0 + self.r_ct
         self.dv_min_abs = 0.06  # Absolute value of +/- hysteresis limit, V
-        self.ib_lag_tau = IB_LAG_CH  # Lag time to wash out sat effect on dv, s
+        self.ib_lag_tau = IB_LAG_CH  # Lag time to wash out saturated effect on dv, s
 
         # Tables CHINS Bmon=1, Bsim=1, from ReGaugeVocSoc 3/2/2023 soc0p
         # VOC_SOC table
@@ -261,7 +261,7 @@ class Chemistry(BMS):
         self.nom_vsat = 13.85 - 0.05  # Saturation threshold at temperature, deg C (13.85 - 0.05 HDB_VB)
         self.r_ss = self.r_0 + self.r_ct
         self.dv_min_abs = 0.06  # Absolute value of +/- hysteresis limit, V
-        self.ib_lag_tau = IB_LAG_CH  # Lag time to wash out sat effect on dv, s
+        self.ib_lag_tau = IB_LAG_CH  # Lag time to wash out saturated effect on dv, s
 
         # 2024-04-24T14-51-24:  tune to data
         t_y_t1 = [21.5, 25.0, 35.0, ]

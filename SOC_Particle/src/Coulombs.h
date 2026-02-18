@@ -57,7 +57,8 @@ public:
   void chem_pretty_print () { chem_.pretty_print(); };
   double coul_eff() { return ( coul_eff_ ); };
   void coul_eff(const double coul_eff) { coul_eff_ = coul_eff; };
-  virtual float count_coulombs(Sensors *Sen, const boolean reset_temp, const float charge_curr, const boolean sat);
+  virtual float count_coulombs(Sensors *Sen, const boolean reset_temp, const float charge_curr, const boolean sat,
+  const boolean saturated);
   double delta_q() { return(*sp_delta_q_); };
   double d_delta_q() { return(d_delta_q_); };
   double delta_q_abs() { return nice_zero(delta_q_abs_, 1e-6); }
@@ -78,6 +79,7 @@ public:
   float soc_inf() { return(soc_inf_); };
   float soc_min() { return(soc_min_); };
   boolean sat() { return(sat_); };
+  boolean saturated() { return(saturated_); };
   double time_neg() { return(time_neg_); };
   double time_pos() { return(time_pos_); };
   virtual float vsat(void) = 0;
@@ -96,7 +98,8 @@ protected:
   double q_cap_rated_scaled_;// Applied rated capacity at t_rated_, after scaling, C
   float q_inf_;       // Same as q_ but not reset on saturation, C
   float q_min_;       // Floor on charge available to use, C
-  boolean sat_;       // Indication that battery is saturated, T=saturated
+  boolean sat_;       // Indication that battery is potentially saturated, T=saturated
+  boolean saturated_; // Battery is confirmed saturated, T=saturated
   float soc_;         // Fraction of saturation charge (q_capacity_) available (0-1)
   float soc_ekf_min_; // Minimum SOC for EKF operation
   float soc_inf_;     // Fraction of saturation charge (q_capacity_) available (-inf - inf)

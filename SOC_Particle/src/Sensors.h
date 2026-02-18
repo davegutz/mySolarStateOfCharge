@@ -580,7 +580,8 @@ public:
   double T_temp;              // Temperature update time, s
   Sync *ReadSensors;          // Handle to debug read time
   Sync *ReadTemp;             // Handle to debug read temperature time
-  boolean saturated;          // Battery saturation status based on Temp and VOC
+  boolean sat;                // Battery potential saturation status based on Temp and VOC
+  boolean saturated;          // Battery confirmed saturation status based on Temp and VOC
   Shunt *ShuntAmp;            // Ib sense amplified
   Shunt *ShuntNoAmp;          // Ib sense non-amplified
   TempSensor* SensorTb;       // Tb sense

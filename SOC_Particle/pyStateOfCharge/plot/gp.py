@@ -133,8 +133,10 @@ def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None):
     plt.subplot(321)
     plt.title(S.plot_title + ' GP 2 nn lag')
     print('GP 2 nn lag', end=':  ')
-    plq(plt, S.mr, 'time', S.mr, 'sat', color='black', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'sat', color='orange', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'sat', color='blue', linestyle='-')
+    plq(plt, S.mv, 'time', S.mv, 'sat', color='red', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'saturated', color='black', linestyle='-.')
+    plq(plt, S.mv, 'time', S.mv, 'saturated', color='orange', linestyle=':')
     plt.legend(loc=1)
     plt.subplot(322)
     plq(plt, S.mr, 'time', S.mr, 'voc', color='black', linestyle='-')
@@ -212,7 +214,7 @@ def gp_3_ekf(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mr, 'time', S.mr, 'ib_noa_model', add=2.5, color='magenta', linestyle='--')
     plq(plt, S.mv, 'time', S.mv, 'ib_noa_model', add=2.5, color='cyan', linestyle='-.')
     plq(plt, S.mr, 'time', S.mr, 'ib_noa_kf', add=2.5, color='black', linestyle='--')
-    plq(plt, S.mv, 'time', S.mv, 'iscn_f', color='red', linestyle='-.')
+    plq(plt, S.mv, 'time', S.mv, 'iscn_f', color='red', linestyle='-.', warn=False)
     plq(plt, S.mr, 'time', S.mr, 'ib_sel', add=-5, color='blue', linestyle='-')
     plq(plt, S.mr, 'time', S.mr, 'ib', add=-10, color='green', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'ib', add=-10, color='cyan', linestyle='--')
@@ -263,8 +265,6 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     plt.subplot(333)
     # mr.ib_amp_hdwe = mr.ibmh
     # mr.ib_amp_model = mr.ibmm
-    saved_fontsize = plt.rcParams['legend.fontsize']
-    plt.rcParams['legend.fontsize'] = '6'
     plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe', add=-2.5, color='blue', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'ib_amp_hdwe', add=-2.5, color='red', linestyle='--')
     plq(plt, S.mr, 'time', S.mr, 'ib_amp_model', add=-2.5, color='magenta', linestyle='-.')
@@ -275,13 +275,15 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mr, 'time', S.mr, 'ib_noa_model', add=2.5, color='magenta', linestyle='-.')
     plq(plt, S.mv, 'time', S.mv, 'ib_noa_model', add=2.5, color='black', linestyle=':')
     plq(plt, S.mr, 'time', S.mr, 'ib_noa_kf', add=2.5, color='black', linestyle='--')
-    plq(plt, S.mv, 'time', S.mv, 'iscn_f', color='red', linestyle='-.')
+    plq(plt, S.mv, 'time', S.mv, 'iscn_f', color='red', linestyle='-.', warn=S.run_type!='RunRun')
     plq(plt, S.mr, 'time', S.mr, 'ib_sel', add=-5, color='blue', linestyle='-')
     plq(plt, S.mr, 'time', S.mr, 'ib', add=-10, color='green', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'ib', add=-10, color='cyan', linestyle='--')
     plq(plt, S.sr, 'time', S.sr, 'ib_in_s', add=-10, color='orange', linestyle='-.')
     plq(plt, S.smv, 'time', S.smv, 'ib_in_s', add=-10, color='red', linestyle=':')
     plt.xlabel('sec')
+    saved_fontsize = plt.rcParams['legend.fontsize']
+    plt.rcParams['legend.fontsize'] = '6'
     plt.legend(loc=3)
     plt.rcParams['legend.fontsize'] = saved_fontsize
     plt.subplot(334)
@@ -295,6 +297,7 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mv, 'time', S.mv, 'voc_stat', add=-1., color='blue', linestyle='--')
     plq(plt, S.sr, 'time', S.sr, 'voc_stat_s', add=-1., color='blue', linestyle='-.')
     plq(plt, S.smv, 'time', S.smv, 'voc_stat_s', add=-1., color='red', linestyle=':')
+    plq(plt, S.mr, 'time', S.mr, 'vsat', color='orange', linestyle=':')
     if S.run_type == 'HistSim':
         plq(plt, S.mr, 'time', S.mr, 'vb_f', add=-2., color='black', linestyle='-')
     plq(plt, S.mr, 'time', S.mr, 'vb', add=-2., color='black', linestyle='-')
@@ -302,7 +305,10 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.sr, 'time', S.sr, 'vb_s', add=-2., color='red', linestyle='-.')
     plq(plt, S.sv, 'time', S.smv, 'vb_s', add=-2., color='pink', linestyle='--')
     plt.xlabel('sec')
+    saved_fontsize = plt.rcParams['legend.fontsize']
+    plt.rcParams['legend.fontsize'] = '6'
     plt.legend(loc=2)
+    plt.rcParams['legend.fontsize'] = saved_fontsize
     plt.subplot(335)
     plq(plt, S.mr, 'time', S.mr, 'e_wrap_n', add=1, color='black', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'e_wrap_n', add=1, color='orange', linestyle='--')
@@ -317,7 +323,9 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mr, 'time', S.mr, 'e_wrap_m_filt', add=-1, color='blue', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'e_wrap_m_filt', add=-1, color='red', linestyle='--')
     plt.xlabel('sec')
+    plt.rcParams['legend.fontsize'] = 6
     plt.legend(loc=2)
+    plt.rcParams['legend.fontsize'] = 'small'
     plt.subplot(336)
     plq(plt, S.mr, 'soc', S.mr, 'vb', color='blue', linestyle='-')
     plq(plt, S.mr, 'soc', S.mr, 'vb_hdwe_f', color='blue', linestyle='-')
@@ -343,18 +351,21 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mv, 'time', S.mv, 'dv_hys', color='cyan', linestyle='--')
     plq(plt, S.sr, 'time', S.sr, 'dv_hys_s', color='black', linestyle='-.', warn=False)
     plq(plt, S.smv, 'time', S.smv, 'dv_hys_s', color='magenta', linestyle=':', warn=False)
-    plq(plt, S.mr, 'time', S.mr, 'sat', add=-0.5, color='black', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'sat', add=-0.5, color='green', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'sat', add=-0.5, color='blue', linestyle='-')
+    plq(plt, S.mv, 'time', S.mv, 'sat', add=-0.5, color='red', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'saturated', add=-0.5, color='black', linestyle='-.')
+    plq(plt, S.mv, 'time', S.mv, 'saturated', add=-0.5, color='green', linestyle=':')
     plq(plt, S.sr, 'time', S.sr, 'sat_s', add=-0.5, color='red', linestyle='-.')
-    if hasattr(S.sv, 'sat'):
-        plq(plt, S.sv, 'time', S.sv, 'sat', add=-0.5, color='cyan', linestyle=':')
+    if hasattr(S.sv, 'model_saturated'):
+        plq(plt, S.sv, 'time', S.sv, 'model_saturated', add=-0.5, color='cyan', linestyle=':')
     plt.xlabel('sec')
     plt.legend(loc=3)
     plt.subplot(339)
     plq(plt, S.mr, 'time', S.mr, 'Tb_rap', color='blue', linestyle='-')
-    plq(plt, S.mr, 'time_t', S.mr, 'Tb_f', color='cyan', linestyle='--', stairs=True)
-    plq(plt, S.mv, 'time', S.mv, 'Tb_rap', color='black', linestyle='-.')
-    plq(plt, S.mv, 'time', S.mv, 'Tb_f', color='magenta', linestyle=':')
+    plq(plt, S.mv, 'time', S.mv, 'Tb_rap', color='black', linestyle='--')
+    plq(plt, S.mr, 'time_t', S.mr, 'Tb_f', color='cyan', linestyle='-.', stairs=True)
+    plq(plt, S.mv, 'time_t', S.mv, 'Tb_f', color='magenta', linestyle=':', stairs=True, warn=S.run_type=='RunRun')
+    plq(plt, S.mv, 'time', S.mv, 'Tb_f', color='magenta', linestyle=':', stairs=True, warn=S.run_type!='RunRun')
     plt.xlabel('sec')
     plt.legend(loc=3)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"

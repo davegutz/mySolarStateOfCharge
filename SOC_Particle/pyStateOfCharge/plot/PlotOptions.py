@@ -28,6 +28,7 @@ class PlotOptions:
     mv: Optional[SavedData]
     sr: Optional[SavedDataSim] = None
     sv: Optional[SavedDataSim] = None
+    smr: Optional[SavedDataSim] = None
     smv: Optional[SavedDataSim] = None
     filename: Optional[str] = ''
     plot_title: Optional[str] = ''

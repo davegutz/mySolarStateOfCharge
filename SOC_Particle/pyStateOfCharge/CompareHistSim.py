@@ -131,7 +131,7 @@ def bandaid(h):
     voc_f = h['voc_f'].copy()
     soc_s = h['soc'].copy()
     bms_off_s = h['bms_off'].copy()
-    sat_s = h['sat'].copy()
+    sat_s = h['saturated'].copy()
     chm_s = h['chm_s'].copy()
     dt_s = h['dt'].copy()
     dv_dyn_s = h['dt'].copy()*0.
@@ -175,10 +175,10 @@ def bandaid(h):
 def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=None):
     h = raw[abs(raw.Tb_f - tb_forr) < tb_band]
 
-    sat_ = np.copy(h.Tb_f)
+    saturated_ = np.copy(h.Tb_f)
     bms_off_ = np.copy(h.Tb_f)
     for i in range(len(h.Tb_f)):
-        sat_[i] = is_sat(h.Tb_f[i], mon.chemistry.rated_temp, h.voc_f[i], h.soc[i], mon.chemistry.nom_vsat,
+        saturated_[i] = is_sat(h.Tb_f[i], mon.chemistry.rated_temp, h.voc_f[i], h.soc[i], mon.chemistry.nom_vsat,
                          mon.chemistry.dvoc_dt, mon.chemistry.low_t)
         bms_off_[i] = (h.Tb_f[i] < mon.chemistry.low_t) or ((h.voc_stat_f[i] < 10.5) and (h.ib_f[i] < Battery.IB_MIN_UP))
 
@@ -214,7 +214,8 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=None):
             soc = np.interp(t_sec, h.time_sec, h.soc)
         for i in range(len(h.time_ux)):
             t_min = int(float(h.time_ux[i]) / 60.)
-        h = rf.rec_append_fields(h, 'sat', sat_)
+        h = rf.rec_append_fields(h, 'sat', saturated_)
+        h = rf.rec_append_fields(h, 'saturated', saturated_)
         h = rf.rec_append_fields(h, 'bms_off', bms_off_)
         h = rf.rec_append_fields(h, 'voc_stat_r_dis', voc_stat_r_dis)
         h = rf.rec_append_fields(h, 'voc_stat_r_chg', voc_stat_r_chg)
@@ -549,6 +550,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
     mon_run, sim_run, unit, fault, hist_20C, filename, Battery = \
         load_hist_and_prep(data_file=data_file, time_end_in=time_end_in, plots=plots, use_mon_csv=use_mon_csv,
                            unit_key=unit_key, sync_time=sync_time, dt_resample=dt_resample, Tb_force=Tb_force)
+    sim_s_run = None
 
     # File path operations
     _, data_file_txt = os.path.split(data_file)
@@ -578,9 +580,9 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
         if hist_20C is not None and len(hist_20C.time) > 1:
             sim_run = None
             if not terse:
-                fig_list, fig_files = overall_fault(mon_run, mon_ver, sim_ver, sim_s_ver, filename,
+                fig_list, fig_files = overall_fault(mon_run, mon_ver, sim_ver, sim_s_run, sim_s_ver, filename,
                                                     fig_files, plot_title=plot_title, fig_list=fig_list)
-            fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
+            fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_run, sim_s_ver, filename, fig_files,
                                            plot_title=plot_title, fig_list=fig_list, run_str='',
                                            ver_str='_ver', strict_overplot=strict_overplot, terse=terse,
                                            run_type='HistSim')
@@ -608,11 +610,11 @@ def main():  # Sample usage. OK on 20260217
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaLoHiFail_soc3p2_hi_lo_bb.csv'
     time_end_in = None
     plots = True
     use_mon_csv = True
-    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     sync_time = None
     dt_resample = 1
     Tb_force = None

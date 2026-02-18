@@ -112,6 +112,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
     mon_run, sim_run, f, data_file_clean, temp_flt_file_clean, _ = \
         load_data(data_file, 1, unit_key, zero_zero_in, time_end_in, legacy=legacy_in, init_time_in=init_time_in,
                   time_shift_in=time_shift_in, mon_str=mon_str)
+    sim_s_run = None
 
     # How to initialize
     if mon_run is None:
@@ -140,12 +141,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
         if not terse and f is not None and temp_flt_file_clean and len(f.time_ux) > 1 and not strict_overplot:
             fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                              fig_list=fig_list, cc_dif_tol=cc_dif_tol_in)
-        if not terse:
-            if tune_in:
-                fig_list, fig_files = gp.tune_r(mon_run, mon_ver, sim_s_ver, filename, fig_files,
-                                             plot_title=plot_title, fig_list=fig_list, run_str='', ver_str='_ver')
-
-        fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_ver, filename, fig_files,
+        fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_run, sim_s_ver, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list, run_str='',
                                        ver_str='_ver', strict_overplot=strict_overplot, terse=terse,
                                        run_type='RunSim')
@@ -194,8 +190,8 @@ def main():  # Example usage.  ok on 20260217
     # Rk,
     # vv0,
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\shunt_test_soc3p2_hi_lo_bb.csv'
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc2p2_hi_lo_bb.csv'
-    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaLoHiFail_soc3p2_hi_lo_bb.csv'
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
 
     # # gdrive = '/home/daveg/Documents/'
     # # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'

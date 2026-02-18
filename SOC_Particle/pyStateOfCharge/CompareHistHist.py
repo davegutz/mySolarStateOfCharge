@@ -45,6 +45,7 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
 
     # Save these
     cc_dif_tol_in = 0.2
+    sim_s_run = None
     sim_s_tst = None
 
     # Load history, normalizing all soc and Tb to 20C
@@ -83,7 +84,7 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
         if hist_20C_run is not None and len(hist_20C_run.time) > 1:
             sim_run = None
             plot_init_in = False
-            fig_list, fig_files = dom_plot(mon_run, mon_tst, sim_run, sim_tst, sim_s_tst, filename_run, fig_files,
+            fig_list, fig_files = dom_plot(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename_run, fig_files,
                                            plot_title=plot_title, fig_list=fig_list, run_str='_'+unit_run,
                                            ver_str='_'+unit_tst, run_type='HistHist')
             fig_list, fig_files = overall_fault(mon_run, mon_tst, sim_tst, sim_s_tst, filename_run,

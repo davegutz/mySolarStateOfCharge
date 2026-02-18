@@ -129,7 +129,7 @@ class Coulombs:
             res = 1
         return res
 
-    def count_coulombs(self, OPT, chem, dt, reset, tb_f, charge_curr, sat):
+    def count_coulombs(self, OPT, chem, dt, reset, tb_f, charge_curr, sat, saturated):
         """Count coulombs based on true=actual capacity
         Inputs:
             dt              Integration step, s

@@ -247,6 +247,7 @@ class Sensors:
 
         self.i = 0
         self.sat_init = self.mon_run.sat[0]
+        self.saturated_init = self.mon_run.saturated[0]
         self.soc_s = self.mon_run.soc_s
 
         # q
