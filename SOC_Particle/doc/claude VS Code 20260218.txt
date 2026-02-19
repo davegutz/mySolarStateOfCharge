@@ -47,6 +47,265 @@
   Seven String objects that grow and shrink with command input. On a Cortex-M33 heap this causes fragmentation. Command strings are short
   (typically under 32 chars). Fixed-size char[] buffers would eliminate this entirely and are equally readable.
 
+
+❯ command.h has seven String objects that can cause fragmentation of memory during run time.   Please suggest code changes needed to use fixed size char[32]            
+  buffers instead, and show how the interfacing call code has to change.                                                                                               
+                                                                                                                                                                        ● Searched for 1 pattern, read 1 file (ctrl+o to expand)     
+                                                                                                                                                                        
+● Let me find the call sites where these String members are used.                                                                                                       
+  
+● Explore(Find all usages of CommandPars string members)                                                                                                                
+  ⎿  Done (14 tool uses · 49.3k tokens · 41s)                                                                                                                           
+  (ctrl+o to expand)                                                                                                                                                    
+                                                                                                                                                                        
+● Now let me look at the key helper functions that take String* to understand their full signatures.                                                                       
+● Searched for 1 pattern, read 2 files (ctrl+o to expand)                                                                                                               
+                                                                                                                                                                        
+● Now I have the full picture. Here's a comprehensive analysis of all changes needed.                                                                                   
+                                                                                                                                                                        
+  ---                                                                                                                                                                   
+  Changes to command.h                                                                                                                                                                                                                                                                                                                          
+  Members + constructor                                                                                                                                                 
+
+  // Before
+  String ctl_str;
+  String cmd_str;
+  String inp_str;
+  String last_str;
+  String queue_str;
+  String soon_str;
+  String asap_str;
+
+  // After
+  char ctl_str[32];
+  char cmd_str[32];
+  char inp_str[32];
+  char last_str[32];
+  char queue_str[32];
+  char soon_str[32];
+  char asap_str[32];
+
+  Constructor initializations change from = "" to [0] = '\0':
+  // Before
+  ctl_str = "";  inp_str = "";  cmd_str = "";
+  last_str = ""; queue_str = ""; soon_str = ""; asap_str = "";
+
+  // After
+  ctl_str[0] = '\0';  inp_str[0] = '\0';  cmd_str[0] = '\0';
+  last_str[0] = '\0'; queue_str[0] = '\0'; soon_str[0] = '\0'; asap_str[0] = '\0';
+
+  ---
+  Changes to debug.h / debug.cpp — add_verify
+
+  The fragmentation detector becomes a bounds checker:
+
+  // Before — debug.h
+  void add_verify(String *src, const String addend);
+
+  // After — debug.h
+  void add_verify(char *src, size_t src_size, const char *addend);
+
+  // Before — debug.cpp
+  void add_verify(String *src, const String addend)
+  {
+    int src_len = src->length();
+    *src += addend;
+    if ( src->length() != (src_len + addend.length()) )
+      Serial.printf("\n\n\n\n**FRAG**\n\n\n\n");
+  }
+
+  // After — debug.cpp
+  void add_verify(char *src, size_t src_size, const char *addend)
+  {
+    size_t src_len = strlen(src);
+    size_t add_len = strlen(addend);
+    if ( src_len + add_len + 1 > src_size )
+      Serial.printf("\n\n\n\n**OVERFLOW**\n\n\n\n");
+    else
+      strncat(src, addend, src_size - src_len - 1);
+  }
+
+  ---
+  Changes to serial.h / serial.cpp — chat_cmd_from
+
+  The function currently returns a String built by consuming chars from the front of *source. It needs an output buffer parameter instead:
+
+  // Before — serial.h
+  String chat_cmd_from(String *source);
+
+  // After — serial.h
+  void chat_cmd_from(char *source, char *out, size_t out_size);
+
+  // Before — serial.cpp
+  String chat_cmd_from(String *source)
+  {
+    String out_str = "";
+    while ( source->length() )
+    {
+      char in_char = source->charAt(0);
+      source->remove(0, 1);
+      out_str += in_char;
+      if ( is_finished(in_char) ) {
+        out_str = finish_request(out_str);
+        break;
+      }
+    }
+    return out_str;
+  }
+
+  // After — serial.cpp
+  void chat_cmd_from(char *source, char *out, size_t out_size)
+  {
+    size_t out_idx = 0;
+    out[0] = '\0';
+    while ( *source )
+    {
+      char in_char = source[0];
+      memmove(source, source + 1, strlen(source)); // shift left, includes '\0'
+      if ( out_idx + 1 < out_size )
+        out[out_idx++] = in_char;
+      out[out_idx] = '\0';
+      if ( is_finished(in_char) ) {
+        finish_request(out, out_size);              // see note below
+        break;
+      }
+    }
+  }
+
+  Note on finish_request: If it currently takes/returns a String, its signature must also change to void finish_request(char *s, size_t size) operating in-place.       
+
+  ---
+  Call-site changes
+
+  chitchat.cpp — chat_cmd_from calls
+
+  // Before
+  if ( cp.ctl_str.length() )           cp.cmd_str = chat_cmd_from(&cp.ctl_str);
+  else if ( cp.asap_str.length() )     cp.cmd_str = chat_cmd_from(&cp.asap_str);
+  if ( cp.soon_str.length() )          cp.cmd_str = chat_cmd_from(&cp.soon_str);
+  else if ( cp.queue_str.length() )    cp.cmd_str = chat_cmd_from(&cp.queue_str);
+  else if ( cp.last_str.length() )     cp.cmd_str = chat_cmd_from(&cp.last_str);
+
+  // After
+  if ( cp.ctl_str[0] )        chat_cmd_from(cp.ctl_str,   cp.cmd_str, sizeof(cp.cmd_str));
+  else if ( cp.asap_str[0] )  chat_cmd_from(cp.asap_str,  cp.cmd_str, sizeof(cp.cmd_str));
+  if ( cp.soon_str[0] )       chat_cmd_from(cp.soon_str,  cp.cmd_str, sizeof(cp.cmd_str));
+  else if ( cp.queue_str[0] ) chat_cmd_from(cp.queue_str, cp.cmd_str, sizeof(cp.cmd_str));
+  else if ( cp.last_str[0] )  chat_cmd_from(cp.last_str,  cp.cmd_str, sizeof(cp.cmd_str));
+
+  chitchat.cpp — add_verify calls
+
+  // Before
+  add_verify(&cp.ctl_str,   from);
+  add_verify(&cp.asap_str,  from);
+  add_verify(&cp.soon_str,  from);
+  add_verify(&cp.queue_str, from);
+  add_verify(&cp.last_str,  from);
+
+  // After — 'from' must also be const char* (or .c_str() if still String temporarily)
+  add_verify(cp.ctl_str,   sizeof(cp.ctl_str),   from);
+  add_verify(cp.asap_str,  sizeof(cp.asap_str),  from);
+  add_verify(cp.soon_str,  sizeof(cp.soon_str),  from);
+  add_verify(cp.queue_str, sizeof(cp.queue_str), from);
+  add_verify(cp.last_str,  sizeof(cp.last_str),  from);
+
+  ble.cpp / serial.cpp — inp_str append
+
+  // Before
+  add_verify(&cp.inp_str, serial_str);
+
+  // After
+  add_verify(cp.inp_str, sizeof(cp.inp_str), serial_str);  // serial_str must be const char*
+
+  chitchat.cpp — cmd_str character/substring operations
+
+  // Before                              // After
+  cp.cmd_str.charAt(0)                   cp.cmd_str[0]
+  cp.cmd_str.charAt(1)                   cp.cmd_str[1]
+  cp.cmd_str.charAt(2)                   cp.cmd_str[2]
+  cp.cmd_str.substring(2)                (cp.cmd_str + 2)           // pointer arithmetic
+  cp.cmd_str.substring(1).length()       strlen(cp.cmd_str + 1)
+  cp.cmd_str.substring(1).toInt()        atoi(cp.cmd_str + 1)
+  cp.cmd_str.substring(2).toInt()        atoi(cp.cmd_str + 2)
+  cp.cmd_str.substring(0,2).c_str()      // needs a small temp:
+                                         char tmp2[3]; strncpy(tmp2, cp.cmd_str, 2); tmp2[2]='\0';
+  cp.cmd_str = ""   (clear)              cp.cmd_str[0] = '\0'
+
+  chitchat.cpp — inp_str indexOf / substring
+
+  // Before
+  int semi_loc = cp.inp_str.indexOf(';');
+  cp.ctl_str = cp.inp_str.substring(0, semi_loc + 1);
+  cp.inp_str = cp.inp_str.substring(semi_loc + 1);
+
+  // After
+  char *semi_p = strchr(cp.inp_str, ';');
+  if ( semi_p )
+  {
+    size_t semi_loc = semi_p - cp.inp_str;
+    strncpy(cp.ctl_str, cp.inp_str, semi_loc + 1);
+    cp.ctl_str[semi_loc + 1] = '\0';
+    memmove(cp.inp_str, cp.inp_str + semi_loc + 1, strlen(cp.inp_str + semi_loc + 1) + 1);
+  }
+
+  chitchat.cpp / recall_*.cpp — find_adjust calls with cmd_str
+
+  If find_adjust currently takes a String, its signature must change to const char *. The cp.cmd_str is then passed directly (no .c_str() needed):
+
+  // Before
+  ap.find_adjust(cp.cmd_str, ...);
+  cp.cmd_str.substring(0,2).c_str()    // passed alongside
+
+  // After
+  ap.find_adjust(cp.cmd_str, ...);     // direct char* pass
+  // tmp2 approach above for the 2-char prefix comparisons
+
+  debug.cpp — pretty_print style (.c_str() calls)
+
+  These are already fine since printf with %s accepts const char * directly — just drop .c_str():
+
+  // Before
+  Serial.printf("... %s ...", cp.cmd_str.c_str());
+
+  // After
+  Serial.printf("... %s ...", cp.cmd_str);
+
+  ---
+  Summary of files that need edits
+
+  ┌──────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────┐
+  │               File               │                                        Change                                        │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤
+  │ command.h                        │ 7 member types + constructor                                                         │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤
+  │ debug.h                          │ add_verify signature                                                                 │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤
+  │ debug.cpp                        │ add_verify body                                                                      │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤
+  │ serial.h                         │ chat_cmd_from signature                                                              │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤
+  │ serial.cpp                       │ chat_cmd_from body; inp_str append call                                              │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤
+  │ talk/chitchat.cpp                │ All chat_cmd_from, add_verify, .length(), .charAt(), .substring(), .indexOf() usages │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤
+  │ talk/followup.cpp                │ .substring().toInt() on cmd_str                                                      │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤
+  │ talk/recall_H/P/R/X.cpp          │ find_adjust calls, .substring(0,2).c_str() patterns                                  │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤
+  │ ble.cpp                          │ inp_str append call                                                                  │
+  ├──────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────┤
+  │ Any file defining finish_request │ Signature change if it uses String                                                   │
+  └──────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────┘
+
+  The find_adjust method signature on ap/sp objects is the highest-risk ripple — check whether it currently takes const String& and update it to const char * at the    
+  same time.
+
+✻ Churned for 2m 11s                                                                                                                                                       
+
+
+
+
+
   3. hm_string = String(buffer) every 100ms loop (MINOR)
 
   // SOC_Particle.ino:302
