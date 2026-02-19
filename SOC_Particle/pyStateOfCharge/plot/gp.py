@@ -49,7 +49,9 @@ class PlotOptions:
     strict_overplot: Optional[bool] = False  # Plot only true overplotting parameters
 
 
-def gp_1(S:PlotOptions, fig_list=None, fig_files=None):
+def gp_1(S:PlotOptions, fig_list=None, fig_files=None, run_type=None):
+    if run_type == 'HistHist':
+        return fig_list, fig_files
     if fig_files is None:
         fig_files = []
     print('gp_plot', end=':  ')
@@ -85,7 +87,7 @@ def gp_1(S:PlotOptions, fig_list=None, fig_files=None):
     return fig_list, fig_files
 
 
-def gp_2(S:PlotOptions, fig_files=None, fig_list=None):
+def gp_2(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     if fig_files is None:
         fig_files = []
     fig_list.append(plt.figure())
@@ -126,7 +128,7 @@ def gp_2(S:PlotOptions, fig_files=None, fig_list=None):
     return fig_list, fig_files
 
 
-def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None):
+def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     if fig_files is None:
         fig_files = []
     fig_list.append(plt.figure())
@@ -198,7 +200,7 @@ def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None):
     return fig_list, fig_files
 
 
-def gp_3_ekf(S:PlotOptions, fig_files=None, fig_list=None):
+def gp_3_ekf(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     if fig_files is None:
         fig_files = []
 
@@ -236,7 +238,7 @@ def gp_3_ekf(S:PlotOptions, fig_files=None, fig_list=None):
     return fig_list, fig_files
 
 
-def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
+def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     if fig_files is None:
         fig_files = []
 

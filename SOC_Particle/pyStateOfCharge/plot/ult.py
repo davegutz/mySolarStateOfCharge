@@ -23,7 +23,7 @@ from plot.plq import plq as plq
 from plot.PlotOptions import PlotOptions
 
 
-def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
+def ult_1(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     if fig_files is None:
         fig_files = []
 
@@ -37,31 +37,32 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.mv, 'time', S.mv, 'ib_amp_hdwe', color='red', linestyle='--', warn=False)
         plq(plt, S.mr, 'time', S.mr, 'ib_noa_hdwe', color='blue', linestyle='-.')
         plq(plt, S.mv, 'time', S.mv, 'ib_noa_hdwe', color='orange', linestyle=':', warn=False)
-    elif (hasattr(S.mr, 'mod') and all(S.mr.mod >= 255.)) or (not (S.strict_overplot) and not(S.run_type == 'HistSim')):
+    elif (hasattr(S.mr, 'mod') and all(S.mr.mod >= 255.)) or (not (S.strict_overplot) \
+                                                              and not(S.run_type=='HistSim' or S.run_type=='HistHist')):
         plq(plt, S.mr, 'time', S.mr, 'ib_amp_model', add=1., color='green', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'ib_amp_model', add=1., color='red', linestyle='--', warn=False)
         plq(plt, S.mr, 'time', S.mr, 'ib_noa_model', add=1., color='blue', linestyle='-.')
         plq(plt, S.mv, 'time', S.mv, 'ib_noa_model', add=1., color='orange', linestyle=':', warn=False)
-    plq(plt, S.mr, 'time', S.mr, 'ib_diff_f', color='cyan', linestyle='-')
+    plq(plt, S.mr, 'time', S.mr, 'ib_diff_f', color='cyan', linestyle='-', warn=S.run_type!='HistHist')
     plq(plt, S.mv, 'time', S.mv, 'ib_diff_f', color='red', linestyle='--', warn=False)
-    plq(plt, S.mr, 'time', S.mr, 'ibd_thr', color='red', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'ibd_thr', slr=-1, color='red', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'ibd_thr', color='red', linestyle='--', warn=S.run_type!='HistHist')
+    plq(plt, S.mr, 'time', S.mr, 'ibd_thr', slr=-1, color='red', linestyle='--', warn=S.run_type!='HistHist')
     plt.legend(loc=1)
     plt.subplot(334)
-    plq(plt, S.mr, 'time', S.mr, 'e_wrap', color='green', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'e_wrap', color='magenta', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'e_wrap', color='green', linestyle='-', warn=S.run_type!='HistHist')
+    plq(plt, S.mv, 'time', S.mv, 'e_wrap', color='magenta', linestyle='--', warn=S.run_type!='HistHist')
     plq(plt, S.mr, 'time', S.mr, 'e_wrap_filt', color='blue', linestyle='-', warn=False)
     plq(plt, S.mv, 'time', S.mv, 'e_wrap_filt', color='orange', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'e_wrap_n', color='green', linestyle='-.')
-    plq(plt, S.mv, 'time', S.mv, 'e_wrap_n', color='pink', linestyle=':')
+    plq(plt, S.mr, 'time', S.mr, 'e_wrap_n', color='green', linestyle='-.', warn=S.run_type!='HistHist')
+    plq(plt, S.mv, 'time', S.mv, 'e_wrap_n', color='pink', linestyle=':', warn=S.run_type!='HistHist')
     plq(plt, S.mr, 'time', S.mr, 'e_wrap_n_filt', color='cyan', linestyle='--', warn=False)
     plq(plt, S.mv, 'time', S.mv, 'e_wrap_n_filt', color='green', linestyle='-.')
     plq(plt, S.mr, 'time', S.mr, 'cc_dif', color='green', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'cc_dif', color='red', linestyle='--', warn=False)
-    plq(plt, S.mr, 'time', S.mr, 'ewnhi_thr', color='red', linestyle='--')
-    plq(plt, S.mv, 'time', S.mv, 'ewnhi_thr', color='orange', linestyle='-.')
-    plq(plt, S.mr, 'time', S.mr, 'ewnlo_thr', color='red', linestyle='--')
-    plq(plt, S.mv, 'time', S.mv, 'ewnlo_thr', color='orange', linestyle='-.')
+    plq(plt, S.mr, 'time', S.mr, 'ewnhi_thr', color='red', linestyle='--', warn=S.run_type!='HistHist')
+    plq(plt, S.mv, 'time', S.mv, 'ewnhi_thr', color='orange', linestyle='-.', warn=S.run_type!='HistHist')
+    plq(plt, S.mr, 'time', S.mr, 'ewnlo_thr', color='red', linestyle='--', warn=S.run_type!='HistHist')
+    plq(plt, S.mv, 'time', S.mv, 'ewnlo_thr', color='orange', linestyle='-.', warn=S.run_type!='HistHist')
     # if active standby
     # plq(plt, S.mr, 'time', S.mr, 'ewhi_thr', color='red', linestyle='-.')
     # plq(plt, S.mr, 'time', S.mr, 'ewlo_thr', color='red', linestyle='-.')

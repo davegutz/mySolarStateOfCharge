@@ -579,9 +579,13 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
                                              fig_list=fig_list, cc_dif_tol=cc_dif_tol_in, time_units='sec')
         if hist_20C is not None and len(hist_20C.time) > 1:
             sim_run = None
+            mon_tst = None
+            sim_tst = None
+            sim_s_tst = None
             if not terse:
-                fig_list, fig_files = overall_fault(mon_run, mon_ver, sim_ver, sim_s_run, sim_s_ver, filename,
-                                                    fig_files, plot_title=plot_title, fig_list=fig_list)
+                fig_list, fig_files = overall_fault(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename,
+                                                    fig_files, plot_title=plot_title, fig_list=fig_list,
+                                                    run_type='HistSim')
             fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_run, sim_s_ver, filename, fig_files,
                                            plot_title=plot_title, fig_list=fig_list, run_str='',
                                            ver_str='_ver', strict_overplot=strict_overplot, terse=terse,

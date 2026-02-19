@@ -30,7 +30,7 @@ if sys.platform == 'darwin':
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
-def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
+def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     print('off_on_plot', end=':  ')
     if S.sr and S.smv:
         fig_list.append(plt.figure())  # 7 off/on sim

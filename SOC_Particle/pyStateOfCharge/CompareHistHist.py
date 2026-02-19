@@ -87,8 +87,9 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
             fig_list, fig_files = dom_plot(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename_run, fig_files,
                                            plot_title=plot_title, fig_list=fig_list, run_str='_'+unit_run,
                                            ver_str='_'+unit_tst, run_type='HistHist')
-            fig_list, fig_files = overall_fault(mon_run, mon_tst, sim_tst, sim_s_tst, filename_run,
-                                                fig_files, plot_title=plot_title, fig_list=fig_list)
+            fig_list, fig_files = overall_fault(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename_run,
+                                                fig_files, plot_title=plot_title, fig_list=fig_list,
+                                                run_type='HistHist')
 
         precleanup_fig_files(output_pdf_name=filename_run, path_to_pdfs=save_pdf_path)
         unite_pictures_into_pdf(outputPdfName=filename_run+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
