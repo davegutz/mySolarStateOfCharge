@@ -54,6 +54,7 @@ def pngs_to_pdf(png_folder='.', output_pdf='output.pdf'):
         print("pngs_to_pdf: no PNG files found in", png_folder)
         return
     c = canvas.Canvas(output_pdf)
+    c.setTitle(os.path.splitext(os.path.basename(output_pdf))[0])
     for png in pngs:
         img = utils.ImageReader(png)
         w, h = img.getSize()
