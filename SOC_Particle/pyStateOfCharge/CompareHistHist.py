@@ -32,6 +32,8 @@ if sys.platform == 'darwin':
     matplotlib.use('tkagg')
 plt.rcParams['axes.grid'] = True
 plt.rcParams['legend.fontsize'] = 'small'
+plt.rcParams['savefig.dpi'] = 300  # Set default savefig DPI to 300
+plt.rcParams['figure.dpi'] = 100  # Also increase display DPI for consistency
 
 # Suppress all UserWarning messages
 import warnings

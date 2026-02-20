@@ -26,7 +26,7 @@ from PlotKiller import show_killer
 from DataOverModel import dom_plot
 from DataOverModel import write_clean_file
 from CompareFault import overall_fault, over_fault
-from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files, precleanup_fig_files
+from unite_pictures import cleanup_fig_files, precleanup_fig_files, pngs_to_pdf
 from datetime import datetime
 from load_data import load_data, remove_nan, remove_0T
 from local_paths import version_from_data_file, local_paths
@@ -39,8 +39,7 @@ import sys
 if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
-plt.rcParams['axes.grid'] = True
-plt.rcParams['legend.fontsize'] = 'small'
+import ComparePlotSettings
 
 # Suppress all UserWarning messages
 import warnings
@@ -575,6 +574,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
         if filename is None:
             filename = 'none'
         plot_title = filename + '   ' + date_time
+        filename = os.path.join(save_pdf_path, filename)
         S = PlotOptions()
         if fault is not None and len(fault.time) > 1:
             fig_list, fig_files = over_fault(fault, filename, fig_files=fig_files, plot_title=plot_title,
@@ -595,9 +595,9 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
                                            run_type='HistSim')
         if S.save_plots:
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-            unite_pictures_into_pdf(outputPdfName=filename+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
+            pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename+'_'+date_time+'.pdf')
             cleanup_fig_files(fig_files)
-    
+
         plt.show(block=False)
         if not fig_list:
             string = 'none plots kill'

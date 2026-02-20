@@ -22,7 +22,7 @@ Dependencies:
     - reportlab  (figures, pdf)
 """
 
-from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files
+from unite_pictures import cleanup_fig_files
 from local_paths import version_from_data_file, local_paths
 from plot.PlotOptions import PlotOptions
 from Battery import overall_batt

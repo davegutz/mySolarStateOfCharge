@@ -37,13 +37,16 @@ class PlotOptions:
     run_type: Optional[str] = ''
 
     def __init__(self, mr=None, mv=None, sr=None, sv=None, smr=None, smv=None, filename=None, plot_title=None,
-                 strict_overplot=None, run_type='None', save_plots=False):
+                 strict_overplot=None, run_type='None', save_plots=True):
         self.mr = mr
         self.mv = mv
         self.sr = sr
         self.sv = sv
         self.smr = smr
         self.smv = smv
+        self.filename = filename
+        self.plot_title = plot_title
+        self.strict_overplot = strict_overplot
         self.save_plots = save_plots
         self.run_type = run_type
         self.run_is_run = self.run_type=='RunSim' or self.run_type=='RunRun'
