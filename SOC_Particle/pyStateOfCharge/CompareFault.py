@@ -24,6 +24,7 @@ from Colors import Colors
 from plot.plq import plq as plq
 from Chemistry_BMS import ib_lag
 from filter.myFilters import LagExp
+from plot.PlotOptions import PlotOptions
 
 # Suppress all UserWarning messages
 import warnings
@@ -268,7 +269,8 @@ def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb, ap_ib_diff_slr=1., ap_i
 
 
 def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, subtitle=None, long_term=True,
-               cc_dif_tol=0.2, time_units='days', timestr='time_ux'):
+               cc_dif_tol=0.2, time_units='days', timestr='time_ux', save_plots=False):
+
     print('over_fault', end=':  ')
     if fig_files is None:
         fig_files = []
@@ -346,7 +348,8 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         fig_list.append(plt.figure())  # 2
         plt.subplot(221)
@@ -390,7 +393,8 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         fig_list.append(plt.figure())  # 3
         plt.subplot(221)
@@ -413,7 +417,8 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plt.legend(loc=4)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if save_plots:
+            plt.savefig(fig_file_name, format="png")
 
     fig_list.append(plt.figure())  # 4
     plt.subplot(331)
@@ -484,12 +489,14 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    plt.savefig(fig_file_name, format="png")
+    if save_plots:
+        plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
 
 
-def overall_fault(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title=None, fig_list=None, run_type=None):
+def overall_fault(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title=None, fig_list=None, run_type=None,
+                  save_plots=False):
     print('overall_fault', end=':  ')
     if fig_files is None:
         fig_files = []
@@ -578,10 +585,12 @@ def overall_fault(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title
         plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    plt.savefig(fig_file_name, format="png")
+    if save_plots:
+        plt.savefig(fig_file_name, format="png")
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    plt.savefig(fig_file_name, format="png")
+    if save_plots:
+        plt.savefig(fig_file_name, format="png")
 
     fig_list.append(plt.figure())  # O_F 2
     plt.subplot(331)
@@ -667,7 +676,8 @@ def overall_fault(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title
     plt.legend(loc=3)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    plt.savefig(fig_file_name, format="png")
+    if save_plots:
+        plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
 

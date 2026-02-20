@@ -24,6 +24,7 @@ from local_paths import version_from_data_file, local_paths
 import os
 from CompareHistSim import load_hist_and_prep
 from CompareFault import overall_fault, over_fault
+from plot.PlotOptions import PlotOptions
 
 import sys
 if sys.platform == 'darwin':
@@ -73,14 +74,15 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
         fig_list = []
         fig_files = []
         plot_title = filename_run + filename_tst + '   ' + date_time
+        S = PlotOptions()
         if fault_run is not None and len(fault_run.time) > 1:
             fig_list, fig_files = over_fault(fault_run, filename_run, fig_files=fig_files, plot_title=plot_title,
                                              subtitle='faults_run', fig_list=fig_list, cc_dif_tol=cc_dif_tol_in,
-                                             time_units='sec')
+                                             time_units='sec', save_plots=S.save_plots)
         if fault_tst is not None and len(fault_tst.time) > 1:
             fig_list, fig_files = over_fault(fault_tst, filename_tst, fig_files=fig_files, plot_title=plot_title,
                                              subtitle='faults_tst', fig_list=fig_list, cc_dif_tol=cc_dif_tol_in,
-                                             time_units='sec')
+                                             time_units='sec', save_plots=S.save_plots)
         if hist_20C_run is not None and len(hist_20C_run.time) > 1:
             sim_run = None
             plot_init_in = False
@@ -89,11 +91,12 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
                                            ver_str='_'+unit_tst, run_type='HistHist')
             fig_list, fig_files = overall_fault(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename_run,
                                                 fig_files, plot_title=plot_title, fig_list=fig_list,
-                                                run_type='HistHist')
+                                                run_type='HistHist', save_plots=S.save_plots)
 
-        precleanup_fig_files(output_pdf_name=filename_run, path_to_pdfs=save_pdf_path)
-        unite_pictures_into_pdf(outputPdfName=filename_run+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
-        cleanup_fig_files(fig_files)
+        if S.save_plots:
+            precleanup_fig_files(output_pdf_name=filename_run, path_to_pdfs=save_pdf_path)
+            unite_pictures_into_pdf(outputPdfName=filename_run+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
+            cleanup_fig_files(fig_files)
     
         plt.show(block=False)
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)

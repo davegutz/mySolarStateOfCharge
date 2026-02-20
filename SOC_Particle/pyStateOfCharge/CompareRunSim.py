@@ -33,6 +33,7 @@ import tkinter.messagebox
 from local_paths import version_from_data_file, local_paths
 import os
 import plot.gp as gp
+from plot.PlotOptions import PlotOptions
 
 if sys.platform == 'darwin':
     import matplotlib
@@ -138,18 +139,20 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
         data_root_test = data_root_test.replace('.csv', '')
         filename = data_root_test
         plot_title = dir_root_test + '/' + data_root_test + '   ' + date_time
+        S = PlotOptions()
         if not terse and f is not None and temp_flt_file_clean and len(f.time_ux) > 1 and not strict_overplot:
             fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
-                                             fig_list=fig_list, cc_dif_tol=cc_dif_tol_in)
+                                             fig_list=fig_list, cc_dif_tol=cc_dif_tol_in, save_plots=S.save_plots)
         fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_run, sim_s_ver, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list, run_str='',
                                        ver_str='_ver', strict_overplot=strict_overplot, terse=terse,
                                        run_type='RunSim')
 
         # Copies
-        precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-        unite_pictures_into_pdf(outputPdfName=filename+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
-        cleanup_fig_files(fig_files)
+        if S.save_plots:
+            precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
+            unite_pictures_into_pdf(outputPdfName=filename+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
+            cleanup_fig_files(fig_files)
         plt.show(block=False)
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         if show_killer_:

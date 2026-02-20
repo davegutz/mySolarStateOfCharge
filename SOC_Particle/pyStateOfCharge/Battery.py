@@ -1626,7 +1626,8 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 2
         fig_list += 1
@@ -1642,7 +1643,8 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 4
         fig_list += 1
@@ -1683,7 +1685,8 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 5
         fig_list += 1
@@ -1719,7 +1722,8 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=4)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 6
         fig_list += 1
@@ -1731,7 +1735,8 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=2)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 7
         fig_list += 1
@@ -1743,7 +1748,8 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=4)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 8
         fig_list += 1
@@ -1755,7 +1761,8 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=4)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 9
         fig_list += 1
@@ -1766,7 +1773,8 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=2)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 10
         fig_list += 1
@@ -1785,7 +1793,8 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=2)
         fig_file_name = filename + "_" + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 11
         fig_list += 1
@@ -1796,7 +1805,8 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=2)
         fig_file_name = filename + "_" + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
     else:
         if use_time_day:
@@ -1865,7 +1875,8 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         plt.figure()
         fig_list += 1
@@ -1891,7 +1902,8 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         plt.figure()
         fig_list += 1
@@ -1943,7 +1955,8 @@ def overall_batt(mv, sv, filename,
         plt.legend(loc=2)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
 

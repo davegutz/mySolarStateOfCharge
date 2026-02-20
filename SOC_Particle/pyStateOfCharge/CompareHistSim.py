@@ -33,6 +33,7 @@ from local_paths import version_from_data_file, local_paths
 from CompareFault import add_stuff_f
 from Util import rename_all
 import os
+from plot.PlotOptions import PlotOptions
 
 import sys
 if sys.platform == 'darwin':
@@ -574,9 +575,11 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
         if filename is None:
             filename = 'none'
         plot_title = filename + '   ' + date_time
+        S = PlotOptions()
         if fault is not None and len(fault.time) > 1:
-            fig_list, fig_files = over_fault(fault, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
-                                             fig_list=fig_list, cc_dif_tol=cc_dif_tol_in, time_units='sec')
+            fig_list, fig_files = over_fault(fault, filename, fig_files=fig_files, plot_title=plot_title,
+                                             subtitle='faults', fig_list=fig_list, cc_dif_tol=cc_dif_tol_in,
+                                             time_units='sec', save_plots=S.save_plots)
         if hist_20C is not None and len(hist_20C.time) > 1:
             sim_run = None
             mon_tst = None
@@ -585,14 +588,15 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
             if not terse:
                 fig_list, fig_files = overall_fault(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename,
                                                     fig_files, plot_title=plot_title, fig_list=fig_list,
-                                                    run_type='HistSim')
+                                                    run_type='HistSim', save_plots=S.save_plots)
             fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_run, sim_s_ver, filename, fig_files,
                                            plot_title=plot_title, fig_list=fig_list, run_str='',
                                            ver_str='_ver', strict_overplot=strict_overplot, terse=terse,
                                            run_type='HistSim')
-        precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-        unite_pictures_into_pdf(outputPdfName=filename+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
-        cleanup_fig_files(fig_files)
+        if S.save_plots:
+            precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
+            unite_pictures_into_pdf(outputPdfName=filename+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
+            cleanup_fig_files(fig_files)
     
         plt.show(block=False)
         if not fig_list:

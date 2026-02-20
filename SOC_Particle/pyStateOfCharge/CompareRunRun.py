@@ -34,6 +34,7 @@ if sys.platform == 'darwin':
     matplotlib.use('tkagg')
 plt.rcParams['axes.grid'] = True
 plt.rcParams['legend.fontsize'] = 'small'
+from plot.PlotOptions import  PlotOptions
 
 # Suppress all UserWarning messages
 import warnings
@@ -116,18 +117,21 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     filename = data_root_run + '__' + data_root_test
     plot_title = dir_root_run + '/' + data_root_run + '__' + dir_root_test + '/' + data_root_test + '   ' + date_time
 
+    S = PlotOptions()
+
     if temp_flt_file_run_clean and len(f_run.time_ux) > 1:
         fig_list, fig_files = over_fault(f_run, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
-                                         fig_list=fig_list)
+                                         fig_list=fig_list, save_plots=S.save_plots)
 
     fig_list, fig_files = dom_plot(mon_run, mon_test, sim_run, sim_test, sim_s_run, sim_s_test, filename, fig_files,
                                    plot_title=plot_title, fig_list=fig_list, run_type='RunRun', terse=terse)  # all over all
 
     # Copies
-    precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-    unite_pictures_into_pdf(outputPdfName=filename+'-'+date_time+'.pdf', save_pdf_path=save_pdf_path,
-                            listWithImagesExtensions=["png"])
-    cleanup_fig_files(fig_files)
+    if S.save_plots:
+        precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
+        unite_pictures_into_pdf(outputPdfName=filename+'-'+date_time+'.pdf', save_pdf_path=save_pdf_path,
+                                listWithImagesExtensions=["png"])
+        cleanup_fig_files(fig_files)
     plt.show(block=False)
     string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
     show_killer(string, 'CompareRunRun', fig_list=fig_list)

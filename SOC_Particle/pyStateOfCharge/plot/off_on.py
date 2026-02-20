@@ -69,7 +69,8 @@ def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plt.legend(loc=1)
         fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         fig_list.append(plt.figure())  # 8 off/on mon 1
         plt.subplot(321)
@@ -188,10 +189,12 @@ def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plt.legend(loc=2)
         fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
         fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        plt.savefig(fig_file_name, format="png")
+        if S.save_plots:
+            plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
