@@ -46,6 +46,8 @@ class PlotOptions:
         self.smv = smv
         self.run_type = run_type
         self.run_is_trans = self.run_type=='RunSim' or self.run_type=='RunRun'
+        self.ver_is_trans_sim = self.run_type == 'RunSim'
+        self.ver_is_trans_run = self.run_type == 'RunRun'
         self.run_is_stdy = not self.run_is_trans
-        self.ver_is_trans = self.run_type=='RunSim' or self.run_type=='RunRun'
-        self.ver_is_stdy = not self.ver_is_trans
+        self.ver_is_stdy = not self.ver_is_trans_run and not self.ver_is_trans_sim
+
