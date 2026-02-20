@@ -28,29 +28,15 @@ from plot.plq import plq as plq
 from Battery import Battery
 import numpy as np
 import sys
-from SavedData import SavedData as SavedData
-from SavedData import SavedDataSim as SavedDataSim
+from plot.PlotOptions import PlotOptions
 
 if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
 plt.rcParams.update({'figure.max_open_warning': 0})
 
-
-@dataclass
-class PlotOptions:
-    mr: SavedData  # Mandatory monitor data to be replicated
-    mv: Optional[SavedData]  # Embedded monitor data sim
-    sr: Optional[SavedDataSim] = None  # Embedded model data app to be replicated
-    sv: Optional[SavedDataSim] = None  # Embedded model data sim
-    smv: Optional[SavedDataSim] = None  # Embedded model data sim
-    filename: Optional[str] = None  # Name of the file to save screenshots
-    plot_title: Optional[str] = None  # Title to put top of plots
-    strict_overplot: Optional[bool] = False  # Plot only true overplotting parameters
-
-
-def gp_1(S:PlotOptions, fig_list=None, fig_files=None, run_type=None):
-    if run_type == 'HistHist':
+def gp_1(S:PlotOptions, fig_list=None, fig_files=None):
+    if S.run_type == 'HistHist':
         return fig_list, fig_files
     if fig_files is None:
         fig_files = []
@@ -86,23 +72,23 @@ def gp_1(S:PlotOptions, fig_list=None, fig_files=None, run_type=None):
 
     return fig_list, fig_files
 
-
-def gp_2(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
+def gp_2(S:PlotOptions, fig_files=None, fig_list=None):
     if fig_files is None:
         fig_files = []
     fig_list.append(plt.figure())
     plt.subplot(221)
     plt.title(S.plot_title + ' GP 2')
     print('GP 2', end=':  ')
-    plq(plt, S.mr, 'time', S.mr, 'vb', color='black', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'vb', color='orange', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'vb_f', color='black', linestyle='-', warn=False)
-    plq(plt, S.mr, 'time', S.mr, 'voc', color='blue', linestyle='-')
-    plq(plt, S.mr, 'time', S.mr, 'voc_d', color='blue', linestyle='-', warn=False)
-    plq(plt, S.mv, 'time', S.mv, 'voc', color='red', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'voc_stat', color='cyan', linestyle='-.')
-    plq(plt, S.mv, 'time', S.mv, 'voc_stat', color='black', linestyle=':', warn=False)
-    plq(plt, S.mr, 'time', S.mr, 'voc_stat_f', color='cyan', linestyle='-.', warn=False)
+    plq(plt, S.mr, 'time', S.mr, 'vb', color='black', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'vb', color='orange', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'vb_f', color='black', linestyle='-', warn=S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'vb_f', color='orange', linestyle='--', warn=S.ver_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'voc', color='blue', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'voc', color='red', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'voc_stat', color='cyan', linestyle='-.', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'voc_stat', color='black', linestyle=':', warn=not S.ver_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'voc_stat_f', color='cyan', linestyle='-.', warn=not S.run_is_stdy and not S.run_is_trans)
+    plq(plt, S.mv, 'time', S.mv, 'voc_stat_f', color='black', linestyle=':', warn=not S.ver_is_stdy and not S.run_is_trans)
     plt.legend(loc=1)
     plt.subplot(222)
     plq(plt, S.mr, 'time', S.mr, 'dv_hys', color='black', linestyle='-')
@@ -115,10 +101,10 @@ def gp_2(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     plt.subplot(224)
     plq(plt, S.mr, 'time', S.mr, 'ib_sel', color='black', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'ib_sel', color='black', linestyle='--', warn=False)
-    plq(plt, S.sr, 'time', S.sr, 'ib_in_s', color='cyan', linestyle='--')
-    plq(plt, S.smv, 'time', S.smv, 'ib_in_s', color='magenta', linestyle='-.')
-    plq(plt, S.mr, 'time', S.mr, 'ib_charge', color='cyan', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'ib_charge', color='orange', linestyle='-.')
+    plq(plt, S.sr, 'time', S.sr, 'ib_in_s', color='cyan', linestyle='--', warn=S.run_type!='HistHist')
+    plq(plt, S.smv, 'time', S.smv, 'ib_in_s', color='magenta', linestyle='-.', warn=S.run_type!='HistHist')
+    plq(plt, S.mr, 'time', S.mr, 'ib_charge', color='cyan', linestyle='-', warn=S.run_type!='HistHist')
+    plq(plt, S.mv, 'time', S.mv, 'ib_charge', color='orange', linestyle='-.', warn=S.run_type!='HistHist')
     plq(plt, S.mr, 'time', S.mr, 'ib_diff', color='red', linestyle=':')
     plt.legend(loc=1)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
@@ -128,7 +114,7 @@ def gp_2(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     return fig_list, fig_files
 
 
-def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
+def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None):
     if fig_files is None:
         fig_files = []
     fig_list.append(plt.figure())
@@ -141,10 +127,10 @@ def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     plq(plt, S.mv, 'time', S.mv, 'saturated', color='orange', linestyle=':')
     plt.legend(loc=1)
     plt.subplot(322)
-    plq(plt, S.mr, 'time', S.mr, 'voc', color='black', linestyle='-')
-    plq(plt, S.mr, 'time', S.mr, 'voc_f', color='black', linestyle='-', warn=False)
-    plq(plt, S.mr, 'time', S.mr, 'voc_d', color='black', linestyle='-', warn=False)
-    plq(plt, S.mv, 'time', S.mv, 'voc', color='orange', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'voc', color='black', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'voc_f', color='black', linestyle='-', warn=not S.run_is_trans)
+    plq(plt, S.mv, 'time', S.mv, 'voc', color='orange', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'voc_f', color='orange', linestyle='--', warn=not S.ver_is_stdy and not S.ver_is_trans)
     plq(plt, S.mr, 'time', S.mr, 'vsat', color='blue', linestyle='-.')
     plq(plt, S.mv, 'time', S.mv, 'vsat', color='red', linestyle=':')
     plq(plt, S.mr, 'time', S.mr, 'voc_soc', color='cyan', linestyle='-')
@@ -155,16 +141,19 @@ def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     plq(plt, S.mv, 'time', S.mv, 'soc', color='orange', linestyle='--')
     plt.legend(loc=1)
     plt.subplot(324)
-    plq(plt, S.mr, 'time', S.mr, 'ib', add=10., color='black', linestyle='-')
-    plq(plt, S.mr, 'time', S.mr, 'ib_f', add=10., color='black', linestyle='-', warn=False)
-    plq(plt, S.mv, 'time', S.mv, 'ib', add=+10., color='orange', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'ib', add=10., color='black', linestyle='-', warn=S.run_type!='HistHist')
+    plq(plt, S.mr, 'time', S.mr, 'ib_f', add=10., color='black', linestyle='-', warn=S.run_type=='HistHist')
+    plq(plt, S.mv, 'time', S.mv, 'ib', add=10., color='orange', linestyle='--', warn=S.run_type!='HistHist')
+    plq(plt, S.mv, 'time', S.mv, 'ib_f', add=10., color='orange', linestyle='--', warn=S.run_type=='HistHist')
     if S.run_type != 'HistSim':
         plq(plt, S.mr, 'time', S.mr, 'ib_lag', color='blue', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'ib_lag', color='red', linestyle='--')
     plt.legend(loc=1)
     plt.subplot(325)
-    plq(plt, S.mr, 'soc', S.mr, 'voc', color='black', linestyle='-')
-    plq(plt, S.mv, 'soc', S.mv, 'voc', color='orange', linestyle='--')
+    plq(plt, S.mr, 'soc', S.mr, 'voc', color='black', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mr, 'soc', S.mr, 'voc_f', color='black', linestyle='-', warn=not S.run_is_trans)
+    plq(plt, S.mv, 'soc', S.mv, 'voc', color='orange', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.mv, 'soc', S.mv, 'voc_f', color='orange', linestyle='--', warn=not S.run_is_trans)
     plq(plt, S.mr, 'soc', S.mr, 'voc_d', color='black', linestyle='-', warn=False)
     plq(plt, S.mr, 'soc', S.mr, 'voc_soc', color='red', linestyle='-')
     plq(plt, S.mv, 'soc', S.mv, 'voc_soc', color='orange', linestyle='--')
@@ -172,7 +161,11 @@ def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
         S.mr.dv = np.array(S.mr.voc_soc) - np.array(S.mr.voc)
     elif hasattr(S.mr, 'voc_d'):
         S.mr.dv = np.array(S.mr.voc_soc) - np.array(S.mr.voc_d)
-    plq(plt, S.mr, 'soc', S.mr, 'dv', add=13, color='blue', linestyle='-')
+    plq(plt, S.mr, 'soc', S.mr, 'dv', add=13, color='blue', linestyle='-', warn=S.run_is_trans)
+    if hasattr(S.mr, 'voc'):
+        S.mr.dv = np.array(S.mr.voc_soc) - np.array(S.mr.voc)
+    elif hasattr(S.mr, 'voc_stat_f'):
+        S.mr.dv = np.array(S.mr.voc_soc) - np.array(S.mr.voc_stat_f)
     if hasattr(S.mv, 'voc'):
         S.mv.dv = np.array(S.mv.voc_soc) - np.array(S.mv.voc)
     elif hasattr(S.mv, 'voc_stat_f'):
@@ -180,13 +173,14 @@ def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     plq(plt, S.mv, 'soc', S.mv, 'dv', add=+13, color='orange', linestyle='--')
     plt.legend(loc=1)
     plt.subplot(326)
-    plq(plt, S.mr, 'time', S.mr, 'voc', color='black', linestyle='-')
-    plq(plt, S.mr, 'time', S.mr, 'voc_f', color='black', linestyle='-', warn=False)
-    plq(plt, S.mv, 'time', S.mv, 'voc', color='cyan', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'voc_d', color='black', linestyle='-.', warn=False)
+    plq(plt, S.mr, 'time', S.mr, 'voc', color='black', linestyle='-', warn=S.run_is_trans)
+    plq(plt, S.mr, 'time', S.mr, 'voc_f', color='black', linestyle='-', warn=S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'voc', color='cyan', linestyle='--', warn=S.run_is_trans)
+    plq(plt, S.mv, 'time', S.mv, 'voc_f', color='cyan', linestyle='--', warn=S.ver_is_stdy and S.ver_is_trans)
     plq(plt, S.mr, 'time', S.mr, 'voc_soc', color='red', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'voc_soc', color='orange', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'dv', add=13, color='blue', linestyle='-')
+    plq(plt, S.mr, 'time', S.mr, 'dv', add=13, color='blue', linestyle='-', warn=S.run_is_trans)
+    plq(plt, S.mv, 'time', S.mv, 'dv', add=13, color='red', linestyle='--', warn=S.ver_is_trans)
     if hasattr(S.mv, 'voc'):
         S.mv.dv = np.array(S.mv.voc_soc) - np.array(S.mv.voc)
     elif hasattr(S.mv, 'voc_stat_f'):
@@ -200,7 +194,7 @@ def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     return fig_list, fig_files
 
 
-def gp_3_ekf(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
+def gp_3_ekf(S:PlotOptions, fig_files=None, fig_list=None):
     if fig_files is None:
         fig_files = []
 
@@ -209,19 +203,19 @@ def gp_3_ekf(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     plt.title(S.plot_title + ' GP 3 KF')
     print('GP 3 KF', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe', add=-2.5, color='blue', linestyle='-')
-    plq(plt, S.mr, 'time', S.mr, 'ib_amp_model', add=-2.5, color='red', linestyle='--')
-    plq(plt, S.mv, 'time', S.mv, 'ib_amp_model', add=-2.5, color='black', linestyle='-.')
-    plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe_kf', add=-2.5, color='black', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'ib_amp_model', add=-2.5, color='red', linestyle='--', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'ib_amp_model', add=-2.5, color='black', linestyle='-.', warn=not S.run_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe_kf', add=-2.5, color='black', linestyle='--', warn=not S.run_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'ib_noa_hdwe', add=2.5, color='blue', linestyle='-.')
-    plq(plt, S.mr, 'time', S.mr, 'ib_noa_model', add=2.5, color='magenta', linestyle='--')
-    plq(plt, S.mv, 'time', S.mv, 'ib_noa_model', add=2.5, color='cyan', linestyle='-.')
-    plq(plt, S.mr, 'time', S.mr, 'ib_noa_kf', add=2.5, color='black', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'ib_noa_model', add=2.5, color='magenta', linestyle='--', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'ib_noa_model', add=2.5, color='cyan', linestyle='-.', warn=not S.run_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'ib_noa_kf', add=2.5, color='black', linestyle='--', warn=not S.run_is_stdy)
     plq(plt, S.mv, 'time', S.mv, 'iscn_f', color='red', linestyle='-.', warn=False)
     plq(plt, S.mr, 'time', S.mr, 'ib_sel', add=-5, color='blue', linestyle='-')
-    plq(plt, S.mr, 'time', S.mr, 'ib', add=-10, color='green', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'ib', add=-10, color='cyan', linestyle='--')
-    plq(plt, S.sr, 'time', S.sr, 'ib_in_s', add=-10, color='orange', linestyle='-.')
-    plq(plt, S.smv, 'time', S.smv, 'ib_in_s', add=-10, color='red', linestyle=':')
+    plq(plt, S.mr, 'time', S.mr, 'ib', add=-10, color='green', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'ib', add=-10, color='cyan', linestyle='--', warn=not S.run_is_stdy)
+    plq(plt, S.sr, 'time', S.sr, 'ib_in_s', add=-10, color='orange', linestyle='-.', warn=not S.run_is_stdy)
+    plq(plt, S.smv, 'time', S.smv, 'ib_in_s', add=-10, color='red', linestyle=':', warn=not S.run_is_stdy)
     plt.xlabel('sec')
     plt.text(0.5, 0.2, "KF_Q_STD= " + "{:10.6f}".format(Battery.KF_Q_STD) + "KF_R_STD= " + "{:10.6f}".format(Battery.KF_R_STD),
              horizontalalignment='center',
@@ -238,7 +232,7 @@ def gp_3_ekf(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     return fig_list, fig_files
 
 
-def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
+def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     if fig_files is None:
         fig_files = []
 
@@ -246,11 +240,11 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     plt.subplot(331)
     plt.title(S.plot_title + ' GP 3 Tune')
     print('GP 3 Tune', end=':  ')
-    plq(plt, S.mr, 'time', S.mr, 'dv_dyn', color='blue', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'dv_dyn', color='red', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'dv_dyn', color='blue', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'dv_dyn', color='red', linestyle='--', warn=not S.ver_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'dv_dyn_f', color='blue', linestyle='-', warn=False)
-    plq(plt, S.sr, 'time', S.sr, 'dv_dyn_s', color='black', linestyle='-.')
-    plq(plt, S.smv, 'time', S.smv, 'dv_dyn_s', color='magenta', linestyle=':')
+    plq(plt, S.sr, 'time', S.sr, 'dv_dyn_s', color='black', linestyle='-.', warn=not S.run_is_stdy)
+    plq(plt, S.smv, 'time', S.smv, 'dv_dyn_s', color='magenta', linestyle=':', warn=not S.ver_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'dv_hys', color='pink', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'dv_hys', color='blue', linestyle='--')
     plt.xlabel('sec')
@@ -258,8 +252,8 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     plt.subplot(332)
     plq(plt, S.mr, 'time', S.mr, 'soc', color='blue', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'soc', color='cyan', linestyle='--')
-    plq(plt, S.sr, 'time', S.sr, 'soc_s', color='black', linestyle='-.')
-    plq(plt, S.smv, 'time', S.smv, 'soc_s', color='magenta', linestyle=':')
+    plq(plt, S.sr, 'time', S.sr, 'soc_s', color='black', linestyle='-.', warn=not S.run_is_stdy)
+    plq(plt, S.smv, 'time', S.smv, 'soc_s', color='magenta', linestyle=':', warn=not S.ver_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'soc_ekf', color='green', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'soc_ekf', color='red', linestyle='--')
     plt.xlabel('sec')
@@ -269,59 +263,58 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     # mr.ib_amp_model = mr.ibmm
     plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe', add=-2.5, color='blue', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'ib_amp_hdwe', add=-2.5, color='red', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'ib_amp_model', add=-2.5, color='magenta', linestyle='-.')
-    plq(plt, S.mv, 'time', S.mv, 'ib_amp_model', add=-2.5, color='black', linestyle=':')
-    plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe_kf', add=-2.5, color='black', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'ib_amp_model', add=-2.5, color='magenta', linestyle='-.', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'ib_amp_model', add=-2.5, color='black', linestyle=':', warn=not S.run_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe_kf', add=-2.5, color='black', linestyle='--', warn=not S.run_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'ib_noa_hdwe', add=2.5, color='blue', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'ib_noa_hdwe', add=2.5, color='red', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'ib_noa_model', add=2.5, color='magenta', linestyle='-.')
-    plq(plt, S.mv, 'time', S.mv, 'ib_noa_model', add=2.5, color='black', linestyle=':')
-    plq(plt, S.mr, 'time', S.mr, 'ib_noa_kf', add=2.5, color='black', linestyle='--')
-    plq(plt, S.mv, 'time', S.mv, 'iscn_f', color='red', linestyle='-.', warn=S.run_type!='RunRun')
+    plq(plt, S.mr, 'time', S.mr, 'ib_noa_model', add=2.5, color='magenta', linestyle='-.', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'ib_noa_model', add=2.5, color='black', linestyle=':', warn=not S.run_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'ib_noa_kf', add=2.5, color='black', linestyle='--', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'iscn_f', color='red', linestyle='-.', warn=not S.run_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'ib_sel', add=-5, color='blue', linestyle='-')
-    plq(plt, S.mr, 'time', S.mr, 'ib', add=-10, color='green', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'ib', add=-10, color='cyan', linestyle='--')
-    plq(plt, S.sr, 'time', S.sr, 'ib_in_s', add=-10, color='orange', linestyle='-.')
-    plq(plt, S.smv, 'time', S.smv, 'ib_in_s', add=-10, color='red', linestyle=':')
+    plq(plt, S.mr, 'time', S.mr, 'ib', add=-10, color='green', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'ib', add=-10, color='cyan', linestyle='--', warn=not S.run_is_stdy)
+    plq(plt, S.sr, 'time', S.sr, 'ib_in_s', add=-10, color='orange', linestyle='-.', warn=not S.run_is_stdy)
+    plq(plt, S.smv, 'time', S.smv, 'ib_in_s', add=-10, color='red', linestyle=':', warn=not S.ver_is_stdy)
     plt.xlabel('sec')
     saved_fontsize = plt.rcParams['legend.fontsize']
     plt.rcParams['legend.fontsize'] = '6'
     plt.legend(loc=3)
     plt.rcParams['legend.fontsize'] = saved_fontsize
     plt.subplot(334)
-    plq(plt, S.mr, 'time', S.mr, 'voc_f', color='blue', linestyle='-', warn=False)
-    plq(plt, S.mr, 'time', S.mr, 'voc', color='blue', linestyle='-', warn=False)
-    plq(plt, S.mv, 'time', S.mv, 'voc', color='cyan', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'voc_d', color='blue', linestyle='-', warn=False)
-    plq(plt, S.mr, 'time', S.mr, 'voc_stat_f', add=-1., color='orange', linestyle='-', warn=False)
-    plq(plt, S.mv, 'time', S.mv, 'voc_stat_f', add=-1., color='blue', linestyle='--', warn=False)
-    plq(plt, S.mr, 'time', S.mr, 'voc_stat', add=-1., color='orange', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'voc_stat', add=-1., color='blue', linestyle='--')
-    plq(plt, S.sr, 'time', S.sr, 'voc_stat_s', add=-1., color='blue', linestyle='-.')
-    plq(plt, S.smv, 'time', S.smv, 'voc_stat_s', add=-1., color='red', linestyle=':')
+    plq(plt, S.mr, 'time', S.mr, 'voc_f', color='blue', linestyle='-', warn=not S.run_is_trans)
+    plq(plt, S.mr, 'time', S.mr, 'voc', color='blue', linestyle='-', warn=not S.ver_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'voc', color='cyan', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'voc_stat_f', add=-1., color='orange', linestyle='-', warn=not S.run_is_trans)
+    plq(plt, S.mv, 'time', S.mv, 'voc_stat_f', add=-1., color='blue', linestyle='--', warn=not S.ver_is_trans)
+    plq(plt, S.mr, 'time', S.mr, 'voc_stat', add=-1., color='orange', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'voc_stat', add=-1., color='blue', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.sr, 'time', S.sr, 'voc_stat_s', add=-1., color='blue', linestyle='-.', warn=not S.run_is_stdy)
+    plq(plt, S.smv, 'time', S.smv, 'voc_stat_s', add=-1., color='red', linestyle=':', warn=not S.ver_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'vsat', color='orange', linestyle=':')
     if S.run_type == 'HistSim':
         plq(plt, S.mr, 'time', S.mr, 'vb_f', add=-2., color='black', linestyle='-')
-    plq(plt, S.mr, 'time', S.mr, 'vb', add=-2., color='black', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'vb', add=-2., color='green', linestyle='--')
-    plq(plt, S.sr, 'time', S.sr, 'vb_s', add=-2., color='red', linestyle='-.')
-    plq(plt, S.sv, 'time', S.smv, 'vb_s', add=-2., color='pink', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'vb', add=-2., color='black', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'vb', add=-2., color='green', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.sr, 'time', S.sr, 'vb_s', add=-2., color='red', linestyle='-.', warn=not S.run_is_stdy)
+    plq(plt, S.sv, 'time', S.smv, 'vb_s', add=-2., color='pink', linestyle='--', warn=not S.ver_is_stdy)
     plt.xlabel('sec')
     saved_fontsize = plt.rcParams['legend.fontsize']
     plt.rcParams['legend.fontsize'] = '6'
     plt.legend(loc=2)
     plt.rcParams['legend.fontsize'] = saved_fontsize
     plt.subplot(335)
-    plq(plt, S.mr, 'time', S.mr, 'e_wrap_n', add=1, color='black', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'e_wrap_n', add=1, color='orange', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'e_wrap_n', add=1, color='black', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'e_wrap_n', add=1, color='orange', linestyle='--', warn=not S.ver_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'e_wrap_n_filt', add=1, color='blue', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'e_wrap_n_filt', add=1, color='red', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'e_wrap', color='black', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'e_wrap', color='orange', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'e_wrap', color='black', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'e_wrap', color='orange', linestyle='--', warn=not S.ver_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'e_wrap_filt', color='blue', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'e_wrap_filt', color='red', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'e_wrap_m', add=-1, color='black', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'e_wrap_m', add=-1, color='orange', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'e_wrap_m', add=-1, color='black', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'e_wrap_m', add=-1, color='orange', linestyle='--', warn=not S.ver_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'e_wrap_m_filt', add=-1, color='blue', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'e_wrap_m_filt', add=-1, color='red', linestyle='--')
     plt.xlabel('sec')
@@ -329,23 +322,23 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     plt.legend(loc=2)
     plt.rcParams['legend.fontsize'] = 'small'
     plt.subplot(336)
-    plq(plt, S.mr, 'soc', S.mr, 'vb', color='blue', linestyle='-')
-    plq(plt, S.mr, 'soc', S.mr, 'vb_hdwe_f', color='blue', linestyle='-')
-    plq(plt, S.mv, 'soc', S.mv, 'vb_hdwe_f', color='cyan', linestyle='-.')
-    plq(plt, S.sr, 'soc_s', S.sr, 'vb_s', color='red', linestyle='-')
-    plq(plt, S.smv, 'soc_s', S.smv, 'vb_s', color='cyan', linestyle='--')
-    plq(plt, S.mr, 'soc', S.mr, 'voc_stat', color='orange', linestyle='-.')
-    plq(plt, S.mr, 'soc', S.mr, 'voc_stat_f', color='orange', linestyle='-.', warn=False)
-    plq(plt, S.smv, 'soc_s', S.smv, 'voc_stat_s', color='red', linestyle=':')
+    plq(plt, S.mr, 'soc', S.mr, 'vb', color='blue', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mr, 'soc', S.mr, 'vb_hdwe_f', color='blue', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'soc', S.mv, 'vb_hdwe_f', color='cyan', linestyle='-.', warn=not S.ver_is_stdy)
+    plq(plt, S.sr, 'soc_s', S.sr, 'vb_s', color='red', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.smv, 'soc_s', S.smv, 'vb_s', color='cyan', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.mr, 'soc', S.mr, 'voc_stat', color='orange', linestyle='-.', warn=not S.run_is_stdy)
+    plq(plt, S.mr, 'soc', S.mr, 'voc_stat_f', color='orange', linestyle='-.', warn=not S.run_is_stdy and not S.run_is_trans)
+    plq(plt, S.smv, 'soc_s', S.smv, 'voc_stat_s', color='red', linestyle=':', warn=not S.ver_is_stdy)
     plt.xlabel('state-of-charge')
     plt.legend(loc=2)
     plt.subplot(337)
-    plq(plt, S.mr, 'time', S.mr, 'vb', color='blue', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'vb', color='orange', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'vb_hdwe_f', color='green', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'vb_hdwe_f', color='magenta', linestyle='--')
-    plq(plt, S.sr, 'time', S.sr, 'vb_s', color='black', linestyle='-.')
-    plq(plt, S.smv, 'time', S.smv, 'vb_s', color='magenta', linestyle=':')
+    plq(plt, S.mr, 'time', S.mr, 'vb', color='blue', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'vb', color='orange', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'vb_hdwe_f', color='green', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'vb_hdwe_f', color='magenta', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.sr, 'time', S.sr, 'vb_s', color='black', linestyle='-.', warn=not S.run_is_stdy)
+    plq(plt, S.smv, 'time', S.smv, 'vb_s', color='magenta', linestyle=':', warn=not S.ver_is_stdy)
     plt.xlabel('sec')
     plt.legend(loc=2)
     plt.subplot(338)
@@ -357,14 +350,14 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
     plq(plt, S.mv, 'time', S.mv, 'sat', add=-0.5, color='red', linestyle='--')
     plq(plt, S.mr, 'time', S.mr, 'saturated', add=-0.5, color='black', linestyle='-.')
     plq(plt, S.mv, 'time', S.mv, 'saturated', add=-0.5, color='green', linestyle=':')
-    plq(plt, S.sr, 'time', S.sr, 'sat_s', add=-0.5, color='red', linestyle='-.')
+    plq(plt, S.sr, 'time', S.sr, 'sat_s', add=-0.5, color='red', linestyle='-.', warn=not S.run_is_stdy)
     if hasattr(S.sv, 'model_saturated'):
         plq(plt, S.sv, 'time', S.sv, 'model_saturated', add=-0.5, color='cyan', linestyle=':')
     plt.xlabel('sec')
     plt.legend(loc=3)
     plt.subplot(339)
-    plq(plt, S.mr, 'time', S.mr, 'Tb_rap', color='blue', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'Tb_rap', color='black', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'Tb_rap', color='blue', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'Tb_rap', color='black', linestyle='--', warn=not S.ver_is_stdy)
     plq(plt, S.mr, 'time_t', S.mr, 'Tb_f', color='cyan', linestyle='-.', stairs=True)
     plq(plt, S.mv, 'time_t', S.mv, 'Tb_f', color='magenta', linestyle=':', stairs=True, warn=S.run_type=='RunRun')
     plq(plt, S.mv, 'time', S.mv, 'Tb_f', color='magenta', linestyle=':', stairs=True, warn=S.run_type!='RunRun')

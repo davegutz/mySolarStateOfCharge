@@ -39,7 +39,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None, unit_key_tst=None,
                       dt_resample=10, plots=True):
 
-    print(f"\ncompare_hist_sim:\n{data_file_run=}\n{unit_key_run=}\n{data_file_tst=}\n{unit_key_tst=}\n{dt_resample=}\n")
+    print(f"\ncompare_hist_hist:\n{data_file_run=}\n{unit_key_run=}\n{data_file_tst=}\n{unit_key_tst=}\n{dt_resample=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 

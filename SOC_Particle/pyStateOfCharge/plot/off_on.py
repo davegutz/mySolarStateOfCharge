@@ -30,7 +30,7 @@ if sys.platform == 'darwin':
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
-def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
+def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
     print('off_on_plot', end=':  ')
     if S.sr and S.smv:
         fig_list.append(plt.figure())  # 7 off/on sim
@@ -113,7 +113,7 @@ def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
         plq(plt, S.smv, 'time', S.smv, 'qcrs_s', color='cyan', linestyle=':')
         plq(plt, S.mr, 'time', S.mr, 'q_capacity', color='blue', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'q_capacity', color='magenta', linestyle='--')
-        plq(plt, S.sv, 'time', S.sr, 'q_capacity', color='black', linestyle='-.')
+        plq(plt, S.sr, 'time', S.sr, 'q_capacity', color='black', linestyle='-.', warn=S.run_type=='HistHist')
         plq(plt, S.sv, 'time', S.sv, 'q_capacity', color='orange', linestyle=':')
         plt.xlabel('sec')
         plt.legend(loc=2)

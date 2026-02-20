@@ -31,7 +31,7 @@ if sys.platform == 'darwin':
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
-def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None, run_type=None):
+def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
     if not fig_files:
         fig_files = []
     if not fig_list:

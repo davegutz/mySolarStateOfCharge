@@ -47,6 +47,10 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 def dom_plot(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
              run_str='_run', ver_str='_ver', strict_overplot=False, terse=False, run_type=None):
+
+#     print(f"\ndom_plot:\n{mr=}\n{mv=}\n{sr=}\n{sv=}\n{smr=}\n{smv=}\n{filename=}\n{fig_files=}\n{plot_title=}\n\
+# {fig_list=}\n{plot_init_in=}\n{run_str=}\n{ver_str=}\n{strict_overplot=}\n{terse=}\n{run_type=}\n")
+
     print('dom_plot', end=':  ')
     if fig_files is None:
         fig_files = []
