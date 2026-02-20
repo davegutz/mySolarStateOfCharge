@@ -73,6 +73,8 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
 
     # Plots
     if plots:
+        filename_run  = filename_run.replace('CompareHistSim', '')
+        filename_tst = filename_tst.replace('CompareHistSim', '')
         aug_file = filename_run + '__' + filename_tst + '_' + os.path.split(__file__)[1].split('.')[0]
         filename = os.path.join(save_pdf_path, aug_file)
         S = PlotOptions()
