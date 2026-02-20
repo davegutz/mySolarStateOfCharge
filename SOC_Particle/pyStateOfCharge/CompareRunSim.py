@@ -20,7 +20,7 @@ Coulomb Counter built in."""
 import sys
 
 from MonSim import replicate, save_clean_file, UserOptions
-from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files, precleanup_fig_files
+from unite_pictures import cleanup_fig_files, precleanup_fig_files, pngs_to_pdf
 from CompareFault import over_fault
 from Util import rename_all
 import matplotlib.pyplot as plt
@@ -137,8 +137,10 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
     if plots:
         dir_root_test, data_root_test = os.path.split(data_file_clean)
         data_root_test = data_root_test.replace('.csv', '')
-        filename = data_root_test
+        aug_file = os.path.split(temp_flt_file_clean)[1].replace('.csv', '_') + os.path.split(__file__)[1].split('.')[0]
+        filename = os.path.join(save_pdf_path, aug_file)
         plot_title = dir_root_test + '/' + data_root_test + '   ' + date_time
+
         S = PlotOptions()
         if not terse and f is not None and temp_flt_file_clean and len(f.time_ux) > 1 and not strict_overplot:
             fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
@@ -151,7 +153,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
         # Copies
         if S.save_plots:
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-            unite_pictures_into_pdf(outputPdfName=filename+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
+            pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
             cleanup_fig_files(fig_files)
         plt.show(block=False)
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
@@ -193,7 +195,7 @@ def main():  # Example usage.  ok on 20260217
     # Rk,
     # vv0,
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\shunt_test_soc3p2_hi_lo_bb.csv'
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaLoHiFail_soc3p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaLoFullFail_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
 
     # # gdrive = '/home/daveg/Documents/'
@@ -228,8 +230,8 @@ def main():  # Example usage.  ok on 20260217
     # plots = False
     plots = True
 
-    terse_in = False
-    # terse_in = True
+    # terse_in = False
+    terse_in = True
 
     strict_overplot_in = False
     # strict_overplot_in = True

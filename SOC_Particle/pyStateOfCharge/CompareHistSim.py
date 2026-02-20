@@ -571,8 +571,7 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
 
     # Plots
     if plots:
-        if filename is None:
-            filename = 'none'
+        filename = filename
         plot_title = filename + '   ' + date_time
         filename = os.path.join(save_pdf_path, filename)
         S = PlotOptions()

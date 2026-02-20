@@ -18,7 +18,7 @@
 import matplotlib.pyplot as plt
 from PlotKiller import show_killer
 from DataOverModel import dom_plot
-from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files, precleanup_fig_files
+from unite_pictures import cleanup_fig_files, precleanup_fig_files, pngs_to_pdf
 from datetime import datetime
 from local_paths import version_from_data_file, local_paths
 import os
@@ -40,9 +40,9 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
 def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None, unit_key_tst=None,
-                      dt_resample=10, plots=True):
+                      dt_resample=10, plots=True, terse=False):
 
-    print(f"\ncompare_hist_hist:\n{data_file_run=}\n{unit_key_run=}\n{data_file_tst=}\n{unit_key_tst=}\n{dt_resample=}\n")
+    print(f"\ncompare_hist_hist:\n{data_file_run=}\n{unit_key_run=}\n{data_file_tst=}\n{unit_key_tst=}\n{dt_resample=}\n{terse=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
@@ -73,16 +73,19 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
 
     # Plots
     if plots:
+        aug_file = filename_run + '__' + filename_tst + '_' + os.path.split(__file__)[1].split('.')[0]
+        filename = os.path.join(save_pdf_path, aug_file)
+        S = PlotOptions()
         fig_list = []
         fig_files = []
         plot_title = filename_run + filename_tst + '   ' + date_time
         S = PlotOptions()
         if fault_run is not None and len(fault_run.time) > 1:
-            fig_list, fig_files = over_fault(fault_run, filename_run, fig_files=fig_files, plot_title=plot_title,
+            fig_list, fig_files = over_fault(fault_run, filename, fig_files=fig_files, plot_title=plot_title,
                                              subtitle='faults_run', fig_list=fig_list, cc_dif_tol=cc_dif_tol_in,
                                              time_units='sec', save_plots=S.save_plots)
         if fault_tst is not None and len(fault_tst.time) > 1:
-            fig_list, fig_files = over_fault(fault_tst, filename_tst, fig_files=fig_files, plot_title=plot_title,
+            fig_list, fig_files = over_fault(fault_tst, filename, fig_files=fig_files, plot_title=plot_title,
                                              subtitle='faults_tst', fig_list=fig_list, cc_dif_tol=cc_dif_tol_in,
                                              time_units='sec', save_plots=S.save_plots)
         if hist_20C_run is not None and len(hist_20C_run.time) > 1:
@@ -90,14 +93,14 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
             plot_init_in = False
             fig_list, fig_files = dom_plot(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename_run, fig_files,
                                            plot_title=plot_title, fig_list=fig_list, run_str='_'+unit_run,
-                                           ver_str='_'+unit_tst, run_type='HistHist')
+                                           ver_str='_'+unit_tst, run_type='HistHist', terse=terse)
             fig_list, fig_files = overall_fault(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename_run,
                                                 fig_files, plot_title=plot_title, fig_list=fig_list,
                                                 run_type='HistHist', save_plots=S.save_plots)
 
         if S.save_plots:
-            precleanup_fig_files(output_pdf_name=filename_run, path_to_pdfs=save_pdf_path)
-            unite_pictures_into_pdf(outputPdfName=filename_run+'_'+date_time+'.pdf', save_pdf_path=save_pdf_path)
+            precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
+            pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename+'_'+date_time+'.pdf')
             cleanup_fig_files(fig_files)
     
         plt.show(block=False)
@@ -115,13 +118,14 @@ def main():
     data_file_tst = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\rapidTweakRegression_soc3p2_hi_lo_bb.csv'
     unit_key_tst = 'g20250612a_soc3p2_bb'
     dt_resample = 10
+    terse = True
 
     # Do this when running compare_hist_sim on run that schedule extracted assuming constant Tb
     # Tb_force = 35
 
     compare_hist_hist(data_file_run=data_file_run, unit_key_run=unit_key_run,
                       data_file_tst=data_file_tst, unit_key_tst=unit_key_tst,
-                      dt_resample=dt_resample)
+                      dt_resample=dt_resample, terse=terse)
 
 
 if __name__ == '__main__':  # Example usage.  Ran ok 20260217

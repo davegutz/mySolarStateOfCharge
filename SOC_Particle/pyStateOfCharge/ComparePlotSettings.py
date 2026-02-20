@@ -1,8 +1,7 @@
 import matplotlib.pyplot as plt
 plt.rcParams['axes.grid'] = True
 plt.rcParams['legend.fontsize'] = 'small'
-plt.rcParams['savefig.dpi'] = 300  # Set default savefig DPI to 300
-# plt.rcParams['figure.dpi'] = 300  # Also increase display DPI for consistency
+plt.rcParams['savefig.dpi'] = 500  # Set default savefig DPI to 300
 
 # Monkey-patch savefig: resize to 16:9 for the save, restore display size after.
 _orig_savefig = plt.savefig
