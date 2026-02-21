@@ -162,11 +162,8 @@ def replicate(OPT: UserOptions):
     while G.i < t_len-1:
         G.i += 1
 
-        if G.i >= 206:
-            pass  # used for debug breakpoint at i >= <val>
-
         # Time
-        now =t [G.i]
+        now = t[G.i]
         SN.update(G.i)
         T_ekf = None
         if G.i != 0:
@@ -177,9 +174,9 @@ def replicate(OPT: UserOptions):
         # Get temperature data
         if hasattr(OPT.mon_run, 'time_t'):
             if hasattr(OPT.mon_run, 'mtb') and OPT.mon_run.mtb is not None \
-                    and  OPT.mon_run.mtb[G.i]>0. and G.i+1 < len(OPT.mon_run.time) :
-                calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and \
-                            (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i+1])
+                    and OPT.mon_run.mtb[G.i]>0. and G.i+1 < len(OPT.mon_run.time) :
+                calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) \
+                    and (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i+1])
             else:
                 calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and \
                             (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i])
@@ -339,14 +336,6 @@ def replicate(OPT: UserOptions):
             hdr = print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim)
 
         prn_soc_debug(OPT, time=now, leader="end loop:                ", i_temp=i_temp, mon=mon, sim=sim)
-
-        # pick a pass to run debugger to a time
-        if G.i >= 206:
-            pass  # used for debug breakpoint at i >= <val>
-        if now > 2:
-            pass  # used for debug breakpoint at now > <val>
-        else:
-            pass
 
         # Finish loop
         # if calc_ekf:

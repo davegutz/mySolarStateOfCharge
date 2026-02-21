@@ -17,7 +17,6 @@ from CompareFault import add_stuff_f, filter_Tb, IB_BAND
 from SavedData import SavedData, SavedDataSim
 from Battery import Battery, BatteryMonitor
 from DataOverModel import write_clean_file
-from idlelib.run import flush_stdout
 from Util import rename_all
 from resample import remove_nan
 import numpy as np
@@ -46,8 +45,7 @@ def remove_0T(d_ra, info):
     filtered_data = d_ra[condition]
     num_removed = len(d_ra) - len(filtered_data)
     if num_removed > 0:
-        print(f"\nremove_0T:  screened out {num_removed} rows from {info} with bad time_ux element\n")
-        flush_stdout()
+        print(f"\nremove_0T:  screened out {num_removed} rows from {info} with bad time_ux element\n", flush=True)
     return filtered_data
 
 
@@ -120,12 +118,9 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
 
     data_file_clean = write_clean_file(path_to_data, type_='_mon', hdr_key=hdr_key_rap, unit_key=unit_key, skip=skip)
     if data_file_clean is None:
-        return None, None, None, None, None, None
-    if data_file_clean is not None:
-        mon_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-    else:
-        mon_raw = None
         print(f"load_data: returning mon=None")
+        return None, None, None, None, None, None
+    mon_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
 
     # Load battery (ref)
     battery_file_clean = write_clean_file(path_to_data, type_='_battery', hdr_key=battery_hdr,

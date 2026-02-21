@@ -106,7 +106,6 @@ def filter_f15_sequence(data_stream):
 
 def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip=1, comment_str='#'):
     """First line with hdr_key defines the number of fields to be imported cleanly"""
-    import os
     (path, basename) = os.path.split(path_to_data)
     version = version_from_data_file(path_to_data)
     (path_to_temp, save_pdf_path, _) = local_paths(version)

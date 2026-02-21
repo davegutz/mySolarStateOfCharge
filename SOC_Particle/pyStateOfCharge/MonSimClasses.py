@@ -334,7 +334,7 @@ class Sensors:
             else:
                 mon.Tb = mon.Tb_hdwe  # past value
             sim.Tb = mon.Tb
-            mon.Tb_s =mon.Tb
+            mon.Tb_s = mon.Tb
         else:
             sim.Tb = OPT.mon_run.Tb_f[i_temp]
             mon.Tb = OPT.mon_run.Tb_f[i_temp]
@@ -395,8 +395,6 @@ class Sensors:
             mon.Tb_rstate = self.TbSenseFilt.rstate
             mon.Tb_state = self.TbSenseFilt.state
         self.assign_tb(mon.Tb, mon.Tb_f, mon.Tb_f_rate)
-        if i_temp > 2:
-            pass
         return mon
 
     def update_ekf(self, i_ekf):

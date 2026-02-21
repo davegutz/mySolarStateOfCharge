@@ -158,36 +158,12 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
 
 
 def main():  # Example usage.  ok on 20260217
-
-    import sys
     if sys.platform == 'linux':
         gdrive = '/home/daveg/gdrive/'
     else:
         gdrive = 'G:/My Drive/'
 
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\offSitHysBmsBB_soc2p2_hi_lo_bb.csv'
-    unit_key = 'g20250612a_soc2p2_hi_lo_chg'
-    time_end_in = None
-    plots = True
-    use_mon_soc_ = False
-    verbose = True
-    scale_in = 1.0
-    slr_hys_sim = 1.0
-    request_history = 3
     init_time_in  = None  # that logic doesn't work yet
-    time_shift_in = None
-    strict_overplot_in = True
-
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewamps_soc2p2_hi_lo_bb.csv' # problems with Vb=0 icharge=0
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsXm2_soc2p2_hi_lo_bb.csv'  # problems with sat
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ssnoisenewampsXm2Cap5_soc2p2_hi_lo_bb.csv'
-
-    # Hardware
-    # Xm0, Ca.5, DP1,
-    # Rf, vv4,
-    # Rk,
-    # vv0,
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\shunt_test_soc3p2_hi_lo_bb.csv'
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaLoFullFail_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
 
