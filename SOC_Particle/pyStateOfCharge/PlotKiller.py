@@ -33,6 +33,7 @@ else:
     import tkinter as tk
     # from tkinter import Button as myButton
 bg_color = "lightgray"
+from ComparePlotSettings import rescale_time_axes
 
 
 class PlotKiller(tk.Toplevel):
@@ -40,10 +41,26 @@ class PlotKiller(tk.Toplevel):
         """Block caller task asking to close all plots then doing so"""
         self.fig_list = fig_list_
         tk.Toplevel.__init__(self)
-        tk.Button(self, command=self.close_figs, text=caller + ": close " + message, font=("Courier", 12)).grid(row=0, column=0, padx=15, pady=15)
+        self.title(caller)
+        tk.Button(self, command=self.close_figs, text="close " + message, font=("Courier", 12)).grid(row=0, column=0, columnspan=4, padx=15, pady=15)
+        tk.Label(self, text="t_min:", font=("Courier", 10)).grid(row=1, column=0, padx=5, pady=5, sticky='e')
+        self.t_min_var = tk.StringVar()
+        tk.Entry(self, textvariable=self.t_min_var, width=10, font=("Courier", 10)).grid(row=1, column=1, padx=5, pady=5)
+        tk.Label(self, text="t_max:", font=("Courier", 10)).grid(row=1, column=2, padx=5, pady=5, sticky='e')
+        self.t_max_var = tk.StringVar()
+        tk.Entry(self, textvariable=self.t_max_var, width=10, font=("Courier", 10)).grid(row=1, column=3, padx=5, pady=5)
+        tk.Button(self, command=self.rescale_axes, text="rescale", font=("Courier", 10)).grid(row=2, column=0, columnspan=4, padx=15, pady=5)
         self.lift()
         self.mainloop()
         # self.grab_set()  # Prevents other Tkinter windows from being used
+
+    def rescale_axes(self):
+        t_min_str = self.t_min_var.get().strip()
+        t_max_str = self.t_max_var.get().strip()
+        t_min = float(t_min_str) if t_min_str else None
+        t_max = float(t_max_str) if t_max_str else None
+        if self.fig_list is not None:
+            rescale_time_axes(self.fig_list, t_min=t_min, t_max=t_max)
 
     def close_figs(self):
         if self.fig_list is None:
