@@ -113,7 +113,7 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
     # Header
     have_header_str = None
     num_fields = 0
-    with open(path_to_data, "r", encoding='cp437') as input_file:
+    with open(path_to_data, "r", encoding='cp437') as input_file:  # reads all characters even bad ones
         with open(csv_file, "w") as output:
             try:
                 for line in input_file:
@@ -129,15 +129,14 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
                             num_fields = line.count(',')  # first line with hdr_key defines number of fields
             except IOError:
                 print("DataOverModel381:", line)  # last line
-    # Data
-    num_lines = 0
-    num_text_run = 0
-    num_lines_in = 0
-    num_skips = 0
-    unit_key_found = False
-    skipped_last = False
-    with (open(path_to_data, "r", encoding='cp437') as input_file):  # reads all characters even bad ones
-        with open(csv_file, "a") as output:
+            # Data - rewind to start of input, continue appending to same output
+            input_file.seek(0)
+            num_lines = 0
+            num_text_run = 0
+            num_lines_in = 0
+            num_skips = 0
+            unit_key_found = False
+            skipped_last = False
             for line in input_file:
                 line = filter_f15_sequence(line)  # ESC[28~ injected by f15 keypress GUI_TestSOC to keep term awake
                 if line.__contains__(unit_key) and not line.__contains__('Config:'):
