@@ -227,9 +227,6 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const bo
     vb_ = Sen->vb();
     ib_ = Sen->ib();
     ib_ = max(min(ib_, IMAX_NUM), -IMAX_NUM);  // Overflow protection when ib_ past value used
-    #ifdef IB_CHARGE_NOA  // Force use of noa but have full signal selection logic on both for evaluation
-        if ( !sp.mod_ib() ) ib_ = Sen->Ib_noa_hdwe/sp.nP();
-    #endif
 
     // Table lookup
     voc_soc_ = voc_soc_tab(soc_, tb_f_);

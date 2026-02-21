@@ -52,7 +52,6 @@
 #undef TB_MAX
 #undef TB_MIN
 #undef CHEM_NOM_VSAT
-#undef IB_CHARGE_NOA
 #undef VOC_STAT_FILT
 
 // Software configuration
