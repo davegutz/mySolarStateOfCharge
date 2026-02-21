@@ -735,7 +735,7 @@ def compare_run():
         keys = [(Ref.file_txt, Ref.key), (Test.file_txt, Test.key)]
         # master.withdraw()
         compare_run_run(keys=keys, data_file_folder_run=Ref.version_path, data_file_folder_test=Test.version_path,
-                        strict_overplot=strict_overplot.get(), terse=terse.get())
+                        terse=terse.get())
 
         # master.deiconify()
 

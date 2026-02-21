@@ -113,7 +113,8 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plt.legend(loc=1)
         fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        if S.save_plots:
+        if S.save_plots and not S.terse:
+
             plt.savefig(fig_file_name, format="png")
 
         fig_list.append(plt.figure())  # sim_s  2

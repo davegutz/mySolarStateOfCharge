@@ -55,7 +55,7 @@ def dom_plot(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title=None
     if fig_files is None:
         fig_files = []
     figOptions = PlotOptions(mr=mr, mv=mv, sr=sr, sv=sv, smr=smr, smv=smv, filename=filename, plot_title=plot_title,
-                             strict_overplot=strict_overplot, run_type=run_type)
+                             strict_overplot=strict_overplot, run_type=run_type, terse=terse)
 
     if not terse:
         # fig_list, fig_files = hist.hs_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,

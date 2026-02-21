@@ -592,7 +592,8 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
                                            plot_title=plot_title, fig_list=fig_list, run_str='',
                                            ver_str='_ver', strict_overplot=strict_overplot, terse=terse,
                                            run_type='HistSim')
-        if S.save_plots:
+        if S.save_plots and not S.terse:
+
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename+'_'+date_time+'.pdf')
             cleanup_fig_files(fig_files)

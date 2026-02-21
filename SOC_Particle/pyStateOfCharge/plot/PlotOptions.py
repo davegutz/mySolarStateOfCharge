@@ -35,9 +35,12 @@ class PlotOptions:
     plot_title: Optional[str] = ''
     strict_overplot: Optional[bool] = False
     run_type: Optional[str] = ''
+    save_plots: Optional[bool] = True
+    terse: Optional[bool] = True
+
 
     def __init__(self, mr=None, mv=None, sr=None, sv=None, smr=None, smv=None, filename=None, plot_title=None,
-                 strict_overplot=None, run_type='None', save_plots=True):
+                 strict_overplot=None, run_type='None', save_plots=True, terse=True):
         self.mr = mr
         self.mv = mv
         self.sr = sr
@@ -54,4 +57,5 @@ class PlotOptions:
         self.ver_is_run = self.run_type == 'RunRun'
         self.run_is_stdy = not self.run_is_run
         self.ver_is_stdy = not self.ver_is_run and not self.ver_is_sim
+        self.terse = terse
 

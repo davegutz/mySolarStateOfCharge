@@ -39,11 +39,6 @@ from plot.PlotOptions import  PlotOptions
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
-# def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True, Dw=0.,  use_mon_soc_=False,
-#                     verbose=True, scale_in=1., slr_hys_sim=1., request_history=5, Battery=None, init_time_in=None,
-#                     time_shift_in=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
-#                     fig_list=None, show_killer_=True):
-
 def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=None, sync_to_ctime=False,
                     terse=True):
 
@@ -127,7 +122,9 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
                                    plot_title=plot_title, fig_list=fig_list, run_type='RunRun', terse=terse)  # all over all
 
     # Copies
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
+
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
         pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
         cleanup_fig_files(fig_files)
@@ -139,7 +136,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
 
 
 def main():
-    keys=[('noaLoFullFail_soc3p2_hi_lo_bb.csv', 'g20250612a_soc3p2_hi_lo_bb'), ('noaLoFullFail_soc2p2_hi_lo_bb.csv', 'g20250612a_soc2p2_hi_lo_bb')]
+    keys=[('ampHiEmptFail_soc2p2_hi_lo_bb.csv', 'g20250612a_soc2p2_hi_lo_bb'), ('ampHiEmptFail_soc3p2_hi_lo_bb.csv', 'g20250612a_soc3p2_hi_lo_bb')]
 
     import sys
     if sys.platform == 'linux':

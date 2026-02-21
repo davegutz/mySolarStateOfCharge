@@ -181,7 +181,8 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
 
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files

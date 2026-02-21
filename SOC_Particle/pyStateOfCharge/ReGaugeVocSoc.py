@@ -206,7 +206,8 @@ class LocalChem(Chemistry):
         # plt.legend(loc=1)
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        # if S.save_plots:
+        # if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
         return fig_list, fig_files

@@ -51,7 +51,8 @@ def init_1(S:PlotOptions, fig_list=None, fig_files=None):
     plt.legend(loc=1)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -104,7 +105,8 @@ def init_1a(S:PlotOptions, fig_list=None, fig_files=None):
         plt.legend(loc=1)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -164,7 +166,8 @@ def dom_2(S:PlotOptions, fig_list=None, fig_files=None):
     plt.legend(loc=1)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -195,7 +198,8 @@ def dom_3(S:PlotOptions, fig_list=None, fig_files=None):
     plt.legend(loc=1)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -232,7 +236,8 @@ def dom_4(S:PlotOptions, fig_list=None, fig_files=None):
     plt.legend(loc=1)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -265,7 +270,8 @@ def dom_4a(S:PlotOptions, fig_list=None, fig_files=None):
     plt.legend(loc=1)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -320,7 +326,8 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
             plt.legend(loc=1)
             fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
             fig_files.append(fig_file_name)
-            if S.save_plots:
+            if S.save_plots and not S.terse:
+
                 plt.savefig(fig_file_name, format="png")
 
             fig_list.append(plt.figure())  # EKF  2
@@ -370,7 +377,8 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
             plt.legend(loc=1)
             fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
             fig_files.append(fig_file_name)
-            if S.save_plots:
+            if S.save_plots and not S.terse:
+
                 plt.savefig(fig_file_name, format="png")
 
             fig_list.append(plt.figure())  # EKF2a
@@ -396,7 +404,8 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
             plt.legend(loc=1)
             fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
             fig_files.append(fig_file_name)
-            if S.save_plots:
+            if S.save_plots and not S.terse:
+
                 plt.savefig(fig_file_name, format="png")
 
             fig_list.append(plt.figure())  # EKF3
@@ -447,7 +456,8 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
         plt.legend(loc=1)
         fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        if S.save_plots:
+        if S.save_plots and not S.terse:
+
             plt.savefig(fig_file_name, format="png")
 
         fig_list.append(plt.figure())  # Hyst 1
@@ -550,6 +560,7 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
         plt.legend(loc=1)
         fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
-        if S.save_plots:
+        if S.save_plots and not S.terse:
+
             plt.savefig(fig_file_name, format="png")
     return fig_list, fig_files

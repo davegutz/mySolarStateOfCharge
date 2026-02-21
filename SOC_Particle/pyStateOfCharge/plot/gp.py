@@ -68,7 +68,8 @@ def gp_1(S:PlotOptions, fig_list=None, fig_files=None):
     plt.legend(loc=1)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -110,7 +111,8 @@ def gp_2(S:PlotOptions, fig_files=None, fig_list=None):
     plt.legend(loc=1)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -191,7 +193,8 @@ def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None):
     plt.legend(loc=1)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -230,7 +233,8 @@ def gp_3_ekf(S:PlotOptions, fig_files=None, fig_list=None):
     plt.legend(loc=3)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -369,7 +373,8 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     plt.legend(loc=3)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -529,7 +534,8 @@ def tune_r(S:PlotOptions, fig_list=None, fig_files=None):
     plt.legend(loc=2)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     fig_list.append(plt.figure())  # GP 3 Tune Summ
@@ -569,7 +575,8 @@ def tune_r(S:PlotOptions, fig_list=None, fig_files=None):
     plt.legend(loc=3)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
-    if S.save_plots:
+    if S.save_plots and not S.terse:
+
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files

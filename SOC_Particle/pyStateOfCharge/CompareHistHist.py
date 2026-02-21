@@ -100,7 +100,8 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
                                                 fig_files, plot_title=plot_title, fig_list=fig_list,
                                                 run_type='HistHist', save_plots=S.save_plots)
 
-        if S.save_plots:
+        if S.save_plots and not S.terse:
+
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename+'_'+date_time+'.pdf')
             cleanup_fig_files(fig_files)

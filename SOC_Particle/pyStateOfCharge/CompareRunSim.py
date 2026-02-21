@@ -148,7 +148,8 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
         # rescale_time_axes(fig_list, 40, 50)
 
         # Copies
-        if S.save_plots:
+        if S.save_plots and not S.terse:
+
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
             cleanup_fig_files(fig_files)
@@ -167,8 +168,8 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     init_time_in  = None  # that logic doesn't work yet
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaLoFullFail_soc3p2_hi_lo_bb.csv'
-    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiEmptFail_soc2p2_hi_lo_bb.csv'
+    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
 
     # # gdrive = '/home/daveg/Documents/'
     # # data_file = gdrive + 'vv4 20250905am_soc4p2_hi_lo_bb.csv'
