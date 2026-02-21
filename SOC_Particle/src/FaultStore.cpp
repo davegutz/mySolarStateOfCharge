@@ -139,7 +139,7 @@ void SavedPars::print_fault_header(Publish *pubList)
     txBuf = String::format("Config:  %s \n", pubList->unit.c_str());
     sendTxBuf(txBuf, true, true);
 
-    txBuf = String::format("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, ibmh_f, ibnh_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_w_f, e_wm_f, e_wm_t, e_wn_f, fltw, falw,\n");
+    txBuf = String::format("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, ib_amp_hdwe_f, ib_noa_hdwe_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_wrap_filt, e_wrap_m_filt, e_wrap_m_trim, e_wrap_n_filt, fltw, falw,\n");
     sendTxBuf(txBuf, true, true);
 }
 

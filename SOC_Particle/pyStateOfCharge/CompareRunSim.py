@@ -19,6 +19,7 @@ the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 import sys
 
+from ComparePlotSettings import rescale_time_axes
 from MonSim import replicate, save_clean_file, UserOptions
 from unite_pictures import cleanup_fig_files, precleanup_fig_files, pngs_to_pdf
 from CompareFault import over_fault
@@ -143,6 +144,8 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
                                        plot_title=plot_title, fig_list=fig_list, run_str='',
                                        ver_str='_ver', strict_overplot=strict_overplot, terse=terse,
                                        run_type='RunSim')
+
+        # rescale_time_axes(fig_list, 40, 50)
 
         # Copies
         if S.save_plots:

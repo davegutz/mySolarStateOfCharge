@@ -46,7 +46,7 @@ boolean recall_P(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             break;
 
         case ( 'b' ):  // Pb:  Print Vb measure
-            Serial.printf("\nVolt:");   Serial.printf("Vb_bias_hdwe,Vb_m,mod,Vb=,%7.3f,%7.3f,%d,%7.3f,\n", 
+            Serial.printf("\nVolt:");   Serial.printf("Vb_bias_hdwe,vb_model,mod,Vb=,%7.3f,%7.3f,%d,%7.3f,\n", 
                 sp.Vb_bias_hdwe(), Sen->Vb_model, sp.modeling(), Sen->Vb);
             break;
 

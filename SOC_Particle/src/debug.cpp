@@ -236,7 +236,7 @@ void debug_check_99(BatteryMonitor *Mon, Sensors *Sen)
   // Various parameters to debug initialization stuff as needed
   void debug_m1(BatteryMonitor *Mon, Sensors *Sen)
   {
-    Serial.printf("mod %d fake_f %d reset_temp %d soft_sim_hold %d Tb%7.3f Tb_f%7.3f Vb%7.3f Ib%7.3f\nib_s%7.3f soc_s%8.4f dq_s%10.1f\nib%7.3f soc  %8.4f dq  %10.1f soc_ekf%8.4f dq_ekf%10.1f\nvoc_filt %7.3f vsat %7.3f sat %d sat_s %d dq_z%10.1f lf %d llf %d\n",
+    Serial.printf("mod %d fake_f %d reset_temp %d soft_sim_hold %d Tb%7.3f Tb_f%7.3f Vb%7.3f Ib%7.3f\nib_s%7.3f soc_s%8.4f delta_q_s%10.1f\nib%7.3f soc  %8.4f dq  %10.1f soc_ekf%8.4f dq_ekf%10.1f\nvoc_filt %7.3f vsat %7.3f sat %d sat_s %d dq_z%10.1f lf %d llf %d\n",
         sp.modeling(), ap.fake_faults, Sen->reset_temp(), cp.soft_sim_hold, Sen->Tb, Sen->Tb_f, Sen->Vb, Sen->Ib,
         Sen->Sim->ib(), Sen->Sim->soc(), Sen->Sim->delta_q(),
         Mon->ib(), Mon->soc(), Mon->delta_q(), Mon->soc_ekf(), Mon->delta_q_ekf(),

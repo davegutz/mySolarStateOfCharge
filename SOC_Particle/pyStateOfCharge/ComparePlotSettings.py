@@ -14,3 +14,70 @@ def _savefig_fullscreen(*args, **kwargs):
     fig.set_size_inches(*orig_size)
 
 plt.savefig = _savefig_fullscreen
+
+
+def rescale_time_axes(fig_list, t_min=None, t_max=None):
+      """Rescale x-axes of all time subplots in every live figure without replotting.
+
+      Applies to axes whose current x-range is NOT Unix epoch (i.e. 'time' and
+      'time_t' axes, which are seconds relative to run start).
+      Fault-plot axes using 'time_ux' (Unix epoch, values > 1e9) are skipped.
+
+      Parameters
+      ----------
+      fig_list : list[matplotlib.figure.Figure]
+          The curated list of live figures from compare_run_sim / dom_plot.
+      t_min : float or None
+          New left x-limit in seconds relative to run start.  None = keep current.
+      t_max : float or None
+          New right x-limit in seconds relative to run start.  None = keep current.
+
+      Usage Examples
+
+      # Zoom to minutes 5–30 of the run (300 s – 1800 s):
+      rescale_time_axes(fig_list, t_min=300, t_max=1800)
+
+      # Zoom in from the right only (keep left edge, cut off after 3600 s):
+      rescale_time_axes(fig_list, t_max=3600)
+
+      # Reset to autorange on all axes:
+      for fig in fig_list:
+          for ax in fig.axes:
+              ax.autoscale(axis='x')
+          fig.canvas.draw_idle()
+
+      ---
+      Key Design Notes
+
+      ┌───────────────────────┬───────────────────────────────┬──────────────────┐
+      │       Axis type       │           Detection           │   How handled    │
+      ├───────────────────────┼───────────────────────────────┼──────────────────┤
+      │ time / time_t         │ xlim < 1e9 (relative seconds) │ set_xlim applied │
+      ├───────────────────────┼───────────────────────────────┼──────────────────┤
+      │ time_ux (fault plots) │ xlim > 1e9 (Unix epoch)       │ skipped          │
+      └───────────────────────┴───────────────────────────────┴──────────────────┘
+
+      - fig.canvas.draw_idle() triggers a lazy redraw — the window updates on the next GUI event loop cycle, not instantly, which is the correct pattern for non-blocking interactive
+      use with plt.show(block=False).
+      - time_t axes (stair-step temperature subplots) share the same seconds-relative scale as time, so the same t_min/t_max applies to both correctly.
+
+      """
+      UNIX_EPOCH_THRESHOLD = 1e9  # values this large are time_ux (Unix epoch), not relative time
+
+      for fig in fig_list:
+          changed = False
+          for ax in fig.axes:
+              xlo, xhi = ax.get_xlim()
+              if xlo > UNIX_EPOCH_THRESHOLD or xhi > UNIX_EPOCH_THRESHOLD:
+                  continue  # skip time_ux (fault-plot) axes
+              new_lo = t_min if t_min is not None else xlo
+              new_hi = t_max if t_max is not None else xhi
+              if new_lo != xlo or new_hi != xhi:
+                  ax.set_xlim(new_lo, new_hi)
+                  changed = True
+          if changed:
+              fig.canvas.draw_idle()  # redraw without replotting
+
+"""
+
+"""
