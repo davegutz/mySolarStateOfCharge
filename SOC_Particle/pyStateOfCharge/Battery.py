@@ -594,8 +594,6 @@ class BatteryMonitor(Battery, EKF1x1):
             self.chm = chem
 
         self.vsat = self.chemistry.nom_vsat + (self.Tb_f - 25.) * self.chemistry.dvoc_dt
-        if OPT.IB_CHARGE_NOA:
-            self.ib_in = self.ib_noa
         self.mod = rp.modeling
         # Overflow protection since ib past value used
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)

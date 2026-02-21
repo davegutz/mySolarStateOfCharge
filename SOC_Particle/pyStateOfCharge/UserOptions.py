@@ -78,4 +78,3 @@ class UserOptions:
     verbose: Optional[bool] = True  # Lots of 'helpful' information used to provide some quick clues about whatever
     # to or instead of plots
     mod_force: Optional[int] = None  # Force modeling config that cannot be gleaned from input data or other reason
-    IB_CHARGE_NOA: Optional[bool] = False  # Force use of ib_noa in coulomb counting but not signal selection or calculate

@@ -50,18 +50,12 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
                     time_shift_in=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
                     fig_list=None, show_killer_=True):
 
-    if data_file.count('soc4p2_hi_lo'):
-       IB_CHARGE_NOA = True
-    else:
-        IB_CHARGE_NOA = False
-
     print(f"\n compare_run_sim: \
     \n{data_file=} \
     \n{unit_key=} \
     \n{time_end_in=} \
     \n{plots=} \
     \n{use_mon_soc_=} \
-    \n{IB_CHARGE_NOA=} \
     \n{verbose=} \
     \n{scale_in=} \
     \n{slr_hys_sim=} \
@@ -128,7 +122,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
                                    use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in, use_vb_raw=use_vb_raw,
                                    add_voc_sim=dvoc_sim_in, add_voc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
                                    verbose=verbose, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
-                                   request_history=request_history, IB_CHARGE_NOA=IB_CHARGE_NOA)
+                                   request_history=request_history)
     mon_ver, sim_ver, sim_s_ver, mon, sim, Battery = replicate(replicateOptions)
     pass
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
@@ -176,7 +170,6 @@ def main():  # Example usage.  ok on 20260217
     time_end_in = None
     plots = True
     use_mon_soc_ = False
-    IB_CHARGE_NOA = False
     verbose = True
     scale_in = 1.0
     slr_hys_sim = 1.0
