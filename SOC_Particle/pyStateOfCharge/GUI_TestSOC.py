@@ -753,6 +753,26 @@ def compare_run_to_hist():
         print('not possible')
 
 
+def compare_hist_hist_run():
+    if not Test.key_exists_in_file:
+        tkinter.messagebox.showwarning(message="Test Key '" + Test.key + "' does not exist in " + Test.file_txt)
+        return
+    if not Ref.key_exists_in_file:
+        tkinter.messagebox.showwarning(message="Ref Key '" + Ref.key + "' does not exist in " + Ref.file_txt)
+        return
+    update_data_buttons()
+    answer = tk.simpledialog.askinteger(title=__file__, prompt="Simulation re-construction sample time in seconds",
+                                        initialvalue=10)
+    if answer is None:
+        print('enter operation cancelled')
+        return
+    print('GUI_TestSOC compare_hist_hist_run:  Ref', Ref.file_path, Ref.key)
+    print('GUI_TestSOC compare_hist_hist_run:  Test', Test.file_path, Test.key)
+    compare_hist_hist(data_file_run=Ref.file_path, unit_key_run=Ref.key,
+                      data_file_tst=Test.file_path, unit_key_tst=Test.key,
+                      dt_resample=answer, terse=terse.get())
+
+
 # Choose file to perform compare_run_run on
 def compare_run_run_choose():
     # Select file
@@ -1132,6 +1152,7 @@ def ref_remove():
     run_button.config(text='Compare Run Sim')
     run_hist_button.config(text='Compare Run Sim Hist')
     hist_sim_button.config(text='Compare Hist Sim')
+    hist_hist_button.forget()
     hist_sim_button.pack(side=tk.RIGHT, padx=5, pady=5)
     run_hist_button.pack(side=tk.RIGHT, padx=5, pady=5)
     Ref.label.forget()
@@ -1142,6 +1163,7 @@ def ref_restore():
     run_button.config(text='Compare Run Run')
     run_hist_button.forget()
     hist_sim_button.forget()
+    hist_hist_button.pack(side=tk.LEFT, padx=5, pady=5)
     Ref.label.pack(padx=5, pady=5)
 
 
@@ -1652,6 +1674,8 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     if platform.system() == 'Darwin':
         run_button = myButton(run_panel, text=' Compare ', command=compare_run, fg="green", bg=bg_color,
                               justify=tk.LEFT, font=butt_font_large)
+        hist_hist_button = myButton(run_panel, text='Compare Hist Hist', command=compare_hist_hist_run, fg="green",
+                                    bg=bg_color, justify=tk.LEFT, font=butt_font_large)
         hist_sim_button = myButton(run_panel, text=' Compare ', command=compare_hist_to_sim, fg="green", bg=bg_color,
                                    justify=tk.LEFT, font=butt_font_large)
         run_hist_button = myButton(run_panel, text=' Compare ', command=compare_run_to_hist, fg="green", bg=bg_color,
@@ -1659,12 +1683,15 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     else:
         run_button = myButton(run_panel, text=' Compare ', command=compare_run, fg="green", bg=bg_color,
                               wraplength=wrap_length, justify=tk.LEFT, font=butt_font_large)
+        hist_hist_button = myButton(run_panel, text='Compare Hist Hist', command=compare_hist_hist_run, fg="green",
+                                    bg=bg_color, justify=tk.LEFT, font=butt_font_large)
         hist_sim_button = myButton(run_panel, text=' Compare ', command=compare_hist_to_sim, fg="green", bg=bg_color,
                                    justify=tk.LEFT, font=butt_font_large)
         run_hist_button = myButton(run_panel, text=' Compare ', command=compare_run_to_hist, fg="green", bg=bg_color,
                                    justify=tk.LEFT, font=butt_font_large)
     mod_in_app_button = myButton(run_panel, text=mod_in_app.get(), command=enter_mod_in_app, fg="green", bg=bg_color)
     run_button.pack(side=tk.LEFT, padx=5, pady=5)
+    hist_hist_button.pack(side=tk.LEFT, padx=5, pady=5)
     mod_in_app_button.pack(side=tk.RIGHT, padx=5, pady=5)
     hist_sim_button.pack(side=tk.RIGHT, padx=5, pady=5)
     run_hist_button.pack(side=tk.RIGHT, padx=5, pady=5)

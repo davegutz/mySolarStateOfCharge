@@ -76,7 +76,9 @@ def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=True,
 
 
 def main():  # Example usage:  ok 20260217
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaLoFullFail_soc3p2_hi_lo_bb.csv'
+
+    # Cut-pasted from GUI_TestSOC Run window
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiEmptFail_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = None
     plots = True
@@ -95,7 +97,6 @@ def main():  # Example usage:  ok 20260217
     sync_time = None
     request_history_run_sim = None
     request_history_hist_sim = None
-    terse = True
 
     compare_run_hist(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,
                      use_mon_soc=use_mon_soc, verbose=verbose, strict_overplot=strict_overplot, terse=terse,

@@ -136,16 +136,18 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
 
 
 def main():
-    keys=[('ampHiEmptFail_soc2p2_hi_lo_bb.csv', 'g20250612a_soc2p2_hi_lo_bb'), ('ampHiEmptFail_soc3p2_hi_lo_bb.csv', 'g20250612a_soc3p2_hi_lo_bb')]
-
     import sys
     if sys.platform == 'linux':
         gdrive = '/home/daveg/gdrive/'
     else:
         gdrive = 'G:/My Drive/'
-    data_file_folder_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a'
-    data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a'
-    sync_to_ctime = True
+
+    # Cut-pasted from GUI_TestSOC Run window
+    keys = [('ampHiEmptFail_soc2p2_hi_lo_bb.csv', 'g20250612a_soc2p2_hi_lo_bb'),
+            ('ampHiEmptFail_soc3p2_hi_lo_bb.csv', 'g20250612a_soc3p2_hi_lo_bb')]
+    data_file_folder_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a'
+    data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a'
+    sync_to_ctime = False
     terse = True
 
     compare_run_run(keys=keys, data_file_folder_run=data_file_folder_run, data_file_folder_test=data_file_folder_test,

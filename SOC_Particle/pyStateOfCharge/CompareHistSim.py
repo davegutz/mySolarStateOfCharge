@@ -618,7 +618,8 @@ def main():  # Sample usage. OK on 20260217
         gdrive = 'G:/My Drive/'
 
     # User inputs (multiple input_files allowed
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\noaLoHiFail_soc3p2_hi_lo_bb.csv'
+    # Cut-pasted from GUI_TestSOC Run window
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiEmptFail_soc3p2_hi_lo_bb.csv'
     time_end_in = None
     plots = True
     use_mon_csv = True
@@ -631,6 +632,7 @@ def main():  # Sample usage. OK on 20260217
     terse = True
     fig_files = None
     fig_list = None
+    show_killer_ = True
 
     compare_hist_sim(data_file=data_file, use_mon_csv=use_mon_csv, unit_key=unit_key, dt_resample=dt_resample,
                      plots=plots, Tb_force=Tb_force, request_history=request_history, terse=terse,
