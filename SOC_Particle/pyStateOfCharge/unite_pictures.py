@@ -1,5 +1,6 @@
 import glob
 import os
+from pathlib import Path, PurePosixPath
 import re
 
 from reportlab.lib import utils
@@ -38,7 +39,7 @@ def precleanup_fig_files(output_pdf_name='unite_pictures.pdf', path_to_pdfs='.')
     # Cleanup other figures in root folder by hand
     from glob import glob
     from os import remove
-    for file in glob(os.path.join(path_to_pdfs, output_pdf_name+'*.pdf')):
+    for file in glob(str(PurePosixPath(path_to_pdfs) / (output_pdf_name + '*.pdf'))):
         print("\nremoving", file, end='')
         try:
             remove(file)
@@ -49,12 +50,12 @@ def precleanup_fig_files(output_pdf_name='unite_pictures.pdf', path_to_pdfs='.')
 # ----------------------------------------------------------------------
 def pngs_to_pdf(png_folder='.', output_pdf='output.pdf'):
     """Combine all PNGs in png_folder into a single PDF at output_pdf (full path)."""
-    pngs = sorted_nicely(glob.glob(os.path.join(png_folder, '*.png')))
+    pngs = sorted_nicely(glob.glob(str(PurePosixPath(png_folder) / '*.png')))
     if not pngs:
         print("pngs_to_pdf: no PNG files found in", png_folder)
         return
     c = canvas.Canvas(output_pdf)
-    c.setTitle(os.path.splitext(os.path.basename(output_pdf))[0])
+    c.setTitle(PurePosixPath(output_pdf).stem)
     for png in pngs:
         img = utils.ImageReader(png)
         w, h = img.getSize()

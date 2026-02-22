@@ -349,6 +349,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         if save_plots:
+            print(f"{fig_file_name=}")
             plt.savefig(fig_file_name, format="png")
 
         fig_list.append(plt.figure())  # 2

@@ -21,6 +21,7 @@
 
 """Replace string in files"""
 import os
+from pathlib import Path, PurePosixPath
 from tkinter import filedialog, messagebox, simpledialog
 import tkinter as tk
 from configparser import ConfigParser
@@ -36,11 +37,11 @@ class Begini(ConfigParser):
     def __init__(self, name, def_dict_):
         ConfigParser.__init__(self, converters={'tuple': parse_tuple})
 
-        (config_path, config_basename) = os.path.split(name)
-        config_txt = os.path.splitext(config_basename)[0] + '.ini'
-        self.config_file_path = os.path.join(config_path, config_txt)
+        config_path, config_basename = str(PurePosixPath(name).parent), PurePosixPath(name).name
+        config_txt = PurePosixPath(config_basename).stem + '.ini'
+        self.config_file_path = str(PurePosixPath(config_path) / config_txt)
         print('config file', self.config_file_path)
-        if os.path.isfile(self.config_file_path):
+        if Path(self.config_file_path).is_file():
             self.read(self.config_file_path)
         else:
             with open(self.config_file_path, 'w') as cfg_file:
@@ -114,7 +115,7 @@ def replace(filepaths=None, silent=False, supported='*'):
     target = tk.simpledialog.askstring('replace source target <files>', 'target string', initialvalue=cf.get_item('replace', 'target'))
     cf.put_item('replace', 'target', target)
     for filepath in filepaths:
-        if os.path.exists(filepath):
+        if Path(filepath).exists():
             with open(filepath, 'r') as file_:
                 data = file_.read()
                 occurrences = data.count(source)

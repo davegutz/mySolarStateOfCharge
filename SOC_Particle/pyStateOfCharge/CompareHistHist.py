@@ -22,6 +22,7 @@ from unite_pictures import cleanup_fig_files, precleanup_fig_files, pngs_to_pdf
 from datetime import datetime
 from local_paths import version_from_data_file, local_paths
 import os
+from pathlib import Path, PurePosixPath
 from CompareHistSim import load_hist_and_prep
 from CompareFault import overall_fault, over_fault
 from plot.PlotOptions import PlotOptions
@@ -67,7 +68,7 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
         mon_run.time -= d_time
 
     # File path operations
-    _, data_file_txt = os.path.split(data_file_run)
+    data_file_txt = PurePosixPath(data_file_run).name
     version = version_from_data_file(data_file_run)
     path_to_temp, save_pdf_path, _ = local_paths(version)
 
@@ -75,8 +76,8 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
     if plots:
         filename_run  = filename_run.replace('CompareHistSim', '')
         filename_tst = filename_tst.replace('CompareHistSim', '')
-        aug_file = filename_run + '__' + filename_tst + '_' + os.path.split(__file__)[1].split('.')[0]
-        filename = os.path.join(save_pdf_path, aug_file)
+        aug_file = filename_run + '__' + filename_tst + '_' + PurePosixPath( Path(__file__).as_posix()).stem
+        filename = str(PurePosixPath(save_pdf_path) / aug_file)
         S = PlotOptions()
         fig_list = []
         fig_files = []

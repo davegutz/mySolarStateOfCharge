@@ -323,18 +323,18 @@ class Begini(ConfigParser):
     def __init__(self, name, def_dict_):
         ConfigParser.__init__(self)
 
-        (config_path, config_basename) = os.path.split(name)
+        config_path, config_basename = str(PurePosixPath(name).parent), PurePosixPath(name).name
         if platform.system() == 'Linux':
-            config_txt = os.path.splitext(config_basename)[0] + '_linux.ini'
-            self.config_file_path = os.path.join('/home/daveg/.local/', config_txt)
+            config_txt = PurePosixPath(config_basename).stem + '_linux.ini'
+            self.config_file_path = str(PurePosixPath('/home/daveg/.local') / config_txt)
         elif platform.system() == 'Darwin':
-            config_txt = os.path.splitext(config_basename)[0] + '_macos.ini'
-            self.config_file_path = os.path.join('/Users/daveg/.local/', config_txt)
+            config_txt = PurePosixPath(config_basename).stem + '_macos.ini'
+            self.config_file_path = str(PurePosixPath('/Users/daveg/.local') / config_txt)
         else:
-            config_txt = os.path.splitext(config_basename)[0] + '.ini'
-            self.config_file_path = os.path.join(os.getenv('LOCALAPPDATA'), config_txt)
+            config_txt = PurePosixPath(config_basename).stem + '.ini'
+            self.config_file_path = str(Path(os.getenv('LOCALAPPDATA')) / config_txt)
         print('config file', self.config_file_path)
-        if os.path.isfile(self.config_file_path):
+        if Path(self.config_file_path).is_file():
             self.read(self.config_file_path)
         else:
             with open(self.config_file_path, 'w') as cfg_file:
@@ -361,28 +361,28 @@ class Begini(ConfigParser):
 # Executive class to control the global variables
 class ExRoot:
     def __init__(self):
-        self.script_loc = os.path.dirname(os.path.abspath(__file__))
-        self.config_path = os.path.join(self.script_loc, 'root_config.ini')
+        self.script_loc = Path(__file__).resolve().parent.as_posix()
+        self.config_path = str(PurePosixPath(self.script_loc) / 'root_config.ini')
         self.version = None
         self.root_config = None
         self.load_root_config(self.config_path)
 
     def load_root_config(self, config_file_path):
         self.root_config = ConfigParser()
-        if os.path.isfile(config_file_path):
+        if Path(config_file_path).is_file():
             self.root_config.read(config_file_path)
         else:
             with open(config_file_path, 'w') as cfg_file:
                 self.root_config.add_section('Root Preferences')
-                rec_folder_path = os.path.expanduser('~') + '/Documents/Recordings'
-                if not os.path.exists(rec_folder_path):
+                rec_folder_path = str(Path.home() / 'Documents' / 'Recordings')
+                if not Path(rec_folder_path).exists():
                     os.makedirs(rec_folder_path)
                 self.root_config.set('Root Preferences', 'recordings path', rec_folder_path)
                 self.root_config.write(cfg_file)
         return self.root_config
 
     def save_root_config(self, config_path_):
-        if os.path.isfile(config_path_):
+        if Path(config_path_).is_file():
             with open(config_path_, 'w') as cfg_file:
                 self.root_config.write(cfg_file)
             print('Saved', config_path_)
@@ -396,8 +396,8 @@ class Exec:
         self.ind = ind
         self.level = level
         self.path_disp_len = path_disp_len_
-        self.script_loc = os.path.dirname(os.path.abspath(__file__))
-        self.config_path = os.path.join(self.script_loc, 'root_config.ini')
+        self.script_loc = Path(__file__).resolve().parent.as_posix()
+        self.config_path = str(PurePosixPath(self.script_loc) / 'root_config.ini')
         # self.root_config = None
         self.load_root_config(self.config_path)
         self.dataReduction_folder = self.cf[self.ind]['dataReduction_folder']
@@ -406,8 +406,8 @@ class Exec:
         self.unit = self.cf[self.ind]['unit']
         if self.version is None:
             self.version = 'undefined'
-        self.version_path = str(os.path.join(self.dataReduction_folder, self.version))
-        if not os.path.isdir(self.version_path):
+        self.version_path = str(PurePosixPath(self.dataReduction_folder) / self.version)
+        if not Path(self.version_path).is_dir():
             tk.messagebox.showerror(title="Error",
                                     message=self.version_path + " unavailable. Abort opening\nTurn on Drive & refresh" +
                                                                 " dataReduction Folder.")
@@ -445,9 +445,9 @@ class Exec:
         else:
             self.file_txt = create_file_txt(name_override, self.unit, self.battery)
             self.key = create_file_key(self.version, self.unit, self.battery)
-        self.file_path = os.path.join(self.version_path, self.file_txt)
+        self.file_path = str(PurePosixPath(self.version_path) / self.file_txt)
         self.update_file_label()
-        self.file_exists = os.path.isfile(self.file_path)
+        self.file_exists = Path(self.file_path).is_file()
         self.update_file_label()
         self.update_key_label()
         self.update_folder_button()
@@ -503,7 +503,7 @@ class Exec:
         self.cf[self.ind]['version'] = self.version
         self.cf.save_to_file()
         self.version_button.config(text=self.version)
-        self.version_path = os.path.join(self.dataReduction_folder, self.version)
+        self.version_path = str(PurePosixPath(self.dataReduction_folder) / self.version)
         os.makedirs(self.version_path, exist_ok=True)
         self.create_file_path_and_key()
         self.update_key_label()
@@ -511,20 +511,20 @@ class Exec:
 
     def load_root_config(self, config_file_path):
         self.root_config = ConfigParser()
-        if os.path.isfile(config_file_path):
+        if Path(config_file_path).is_file():
             self.root_config.read(config_file_path)
         else:
             with open(config_file_path, 'w') as cfg_file:
                 self.root_config.add_section('Root Preferences')
-                rec_folder_path = os.path.expanduser('~') + '/Documents/Recordings'
-                if not os.path.exists(rec_folder_path):
+                rec_folder_path = str(Path.home() / 'Documents' / 'Recordings')
+                if not Path(rec_folder_path).exists():
                     os.makedirs(rec_folder_path)
                 self.root_config.set('Root Preferences', 'recordings path', rec_folder_path)
                 self.root_config.write(cfg_file)
         return self.root_config
 
     def save_root_config(self, config_path_):
-        if os.path.isfile(config_path_):
+        if Path(config_path_).is_file():
             with open(config_path_, 'w') as cfg_file:
                 self.root_config.write(cfg_file)
             print('Saved', config_path_)
@@ -573,7 +573,7 @@ class Exec:
         self.battery_button.config(text=self.battery)
 
     def update_folder_button(self):
-        if os.path.exists(self.dataReduction_folder):
+        if Path(self.dataReduction_folder).exists():
             self.dataReduction_folder_exists = True
         else:
             self.dataReduction_folder_exists = False
@@ -586,7 +586,7 @@ class Exec:
     def update_key_label(self):
         self.key_label.config(text=self.key)
         self.key_exists_in_file = False
-        if os.path.isfile(self.file_path):
+        if Path(self.file_path).is_file():
             for line in open(self.file_path, 'r'):
                 if re.search(self.key, line):
                     self.key_exists_in_file = True
@@ -619,7 +619,7 @@ def clear_data_verbose():
 
 
 def clear_data(silent=False, nowait=False):
-    if os.path.isfile(putty_test_csv_path.get()):
+    if Path(putty_test_csv_path.get()).is_file():
         enter_size = putty_size()  # bytes
         time.sleep(1.)
         wait_size = putty_size()  # bytes
@@ -701,7 +701,7 @@ def compare_hist_sim_choose():
 def compare_hist_to_sim():
     if modeling.get():
         update_data_buttons()
-        print('compare_hist_to_sim.  save_pdf_path', os.path.join(Test.version_path, './figures'))
+        print('compare_hist_to_sim.  save_pdf_path', str(PurePosixPath(Test.version_path) / 'figures'))
         # master.withdraw()
         answer = tk.simpledialog.askinteger(title=__file__, prompt="Simulation re-construction sample time in seconds",
                                             initialvalue=10)
@@ -721,7 +721,7 @@ def compare_run():
         return
     update_data_buttons()
     if modeling.get():
-        print('compare_run_sim.  save_pdf_path', os.path.join(Test.version_path, './figures'))
+        print('compare_run_sim.  save_pdf_path', str(PurePosixPath(Test.version_path) / 'figures'))
         # master.withdraw()
         compare_run_sim(data_file=Test.file_path, unit_key=Test.key, strict_overplot=strict_overplot.get(),
                         terse=terse.get())
@@ -746,7 +746,7 @@ def compare_run_to_hist():
         return
     update_data_buttons()
     if modeling.get():
-        print('compare_hist_to_sim.  save_pdf_path', os.path.join(Test.version_path, './figures'))
+        print('compare_hist_to_sim.  save_pdf_path', str(PurePosixPath(Test.version_path) / 'figures'))
         compare_run_hist(data_file=Test.file_path, unit_key=Test.key, strict_overplot=strict_overplot.get(),
                         terse=terse.get())
     else:
@@ -821,8 +821,8 @@ def compare_run_sim_choose():
 
 # Split all information contained in file path
 def contain_all(testpath):
-    folder_path, basename = os.path.split(testpath)
-    parent, txt = os.path.split(folder_path)
+    folder_path, basename = str(PurePosixPath(testpath).parent), PurePosixPath(testpath).name
+    parent, txt = str(PurePosixPath(folder_path).parent), PurePosixPath(folder_path).name
     # get key
     key = ''
     with open(testpath, 'r') as file:
@@ -1140,8 +1140,8 @@ def lookup_test():
 
 
 def putty_size():
-    if os.path.isfile(putty_test_csv_path.get()):
-        enter_size = os.path.getsize(putty_test_csv_path.get())  # bytes
+    if Path(putty_test_csv_path.get()).is_file():
+        enter_size = Path(putty_test_csv_path.get()).stat().st_size  # bytes
     else:
         enter_size = 0
     return enter_size
@@ -1206,7 +1206,7 @@ def save_data():
                 Test.create_file_path_and_key(name_override=new_file_txt)
                 Test.label.config(text=Test.file_txt)
                 print('Test.file_path', Test.file_path)
-        if os.path.isfile(Test.file_path) and os.path.getsize(Test.file_path) > 0:  # bytes
+        if Path(Test.file_path).is_file() and Path(Test.file_path).stat().st_size > 0:  # bytes
             confirmation = tk.messagebox.askyesno('query overwrite', 'File exists:  overwrite?')
             if confirmation is False:
                 print('skipped overwrite')
@@ -1244,7 +1244,7 @@ def save_data_as():
                 Test.create_file_path_and_key(name_override=new_file_txt)
                 Test.label.config(text=Test.file_txt)
                 print('Test.file_path', Test.file_path)
-        if os.path.isfile(Test.file_path) and os.path.getsize(Test.file_path) > 0:  # bytes
+        if Path(Test.file_path).is_file() and Path(Test.file_path).stat().st_size > 0:  # bytes
             confirmation = tk.messagebox.askyesno('query overwrite', 'File exists:  overwrite?')
             if confirmation is False:
                 print('reset and use clear')
@@ -1276,7 +1276,7 @@ def save_progress():
                 Test.create_file_path_and_key(name_override=new_file_txt)
                 Test.label.config(text=Test.file_txt)
                 print('Test.file_path', Test.file_path)
-        if os.path.isfile(Test.file_path) and os.path.getsize(Test.file_path) > 0:  # bytes
+        if Path(Test.file_path).is_file() and Path(Test.file_path).stat().st_size > 0:  # bytes
             confirmation = tk.messagebox.askyesno('query overwrite', 'File exists:  overwrite?')
             if confirmation is False:
                 print('skipped overwrite')
@@ -1299,8 +1299,8 @@ def save_progress():
 
 
 def save_putty():
-    m_str = datetime.datetime.fromtimestamp(os.path.getmtime(putty_test_csv_path.get())).strftime("%Y-%m-%dT%H-%M-%S").replace(' ', 'T')
-    putty_test_sav_path = tk.StringVar(master, os.path.join(path_to_temp.get(), 'putty_' + m_str + '.csv'))
+    m_str = datetime.datetime.fromtimestamp(Path(putty_test_csv_path.get()).stat().st_mtime).strftime("%Y-%m-%dT%H-%M-%S").replace(' ', 'T')
+    putty_test_sav_path = tk.StringVar(master, str(PurePosixPath(path_to_temp.get()) / ('putty_' + m_str + '.csv')))
     print(f"GUI_TestSOC(save_putty):\n{putty_test_csv_path.get()=}\n{putty_test_sav_path.get()=}\n")
     try:
         shutil.copyfile(putty_test_csv_path.get(), putty_test_sav_path.get())
@@ -1313,7 +1313,7 @@ def save_putty():
 
 
 def size_of(path):
-    if os.path.isfile(path) and (size := os.path.getsize(path)) > 0:  # bytes
+    if Path(path).is_file() and (size := Path(path).stat().st_size) > 0:  # bytes
         return size
     else:
         return 0
@@ -1370,6 +1370,7 @@ def update_data_buttons():
 
 if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     import os
+    from pathlib import Path, PurePosixPath
     import tkinter as tk
     from tkinter import ttk
     result_ready = 0
@@ -1407,10 +1408,10 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
         putty_test_csv_path = tk.StringVar(master, '/Users/daveg/.local/putty_test.csv')
         path_to_temp = tk.StringVar(master, '/Users/daveg/.local')
     else:
-        putty_test_csv_path = tk.StringVar(master, os.path.join(os.getenv('LOCALAPPDATA'), 'Temp', 'putty_test.csv'))
-        path_to_temp = tk.StringVar(master, os.path.join(os.getenv('LOCALAPPDATA'), 'Temp'))
+        putty_test_csv_path = tk.StringVar(master, str(Path(os.getenv('LOCALAPPDATA')) / 'Temp' / 'putty_test.csv'))
+        path_to_temp = tk.StringVar(master, str(Path(os.getenv('LOCALAPPDATA')) / 'Temp'))
     print(f"{putty_test_csv_path.get()=}")
-    icon_path = os.path.join(ex_root.script_loc, 'GUI_TestSOC.png')
+    icon_path = str(PurePosixPath(ex_root.script_loc) / 'GUI_TestSOC.png')
     master.iconphoto(False, tk.PhotoImage(file=icon_path))
     top_panel = tk.Frame(master)
     top_panel.pack(expand=True, fill='both')
@@ -1495,7 +1496,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     swap_button.pack(side=tk.RIGHT, padx=5, pady=5)
 
     # Image
-    pic_path = os.path.join(ex_root.script_loc, 'GUI_TestSOC.png')
+    pic_path = str(PurePosixPath(ex_root.script_loc) / 'GUI_TestSOC.png')
     picture = tk.PhotoImage(file=pic_path).subsample(5, 5)
     label = tk.Label(top_panel_right_ctr, image=picture)
     label.pack(padx=5, pady=5, expand=True, fill='both')
@@ -1532,7 +1533,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     Ref.create_file_path_and_key(cf['others']['option'])
 
     # init row
-    empty_csv_path = tk.StringVar(master, os.path.join(Test.dataReduction_folder, 'empty.csv'))
+    empty_csv_path = tk.StringVar(master, str(PurePosixPath(Test.dataReduction_folder) / 'empty.csv'))
     _, init_val, _ = lookup.get('satInit')
     init = tk.StringVar(master, init_val)
     init_label = tk.Label(option_panel_left, text='init & clear:', font=label_font_gentle)

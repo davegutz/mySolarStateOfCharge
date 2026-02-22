@@ -19,6 +19,7 @@ __date__ = '$Date: 2022/06/10 13:15:02 $'
 
 import numpy as np
 import os
+from pathlib import Path, PurePosixPath
 
 
 class RateLimit:
@@ -754,7 +755,7 @@ if __name__ == '__main__':
         fig_list = []
         fig_files = []
         date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-        filename = os.path.split(__file__)[1].split('.')[0]
+        filename = PurePosixPath(__file__).stem
         plot_title = filename + '   ' + date_time
 
         overall(filter_1.saved, filter_2.saved, filename, fig_files, plot_title=plot_title, fig_list=fig_list)

@@ -14,6 +14,7 @@
 #
 # See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
 import os
+from pathlib import Path, PurePosixPath
 import sys
 import inspect
 import subprocess
@@ -155,8 +156,8 @@ def config_section_map(config, section):
 
 # Work out all the paths
 def configurator(filepath):
-    (config_path, config_basename) = os.path.split(filepath)
-    config_file_path = os.path.join(config_path, 'GUI_TestSOC.ini')
+    config_path, config_basename = str(PurePosixPath(filepath).parent), PurePosixPath(filepath).name
+    config_file_path = str(PurePosixPath(config_path) / 'GUI_TestSOC.ini')
     config = load_config(config_file_path)
     return config_path, config_basename, config_file_path, config
 
@@ -179,7 +180,7 @@ def display_result(txt_path, platform, silent):
 # Config file
 def load_config(path):
     config = configparser.ConfigParser()
-    if os.path.isfile(path):
+    if Path(path).is_file():
         config.read(path)
     else:
         with open(path, 'w') as cfg_file:

@@ -25,6 +25,7 @@ from CompareRunRun import load_data
 from DataOverModel import dom_plot
 from PlotOffOn import off_on_plot
 import os
+from pathlib import Path, PurePosixPath
 from myFilters import LagExp
 import numpy.lib.recfunctions as rf
 from Chemistry_BMS import ib_lag, Chemistry
@@ -92,9 +93,9 @@ def scale_sres0(data, slr_res_0):
 def seek_tensor(save_pdf_path='./figures', path_to_temp='./temp'):
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     date_ = datetime.now().strftime("%y%m%d")
-    if not os.path.isdir(save_pdf_path):
+    if not Path(save_pdf_path).is_dir():
         os.mkdir(save_pdf_path)
-    if not os.path.isdir(path_to_temp):
+    if not Path(path_to_temp).is_dir():
         os.mkdir(path_to_temp)
 
     # Transient  inputs
@@ -139,14 +140,14 @@ def seek_tensor(save_pdf_path='./figures', path_to_temp='./temp'):
     data_file = None
     if data_file_path is None:
         if data_file_txt is not None:
-            path_to_data = os.path.join(os.getcwd(), data_file_txt)
+            path_to_data = str(PurePosixPath(os.getcwd()) / data_file_txt)
         else:
             path_to_data = None
         data_file_path = path_to_data
         if temp_file == '':
             data_file = data_file_path
         else:
-            path_to_temp = os.path.join(path_to_temp, temp_file)
+            path_to_temp = str(PurePosixPath(path_to_temp) / temp_file)
             data_file = path_to_temp
 
     # # Load mon v4 (old)
@@ -182,7 +183,7 @@ def seek_tensor(save_pdf_path='./figures', path_to_temp='./temp'):
     # Plots
     fig_list = []
     fig_files = []
-    dir_root_test, data_root_test = os.path.split(data_file_clean)
+    dir_root_test, data_root_test = str(PurePosixPath(data_file_clean).parent), PurePosixPath(data_file_clean).name
     data_root_test = data_root_test.replace('.csv', '')
     filename = data_root_test
     plot_title = dir_root_test + '/' + data_root_test + '   ' + date_time

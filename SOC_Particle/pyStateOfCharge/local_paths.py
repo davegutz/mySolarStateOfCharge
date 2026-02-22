@@ -17,6 +17,7 @@
 
 import os
 import platform
+from pathlib import Path, PurePosixPath
 
 
 def local_paths(version_folder='no_name'):
@@ -26,30 +27,30 @@ def local_paths(version_folder='no_name'):
     elif platform.system() == 'Darwin':
         path_to_local = '/Users/daveg/.local/SOC_Particle'
     else:
-        path_to_local = os.path.join(os.getenv('LOCALAPPDATA'), 'SOC_Particle')
+        path_to_local = str(Path(os.getenv('LOCALAPPDATA')) / 'SOC_Particle')
 
-    if not os.path.isdir(path_to_local):
+    if not Path(path_to_local).is_dir():
         os.mkdir(path_to_local)
-    path_to_version_folder = os.path.join(path_to_local, version_folder)
-    if not os.path.isdir(path_to_version_folder):
+    path_to_version_folder = str(PurePosixPath(path_to_local) / version_folder)
+    if not Path(path_to_version_folder).is_dir():
         os.mkdir(path_to_version_folder)
-    path_to_temp = os.path.join(path_to_version_folder, 'temp')
-    if not os.path.isdir(path_to_temp):
+    path_to_temp = str(PurePosixPath(path_to_version_folder) / 'temp')
+    if not Path(path_to_temp).is_dir():
         os.mkdir(path_to_temp)
-    save_pdf_path = os.path.join(path_to_version_folder, 'figures')
-    if not os.path.isdir(save_pdf_path):
+    save_pdf_path = str(PurePosixPath(path_to_version_folder) / 'figures')
+    if not Path(save_pdf_path).is_dir():
         os.mkdir(save_pdf_path)
-    putty_test_csv_path = os.path.join(path_to_local, 'putty_test.csv')
+    putty_test_csv_path = str(PurePosixPath(path_to_local) / 'putty_test.csv')
 
     return path_to_temp, save_pdf_path, putty_test_csv_path
 
 
 def version_from_data_file(path_to_data):
-    data_file_folder = os.path.split(path_to_data)[0]
-    version = os.path.split(data_file_folder)[-1]
+    data_file_folder = str(PurePosixPath(path_to_data).parent)
+    version = PurePosixPath(data_file_folder).name
     return version
 
 
 def version_from_data_path(path):
-    version = os.path.split(path)[-1]
+    version = PurePosixPath(path).name
     return version

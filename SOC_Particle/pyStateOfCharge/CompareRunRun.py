@@ -25,6 +25,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from PlotKiller import show_killer
 import os
+from pathlib import Path, PurePosixPath
 from load_data import load_data, calculate_master_sync
 from local_paths import version_from_data_path, local_paths
 
@@ -64,7 +65,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     _, save_pdf_path, _ = local_paths(version)
 
     # Load old ref data
-    data_file_run = os.path.join(data_file_folder_run, data_file_txt_run)
+    data_file_run = str(PurePosixPath(data_file_folder_run) / data_file_txt_run)
     mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
         load_data(data_file_run, 1, unit_key_run, zero_zero_in, time_end_in)
     sim_s_run = None
@@ -73,7 +74,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     f_run.str = 'f1'
 
     # Load new test data
-    data_file_test = os.path.join(data_file_folder_test, data_file_txt_test)
+    data_file_test = str(PurePosixPath(data_file_folder_test) / data_file_txt_test)
     mon_test, sim_test, f_test, data_file_ver_clean, temp_flt_file_ver_clean, sync_info_test = \
         load_data(data_file_test, 1, unit_key_test, zero_zero_in, time_end_in)
     sim_s_test = None
@@ -103,13 +104,13 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     # Plots
     fig_list = []
     fig_files = []
-    dir_root_run, data_root_run = os.path.split(data_file_run_clean)
+    dir_root_run, data_root_run = str(PurePosixPath(data_file_run_clean).parent), PurePosixPath(data_file_run_clean).name
     data_root_run = data_root_run.replace('.csv', '')
-    dir_root_test, data_root_test = os.path.split(data_file_ver_clean)
+    dir_root_test, data_root_test = str(PurePosixPath(data_file_ver_clean).parent), PurePosixPath(data_file_ver_clean).name
     data_root_test = data_root_test.replace('.csv', '')
 
-    filename = data_root_run + '__' + data_root_test + '_' + os.path.split(__file__)[1].split('.')[0]
-    filename = os.path.join(save_pdf_path, filename)
+    filename = data_root_run + '__' + data_root_test + '_' + PurePosixPath( Path(__file__).as_posix()).stem
+    filename = str(PurePosixPath(save_pdf_path) / filename)
     plot_title = dir_root_run + '/' + data_root_run + '__' + dir_root_test + '/' + data_root_test + '   ' + date_time
 
     S = PlotOptions()

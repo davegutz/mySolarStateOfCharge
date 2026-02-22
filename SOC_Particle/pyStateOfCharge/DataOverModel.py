@@ -38,6 +38,7 @@ import numpy as np
 import sys
 import re
 import os
+from pathlib import Path, PurePosixPath
 
 if sys.platform == 'darwin':
     import matplotlib
@@ -106,7 +107,7 @@ def filter_f15_sequence(data_stream):
 
 def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip=1, comment_str='#'):
     """First line with hdr_key defines the number of fields to be imported cleanly"""
-    (path, basename) = os.path.split(path_to_data)
+    path, basename = str(PurePosixPath(path_to_data).parent), PurePosixPath(path_to_data).name
     version = version_from_data_file(path_to_data)
     (path_to_temp, save_pdf_path, _) = local_paths(version)
     csv_file = path_to_temp+'/'+basename.replace('.csv', type_ + '_' + unit_key + '.csv', 1)

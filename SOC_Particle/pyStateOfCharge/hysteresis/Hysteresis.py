@@ -20,6 +20,7 @@ __date__ = '$Date: 2022/11/12 13:15:02 $'
 import numpy as np
 from unite_pictures import cleanup_fig_files
 import os
+from pathlib import Path, PurePosixPath
 
 
 class Hysteresis:
@@ -301,7 +302,7 @@ if __name__ == '__main__':
         fig_list = []
         fig_files = []
         date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-        filename = os.path.split(__file__)[1].split('.')[0]
+        filename = PurePosixPath(__file__).stem
         plot_title = filename + '   ' + date_time
 
         fig_list, fig_files = overall(hys.saved, filename, fig_files, plot_title=plot_title, fig_list=fig_list)

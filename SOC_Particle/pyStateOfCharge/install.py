@@ -18,6 +18,7 @@ from Colors import Colors
 import shutil
 import sys
 import os
+from pathlib import Path, PurePosixPath
 
 # If shortcut disappears run debug = True to troubleshoot
 debug = False
@@ -28,18 +29,18 @@ result = None
 GUI_TestSOC_dest_path = None
 
 # Create executable
-GUI_TestSOC_path = os.path.join(os.getcwd(), 'GUI_TestSOC.png')
+GUI_TestSOC_path = str(PurePosixPath(os.getcwd()) / 'GUI_TestSOC.png')
 if sys.platform == 'win32':
 
     # Check executable is local
     x=1;
-    if sys.executable.__contains__("venv" + os.path.sep + "Scripts" + os.path.sep + "python"):
+    if sys.executable.__contains__(str(Path("venv") / "Scripts" / "python")):
         pass
     else:
         print(Colors.fg.red, 'failed:  need to use local venv interpreter', Colors.reset)
         exit(1)
 
-    GUI_TestSOC_dest_path = os.path.join(os.getcwd(), 'dist', 'GUI_TestSOC', '_internal', 'GUI_TestSOC.png')
+    GUI_TestSOC_dest_path = str(PurePosixPath(os.getcwd()) / 'dist' / 'GUI_TestSOC' / '_internal' / 'GUI_TestSOC.png')
     test_cmd_create = 'pyinstaller .\\GUI_TestSOC.py --i GUI_TestSOC.ico -y'
     result = run_shell_cmd(test_cmd_create, silent=False)
     if result == -1:
@@ -93,7 +94,7 @@ Categories=Utility
         print(Colors.fg.green, 'success', Colors.reset)
 
     # Check executable is local
-    if sys.executable.__contains__("venv" + os.path.sep + "bin" + os.path.sep + "python"):
+    if sys.executable.__contains__(str(Path("venv") / "bin" / "python")):
         pass
     else:
         print(Colors.fg.red, 'failed:  need to use local venv interpreter', Colors.reset)

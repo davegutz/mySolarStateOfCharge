@@ -33,6 +33,7 @@ from PlotKiller import show_killer
 import tkinter.messagebox
 from local_paths import version_from_data_file, local_paths
 import os
+from pathlib import Path, PurePosixPath
 import plot.gp as gp
 from plot.PlotOptions import PlotOptions
 
@@ -130,10 +131,10 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
 
     # Plots
     if plots:
-        dir_root_test, data_root_test = os.path.split(data_file_clean)
+        dir_root_test, data_root_test = str(PurePosixPath(data_file_clean).parent), PurePosixPath(data_file_clean).name
         data_root_test = data_root_test.replace('.csv', '')
-        aug_file = os.path.split(temp_flt_file_clean)[1].replace('.csv', '_') + os.path.split(__file__)[1].split('.')[0]
-        filename = os.path.join(save_pdf_path, aug_file)
+        aug_file = PurePosixPath(temp_flt_file_clean).name.replace('.csv', '_') + PurePosixPath( Path(__file__).as_posix()).stem
+        filename = str(PurePosixPath(save_pdf_path) / aug_file)
         plot_title = dir_root_test + '/' + data_root_test + '   ' + date_time
 
         S = PlotOptions()

@@ -23,6 +23,7 @@ Example:
 # Source - https://github.com/kasun/python-tail
 
 import os
+from pathlib import Path, PurePosixPath
 import sys
 import tkinter.filedialog
 from threading import Thread
@@ -77,7 +78,7 @@ class Tail(object):
             raise TailError("File '%s' does not exist" % _file)
         if not os.access(_file, os.R_OK):
             raise TailError("File '%s' not readable" % _file)
-        if os.path.isdir(_file):
+        if Path(_file).is_dir():
             raise TailError("File '%s' is a directory" % _file)
 
 
@@ -107,7 +108,7 @@ def enter_folder():
     answer = tk.filedialog.askdirectory(title="Select a tail destination folder", initialdir=tail_path.get())
     if answer is not None and answer != '':
         tail_folder.set(answer)
-    tail_path.set(os.path.join(tail_folder.get(), tail_file.get()))
+    tail_path.set(str(PurePosixPath(tail_folder.get()) / tail_file.get()))
     tail_path_butt.config(text=tail_path.get())
     out_path.set(tail_file.get() + '.tail')
 
@@ -120,7 +121,7 @@ def gen_data():
 
 def gen_temp_file(path_=None, max_=100, trigger=10):
     if path_ is None:
-        path_to_data = os.path.join(os.getcwd(), 'MyTail.txt')
+        path_to_data = str(PurePosixPath(os.getcwd()) / 'MyTail.txt')
     else:
         path_to_data = path_
     line_cnt = 0
@@ -210,11 +211,11 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
 
     root = tk.Tk()
     root.title('tail -f')
-    path = tk.StringVar(root, os.path.join(os.getcwd(), 'MyTail.txt'))
+    path = tk.StringVar(root, str(PurePosixPath(os.getcwd()) / 'MyTail.txt'))
     max_len = tk.IntVar(root, 1000)
     tail_folder = tk.StringVar(root, os.getcwd())
     tail_file = tk.StringVar(root, 'putty_test.csv')
-    tail_path = tk.StringVar(root, os.path.join(tail_folder.get(), tail_file.get()))
+    tail_path = tk.StringVar(root, str(PurePosixPath(tail_folder.get()) / tail_file.get()))
     out_path = tk.StringVar(root, tail_file.get() + '.tail')
     string = tk.StringVar(root, '<enter string to monitor>')
     myButton(root, text="monitor MyTail.txt", command=watch_data).grid(row=0, column=1)

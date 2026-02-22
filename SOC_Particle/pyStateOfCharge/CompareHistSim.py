@@ -33,6 +33,7 @@ from local_paths import version_from_data_file, local_paths
 from CompareFault import add_stuff_f
 from Util import rename_all
 import os
+from pathlib import Path, PurePosixPath
 from plot.PlotOptions import PlotOptions
 
 import sys
@@ -388,12 +389,14 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
     # Save files
     filename = None
     if temp_flt_file_clean is not None:
-        filename = os.path.split(temp_flt_file_clean)[1].replace('.csv', '_') + os.path.split(__file__)[1].split('.')[0]
+        filename = (PurePosixPath(temp_flt_file_clean).name.replace('.csv', '_')
+                    + PurePosixPath( Path(__file__).as_posix()).stem)
     elif temp_hist_file_clean is not None:
-        filename = os.path.split(temp_hist_file_clean)[1].replace('.csv', '_') + os.path.split(__file__)[1].split('.')[
-            0]
+        filename = (PurePosixPath(temp_hist_file_clean).name.replace('.csv', '_')
+                    + PurePosixPath( Path(__file__).as_posix()).stem)
     elif temp_sum_file_clean is not None:
-        filename = os.path.split(temp_sum_file_clean)[1].replace('.csv', '_') + os.path.split(__file__)[1].split('.')[0]
+        filename = (PurePosixPath(temp_sum_file_clean).name.replace('.csv', '_')
+                    + PurePosixPath( Path(__file__).as_posix()).stem)
 
     unit = ''
     t_rated = None
@@ -547,13 +550,13 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
     use_sat_mon_in = True
 
     # Load history, normalizing all soc and Tb to 20C
-    mon_run, sim_run, unit, fault, hist_20C, filename, Battery = \
+    mon_run, sim_run, unit, fault, hist_20C, load_filename, Battery = \
         load_hist_and_prep(data_file=data_file, time_end_in=time_end_in, plots=plots, use_mon_csv=use_mon_csv,
                            unit_key=unit_key, sync_time=sync_time, dt_resample=dt_resample, Tb_force=Tb_force)
     sim_s_run = None
 
     # File path operations
-    _, data_file_txt = os.path.split(data_file)
+    data_file_txt = PurePosixPath(data_file).name
     version = version_from_data_file(data_file)
     path_to_temp, save_pdf_path, _ = local_paths(version)
 
@@ -571,9 +574,8 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
 
     # Plots
     if plots:
-        filename = filename
-        plot_title = filename + '   ' + date_time
-        filename = os.path.join(save_pdf_path, filename)
+        plot_title = load_filename + '   ' + date_time
+        filename = str(PurePosixPath(save_pdf_path) / load_filename)
         S = PlotOptions()
         if fault is not None and len(fault.time) > 1:
             fig_list, fig_files = over_fault(fault, filename, fig_files=fig_files, plot_title=plot_title,
@@ -618,7 +620,7 @@ def main():  # Sample usage. OK on 20260217
 
     # User inputs (multiple input_files allowed
     # Cut-pasted from GUI_TestSOC Run window
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiEmptFail_soc3p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc3p2_hi_lo_bb.csv'
     time_end_in = None
     plots = True
     use_mon_csv = True
