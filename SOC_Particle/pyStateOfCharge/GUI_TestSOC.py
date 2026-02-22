@@ -1149,19 +1149,19 @@ def putty_size():
 
 def ref_remove():
     top_panel_right.pack_forget()
-    run_button.config(text='Compare Run Sim')
-    run_hist_button.config(text='Compare Run Sim Hist')
+    run_x_button.config(text='Compare Run Sim')
+    run_sim_hist_button.config(text='Run Both of These')
     hist_sim_button.config(text='Compare Hist Sim')
     hist_hist_button.forget()
-    hist_sim_button.pack(side=tk.RIGHT, padx=5, pady=5)
-    run_hist_button.pack(side=tk.RIGHT, padx=5, pady=5)
+    hist_sim_button.pack(side=tk.LEFT, padx=5, pady=5)
+    run_sim_hist_button.pack(side=tk.RIGHT, padx=5, pady=5)
     Ref.label.forget()
 
 
 def ref_restore():
     top_panel_right.pack(expand=True, fill='both')
-    run_button.config(text='Compare Run Run')
-    run_hist_button.forget()
+    run_x_button.config(text='Compare Run Run')
+    run_sim_hist_button.forget()
     hist_sim_button.forget()
     hist_hist_button.pack(side=tk.LEFT, padx=5, pady=5)
     Ref.label.pack(padx=5, pady=5)
@@ -1672,29 +1672,29 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     run_panel.pack(expand=True, fill='x')
     tk.Label(run_panel, text='------->', font=("Courier", 8), bg='lightgreen').pack(side=tk.LEFT)
     if platform.system() == 'Darwin':
-        run_button = myButton(run_panel, text=' Compare ', command=compare_run, fg="green", bg=bg_color,
-                              justify=tk.LEFT, font=butt_font_large)
+        run_x_button = myButton(run_panel, text=' Compare ', command=compare_run, fg="green", bg=bg_color,
+                                  justify=tk.LEFT, font=butt_font_large)
         hist_hist_button = myButton(run_panel, text='Compare Hist Hist', command=compare_hist_hist_run, fg="green",
                                     bg=bg_color, justify=tk.LEFT, font=butt_font_large)
         hist_sim_button = myButton(run_panel, text=' Compare ', command=compare_hist_to_sim, fg="green", bg=bg_color,
                                    justify=tk.LEFT, font=butt_font_large)
-        run_hist_button = myButton(run_panel, text=' Compare ', command=compare_run_to_hist, fg="green", bg=bg_color,
-                                   justify=tk.LEFT, font=butt_font_large)
+        run_sim_hist_button = myButton(run_panel, text=' Compare ', command=compare_run_to_hist, fg="green", bg=bg_color,
+                                       justify=tk.LEFT, font=butt_font_large)
     else:
-        run_button = myButton(run_panel, text=' Compare ', command=compare_run, fg="green", bg=bg_color,
+        run_x_button = myButton(run_panel, text=' Compare ', command=compare_run, fg="green", bg=bg_color,
                               wraplength=wrap_length, justify=tk.LEFT, font=butt_font_large)
         hist_hist_button = myButton(run_panel, text='Compare Hist Hist', command=compare_hist_hist_run, fg="green",
                                     bg=bg_color, justify=tk.LEFT, font=butt_font_large)
         hist_sim_button = myButton(run_panel, text=' Compare ', command=compare_hist_to_sim, fg="green", bg=bg_color,
                                    justify=tk.LEFT, font=butt_font_large)
-        run_hist_button = myButton(run_panel, text=' Compare ', command=compare_run_to_hist, fg="green", bg=bg_color,
+        run_sim_hist_button = myButton(run_panel, text=' Compare ', command=compare_run_to_hist, fg="green", bg=bg_color,
                                    justify=tk.LEFT, font=butt_font_large)
     mod_in_app_button = myButton(run_panel, text=mod_in_app.get(), command=enter_mod_in_app, fg="green", bg=bg_color)
-    run_button.pack(side=tk.LEFT, padx=5, pady=5)
+    run_x_button.pack(side=tk.LEFT, padx=5, pady=5)
     hist_hist_button.pack(side=tk.LEFT, padx=5, pady=5)
     mod_in_app_button.pack(side=tk.RIGHT, padx=5, pady=5)
     hist_sim_button.pack(side=tk.RIGHT, padx=5, pady=5)
-    run_hist_button.pack(side=tk.RIGHT, padx=5, pady=5)
+    run_sim_hist_button.pack(side=tk.RIGHT, padx=5, pady=5)
 
     # Compare panel
     compare_sep_panel = tk.Frame(master)

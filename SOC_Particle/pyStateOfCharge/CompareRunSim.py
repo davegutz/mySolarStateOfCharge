@@ -149,10 +149,9 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
 
         # Copies
         if S.save_plots and not S.terse:
-
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
-            cleanup_fig_files(fig_files)
+        cleanup_fig_files(fig_files)
         plt.show(block=False)
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         if show_killer_:
