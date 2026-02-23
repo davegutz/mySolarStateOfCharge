@@ -46,17 +46,17 @@ if sys.platform == 'darwin':
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
-def dom_plot(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init_in=False,
-             run_str='_run', ver_str='_ver', strict_overplot=False, terse=False, run_type=None):
+def dom_plot(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init=False,
+             run_str='_run', ver_str='_ver', strict_overplot=False, terse=False, run_type=None, save_plots=False):
 
 #     print(f"\ndom_plot:\n{mr=}\n{mv=}\n{sr=}\n{sv=}\n{smr=}\n{smv=}\n{filename=}\n{fig_files=}\n{plot_title=}\n\
-# {fig_list=}\n{plot_init_in=}\n{run_str=}\n{ver_str=}\n{strict_overplot=}\n{terse=}\n{run_type=}\n")
+# {fig_list=}\n{plot_init=}\n{run_str=}\n{ver_str=}\n{strict_overplot=}\n{terse=}\n{run_type=}\n{save_plots=}\n")
 
     print('dom_plot', end=':  ')
     if fig_files is None:
         fig_files = []
     figOptions = PlotOptions(mr=mr, mv=mv, sr=sr, sv=sv, smr=smr, smv=smv, filename=filename, plot_title=plot_title,
-                             strict_overplot=strict_overplot, run_type=run_type, terse=terse)
+                             strict_overplot=strict_overplot, run_type=run_type, terse=terse, save_plots=save_plots)
 
     if not terse:
         # fig_list, fig_files = hist.hs_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
@@ -64,7 +64,7 @@ def dom_plot(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title=None
         # fig_list, fig_files = hist.hs_tune_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
         #                                          strict_overplot=strict_overplot)
         fig_list, fig_files = dom.ekf_plots(figOptions, fig_files=fig_files, fig_list=fig_list)
-        if  plot_init_in and hasattr(smv, 'time') and hasattr(sr, 'time'):
+        if  plot_init and hasattr(smv, 'time') and hasattr(sr, 'time'):
             fig_list, fig_files = dom.init_1(figOptions, fig_files=fig_files, fig_list=fig_list)
             fig_list, fig_files = dom.init_1a(figOptions, fig_files=fig_files, fig_list=fig_list)
         fig_list, fig_files = sim_s.sim_s_plots(figOptions, fig_files=fig_files, fig_list=fig_list)
@@ -134,7 +134,7 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
             input_file.seek(0)
             num_lines = 0
             num_text_run = 0
-            num_lines_in = 0
+            num_lines = 0
             num_skips = 0
             unit_key_found = False
             skipped_last = False
@@ -152,7 +152,7 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
                     if line.count(",") == num_fields and line.count(";") == 0 and \
                             num_text == num_text_run and \
                             re.search(r'[^a-zA-Z0-9+-_.:, ]', line[:-1]) is None and \
-                            (num_lines == 0 or ((num_lines_in+1) % skip) == 0) and line.count(comment_str) == 0:
+                            (num_lines == 0 or ((num_lines+1) % skip) == 0) and line.count(comment_str) == 0:
                         output.write("{:2d},".format(skipped_last) + line)
                         num_lines += 1
                         skipped_last = False
@@ -161,14 +161,14 @@ def write_clean_file(path_to_data, type_=None, hdr_key=None, unit_key=None, skip
                         print(f"  line.count(',') == num_fields  {line.count(",") == num_fields}   \
 \nAND num_text == num_text_run {num_text == num_text_run} \
 \nAND re.search(r'[^a-zA-Z0-9+-_.:, ]', line[:-1]) is None {re.search(r'[^a-zA-Z0-9+-_.:, ]', line[:-1]) is None} \
-\nAND (num_lines == 0 or ((num_lines_in+1) % skip) == 0) {(num_lines == 0 or ((num_lines_in+1) % skip) == 0)} \
+\nAND (num_lines == 0 or ((num_lines+1) % skip) == 0) {(num_lines == 0 or ((num_lines+1) % skip) == 0)} \
 \nAND line.count(comment_str) == 0 {line.count(comment_str) == 0}")
                         print(f"{line.count(',')=} {num_fields=}")
                         print(f"{line[-1]=}")
                         print(f"{num_text=} {num_text_run=}")
                         num_skips += 1
                         skipped_last = True
-                    num_lines_in += 1
+                    num_lines += 1
     if not num_lines:
         csv_file = None
         print("I(write_clean_file): no data to write")

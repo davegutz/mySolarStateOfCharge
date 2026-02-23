@@ -102,7 +102,7 @@ def seek_tensor(save_pdf_path='./figures', path_to_temp='./temp'):
     init_time_in = None
     use_ib_mon_in = True
     skip = 1
-    time_end_in = None
+    time_end = None
     # plot_init_in = False
     long_term_in = False
     plot_overall_in = True
@@ -113,7 +113,7 @@ def seek_tensor(save_pdf_path='./figures', path_to_temp='./temp'):
     # data_file_txt = None
     temp_file = ''
     # sat_init_in = None
-    use_mon_soc_in = True
+    use_mon_soc = True
     v1_only_in = True
     dDA_in = 0.
     zero_zero_in = True
@@ -152,7 +152,7 @@ def seek_tensor(save_pdf_path='./figures', path_to_temp='./temp'):
 
     # # Load mon v4 (old)
     mon_run, sim_run, f, data_file_clean, temp_flt_file_clean, _ = \
-        load_data(data_file, skip, unit_key, zero_zero_in, time_end_in, legacy=legacy_in, v1_only=v1_only_in)
+        load_data(data_file, skip, unit_key, zero_zero_in, time_end, legacy=legacy_in, v1_only=v1_only_in)
     mon_run = add_ib_lag(mon_run)
     mon_run = adjust_soc(mon_run, dDA_in)
     mon_run = add_voc_soc_new(mon_run)
@@ -176,7 +176,7 @@ def seek_tensor(save_pdf_path='./figures', path_to_temp='./temp'):
     mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
     mon_ver, sim_ver, sim_s_ver, mon, sim = \
         replicate(mon_run, sim_run=sim_run, init_time=init_time, use_ib_mon=use_ib_mon_in, verbose=verbose_in,
-                  use_vb_sim=use_vb_sim_in, use_mon_soc=use_mon_soc_in,
+                  use_vb_sim=use_vb_sim_in, use_mon_soc=use_mon_soc,
                   slr_res_0=sres0_in, stauct_mon=stauct_mon_in, slr_res_ct=sresct_in)
     save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
 

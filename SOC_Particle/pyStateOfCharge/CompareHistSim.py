@@ -320,7 +320,7 @@ def add_qcrs(hist, mon_t_=False, mon=None, qcrs=None, t_rated=None, dqdt=None):
     return hist
 
 
-def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv=False, unit_key=None,
+def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=False, unit_key=None,
                        sync_time=None, dt_resample=10, Tb_force=None, skip=1):
     """Load history, reconstruct samples by linear interpolation and normalize all soc and Tb to 20C"""
 
@@ -340,21 +340,21 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
     Battery_off_dict = load_off_nominal_battery(Battery_to_add=battery_raw)
     apply_off_nominal_battery(Battery, Battery_off_dict)
 
-    rated_batt_cap_in = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_mon_z
-    rated_batt_cap_s_in = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_sim_z
-    qcrs = rated_batt_cap_in * 3600.
+    rated_batt_cap = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_mon_z
+    rated_batt_cap_s = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_sim_z
+    qcrs = rated_batt_cap * 3600.
 
 
     # Save these
-    rated_batt_cap_in = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_mon_z
+    rated_batt_cap = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_mon_z
     # Reconstruction of soc using subsampled data is poor.  Drive everything with soc from Monitor
-    dvoc_mon_in = 0.
+    dvoc_mon = 0.
 
     # Load mon to extract mod information
     # # Load mon v4 (old)
     if use_mon_csv:
         mon, sim, fault, mon_t_file_clean, temp_mont_t_file_clean, _ = \
-            load_data(data_file, 1, unit_key=unit_key, time_end_in=time_end_in, zero_zero_in=False, mon_str='hist')
+            load_data(data_file, 1, unit_key=unit_key, time_end=time_end, zero_zero=False, mon_str='hist')
         mon = rename_all(mon)
     else:
         mon = None
@@ -428,11 +428,11 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
             # noinspection PyTypeChecker
             # Rename
             f_raw = rename_all(f_raw)
-            fault = add_stuff_f(f_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
+            fault = add_stuff_f(f_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap, Dw=dvoc_mon,
                                 time_sync=sync_time, unit=unit, ap_ib_diff_slr=Battery_off_dict['ap_ib_diff_slr'],
                                 ap_ib_quiet_slr=Battery_off_dict['ap_ib_quiet_slr'])
             print("\nfault after add_stuff_f:\n", fault.dtype.names, fault, "\n")
-            fault = filter_Tb(fault, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap_in)  # tb_band=100 disables banding
+            fault = filter_Tb(fault, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap)  # tb_band=100 disables banding
         else:
             fault = None
 
@@ -447,7 +447,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
         # print("\nhist raw:\n", h_combo_raw.dtype.names, "\n", h_combo_raw, "\n", h_combo_raw.dtype.names, "\n")
         # noinspection PyTypeChecker
         h_combo_raw = rename_all(h_combo_raw)
-        hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap_in, Dw=dvoc_mon_in,
+        hist = add_stuff_f(h_combo_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap, Dw=dvoc_mon,
                            time_sync=sync_time, ap_ib_diff_slr=Battery_off_dict['ap_ib_diff_slr'],
                            ap_ib_quiet_slr=Battery_off_dict['ap_ib_quiet_slr'])
 
@@ -459,7 +459,7 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
         print("\nhist convert to 20C...:", end='')
 
         # Convert all the long time readings (history) to same arbitrary (20 deg C) temperature
-        hist_20C = filter_Tb(hist, 20., batt, tb_band=TB_BAND, rated_batt_cap=rated_batt_cap_in)
+        hist_20C = filter_Tb(hist, 20., batt, tb_band=TB_BAND, rated_batt_cap=rated_batt_cap)
         print("done")
 
         # Shift time by detecting when ib changes
@@ -508,13 +508,13 @@ def load_hist_and_prep(data_file=None, time_end_in=None, plots=True, use_mon_csv
         return mon, sim, unit, fault, hist_20C, filename, Battery
 
 
-def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=False, unit_key=None,
+def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=False, unit_key=None,
                      sync_time=None, dt_resample=10, Tb_force=None, request_history=None, strict_overplot=False,
                      terse=False, fig_list=None, fig_files=None, show_killer_=True):
 
     print(f"\ncompare_hist_sim: \
     \n{data_file=} \
-    \n{time_end_in=} \
+    \n{time_end=} \
     \n{plots=} \
     \n{use_mon_csv=} \
     \n{unit_key=} \
@@ -538,20 +538,20 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
     date_ = datetime.now().strftime("%y%m%d")
 
     # Save these
-    scale_in = 1
-    cc_dif_tol_in = 0.2
-    use_mon_soc_in = True
+    scale_batt = 1
+    cc_dif_tol = 0.2
+    use_mon_soc = True
     # Reconstruction of soc using subsampled data is poor.  Drive everything with soc from Monitor
-    dvoc_mon_in = 0.
-    dvoc_sim_in = 0.
+    dvoc_mon = 0.
+    dvoc_sim = 0.
     mon_ver = None
     sim_ver = None
     sim_s_ver = None
-    use_sat_mon_in = True
+    use_sat_mon = True
 
     # Load history, normalizing all soc and Tb to 20C
     mon_run, sim_run, unit, fault, hist_20C, load_filename, Battery = \
-        load_hist_and_prep(data_file=data_file, time_end_in=time_end_in, plots=plots, use_mon_csv=use_mon_csv,
+        load_hist_and_prep(data_file=data_file, time_end=time_end, plots=plots, use_mon_csv=use_mon_csv,
                            unit_key=unit_key, sync_time=sync_time, dt_resample=dt_resample, Tb_force=Tb_force)
     sim_s_run = None
 
@@ -565,10 +565,10 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
         data_file_clean = path_to_temp + '/' + data_file_txt.replace('.csv', '_hist' + '.csv', 1)
         mon_file_save = data_file_clean.replace(".csv", "_rep_hist.csv")
         replicateOptions = UserOptions(mon_run=mon_run, sim_run=sim_run, run_type='HistSim', init_time=1.,
-                                       verbose=False, max_time=time_end_in, use_vb_sim=False, scale_in=scale_in,
-                                       use_mon_soc=use_mon_soc_in, add_voc_mon=dvoc_mon_in, add_voc_sim=dvoc_sim_in,
+                                       verbose=False, max_time=time_end, use_vb_sim=False, scale_batt=scale_batt,
+                                       use_mon_soc=use_mon_soc, add_voc_mon=dvoc_mon, add_voc_sim=dvoc_sim,
                                        unit=unit, use_ib_mon=True, request_history=request_history, mod_force=0,
-                                       use_sat_mon=use_sat_mon_in)
+                                       use_sat_mon=use_sat_mon)
         mon_ver, sim_ver, sim_s_ver, mon_r, sim_r, battery = replicate(replicateOptions)
         save_clean_file(mon_ver, mon_file_save, 'mon_rep_hist' + date_)
 
@@ -576,29 +576,35 @@ def compare_hist_sim(data_file=None, time_end_in=None, plots=True, use_mon_csv=F
     if plots:
         plot_title = load_filename + '   ' + date_time
         filename = str(PurePosixPath(save_pdf_path) / load_filename)
-        S = PlotOptions()
+
+        S = PlotOptions(terse=terse)
+
         if fault is not None and len(fault.time) > 1:
             fig_list, fig_files = over_fault(fault, filename, fig_files=fig_files, plot_title=plot_title,
-                                             subtitle='faults', fig_list=fig_list, cc_dif_tol=cc_dif_tol_in,
+                                             subtitle='faults', fig_list=fig_list, cc_dif_tol=cc_dif_tol,
                                              time_units='sec', save_plots=S.save_plots)
+
         if hist_20C is not None and len(hist_20C.time) > 1:
             sim_run = None
             mon_tst = None
             sim_tst = None
             sim_s_tst = None
-            if not terse:
+            if not S.terse:
                 fig_list, fig_files = overall_fault(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename,
                                                     fig_files, plot_title=plot_title, fig_list=fig_list,
                                                     run_type='HistSim', save_plots=S.save_plots)
+
             fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_run, sim_s_ver, filename, fig_files,
                                            plot_title=plot_title, fig_list=fig_list, run_str='',
-                                           ver_str='_ver', strict_overplot=strict_overplot, terse=terse,
-                                           run_type='HistSim')
+                                           ver_str='_ver', strict_overplot=strict_overplot, terse=S.terse,
+                                           run_type='HistSim', save_plots=S.save_plots)
+
         if S.save_plots and not S.terse:
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename+'_'+date_time+'.pdf')
         cleanup_fig_files(fig_files)
 
+        print('showing plots...')
         plt.show(block=False)
         if not fig_list:
             string = 'none plots kill'
@@ -621,7 +627,7 @@ def main():  # Sample usage. OK on 20260217
     # User inputs (multiple input_files allowed
     # Cut-pasted from GUI_TestSOC Run window
     data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc3p2_hi_lo_bb.csv'
-    time_end_in = None
+    time_end = None
     plots = True
     use_mon_csv = True
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
@@ -629,15 +635,15 @@ def main():  # Sample usage. OK on 20260217
     dt_resample = 1
     Tb_force = None
     request_history = None
-    strict_overplot = True
-    terse = True
+    strict_overplot = False
+    terse = False
     fig_files = None
     fig_list = None
     show_killer_ = True
 
     compare_hist_sim(data_file=data_file, use_mon_csv=use_mon_csv, unit_key=unit_key, dt_resample=dt_resample,
-                     plots=plots, Tb_force=Tb_force, request_history=request_history, terse=terse,
-                     strict_overplot=strict_overplot)
+                     plots=plots, Tb_force=Tb_force, request_history=request_history,
+                     strict_overplot=strict_overplot, terse=terse)
 
 
 if __name__ == '__main__':  # Example usage.  Ran ok 20260217

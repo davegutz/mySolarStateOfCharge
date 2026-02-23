@@ -174,7 +174,7 @@ void chit(const String from, const urgency when)
 
 
 // Parse inputs to queues
-void chitter(const boolean chitchat, BatteryMonitor *Mon, Sensors *Sen)
+bool chitter(const boolean chitchat, BatteryMonitor *Mon, Sensors *Sen)
 {
   urgency request;
   String nibble;
@@ -254,6 +254,12 @@ void chitter(const boolean chitchat, BatteryMonitor *Mon, Sensors *Sen)
       #endif
     }
   }
+  return cp.cmd_str.length()    ||
+         cp.ctl_str.length()    ||
+         cp.asap_str.length()   ||
+         ( cp.chitchat && ( cp.soon_str.length()  ||
+                            cp.queue_str.length() ||
+                            cp.last_str.length() ) );
 }
 
 

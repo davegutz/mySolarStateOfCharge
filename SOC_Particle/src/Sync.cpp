@@ -34,7 +34,7 @@ Sync::Sync()
 Sync::Sync(unsigned long long delay)
     : delay_(delay), last_(0ULL), now_(0ULL), stat_(false), updateDiff_(0), updateTime_(0)
 {
-  updateTimeInput_ = float(delay_)/1000.;
+  updateTimeInput_ = float(delay_)/1000.f;
 }
 
 // Check and count 

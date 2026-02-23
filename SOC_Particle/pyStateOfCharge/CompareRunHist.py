@@ -62,9 +62,9 @@ def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=True,
     \n ")
 
     fig_list, fig_files = \
-        compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_shift_in=time_shift,
-                        use_mon_soc_=use_mon_soc, verbose=verbose, scale_in=scale, slr_hys_sim=slr_hys_sim,
-                        request_history=request_history_run_sim, init_time_in=init_time,
+        compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_shift=time_shift,
+                        use_mon_soc_=use_mon_soc, verbose=verbose, scale_batt=scale, slr_hys_sim=slr_hys_sim,
+                        request_history=request_history_run_sim, init_time=init_time,
                         strict_overplot=strict_overplot, terse=terse, show_killer_=False)
 
     _, _ = \

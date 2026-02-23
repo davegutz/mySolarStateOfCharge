@@ -47,25 +47,26 @@ plt.rcParams['legend.fontsize'] = 'small'
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
-def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True, Dw=0.,  use_mon_soc_=False,
-                    verbose=True, scale_in=1., slr_hys_sim=1., request_history=5, Battery=None, init_time_in=None,
-                    time_shift_in=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
+def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw=0.,  use_mon_soc_=False,
+                    verbose=True, scale_batt=1., slr_hys_sim=1., request_history=5, Battery=None, init_time=None,
+                    time_shift=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
                     fig_list=None, show_killer_=True):
 
     print(f"\n compare_run_sim: \
     \n{data_file=} \
     \n{unit_key=} \
-    \n{time_end_in=} \
+    \n{time_end=} \
     \n{plots=} \
     \n{use_mon_soc_=} \
     \n{verbose=} \
-    \n{scale_in=} \
+    \n{scale_batt=} \
     \n{slr_hys_sim=} \
     \n{request_history=} \
-    \n{init_time_in=} \
-    \n{time_shift_in=} \
+    \n{init_time=} \
+    \n{time_shift=} \
     \n{strict_overplot=} \
-    \n{terse=}\n{mon_str=} \
+    \n{terse=} \
+    \n{mon_str=} \
     \n")
 
     if fig_files is None:
@@ -78,17 +79,15 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
     date_ = datetime.now().strftime("%y%m%d")
 
     # Transient  inputs
-    zero_zero_in = False
-    use_vb_sim_in = False
-    use_ib_mon_in = False
-    tune_in = False
-    cc_dif_tol_in = 0.2
-    legacy_in = False
+    zero_zero = False
+    use_vb_sim = False
+    use_ib_mon = False
+    cc_dif_tol = 0.2
+    legacy = False
     use_vb_raw = False
-    dvoc_sim_in = 0.
-    dvoc_mon_in = Dw
-    use_mon_soc_in = use_mon_soc_
-    s_hys_sim_in = slr_hys_sim
+    dvoc_sim = 0.
+    dvoc_mon = Dw
+    use_mon_soc = use_mon_soc_
 
     # detect running interactively
     # this is written to run in pwd of call
@@ -107,8 +106,8 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
 
     # # Load mon v4 (old)
     mon_run, sim_run, f, data_file_clean, temp_flt_file_clean, _ = \
-        load_data(data_file, 1, unit_key, zero_zero_in, time_end_in, legacy=legacy_in, init_time_in=init_time_in,
-                  time_shift_in=time_shift_in, mon_str=mon_str)
+        load_data(data_file, 1, unit_key, zero_zero, time_end, legacy=legacy, init_time=init_time,
+                  time_shift=time_shift, mon_str=mon_str)
     sim_s_run = None
 
     # How to initialize
@@ -121,9 +120,9 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
     # New run
     mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
     replicateOptions = UserOptions(mon_run=mon_run, sim_run=sim_run, run_type='RunSim', init_time=mon_run.init_time,
-                                   use_ib_mon=use_ib_mon_in, use_mon_soc=use_mon_soc_in, use_vb_raw=use_vb_raw,
-                                   add_voc_sim=dvoc_sim_in, add_voc_mon=dvoc_mon_in, use_vb_sim=use_vb_sim_in,
-                                   verbose=verbose, scale_in=scale_in, slr_hys_sim=s_hys_sim_in,
+                                   use_ib_mon=use_ib_mon, use_mon_soc=use_mon_soc, use_vb_raw=use_vb_raw,
+                                   add_voc_sim=dvoc_sim, add_voc_mon=dvoc_mon, use_vb_sim=use_vb_sim,
+                                   verbose=verbose, scale_batt=scale_batt, slr_hys_sim=slr_hys_sim,
                                    request_history=request_history)
     mon_ver, sim_ver, sim_s_ver, mon, sim, Battery = replicate(replicateOptions)
     pass
@@ -137,23 +136,25 @@ def compare_run_sim(data_file=None, unit_key=None, time_end_in=None, plots=True,
         filename = str(PurePosixPath(save_pdf_path) / aug_file)
         plot_title = dir_root_test + '/' + data_root_test + '   ' + date_time
 
-        S = PlotOptions()
-        if not terse and f is not None and temp_flt_file_clean and len(f.time_ux) > 1 and not strict_overplot:
+        S = PlotOptions(terse=terse)
+        if not S.terse and f is not None and temp_flt_file_clean and len(f.time_ux) > 1 and not strict_overplot:
             fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
-                                             fig_list=fig_list, cc_dif_tol=cc_dif_tol_in, save_plots=S.save_plots)
+                                             fig_list=fig_list, cc_dif_tol=cc_dif_tol, save_plots=S.save_plots)
+
         fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_run, sim_s_ver, filename, fig_files,
                                        plot_title=plot_title, fig_list=fig_list, run_str='',
-                                       ver_str='_ver', strict_overplot=strict_overplot, terse=terse,
-                                       run_type='RunSim')
-
-        # rescale_time_axes(fig_list, 40, 50)
+                                       ver_str='_ver', strict_overplot=strict_overplot, terse=S.terse,
+                                       run_type='RunSim', save_plots=S.save_plots)
 
         # Copies
         if S.save_plots and not S.terse:
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
         cleanup_fig_files(fig_files)
+
+        print('showing plots...')
         plt.show(block=False)
+
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         if show_killer_:
             show_killer(string, 'CompareRunSim', fig_list=fig_list)
@@ -167,24 +168,30 @@ def main():  # Example usage.  ok on 20260217
     else:
         gdrive = 'G:/My Drive/'
 
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc2p2_hi_lo_bb.csv'
-    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
-    time_end_in = None
+    # Cut-pasted from GUI_TestSOC Run window
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc2p2_hi_lo_bb.csv'
+    # unit_key = 'g20250612a_soc2p2_hi_lo_bb'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc3p2_hi_lo_bb.csv'
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
+    time_end = None
     plots = True
     use_mon_soc_ = False
     verbose = True
-    scale_in = 1.0
+    scale_batt = 1.0
     slr_hys_sim = 1.0
     request_history = 5
-    init_time_in = None
-    time_shift_in = None
+    init_time = None
+    time_shift = None
     strict_overplot = True
     terse = True
     mon_str = ''
 
-    compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end_in=time_end_in,
-                    use_mon_soc_=use_mon_soc_, verbose=verbose, scale_in=scale_in, slr_hys_sim=slr_hys_sim,
-                    request_history=request_history, init_time_in=init_time_in, time_shift_in=time_shift_in,
+    strict_overplot = False
+    terse = False
+
+    compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,
+                    use_mon_soc_=use_mon_soc_, verbose=verbose, scale_batt=scale_batt, slr_hys_sim=slr_hys_sim,
+                    request_history=request_history, init_time=init_time, time_shift=time_shift,
                     strict_overplot=strict_overplot, terse=terse)
 
 

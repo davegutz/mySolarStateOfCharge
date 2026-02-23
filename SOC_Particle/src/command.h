@@ -143,44 +143,6 @@ public:
   {
     #ifndef SOFT_DEPLOY_PHOTON
 
-      //    text    data     bss     dec     hex filename
-      //  290186  119852   13850  423888   677d0 c:/Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/target/6.    // Serial.printf("command parameters(cp):\n");
-      // Serial.printf(" inf_reset %d\n", inf_reset);
-      // Serial.printf(" model_cutback %d\n", model_cutback);
-      // Serial.printf(" model_saturated %d\n", model_saturated);
-      // Serial.printf(" publishS %d\n", publishS);
-      // Serial.printf(" soft_reset %d\n", soft_reset);
-      // Serial.printf(" soft_reset_sim %d\n", soft_reset_sim);
-      // Serial.printf(" tb_info.t_c %7.3f\n", tb_info.t_c);
-      // Serial.printf(" tb_info.ready %d\n", tb_info.ready);
-      // Serial.printf(" write_summary %d\n\n", write_summary);
-      // Serial.printf(" kf_reset %d\n", kf_reset);
-
-      //   text    data     bss     dec     hex filename
-      // 290434  119852   13602  423888   677d0 c:/Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/target/6.
-      // sprintf(pr.buff, "command parameters(cp):\n");
-      // sendTxBuf(pr.buff, true, true);
-      // sprintf(pr.buff, " inf_reset %d\n", inf_reset);
-      // sendTxBuf(pr.buff, true, true);
-      // sprintf(pr.buff, " model_cutback %d\n", model_cutback);
-      // sendTxBuf(pr.buff, true, true);
-      // sprintf(pr.buff, " model_saturated %d\n", model_saturated);
-      // sendTxBuf(pr.buff, true, true);
-      // sprintf(pr.buff, " publishS %d\n", publishS);
-      // sendTxBuf(pr.buff, true, true);
-      // sprintf(pr.buff, " soft_reset %d\n", soft_reset);
-      // sendTxBuf(pr.buff, true, true);
-      // sprintf(pr.buff, " soft_reset_sim %d\n", soft_reset_sim);
-      // sendTxBuf(pr.buff, true, true);
-      // sprintf(pr.buff, " tb_info.t_c %7.3f\n", tb_info.t_c);
-      // sendTxBuf(pr.buff, true, true);
-      // sprintf(pr.buff, " tb_info.ready %d\n", tb_info.ready);
-      // sendTxBuf(pr.buff, true, true);
-      // sprintf(pr.buff, " write_summary %d\n\n", write_summary);
-      // sendTxBuf(pr.buff, true, true);
-      // sprintf(pr.buff, " kf_reset %d\n", kf_reset);
-      // sendTxBuf(pr.buff, true, true);
-
       //   text    data     bss     dec     hex filename
       // 290338  119852   13698  423888   677d0 c:/Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/target/6.
       sendTxBuf(String::format("command parameters(cp):\n"), true, true);

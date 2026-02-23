@@ -49,10 +49,8 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     # date_ = datetime.now().strftime("%y%m%d")
 
     # Transient  inputs
-    zero_zero_in = False
-    time_end_in = None
-    rated_batt_cap_run_in = 108.4
-    rated_batt_cap_test_in = 108.4
+    zero_zero = False
+    time_end = None
 
     # Regression suite
     data_file_txt_run = keys[0][0]
@@ -67,7 +65,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     # Load old ref data
     data_file_run = str(PurePosixPath(data_file_folder_run) / data_file_txt_run)
     mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
-        load_data(data_file_run, 1, unit_key_run, zero_zero_in, time_end_in)
+        load_data(data_file_run, 1, unit_key_run, zero_zero, time_end)
     sim_s_run = None
     mon_run.str = 'r1'
     sim_run.str = 's1'
@@ -76,7 +74,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     # Load new test data
     data_file_test = str(PurePosixPath(data_file_folder_test) / data_file_txt_test)
     mon_test, sim_test, f_test, data_file_ver_clean, temp_flt_file_ver_clean, sync_info_test = \
-        load_data(data_file_test, 1, unit_key_test, zero_zero_in, time_end_in)
+        load_data(data_file_test, 1, unit_key_test, zero_zero, time_end)
     sim_s_test = None
     mon_test.str = 'r2'
     sim_test.str = 's2'
@@ -113,21 +111,25 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     filename = str(PurePosixPath(save_pdf_path) / filename)
     plot_title = dir_root_run + '/' + data_root_run + '__' + dir_root_test + '/' + data_root_test + '   ' + date_time
 
-    S = PlotOptions()
+    S = PlotOptions(terse=terse)
 
     if temp_flt_file_run_clean and len(f_run.time_ux) > 1:
         fig_list, fig_files = over_fault(f_run, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                          fig_list=fig_list, save_plots=S.save_plots)
 
     fig_list, fig_files = dom_plot(mon_run, mon_test, sim_run, sim_test, sim_s_run, sim_s_test, filename, fig_files,
-                                   plot_title=plot_title, fig_list=fig_list, run_type='RunRun', terse=terse)  # all over all
+                                   plot_title=plot_title, fig_list=fig_list, run_type='RunRun', terse=S.terse,
+                                   save_plots=S.save_plots)  # all over all
 
     # Copies
     if S.save_plots and not S.terse:
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
         pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
     cleanup_fig_files(fig_files)
+
+    print('showing plots...')
     plt.show(block=False)
+
     string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
     show_killer(string, 'CompareRunRun', fig_list=fig_list)
 
@@ -144,8 +146,8 @@ def main():
     # Cut-pasted from GUI_TestSOC Run window
     keys = [('ampHiEmptFail_soc2p2_hi_lo_bb.csv', 'g20250612a_soc2p2_hi_lo_bb'),
             ('ampHiEmptFail_soc3p2_hi_lo_bb.csv', 'g20250612a_soc3p2_hi_lo_bb')]
-    data_file_folder_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a'
-    data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a'
+    data_file_folder_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a'
+    data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a'
     sync_to_ctime = False
     terse = True
 

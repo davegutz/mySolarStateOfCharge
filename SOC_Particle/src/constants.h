@@ -67,7 +67,7 @@
 #ifndef DISAB_TB_FA
     #define DISAB_TB_FA false
 #endif
-const String unit = version + "_" + HDWE_UNIT;
+const char unit[] = version_str "_" HDWE_UNIT;
 
 // Constants always defined
 #define ONE_HOUR_MILLIS       3600000UL // Number of milliseconds in one hour (60*60*1000)

@@ -193,13 +193,6 @@ void debug_check_99(BatteryMonitor *Mon, Sensors *Sen)
       chit("Xm0,", QUEUE);      // Hardware mode
       chit("Dr1,", QUEUE);      // Max rate to measure throughput in zero script
     }
-    // Allow leaving scripting zero as is
-    // else if ( last_call==99 )
-    // {
-    //   sendTxBuf(String::format("\nRestore defaults: 'Xm, Dr,'\n"), true, true);
-    //   chit("Xm,", QUEUE);      // Nominal
-    //   chit("Dr,", QUEUE);       // Nominal
-    // }
   }
   last_call = sp.debug();
 
@@ -217,7 +210,7 @@ void debug_check_99(BatteryMonitor *Mon, Sensors *Sen)
       String::format("voc   voc_soc *DwTab|") +
       String::format("*Sran|") +
       String::format(" T  |\n") +
-      String::format("%6.2f|%6.3f %6.3f %5.2f %6.2f|%5.3f %5.3f|%6.2f %6.2f %5.3f %5.2f %6.2f|%6.2f %6.2f %5.3f %5.2f %6.2f|%6.2f  %5.2f|%5.2f %5.2f  %7.2f| %4.2f|%5.3f|\n",
+      String::format("%6.2f|%6.3f %6.3f %5.2f %6.2f|%5.3f %5.3f|%6.2f %6.2f %5.3f %5.2f %6.2f|%6.2f %6.2f %5.3f %5.2f %6.2f|%6.2f  %5.2f|%5.2f %5.2f  %7.2f| %4.2f|%6.4f|\n",
       Sen->Tb_hdwe_filt,
       Sen->Vb_hdwe_f, Sen->Vb_rms, sp.Vb_scale(), sp.Vb_bias_hdwe(),
       Sen->ShuntAmp->Vc(), Sen->Vc_rms, 

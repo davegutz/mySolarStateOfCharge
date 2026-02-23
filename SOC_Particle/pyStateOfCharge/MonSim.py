@@ -129,7 +129,7 @@ def replicate(OPT: UserOptions):
     SN = Sensors(OPT, run_type=OPT.run_type)
 
     # Battery sizing
-    scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_in, Battery.NOM_UNIT_CAP)
+    scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_batt, Battery.NOM_UNIT_CAP)
 
     # Make batteries from modified class constants
     sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test)
@@ -358,7 +358,7 @@ def replicate(OPT: UserOptions):
                   f"skip_mon {bool(SN.mon_run.skip_mon[G.i])}\n"
                   f"skip_sim {bool(SN.sim_run.skip_sim[G.i])}\n"
                   f"")
-            exit(1)
+            return None, None, None, None, None, None
 
     # Data
     if OPT.verbose:

@@ -96,10 +96,10 @@ class Sensors:
             self.Tb_f = self.mon_run.Tb_f_rap[0]
             self.lut_dTb = None
             self.dTb = 0.
-            if OPT.add_Tb_in is not None:
-                self.add_Tb_in = np.array(OPT.add_Tb_in)
-                self.Tb0 += OPT.add_Tb_in[1, 0]
-                self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb_in[0, :]), np.array(OPT.add_Tb_in[1, :]))
+            if OPT.add_Tb is not None:
+                self.add_Tb = np.array(OPT.add_Tb)
+                self.Tb0 += OPT.add_Tb[1, 0]
+                self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb[0, :]), np.array(OPT.add_Tb[1, :]))
                 self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
             if self.mon_run.Tb_f_rate is not None:
                 self.Tb_f_rate = self.mon_run.Tb_f_rate[0]
@@ -152,10 +152,10 @@ class Sensors:
             self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
             self.lut_dTb = None
             self.dTb = 0.
-            if OPT.add_Tb_in is not None:
-                self.add_Tb_in = np.array(OPT.add_Tb_in)
-                self.Tb0 += OPT.add_Tb_in[1, 0]
-                self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb_in[0, :]), np.array(OPT.add_Tb_in[1, :]))
+            if OPT.add_Tb is not None:
+                self.add_Tb = np.array(OPT.add_Tb)
+                self.Tb0 += OPT.add_Tb[1, 0]
+                self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb[0, :]), np.array(OPT.add_Tb[1, :]))
                 self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
             self.Tb_f_rap = self.mon_run.Tb_f_rap
             self.Tb_rap_init = self.mon_run.Tb_rap[0] + self.dTb
@@ -210,10 +210,10 @@ class Sensors:
             self.Tb_f_rate_init = 0.
             self.lut_dTb = None
             self.dTb = 0.
-            if OPT.add_Tb_in is not None:
-                self.add_Tb_in = np.array(OPT.add_Tb_in)
-                self.Tb0 += OPT.add_Tb_in[1, 0]
-                self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb_in[0, :]), np.array(OPT.add_Tb_in[1, :]))
+            if OPT.add_Tb is not None:
+                self.add_Tb = np.array(OPT.add_Tb)
+                self.Tb0 += OPT.add_Tb[1, 0]
+                self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb[0, :]), np.array(OPT.add_Tb[1, :]))
                 self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
             self.Tb_rap_init = self.mon_run.Tb_f[0] + self.dTb
             self.Tb_f_rap_init = self.mon_run.Tb_f[0] + self.dTb

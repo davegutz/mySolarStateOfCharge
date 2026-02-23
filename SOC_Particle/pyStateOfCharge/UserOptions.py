@@ -38,7 +38,7 @@ class UserOptions:
     max_time: Optional[float] = None  # Limit the simultation run, s
 
     # Model scalar / adders
-    scale_in: Optional[float] = None  # Battery size scalar applied to the nominal battery unit of 100 A-h
+    scale_batt: Optional[float] = None  # Battery size scalar applied to the nominal battery unit of 100 A-h
     slr_cap_chg: Optional[float] = 1.  # Scalar on ideal capacitor model for hysteresis charging model only
     slr_cap_dis: Optional[float] = 1.  # Scalar on ideal capacitor model for hysteresis discharging model only
     slr_coul_eff: Optional[float] = 1.  # Scalar on Coulombic Efficiency of battery model, both for the BatterySim model
@@ -57,7 +57,7 @@ class UserOptions:
     add_voc_sim: Optional[float] = 0.  # Adder to BatterySim voc table outputs (should match dvoc of Chemistry_BMS.cpp)
     add_voc_mon: Optional[float] = 0.  # Adder to BatteryMonitor voc table outputs (should match dvoc of
     # Chemistry_BMS.cpp)
-    add_Tb_in: Optional[float] = None  # Adder on sensed Tb, deg C
+    add_Tb: Optional[float] = None  # Adder on sensed Tb, deg C
 
     # Failure injection
     ib_fail_t: Optional[float] = None  # Time to inject a failure into the Ib input signal

@@ -26,13 +26,13 @@ import numpy as np
 
 class SavedData:
     def __init__(self, battery=None, rap=None, sel=None, ekf=None, temp=None, shunt=None,
-                 time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None, init_time_in=None, time_shift_in=None,
+                 time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None, init_time=None, time_shift=None,
                  str_=None):
         self.str = str_
         i_end = 0
         n = None
         ib_lag = None
-        self.time_shift = time_shift_in
+        self.time_shift = time_shift
 
         # Load off-nominal Battery values
         if battery is not None:
@@ -388,8 +388,8 @@ class SavedData:
             self.time_t = np.copy(self.dt)
 
         # Initialization time logic
-        if init_time_in:
-            self.init_time = init_time_in
+        if init_time:
+            self.init_time = init_time
         else:
             if self.time[0] == 0.:  # no initialization flat detected at beginning of recording
                 self.init_time = 1.

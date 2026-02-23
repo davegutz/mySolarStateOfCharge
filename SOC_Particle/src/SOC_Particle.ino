@@ -118,7 +118,7 @@ Pins *myPins;                   // Photon hardware pin mapping used
 // Setup
 void setup()
 {
-  Log.info("begin setup");
+  // Log.info("begin setup");
   // Serial
   // Serial.blockOnOverrun(false);  doesn't work
   Serial.begin(SOFT_SBAUD);
@@ -156,7 +156,7 @@ void setup()
   // A4 (pin 'D1') - alternate to SCL.
   // A5 (pin 'D14') - Vr or Vc
 
-  Log.info("setup Pins");
+  // Log.info("setup Pins");
   myPins = new Pins(D3, D7, D12, D11, D13, D14, D0, true);
   pinMode(myPins->status_led, OUTPUT);
   digitalWrite(myPins->status_led, LOW);
@@ -165,7 +165,7 @@ void setup()
   // I2C for OLED, ADS, backup EERAM, DS2482
   // Photon2 only accepts 100 and 400 khz
   #if !defined(HDWE_BARE) && !defined(HDWE_2WIRE)
-    Log.info("setup I2C Wire");
+    // Log.info("setup I2C Wire");
     #ifdef HDWE_ADS1013_AMP_NOA
       Wire.setSpeed(CLOCK_SPEED_100KHZ);
       sendTxBuf("Nominal Wire setup for ADS1013\n", true, true);
@@ -233,7 +233,7 @@ void setup()
   // Ask to renominalize
   if ( ASK_DURING_BOOT )
   {
-    Log.info("setup renominalize");
+    // Log.info("setup renominalize");
     if ( sp.num_diffs() )
     {
       #if defined(HDWE_SSD1306_OLED) && !defined(HDWE_2WIRE)
@@ -244,7 +244,7 @@ void setup()
     }
   }
 
-  Log.info("setup end");
+  // Log.info("setup end");
   sendTxBuf("End setup()\n\n", true, true);
 } // setup
 
@@ -296,20 +296,20 @@ void loop()
     Ds2482.loop();
   #endif
   if ( now - last_sync > ONE_DAY_MILLIS || reset )  sync_time(now, &last_sync, &millis_flip);
-  Sen->control_time = double(Sen->now/1000);
+  Sen->control_time = double(Sen->now)/1000.;
   char buffer[32];
   time_long_2_str(time_now, buffer);
   hm_string = String(buffer);
-  read_temp = ReadTemp->update(System.millis(), reset);
-  read = ReadSensors->update(System.millis(), reset);
-  chitchat = Talk->update(System.millis(), reset);
+  read_temp = ReadTemp->update(now, reset);
+  read = ReadSensors->update(now, reset);
+  chitchat = Talk->update(now, reset);
   elapsed = ReadSensors->now() - start;
   elapsed_reset = ReadSensors->now() - start_reset;
-  control = ControlSync->update(System.millis(), reset);
-  display_and_remember = DisplayUserSync->update(System.millis(), reset);
+  control = ControlSync->update(now, reset);
+  display_and_remember = DisplayUserSync->update(now, reset);
   boolean boot_summ = boot_wait && ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay) ) && !sp.modeling_z;
   if ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay) ) boot_wait = false;
-  summarizing = Summarize->update(System.millis(), false) || boot_summ;
+  summarizing = Summarize->update(now, false) || boot_summ;
 
   // Sample temperature
   // Outputs:   Sen->Tb,  Sen->Tb_f
@@ -328,14 +328,14 @@ void loop()
       if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 396 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt, %11.8f %11.8f\n",
         Sen->Tb_model, Sen->Tb_model_filt), true, true);
     }
-    Log.info("ino:  temp_load_and_filter");
+    // Log.info("ino:  temp_load_and_filter");
     
     Sen->temp_load_and_filter(Sen, reset_temp);
     Sen->select_temp(Mon);
 
     if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 403 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
         reset_temp, Sen->Sim->tb_f(), Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate), true, true);
-    Log.info("ino:  print_temp_serial");
+    // Log.info("ino:  print_temp_serial");
     print_temp_serial(reset_temp, Sen);
   }
 
@@ -343,10 +343,10 @@ void loop()
   #ifndef HDWE_ADS1013_AMP_NOA
     if ( read )
     {
-      Log.info("Read shunt");
+      // Log.info("Read shunt");
       if ( reset_kf )sendTxBuf(" SOC_Particle:  reseting kfs\n", true, true);
       Sen->ShuntAmp->sample(reset_kf);
-      Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.);
+      // Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.f);
       Sen->ShuntNoAmp->sample(reset_kf);
     }
   #endif
@@ -354,7 +354,7 @@ void loop()
   // Input all other sensors and do high rate calculations
   if ( read )
   {
-    Log.info("ino:  read");
+    // Log.info("ino:  read");
     Sen->reset = reset;
 
     // Check for really slow data capture and run EKF each read frame
@@ -376,7 +376,7 @@ void loop()
     // Read sensors, model signals, select between them, synthesize injection signals on current
     // Inputs:  sp.config, sp.sim_chm
     // Outputs: Sen->Ib, Sen->Vb, sp.inj_bias
-    Log.info("ino:  sense_synth_select");
+    // Log.info("ino:  sense_synth_select");
     sense_synth_select(reset, reset_temp, reset_kf, ReadSensors->now(), elapsed, myPins, Mon, Sen);
 
     // Calculate Ah remaining`
@@ -397,7 +397,7 @@ void loop()
     // Publish for variable print rate
     if ( cp.publishS )
     {
-      Log.info("ino:  assign_publist ReadSensors->now()=%lld", ReadSensors->now());
+      // Log.info("ino:  assign_publist ReadSensors->now()=%lld", ReadSensors->now());
       assign_publist(&pp.pubList, ReadSensors->now(), unit, hm_string, Sen, num_timeouts, Mon);
       static boolean wrote_last_time = false;
       if ( wrote_last_time )
@@ -408,18 +408,18 @@ void loop()
     }
 
     // Print
-    Log.info("ino:  print_rapid_data");
+    // Log.info("ino:  print_rapid_data");
     print_shunt_serial(reset, Sen);
     print_rapid_data(reset, Sen, Mon, reset_temp);
     print_signal_sel_serial(reset, Sen, Mon, Sen->Sim);
 
-    Log.info("end read");
+    // Log.info("end read");
   }  // end read (high speed frame)
 
   // Bluetooth display drivers.   Also convenient update time for saving parameters (remember)
   if ( display_and_remember )
   {
-    Log.info("display and remember");
+    // Log.info("display and remember");
     serial_display(Sen, Mon);
     sp.put_Time_now(max( sp.Time_now_z, (unsigned long)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
   }
@@ -435,9 +435,11 @@ void loop()
   // Chit-chat requires 'read' timing so 'DP' and 'Dr' can manage sequencing
   // Running chitter unframed allows queues of different priorities to be built from long
   // runs of Serial inputs
-  chitter(chitchat, Mon, Sen);  // Parse inputs to queues
-  chatter();  // Prioritize commands to describe.  ctl_str and asap_str queues always run.  Others only with chitchat
-  describe(Mon, Sen);  // Run the commands
+  if ( chitter(chitchat, Mon, Sen) )  // Parse inputs to queues; returns true if any queue has work
+  {
+    chatter();  // Prioritize commands to describe.  ctl_str and asap_str queues always run.  Others only with chitchat
+    describe(Mon, Sen);  // Run the commands
+  }
 
   // Summary management.   Every boot after a wait an initial summary is saved in rotating buffer
   // Then every half-hour unless modeling.   Can also request manually via cp.write_summary (Talk)
@@ -485,7 +487,7 @@ void loop()
   if ( cp.ekf_reset ) cp.ekf_reset_print = reset_ekf = true;
   if ( cp.kf_reset ) cp.kf_reset_print = reset_kf = true;
   cp.soft_reset = cp.soft_reset_sim = cp.ekf_reset = cp.kf_reset = false;
-  Log.info("ino:  end loop\n\n\n");
+  // Log.info("ino:  end loop\n\n\n");
 
 } // loop
 

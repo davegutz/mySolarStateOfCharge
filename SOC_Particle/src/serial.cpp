@@ -181,7 +181,7 @@ void print_rapid_header(void)
 void print_rapid_serial(const boolean reset, Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
   // if ( Sen->T == 0.) return;
-  double cTime = double(Sen->now)/1000;
+  double cTime = double(Sen->now)/1000.;
   
   sprintf(pr.buff,  "%s,%s,%13.4f,%8.4f,   %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,   ", \
     pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
@@ -206,7 +206,7 @@ void print_rapid_serial(const boolean reset, Publish *pubList, Sensors *Sen, Bat
 
     Serial.printf("\n");
 
-    Log.info("    print_rapid_create_string cTime,%9.3f,", cTime);
+    // Log.info("    print_rapid_create_string cTime,%9.3f,", cTime);
 }
 void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp)
 {
@@ -225,7 +225,7 @@ void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, co
     }
     if ( cp.publishS )
     {
-      Log.info("  print_rapid_data:  print_rapid_serial");
+      // Log.info("  print_rapid_data:  print_rapid_serial");
       print_rapid_serial(reset, &pp.pubList, Sen, Mon);
       cp.num_v_print++;
     }
@@ -471,7 +471,7 @@ void print_temp_serial(const boolean reset, Sensors *Sen)
     Serial.printf("temp_unit, %13.4f, %8.4f, %11.8f, %11.8f, %11.8f, %d, %11.8f, %11.8f, %11.8f, %11.8f, %11.8f,  %11.8f,\n",
       cTime, Sen->T_temp, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_hdwe_filt, Sen->Tb_model_filt, Sen->Tb_f, Sen->Tb_hdwe_filt_rate,
       Sen->Tb_model_filt_rate, Sen->Tb_f_rate);
-    Log.info("    print_temp_serial cTime,%9.3f,", cTime);
+    // Log.info("    print_temp_serial cTime,%9.3f,", cTime);
   }
 }
 

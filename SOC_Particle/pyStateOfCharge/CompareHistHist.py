@@ -48,7 +48,7 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
     # Save these
-    cc_dif_tol_in = 0.2
+    cc_dif_tol = 0.2
     sim_s_run = None
     sim_s_tst = None
 
@@ -78,25 +78,27 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
         filename_tst = filename_tst.replace('CompareHistSim', '')
         aug_file = filename_run + '__' + filename_tst + '_' + PurePosixPath( Path(__file__).as_posix()).stem
         filename = str(PurePosixPath(save_pdf_path) / aug_file)
-        S = PlotOptions()
         fig_list = []
         fig_files = []
         plot_title = filename_run + filename_tst + '   ' + date_time
-        S = PlotOptions()
+
+        S = PlotOptions(terse=terse)
+
         if fault_run is not None and len(fault_run.time) > 1:
             fig_list, fig_files = over_fault(fault_run, filename, fig_files=fig_files, plot_title=plot_title,
-                                             subtitle='faults_run', fig_list=fig_list, cc_dif_tol=cc_dif_tol_in,
+                                             subtitle='faults_run', fig_list=fig_list, cc_dif_tol=cc_dif_tol,
                                              time_units='sec', save_plots=S.save_plots)
+
         if fault_tst is not None and len(fault_tst.time) > 1:
             fig_list, fig_files = over_fault(fault_tst, filename, fig_files=fig_files, plot_title=plot_title,
-                                             subtitle='faults_tst', fig_list=fig_list, cc_dif_tol=cc_dif_tol_in,
+                                             subtitle='faults_tst', fig_list=fig_list, cc_dif_tol=cc_dif_tol,
                                              time_units='sec', save_plots=S.save_plots)
+
         if hist_20C_run is not None and len(hist_20C_run.time) > 1:
             sim_run = None
-            plot_init_in = False
             fig_list, fig_files = dom_plot(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename_run, fig_files,
                                            plot_title=plot_title, fig_list=fig_list, run_str='_'+unit_run,
-                                           ver_str='_'+unit_tst, run_type='HistHist', terse=terse)
+                                           ver_str='_'+unit_tst, run_type='HistHist', terse=S.terse, save_plots=S.save_plots)
             fig_list, fig_files = overall_fault(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename_run,
                                                 fig_files, plot_title=plot_title, fig_list=fig_list,
                                                 run_type='HistHist', save_plots=S.save_plots)
@@ -105,7 +107,8 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename+'_'+date_time+'.pdf')
         cleanup_fig_files(fig_files)
-    
+
+        print('showing plots...')
         plt.show(block=False)
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         show_killer(string, 'CompareFault', fig_list=fig_list)
@@ -116,16 +119,14 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
 def main():
 
     # User inputs (multiple input_files allowed
+
     # Cut-pasted from GUI_TestSOC Run window
-    data_file_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiEmptFail_soc2p2_hi_lo_bb.csv'
+    data_file_run = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc2p2_hi_lo_bb.csv'
     unit_key_run = 'g20250612a_soc2p2_hi_lo_bb'
-    data_file_tst = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction\\g20250612a\\ampHiEmptFail_soc3p2_hi_lo_bb.csv'
+    data_file_tst = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc3p2_hi_lo_bb.csv'
     unit_key_tst = 'g20250612a_soc3p2_hi_lo_bb'
     dt_resample = 1
     terse = True
-
-    # Do this when running compare_hist_sim on run that schedule extracted assuming constant Tb
-    # Tb_force = 35
 
     compare_hist_hist(data_file_run=data_file_run, unit_key_run=unit_key_run,
                       data_file_tst=data_file_tst, unit_key_tst=unit_key_tst,

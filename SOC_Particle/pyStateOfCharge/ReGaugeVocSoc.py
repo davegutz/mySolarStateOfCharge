@@ -235,7 +235,7 @@ if __name__ == '__main__':  # Example usage. Did not run on 20260217.  Useful fo
     #  Check values below in LocalChem() for mod_code, rated_batt_cap, scale
     #    mod_code agrees with entries (for proper plotting and bookkeeping)
     #    rated_batt_cap from Battery.NOM_UNIT_CAP in Python, not #define in app
-    #    scale from scale_in in CompareRunSim.   It doesn't appear in CompareRunSim there is a default value of 1.
+    #    scale from scale_batt in CompareRunSim.   It doesn't appear in CompareRunSim there is a default value of 1.
     def main():
         date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 

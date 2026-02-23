@@ -404,9 +404,9 @@ class SavedData:
 
 
 # Load from files
-def load_data_KF1x1_test(path_to_data, time_end_in):
+def load_data_KF1x1_test(path_to_data, time_end):
 
-    print(f"load_data_KF1x1_test: \n{path_to_data=}\n{time_end_in=}\n")
+    print(f"load_data_KF1x1_test: \n{path_to_data=}\n{time_end=}\n")
 
     hdr_key_x = "unit_shunt,"  # Find one self of title
     unit_key_x = "shunt_unit"
@@ -421,7 +421,7 @@ def load_data_KF1x1_test(path_to_data, time_end_in):
         mon_raw = None
         print(f"load_data_KF1x1_test: returning mon=None")
 
-    mon = SavedData(x=mon_raw, time_end=time_end_in)
+    mon = SavedData(x=mon_raw, time_end=time_end)
 
     return mon, data_file_clean
 

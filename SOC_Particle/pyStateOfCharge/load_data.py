@@ -93,11 +93,11 @@ class SyncInfo:
 
 
 # Load from files
-def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_batt_cap=Battery.NOM_UNIT_CAP,
-              legacy=False, zero_thr_in=0.02, init_time_in=None, time_shift_in=None, mon_str=''):
+def load_data(path_to_data, skip, unit_key, zero_zero, time_end, rated_batt_cap=Battery.NOM_UNIT_CAP,
+              legacy=False, zero_thr_in=0.02, init_time=None, time_shift=None, mon_str=''):
 
-    print(f"load_data: \n{path_to_data=}\n{skip=}\n{unit_key=}\n{zero_zero_in=}\n{time_end_in=}\n{rated_batt_cap=}\n"
-          f"{legacy=}\n{init_time_in=}\n{time_shift_in=}\n")
+    print(f"load_data: \n{path_to_data=}\n{skip=}\n{unit_key=}\n{zero_zero=}\n{time_end=}\n{rated_batt_cap=}\n"
+          f"{legacy=}\n{init_time=}\n{time_shift=}\n")
 
     battery_hdr = "Battery_hdr"
     battery_val = "Battery_val"
@@ -171,8 +171,8 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
         print(f"load_data: returning shunt_raw=None")
 
     mon = SavedData(battery=battery_raw, rap=mon_raw, sel=sel_raw, ekf=ekf_raw, temp=temp_raw, shunt=shunt_raw,
-                    time_end=time_end_in, zero_zero=zero_zero_in, zero_thr=zero_thr_in, sync_cTime=sync,
-                    init_time_in=init_time_in, time_shift_in=time_shift_in, str_=mon_str)
+                    time_end=time_end, zero_zero=zero_zero, zero_thr=zero_thr_in, sync_cTime=sync,
+                    init_time=init_time, time_shift=time_shift, str_=mon_str)
     batt = BatteryMonitor()
 
     # Load sim _s v24 portion of real-time run (ref)
@@ -181,10 +181,10 @@ def load_data(path_to_data, skip, unit_key, zero_zero_in, time_end_in, rated_bat
     if data_file_sim_clean:
         sim_raw = np.genfromtxt(data_file_sim_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
         sim_raw = rename_all(sim_raw)
-        sim = SavedDataSim(time_run_start=mon.time_run_start, data=sim_raw, time_end=time_end_in)
+        sim = SavedDataSim(time_run_start=mon.time_run_start, data=sim_raw, time_end=time_end)
     else:
         sim_raw = None
-        sim = SavedDataSim(time_run_start=mon.time_run_start, data=sim_raw, time_end=time_end_in, fake=True,
+        sim = SavedDataSim(time_run_start=mon.time_run_start, data=sim_raw, time_end=time_end, fake=True,
                            mon_for_fake=mon, str_='run_s')
         sim = rename_all(sim)
         print(f"load_data: returning sim=None")

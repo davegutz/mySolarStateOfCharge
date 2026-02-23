@@ -66,7 +66,7 @@ TempSensor::~TempSensor() {}
 // functions
 float TempSensor::sample(Sensors *Sen)
 {
-  Log.info("  TempSensor::sample");
+  // Log.info("  TempSensor::sample");
   // Read Sensor
   // MAXIM conversion 1-wire Tp plenum temperature
   static double Tb_hdwe = 0.;
@@ -1429,7 +1429,7 @@ void Sensors::select_temp(BatteryMonitor *Mon)
       Tb = Tb_hdwe;
       Tb_f = Tb_hdwe_filt;
       Tb_f_rate = Tb_hdwe_filt_rate;
-      Log.info("    select_volt_and_current:  Tb=Tb_hdwe=%9.5f Tb_f%9.5f Tb_f_rate%11.8f", Tb_hdwe, Tb_f, Tb_f_rate);
+      // Log.info("    select_volt_and_current:  Tb=Tb_hdwe=%9.5f Tb_f%9.5f Tb_f_rate%11.8f", Tb_hdwe, Tb_f, Tb_f_rate);
     }
   }
   sample_time_tb_ = SensorTb->sample_time();
@@ -1510,7 +1510,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
   Ib_noa_rms = IbNoaRMS->update(Ib_noa);
   T =  double(dt_ib_)/1000.;  // s
   now = sample_time_ib_ - inst_millis_ + inst_time_*1000;
-  Log.info("    select_volt_and_current now:  now,%lld, cTime,%7.3f,", now, double(now)/1000.);
+  // Log.info("    select_volt_and_current now:  now,%lld, cTime,%7.3f,", now, double(now)/1000.);
 
   if ( sp.debug()==62 ) Serial.printf(" Ib%7.3f Ib_hdwe%7.3f Ib_hdwe_model%7.3f Ib_amp%7.3f Ib_amp_model%7.3f Ib_amp_hdwe%7.3f Ib_noa%7.3f Ib_noa_model%7.3f Ib_noa_hdwe%7.3f\n",
    Ib, Ib_hdwe, Ib_hdwe_model, Ib_amp, Ib_amp_model, Ib_amp_hdwe, Ib_noa, Ib_noa_model, Ib_noa_hdwe);
@@ -1655,7 +1655,7 @@ void Sensors::shunt_select_initial(const boolean reset)
 // Load and filter Tb
 void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
 {
-  Log.info("  temp_load_and_filter:  calling sample");
+  // Log.info("  temp_load_and_filter:  calling sample");
   reset_temp_ = reset_temp;
   #ifndef HDWE_BARE
     Tb_hdwe = SensorTb->sample(Sen);  // Must sample even if using model
@@ -1668,7 +1668,7 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
       Tb_hdwe = Tb_model;
     }
     now_temp = sample_time_tb_ - inst_millis_ + inst_time_*1000;
-    Log.info("    temp_load_and_filter:  now_temp,%lld, cTime,%7.3f,", now_temp, double(now_temp)/1000.);
+    // Log.info("    temp_load_and_filter:  now_temp,%lld, cTime,%7.3f,", now_temp, double(now_temp)/1000.);
   #else
     Tb_hdwe = RATED_TEMP;
   #endif
