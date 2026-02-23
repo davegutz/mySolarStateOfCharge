@@ -605,7 +605,7 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename+'_'+date_time+'.pdf')
         cleanup_fig_files(fig_files)
 
-        print('showing plots...')
+        print('showing plots...waiting on user')
         plt.show(block=False)
         if not fig_list:
             string = 'none plots kill'
@@ -628,11 +628,11 @@ def main():  # Sample usage. OK on 20260217
 
     # User inputs (multiple input_files allowed
     # Cut-pasted from GUI_TestSOC Run window
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc3p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc2p2_hi_lo_bb.csv'
     time_end = None
     plots = True
     use_mon_csv = True
-    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
+    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
     sync_time = None
     dt_resample = 1
     Tb_force = None
@@ -642,8 +642,6 @@ def main():  # Sample usage. OK on 20260217
     fig_files = None
     fig_list = None
     show_killer_ = True
-
-    terse = True
 
     compare_hist_sim(data_file=data_file, use_mon_csv=use_mon_csv, unit_key=unit_key, dt_resample=dt_resample,
                      plots=plots, Tb_force=Tb_force, request_history=request_history,

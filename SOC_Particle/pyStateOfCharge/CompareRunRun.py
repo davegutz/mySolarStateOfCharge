@@ -133,7 +133,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
         pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
     cleanup_fig_files(fig_files)
 
-    print('showing plots...')
+    print('showing plots...waiting on user')
     plt.show(block=False)
 
     string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
