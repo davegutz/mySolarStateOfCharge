@@ -601,6 +601,7 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
 
         if S.save_plots and not S.terse:
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
+            print('creating pdf...')
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename+'_'+date_time+'.pdf')
         cleanup_fig_files(fig_files)
 
@@ -612,6 +613,7 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
             string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         if show_killer_:
             show_killer(string, 'CompareFault', fig_list=fig_list)
+        print('DONE')
 
     return fig_list, fig_files
 
@@ -640,6 +642,8 @@ def main():  # Sample usage. OK on 20260217
     fig_files = None
     fig_list = None
     show_killer_ = True
+
+    terse = True
 
     compare_hist_sim(data_file=data_file, use_mon_csv=use_mon_csv, unit_key=unit_key, dt_resample=dt_resample,
                      plots=plots, Tb_force=Tb_force, request_history=request_history,

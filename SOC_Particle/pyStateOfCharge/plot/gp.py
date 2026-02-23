@@ -311,11 +311,11 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mr, 'time', S.mr, 'vsat', color='orange', linestyle=':')
     if S.run_type == 'HistSim':
         plq(plt, S.mr, 'time', S.mr, 'vb_f', add=-2., color='black', linestyle='-')
-        plq(plt, S.mv, 'time', S.mv, 'vb_f', add=-2., color='red', linestyle='--')
+        plq(plt, S.mv, 'time', S.mv, 'vb', add=-2., color='red', linestyle='--')
     plq(plt, S.mr, 'time', S.mr, 'vb', add=-2., color='black', linestyle='-', warn=not S.run_is_stdy)
     plq(plt, S.mv, 'time', S.mv, 'vb', add=-2., color='green', linestyle='--', warn=not S.ver_is_stdy)
     plq(plt, S.sr, 'time', S.sr, 'vb_s', add=-2., color='red', linestyle='-.', warn=not S.run_is_stdy)
-    plq(plt, S.sv, 'time', S.smv, 'vb_s', add=-2., color='pink', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.smv, 'time', S.smv, 'vb_s', add=-2., color='pink', linestyle='--', warn=not S.ver_is_stdy and not S.run_is_stdy)
     plt.xlabel('sec')
     saved_fontsize = plt.rcParams['legend.fontsize']
     plt.rcParams['legend.fontsize'] = '6'

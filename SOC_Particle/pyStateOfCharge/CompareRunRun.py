@@ -113,9 +113,14 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
 
     S = PlotOptions(terse=terse)
 
-    if temp_flt_file_run_clean and len(f_run.time_ux) > 1:
-        fig_list, fig_files = over_fault(f_run, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
-                                         fig_list=fig_list, save_plots=S.save_plots)
+    if not S.terse:
+        if temp_flt_file_run_clean and len(f_run.time_ux) > 1:
+            fig_list, fig_files = over_fault(f_run, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
+                                             fig_list=fig_list, save_plots=S.save_plots)
+
+        if temp_flt_file_ver_clean and len(f_test.time_ux) > 1:
+            fig_list, fig_files = over_fault(f_test, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
+                                             fig_list=fig_list, save_plots=S.save_plots)
 
     fig_list, fig_files = dom_plot(mon_run, mon_test, sim_run, sim_test, sim_s_run, sim_s_test, filename, fig_files,
                                    plot_title=plot_title, fig_list=fig_list, run_type='RunRun', terse=S.terse,
@@ -124,6 +129,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     # Copies
     if S.save_plots and not S.terse:
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
+        print('creating pdf...')
         pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
     cleanup_fig_files(fig_files)
 
@@ -132,6 +138,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
 
     string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
     show_killer(string, 'CompareRunRun', fig_list=fig_list)
+    print('DONE')
 
     return True
 
