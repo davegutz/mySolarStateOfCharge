@@ -439,7 +439,7 @@ def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=Fa
     # sums and history
     h_combo_raw = hstack2((h_raw, s_raw))
     if h_combo_raw is None:
-        return None, None, unit, None, None, filename, Battery
+        return None, None, unit, fault, None, filename, Battery
     else:
         h_combo_raw = np.unique(h_combo_raw)
         h_combo_raw = remove_nan(h_combo_raw)
@@ -628,13 +628,13 @@ def main():  # Sample usage. OK on 20260217
 
     # User inputs (multiple input_files allowed
     # Cut-pasted from GUI_TestSOC Run window
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/pullVr_soc2p2_hi_lo_bb.csv'
     time_end = None
     plots = True
-    use_mon_csv = True
+    use_mon_csv = False
     unit_key = 'g20250612a_soc2p2_hi_lo_bb'
     sync_time = None
-    dt_resample = 1
+    dt_resample = 10
     Tb_force = None
     request_history = None
     strict_overplot = False
