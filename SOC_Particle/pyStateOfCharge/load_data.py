@@ -15,7 +15,7 @@
 """Utility to load data from csv files"""
 from CompareFault import add_stuff_f, filter_Tb, IB_BAND
 from SavedData import SavedData, SavedDataSim
-from Battery import Battery, BatteryMonitor
+from Battery import Battery, BatteryMonitor, load_off_nominal_battery
 from DataOverModel import write_clean_file
 from Util import rename_all
 from resample import remove_nan
@@ -115,12 +115,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero, time_end, rated_batt_cap=
     unit_key_shunt = "shunt_unit"
 
     sync = find_sync(path_to_data)
-
-    data_file_clean = write_clean_file(path_to_data, type_='_mon', hdr_key=hdr_key_rap, unit_key=unit_key, skip=skip)
-    if data_file_clean is None:
-        print(f"load_data: returning mon=None")
-        return None, None, None, None, None, None
-    mon_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+    batt = BatteryMonitor()
 
     # Load battery (ref)
     battery_file_clean = write_clean_file(path_to_data, type_='_battery', hdr_key=battery_hdr,
@@ -130,6 +125,39 @@ def load_data(path_to_data, skip, unit_key, zero_zero, time_end, rated_batt_cap=
     else:
         battery_raw = None
         print(f"load_data: returning battery_raw=None")
+    # Load off-nominal Battery values
+    if battery_raw is not None:
+        # Scroll through all off-nominals make dictionary
+        Battery_off_dict = load_off_nominal_battery(Battery_to_add=battery_raw)
+    if Battery_off_dict is None:
+        return None, None, None, None, None, None
+
+    # Load fault
+    temp_flt_file_clean = write_clean_file(path_to_data, type_='_flt', hdr_key='fltb',
+                                           unit_key='unit_f', skip=skip, comment_str='---')
+    if temp_flt_file_clean:
+        f_raw = np.genfromtxt(temp_flt_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
+    else:
+        print("data from", temp_flt_file, "empty after loading")
+        f_raw = None
+    if f_raw is not None:
+        f_raw = np.unique(f_raw)
+        f_raw = remove_nan(f_raw)
+        f_raw = rename_all(f_raw)
+        f = add_stuff_f(f_raw, batt, ib_band=IB_BAND, ap_ib_diff_slr=Battery_off_dict['ap_ib_diff_slr'],
+                        ap_ib_quiet_slr=Battery_off_dict['ap_ib_quiet_slr'])
+        print("\nload_data:  f:\n", f, "\n")
+        f = filter_Tb(f, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap)
+        f.str = ''
+    else:
+        f = None
+        print(f"load_data: returning f=None")
+
+    data_file_clean = write_clean_file(path_to_data, type_='_mon', hdr_key=hdr_key_rap, unit_key=unit_key, skip=skip)
+    if data_file_clean is None:
+        print(f"load_data: returning mon=None")
+        return None, None, f, None, temp_flt_file_clean, None
+    mon_raw = np.genfromtxt(data_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
 
     # Load sel (ref)
     sel_file_clean = write_clean_file(path_to_data, type_='_sel', hdr_key=hdr_key_sel,
@@ -173,7 +201,6 @@ def load_data(path_to_data, skip, unit_key, zero_zero, time_end, rated_batt_cap=
     mon = SavedData(battery=battery_raw, rap=mon_raw, sel=sel_raw, ekf=ekf_raw, temp=temp_raw, shunt=shunt_raw,
                     time_end=time_end, zero_zero=zero_zero, zero_thr=zero_thr_in, sync_cTime=sync,
                     init_time=init_time, time_shift=time_shift, str_=mon_str)
-    batt = BatteryMonitor()
 
     # Load sim _s v24 portion of real-time run (ref)
     data_file_sim_clean = write_clean_file(path_to_data, type_='_sim', hdr_key=hdr_key_sim,
@@ -191,26 +218,5 @@ def load_data(path_to_data, skip, unit_key, zero_zero, time_end, rated_batt_cap=
 
     # Calculate sync information
     sync_info = SyncInfo(sav_mon=mon, sync=sync)
-
-    # Load fault
-    temp_flt_file_clean = write_clean_file(path_to_data, type_='_flt', hdr_key='fltb',
-                                           unit_key='unit_f', skip=skip, comment_str='---')
-    if temp_flt_file_clean:
-        f_raw = np.genfromtxt(temp_flt_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-    else:
-        print("data from", temp_flt_file, "empty after loading")
-        f_raw = None
-    if f_raw is not None:
-        f_raw = np.unique(f_raw)
-        f_raw = remove_nan(f_raw)
-        f_raw = rename_all(f_raw)
-        f = add_stuff_f(f_raw, batt, ib_band=IB_BAND, ap_ib_diff_slr=mon.Battery_off_dict['ap_ib_diff_slr'],
-                        ap_ib_quiet_slr=mon.Battery_off_dict['ap_ib_quiet_slr'])
-        print("\nload_data:  f:\n", f, "\n")
-        f = filter_Tb(f, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap)
-        f.str = ''
-    else:
-        f = None
-        print(f"load_data: returning f=None")
 
     return mon, sim, f, data_file_clean, temp_flt_file_clean, sync_info
