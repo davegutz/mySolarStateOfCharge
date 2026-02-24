@@ -68,16 +68,24 @@ class PlotKiller(tk.Toplevel):
             rescale_time_axes(self.fig_list, t_min=t_min, t_max=t_max)
 
     def hardcopy(self):
+        import os
         from datetime import datetime
         from unite_pictures import precleanup_fig_files, pngs_to_pdf
         if self.fig_list is None or self.fig_files is None or self.pdf_base is None:
             return
         for fig, fig_file in zip(self.fig_list, self.fig_files):
-            fig.savefig(fig_file, format="png")
+            plt.figure(fig.number)   # make this the current figure so plt.gcf() works in the patch
+            plt.savefig(fig_file, format="png")
             print("saved", fig_file)
         precleanup_fig_files(output_pdf_name=self.pdf_base, path_to_pdfs=self.pdf_path)
         date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        print('creating pdf...')
         pngs_to_pdf(png_folder=self.pdf_path, output_pdf=self.pdf_base + '_' + date_time + '.pdf')
+        for fig_file in self.fig_files:
+            try:
+                os.remove(fig_file)
+            except OSError:
+                pass
 
     def close_figs(self):
         if self.fig_list is None:
