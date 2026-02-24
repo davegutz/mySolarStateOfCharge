@@ -21,7 +21,7 @@ Dependencies:
 import numpy as np
 
 def plq(plt_, sx, st, sy, yt, slr=1, add=0., color='black', linestyle='-', label=None, marker=None,
-        markersize=None, markevery=None, stairs=False, warn=True, linewidth=None):
+        markersize=None, markevery=None, stairs=False, warn=True, linewidth=1.5):
     if not label:
         slr_str = ''
         if slr != 1.:
@@ -50,7 +50,8 @@ def plq(plt_, sx, st, sy, yt, slr=1, add=0., color='black', linestyle='-', label
                         print(f"plq: skipping     {yt}({st})     labeled  '{label}'  Dimensions of time different")
                     return
                 x_in = np.append(getattr(sx, st), getattr(sx, st)[-1]+dt)
-                plt_.stairs(yscld, x_in, color=color, linestyle=linestyle, label=label, baseline=None)
+                plt_.stairs(yscld, x_in, color=color, linestyle=linestyle, label=label, baseline=None,
+                            linewidth=linewidth)
             else:
                 plt_.plot(getattr(sx, st), yscld, color=color, linestyle=linestyle, label=label, marker=marker,
                           markersize=markersize, markevery=markevery, linewidth=linewidth)
