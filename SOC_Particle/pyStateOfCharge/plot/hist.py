@@ -35,7 +35,7 @@ def hs_plots(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
             run_str='_run', ver_str='_ver', strict_overplot=False):
     fig_list.append(plt.figure())  # HS 1
     plt.subplot(221)
-    plt.title(S.plot_title + ' HS 1')
+    plt.suptitle(S.plot_title + ' HS 1')
     print('HS 1', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'vb_f', color='black', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'vb', color='orange', linestyle='--')
@@ -66,7 +66,7 @@ def hs_plots(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
 
     fig_list.append(plt.figure())  # HS sat
     plt.subplot(321)
-    plt.title(S.plot_title + 'HS sat')
+    plt.suptitle(S.plot_title + 'HS sat')
     print('HS sat', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'sat', color='blue', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'sat', color='red', linestyle='--')
@@ -113,7 +113,7 @@ def hs_plots(mr, mv, sr, sv, smv, filename, fig_files=None, plot_title=None, fig
 
     fig_list.append(plt.figure())  # HS 3 Tune
     plt.subplot(331)
-    plt.title(S.plot_title + ' HS 3 Tune')
+    plt.suptitle(S.plot_title + ' HS 3 Tune')
     print('HS 3 Tune', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'dv_dyn_f', color='blue', linestyle='-')
     plt.plot(mv.time, mv.dv_dyn, color='cyan', linestyle='--', label='dv_dyn' + ver_str)
@@ -291,7 +291,7 @@ def hs_tune_plots(S:PlotOptions, fig_list=None, fig_files=None,
 
     fig_list.append(plt.figure())  # HS 3 Tune R
     plt.subplot(321)
-    plt.title(S.plot_title + ' HS 3 Tune R')
+    plt.suptitle(S.plot_title + ' HS 3 Tune R')
     print('HS 3 Tune R', end=':  ')
     plt.plot(tv, vb, color='blue', linestyle='-', label='vb_x')
     if hasattr(smv, 'vb_s'):
@@ -347,7 +347,7 @@ def hs_tune_plots(S:PlotOptions, fig_list=None, fig_files=None,
 
     fig_list.append(plt.figure())  # HS 3 Tune Summ
     plt.subplot(221)
-    plt.title(S.plot_title + ' HS 3 Tune Summ')
+    plt.suptitle(S.plot_title + ' HS 3 Tune Summ')
     print('HS 3 Tune Summ', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'vb', color='blue', linestyle='-')
     plq(plt, S.mr, 'time', S.mr, 'vb_f', color='blue', linestyle='-')

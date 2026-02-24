@@ -186,7 +186,7 @@ def main():  # Example usage.  ok on 20260217
     init_time = None
     time_shift = None
     strict_overplot = True
-    terse = True
+    terse = False
     mon_str = ''
 
     strict_overplot = False

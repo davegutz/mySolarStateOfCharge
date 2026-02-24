@@ -41,7 +41,7 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
     if S.sr and S.smv:
         fig_list.append(plt.figure())  # sim_s  1
         plt.subplot(331)
-        plt.title(S.plot_title + ' sim_s 1')
+        plt.suptitle(S.plot_title + ' sim_s 1')
         print('sim_s 1', end=':  ')
         plq(plt, S.mr, 'time', S.mr, 'ib_sel', color='blue', linestyle='-')
         plq(plt, S.mr, 'time', S.mr, 'ib', add=-5, color='black', linestyle='-')
@@ -120,7 +120,7 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
         fig_list.append(plt.figure())  # sim_s  2
         plt.subplot(331)
         if S.strict_overplot:
-            plt.title(S.plot_title + ' sim_s 2')
+            plt.suptitle(S.plot_title + ' sim_s 2')
             print('sim_s 2', end=':  ')
         plq(plt, S.mr, 'time', S.mr, 'vb', color='red', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'vb', color='blue', linestyle='--')
@@ -183,7 +183,7 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
 
         fig_list.append(plt.figure())  # sim_s  2a
         plt.subplot(221)
-        plt.title(S.plot_title + ' sim_s 2a')
+        plt.suptitle(S.plot_title + ' sim_s 2a')
         print('sim_s 2a', end=':  ')
         plq(plt, S.mr, 'time', S.mr, 'vb', color='black', linestyle='-')
         if S.strict_overplot:
@@ -245,7 +245,7 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
 
         fig_list.append(plt.figure())  # sim_s  3
         plt.subplot(321)
-        plt.title(S.plot_title + ' sim_s 3')
+        plt.suptitle(S.plot_title + ' sim_s 3')
         print('sim_s 3', end=':  ')
         plq(plt, S.mr, 'time', S.mr, 'soc', color='blue', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'soc', color='red', linestyle='--')
@@ -315,7 +315,7 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
 
         fig_list.append(plt.figure())  # sim_s  4
         plt.subplot(221)
-        plt.title(S.plot_title + ' sim_s 4')
+        plt.suptitle(S.plot_title + ' sim_s 4')
         print('sim_s 4', end=':  ')
         plq(plt, S.mr, 'time', S.mr, 'soc', color='blue', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'soc', color='red', linestyle='--')

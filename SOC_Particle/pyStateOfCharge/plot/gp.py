@@ -44,7 +44,7 @@ def gp_1(S:PlotOptions, fig_list=None, fig_files=None):
 
     fig_list.append(plt.figure())  # GP 1
     plt.subplot(221)
-    plt.title(S.plot_title + ' GP 1')
+    plt.suptitle(S.plot_title + ' GP 1')
     print('GP 1', end=':  ')
     plq(plt, S.sr, 'time', S.sr, 'vb_s', color='black', linestyle='-', warn=not S.ver_is_stdy)
     plq(plt, S.smv, 'time', S.smv, 'vb_s', color='orange', linestyle='--', warn=not S.ver_is_run)
@@ -80,7 +80,7 @@ def gp_2(S:PlotOptions, fig_files=None, fig_list=None):
 
     fig_list.append(plt.figure())
     plt.subplot(221)
-    plt.title(S.plot_title + ' GP 2')
+    plt.suptitle(S.plot_title + ' GP 2')
     print('GP 2', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'vb', color='black', linestyle='-', warn=not S.run_is_stdy)
     plq(plt, S.mv, 'time', S.mv, 'vb', color='orange', linestyle='--', warn=not S.ver_is_stdy)
@@ -124,7 +124,7 @@ def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None):
 
     fig_list.append(plt.figure())
     plt.subplot(321)
-    plt.title(S.plot_title + ' GP 2 nn lag')
+    plt.suptitle(S.plot_title + ' GP 2 nn lag')
     print('GP 2 nn lag', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'sat', color='blue', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'sat', color='red', linestyle='--')
@@ -206,7 +206,7 @@ def gp_3_ekf(S:PlotOptions, fig_files=None, fig_list=None):
 
     fig_list.append(plt.figure())
     plt.subplot(111)
-    plt.title(S.plot_title + ' GP 3 KF')
+    plt.suptitle(S.plot_title + ' GP 3 KF')
     print('GP 3 KF', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe', add=-2.5, color='blue', linestyle='-')
     plq(plt, S.mr, 'time', S.mr, 'ib_amp_model', add=-2.5, color='black', linestyle='--', warn=not S.run_is_stdy)
@@ -251,7 +251,7 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
 
     fig_list.append(plt.figure())  # GP 3 Tune
     plt.subplot(331)
-    plt.title(S.plot_title + ' GP 3 Tune')
+    plt.suptitle(S.plot_title + ' GP 3 Tune')
     print('GP 3 Tune', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'dv_dyn', color='blue', linestyle='-', warn=not S.run_is_stdy)
     plq(plt, S.mv, 'time', S.mv, 'dv_dyn', color='red', linestyle='--', warn=not S.ver_is_stdy)
@@ -501,7 +501,7 @@ def tune_r(S:PlotOptions, fig_list=None, fig_files=None):
 
     fig_list.append(plt.figure())  # GP 3 Tune R
     plt.subplot(321)
-    plt.title(S.plot_title + ' GP 3 Tune R')
+    plt.suptitle(S.plot_title + ' GP 3 Tune R')
     print('GP 3 Tune R', end=':  ')
     plq(plt, S.mv, 'time', S.mv, 'vb', color='blue', linestyle='-')
     if hasattr(S.smv, 'vb_s'):
@@ -558,7 +558,7 @@ def tune_r(S:PlotOptions, fig_list=None, fig_files=None):
 
     fig_list.append(plt.figure())  # GP 3 Tune Summ
     plt.subplot(221)
-    plt.title(S.plot_title + ' GP 3 Tune Summ')
+    plt.suptitle(S.plot_title + ' GP 3 Tune Summ')
     print('GP 3 Tune Summ', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'vb', color='blue', linestyle='-')
     plq(plt, S.mr, 'time', S.mr, 'vb_hdwe_f', color='blue', linestyle='-')

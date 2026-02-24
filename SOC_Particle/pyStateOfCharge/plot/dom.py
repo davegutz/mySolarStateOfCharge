@@ -28,7 +28,7 @@ def init_1(S:PlotOptions, fig_list=None, fig_files=None):
         fig_files = []
     fig_list.append(plt.figure())
     plt.subplot(221)
-    plt.title(S.plot_title + ' init 1')
+    plt.suptitle(S.plot_title + ' init 1')
     print('init 1', end=':  ')
     plq(plt, S.sr, 'time', S.sr, 'reset_s', color='black', linestyle='-')
     plq(plt, S.smv, 'time', S.smv, 'reset_s', color='red', linestyle='--')
@@ -63,7 +63,7 @@ def init_1a(S:PlotOptions, fig_list=None, fig_files=None):
 
     fig_list.append(plt.figure())
     plt.subplot(221)
-    plt.title(S.plot_title + ' 1a')
+    plt.suptitle(S.plot_title + ' 1a')
     print('1a', end=':  ')
     if hasattr(S.mr, 'mod_data') and S.mr.mod_data[0] != 0 and S.strict_overplot:
         plq(plt, S.mr, 'time', S.mr, 'ib_amp_model', color='black', linestyle='-')
@@ -113,7 +113,7 @@ def init_1a(S:PlotOptions, fig_list=None, fig_files=None):
 def dom_2(S:PlotOptions, fig_list=None, fig_files=None):
     fig_list.append(plt.figure())
     plt.subplot(321)
-    plt.title(S.plot_title + ' DOM 2')
+    plt.suptitle(S.plot_title + ' DOM 2')
     print('DOM 2', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'dv_dyn', color='green', linestyle='-', warn=not S.run_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'dv_dyn_f', color='green', linestyle='-', warn=False)
@@ -173,7 +173,7 @@ def dom_2(S:PlotOptions, fig_list=None, fig_files=None):
 def dom_3(S:PlotOptions, fig_list=None, fig_files=None):
     fig_list.append(plt.figure())
     plt.subplot(221)
-    plt.title(S.plot_title + ' DOM 3')
+    plt.suptitle(S.plot_title + ' DOM 3')
     print('DOM 3', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'soc', color='blue', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'soc', color='red', linestyle='--')
@@ -204,7 +204,7 @@ def dom_3(S:PlotOptions, fig_list=None, fig_files=None):
 def dom_4(S:PlotOptions, fig_list=None, fig_files=None):
     fig_list.append(plt.figure())
     plt.subplot(131)
-    plt.title(S.plot_title + ' DOM 4')
+    plt.suptitle(S.plot_title + ' DOM 4')
     print('DOM 4', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'soc', color='orange', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'soc', color='green', linestyle='--')
@@ -241,7 +241,7 @@ def dom_4(S:PlotOptions, fig_list=None, fig_files=None):
 def dom_4a(S:PlotOptions, fig_list=None, fig_files=None):
     fig_list.append(plt.figure())
     plt.subplot(311)
-    plt.title(S.plot_title + ' DOM 4a')
+    plt.suptitle(S.plot_title + ' DOM 4a')
     print('DOM 4a', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'ib', color='orange', linestyle='-', warn=not S.run_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'ib_f', color='orange', linestyle='-', warn=False)
@@ -278,7 +278,7 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
         if S.mr.Fx is not None:  # ekf
             fig_list.append(plt.figure())  # EKF  1
             plt.subplot(331)
-            plt.title(S.plot_title + ' EKF 1')
+            plt.suptitle(S.plot_title + ' EKF 1')
             print('EKF 1', end=':  ')
             plq(plt, S.mr, 'time_e', S.mr, 'u', color='blue', linestyle='-', stairs=True)
             plq(plt, S.mv, 'time', S.mv, 'u_ekf', color='red', linestyle='--', stairs=True)
@@ -326,7 +326,7 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
 
             fig_list.append(plt.figure())  # EKF  2
             plt.subplot(331)
-            plt.title(S.plot_title + ' EKF 2')
+            plt.suptitle(S.plot_title + ' EKF 2')
             print('EKF 2', end=':  ')
             plq(plt, S.mr, 'time_e', S.mr, 'K', color='blue', linestyle='-', stairs=True)
             plq(plt, S.mv, 'time', S.mv, 'K', color='red', linestyle='--', stairs=True)
@@ -376,7 +376,7 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
 
             fig_list.append(plt.figure())  # EKF2a
             plt.subplot(311)
-            plt.title(S.plot_title + ' EKF 2a')
+            plt.suptitle(S.plot_title + ' EKF 2a')
             print('EKF 2a', end=':  ')
             plq(plt, S.mr, 'time', S.mr, 'voc_stat', add=-0.0, color='red', linestyle='-', stairs=True)
             plq(plt, S.mv, 'time', S.mv, 'voc_stat', add=-0.0, color='black', linestyle='--', stairs=True)
@@ -402,7 +402,7 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
 
             fig_list.append(plt.figure())  # EKF3
             plt.subplot(221)
-            plt.title(S.plot_title + ' EKF 3')
+            plt.suptitle(S.plot_title + ' EKF 3')
             print('EKF 3', end=':  ')
             plq(plt, S.mr, 'time', S.mr, 'ib', color='red', linestyle='-', stairs=True)
             plq(plt, S.mv, 'time', S.mv, 'ib', color='black', linestyle='--', stairs=True)
@@ -441,7 +441,7 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
     if S.mr.voc_soc is not None:
         fig_list.append(plt.figure())  # EKF  4
         plt.subplot(111)
-        plt.title(S.plot_title + ' EKF 4')
+        plt.suptitle(S.plot_title + ' EKF 4')
         print('EKF 4', end=':  ')
         plq(plt, S.mr, 'soc', S.mr, 'voc_stat', color='red', linestyle='-', warn=not S.run_is_stdy)
         plq(plt, S.mr, 'soc', S.mr, 'voc_stat_f', color='red', linestyle='-', warn=not S.run_is_run)
@@ -457,7 +457,7 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
 
         fig_list.append(plt.figure())  # Hyst 1
         plt.subplot(331)
-        plt.title(S.plot_title + ' Hyst 1')
+        plt.suptitle(S.plot_title + ' Hyst 1')
         print('Hyst 1', end=':  ')
         # plq(plt, S.mr, 'time', S.mr, 'dv_hys_required, linestyle='-', color='black', label='dv_hys_required'+run_str)
         plq(plt, S.mr, 'time', S.mr, 'e_wrap', slr=-1, color='red', linestyle='-', warn=not S.run_is_stdy)

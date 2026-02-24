@@ -36,7 +36,7 @@ def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
     if S.sr and S.smv:
         fig_list.append(plt.figure())  # 7 off/on sim
         plt.subplot(321)
-        plt.title(S.plot_title + ' off/on sim 1')
+        plt.suptitle(S.plot_title + ' off/on sim 1')
         print('off/on sim 1', end=':  ')
         plq(plt, S.mr, 'time', S.mr, 'vb_s', color='black', linestyle='-')
         plq(plt, S.sv, 'time', S.sv, 'vb', color='cyan', linestyle='--')
@@ -75,7 +75,7 @@ def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
 
         fig_list.append(plt.figure())  # 8 off/on mon 1
         plt.subplot(321)
-        plt.title(S.plot_title + ' off/on mon 1')
+        plt.suptitle(S.plot_title + ' off/on mon 1')
         print('off/on mon 1', end=':  ')
         plq(plt, S.mr, 'time', S.mr, 'vb', color='black', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'vb', color='green', linestyle='--')
@@ -111,7 +111,7 @@ def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
 
         fig_list.append(plt.figure())  # 9 off/on soc
         plt.subplot(321)
-        plt.title(S.plot_title + ' off/on soc')
+        plt.suptitle(S.plot_title + ' off/on soc')
         print('off/on soc', end=':  ')
         plq(plt, S.mr, 'time', S.mr, 'qcrs', color='blue', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'qcrs', color='magenta', linestyle='--')

@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import textwrap
 plt.rcParams['axes.grid'] = True
 plt.rcParams['legend.fontsize'] = 'small'
 plt.rcParams['savefig.dpi'] = 500  # Set default savefig DPI to 300
@@ -14,6 +15,23 @@ def _savefig_fullscreen(*args, **kwargs):
     fig.set_size_inches(*orig_size)
 
 plt.savefig = _savefig_fullscreen
+
+# Monkey-patch title/suptitle: wrap long strings so they don't overflow the figure edge.
+_TITLE_WRAP_WIDTH = 70  # characters; fits comfortably in a 16-inch figure
+
+_orig_title = plt.title
+def _title_wrapped(label='', *args, **kwargs):
+    if isinstance(label, str):
+        label = textwrap.fill(label, width=_TITLE_WRAP_WIDTH)
+    return _orig_title(label, *args, **kwargs)
+plt.title = _title_wrapped
+
+_orig_suptitle = plt.suptitle
+def _suptitle_wrapped(t, *args, **kwargs):
+    if isinstance(t, str):
+        t = textwrap.fill(t, width=_TITLE_WRAP_WIDTH)
+    return _orig_suptitle(t, *args, **kwargs)
+plt.suptitle = _suptitle_wrapped
 
 
 def rescale_time_axes(fig_list, t_min=None, t_max=None):

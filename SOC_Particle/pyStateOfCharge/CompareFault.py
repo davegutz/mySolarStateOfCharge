@@ -278,7 +278,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     if long_term:
         fig_list.append(plt.figure())  # 1
         plt.subplot(331)
-        plt.title(plot_title + ' f1')
+        plt.suptitle(plot_title + ' f1')
         print('f1', end=':  ')
         plt.suptitle(subtitle)
         plq(plt, hi, timestr, hi, 'soc', color='black', linestyle='-', marker='.', markersize='3')
@@ -353,7 +353,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
 
         fig_list.append(plt.figure())  # 2
         plt.subplot(221)
-        plt.title(plot_title + ' f2')
+        plt.suptitle(plot_title + ' f2')
         print('f2', end=':  ')
         plt.suptitle(subtitle)
         plq(plt, hi, timestr, hi, 'vsat', color='orange', linewidth='1', marker='.', markersize='1')
@@ -398,7 +398,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
 
         fig_list.append(plt.figure())  # 3
         plt.subplot(221)
-        plt.title(plot_title + ' f3')
+        plt.suptitle(plot_title + ' f3')
         print('f3', end=':  ')
         plt.suptitle(subtitle)
         plq(plt, hi, timestr, hi, 'dv_hys', color='blue', linestyle='-', marker='o', markersize='3')
@@ -422,7 +422,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
 
     fig_list.append(plt.figure())  # 4
     plt.subplot(331)
-    plt.title(plot_title + ' f4')
+    plt.suptitle(plot_title + ' f4')
     print('f4', end=':  ')
     plq(plt, hi, timestr, hi, 'ib_f', color='green')
     plq(plt, hi, timestr, hi, 'ib', color='cyan', warn=False)
@@ -502,7 +502,7 @@ def overall_fault(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title
 
     fig_list.append(plt.figure())  # of 1
     plt.subplot(331)
-    plt.title(plot_title + ' O_F 1')
+    plt.suptitle(plot_title + ' O_F 1')
     print('0_F 1', end=':  ')
     plq(plt, mr, 'time', mr, 'ib_sel', color='black', linestyle='-')
     plq(plt, mv, 'time', mv, 'ib_sel', color='cyan', linestyle='--', warn=not run_type=='HistHist' and not run_type=='HistSim')
@@ -590,7 +590,7 @@ def overall_fault(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title
 
     fig_list.append(plt.figure())  # O_F 2
     plt.subplot(331)
-    plt.title(plot_title + ' O_F 2')
+    plt.suptitle(plot_title + ' O_F 2')
     print('0_F 2', end=':  ')
     if hasattr(mr, 'vb'):
         mr.dv_dyn = mr.vb - mr.voc

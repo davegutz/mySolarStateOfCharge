@@ -29,7 +29,7 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
 
     fig_list.append(plt.figure())  # Ult 1
     plt.subplot(331)
-    plt.title(S.plot_title + ' Ult 1')
+    plt.suptitle(S.plot_title + ' Ult 1')
     plt.rcParams['legend.fontsize'] = 6
     print('Ult 1', end=':  ')
     if (hasattr(S.mr, 'mib') and all(S.mr.mib == 0)) or (hasattr(S.mr, 'mod_data') and all(S.mr.mod_data < 64)):
