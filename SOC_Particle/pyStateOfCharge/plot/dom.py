@@ -106,7 +106,6 @@ def init_1a(S:PlotOptions, fig_list=None, fig_files=None):
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     if S.save_plots and not S.terse:
-
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -167,7 +166,6 @@ def dom_2(S:PlotOptions, fig_list=None, fig_files=None):
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     if S.save_plots and not S.terse:
-
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -199,7 +197,6 @@ def dom_3(S:PlotOptions, fig_list=None, fig_files=None):
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     if S.save_plots and not S.terse:
-
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -237,7 +234,6 @@ def dom_4(S:PlotOptions, fig_list=None, fig_files=None):
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     if S.save_plots and not S.terse:
-
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -271,7 +267,6 @@ def dom_4a(S:PlotOptions, fig_list=None, fig_files=None):
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     if S.save_plots and not S.terse:
-
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -327,7 +322,6 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
             fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
             fig_files.append(fig_file_name)
             if S.save_plots and not S.terse:
-
                 plt.savefig(fig_file_name, format="png")
 
             fig_list.append(plt.figure())  # EKF  2
@@ -378,7 +372,6 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
             fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
             fig_files.append(fig_file_name)
             if S.save_plots and not S.terse:
-
                 plt.savefig(fig_file_name, format="png")
 
             fig_list.append(plt.figure())  # EKF2a
@@ -405,7 +398,6 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
             fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
             fig_files.append(fig_file_name)
             if S.save_plots and not S.terse:
-
                 plt.savefig(fig_file_name, format="png")
 
             fig_list.append(plt.figure())  # EKF3
@@ -441,6 +433,10 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
             plq(plt, S.mr, 'time_e', S.mr, 'z', color='cyan', linestyle='-.', stairs=True)
             plq(plt, S.mv, 'time', S.mv, 'z', color='orange', linestyle=':', stairs=True)
             plt.legend(loc=1)
+            fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+            fig_files.append(fig_file_name)
+            if S.save_plots and not S.terse:
+                plt.savefig(fig_file_name, format="png")
 
     if S.mr.voc_soc is not None:
         fig_list.append(plt.figure())  # EKF  4
@@ -457,7 +453,6 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
         fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         if S.save_plots and not S.terse:
-
             plt.savefig(fig_file_name, format="png")
 
         fig_list.append(plt.figure())  # Hyst 1
@@ -561,6 +556,6 @@ def ekf_plots(S:PlotOptions, fig_list=None, fig_files=None):
         fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         if S.save_plots and not S.terse:
-
             plt.savefig(fig_file_name, format="png")
+
     return fig_list, fig_files

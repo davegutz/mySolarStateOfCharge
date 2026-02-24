@@ -32,6 +32,7 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 
 def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
     print('off_on_plot', end=':  ')
+
     if S.sr and S.smv:
         fig_list.append(plt.figure())  # 7 off/on sim
         plt.subplot(321)
@@ -103,6 +104,10 @@ def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
             plt.subplot(326)
             plq(plt, S.mr, 'time', S.mr, 'vr', color='green', linestyle='-')
             plt.legend(loc=1)
+        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_files.append(fig_file_name)
+        if S.save_plots and not S.terse:
+            plt.savefig(fig_file_name, format="png")
 
         fig_list.append(plt.figure())  # 9 off/on soc
         plt.subplot(321)
@@ -190,13 +195,6 @@ def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
         fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         if S.save_plots and not S.terse:
-
-            plt.savefig(fig_file_name, format="png")
-
-        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
             plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files

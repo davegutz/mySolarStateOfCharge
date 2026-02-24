@@ -439,7 +439,6 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plq(plt, hi, timestr, hi, 'vb', color='cyan', linestyle='-', warn=False)
     plt.legend(loc=1)
     plt.subplot(334)
-
     plq(plt, hi, timestr, hi, 'voc_stat_f', color='green', linestyle='-')
     plq(plt, hi, timestr, hi, 'voc_stat', color='cyan', linestyle='-', warn=False)
     plq(plt, hi, timestr, hi, 'vsat', color='blue', linestyle='-')
@@ -584,10 +583,6 @@ def overall_fault(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title
         plq(plt, mv, 'time', mv, 'dv_dyn', color='cyan', linestyle='--')
         plq(plt, smv, 'time', smv, 'dv_dyn_s', color='orange', linestyle='-.')
         plt.legend(loc=1)
-    fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
-    fig_files.append(fig_file_name)
-    if save_plots:
-        plt.savefig(fig_file_name, format="png")
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     if save_plots:

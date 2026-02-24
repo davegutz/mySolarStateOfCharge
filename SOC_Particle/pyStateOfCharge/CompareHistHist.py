@@ -107,12 +107,12 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
             print('creating pdf...')
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename+'_'+date_time+'.pdf')
-        cleanup_fig_files(fig_files)
 
-        print('showing plots...waiting on user')
+        print('showing plots...')
         plt.show(block=False)
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
-        show_killer(string, 'CompareFault', fig_list=fig_list)
+        show_killer(string, 'CompareFault', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename)
+        cleanup_fig_files(fig_files)
         print('DONE')
 
     return mon_run, sim_run, mon_tst, sim_tst, sim_s_tst

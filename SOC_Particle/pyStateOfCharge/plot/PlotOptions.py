@@ -40,7 +40,7 @@ class PlotOptions:
 
 
     def __init__(self, mr=None, mv=None, sr=None, sv=None, smr=None, smv=None, filename=None, plot_title=None,
-                 strict_overplot=None, run_type='None', save_plots=True, terse=True):
+                 strict_overplot=None, run_type='None', save_plots=False, terse=True):
         self.mr = mr
         self.mv = mv
         self.sr = sr

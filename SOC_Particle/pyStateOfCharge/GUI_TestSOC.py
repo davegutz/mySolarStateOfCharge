@@ -98,16 +98,15 @@ unit_list = [
     ]
 battery_list = ['bb', 'chg']
 sel_list = [
-    'custom', 'init1', 'saveAdjusts', 'ampHiFail', 'ampHiEmptFail', 'noaHiFail', 'rapidTweakRegression', 'allIn', 'allInBB',
-    'allInCHG', 'allProto', 'pulseSoft', 'pulseHard', 'rapidTweakRegressionH0', 'offLowSoc', 'offSitHysBmsBB',
+    'custom', 'init1', 'saveAdjusts', 'ampHiEmptFail', 'ampHiFail', 'noaHiFail', 'rapidTweakRegression', 'allInBB',
+    'allProto', 'pulseSoft', 'pulseHard', 'rapidTweakRegressionH0', 'offLowSoc', 'offSitHysBmsBB',
     'offSitHysBmsCHG', 'triTweakDisch', 'ampHiFailFf', 'ampLoFail', 'ampLoFullFail', 'noaLoFail', 'noaLoFullFail', 'ampHiFailNoise', 'noaHiFailNoise',
     'rapidTweakRegression40C', 'slowTweakRegression', 'satSitBB', 'satSitCHG',
     ]
 sel_list1 = [
     'flatSitHys', 'offSitHysBmsNoiseBB', 'offSitHysBmsNoiseCHG', 'ampHiFailSlow',
     'noaHiFailSlow', 'noaHiFailSlower', 'noaHiFailSlowest', 'vHiFail', 'vHiFailNoise', 'vHiFailH', 'vHiFailFf',
-    'pulseHard', 'tbFailMod1W', 'tbFailHdwe1W', 'tLoFailHdwe', 'DvMon', 'DvSim', 'faultParade', 'allInBBn', 'allInCHn',
-    'allInCHGn', 'stepDown', 'stepUp', 'zero_with_pc',
+    'pulseHard', 'tbFailMod1W', 'tbFailHdwe1W', 'tLoFailHdwe', 'DvMon', 'DvSim', 'faultParade', 'stepDown', 'stepUp', 'zero_with_pc',
     ]
 macro_sel_list = [
     'end_early', 'hdwNoVbPcMidInit', 'modHalfInit', 'modHiInit', 'modHalfInitNoCc', 'modEmptInitBB', 'modEmptInitCHG',
@@ -130,7 +129,6 @@ noisePackage = 'DT.05;DV0.3;DM.75;DN6;'
 silentPackage = 'DT0;DV0;DM0;DN0;'
 synced_slow = 'Dr400;D>400;Dq400;ED1;DP1;'
 synced_slow_pulse = 'Dr800;D>800;Dq800;ED1;DP1;'
-# slow = 'Dr400;D>400;DP1;'
 slow = synced_slow
 quiet = 'vv0;Dr;Dq;DP;D>;Dh;'
 quietwait = '<vv0;Dr;DP;D>;Dh;'
@@ -172,49 +170,14 @@ lookup = {
         'initMid': (22, 'Y;' + quiet + 'cc;Dh1800000;*W;*vv0;*XS;*Ca.5;BZ;Ff0;<HR;<Rf;<XD;', ('',)),
         'saveAdjusts': (60, 'vv4;Dh1000;PR;PV;Pr;Pr;BP2;Pr;BP1;Pr;BS2;Pr;BS1;Pr;Pr;Pr;DA5;Pr;DB-5;Pr;RS;Pr;Dc0.2;Pr;Dc0;DI-10;Pr;DI0;Pr;Dt5;Pr;Dt0;Pr;SA2;Pr;SA1;Pr;SB2;Pr;SB1;Pr;si-1;Pr;RS;Pr;Sk2;Pr;Sk1;Pr;SQ2;Pr;SQ1;Pr;Sq3;Pr;Sq1;Pr;SV1.1;Pr;SV1;Pr;Xb10;Pr;Xb0;Pr;Xa1000;Pr;Xa0;Pr;Xf1;Pr;RS;Pr;Xm10;Pr;RS;Pr;W3;vv0;XQ3;PR;PV;XQ60000;Dh;', ("For testing out the adjustments and memory", "Read through output and witness set and reset of all", "The DS2482 moderate headroom should not exceed limit printed.  EG 11 of 12 is ok.")),
         'custom': (72, 'XQ60000;', ("For general purpose data collection", "'save data' will present a choice of file name", "")),
-        'allIn':   (3790,
-                    slow + 'Dh4000;' +
-                    'cc;' + modHalfInit + slowTranPrep + c50 + 'XQ25000;' + c00 + tempCleanup +      # 1 ampHiFail 0
-                    '  Rs;W4;Xp10;'   +                                                           # 2 rapidTweakRegression 62
-                    '  Rs;W4;vv4;W4;Xp7;  ' +                                                            # 3 pulseSoft  251
-                    '  Rs;W4;vv4;W4;Xp8;  ' +                                                            # 3 pulseHard  251
-                    '  Rs;W4;Xp13;  ' +                                                           # 4 triTweakDisch  269
-                    modHalfInit + slowTranPrep + 'Ff1;' + c50 + 'XQ40000;' + c00 + tempCleanup +     # 5 ampHiFailFf 465
-                    modHalfInit + slowTranPrep + cm50 + 'XQ50000;' + c00 + tempCleanup +     # 6 ampLoFail    543
-                    '  D^15;Rs;W4;Xp10; ' +                                                       # 7 rapidTweakRegression40C  630
-                    '  Rs;W4;Xp11;  ' +                                                           # 8 slowTweakRegression  880
-                    'Xm247;Ca0.9;Rb;Rf;Xts;Xa-81;Xf0.004;XW10000;XT10;XC2;W1;HR;vv4;W;Rs;XR;XQ580000;Xa0;Xb0;' + tempCleanup +  # 9 flatSitHys   1466
-                    modHalfInit + slowTranPrep + c08 + 'Fc0.001;Fd0.5;XQ400000;' + c00 + tempCleanup +    # 10 ampHiFailSlow  2043
-                    modHalfInit + slowTranPrep + 'XY;Dv0.82;XQ60000;' + 'Dv0;' + tempCleanup +     # 11 vHiFail  2480
-                    modHalfInit + slowTranPrep + 'Xv.002;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + tempCleanup +       # 12 tbFailMod  2560
-                    modHalfInit + 'Xm246;' + slowTranPrep + 'Xv.002;W10;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + tempCleanup +  # 13 tbFailHdwe   2684
-                    modHalfInit + slowTranPrep + 'XY;Dw-0.8;Dn0.0001;XQ120000;Dw0;' + tempCleanup +  # 14 DvMon  2798
-                    modHalfInit + slowTranPrep + 'XY;Dy-0.8;Dn0.0001;XQ120000;Dy0;' +  # 15 DvSim  2936
-                    modHalfInit + slowTranPrep + d50 + 'XQ25000;' + c00 + tempCleanup +      # 16 noaHiFail 3006
-                    modHalfInit + slowTranPrep + d06 + 'Fc0.004;Fd0.5;XQ400000;' + c00 + tempCleanup +    # 17 noaHiFailSlow  3476
-                    modHalfInit + slowTranPrep + cm50 + 'XQ50000;' + c00 + tempCleanup +     # 18 ampLoFail     3553
-                    quiet + cleanup,
-                    ('All the best transients', "Must have same 'vv*' throughout", "")),
         'allInBB': (1200,
                     slow + 'Dh4000;' +
                     modEmptInitBB + slowTwitchDef + 'Xa-162;' + slowTranPrep + twitch + 'XQ568000;' + 'Xa0;' + tempCleanup +  # offSitHysBmsBB
                     'Xm247;Ca0.9962;' + fastTwitchDef + 'Xa17;' + slowTranPrep + 'XR;XQ600000;' + 'Xa0;' +  # satSitBB
                     quiet + cleanup,
                     ('All the best transients BB', "Must have same 'vv*' throughout", "")),
-        'allInBBn': (690,
-                     slow + 'Dh4000;' +
-                     modHalfInit + slowTranPrep + noisePackage + c50 + 'XQ25000;' + c00 + silentPackage + tempCleanup +  # 1 ampHiFailNoise 0
-                     modEmptInitBB + slowTwitchDef + 'Xa-162;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage +  # 1 offSitHysBmsNoiseCHG 70
-                     quiet + cleanup,
-                     ('All the best transients CHG noise', "Must have same 'vv*' throughout", "")),
-        'allInCHGn': (690,
-                      slow + 'Dh4000;' +
-                      modHalfInit + slowTranPrep + noisePackage + c50 + 'XQ25000;' + c00 + silentPackage + tempCleanup +  # 1 ampHiFailNoise 0
-                      modEmptInitCHG + slowTwitchDef + 'Xa-324;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage +  # 1 offSitHysBmsNoiseCHG 70
-                      quiet + cleanup,
-                      ('All the best transients CHG noise', "Must have same 'vv*' throughout", "")),
-        'ampHiFail': (118, modHalfInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
         'ampHiEmptFail': (118, modLoInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
+        'ampHiFail': (118, modHalfInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
         'noaHiFail': (118, modHalfInit + tranPrep + d50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp. With ib_diff only nothing changes then should isolate to the noa by wrap and choose amp.", "'diff' will be displayed then ib_fail due to wrap of noa", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen).", "Loss of ib set 'accy' because loss of current sensing at high currents.")),
         'rapidTweakRegression': (205, slow + 'Rs;W4;Xp10;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'allProto': (552, modHalfInit + tranPrep + c50 + 'XQ25000;' + c00 + tempCleanup + '  Rs;W4;Xp10;  Rs;W4;Xp13;  ' + modHalfInitNoCc + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ('Proto multi', "Must have same 'vv*' throughout", "No 'HR' either")),

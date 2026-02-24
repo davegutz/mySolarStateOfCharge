@@ -151,14 +151,14 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
             print('creating pdf...')
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
-        cleanup_fig_files(fig_files)
 
-        print('showing plots...waiting on user')
+        print('showing plots...')
         plt.show(block=False)
 
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         if show_killer_:
-            show_killer(string, 'CompareRunSim', fig_list=fig_list)
+            show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename)
+        cleanup_fig_files(fig_files)
         print('DONE')
 
     return fig_list, fig_files
@@ -171,10 +171,10 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     # Cut-pasted from GUI_TestSOC Run window
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc2p2_hi_lo_bb.csv'
-    # unit_key = 'g20250612a_soc2p2_hi_lo_bb'
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc3p2_hi_lo_bb.csv'
-    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc2p2_hi_lo_bb.csv'
+    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc3p2_hi_lo_bb.csv'
+    # unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = None
     plots = True
     use_mon_soc_ = False

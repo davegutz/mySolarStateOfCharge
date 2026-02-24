@@ -37,6 +37,7 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
     if not fig_list:
         fig_list = []
     print('sim_s_plot', end=':  ')
+
     if S.sr and S.smv:
         fig_list.append(plt.figure())  # sim_s  1
         plt.subplot(331)
@@ -114,7 +115,6 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
         fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         if S.save_plots and not S.terse:
-
             plt.savefig(fig_file_name, format="png")
 
         fig_list.append(plt.figure())  # sim_s  2
@@ -176,6 +176,10 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.sr, 'time', S.sr, 'voc_stat_s', color='black', linestyle='-.')
         plq(plt, S.smv, 'time', S.smv, 'voc_stat_s', color='orange', linestyle=':')
         plt.legend(loc=1)
+        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_files.append(fig_file_name)
+        if S.save_plots and not S.terse:
+            plt.savefig(fig_file_name, format="png")
 
         fig_list.append(plt.figure())  # sim_s  2a
         plt.subplot(221)
@@ -234,6 +238,10 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
         if S.strict_overplot:
             plq(plt, S.smv, 'time', S.smv, 'ib_charge_s', color='cyan', linestyle=':')
         plt.legend(loc=1)
+        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_files.append(fig_file_name)
+        if S.save_plots and not S.terse:
+            plt.savefig(fig_file_name, format="png")
 
         fig_list.append(plt.figure())  # sim_s  3
         plt.subplot(321)
@@ -300,6 +308,10 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.mr, 'soc', S.mr, 'voc_stat', color='red', linestyle='-.')
         plq(plt, S.mv, 'soc', S.mv, 'voc_stat', color='orange', linestyle=':')
         plt.legend(loc=1)
+        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_files.append(fig_file_name)
+        if S.save_plots and not S.terse:
+            plt.savefig(fig_file_name, format="png")
 
         fig_list.append(plt.figure())  # sim_s  4
         plt.subplot(221)
@@ -356,4 +368,9 @@ def sim_s_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.mv, 'time', S.mv, 'voc_soc', color='orange', linestyle=':')
         plt.ylim(xmin, 14.5)
         plt.legend(loc=1)
+        fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
+        fig_files.append(fig_file_name)
+        if S.save_plots and not S.terse:
+            plt.savefig(fig_file_name, format="png")
+
     return fig_list, fig_files

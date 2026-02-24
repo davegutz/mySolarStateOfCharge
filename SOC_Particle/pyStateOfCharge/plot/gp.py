@@ -41,6 +41,7 @@ def gp_1(S:PlotOptions, fig_list=None, fig_files=None):
     if fig_files is None:
         fig_files = []
     print('gp_plot', end=':  ')
+
     fig_list.append(plt.figure())  # GP 1
     plt.subplot(221)
     plt.title(S.plot_title + ' GP 1')
@@ -76,14 +77,15 @@ def gp_1(S:PlotOptions, fig_list=None, fig_files=None):
 def gp_2(S:PlotOptions, fig_files=None, fig_list=None):
     if fig_files is None:
         fig_files = []
+
     fig_list.append(plt.figure())
     plt.subplot(221)
     plt.title(S.plot_title + ' GP 2')
     print('GP 2', end=':  ')
     plq(plt, S.mr, 'time', S.mr, 'vb', color='black', linestyle='-', warn=not S.run_is_stdy)
     plq(plt, S.mv, 'time', S.mv, 'vb', color='orange', linestyle='--', warn=not S.ver_is_stdy)
-    plq(plt, S.mr, 'time', S.mr, 'vb_f', color='black', linestyle='-', warn=not S.run_is_stdy)
-    plq(plt, S.mv, 'time', S.mv, 'vb_f', color='orange', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'vb_f', color='black', linestyle='-', warn=not S.run_is_stdy and not S.run_is_run)
+    plq(plt, S.mv, 'time', S.mv, 'vb_f', color='orange', linestyle='--', warn=not S.ver_is_stdy and not S.ver_is_sim)
     plq(plt, S.mr, 'time', S.mr, 'voc', color='blue', linestyle='-', warn=not S.run_is_stdy)
     plq(plt, S.mv, 'time', S.mv, 'voc', color='red', linestyle='--', warn=not S.ver_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'voc_stat', color='cyan', linestyle='-.', warn=not S.run_is_stdy)
@@ -119,6 +121,7 @@ def gp_2(S:PlotOptions, fig_files=None, fig_list=None):
 def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None):
     if fig_files is None:
         fig_files = []
+
     fig_list.append(plt.figure())
     plt.subplot(321)
     plt.title(S.plot_title + ' GP 2 nn lag')
@@ -155,7 +158,7 @@ def gp_2_nn_lag(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mr, 'soc', S.mr, 'voc', color='black', linestyle='-', warn=not S.run_is_stdy)
     plq(plt, S.mr, 'soc', S.mr, 'voc_f', color='black', linestyle='-', warn=not S.run_is_run)
     plq(plt, S.mv, 'soc', S.mv, 'voc', color='orange', linestyle='--', warn=not S.ver_is_stdy)
-    plq(plt, S.mv, 'soc', S.mv, 'voc_f', color='orange', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.mv, 'soc', S.mv, 'voc_f', color='orange', linestyle='--', warn=not S.ver_is_stdy and not S.ver_is_sim)
     plq(plt, S.mr, 'soc', S.mr, 'voc_d', color='black', linestyle='-', warn=False)
     plq(plt, S.mr, 'soc', S.mr, 'voc_soc', color='red', linestyle='-')
     plq(plt, S.mv, 'soc', S.mv, 'voc_soc', color='orange', linestyle='--')
@@ -389,7 +392,6 @@ def gp_3_tune(S:PlotOptions, fig_files=None, fig_list=None):
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     if S.save_plots and not S.terse:
-
         plt.savefig(fig_file_name, format="png")
 
     return fig_list, fig_files
@@ -552,7 +554,6 @@ def tune_r(S:PlotOptions, fig_list=None, fig_files=None):
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
     if S.save_plots and not S.terse:
-
         plt.savefig(fig_file_name, format="png")
 
     fig_list.append(plt.figure())  # GP 3 Tune Summ

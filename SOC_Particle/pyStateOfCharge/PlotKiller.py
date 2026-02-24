@@ -37,9 +37,12 @@ from ComparePlotSettings import rescale_time_axes
 
 
 class PlotKiller(tk.Toplevel):
-    def __init__(self, message, caller, fig_list_=None):
+    def __init__(self, message, caller, fig_list_=None, fig_files_=None, pdf_path_='.', pdf_base_=None):
         """Block caller task asking to close all plots then doing so"""
         self.fig_list = fig_list_
+        self.fig_files = fig_files_
+        self.pdf_path = pdf_path_
+        self.pdf_base = pdf_base_
         tk.Toplevel.__init__(self)
         self.title(caller)
         tk.Button(self, command=self.close_figs, text="close " + message, font=("Courier", 12)).grid(row=0, column=0, columnspan=4, padx=15, pady=15)
@@ -50,6 +53,8 @@ class PlotKiller(tk.Toplevel):
         self.t_max_var = tk.StringVar()
         tk.Entry(self, textvariable=self.t_max_var, width=10, font=("Courier", 10)).grid(row=1, column=3, padx=5, pady=5)
         tk.Button(self, command=self.rescale_axes, text="rescale", font=("Courier", 10)).grid(row=2, column=0, columnspan=4, padx=15, pady=5)
+        if fig_files_ is not None and pdf_base_ is not None:
+            tk.Button(self, command=self.hardcopy, text="Hardcopy", font=("Courier", 10)).grid(row=3, column=0, columnspan=4, padx=15, pady=5)
         self.lift()
         self.mainloop()
         # self.grab_set()  # Prevents other Tkinter windows from being used
@@ -62,6 +67,18 @@ class PlotKiller(tk.Toplevel):
         if self.fig_list is not None:
             rescale_time_axes(self.fig_list, t_min=t_min, t_max=t_max)
 
+    def hardcopy(self):
+        from datetime import datetime
+        from unite_pictures import precleanup_fig_files, pngs_to_pdf
+        if self.fig_list is None or self.fig_files is None or self.pdf_base is None:
+            return
+        for fig, fig_file in zip(self.fig_list, self.fig_files):
+            fig.savefig(fig_file, format="png")
+            print("saved", fig_file)
+        precleanup_fig_files(output_pdf_name=self.pdf_base, path_to_pdfs=self.pdf_path)
+        date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        pngs_to_pdf(png_folder=self.pdf_path, output_pdf=self.pdf_base + '_' + date_time + '.pdf')
+
     def close_figs(self):
         if self.fig_list is None:
             plt.close('all')
@@ -72,14 +89,14 @@ class PlotKiller(tk.Toplevel):
         self.destroy()
 
 
-def show_and_kill(string, caller, fig_list=None):
+def show_and_kill(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None):
     plt.show()
     time.sleep(1)
-    PlotKiller(string, caller, fig_list)
+    PlotKiller(string, caller, fig_list, fig_files, pdf_path, pdf_base)
 
 
-def show_killer(string, caller, fig_list=None):
-    PlotKiller(string, caller, fig_list)
+def show_killer(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None):
+    PlotKiller(string, caller, fig_list, fig_files, pdf_path, pdf_base)
 
 
 def simple_plot1():
