@@ -95,7 +95,7 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mr, 'time', S.mr, 'cc_dif', color='black', linestyle='-')
     plq(plt, S.mr, 'time', S.mr, 'ccd_thr', color='red', linestyle='--')
     plq(plt, S.mr, 'time', S.mr, 'ccd_thr', slr=-1, color='red', linestyle='--')
-    # plt.ylim(-.01, .01)
+    plt.ylim(-.01, .01)
     plt.legend(loc=3)
     plt.subplot(133)
     plq(plt, S.mr, 'time', S.mr, 'wrap_lo_fa', add=+58, color='green', linestyle='-')
