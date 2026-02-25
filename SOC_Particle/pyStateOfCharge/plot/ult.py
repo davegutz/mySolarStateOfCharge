@@ -66,7 +66,7 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     # if active standby
     # plq(plt, S.mr, 'time', S.mr, 'ewhi_thr', color='red', linestyle='-.')
     # plq(plt, S.mr, 'time', S.mr, 'ewlo_thr', color='red', linestyle='-.')
-    plt.ylim(-4, 4)
+    plt.ylim(-.2, .2)
     plt.legend(loc=1)
     plt.subplot(332)
     plq(plt, S.mr, 'time', S.mr, 'tb_sel', add=+6, color='green', linestyle='-')
