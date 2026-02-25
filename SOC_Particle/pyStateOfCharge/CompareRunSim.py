@@ -190,8 +190,8 @@ def main():  # Example usage.  ok on 20260217
     request_history = 5
     init_time = None
     time_shift = None
-    strict_overplot = False
-    terse = False
+    strict_overplot = True
+    terse = True
     mon_str = ''
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,

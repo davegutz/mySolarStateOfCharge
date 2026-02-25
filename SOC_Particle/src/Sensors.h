@@ -214,7 +214,7 @@ protected:
 #define IB_DIFF_HI_FA 8   // Persisted sensor difference error, latches because hard type, T = fail
 #define IB_DIFF_LO_FA 9   // Persisted sensor difference error, latches because hard type, T = fail
 #define IB_DSCN_FA    10  // Dual persisted quiet error, heals functional type, T = disconnected shunt
-#define VC_FA         11  // Peristed, latched isolation of Vc failure, latches because hard type, T=failed
+#define VC_FA         13  // Peristed, latched isolation of Vc failure, latches because hard type, T=failed
 #define WRAP_HI_M_FA  14  // Wrap isolates to Ib amp high fail, heals because dual sensor (no latch)
 #define WRAP_LO_M_FA  15  // Wrap isolates to Ib amp low fail, heals because dual sensor (no latch)
 #define WRAP_HI_N_FA  16  // Wrap isolates to Ib amp high fail, heals because dual sensor (no latch)

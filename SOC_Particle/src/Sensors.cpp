@@ -713,7 +713,7 @@ txBuf = String::format("") +
     String::format("7 red wv  %d  %d   'Fd, Fi/Fo ^'\n",  red_loss(), wrap_vb_fa()) +
     String::format("6 wl      %d  %d 'Fo ^'\n", wrap_lo_flt(), wrap_lo_fa()) +
     String::format("5 wh      %d  %d 'Fi ^'\n", wrap_hi_flt(), wrap_hi_fa()) +
-    String::format("4 vc | cc_dif %d  %d 'x Fc ^'\n", vc_fa(), cc_diff_fa()) +
+    String::format("4 xx | cc_dif x  %d 'x Fc ^'\n", cc_diff_fa()) +
     String::format("3 ib n    %d  %d 'FI 1'\n", ib_noa_flt(), ib_noa_fa()) +
     String::format("2 ib m    %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa()) +
     String::format("1 vb      %d  %d 'Fv 1  *SV, *Dc/*Dv'.", vb_flt(), vb_fa()) +
