@@ -67,6 +67,8 @@
 #define FAKE_FAULTS           true    // What to do with faults, T=detect and display them but don't change signals
 #define CC_DIFF_SOC_DIS_THRESH  0.5   // Signal selection threshold for Coulomb counter EKF disagree test (0.2, 0.1 too small on truck)
 #define DISAB_TB_FA true
+#define FI_NOM 2.5 // Hi wrap threshold nominal scalar (1.0)
+#define FO_NOM 2.5 // Lo wrap threshold nominal scalar (1.0)
 
 // ekf tune
 #define EKF_Q_SD_NORM   0.0015  // Standard deviation of normal EKF process uncertainty, V (0.0015)

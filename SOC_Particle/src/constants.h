@@ -316,6 +316,12 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #if !defined(EWHI_TRM_SLR)
     #define EWHI_TRM_SLR    2.5 // Amp looparound high error trim scalar. Shouldn't have full authority to always cancel ewm fault (2.0)
 #endif
+#if !defined(FI_NOM)
+    #define FI_NOM    1.0 // Hi wrap threshold nominal scalar (1.0)
+#endif
+#if !defined(FO_NOM)
+    #define FO_NOM    1.0 // Lo wrap threshold nominal scalar (1.0)
+#endif
 
 // Conversion gains
 // Voltage measurement gains
