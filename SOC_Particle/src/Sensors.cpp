@@ -732,7 +732,7 @@ txBuf = String::format("") +
     String::format("1-diff_ib  %2d\n", dispRead(diff_ib)) +
     String::format("0-conn     %2d\n\n", dispRead(conn)); 
   sendTxBuf(txBuf, true, true);
-// enum dispw {conn=0, diff_ib=1, red_loss=2, fail_ib=3, fail_ibm=4, fail_vb=5, flt_tb=6, flt_ekf=7, SAT=8, off=9, accy=10, time_long=11, Count};
+  // enum dispw {conn=0, diff_ib=1, red_loss=2, fail_ib=3, fail_ibm=4, fail_vb=5, flt_tb=6, flt_ekf=7, SAT=8, off=9, accy=10, time_long=11, Count};
 
   txBuf = bitMapPrint(pr.buff, fltw_, NUM_FLT) +
     String::format("   ") +
@@ -751,9 +751,9 @@ txBuf = String::format("") +
     sendTxBuf(txBuf, true, true);
   }
 
-  if ( Sen->now < 1746684850783ULL )
+  if ( sp.Time_now_z < 1746684000UL )
   {
-    txBuf = String::format("\n\n////////////////// WARN set UT (h;)\n\n");
+    txBuf = String::format("\n\n////////////////// WARN set UT (h;) %lu < %lu\n\n", sp.Time_now_z, 1746684000UL);
     sendTxBuf(txBuf, true, true);
   }
 }
