@@ -817,7 +817,7 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
     bms_off_ = np.copy(h.Tb_f)
     for i in range(len(h.Tb_f)):
         saturated_[i] = is_sat(h.Tb_f[i], mon.chemistry.rated_temp, h.voc_f[i], h.soc[i], mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt,
-                         mon.chemistry.low_t)
+                         mon.chemistry.low_t, vsat_add=mon.sp_vsat_add_z)
         bms_off_[i] = (h.Tb_f[i] < mon.chemistry.low_t) or ((h.voc_stat_f[i] < 10.5) and (h.ib_f[i] < Battery.IB_MIN_UP))
 
     # Correct for temp

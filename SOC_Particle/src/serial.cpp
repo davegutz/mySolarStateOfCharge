@@ -131,6 +131,7 @@ void print_battery_header()
   Serial.printf("WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR, WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_MOD_C_RATE, WRAP_SOC_MOD_OFF,");
   Serial.printf("ap_cc_diff_slr, ap_ib_diff_slr, ap_ib_quiet_slr, ap_disab_ib_fa, ap_disab_tb_fa, ap_disab_vb_fa,");
   Serial.printf("sp_cutback_gain_slr_z, ap_dv_voc_soc, ap_ds_voc_soc, sp_Dw_z, WRAP_LO_S, WRAP_LO_R, WRAP_HI_S, WRAP_HI_R,");
+  Serial.printf("sp_vsat_add_z,");
   Serial.printf("\n");
 
 }
@@ -162,6 +163,8 @@ void print_battery_serial()
 
   Serial.printf("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
     sp.cutback_gain_slr_z, ap.dv_voc_soc, ap.ds_voc_soc, sp.Dw_z, WRAP_LO_S, WRAP_LO_R, WRAP_HI_S, WRAP_HI_R);
+
+  Serial.printf("%10.7f,", sp.Vsat_add());
 
   Serial.printf("\n");
 }

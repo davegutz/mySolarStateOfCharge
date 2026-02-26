@@ -201,7 +201,7 @@ class Battery(Coulombs):
     ap_dv_voc_soc = None
     ap_ds_voc_soc = None
     sp_Dw_z = None
-
+    sp_vsat_add_z = None
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
@@ -214,8 +214,7 @@ class Battery(Coulombs):
                             or 20 - 40 A for a 100 Ah battery"""
 
     def __init__(self, OPT=None, q_cap_rated=NOM_UNIT_CAP*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
-                 dvoc=0., mod_code=0,
-                 scale_cap=1., mon=None, str=None):
+                 dvoc=0., mod_code=0, vsat_add=0., scale_cap=1., mon=None, str=None):
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
         etal.pdf.'  SOC-OCV curve fit './Battery State/BattleBorn Rev1.xls:Model Fit' using solver with min slope
@@ -247,7 +246,7 @@ class Battery(Coulombs):
         self.dv_dsoc = 0.  # Slope of soc-voc curve, V/%
         self.tcharge = 0.  # Charging time to 100%, hr
         self.sr = 1  # Resistance scalar
-        self.vsat = self.chemistry.nom_vsat
+        self.vsat = self.chemistry.nom_vsat + vsat_add
         # range 0 - 50 C, V/deg C
         self.dt = 0  # Update time, s
         if OPT is not None:
@@ -370,14 +369,15 @@ class Battery(Coulombs):
 class BatteryMonitor(Battery, EKF1x1):
     """Extend Battery class to make a monitor"""
     def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600, t_rated=25., temp_rlim=0.017, scale=1.,
-                 tb_f=25., tweak_test=False, dvoc=0., mod_code=0):
+                 tb_f=25., tweak_test=False, dvoc=0., mod_code=0, vsat_add=0.):
         if hasattr(OPT, 'slr_res_0'):
             ref = OPT.mon_run
         else:
             pass
         q_cap_rated_scaled = q_cap_rated * scale
         Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
-                         tweak_test=tweak_test, dvoc=dvoc, mod_code=mod_code, scale_cap=scale, mon=True, str='ver')
+                         tweak_test=tweak_test, dvoc=dvoc, mod_code=mod_code, scale_cap=scale, mon=True, str='ver',
+                         vsat_add=vsat_add)
 
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
@@ -593,7 +593,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
 
-        self.vsat = self.chemistry.nom_vsat + (self.Tb_f - 25.) * self.chemistry.dvoc_dt
+        self.vsat = self.chemistry.nom_vsat + (self.Tb_f - 25.) * self.chemistry.dvoc_dt + Battery.sp_vsat_add_z
         self.mod = rp.modeling
         # Overflow protection since ib past value used
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
@@ -1050,10 +1050,10 @@ class BatterySim(Battery):
     """Extend Battery class to make a model"""
 
     def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600, t_rated=25., temp_rlim=0.017,
-                 scale=1., tb_f=25., tweak_test=False, mod_code=0):
+                 scale=1., tb_f=25., tweak_test=False, mod_code=0, vsat_add=0.):
         Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, dvoc=OPT.add_voc_sim, mod_code=mod_code, scale_cap=scale, mon=False,
-                         str='ver_s')
+                         str='ver_s', vsat_add=vsat_add)
         self.chemistry = Chemistry(mod_code=mod_code, dvoc=OPT.add_voc_sim, unit=OPT.unit)
         self.chemistry.assign_all_mod(mod_code, unit=OPT.unit)
         self.lut_voc = None
@@ -1192,7 +1192,8 @@ class BatterySim(Battery):
         self.dv_dyn = self.vb - self.voc
 
         # Saturation logic, both full and empty
-        self.vsat = sat_voc(self.Tb_f, self.chemistry.rated_temp, self.chemistry.nom_vsat, self.chemistry.dvoc_dt)
+        self.vsat = sat_voc(self.Tb_f, self.chemistry.rated_temp, self.chemistry.nom_vsat, self.chemistry.dvoc_dt,
+                            vsat_add=Battery.sp_vsat_add_z)
         self.sat_ib_max = (self.sat_ib_null + (1 - self.soc - Battery.ap_ds_voc_soc) * self.sat_cutback_gain
                            * Battery.sp_cutback_gain_slr_z)
         if rp.tweak_test or (not rp.modeling_ib):
@@ -1327,13 +1328,13 @@ class BatterySim(Battery):
 
 
 # Other functions
-def is_sat(tb_f, rated_temp, voc, soc, nom_vsat, dvoc_dt, low_t):
-    vsat = sat_voc(tb_f, rated_temp, nom_vsat, dvoc_dt)
+def is_sat(tb_f, rated_temp, voc, soc, nom_vsat, dvoc_dt, low_t, vsat_add=0.):
+    vsat = sat_voc(tb_f, rated_temp, nom_vsat, dvoc_dt, vsat_add=vsat_add)
     return tb_f > low_t and (voc >= vsat or soc >= Battery.mxeps_bb)
 
 
-def sat_voc(tb_f, rated_temp, vsat, dvoc_dt):
-    return vsat + (tb_f-rated_temp)*dvoc_dt
+def sat_voc(tb_f, rated_temp, vsat, dvoc_dt, vsat_add=0.):
+    return vsat + (tb_f-rated_temp)*dvoc_dt + vsat_add
 
 
 class Looparound:
@@ -1579,6 +1580,7 @@ class Saved:
         self.Tb_model = []
         self.vb_hdwe = []
         self.vb_hdwe_f = []
+        self.vsat = []
 
 
 def overall_batt(mv, sv, filename,

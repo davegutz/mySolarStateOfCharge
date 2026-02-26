@@ -144,6 +144,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero, time_end, rated_batt_cap=
         f_raw = np.unique(f_raw)
         f_raw = remove_nan(f_raw)
         f_raw = rename_all(f_raw)
+        batt.sp_vsat_add_z = Battery_off_dict['sp_vsat_add_z']
         f = add_stuff_f(f_raw, batt, ib_band=IB_BAND, ap_ib_diff_slr=Battery_off_dict['ap_ib_diff_slr'],
                         ap_ib_quiet_slr=Battery_off_dict['ap_ib_quiet_slr'])
         print("\nload_data:  f:\n", f, "\n")

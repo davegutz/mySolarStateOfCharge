@@ -79,6 +79,8 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mv, 'time', S.mv, 'tb_fa', color='cyan', linestyle=':', warn=False)
     plq(plt, S.mr, 'time', S.mr, 'ib_choice', add=-2, color='black', linestyle='-', warn=not S.run_is_stdy)
     plq(plt, S.mv, 'time', S.mv, 'ib_choice', add=-2, color='blue', linestyle='--', warn=not S.ver_is_stdy and not S.ver_is_sim)
+    plq(plt, S.mr, 'time', S.mr, 'reset', add=-4, color='magenta', linestyle='-')
+    plq(plt, S.mv, 'time', S.mv, 'reset', add=-4, color='cyan', linestyle='--')
     plt.legend(loc=1)
     plt.subplot(337)
     plq(plt, S.mr, 'time', S.mr, 'e_wrap_m_filt', color='green', linestyle='-', warn=False)

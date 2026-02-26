@@ -322,6 +322,9 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #if !defined(FO_NOM)
     #define FO_NOM    1.0 // Lo wrap threshold nominal scalar (1.0)
 #endif
+#if !defined(VSAT_ADD)
+    #define VSAT_ADD    0.0 // Bias on nominal vsat (0.0)
+#endif
 
 // Conversion gains
 // Voltage measurement gains

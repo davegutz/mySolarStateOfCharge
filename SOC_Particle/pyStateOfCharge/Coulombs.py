@@ -42,6 +42,7 @@ class Coulombs:
         self.resetting = True
         self.q_min = 0.
         self.sat = True
+        self.saturated = True
         self.chm = mod_code
         self.tweak_test = tweak_test
         self.reset = False
@@ -148,13 +149,14 @@ class Coulombs:
         if charge_curr > 0. and not self.tweak_test:
             self.d_delta_q *= self.chemistry.coul_eff
         self.sat = sat
+        self.saturated = saturated
         self.tb_f = tb_f
 
         # if charge_curr < 0.:
         #     print(f"{OPT.mon_run.time[G.i]=} {OPT.mon_run.time[G.i]-OPT.mon_run.time[G.i-1]=} {OPT.mon_run.dt[G.i]=} {dt} {OPT.mon_run.ib_charge[G.i]=} {charge_curr} {OPT.mon_run.ib_charge[G.i] * OPT.mon_run.dt[G.i]=} {dt * charge_curr} {OPT.mon_run.d_delta_q[G.i]=} {self.d_delta_q}")
 
         # Saturation.   Goal is to set q_capacity and hold it so remembers last saturation status.
-        if sat:
+        if self.saturated:
             if self.d_delta_q > 0:
                 self.d_delta_q = 0.
                 if ~self.resetting:

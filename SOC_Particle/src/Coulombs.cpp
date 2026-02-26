@@ -181,7 +181,7 @@ float Coulombs::count_coulombs(Sensors *Sen, const boolean reset_temp, const flo
     saturated_ = saturated;
 
     // Saturation.   Goal is to set q_capacity and hold it so remember last saturation status.
-    if ( sat )
+    if ( saturated_ )
     {
         if ( d_delta_q_ > 0 )
         {
