@@ -124,49 +124,46 @@ void print_all_header(Sensors *Sen)
 // print ekf for data collection
 void print_battery_header()
 {
-  Serial.printf("Battery_hdr, hdwe_ib_hi_lo, HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI, IB_ABS_MAX_NOA, IB_ABS_MAX_AMP, KF_Q_STD, KF_R_STD,");
-  Serial.printf("SHUNT_AMP_GAIN, SHUNT_NOA_GAIN, NS, NP, sp_ib_disch_slr_z, ap_hys_scale, ap_dc_dc_on,");
-  Serial.printf("EWLO_TRM_SLR, EWHI_TRM_SLR, WRAP_HI_AMP, WRAP_LO_AMP, WRAP_HI_NOA, WRAP_LO_NOA, ap_ewhi_slr, ap_ewlo_slr,");
-  Serial.printf("IBATT_DISAGREE_THRESH, NOM_UNIT_CAP, sp_s_cap_mon_z, sp_s_cap_sim_z, RATED_TEMP, CHEM,");
-  Serial.printf("WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR, WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_MOD_C_RATE, WRAP_SOC_MOD_OFF,");
-  Serial.printf("ap_cc_diff_slr, ap_ib_diff_slr, ap_ib_quiet_slr, ap_disab_ib_fa, ap_disab_tb_fa, ap_disab_vb_fa,");
-  Serial.printf("sp_cutback_gain_slr_z, ap_dv_voc_soc, ap_ds_voc_soc, sp_Dw_z, WRAP_LO_S, WRAP_LO_R, WRAP_HI_S, WRAP_HI_R,");
-  Serial.printf("sp_vsat_add_z,");
-  Serial.printf("\n");
+  String txBuf;
+  txBuf = String::format("Battery_hdr, hdwe_ib_hi_lo, HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI, IB_ABS_MAX_NOA, IB_ABS_MAX_AMP, KF_Q_STD, KF_R_STD,") +
+    String::format("SHUNT_AMP_GAIN, SHUNT_NOA_GAIN, NS, NP, sp_ib_disch_slr_z, ap_hys_scale, ap_dc_dc_on,") +
+    String::format("EWLO_TRM_SLR, EWHI_TRM_SLR, WRAP_HI_AMP, WRAP_LO_AMP, WRAP_HI_NOA, WRAP_LO_NOA, ap_ewhi_slr, ap_ewlo_slr,") +
+    String::format("IBATT_DISAGREE_THRESH, NOM_UNIT_CAP, sp_s_cap_mon_z, sp_s_cap_sim_z, RATED_TEMP, CHEM,") +
+    String::format("WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR, WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_MOD_C_RATE, WRAP_SOC_MOD_OFF,") +
+    String::format("ap_cc_diff_slr, ap_ib_diff_slr, ap_ib_quiet_slr, ap_disab_ib_fa, ap_disab_tb_fa, ap_disab_vb_fa,") +
+    String::format("sp_cutback_gain_slr_z, ap_dv_voc_soc, ap_ds_voc_soc, sp_Dw_z, WRAP_LO_S, WRAP_LO_R, WRAP_HI_S, WRAP_HI_R,") +
+    String::format("sp_vsat_add_z,") +
+    String::format("\n");
 
+  sendTxBuf(txBuf, true, true);
 }
 
 void print_battery_serial()
- {
+ {  
   #ifdef HDWE_IB_HI_LO
     boolean hdwe_ib_hi_lo = true;
   #else
     boolean hdwe_ib_hi_lo = false;
   #endif
-  Serial.printf("Battery_val,%d,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
-    hdwe_ib_hi_lo, HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI, IB_ABS_MAX_NOA, IB_ABS_MAX_AMP, KF_Q_STD, KF_R_STD);
+  String txBuf;
+  txBuf = String::format("Battery_val,%d,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      hdwe_ib_hi_lo, HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI, IB_ABS_MAX_NOA, IB_ABS_MAX_AMP, KF_Q_STD, KF_R_STD) +
+    String::format("%10.7f,%10.7f,%4.2f,%4.2f,%10.7f,%10.7f,%d,",
+      SHUNT_AMP_GAIN, SHUNT_NOA_GAIN, NS, NP, sp.ib_disch_slr_z, ap.hys_scale, ap.dc_dc_on) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      EWLO_TRM_SLR, EWHI_TRM_SLR, WRAP_HI_AMP, WRAP_LO_AMP, WRAP_HI_NOA, WRAP_LO_NOA, ap.ewhi_slr, ap.ewlo_slr)+
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%d,",
+      IBATT_DISAGREE_THRESH, NOM_UNIT_CAP, sp.s_cap_mon_z, sp.s_cap_sim_z, RATED_TEMP, CHEM) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR, WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_MOD_C_RATE, WRAP_SOC_MOD_OFF) +
+    String::format("%10.7f,%10.7f,%10.7f,  %d,%d,%d,",
+      ap.cc_diff_slr, ap.ib_diff_slr, ap.ib_quiet_slr, ap.disab_ib_fa, ap.disab_tb_fa, ap.disab_vb_fa) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      sp.cutback_gain_slr_z, ap.dv_voc_soc, ap.ds_voc_soc, sp.Dw_z, WRAP_LO_S, WRAP_LO_R, WRAP_HI_S, WRAP_HI_R) +
+    String::format("%10.7f,", sp.Vsat_add()) +
+    String::format("\n");
 
-  Serial.printf("%10.7f,%10.7f,%4.2f,%4.2f,%10.7f,%10.7f,%d,",
-    SHUNT_AMP_GAIN, SHUNT_NOA_GAIN, NS, NP, sp.ib_disch_slr_z, ap.hys_scale, ap.dc_dc_on);
-  
-  Serial.printf("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
-    EWLO_TRM_SLR, EWHI_TRM_SLR, WRAP_HI_AMP, WRAP_LO_AMP, WRAP_HI_NOA, WRAP_LO_NOA, ap.ewhi_slr, ap.ewlo_slr);
-
-  Serial.printf("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%d,",
-    IBATT_DISAGREE_THRESH, NOM_UNIT_CAP, sp.s_cap_mon_z, sp.s_cap_sim_z, RATED_TEMP, CHEM);
-
-  Serial.printf("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
-    WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR, WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_MOD_C_RATE, WRAP_SOC_MOD_OFF);
-
-  Serial.printf("%10.7f,%10.7f,%10.7f,  %d,%d,%d,",
-    ap.cc_diff_slr, ap.ib_diff_slr, ap.ib_quiet_slr, ap.disab_ib_fa, ap.disab_tb_fa, ap.disab_vb_fa);
-
-  Serial.printf("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
-    sp.cutback_gain_slr_z, ap.dv_voc_soc, ap.ds_voc_soc, sp.Dw_z, WRAP_LO_S, WRAP_LO_R, WRAP_HI_S, WRAP_HI_R);
-
-  Serial.printf("%10.7f,", sp.Vsat_add());
-
-  Serial.printf("\n");
+    sendTxBuf(txBuf, true, true);
 }
 
 // Print primary data

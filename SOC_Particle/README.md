@@ -313,7 +313,7 @@ The one-wire temperature sensor sometimes requires up to a minute to provide con
 
 It is possible to re-initialize on the fly.   When the user requests the monitor to be at a different charge state, for some off-line testing of the logic for example, the synchronization ecosystem will turn on the 'reset' flags to force this to happen as on a normal power-up.
 
-Because 'sat' is a UBC, when calling 'count_coulombs()' we have to tell it that we expect to call it again, and it should set the 'resetting_' sticky bit upon exit.   For that, we set the 'resetting' (no underscore) input flag.
+Because 'saturation' is a UBC, when calling 'count_coulombs()' we have to tell it that we expect to call it again, and it should set the 'resetting_' sticky bit upon exit.   For that, we set the 'resetting' (no underscore) input flag.
 
 A significant simplification is possible to initialize the off-line over-plot model.  The data drives the model and thus must initialize to the same condition to be useful.   Rather than develop a separate initialization ecosystem for the model, it simply initializes to the incoming data.   The incoming data carries flags names 'reset' or 'reset_temp' that tell the model when to do this.   The re-initialization events occur seamlessly too.
 Reliability Concept

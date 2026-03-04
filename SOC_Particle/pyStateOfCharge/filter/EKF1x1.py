@@ -34,7 +34,7 @@ class EKF1x1:
         self.K = 0.  # Kalman gain
         self.hx = 0.  # Output of observation function h(x)
         self.u_ekf = 0.  # Control input
-        self.x = 0.  # Kalman state variable
+        self.x = 1.  # Kalman state variable
         self.y = 0.  # Residual z-hx
         self.y_f = 0.  # Residual filtered z-hx
         self.z = 0.  # Observation of state x

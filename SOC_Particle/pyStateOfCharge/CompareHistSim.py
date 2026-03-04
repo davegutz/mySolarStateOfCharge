@@ -634,13 +634,13 @@ def main():  # Sample usage. OK on 20260217
 
     # User inputs (multiple input_files allowed
     # Cut-pasted from GUI_TestSOC Run window
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/pullVr_soc2p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/truckHist_20260302.csv'
     time_end = None
     plots = True
     use_mon_csv = False
-    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
+    unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     sync_time = None
-    dt_resample = 10
+    dt_resample = 900
     Tb_force = None
     request_history = None
     strict_overplot = False

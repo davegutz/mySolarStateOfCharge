@@ -386,10 +386,10 @@ class BatteryMonitor(Battery, EKF1x1):
         so equations error when soc<=0 to match data.    See Battery.h
         """
         # Parents
+        self.soc_ekf = 0.  # Filtered state of charge from ekf (0-1)
         EKF1x1.__init__(self)
         self.tcharge_ekf = 0.  # Charging time to 100% from ekf, hr
         self.voc = 0.  # Charging voltage, V
-        self.soc_ekf = 0.  # Filtered state of charge from ekf (0-1)
         self.q_ekf = 0  # Filtered charge calculated by ekf, C
         self.amp_hrs_remaining_ekf = 0  # Discharge amp*time left if drain to q_ekf=0, A-h
         self.amp_hrs_remaining_wt = 0  # Discharge amp*time left if drain soc_wt_ to 0, A-h

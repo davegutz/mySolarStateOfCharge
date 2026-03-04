@@ -67,6 +67,9 @@
 #ifndef DISAB_TB_FA
     #define DISAB_TB_FA false
 #endif
+#ifndef DISAB_VB_FA
+    #define DISAB_VB_FA false
+#endif
 const char unit[] = version_str "_" HDWE_UNIT;
 
 // Constants always defined
