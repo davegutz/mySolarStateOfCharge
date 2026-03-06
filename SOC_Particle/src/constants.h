@@ -212,7 +212,7 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #define WRAP_MOD_C_RATE     .02         // Moderate charge rate threshold to engage wrap threshold (0.02 to prevent trip near saturation .05 too large)
 #define WRAP_SOC_MOD_OFF    0.85        // Disable e_wrap_lo when nearing saturated and moderate C_rate (0.85)
 #define AMP_WRAP_TRIM_GAIN  0.015       // Amp looparound trim gain r/s (0.015)
-#define NOA_WRAP_TRIM_GAIN  0.0         // Non-Amp looparound trim gain r/s (0.0, legacy simple)
+#define NOA_WRAP_TRIM_GAIN  0.015       // Non-Amp looparound trim gain r/s (0.015)
 #define VC_S                1.0         // Vc sense scalar (1.0)
 #define VO_S                1.0         // Vo sense scalar (1.0)
 #define VTB_S               1.0         // VTb sense scalar (1.0)
@@ -314,16 +314,16 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
     #define KF_R_STD        0.1000 // Shunt KF state uncertainty  tune 2025128 like ishunt_cal_filt F_W_I=0.5, F_Z_I=0.8
 #endif
 #if !defined(EWLO_TRM_SLR)
-    #define EWLO_TRM_SLR    2.5 // Amp looparound low error trim scalar.  Shouldn't have full authority to always cancel ewm fault (2.0)
+    #define EWLO_TRM_SLR    25. // Amp looparound low error trim scalar.  Should provide hysteresis (~1 V) authority (25.)
 #endif
 #if !defined(EWHI_TRM_SLR)
-    #define EWHI_TRM_SLR    2.5 // Amp looparound high error trim scalar. Shouldn't have full authority to always cancel ewm fault (2.0)
+    #define EWHI_TRM_SLR    25. // Amp looparound high error trim scalar.  Should provide hysteresis (~1 V) authority (25.)
 #endif
 #if !defined(FI_NOM)
-    #define FI_NOM    1.0 // Hi wrap threshold nominal scalar (1.0)
+    #define FI_NOM    1.0 // Hi wrap threshold nominal scalar (1.0)  // Fi
 #endif
 #if !defined(FO_NOM)
-    #define FO_NOM    1.0 // Lo wrap threshold nominal scalar (1.0)
+    #define FO_NOM    1.0 // Lo wrap threshold nominal scalar (1.0)  // Fo
 #endif
 #if !defined(VSAT_ADD)
     #define VSAT_ADD    0.0 // Bias on nominal vsat (0.0)

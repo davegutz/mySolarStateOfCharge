@@ -326,7 +326,7 @@ void KalmanFilter::print_serial()
 void print_signal_sel_header(void)
 {
   Serial.printf("unit_s,c_time_sel,reset,resaf,user_sel,   cc_dif,  ib_amp_hdwe,ib_noa_hdwe,ib_amp_model,ib_noa_model,ib_model,  kfres,vovcm,vovcn,ib_amp_hdwe_kf,ib_noa_hdwe_kf,  ib_diff, ib_diff_f,");
-  Serial.printf("  vr,voc_soc,e_wrap,e_wrap_filt,ib_dyn_m,dv_dyn_m,e_wrap_m,e_wrap_m_reset,e_wrap_m_filt,ib_dyn_n,dv_dyn_n,e_wrap_n,e_wrap_n_filt,e_wrap_m_trim,");
+  Serial.printf("  vr,voc_soc,e_wrap,e_wrap_filt,ib_dyn_m,dv_dyn_m,e_wrap_m,e_wrap_m_reset,e_wrap_m_filt,e_wrap_m_trim,ib_dyn_n,dv_dyn_n,e_wrap_n,e_wrap_n_filt,e_wrap_n_trim,");
   Serial.printf("  ib_sel_stat,ib_choice,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_hdwe,vb_s,mvb,vb,  mtb,Tb_fa, ");
   Serial.printf("  ib_rate, ib_quiet, ib_really_quiet, tb_sel, ccd_thr, ewmhi_thr, ewmlo_thr, ewnhi_thr, ewnlo_thr, ibd_thr, ibq_thr, preserving,ff,y_f,ib_dec,");
   Serial.printf("  ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rstate_m, ib_dyn_lstate_m,");
@@ -353,10 +353,11 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
           Sen->Flt->ib_diff(), Sen->Flt->ib_diff_f());
       Serial.printf("%s", pr.buff);
 
-      sprintf(pr.buff, "   %8.6f,%7.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%2d,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,",
-          Sen->vc_hdwe(), Mon->voc_soc(), Sen->Flt->e_wrap(), Sen->Flt->e_wrap_filt(), Sen->Flt->ib_dyn_m(), Sen->Flt->dv_dyn_m(), Sen->Flt->e_wrap_m(), Sen->Flt->e_wrap_m_r(), Sen->Flt->e_wrap_m_filt(),
+      sprintf(pr.buff, "   %8.6f,%7.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%2d,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,",
+          Sen->vc_hdwe(), Mon->voc_soc(), Sen->Flt->e_wrap(), Sen->Flt->e_wrap_filt(), Sen->Flt->ib_dyn_m(), Sen->Flt->dv_dyn_m(),
+          Sen->Flt->e_wrap_m(), Sen->Flt->e_wrap_m_r(), Sen->Flt->e_wrap_m_filt(), Sen->Flt->LoopIbAmp->e_wrap_trim(),
           Sen->Flt->ib_dyn_n(), Sen->Flt->dv_dyn_n(), Sen->Flt->e_wrap_n(), Sen->Flt->e_wrap_n_filt(),
-          Sen->Flt->LoopIbAmp->e_wrap_trim());
+          Sen->Flt->LoopIbNoa->e_wrap_trim());
       Serial.printf("%s", pr.buff);
 
         sprintf(pr.buff, "  %d,%d,%8.6f,%8.6f,%8.6f, %d,%8.6f,  %d,%8.6f,%8.6f, %d,%8.6f,  %d, %d, ",

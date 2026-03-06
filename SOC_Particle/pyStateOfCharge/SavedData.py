@@ -326,6 +326,8 @@ class SavedData:
             self.e_wrap_n = np.copy(self.ib) * 0.
         if self.e_wrap_n_filt is None:
             self.e_wrap_n_filt = np.copy(self.ib) * 0.
+        if self.e_wrap_n_trim is None:
+            self.e_wrap_n_trim = np.copy(self.ib) * 0.
         if self.e_wrap is None:
             self.e_wrap = np.copy(self.ib) * 0.
         if self.e_wrap_filt is None:
