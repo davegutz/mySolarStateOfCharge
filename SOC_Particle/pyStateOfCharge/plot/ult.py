@@ -66,7 +66,7 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     # if active standby
     # plq(plt, S.mr, 'time', S.mr, 'ewhi_thr', color='red', linestyle='-.')
     # plq(plt, S.mr, 'time', S.mr, 'ewlo_thr', color='red', linestyle='-.')
-    plt.ylim(-.2, .2)
+    plt.ylim(-4, 4)
     plt.legend(loc=1)
     plt.subplot(332)
     plq(plt, S.mr, 'time', S.mr, 'tb_sel', add=+6, color='green', linestyle='-')
@@ -91,7 +91,7 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mv, 'time', S.mv, 'ewmhi_thr', color='orange', linestyle='-.', warn=not S.ver_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'ewmlo_thr', color='red', linestyle='--', warn=not S.run_is_stdy)
     plq(plt, S.mv, 'time', S.mv, 'ewmlo_thr', color='orange', linestyle='-.', warn=not S.ver_is_stdy)
-    plt.ylim(-0.2, 0.2)
+    plt.ylim(-4, 4)
     plt.legend(loc=1)
     plt.subplot(338)
     plq(plt, S.mr, 'time', S.mr, 'cc_dif', color='black', linestyle='-')

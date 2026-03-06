@@ -367,7 +367,7 @@ class KF1x1VarDtxx:
         # self.P = (np.eye(self.x.shape[0]) - self.K @ self.H) @ self.P
         self.P = np.array( [[(1-k0)*p00, (1-k0)*p01], [-k1*p00+p10, -k1*p01+p11]])
 
-        return float(self.x[0])
+        return float(self.x[0][0])
 
     def get_state(self):
         """
@@ -376,4 +376,4 @@ class KF1x1VarDtxx:
         Returns:
             numpy.ndarray: The current state vector [position, velocity].
         """
-        return float(self.x[0]), float(self.x[1])
+        return float(self.x[0][0]), float(self.x[1][0])

@@ -179,7 +179,8 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     # Cut-pasted from GUI_TestSOC Run window
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/truckTurnOnFault_soc4p2_hi_lo_bb.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/truckTurnOnFault_soc4p2_hi_lo_bb.csv'
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/turnaround 20260506_soc4p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     time_end = None
     plots = True
