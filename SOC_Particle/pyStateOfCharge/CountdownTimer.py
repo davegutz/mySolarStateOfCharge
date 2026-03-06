@@ -21,7 +21,12 @@ import sys
 if sys.version_info.minor < 12:
     import pyautogui
 else:
-    from pynput.keyboard import Key, Controller
+    try:
+        from evdev import UInput, ecodes as ev
+        _kb_backend = 'evdev'
+    except ImportError:
+        from pynput.keyboard import Key, Controller
+        _kb_backend = 'pynput'
 import time
 import platform
 if platform.system() == 'Darwin':
@@ -153,14 +158,22 @@ def stay_awake(up_set_min=3.):
         pyautogui.FAILSAFE = False
     while True and (up_time_min < up_set_min):
         time.sleep(30.)
-        keyboard = None
         if sys.version_info.minor > 11:
-            keyboard = Controller()
-        for i in range(0, 3):
-            if sys.version_info.minor > 11:
-                keyboard.press(Key.f15)  # Shift key does not disturb fullscreen
-                keyboard.release(Key.f15)  # Shift key does not disturb fullscreen
+            if _kb_backend == 'evdev':
+                ui = UInput()
+                for i in range(0, 3):
+                    ui.write(ev.EV_KEY, ev.KEY_F15, 1)
+                    ui.syn()
+                    ui.write(ev.EV_KEY, ev.KEY_F15, 0)
+                    ui.syn()
+                ui.close()
             else:
+                keyboard = Controller()
+                for i in range(0, 3):
+                    keyboard.press(Key.f15)  # Shift key does not disturb fullscreen
+                    keyboard.release(Key.f15)  # Shift key does not disturb fullscreen
+        else:
+            for i in range(0, 3):
                 pyautogui.press('f15')  # Shift key does not disturb fullscreen
         up_time_min = (time.time() - start_time) / 60.
         print(f"stay_awake CountdownTimer: {up_time_min=}")

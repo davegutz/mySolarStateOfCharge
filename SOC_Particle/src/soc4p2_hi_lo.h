@@ -66,8 +66,8 @@
 // Faults
 #define FAKE_FAULTS           true    // What to do with faults, T=detect and display them but don't change signals
 #define CC_DIFF_SOC_DIS_THRESH  0.5   // Signal selection threshold for Coulomb counter EKF disagree test (0.2, 0.1 too small on truck)
-#define FI_NOM 16. // Hi wrap threshold nominal scalar (1.0)  // Fi
-#define FO_NOM 16. // Lo wrap threshold nominal scalar (1.0)  // Fo
+#define FI_NOM 32. // Hi wrap threshold nominal scalar (1.0)  // Fi
+#define FO_NOM 32. // Lo wrap threshold nominal scalar (1.0)  // Fo
 #define DISAB_VB_FA true
 #define DISAB_TB_FA true          // Had high out of range failure.  Want to keep running without latch on the truck
 

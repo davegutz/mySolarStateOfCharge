@@ -634,8 +634,9 @@ def main():  # Sample usage. OK on 20260217
 
     # User inputs (multiple input_files allowed
     # Cut-pasted from GUI_TestSOC Run window
-    data_file = 'C:/Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/pyStateOfCharge/g20250612a/hist 20260305.csv'
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/hist 20260305.csv'
+    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/truckHist_20260302.csv'
+
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/turnaround 20260506_soc4p2_hi_lo_bb.csv'
     time_end = None
     plots = True
     use_mon_csv = False
