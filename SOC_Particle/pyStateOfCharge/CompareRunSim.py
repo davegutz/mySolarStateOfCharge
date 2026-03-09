@@ -18,8 +18,14 @@ a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 import sys
-import matplotlib
-if sys.platform in ('darwin', 'linux'):
+import os
+if sys.platform == 'linux':
+    import matplotlib
+    is_wayland = os.environ.get('XDG_SESSION_TYPE') == 'wayland' or bool(os.environ.get('WAYLAND_DISPLAY'))
+    if is_wayland:
+        matplotlib.use('tkagg')
+if sys.platform == 'darwin':
+    import matplotlib
     matplotlib.use('tkagg')
 
 import ComparePlotSettings

@@ -30,9 +30,16 @@ from load_data import load_data, calculate_master_sync
 from local_paths import version_from_data_path, local_paths
 
 import sys
+import os
+if sys.platform == 'linux':
+    import matplotlib
+    is_wayland = os.environ.get('XDG_SESSION_TYPE') == 'wayland' or bool(os.environ.get('WAYLAND_DISPLAY'))
+    if is_wayland:
+        matplotlib.use('tkagg')
 if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
+
 import ComparePlotSettings
 from plot.PlotOptions import  PlotOptions
 
