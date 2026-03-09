@@ -26,15 +26,7 @@ from Chemistry_BMS import ib_lag
 from filter.myFilters import LagExp
 from plot.PlotOptions import PlotOptions
 import sys
-import os
-if sys.platform == 'linux':
-    import matplotlib
-    is_wayland = os.environ.get('XDG_SESSION_TYPE') == 'wayland' or bool(os.environ.get('WAYLAND_DISPLAY'))
-    if is_wayland:
-        matplotlib.use('tkagg')
-if sys.platform == 'darwin':
-    import matplotlib
-    matplotlib.use('tkagg')
+import ComparePlotSettings
 
 # Suppress all UserWarning messages
 import warnings

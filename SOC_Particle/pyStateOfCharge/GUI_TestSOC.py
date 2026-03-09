@@ -1372,7 +1372,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     bg_color = "lightgray"
 
     # Master and header
-    master = tk.Tk()
+    master = tk.Tk(className='GUI_TestSOC')
     master.title('State of Charge')
     master.wm_minsize(width=min_width, height=main_height)
     # master.iconphoto(False, tk.PhotoImage(file='./GUI_TestSOC.png'))

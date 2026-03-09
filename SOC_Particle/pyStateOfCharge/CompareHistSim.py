@@ -35,18 +35,7 @@ from Util import rename_all
 import os
 from pathlib import Path, PurePosixPath
 from plot.PlotOptions import PlotOptions
-
 import sys
-import os
-if sys.platform == 'linux':
-    import matplotlib
-    is_wayland = os.environ.get('XDG_SESSION_TYPE') == 'wayland' or bool(os.environ.get('WAYLAND_DISPLAY'))
-    if is_wayland:
-        matplotlib.use('tkagg')
-if sys.platform == 'darwin':
-    import matplotlib
-    matplotlib.use('tkagg')
-
 import ComparePlotSettings
 
 # Suppress all UserWarning messages

@@ -17,16 +17,6 @@
 a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
-import sys
-import os
-if sys.platform == 'linux':
-    import matplotlib
-    is_wayland = os.environ.get('XDG_SESSION_TYPE') == 'wayland' or bool(os.environ.get('WAYLAND_DISPLAY'))
-    if is_wayland:
-        matplotlib.use('tkagg')
-if sys.platform == 'darwin':
-    import matplotlib
-    matplotlib.use('tkagg')
 
 import ComparePlotSettings
 from ComparePlotSettings import rescale_time_axes
@@ -39,6 +29,7 @@ from datetime import datetime
 from load_data import load_data
 from DataOverModel import dom_plot
 import easygui
+import sys
 from PlotKiller import show_killer
 import tkinter.messagebox
 from local_paths import version_from_data_file, local_paths
