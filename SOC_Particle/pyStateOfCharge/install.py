@@ -118,7 +118,7 @@ Categories=Utility
     except PermissionError:
         print(Colors.fg.red,
               "Stop and establish sudo permissions"
-              "  or"
+              "  or "
               f"sudo mv /home/{login}//Desktop/GUI_TestSOC.desktop /usr/share/applications/.",
               Colors.reset)
         exit(1)
