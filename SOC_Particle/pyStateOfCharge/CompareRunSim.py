@@ -18,6 +18,9 @@ a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 import sys
+import matplotlib
+if sys.platform in ('darwin', 'linux'):
+    matplotlib.use('tkagg')
 
 import ComparePlotSettings
 from ComparePlotSettings import rescale_time_axes
@@ -37,10 +40,6 @@ import os
 from pathlib import Path, PurePosixPath
 import plot.gp as gp
 from plot.PlotOptions import PlotOptions
-
-if sys.platform == 'darwin':
-    import matplotlib
-    matplotlib.use('tkagg')
 plt.rcParams['axes.grid'] = True
 plt.rcParams['legend.fontsize'] = 'small'
 
@@ -161,6 +160,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
 
         print('showing plots...')
+        plt.ion()
         plt.show(block=False)
 
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
