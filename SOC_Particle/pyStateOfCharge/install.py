@@ -63,7 +63,7 @@ if sys.platform == 'linux':
         login = os.environ['LOGNAME']
     desktop_entry = f"""[Desktop Entry]
 Name=GUI_TestSOC
-Exec=/home/{login}/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/pyStateOfCharge/.venv/bin/python3 /home/{login}/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/pyStateOfCharge/GUI_TestSOC.py
+Exec={sys.executable} /home/{login}/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/pyStateOfCharge/GUI_TestSOC.py
 Path=/home/{login}/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/pyStateOfCharge
 Icon=/home/{login}/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/pyStateOfCharge/GUI_TestSOC.png
 StartupWMClass=GUI_TestSOC
@@ -111,7 +111,7 @@ Categories=Utility
 
     # Move file
     try:
-        if debug is True:  # Leaves shortcut on desktop for troubleshooting
+        if debug:  # Leaves shortcut on desktop for troubleshooting
             pass
         else:
             result = shutil.move(f'/home/{login}/Desktop/GUI_TestSOC.desktop',
@@ -123,13 +123,18 @@ Categories=Utility
               f"sudo mv /home/{login}//Desktop/GUI_TestSOC.desktop /usr/share/applications/.",
               Colors.reset)
         exit(1)
+
     if result != '/usr/share/applications/GUI_TestSOC.desktop':
-        print(Colors.fg.red, f"'mv ...' failed code {result}", Colors.reset)
+        if debug:
+            print(Colors.fg.red, ".desktop file held on Desktop for debugging", Colors.reset)
+        else:
+            print(Colors.fg.red, f"'mv ...' failed code {result}", Colors.reset)
     else:
         print(Colors.fg.green,
               'mv success.  Browse apps :: and make it favorites.  Open and set path to dataReduction'
               "you shouldn't have to remake shortcuts",
               Colors.reset)
+
 elif sys.platform == 'darwin':
     print(Colors.fg.green,
           f"Make sure 'Python Launcher' (Python Script Preferences) option for 'Allow override with #! in script' is checked.\n"
