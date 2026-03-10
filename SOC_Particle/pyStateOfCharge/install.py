@@ -73,6 +73,7 @@ Terminal=true
 Encoding=UTF-8
 Categories=Utility
 """
+
     with open(f"/home/{login}/Desktop/GUI_TestSOC.desktop", "w") as text_file:
         result = text_file.write("%s" % desktop_entry)
     if result == -1:
