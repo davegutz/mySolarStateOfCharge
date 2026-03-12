@@ -563,57 +563,41 @@ void serialEvent()
 void wait_on_user_input()
 {
   uint8_t count = 0;
-  uint16_t answer = '\r';
-  // Get user input but timeout at 120 seconds if no response
-  while ( count<30 && answer!='Y' && answer!='y' && answer!='n' && answer!='N' )
+  int answer = 0;
+
+  // Prompt once showing default as N
+  sendTxBuf("\n\n", true, true);
+  sp.pretty_print(false);
+  sendTxBuf("Reset to defaults? [y/N]:", true, true);
+
+  // Wait for up to ~30 seconds for a response. Treat CR/LF (Enter) as default 'n'.
+  while ( count < 30 && answer!='Y' && answer!='y' && answer!='n' && answer!='N' )
   {
-    if ( answer=='\r')
-    {
-      count++;
-      if ( count>1 ) delay(4000);
-    }
-    else delay(100);
-
     if ( Serial.available() )
-      answer=Serial.read();
-
-    else if ( cp.ble_first_char!='\0' )
+    {
+      answer = Serial.read();
+      if ( answer=='\r' || answer=='\n' )
+      {
+        answer = 'n';
+        break;
+      }
+    }
+    else if ( cp.ble_first_char != '\0' )
     {
       answer = cp.ble_first_char;
       cp.ble_first_char = '\0';
-    }
-
-    else
-      Serial.printf("unavail\n");
-
-    if ( answer=='\r')
-    {
-      sendTxBuf("\n\n", true, true);
-      sp.pretty_print( false );
-      sendTxBuf("Reset to defaults? [y/n]:", true, true);
-    }
-    else  // User is typing.  Ignore him until they answer 'Y', 'N', or 'n'.  But timeout at 30 seconds if they don't
-    {
-      while ( answer!='Y' && answer!='y' && answer!='N' && answer!='n' && count<30 )
+      if ( answer=='\r' || answer=='\n' )
       {
-        if ( Serial.available() )
-          answer = Serial.read();
-
-        else if ( cp.ble_first_char!='\0' )
-        {
-          answer = cp.ble_first_char;
-          cp.ble_first_char = '\0';
-        }
-
-        else
-          {
-            Serial.printf("?");
-            count++;
-            delay(1000);
-          }
+        answer = 'n';
+        break;
       }
     }
-
+    else
+    {
+      Serial.printf("?");
+      count++;
+      delay(1000);
+    }
   }
 
   // Wrap it up
@@ -624,7 +608,7 @@ void wait_on_user_input()
     sp.pretty_print( true );
     System.backupRamSync();
   }
-  else if ( answer=='n' || answer=='N' || count==30 )
+  else
   {
     sendTxBuf(" N.  moving on...\n\n", true, true);
   }

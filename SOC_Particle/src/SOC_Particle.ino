@@ -111,9 +111,6 @@ unsigned long long last_sync = System.millis();   // Timekeeping
 int num_timeouts = 0;           // Number of Particle.connect() needed to unfreeze
 String hm_string = "00:00";     // time, hh:mm
 Pins *myPins;                   // Photon hardware pin mapping used
-#if defined(HDWE_SSD1306_OLED) && !defined(HDWE_2WIRE)
-  Adafruit_SSD1306 *display;      // Main OLED display
-#endif
 
 // Setup
 void setup()
@@ -236,11 +233,7 @@ void setup()
     // Log.info("setup renominalize");
     if ( sp.num_diffs() )
     {
-      #if defined(HDWE_SSD1306_OLED) && !defined(HDWE_2WIRE)
-        wait_on_user_input(display);
-      #else
-        wait_on_user_input();
-      #endif
+      wait_on_user_input();
     }
   }
 
