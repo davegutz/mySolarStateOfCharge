@@ -132,8 +132,8 @@ soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
   sendTxBuf(txBuf, true, true);
 
   // if ( Sen->Flt->falw() || Sen->Flt->fltw() ) chit("Pf;", SOON);
-  // time_long_2_str((time_t)sp.Time_now_z, pr.buff);
-  // txBuf = String::format(" time %ld hms:  %s\n", sp.Time_now_z, pr.buff);
+  // time_long_2_str((time_t)sp.Time_now(), pr.buff);
+  // txBuf = String::format(" time %ld hms:  %s\n", sp.Time_now(), pr.buff);
   // sendTxBuf(txBuf, true, true);
    if ( Sen->Flt->falw() || Sen->Flt->fltw() )  sendTxBuf("There are faults\n", true, true);
   }
@@ -150,7 +150,7 @@ void debug_qf(BatteryMonitor *Mon, Sensors *Sen)
   sendTxBuf(txBuf, true, true);
 
   txBuf = String::format(" fake_faults %d\n latched_fail %d\n latch_fake %d\n preserving %d\n\n",
-      ap.fake_faults, Sen->Flt->latched_fail(), Sen->Flt->latch_fake(), Sen->Flt->preserving()) +
+      ap.fake_faults(), Sen->Flt->latched_fail(), Sen->Flt->latch_fake(), Sen->Flt->preserving()) +
     String::format(" wrap_hi_or_lo_fa %d wrap_hi_and_lo_fa %d\n\n", Sen->Flt->wrap_hi_or_lo_fa(), Sen->Flt->wrap_hi_and_lo_fa());
   sendTxBuf(txBuf, true, true);
 
@@ -164,7 +164,7 @@ void debug_qs(BatteryMonitor *Mon, Sensors *Sen)
   txBuf = String::format("Selection:\n %d  Amp->bare\n %d  NoAmp->bare\n %d  ib diff fail\n %d  wrap hi fail\n %d  wrap lo fail\n %d  wrap volt fail\n %d  cc diff fail\n %d  sp.ib_force()\n %d  vb fail\n %d  Tb fail\n",
     Sen->ShuntAmp->bare_shunt(), Sen->ShuntNoAmp->bare_shunt(), Sen->Flt->ib_diff_fa(), Sen->Flt->wrap_hi_fa(), Sen->Flt->wrap_lo_fa(), Sen->Flt->wrap_vb_fa(), Sen->Flt->cc_diff_fa(), sp.ib_force(), Sen->Flt->vb_fa(), Sen->Flt->tb_fa()) +
     String::format(" %d  fake\n %d  ib choice\n %d  ib choice past\n %d  ib decision\n %d  vb sel stat\n %d  vb sel stat past\n %d  tb sel stat\n %d  tb sel stat past\n %d  latch\n %d  latch_fake\n",
-    ap.fake_faults, Sen->Flt->ib_choice(), Sen->Flt->ib_choice_past(), Sen->Flt->ib_decision(), Sen->Flt->vb_sel_stat(), Sen->Flt->vb_sel_stat_past(), Sen->Flt->tb_sel_status(), Sen->Flt->tb_sel_stat_past(), Sen->Flt->latched_fail(), Sen->Flt->latch_fake()) +
+    ap.fake_faults(), Sen->Flt->ib_choice(), Sen->Flt->ib_choice_past(), Sen->Flt->ib_decision(), Sen->Flt->vb_sel_stat(), Sen->Flt->vb_sel_stat_past(), Sen->Flt->tb_sel_status(), Sen->Flt->tb_sel_stat_past(), Sen->Flt->latched_fail(), Sen->Flt->latch_fake()) +
     String::format(" %d  preserving faults\n", Sen->Flt->preserving());
   sendTxBuf(txBuf, true, true);
 
@@ -202,23 +202,23 @@ void debug_check_99(BatteryMonitor *Mon, Sensors *Sen)
   {
     String txBuf = 
       String::format("\n Tb   |") +
-      String::format("Vb      Vbrms *SV,     *Dc|") + 
+      String::format("Vb      Vbrms  SV,     *Dc|") + 
       String::format("Vr    Vrrms|") +
-      String::format(" Imh    Imhkf Imhrms *SA,    *DA|") +
-      String::format(" Inh    Inhkf Inhrms *SB,    *DB|") +
+      String::format(" Imh    Imhkf Imhrms  SA,    *DA|") +
+      String::format(" Inh    Inhkf Inhrms  SB,    *DB|") +
       String::format(" Ibsel *SDasy|") +
       String::format("voc   voc_soc *DwTab|") +
       String::format("*Sran|") +
       String::format(" T  |\n") +
       String::format("%6.2f|%6.3f %6.3f %5.2f %6.2f|%5.3f %5.3f|%6.2f %6.2f %5.3f %5.2f %6.2f|%6.2f %6.2f %5.3f %5.2f %6.2f|%6.2f  %5.2f|%5.2f %5.2f  %7.2f| %4.2f|%6.4f|\n",
       Sen->Tb_hdwe_filt,
-      Sen->Vb_hdwe_f, Sen->Vb_rms, sp.Vb_scale(), sp.Vb_bias_hdwe(),
+      Sen->Vb_hdwe_f, Sen->Vb_rms, ap.Vb_scale(), sp.Vb_bias_hdwe(),
       Sen->ShuntAmp->Vc(), Sen->Vc_rms, 
-      Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_amp_rms, sp.ib_scale_amp(), sp.ib_bias_amp(),
-      Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->Ib_noa_rms, sp.ib_scale_noa(), sp.ib_bias_noa(),
+      Sen->Ib_amp_hdwe_f, Sen->Ib_amp_hdwe_kf, Sen->Ib_amp_rms, ap.ib_scale_amp(), sp.ib_bias_amp(),
+      Sen->Ib_noa_hdwe_f, Sen->Ib_noa_hdwe_kf, Sen->Ib_noa_rms, ap.ib_scale_noa(), sp.ib_bias_noa(),
       Sen->Ib_hdwe_f_cal, sp.ib_disch_slr(),
       Mon->voc(), Mon->voc_soc(), sp.Dw(),
-      ap.slr_res,
+      ap.slr_res(),
       Sen->T);
 
     sendTxBuf(txBuf, true, true);
@@ -230,10 +230,10 @@ void debug_check_99(BatteryMonitor *Mon, Sensors *Sen)
   void debug_m1(BatteryMonitor *Mon, Sensors *Sen)
   {
     Serial.printf("mod %d fake_f %d reset_temp %d soft_sim_hold %d Tb%7.3f Tb_f%7.3f Vb%7.3f Ib%7.3f\nib_s%7.3f soc_s%8.4f delta_q_s%10.1f\nib%7.3f soc  %8.4f dq  %10.1f soc_ekf%8.4f dq_ekf%10.1f\nvoc_filt %7.3f vsat %7.3f sat %d sat_s %d dq_z%10.1f lf %d llf %d\n",
-        sp.modeling(), ap.fake_faults, Sen->reset_temp(), cp.soft_sim_hold, Sen->Tb, Sen->Tb_f, Sen->Vb, Sen->Ib,
+        sp.modeling(), ap.fake_faults(), Sen->reset_temp(), cp.soft_sim_hold, Sen->Tb, Sen->Tb_f, Sen->Vb, Sen->Ib,
         Sen->Sim->ib(), Sen->Sim->soc(), Sen->Sim->delta_q(),
         Mon->ib(), Mon->soc(), Mon->delta_q(), Mon->soc_ekf(), Mon->delta_q_ekf(),
-        Mon->voc_dead(), Mon->vsat(), Mon->sat(), Sen->Sim->sat(), sp.delta_q_z, Sen->Flt->latched_fail(), Sen->Flt->latch_fake());
+        Mon->voc_dead(), Mon->vsat(), Mon->sat(), Sen->Sim->sat(), sp.delta_q(), Sen->Flt->latched_fail(), Sen->Flt->latch_fake());
   }
 #endif
 

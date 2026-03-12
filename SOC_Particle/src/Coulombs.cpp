@@ -196,7 +196,7 @@ float Coulombs::count_coulombs(Sensors *Sen, const boolean reset_temp, const flo
           *sp_delta_q_ = 0.;
         }
     }
-    // else if ( reset_temp && !ap.fake_faults ) *sp_delta_q_ = delta_q_ekf;  // Solution to booting up unsaturated
+    // else if ( reset_temp && !ap.fake_faults() ) *sp_delta_q_ = delta_q_ekf;  // Solution to booting up unsaturated
     resetting_ = false;     // one pass flag
 
     // Integration.   Can go to negative

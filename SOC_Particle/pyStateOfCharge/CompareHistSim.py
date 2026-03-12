@@ -336,13 +336,13 @@ def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=Fa
     Battery_off_dict = load_off_nominal_battery(Battery_to_add=battery_raw)
     apply_off_nominal_battery(Battery, Battery_off_dict)
 
-    rated_batt_cap = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_mon_z
-    rated_batt_cap_s = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_sim_z
+    rated_batt_cap = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_mon
+    rated_batt_cap_s = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_sim
     qcrs = rated_batt_cap * 3600.
 
 
     # Save these
-    rated_batt_cap = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_mon_z
+    rated_batt_cap = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_mon
     # Reconstruction of soc using subsampled data is poor.  Drive everything with soc from Monitor
     dvoc_mon = 0.
 

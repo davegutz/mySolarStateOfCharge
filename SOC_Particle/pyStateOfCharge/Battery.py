@@ -36,7 +36,7 @@ import Globals as G
 class Retained:
 
     def __init__(self):
-        self.cutback_gain_scalar = Battery.sp_cutback_gain_slr_z
+        self.cutback_gain_scalar = Battery.sp_cutback_gain_slr
         self.delta_q = 0.
         self.modeling = 0
         self.modeling_ib = False
@@ -183,12 +183,12 @@ class Battery(Coulombs):
     IBATT_DISAGREE_THRESH = None
     IB_DIFF_SLR = None
     NOM_UNIT_CAP = 108.4  # Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah
-    sp_s_cap_mon_z = None
-    sp_s_cap_sim_z = None
+    sp_s_cap_mon = None
+    sp_s_cap_sim = None
     RATED_TEMP = None
     CHEM = None
     skip_battery = None
-    sp_ib_disch_slr_z = None
+    sp_ib_disch_slr = None
     ap_ewhi_slr = None
     ap_ewlo_slr = None
     ap_cc_diff_slr = None
@@ -197,11 +197,11 @@ class Battery(Coulombs):
     ap_disab_ib_fa = None
     ap_disab_tb_fa = None
     ap_disab_vb_fa = None
-    sp_cutback_gain_slr_z = None
+    sp_cutback_gain_slr = None
     ap_dv_voc_soc = None
     ap_ds_voc_soc = None
-    sp_Dw_z = None
-    sp_vsat_add_z = None
+    sp_Dw = None
+    sp_vsat_add = None
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
@@ -223,7 +223,7 @@ class Battery(Coulombs):
         """
         # Parents
         Coulombs.__init__(self, OPT, q_cap_rated,  q_cap_rated, t_rated, temp_rlim, tweak_test, dvoc=dvoc,
-                          Dw=Battery.sp_Dw_z)
+                          Dw=Battery.sp_Dw)
 
         # Defaults
         self.chem = mod_code
@@ -594,7 +594,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.chemistry.assign_all_mod(chem, unit=self.unit)
             self.chm = chem
 
-        self.vsat = self.chemistry.nom_vsat + (self.Tb_f - 25.) * self.chemistry.dvoc_dt + Battery.sp_vsat_add_z
+        self.vsat = self.chemistry.nom_vsat + (self.Tb_f - 25.) * self.chemistry.dvoc_dt + Battery.sp_vsat_add
         self.mod = rp.modeling
         # Overflow protection since ib past value used
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
@@ -1062,7 +1062,7 @@ class BatterySim(Battery):
         # self.sat_ib_null = 0.1*Battery.NOM_UNIT_CAP  # Current cutback value for voc=vsat, A
         self.sat_ib_null = 0.  # Current cutback value for soc=1, A
         # self.sat_cutback_gain = 4.8  # Gain to retard ib when voc exceeds vsat, dimensionless
-        self.sat_cutback_gain = 1000.*Battery.sp_cutback_gain_slr_z  # Gain to retard ib when soc approaches 1, dimensionless
+        self.sat_cutback_gain = 1000.*Battery.sp_cutback_gain_slr  # Gain to retard ib when soc approaches 1, dimensionless
         self.model_cutback = False  # Indicate current being limited on saturation cutback, T = cutback limited
         self.model_saturated = False  # Indicator of maximal cutback, T = cutback saturated
         self.ib_sat = 0.5  # Threshold to declare saturation.  This regeneratively slows down charging so if too
@@ -1194,9 +1194,9 @@ class BatterySim(Battery):
 
         # Saturation logic, both full and empty
         self.vsat = sat_voc(self.Tb_f, self.chemistry.rated_temp, self.chemistry.nom_vsat, self.chemistry.dvoc_dt,
-                            vsat_add=Battery.sp_vsat_add_z)
+                            vsat_add=Battery.sp_vsat_add)
         self.sat_ib_max = (self.sat_ib_null + (1 - self.soc - Battery.ap_ds_voc_soc) * self.sat_cutback_gain
-                           * Battery.sp_cutback_gain_slr_z)
+                           * Battery.sp_cutback_gain_slr)
         if rp.tweak_test or (not rp.modeling_ib):
             self.sat_ib_max = ib_charge_fut
         self.ib_fut = min(ib_charge_fut, self.sat_ib_max)  # the feedback of self.ib

@@ -57,7 +57,7 @@ void EKF_1x1::predict_ekf(double u, const boolean freeze)
   this->ekf_predict(&Fx_, &Bu_);
   if ( !freeze_ ) x_ = Fx_*x_ + Bu_*u_;
   if ( isnan(P_) ) P_ = 0.;   // reset overflow
-  P_ = Fx_*P_*Fx_ + Q_*ap.ekf_q*ap.ekf_q;
+  P_ = Fx_*P_*Fx_ + Q_*ap.ekf_q()*ap.ekf_q();
   x_prior_ = x_;
   P_prior_ = P_;
 }
@@ -84,22 +84,22 @@ void EKF_1x1::update_ekf(const double z, double x_min, double x_max)
   this->ekf_update(&hx_, &H_, &x_for_hx_, &Tb_f_for_hx_);
   z_ = z;
   double pht = P_*H_;
-  S_ = H_*pht + R_*ap.ekf_r*ap.ekf_r;
+  S_ = H_*pht + R_*ap.ekf_r()*ap.ekf_r();
   if ( abs(S_) > 1e-12) K_ = pht / S_;  // Using last-good-value if S_ = 0
   y_ = z_ - hx_;
   if ( !freeze_ ) x_ = max(min( x_ + K_*y_, x_max), x_min);
-  if ( ap.ekf_x != 0. )
+  if ( ap.ekf_x() != 0. )
   {
-    x_ = ap.ekf_x;
-    ap.ekf_x = 0.;
+    x_ = ap.ekf_x();
+    ap.ekf_x(0.);
   }
   double i_kh = 1. - K_*H_;
   if ( freeze_ ) i_kh = 1.;
   P_ *= i_kh;
-  if ( ap.ekf_p != 0. )
+  if ( ap.ekf_p() != 0. )
   {
-    P_ = ap.ekf_p;
-    ap.ekf_p = 0.;
+    P_ = ap.ekf_p();
+    ap.ekf_p(0.);
   }
   x_post_ = x_;
   P_post_ = P_;

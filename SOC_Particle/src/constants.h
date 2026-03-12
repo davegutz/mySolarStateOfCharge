@@ -299,7 +299,7 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
     #define CURR_BIAS_ALL 0.
 #endif
 #if !defined(SHUNT_GAIN)
-    #define SHUNT_GAIN            1333. // Shunt V2A gain (scale with * 'SA' and 'SB'), A/V (1333 is 100A/0.075V)
+    #define SHUNT_GAIN            1333. // Shunt V2A gain (scale with 'SA' and 'SB'), A/V (1333 is 100A/0.075V)
 #endif
 #if !defined(KF_USE_AMP)
     #define KF_USE_AMP        false

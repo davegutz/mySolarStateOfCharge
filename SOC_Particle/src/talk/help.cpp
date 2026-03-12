@@ -52,8 +52,8 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sendTxBuf("  bR= ", true, true); sendTxBuf("reset all buffers\n", true, true);
 
   sendTxBuf("\nB<?> Battery e.g.:\n", true, true);
-  sp.nP_p->print_help();  //* BP
-  sp.nS_p->print_help();  //* BS
+  ap.nP_p->print_help();  //* BP
+  ap.nS_p->print_help();  //* BS
 
   sendTxBuf("\nBZ Benignly zero test settings\n", true, true);
   
@@ -98,15 +98,15 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.dv_voc_soc_p->print_help();  //  Dy
   ap.Tb_bias_model_p->print_help();  // D^
   ap.talk_delay_p->print_help();  //  D>
-  sp.ib_scale_amp_p->print_help();  //* SA
-  sp.ib_scale_noa_p->print_help();  //* SB
+  ap.ib_scale_amp_p->print_help();  // SA
+  ap.ib_scale_noa_p->print_help();  // SB
   sp.ib_disch_slr_p->print_help();  //* SD
   ap.hys_scale_p->print_help();  //  Sh
   ap.hys_state_p->print_help();  //  SH
   sp.cutback_gain_slr_p->print_help();  //* Sk
-  sp.s_cap_mon_p->print_help();  //* SQ
-  sp.s_cap_sim_p->print_help();  //* Sq
-  sp.Vb_scale_p->print_help();  //* SV
+  ap.s_cap_mon_p->print_help();  // SQ
+  ap.s_cap_sim_p->print_help();  // Sq
+  ap.Vb_scale_p->print_help();  // SV
   ap.q_std_p->print_help();  // Kq
   ap.r_std_p->print_help();  // Kr
 
@@ -158,8 +158,8 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
 
   sp.ib_force_p->print_help();  //* si
   sp.Time_now_p->print_help();  //* UT
-  time_long_2_str((time_t)sp.Time_now_z, buffer);
-  sendTxBuf(String::format(" time %ld hms:  %s\n", sp.Time_now_z, buffer), true, true);
+  time_long_2_str((time_t)sp.Time_now(), buffer);
+  sendTxBuf(String::format(" time %ld hms:  %s\n", sp.Time_now(), buffer), true, true);
   ap.ekf_conv_p->print_help();  // VC
   ap.ekf_q_p->print_help();  // VQ
   ap.ekf_r_p->print_help();  // VR

@@ -20,11 +20,11 @@
 
 // Sensor biases
 #define CURR_BIAS_AMP         0.00  // Calibration of amplified shunt sensor (* 'DA'), A
-#define CURR_SCALE_AMP         1.0  // Hardware to match data (* 'SA')
+#define CURR_SCALE_AMP         1.0  // Hardware to match data ('SA')
 #define CURR_BIAS_NOA         -0.6  // Calibration of non-amplified shunt sensor (* 'DB'), A
-#define CURR_SCALE_NOA         1.0  // Hardware to match data (* 'SB')
+#define CURR_SCALE_NOA         1.0  // Hardware to match data ('SB')
 #define CURR_SCALE_DISCH       1.0  // Scale discharge to account for asymetric inverter action only on discharge (* 'SD'), slr
-#define SHUNT_GAIN            1333. // Shunt V2A gain (scale with * 'SA' and 'SB'), A/V (-1333 is -100A/0.075V)
+#define SHUNT_GAIN            1333. // Shunt V2A gain (scale with 'SA' and 'SB'), A/V (-1333 is -100A/0.075V)
 #define SHUNT_AMP_R1          5600.     // Amplifed shunt ADS resistance, ohms
 #define SHUNT_AMP_R2          27000.    // Amplifed shunt ADS resistance, ohms
 #define CURR_BIAS_ALL         0.0   // Bias on all shunt sensors (* 'DI'), A
@@ -42,7 +42,7 @@
 //   would have  NOM_UNIT_CAP 200, NS 2, and NP 2
 #define COULOMBIC_EFF_SCALE   1.0     // Scalar on Coulombic efficiency of battery, fraction of charge that gets used (1.0)
 #define CHEM                  2       // Chemistry monitor code integer, 0=Battleborn, 1=CHINS-guest room, 2=CHINS-garage
-#define NOM_UNIT_CAP          102.9   // Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah
+#define NOM_UNIT_CAP          102.9   // Nominal battery unit capacity.  (* 'Sc' or ' BS'/' BP'), Ah
 #define CHEM_NOM_VSAT       13.85   // Nominal saturation voltage at 25C, V (13.85)
 #define HYS_SCALE             1.0     // Scalar on hysteresis (1.0)
 #define NS                    2.0     // Number of series batteries in bank.  Fractions scale and remember NOM_UNIT_CAP (* 'BS')

@@ -126,9 +126,9 @@ public:
   void convert(const boolean disconnect, const boolean reset, Sensors *Sen);
   float get_v() { return KF_->get_v(); };
   float Ishunt_cal() { return Ishunt_cal_; };
-  float ishunt_cal() { return Ishunt_cal_ / sp.nP(); };
+  float ishunt_cal() { return Ishunt_cal_ / ap.nP(); };
   float Ishunt_cal_kf() { return Ishunt_cal_kf_; };
-  float ishunt_cal_kf() { return Ishunt_cal_kf_ / sp.nP(); };
+  float ishunt_cal_kf() { return Ishunt_cal_kf_ / ap.nP(); };
   void kf_q_std(const double q) {KF_->q_std(q);};
   void kf_r_std(const double r) {KF_->r_std(r);};
   void print_serial_header(const char suffix);
@@ -405,7 +405,7 @@ public:
   void preserving(const boolean cmd) {  sp.put_Preserving(cmd); }; // TODO:  Parameter class with = operator --> put. Then *sp_preserving = cmd
   boolean preserving() { return *sp_preserving_; };
   void pretty_print(Sensors *Sen, BatteryMonitor *Mon);
-  boolean record() { if ( ap.fake_faults ) return no_fails_fake(); else return no_fails(); };
+  boolean record() { if ( ap.fake_faults() ) return no_fails_fake(); else return no_fails(); };
   boolean red_loss() { return faultRead(RED_LOSS); };
   void reset_all_faults(const boolean cmd) { reset_all_faults_ = cmd; };
   boolean reset_all_faults() { return reset_all_faults_; };
@@ -601,22 +601,22 @@ public:
   unsigned long long dt_ib(void) { return dt_ib_; }; // ms since last update of selected Ib sample
   void select_temp(BatteryMonitor *Mon);  // Make final signal selection
   void select_volt_and_current(BatteryMonitor *Mon);  // Make final signal selection
-  float ib() { return Ib / sp.nP(); };                            // Battery unit current, A
-  float ib_amp() { return Ib_amp / sp.nP(); };                    // Battery amp unit current, A
-  float ib_amp_hdwe() { return Ib_amp_hdwe / sp.nP(); };          // Battery amp unit current, A
-  float ib_amp_hdwe_f() { return Ib_amp_hdwe_f / sp.nP(); };      // Battery amp 2-pole filtered unit current, A
-  float ib_amp_hdwe_kf() { return Ib_amp_hdwe_kf / sp.nP(); };    // Battery amp kalman filtered unit current, A
-  float ib_amp_model() { return Ib_amp_model / sp.nP(); };        // Battery amp model unit current, A
+  float ib() { return Ib / ap.nP(); };                            // Battery unit current, A
+  float ib_amp() { return Ib_amp / ap.nP(); };                    // Battery amp unit current, A
+  float ib_amp_hdwe() { return Ib_amp_hdwe / ap.nP(); };          // Battery amp unit current, A
+  float ib_amp_hdwe_f() { return Ib_amp_hdwe_f / ap.nP(); };      // Battery amp 2-pole filtered unit current, A
+  float ib_amp_hdwe_kf() { return Ib_amp_hdwe_kf / ap.nP(); };    // Battery amp kalman filtered unit current, A
+  float ib_amp_model() { return Ib_amp_model / ap.nP(); };        // Battery amp model unit current, A
   float ib_amp_vo_vc() { return ShuntAmp->Vo_Vc(); };             // Battery amp kalman filter input, V
   float ib_amp_vo_vc_f() { return ShuntAmp->Vo_Vc_kf(); };        // Battery amp kalman filter output, V
-  float ib_hdwe() { return Ib_hdwe / sp.nP(); };                  // Battery select hardware unit current, A
-  float ib_hdwe_model() { return Ib_hdwe_model / sp.nP(); };      // Battery select hardware model unit current, A
-  float ib_model() { return Ib_model / sp.nP(); };                // Battery select model unit current, A
-  float ib_model_in() { return Ib_model_in / sp.nP(); };          // Battery select model input unit current, A
-  float ib_noa() { return Ib_noa / sp.nP(); };                    // Battery noa unit current, A
-  float ib_noa_hdwe() { return Ib_noa_hdwe / sp.nP(); };          // Battery no amp unit current, A
-  float ib_noa_hdwe_kf() { return Ib_noa_hdwe_kf / sp.nP(); };    // Battery no amp kalman filtered unit current, A
-  float ib_noa_model() { return Ib_noa_model / sp.nP(); };        // Battery no amp model unit current, A
+  float ib_hdwe() { return Ib_hdwe / ap.nP(); };                  // Battery select hardware unit current, A
+  float ib_hdwe_model() { return Ib_hdwe_model / ap.nP(); };      // Battery select hardware model unit current, A
+  float ib_model() { return Ib_model / ap.nP(); };                // Battery select model unit current, A
+  float ib_model_in() { return Ib_model_in / ap.nP(); };          // Battery select model input unit current, A
+  float ib_noa() { return Ib_noa / ap.nP(); };                    // Battery noa unit current, A
+  float ib_noa_hdwe() { return Ib_noa_hdwe / ap.nP(); };          // Battery no amp unit current, A
+  float ib_noa_hdwe_kf() { return Ib_noa_hdwe_kf / ap.nP(); };    // Battery no amp kalman filtered unit current, A
+  float ib_noa_model() { return Ib_noa_model / ap.nP(); };        // Battery no amp model unit current, A
   float ib_noa_vo_vc() { return ShuntNoAmp->Vo_Vc(); };           // Battery no amp kalman filter input, V
   float ib_noa_vo_vc_f() { return ShuntNoAmp->Vo_Vc_kf(); };      // Battery no amp kalman filter output, V
   float Ib_amp_add();
@@ -640,11 +640,11 @@ public:
   void shunt_select_initial(const boolean reset);   // Choose between shunts for model
   void temp_load_and_filter(Sensors *Sen, const boolean reset_temp);
   float Tb_noise();
-  float vb() { return Vb / sp.nS(); };                            // Battery select unit voltage, V
-  float vb_hdwe() { return Vb_hdwe / sp.nS(); };                  // Battery select hardware unit voltage, V
-  float vb_hdwe_f() { return Vb_hdwe_f / sp.nS(); };              // Battery select hardware unit voltage filtered, V
+  float vb() { return Vb / ap.nS(); };                            // Battery select unit voltage, V
+  float vb_hdwe() { return Vb_hdwe / ap.nS(); };                  // Battery select hardware unit voltage, V
+  float vb_hdwe_f() { return Vb_hdwe_f / ap.nS(); };              // Battery select hardware unit voltage filtered, V
   void vb_load(const uint16_t vb_pin, const boolean reset);       // Analog read of Vb
-  float vb_model() { return (Vb_model / sp.nS()); };              // Battery select model unit voltage, V
+  float vb_model() { return (Vb_model / ap.nS()); };              // Battery select model unit voltage, V
   float Vb_add();
   float Vb_noise();
   void vb_print(void);                  // Print Vb result

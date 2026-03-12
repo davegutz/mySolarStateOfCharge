@@ -46,7 +46,7 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                 case ( 'a' ):  // Ca<>:  assign charge state in fraction to all versions including model
                     if ( ap.init_all_soc_p->success() )
                     {
-                        initialize_all(Mon, Sen, ap.init_all_soc, true);
+                        initialize_all(Mon, Sen, ap.init_all_soc(), true);
                         #ifdef DEBUG_DETAIL
                         if ( sp.debug()==-1 ){ Serial.printf("after initialize_all:"); debug_m1(Mon, Sen);}
                         #endif
@@ -68,13 +68,13 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                 case ( 'm' ):  // Cm<>:  assign curve charge state in fraction to model only (ekf if modeling)
                     if ( ap.init_sim_soc_p->success() )  // Apply crude limit to prevent user error
                     {
-                        Sen->Sim->apply_soc(ap.init_sim_soc, Sen->Tb_f);
+                        Sen->Sim->apply_soc(ap.init_sim_soc(), Sen->Tb_f);
                         Serial.printf("soc%8.4f, dq%7.3f, soc_mod%8.4f, dq mod%7.3f,\n",
                             Mon->soc(), Mon->delta_q(), Sen->Sim->soc(), Sen->Sim->delta_q());
                         if ( sp.modeling() ) cp.cmd_reset_sim(); // Does not block.  Commands a reset
                     }
                     else
-                        Serial.printf("soc%8.4f; must be 0-1.1\n", ap.init_sim_soc);
+                        Serial.printf("soc%8.4f; must be 0-1.1\n", ap.init_sim_soc());
                     break;
             }
             break;
@@ -84,35 +84,35 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
             {
                 case ( 'h' ):  //   Dh<>:  Summary sample time input  TODO:  not sure this section needed since nominalizing capability added 11/2025
                     if ( ap.sum_delay_p->success() )
-                        Sen->Summarize->delay(max(ap.read_delay, ap.sum_delay), Sen->now);  // validated
+                        Sen->Summarize->delay(max(ap.read_delay(), ap.sum_delay()), Sen->now);  // validated
                     else if (ap.value_str()=="0" || ap.value_str()=="")
                     {
                         Serial.printf("setting NOMINAL instead\n");
                         ap.sum_delay_p->set_nominal();
-                        Sen->Summarize->delay(max(ap.read_delay, ap.sum_delay), Sen->now);
+                        Sen->Summarize->delay(max(ap.read_delay(), ap.sum_delay()), Sen->now);
                     }
                     break;
 
                 case ( 'q' ):  //   Dq<>:  TEMP sample time input
                     if ( ap.temp_delay_p->success() )
                     {
-                        Sen->ReadTemp->delay(ap.temp_delay);  // validated
-                        Sen->Summarize->delay(max(ap.temp_delay, ap.sum_delay));  // validated
+                        Sen->ReadTemp->delay(ap.temp_delay());  // validated
+                        Sen->Summarize->delay(max(ap.temp_delay(), ap.sum_delay()));  // validated
                     }
                     break;
 
                 case ( 'r' ):  //   Dr<>:  READ sample time input
                     if ( ap.read_delay_p->success() )
                     {
-                        Sen->ReadSensors->delay(ap.read_delay);  // validated
-                        Sen->Summarize->delay(max(ap.read_delay, ap.sum_delay));  // validated
+                        Sen->ReadSensors->delay(ap.read_delay());  // validated
+                        Sen->Summarize->delay(max(ap.read_delay(), ap.sum_delay()));  // validated
                     }
                     break;
 
                 case ( 's' ):  //   Ds<>:  Battery Sim dx_voc bias
                     if ( ap.ds_voc_soc_p->success() )
                     {
-                        Sen->Sim->put_dx_voc(ap.ds_voc_soc);  // validated
+                        Sen->Sim->put_dx_voc(ap.ds_voc_soc());  // validated
                     }
                     break;
 
@@ -135,7 +135,7 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
 
                 case ( '>' ):  //   D><>:  TALK sample time input
                     if ( ap.talk_delay_p->success() )
-                        Sen->Talk->delay(ap.talk_delay);  // validated
+                        Sen->Talk->delay(ap.talk_delay());  // validated
                     break;
             }
             break;
@@ -161,10 +161,10 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                 case ( 'q' ):  // Kq
                 if ( ap.q_std_p->success() )
                 {
-                    Sen->ShuntAmp->kf_q_std(ap.q_std);
-                    Sen->ShuntAmp->kf_r_std(ap.r_std);
-                    Sen->ShuntNoAmp->kf_q_std(ap.q_std);
-                    Sen->ShuntNoAmp->kf_r_std(ap.r_std);
+                    Sen->ShuntAmp->kf_q_std(ap.q_std());
+                    Sen->ShuntAmp->kf_r_std(ap.r_std());
+                    Sen->ShuntNoAmp->kf_q_std(ap.q_std());
+                    Sen->ShuntNoAmp->kf_r_std(ap.r_std());
                 }
                 break;
             }
@@ -207,23 +207,23 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                 case ( 'H' ):  //   SH<>: state of all hysteresis
                     if ( ap.hys_state_p->success() )
                     {
-                        Sen->Sim->hys_state(ap.hys_state);
-                        Sen->Flt->wrap_err_filt_state(-ap.hys_state);
+                        Sen->Sim->hys_state(ap.hys_state());
+                        Sen->Flt->wrap_err_filt_state(-ap.hys_state());
                     }
                     break;
 
-                case ( 'q' ):  //*  Sq<>: scale capacity sim
-                    if ( sp.s_cap_sim_p->success() )
+                case ( 'q' ):  //   Sq<>: scale capacity sim
+                    if ( ap.s_cap_sim_p->success() )
                     {
-                        Sen->Sim->apply_cap_scale(sp.s_cap_sim());
+                        Sen->Sim->apply_cap_scale(ap.s_cap_sim());
                         if ( sp.modeling() ) Mon->init_soc_ekf(Sen->Sim->soc());
                     }
                     break;
             
-                case ( 'Q' ):  //*  SQ<>: scale capacity mon
-                    if ( sp.s_cap_mon_p->success() )
+                case ( 'Q' ):  //   SQ<>: scale capacity mon
+                    if ( ap.s_cap_mon_p->success() )
                     {
-                        Mon->apply_cap_scale(sp.s_cap_mon());
+                        Mon->apply_cap_scale(ap.s_cap_mon());
                     }
                     break;      
             }
@@ -247,9 +247,9 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
             {
 
                 case ( 'T' ):  //*  UT<>:  Unix time since epoch
-                  Time.setTime( (time_t) (sp.Time_now_z) );
-                  time_long_2_str((time_t)sp.Time_now_z, buffer);
-                  sendTxBuf(String::format(" time %ld hms:  %s\n", sp.Time_now_z, buffer), true, true);
+                  Time.setTime( (time_t) (sp.Time_now()) );
+                  time_long_2_str((time_t)sp.Time_now(), buffer);
+                  sendTxBuf(String::format(" time %ld hms:  %s\n", sp.Time_now(), buffer), true, true);
                 break;
 
             }
@@ -273,21 +273,21 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
 
                 case ( 'a' ): // Xa<>:  injection amplitude
                     if ( sp.amp_p->success() )
-                        Serial.printf("Inj amp, %s, %s set%7.3f & inj_bias set%7.3f\n", sp.amp_p->units(), sp.amp_p->description(), sp.Amp(), sp.inj_bias());
+                        Serial.printf("Inj amp, %s, %s set%7.3f & inj_bias set%7.3f\n", sp.amp_p->units(), sp.amp_p->description(), sp.Amp(ap.nP()), sp.inj_bias());
                     break;
 
                 case ( 'f' ): //*  Xf<>:  injection frequency
-                    if ( sp.freq_p->success() ) sp.freq_z = sp.freq_z*(2. * PI);
+                    if ( sp.freq_p->success() ) sp.freq(sp.freq()*(2. * PI));
                     break;
 
                 case ( 'b' ): //*  Xb<>:  injection bias
                     if ( sp.inj_bias_p->success() )
-                        Serial.printf("Inj amp, %s, %s set%7.3f & inj_bias set%7.3f\n", sp.amp_p->units(), sp.amp_p->description(), sp.Amp(), sp.inj_bias());
+                        Serial.printf("Inj amp, %s, %s set%7.3f & inj_bias set%7.3f\n", sp.amp_p->units(), sp.amp_p->description(), sp.Amp(ap.nP()), sp.inj_bias());
                     break;
 
                 case ( 'Q' ): //  XQ<>: time until quiet
                     if ( ap.until_q_p->success() )
-                        Serial.printf("Going black for %7.1f seconds\n", float(ap.until_q) / 1000.);
+                        Serial.printf("Going black for %7.1f seconds\n", float(ap.until_q()) / 1000.);
                         Serial.printf("Freezing queues.  When using 'XQ' unfreeze with 'cc'\n");
                         cp.freeze = true;
                     break;

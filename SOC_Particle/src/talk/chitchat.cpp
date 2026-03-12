@@ -50,49 +50,49 @@ void benign_zero(BatteryMonitor *Mon, Sensors *Sen) // BZ
   cp.cmd_summarize(); // Hs
 
   // Model
-  ap.hys_scale = HYS_SCALE;                  // Sh 1
-  ap.slr_res = 1;                            // Sr 1
+  ap.hys_scale(HYS_SCALE);                  // Sh 1
+  ap.slr_res(1);                            // Sr 1
   sp.cutback_gain_slr_p->print_adj_print(1); // Sk 1
-  ap.hys_state = 0;                          // SH 0
+  ap.hys_state(0);                          // SH 0
 
   // Injection
-  ap.ib_amp_add = 0;        // Dm 0
-  ap.ib_noa_add = 0;        // Dn 0
-  sp.ib_bias_all_z = 0;     // DI 0
-  ap.vb_add = NOM_VB_ADD;   // Dv 0
-  ap.ds_voc_soc = NOM_DS;   // Ds 0
-  Sen->Sim->put_dx_voc(ap.ds_voc_soc);
+  ap.ib_amp_add(0);        // Dm 0
+  ap.ib_noa_add(0);        // Dn 0
+  sp.ib_bias_all(0.f);      // DI 0
+  ap.vb_add(NOM_VB_ADD);   // Dv 0
+  ap.ds_voc_soc(NOM_DS);   // Ds 0
+  Sen->Sim->put_dx_voc(ap.ds_voc_soc());
 
-  ap.Tb_bias_model = TEMP_BIAS; // D^
-  ap.dv_voc_soc = NOM_DY;   // Dy
-  ap.vc_add = NOM_VC_ADD;   // D3
-  ap.tb_stale_time_slr = 1; // Xv 1
-  ap.fail_tb = false;       // Xu 0
-  ap.ib_amp_max = (IB_ABS_MAX_AMP/NP/0.95);   // Mm 0
-  ap.ib_amp_min = -(IB_ABS_MAX_AMP/NP/0.95);  // Mn 0
-  ap.ib_noa_max = (IB_ABS_MAX_NOA/NP/0.95);   // Nm 0
-  ap.ib_noa_min = -(IB_ABS_MAX_NOA/NP/0.95);  // Nn 0
+  ap.Tb_bias_model(TEMP_BIAS); // D^
+  ap.dv_voc_soc(NOM_DY);   // Dy
+  ap.vc_add(NOM_VC_ADD);   // D3
+  ap.tb_stale_time_slr(1); // Xv 1
+  ap.fail_tb(false);       // Xu 0
+  ap.ib_amp_max( (IB_ABS_MAX_AMP/NP/0.95) );   // Mm 0
+  ap.ib_amp_min(-(IB_ABS_MAX_AMP/NP/0.95) );  // Mn 0
+  ap.ib_noa_max( (IB_ABS_MAX_NOA/NP/0.95) );   // Nm 0
+  ap.ib_noa_min(-(IB_ABS_MAX_NOA/NP/0.95) );  // Nn 0
   
   // Noise
-  ap.Tb_noise_amp = TB_NOISE;         // DT 0
-  ap.Vb_noise_amp = VB_NOISE;         // DV 0
-  ap.Ib_amp_noise_amp = IB_AMP_NOISE; // DM 0
-  ap.Ib_noa_noise_amp = IB_NOA_NOISE; // DN 0
+  ap.Tb_noise_amp(TB_NOISE);         // DT 0
+  ap.Vb_noise_amp(VB_NOISE);         // DV 0
+  ap.Ib_amp_noise_amp(IB_AMP_NOISE); // DM 0
+  ap.Ib_noa_noise_amp(IB_NOA_NOISE); // DN 0
 
   // EKF
-  // ap.eframe_mult = max(min(EKF_EFRAME_MULT, UINT8_MAX), 0); // ED
+  // ap.eframe_mult() = max(min(EKF_EFRAME_MULT, UINT8_MAX), 0); // ED
  
   // Fault logic
-  ap.cc_diff_slr = 1;  // Fc 1
-  ap.ib_diff_slr = 1;  // Fd 1
-  ap.fake_faults = 0;  // Ff 0
+  ap.cc_diff_slr(1);  // Fc 1
+  ap.ib_diff_slr(1);  // Fd 1
+  ap.fake_faults(0);  // Ff 0
   sp.put_ib_force(IB_FORCE); // si / Ff IB_FORCE
-  ap.ewhi_slr = 1;     // Fi
-  ap.ewlo_slr = 1;     // Fo
-  ap.ib_quiet_slr = 1; // Fq 1
-  ap.disab_ib_fa = 0;  // FI 0
-  ap.disab_tb_fa = 0;  // FT 0
-  ap.disab_vb_fa = 0;  // FV 0
+  ap.ewhi_slr(1);     // Fi
+  ap.ewlo_slr(1);     // Fo
+  ap.ib_quiet_slr(1); // Fq 1
+  ap.disab_ib_fa(0);  // FI 0
+  ap.disab_tb_fa(0);  // FT 0
+  ap.disab_vb_fa(0);  // FV 0
 }
 
 
@@ -350,7 +350,7 @@ String chit_nibble_ctl()
 // Start over with clean queues
 void clear_queues()
 {
-  ap.until_q = 0UL;
+  ap.until_q(0UL);
   cp.inp_token = true;
   cp.cmd_str = "";
   cp.last_str = "";
@@ -455,7 +455,7 @@ void describe(BatteryMonitor *Mon, Sensors *Sen)
 
           case ( 'u' ):  // cu:  unfreeze queues
           Serial.printf("***UNFREEZE QUEUES.  If runing with XQ use 'cc' instead\n");
-          if ( ap.until_q == 0UL ) cp.freeze = false;
+          if ( ap.until_q() == 0UL ) cp.freeze = false;
           break;
 
           default:

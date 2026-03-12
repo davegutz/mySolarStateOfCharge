@@ -23,8 +23,8 @@
   * 12-Dec-2022   RetainedPars-->SavedPars to support Argon with 47L16 EERAM device
   * 22-Dec-2022   Dual amplifier replaces dual ADS.  Beta release v20221220.  ADS still used on Photon.
   * 01-Dec-2023   g20231111 Photon 2, DS2482
-  * 01-Apr-2024   g20230331 ib_charge = ib_ / sp.nS() while Randles uses ib_.  Tune Tb initialization
-  * 17-Apr-2024   Undo previous ib_/sp.nS() change
+  * 01-Apr-2024   g20230331 ib_charge = ib_ / ap.nS() while Randles uses ib_.  Tune Tb initialization
+  * 17-Apr-2024   Undo previous ib_/ap.nS() change
   * ....see git log for more details
   * 02-Feb-2026   BLE and HI_LO ib selection
 //
@@ -132,8 +132,8 @@ void setup()
   BLE.advertise(&data);
 
   // Time
-  sp.put_Time_now(max(sp.Time_now_z, (unsigned long)Time.now()));  // Synch with web when possible
-  Time.setTime( (time_t) (sp.Time_now_z) );
+  sp.put_Time_now(max(sp.Time_now(), (unsigned long)Time.now()));  // Synch with web when possible
+  Time.setTime( (time_t) (sp.Time_now()) );
 
   // Peripherals (non-Photon2)
   // D6 - one-wire temp sensor
@@ -220,7 +220,7 @@ void setup()
 
   // Enable and print stored history
   System.enableFeature(FEATURE_RETAINED_MEMORY);
-  if ( sp.debug_z==1 || sp.debug_z==2 || sp.debug_z==3 || sp.debug_z==4 )
+  if ( sp.debug()==1 || sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )
   {
     sp.print_history_array();
     sp.print_fault_header(&pp.pubList);
@@ -300,8 +300,8 @@ void loop()
   elapsed_reset = ReadSensors->now() - start_reset;
   control = ControlSync->update(now, reset);
   display_and_remember = DisplayUserSync->update(now, reset);
-  boolean boot_summ = boot_wait && ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay) ) && !sp.modeling_z;
-  if ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay) ) boot_wait = false;
+  boolean boot_summ = boot_wait && ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay()) ) && !sp.modeling();
+  if ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay()) ) boot_wait = false;
   summarizing = Summarize->update(now, false) || boot_summ;
 
   // Sample temperature
@@ -316,7 +316,7 @@ void loop()
     Sen->T_temp = ReadTemp->updateTime();
     if ( reset_temp )
     {
-      Sen->Tb_model = Sen->Tb_model_filt = NOMINAL_TB + ap.Tb_bias_model;
+      Sen->Tb_model = Sen->Tb_model_filt = NOMINAL_TB + ap.Tb_bias_model();
     
       if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 396 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt, %11.8f %11.8f\n",
         Sen->Tb_model, Sen->Tb_model_filt), true, true);
@@ -351,11 +351,11 @@ void loop()
     Sen->reset = reset;
 
     // Check for really slow data capture and run EKF each read frame
-    // ap.eframe_mult = max(int(float(READ_DELAY)*float(EKF_EFRAME_MULT)/float(ReadSensors->delay())+0.9999), 1);
+    // ap.eframe_mult() = max(int(float(READ_DELAY)*float(EKF_EFRAME_MULT)/float(ReadSensors->delay())+0.9999), 1);
 
     // Set print frame
     static uint8_t print_count = 0;
-    if ( print_count>=ap.print_mult-1 || print_count==UINT8_MAX )  // > avoids lockup on change by user
+    if ( print_count>=ap.print_mult()-1 || print_count==UINT8_MAX )  // > avoids lockup on change by user
     {
       print_count = 0;
       cp.publishS = true;
@@ -382,10 +382,10 @@ void loop()
     Mon->regauge(Sen->Tb_f);
 
     // Empty battery
-    if ( sp.modeling_z && reset && Sen->Sim->q()<=0. ) Sen->Ib = 0.;
+    if ( sp.modeling() && reset && Sen->Sim->q()<=0. ) Sen->Ib = 0.;
 
     // Debug for read
-    if ( sp.debug_z==12 ) debug_12(Mon, Sen);
+    if ( sp.debug()==12 ) debug_12(Mon, Sen);
 
     // Publish for variable print rate
     if ( cp.publishS )
@@ -414,7 +414,7 @@ void loop()
   {
     // Log.info("display and remember");
     serial_display(Sen, Mon);
-    sp.put_Time_now(max( sp.Time_now_z, (unsigned long)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
+    sp.put_Time_now(max( sp.Time_now(), (unsigned long)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
   }
 
   // Discuss things with the user
@@ -438,15 +438,15 @@ void loop()
   // Then every half-hour unless modeling.   Can also request manually via cp.write_summary (Talk)
   if ( (!boot_wait && summarizing) || cp.write_summary )
   {
-    sp.put_Ihis(sp.ihis_z + 1);
-    if ( sp.ihis_z > (sp.nhis() - 1) ) sp.put_Ihis(0);  // wrap buffer
+    sp.put_Ihis(sp.ihis() + 1);
+    if ( sp.ihis() > (sp.nhis() - 1) ) sp.put_Ihis(0);  // wrap buffer
     Flt_st hist_snap, hist_bounced;
     hist_snap.assign(Time.now(), Mon, Sen);
-    hist_bounced = sp.put_history(hist_snap, sp.ihis_z);
+    hist_bounced = sp.put_history(hist_snap, sp.ihis());
 
-    sp.put_Isum(sp.isum_z + 1);
-    if ( sp.isum_z > (uint16_t)(sp.nsum()-1) ) sp.put_Isum(0);  // wrap buffer
-    mySum[sp.isum_z].copy_to_Flt_ram_from(hist_bounced);
+    sp.put_Isum(sp.isum() + 1);
+    if ( sp.isum() > (uint16_t)(sp.nsum()-1) ) sp.put_Isum(0);  // wrap buffer
+    mySum[sp.isum()].copy_to_Flt_ram_from(hist_bounced);
     sendTxBuf("Summ...\n", true, true);
     cp.write_summary = false;
   }
@@ -460,7 +460,7 @@ void loop()
     reset = reset_ekf = reset_kf = cp.ekf_reset_print = cp.kf_reset_print = false;
     if ( reset_temp ) sendTxBuf("*", true, true);
   }
-  if ( read_temp && elapsed_reset>ap.temp_delay && reset_temp )
+  if ( read_temp && elapsed_reset>ap.temp_delay() && reset_temp )
   {
     sendTxBuf("...temp init complete\n", true, true);
     reset_temp = false;

@@ -23,9 +23,9 @@
 
 // Sensor biases
 #define CURR_BIAS_AMP         0.00  // Calibration of amplified shunt sensor (* 'DA'), A, from 0.15 on 20250608
-#define CURR_SCALE_AMP         1.0  // Hardware to match data (* 'SA')
+#define CURR_SCALE_AMP         1.0  // Hardware to match data ('SA')
 #define CURR_BIAS_NOA         0.15  // Calibration of non-amplified shunt sensor (* 'DB'), A
-#define CURR_SCALE_NOA         1.0  // Hardware to match data (* 'SB')
+#define CURR_SCALE_NOA         1.0  // Hardware to match data ('SB')
 #define CURR_SCALE_DISCH       1.0  // Scale discharge to account for asymetric inverter action only on discharge (* 'SD'), slr
 #define CURR_BIAS_ALL           0.0 // Bias on all shunt sensors (* 'DI'), A
 #define VOLT_BIAS             -0.10 // Bias on Vb sensor (* 'Dc'), V
@@ -35,7 +35,7 @@
 //#define IB_FORCE                 -1 // Force ib signal selection, -1 = noamp, 0 =
 
 // Ib hardware
-#define SHUNT_GAIN            1333. // Shunt V2A gain (scale with * 'SA' and 'SB'), A/V (1333 is 100A/0.075V)
+#define SHUNT_GAIN            1333. // Shunt V2A gain (scale with 'SA' and 'SB'), A/V (1333 is 100A/0.075V)
 #define SHUNT_AMP_R1          1500. // Internal amp resistance 196x, ohms (5100)
 #define SHUNT_AMP_R2        332000. // Internal amp resistance 196x, ohms (1000000)
 #define IB_ABS_MAX_AMP        12.0  // Hard range limit of sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_AMP_R1 / SHUNT_AMP_R2 *1.05) but saw -11.48 A (12)
@@ -57,7 +57,7 @@
 //   would have  NOM_UNIT_CAP 200, NS 2, and NP 2
 #define COULOMBIC_EFF_SCALE   1.0   // Scalar on Coulombic efficiency of battery, fraction of charge that gets used (1.0)
 #define CHEM                    0   // Chemistry monitor code integer, 0=Battleborn, 1=CHINS-guest room, 2=CHINS-garage
-#define NOM_UNIT_CAP        108.4   // Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah logic, 1 = amp
+#define NOM_UNIT_CAP        108.4   // Nominal battery unit capacity.  (* 'Sc' or ' BS'/' BP'), Ah logic, 1 = amp
 #define CHEM_NOM_VSAT       13.85   // Nominal saturation voltage at 25C, V (13.35)
 #define HYS_SCALE             1.0   // Scalar on hysteresis (1.0)
 #define NS                    1.0   // Number of series batteries in bank.  Fractions scale and remember NOM_UNIT_CAP (* 'BS')
@@ -66,8 +66,8 @@
 // Faults
 #define FAKE_FAULTS           true    // What to do with faults, T=detect and display them but don't change signals
 #define CC_DIFF_SOC_DIS_THRESH  0.5   // Signal selection threshold for Coulomb counter EKF disagree test (0.2, 0.1 too small on truck)
-#define FI_NOM 32. // Hi wrap threshold nominal scalar (1.0)  // Fi
-#define FO_NOM 32. // Lo wrap threshold nominal scalar (1.0)  // Fo
+#define FI_NOM 200. // Hi wrap threshold nominal scalar (1.0)  // Fi
+#define FO_NOM 200. // Lo wrap threshold nominal scalar (1.0)  // Fo
 #define DISAB_VB_FA true
 #define DISAB_TB_FA true          // Had high out of range failure.  Want to keep running without latch on the truck
 

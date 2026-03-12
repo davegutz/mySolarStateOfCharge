@@ -41,10 +41,10 @@ extern BleCharacteristic txCharacteristic;
 void sample_burst(Pins *myPins, Sensors *Sen)
 {
   unsigned long int local_micros_init = micros();
-  if ( ap.samp_points>0 )
+  if ( ap.samp_points() > 0 )
   {
     Serial.printf("u_cx, time, vovcn, vovcnkf,\n");
-    for (unsigned long int i=0; i<ap.samp_points; i++ )  // Cx
+    for (unsigned long int i=0; i<ap.samp_points(); i++ )  // Cx
     {
       unsigned long int local_micros = micros();
       if ( i== 0 ) local_micros_init = local_micros;
@@ -55,7 +55,7 @@ void sample_burst(Pins *myPins, Sensors *Sen)
       Serial.printf("cx_u, %8.6f, %8.6f, %8.6f,\n",
         (local_micros - local_micros_init)*1e-6, Sen->ShuntNoAmp->Vo_Vc(), Sen->ShuntNoAmp->Vo_Vc_kf());
     }
-    ap.samp_points = 0;
+    ap.samp_points(0);
   }
 }
 
@@ -148,15 +148,15 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #endif
   // Call calculate twice because sat_ is a used-before-calculated (UBC)
   // Simple 'call twice' method because sat_ is discrete no analog which would require iteration
-  Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on, true) * sp.nS();
+  Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on(), true) * ap.nS();
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("S.a_b1:  "); debug_m1(Mon, Sen);}
   #endif
-  Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on, true) * sp.nS();  // Call again because sat is a UBC
+  Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on(), true) * ap.nS();  // Call again because sat is a UBC
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("S.a_b2:  "); debug_m1(Mon, Sen);}
   #endif
-  Sen->Ib_model = Sen->Sim->ib_fut() * sp.nP();
+  Sen->Ib_model = Sen->Sim->ib_fut() * ap.nP();
   #ifdef DEBUG_DETAIL
     if ( sp.debug()==-1 ){ Serial.printf("S.a_b3:  "); debug_m1(Mon, Sen);}
   #endif
@@ -263,7 +263,7 @@ void  monitor(const boolean reset, const boolean reset_temp, const boolean reset
 
   // Debounce saturation calculation done in ekf using voc model
   Sen->sat = Mon->is_sat(reset);
-  Sen->saturated = Is_sat_delay->calculate(Sen->sat, T_SAT*ap.s_t_sat, T_DESAT*ap.s_t_sat, min(Sen->T, T_SAT/2.), reset);
+  Sen->saturated = Is_sat_delay->calculate(Sen->sat, T_SAT*ap.s_t_sat(), T_DESAT*ap.s_t_sat(), min(Sen->T, T_SAT/2.), reset);
 
   // Memory store
   Mon->count_coulombs(Sen, reset_temp, Mon->ib_charge(), Sen->sat, Sen->saturated);
@@ -312,8 +312,8 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const boo
   //  Inputs:  Sen->Tb_f(past), Sen->Ib_model_in
   //  States: Sim->soc(past)
   //  Outputs:  Tb_hdwe, Ib_model, Vb_model, sp.inj_bias, Sim.model_saturated
-  Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on, reset) * sp.nS() + Sen->Vb_add();
-  Sen->Ib_model = Sen->Sim->ib_fut() * sp.nP();
+  Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on(), reset) * ap.nS() + Sen->Vb_add();
+  Sen->Ib_model = Sen->Sim->ib_fut() * ap.nP();
   cp.model_cutback = Sen->Sim->cutback();
   cp.model_saturated = Sen->Sim->saturated();
 
@@ -346,11 +346,11 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const boo
     else fails_repeated = min(fails_repeated + 1, 99);
     if ( fails_repeated < 3 )
     {
-      sp.put_Iflt(sp.Iflt() + 1);
-      if ( sp.Iflt()>sp.nflt() - 1 ) sp.put_Iflt(0);  // wrap buffer
+      sp.put_Iflt(sp.iflt() + 1);
+      if ( sp.iflt()>sp.nflt() - 1 ) sp.put_Iflt(0);  // wrap buffer
       Flt_st fault_snap;
       fault_snap.assign(Time.now(), Mon, Sen);
-      sp.put_fault(fault_snap, sp.Iflt());
+      sp.put_fault(fault_snap, sp.iflt());
     }
     else if ( fails_repeated < 4 )
     {
@@ -381,7 +381,7 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const boo
 
     Sen->elapsed_inj = Sen->now - Sen->start_inj + 1UL; // Shift by 1 because using ==0 as reset button
 
-    // Put a stop to this but retain sp.amp_z to scale fault and history printouts properly
+    // Put a stop to this but retain sp.amp_ to scale fault and history printouts properly
     if (Sen->now > Sen->stop_inj)
     {
       sp.put_Inj_bias(0);
@@ -396,19 +396,19 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const boo
     chit("vv0;", ASAP);    // Turn off echo
     chit("Xp0;", SOON);    // Reset
   }
-  Sen->Sim->calc_inj(Sen->elapsed_inj, sp.type(), sp.Amp(), sp.freq());
+  Sen->Sim->calc_inj(Sen->elapsed_inj, sp.type(), sp.Amp(ap.nP()), sp.freq());
 
   // Quiet logic.   Reset to ready state at soc=0.5; do not change Modeling.  Passes at least once before running chit.
   static unsigned long long millis_past = System.millis();
-  static unsigned long int until_q_past = ap.until_q;
-  if ( ap.until_q>0UL && until_q_past==0UL ) until_q_past = ap.until_q;
-  ap.until_q = (unsigned long) max(0, (long) ap.until_q  - (long)(System.millis() - millis_past));
-  if ( ap.until_q==0UL && until_q_past>0UL )
+  static unsigned long int until_q_past = ap.until_q();
+  if ( ap.until_q()>0UL && until_q_past==0UL ) until_q_past = ap.until_q();
+  ap.until_q( (unsigned long) max(0, (long) ap.until_q()  - (long)(System.millis() - millis_past)) );
+  if ( ap.until_q()==0UL && until_q_past>0UL )
   {
     chit("BZ;", SOON);
     cp.freeze = false;  // unfreeze the queues
   }
-  until_q_past = ap.until_q;
+  until_q_past = ap.until_q();
   millis_past = System.millis();
 
 }

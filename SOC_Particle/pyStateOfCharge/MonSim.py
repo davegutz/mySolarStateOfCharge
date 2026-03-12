@@ -133,9 +133,9 @@ def replicate(OPT: UserOptions):
 
     # Make batteries from modified class constants
     sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
-                     vsat_add=Battery.sp_vsat_add_z)
+                     vsat_add=Battery.sp_vsat_add)
     mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], tb_f=SN.mon_run.Tb_f[0], scale=scale_mon,
-                         vsat_add=Battery.sp_vsat_add_z, tweak_test=tweak_test)
+                         vsat_add=Battery.sp_vsat_add, tweak_test=tweak_test)
     Is_sat_delay = TFDelay(in_=OPT.mon_run.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
     # Time sync
@@ -304,7 +304,7 @@ def replicate(OPT: UserOptions):
             saturated = OPT.mon_run.saturated[G.i]
         else:
             sat = is_sat(SN.Tb_f_past, mon.chemistry.rated_temp, mon.voc_dead, mon.soc, mon.chemistry.nom_vsat,
-                         mon.chemistry.dvoc_dt, mon.chemistry.low_t, vsat_add=Battery.sp_vsat_add_z)
+                         mon.chemistry.dvoc_dt, mon.chemistry.low_t, vsat_add=Battery.sp_vsat_add)
             saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
 
         # Monitor count Coulumbs
