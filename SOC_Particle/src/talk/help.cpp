@@ -169,7 +169,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
 
   sendTxBuf("  -<>: Negative - Arduino plot compatible\n", true, true);
   sendTxBuf(" vv-2: ADS counts for throughput meas\n", true, true);
-  #ifdef DEBUG_DETAIL
+  #ifdef DEBUG_INIT
     sendTxBuf("  v-1: Debug\n", true, true);
   #endif
   sendTxBuf("  vv1: GP\n", true, true);

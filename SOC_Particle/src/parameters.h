@@ -31,8 +31,6 @@
 #include "Variable.h"
 #include "Cloud.h"
 
-void app_no();
-void app_mon_chem();
 
 class Parameters
 {

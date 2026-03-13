@@ -234,6 +234,7 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #define DISAB_LO_SET       0.4          // Disable lo=amp wrap fault set persistence, s (0.4)
 #define DISAB_LO_RESET     0.8          // Disable lo=amp wrap fault reset persistence, s (0.8)
 #define MAX_TRIM_RATE    0.005          // Max allowable amp e_wraptrim rate, V/s (0.005)
+
 // Default values for constants that can be overridden
 #if !defined(NOM_DS)
     #define NOM_DS             0.0          // Nominal VOC(SOC) del soc (Ds) 0.0)
@@ -243,9 +244,6 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #endif
 #if !defined(VV)
     #define VV                   0          // Nominal verbosity (vv) (0)
-#endif
-#if !defined(XM)
-    #define XM                   0          // Nominal modeling (Xm) (0)
 #endif
 #if !defined(TEMP_BIAS)
     #define TEMP_BIAS          0.0          // Nominal bias on Tb (D^) (0.0)
@@ -328,6 +326,80 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #if !defined(VSAT_ADD)
     #define VSAT_ADD    0.0 // Bias on nominal vsat (0.0)
 #endif
+#if !defined(VTAB_BIAS)
+    #define VTAB_BIAS   0.0 // Bias on voc_soc table (* 'Dw'), V (0.0)
+#endif
+
+// Ib hardware
+#if !defined(SHUNT_AMP_R1)
+    #define SHUNT_AMP_R1    1500. // Internal amp resistance 196x, ohms (1500)
+#endif
+#if !defined(SHUNT_AMP_R2)
+    #define SHUNT_AMP_R2    332000. // Internal amp resistance 196x, ohms (332000)
+#endif
+#if !defined(SHUNT_NOA_R1)
+    #define SHUNT_NOA_R1    1500. // Internal amp resistance 29.4x, ohms (1500)
+#endif
+#if !defined(SHUNT_NOA_R2)
+    #define SHUNT_NOA_R2    33200. // Internal amp resistance 29.4x, ohms (33200)
+#endif
+
+// Vb Hardware
+#if !defined(VB_SENSE_R_LO)
+    #define VB_SENSE_R_LO   4700 // Vb low sense resistor, ohm (4700)
+#endif
+#if !defined(VB_SENSE_R_HI)
+    #define VB_SENSE_R_HI   22000 // Vb high sense resistor, ohm (22000)
+#endif
+
+// Chemistry and modeling
+#if !defined(COULOMBIC_EFF_SCALE)
+    #define COULOMBIC_EFF_SCALE 1.0 // Scalar on Coulombic efficiency of battery, fraction of charge that gets used (1.0)
+#endif
+#if !defined(CHEM)
+    #define CHEM    0 // Chemistry monitor code integer, 0=Battleborn (0)
+#endif
+#if !defined(NOM_UNIT_CAP)
+    #define NOM_UNIT_CAP    108.4 // Nominal battery unit capacity (* 'Sc' or 'BS'/'BP'), Ah (108.4)
+#endif
+#if !defined(CHEM_NOM_VSAT)
+    #define CHEM_NOM_VSAT   13.85 // Nominal saturation voltage at 25C, V (13.85)
+#endif
+#if !defined(HYS_SCALE)
+    #define HYS_SCALE   1.0 // Scalar on hysteresis (1.0)
+#endif
+
+// Bank configuration
+#if !defined(NS)
+    #define NS  1.0 // Number of series batteries in bank (* 'BS') (1.0)
+#endif
+#if !defined(NP)
+    #define NP  1.0 // Number of parallel batteries in bank (* 'BP') (1.0)
+#endif
+
+// Faults
+#if !defined(FAKE_FAULTS)
+    #define FAKE_FAULTS false // Detect and display faults but don't change signals (false)
+#endif
+#if !defined(CC_DIFF_SOC_DIS_THRESH)
+    #define CC_DIFF_SOC_DIS_THRESH  0.5 // Signal selection threshold for Coulomb counter EKF disagree test (0.5)
+#endif
+#if !defined(EKF_Q_SD_NORM)
+    #define EKF_Q_SD_NORM   0.0015 // Standard deviation of normal EKF process uncertainty, V (0.0015)
+#endif
+#if !defined(EKF_R_SD_NORM)
+    #define EKF_R_SD_NORM   0.5 // Standard deviation of normal EKF state uncertainty, fraction (0-1) (0.5)
+#endif
+#if !defined(EKF_EFRAME_MULT)
+    #define EKF_EFRAME_MULT 20 // EKF multiframe: READ executes per EKF execute (20)
+#endif
+#if !defined(VOC_STAT_FILT)
+    #define VOC_STAT_FILT   120. // voc_stat_f_ filtering time constant for EKF, s (120)
+#endif
+#if !defined(EKF_CONV)
+    #define EKF_CONV    0.025 // EKF tracking error indicating convergence, V (0.025)
+#endif
+
 
 // Conversion gains
 // Voltage measurement gains

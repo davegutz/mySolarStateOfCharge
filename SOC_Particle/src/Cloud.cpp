@@ -26,9 +26,6 @@
 #include "constants.h"
 #include <math.h>
 
-// #include "Blynk/BlynkSimpleSerialBLE.h"
-// #define BLYNK_PRINT Serial
-
 extern CommandPars cp;            // Various parameters to be common at system level (reset on PLC reset)
 extern PublishPars pp;            // For publishing
 

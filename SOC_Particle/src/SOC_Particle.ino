@@ -259,7 +259,6 @@ void loop()
   boolean summarizing;
   static boolean boot_wait = true;  // waiting for a while before summarizing
   static Sync *Summarize = new Sync(SUMMARY_DELAY);
-  boolean control;
   static Sync *ControlSync = new Sync(CONTROL_DELAY);
   unsigned long long elapsed = 0;
   unsigned long long elapsed_reset = 0;
@@ -422,8 +421,6 @@ void loop()
   // then can enter commands by sending strings.   End the strings with a real carriage return
   // right in the "Send String" box then press "Send."
   // String definitions are below.
-  // Control
-  if ( control ){} // placeholder
 
   // Chit-chat requires 'read' timing so 'DP' and 'Dr' can manage sequencing
   // Running chitter unframed allows queues of different priorities to be built from long

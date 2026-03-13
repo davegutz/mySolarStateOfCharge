@@ -29,11 +29,10 @@
 
 void add_verify(String *src, const String addend);
 
-#ifdef DEBUG_DETAIL
+#ifdef DEBUG_INIT
     void debug_m1(BatteryMonitor *Mon, Sensors *Sen);
 #endif
 
-void debug_4(BatteryMonitor *Mon, Sensors *Sen);
 void debug_m7(BatteryMonitor *Mon, Sensors *Sen);
 
 void debug_12(BatteryMonitor *Mon, Sensors *Sen);

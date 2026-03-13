@@ -427,4 +427,3 @@ void SavedPars::set_nominal()
     put_Preserving(uint8_t(0));
  }
 
-void app_no() { };

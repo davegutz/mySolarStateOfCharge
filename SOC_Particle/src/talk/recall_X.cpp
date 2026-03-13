@@ -40,7 +40,6 @@ boolean recall_X(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
 {
     boolean found = true;
     int INT_in;
-    String murmur;
     switch ( letter_1 )
     {
         case ( 'D' ): // XD  display a message

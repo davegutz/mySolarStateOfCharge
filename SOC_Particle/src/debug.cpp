@@ -225,7 +225,7 @@ void debug_check_99(BatteryMonitor *Mon, Sensors *Sen)
   }
 }
 
-#ifdef DEBUG_DETAIL
+#ifdef DEBUG_INIT
   // Various parameters to debug initialization stuff as needed
   void debug_m1(BatteryMonitor *Mon, Sensors *Sen)
   {
