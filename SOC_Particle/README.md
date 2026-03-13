@@ -7,6 +7,7 @@ Use temperature, voltage and bipolar current measurements with a programmable lo
 * [State of Charge Monitor](#state-of-charge-monitor)
   * [Abstract:](#abstract)
   * [Off-the-Shelf Hardware Description](#off-the-shelf-hardware-description)
+  * [Software Installation](#software-installation)
   * [Requirements](#requirements)
   * [Assumptions](#assumptions)
   * [Implementation Notes](#implementation-notes)
@@ -40,13 +41,14 @@ Use temperature, voltage and bipolar current measurements with a programmable lo
 <!-- TOC -->
 
 ## Abstract
-Users of rechargeable battery banks need to know how much charge remains.  This becomes important for estimating the range of travel for an electric car, for example – the 'gas gauge replacement.'   In my case, when truck camping with my CPAP machine I need to know if there is enough charge in the RV battery bank to power the CPAP overnight.   I've never woke up gasping and I want to minimize that possibility.   Old technology batteries, e.g. Lead-acid, have a steep curve relationship between terminal voltage and state-of-charge (SoC).   This makes it easy to use a voltmeter as a SoC gauge.  Newer batteries developed for electric cars are different.  The flat voltage-SoC characteristic of modern LiFeP04 batteries – safe to install in sleeping quarters and efficient charge handlers – makes it nearly impossible to guess SoC from voltage measurement.   Further complicating the task, the electrical hysteresis where voltage depends on direction of charging/discharging and time history is large compared to the SoC characteristic.   Hysteresis uncertainty approaches the entire SoC curve from fully discharged to fully charged.   A 'smart,' reliable monitor is needed.  Smart would be capabilities that keep track of the time history to as accurately as possible predict time remaining for current usage.   Reliable would be features that keep the system operational in the presence of common failures, allowing the user to repair the system at their convenience with no downtime.  At present, my system is designed for a couple, one-off prototypes and relies on calibration of inexpensive components for precision.  The known condition of full saturation is easily detected and used to re-calibrate the device on the fly.  Hardware RC filtering is needed to clean up the sensor signals from noise injected by AC inverter devices.  A 1 Hz low-pass anti-alias filter in hardware is all that is needed.   Since SoC is a long term, e.g. 24 hour integration process – a very slow low-pass filter in itself, no precision is lost using the hardware RC filtering.   Therefore, advanced software filtering is not required for the main task of counting Coulomb charge.   An Extended Kalman Filter (EKF) advanced filtering is useful, however, to detect component failures and establish reliability.   I used Mathworks' EKF prototype.  I created my own 'reservoir' charge model to track hysteresis.  I found that reasonable reliability is achieved with simplex temperature sensing, simplex voltage sensing, and dual current sensing.   The combination of two current signals, one voltage sensor, the EKF, and known SoC characteristic (voltage-current-time history) enables the equivalent of triplex current sensing.   Quiet signal detection logic detects that a current sensor is disconnected either by wiring or failure to help isolate.  For strictly hardware reliability reasons, the 1-wire temperature sensor and the mini-OLED display are line replaceable.   Faults and history are recorded in EERAM for later retrieval.   A standalone Python data reduction program (DRP) allows comparing history with a model to understand operation.   The DRP also serves as regression machine to compare software changes with past changes, to develop component maps for characterizing a system, and to investigate problems.  Some learnings:   The system needs to run at about 0.1 seconds update to accurately capture by integration the peaks and valleys of battery bank usage.  The EKF needs to run double precision as well as slower update rate, about 0.5 seconds, to handle the numerics of the system.   It is possible to self-calibrate by comparing total charge history to total discharge history between known charge states – full charge.   By triangulation of data history, the charging efficiency of the batteries needs to be estimated to complement the history data.  System uncertainty for this home-made system is large so that this self-calibration adds no value and was omitted from the published version.    Simple scalar-adder calibration of the installed current sensor using a clamping current meter is sufficient to establish monitor precision within about a half hour of time remaining estimate.  To calibrate the system, the user needs to be intentionally discharged and recharged at expected operating temperatures to characterize the SoC-voltage (voc(soc)) map and hysteresis model.  Triangulation of data, IE. repeated calibration runs from full charge to full discharge, allows estimation of the battery capacity versus rated while calibrating the current sensors (full charge condition is repeatable).  In the case of a CPAP system, I used a couple household fans to simulate actual load and ran data collection overnight in the driveway with the fans while I slept in the house with  my CPAP.  Battery life may be monitored by repeat calibration.   Most of my findings are preliminary based on my observations of prototypes and a lot of experience in the development of computer controlled systems.   I took advantage of my 'skunk works' arrangement in retirement.    Rigorous study is needed to establish the findings as fact for some product device.
+Users of rechargeable battery banks need to know how much charge remains.  This becomes important for estimating the range of travel for an electric car, for example – the 'gas gauge replacement.'   In my case, when truck camping with my CPAP machine I need to know if there is enough charge in the RV battery bank to power the CPAP overnight.   I've never woke up gasping and I want to minimize that possibility.   Old technology batteries, e.g. Lead-acid, have a steep curve relationship between terminal voltage and state-of-charge (SoC).   This makes it easy to use a voltmeter as a SoC gauge.  Newer batteries developed for electric cars are different.  The flat voltage-SoC characteristic of modern LiFePO4 batteries – safe to install in sleeping quarters and efficient charge handlers – makes it nearly impossible to guess SoC from voltage measurement.   Further complicating the task, the electrical hysteresis where voltage depends on direction of charging/discharging and time history is large compared to the SoC characteristic.   Hysteresis uncertainty approaches the entire SoC curve from fully discharged to fully charged.   A 'smart,' reliable monitor is needed.  Smart would be capabilities that keep track of the time history to as accurately as possible predict time remaining for current usage.   Reliable would be features that keep the system operational in the presence of common failures, allowing the user to repair the system at their convenience with no downtime.  The known condition of full saturation is easily detected and used to re-calibrate the device on the fly.  Hardware RC filtering is needed to clean up the sensor signals from noise injected by AC inverter devices.  A 1 Hz low-pass anti-alias filter in hardware is all that is needed.   Since SoC is a long term, e.g. 24 hour integration process – a very slow low-pass filter in itself, no precision is lost using the hardware RC filtering.   Therefore, advanced software filtering is not required for the main task of counting Coulomb charge.   An Extended Kalman Filter (EKF) advanced filtering is useful, however, to detect component failures and establish reliability.   I used Mathworks' EKF prototype.  I created my own 'reservoir' charge model to track hysteresis.  I found that reasonable reliability is achieved with simplex temperature sensing, simplex voltage sensing, and dual current sensing.   The combination of two current signals, one voltage sensor, the EKF, and known SoC characteristic (voltage-current-time history) enables the equivalent of triplex current sensing.   Quiet signal detection logic detects that a current sensor is disconnected either by wiring or failure to help isolate.  For strictly hardware reliability reasons, all sensor components are line replaceable.   
+There are breadboards with plug-in custom circuit boards for each signal.  Faults and history are recorded in EERAM for later retrieval.   A standalone Python data reduction program (DRP) allows comparing history with a model to understand operation.   The DRP also serves as regression machine to compare software changes with past changes, to develop component maps for characterizing a system, and to investigate problems.  Some learnings:   The system needs to run at about 0.1 seconds update to accurately capture by integration the peaks and valleys of battery bank usage.  The EKF needs to run double precision as well as slower update rate, about 0.5 seconds, to handle the numerics of the system.   It is possible to self-calibrate by comparing total charge history to total discharge history between known charge states – full charge.   By triangulation of data history, the charging efficiency of the batteries needs to be estimated to complement the history data.  System uncertainty for this home-made system is large so that this self-calibration adds no value and was omitted from the published version.    Simple scalar-adder calibration of the installed current sensor using a clamping current meter is sufficient to establish monitor precision within about a half hour of time remaining estimate.  To calibrate the system, the user needs to be intentionally discharged and recharged at expected operating temperatures to characterize the SoC-voltage (voc(soc)) map and hysteresis model.  Triangulation of data, IE. repeated calibration runs from full charge to full discharge, allows estimation of the battery capacity versus rated while calibrating the current sensors (full charge condition is repeatable).  In the case of a CPAP system, I used a couple household fans to simulate actual load and ran data collection overnight in the driveway with the fans while I slept in the house with  my CPAP.  Battery life may be monitored by repeat calibration.  More rigorous study is needed to establish the findings as fact for some product device.
 
-Battery cyclic life effects are neglected for this type of application, LiFeP04 batteries.
+Battery cyclic life effects are neglected for this type of application, LiFePO4 batteries.
 
 
 ## Off-the-Shelf Hardware Description
-I used prototype boards to connect various off-the-shelf devices into a reliable, maintainable box.  The heart of the system is the Particle programmable logic controller (PLC).   I've incorporated both the Particle Photon device gen 1 device and the Particle Argon gen 3 device.   Figure board layout shows the latest Argon schematic using Stripboard, a prototyping 0.1 inch spaced board that underneath connects vertical elements with layered copper conductors and over the top and bottom connects signals into bus bars and horizontal elements that connect v+ and v- into bus bars.   The Photon is no longer available, so I didn't bother to show a schematic.  It is similar without the 47L16 device but with a battery connected to 'VBAT.'   The Argon will disappear soon too probably in 2023.   The recommended replacement is Photon 2.  In the future I suggest getting the Photon 2 developer kit that has headers and other peripherals such as USB installed.
+I used prototype boards to connect various off-the-shelf devices into a reliable, maintainable box.  The heart of the system is the Particle programmable logic controller (PLC) Photon2. Figure board layout shows the latest schematic using Stripboard, a prototyping 0.1 inch spaced board that underneath connects vertical elements with layered copper conductors and over the top and bottom connects signals into bus bars and horizontal elements that connect v+ and v- into bus bars. It's well worth it to buy the Photon2 developer kit that has headers and other peripherals such as USB installed.
 
 ![layout](doc/board layout.png)
  <b>Fig.1 - State of Charge Wiring Diagram Board Layout</b>
@@ -54,12 +56,7 @@ I used prototype boards to connect various off-the-shelf devices into a reliable
 <img src="doc/board layout.png" alt="State of Charge Wiring Diagram Board Layout"/>
  <b>Fig.1a - State of Charge Wiring Diagram Board Layout</b>
 
-
-It doesn't matter which of the old generation boards are used.   The Photon uses an external CR2040 battery to energy EERAM while the Argon uses a peripheral 47L16 EERAM device that saves to EEPROM when it detects loss of power, using an external capacitor to power itself while doing so.   The SOC_Particle application uses #define to configure for either board.   When the use 'Configure for device' on the Particle Workbench Visual Studio IDE and select the Particle device, Argon and give it a name, it automatically configures the global #defines to allow you to select the correct #define locally for your own use.   Giving it a name checks that you're loading the proper device that you configured for.  
-
 Device names are given using the Particle App with the device in Setup mode (push left button for 3 seconds to get blinking blue light).
-
-The 47L16 EERAM device provides memory to the Argon through power loss, sometimes caused by the battery management system (BMS) of the battery itself as well as user events.
 
 OPA333 op-amp circuits, two for reliability, convert the bipolar +/- 0.075 volt Bayite shunt signal, current range 100 Amps, into full range 0-3.3v A/D signal.   The current signal uses a dedicated, shielded sense line to feed high impedance op-amp circuits to avoid line effects.
 
@@ -69,9 +66,14 @@ A 12v – 5v converter circuit feeds power to the Particle device and the 1-wire
 
 All the hardware if the least expensive possible.   Battery uncertainty drives accuracy.   And low rate of production make use of user calibration feasible.
 
-The initial battery used to test the system, and use on RV trips, was the Battleborn 100 A-h LiFeP04.   It is the most expensive battery available and comes with an industry-leading BMS that prevents damage from misuse.  I thought that was important for the first prototype.    Chins batteries are available at 1/3 the price.
+The initial battery used to test the system, and use on RV trips, was the Battleborn 100 A-h LiFePO4.   It is the most expensive battery available and comes with an industry-leading BMS that prevents damage from misuse.  I thought that was important for the first prototype.    Chins batteries are available at 1/3 the price.
 
 ## Software Installation
+
+[**Complete Installation Guide — VS Code, PyCharm, puTTY (all platforms)**](INSTALL.md)
+
+Platform-specific supplements:
+
 [Windows Software Installation](doc/InstallationWindows.md)
 
 [Linux Software Installation](doc/InstallationLinux.md)
@@ -101,7 +103,7 @@ In the spirit of Software Engineering principles, I document perceived requireme
     7. Load software using USB. Wi-Fi to truck or phone (hotspot) may not be reliable.  Related requirement: provide holes to press Particle Device buttons: sometimes setup long-press needed or manual flash request needed with these devices.
     8. Likewise, monitor USB using laptop or phone. 'Talk' function should change serial monitor and inject signals for debugging.
     9. Device shall have no effect on system operation.  Monitor function only.
-    10. Bluetooth serial interface required. ***This did not work due to age of Android phone (6 yrs) not compatible with the latest Bluetooth devices.
+    10. Bluetooth serial interface required.  Little OLED displays have short life and need an adjustment tool.
     11. Keep as much summary as possible of soc every half hour: Tb, Vb, soc.  Save as SRAM battery backup memory. Print out to serial automatically on boot and as requested by 'Talk.' This will tell users charging history.
     12. Adjustments to model using talk function should preserve delta_q between models to preserve change from saturated situation. The one 'constant' in this device is that it may be reset to reality whenever fully charged.  Test it the same way. The will be separate adjustment to bias the model away from this ('n' and 'W')
     13. The 'Talk' function should let the user test a lot of stuff.  The biggest short coming is that it is a little quirky. For example, resetting the Particle device or doing any number of things sometimes requires the filters to be initialized differently, e.g. initialize to input rather than tending toward initializing to 0.  The initialization was optimized for installed use. So the user needs to get used to rationalizing the initialization behavior they see when testing. They can wait for the system to settle, sometimes 5 minutes.  They can run Talk('Rs') to attempt a software filter reset - won't help if the test draws a steady current after reset/reboot.
@@ -124,7 +126,7 @@ In the spirit of Software Engineering principles, I document perceived requireme
     30. The nominal unit of configuration shall be a 12 v battery with a characteristic(soc) and rated Ah capacity. Use with multiple batteries shall include running an arbitrary number of batteries in parallel and then series (nPnS). The configuration shall be in constants.h (.e.g. #include soc0p) and in retained.h.  This is called the 'chemistry' of the configuration.
     31. The configuration shall be fully adjustable on the fly using Talk. If somebody has Battleborn or a LION they will not need to ever recompile and reflash a Particle device.
     32. Maximize system availability in presence of loss of sensor signals. Soft or hard resets cause signal fault detection and selection to reset.  Flash display to communicate signal status: every fourth update of screen indicates a minor fault. Every other update is major fault where action needed.  Print signal faults in the 'Q' talk.  Add ability to mask faults to a retained parameter rp.
-    33. No battery cyclic life logic is needed for LiFeP04 applications.
+    33. No battery cyclic life logic is needed for LiFePO4 applications.
     34. The user talk interface should have a timer / freeze / release function to allow multiple long scripts to be run together.
 
 
@@ -147,10 +149,10 @@ In the spirit of Software Engineering principles, I document perceived requireme
 
     1. An EKF is no more accurate than the open loop voc(soc) curves.  As a solver, it does seem to follow through troughs without divergence – a pleasant surprise.
     2. A Coulomb Counter implementation is very accurate but needs to calibrate every couple cycles to avoid 'infinite wander.'  This should happen naturally as the battery charges fully each day.
-    3. Blynk phone monitor implemented, as well as Particle Cloud, but found to be impractical because
+    3. Blynk phone monitor tried, as well as Particle Cloud, but found to be impractical because
        a. Seldom near Wi-Fi when camping.
        b. OLED display works well.
-       c. 'Talk' interface works well. Can use with phone while on the go. Need to buy dongle for the phone (Android only): Micro USB 2.0 OTG Cable ($6 on Amazon).
+       c. 'Talk' interface works well. Can use with phone while on the go using USB with a Serial Monitor app or BLE with a Bluetooth Monitor app.  Or you can lug a laptop and use USB.
     4. Shunt monitor seems to have 0 V bias at 0 A current so this is assumed when scaling inputs.
     5. Current calibrated using clamping ammeter turning large loads off and on.
     6. Battleborn nominal capacity determined by load tests.
@@ -169,7 +171,7 @@ In the spirit of Software Engineering principles, I document perceived requireme
     19. All logic uses a counting scheme that debits Coulombs since last known saturation.  The prime requirement of using saturation to periodically reset logic is reflected in use of change since saturation.
     20. The easiest way to confirm that the EKF is working correctly is to set 'modeling' using Talk('Xm7') and verify that soc_ekf equals soc_mod.
     21. Lessons-learned from installation in truck. Worked fine driving both A/D with D2 from main board.  But when installed in truck all hell broke loose.  The root cause was grounding the Vlow fuse side of shunt legs of the A/D converters.  In theory the fuse side is the same as ground of power supply.  But the wires are gauge 20-22 and I detected a 75 mA current in the Vh and Vl legs which is enough to put about 50% error on detection.  Very sensitive.  But if float both legs and avoid ground looping it works fine.  And as long as ground loops avoided, there is no need to beef up the sense wire gauge because there will be no current to speak of. I revised the schematics.  There are now two pin-outs: one for installed in truck and another when driving with the D2 pin and PWM into the RC circuits.
-    22. 'Talk' refers to using CoolTerm to transmit commands through the myTalk.cpp functions. Talk is not threaded so can only send off a barrage of commands open loop and hope for the best.
+    22. 'Talk' refers to using puTTY to transmit commands through the myTalk.cpp functions. Talk is not threaded so can only send off a barrage of commands open loop and hope for the best.
     23. I had to add persistence to the 'log on boot' function.  When in a cold shutoff, the BMS of the battery periodically 'looks' at the state of the battery by turning it on for a few seconds. The summary filled up quickly with these useless logs. I used a 60 second persistence.
     24. Use Tb<8 deg C to turn off monitoring for saturation.  This prevents false saturation trips under normal conditions.
     25. Had a failed attempt to heat the battery before settling on what Battleborn does here: <https://battlebornbatteries.com/faq-how-to-use-a-heat-pad-with-battle-born-batteries/>. I thought the pads I bought here: <https://smile.amazon.com/gp/product/B0794V5J5H/ref=ppx_yo_dt_b_asin_title_o05_s00?ie=UTF8&psc=1> would gently heat the batter. I had the right wattage (36 W vs 30 W that Battleborn uses) but I put them all on the bottom. And the temp sensor is on top.  And the controller is on/off.  That set up a situation where the heat would be on full blast and the entire battery had to heat up before the wave of heat would hit the sensor to shut it off.  The wave continued to create about 5 degree C overshoot of temp then 5 degree C undershoot on recovery.  I measured up to 180 F at the bottom of the battery using an oven thermometer. There was some localized melting of the case. A model accurately predicted it.  See GitHub\myStateOfCharge\SOC_Particle\Battery State\EKF\sandbox\GP_battery_warm_2022a.py. I made a jacket, covered whole thing with R1 camping pad (because BB suggests putting temp sensors inside 'blanket') and put the temp sensor for the SoC monitor and the heater together at one corner about 2 inches down from the top.  I set the on/off to run between 40 and 50F (4.4 - 7.2C) compared to BB 35 - 45 F. I wanted tighter control for better data.  Maybe after I get more data I'll loosen it back up to 35 - 45 F.
@@ -182,23 +184,18 @@ In the spirit of Software Engineering principles, I document perceived requireme
     32. Some Randles dynamics approximation was added to the models, both simulated and EKF embedded to better match reality.  I did this in response to poor behavior of the electrical circuits in presence of 60 Hz pulse noise introduced by my system's pure-sine A/C inverter.  Eventually I added 1 Hz time constant RC circuits to the A/D analog inputs to smooth things out.  I'm not sure the electrical circuit models add any value now.  This is because the objective of this device is to measure long term energy drain, time averaged by integration over periods of hours.  So much filtering inherent in integration would swamp most of the dynamics captured by the Randles models.  It averages out.  Detailed study is needed to justify either leaving it in or removing it. An easy study would be to run the simulated version, turning off the Randles model in the Monitor object only. Run the accelerated age test - 'Tweak test' - and observe changes in the Monitor's tweak behavior upon turning off its Randles model.  Then and only then it may be sensible to embark on improving the Randles models.
     33. Given the existing Randles models, note that current is constrained to be the same through series arrangements of battery units.  The constraint comes from external loads that have much higher impedance than battery cells.  Those cells are nearly pure capacitance.  With identical current and mostly linear dynamics, series batteries would have the same current and divide the voltage perfectly.  Parallel batteries would have the same voltage and divide the current perfectly.  Even the non-linear hysteresis is driven by that same identical current forcing a perfect division of that voltage drop too.  So multiple battery banks may be managed by scalars nP and nS on the output of single battery models.
     34. Throughput test
-        v1;Dr1;
+        vv1;Dr1;
          look at T print, estimate X-2s value (0.049s, ~50% margin)
         Dr100;
          confirm T restored to 0.100s
-    35. Android running of data collection.  The very best I could accomplish is to run BLESerial App and save to file. You can use BLE transmit to change anything, echoed still on USB so flying a little blind.  Best for changing 'v0' to 'v1' and vice-versa. The script 'DataOverModel.py' WILL RUN ON ANDROID using PyDroid and a bunch of stupid setup work. But live plots I couldn't get to work because USB support is buggy. The author of best tools usbserial4 said using Python 2 was best - forget that! Easiest to collect data using BLESerial and move to PC for analysis. Could use laptop PC to collect either BLE or USB and that should work really well.  Plug laptop into truck cab inverter.
+    35. Android running of data collection.  The very best I could accomplish is to run BLESerial App and save to file. You can use BLE transmit to change anything, echoed still on USB so flying a little blind.  Best for changing 'vv0' to 'vv1' and vice-versa. The script 'DataOverModel.py' WILL RUN ON ANDROID using PyDroid and a bunch of stupid setup work. But live plots I couldn't get to work because USB support is buggy. The author of best tools usbserial4 said using Python 2 was best - forget that! Easiest to collect data using BLESerial and move to PC for analysis. Could use laptop PC to collect either BLE or USB and that should work really well.  Plug laptop into truck cab inverter.
     36. Capitalized parameters, violation of coding standards, are "Bank" values, e.g. for '2P3S' parallel-serial banks of batteries while lower case are per 12V battery unit.
     37. Signal injection examples:
-       Ca0.5;Xts;Xa100;Xf0.1;XW5;XC5;v1;XR;
+       Ca0.5;Xts;Xa100;Xf0.1;XW5;XC5;vv1;XR;
        Expected anomalies:
        - real world collection sometimes run sample times longer than RANDLES_T_MAX.  When that happens the modeled simulation of Randles system will oscillate so it is bypassed.  Real data will appear to have first order response and simulation in python will appear to be step.
     38. Manual tests to check initialization of real world.  Set 'Xm=4;' to over-ride current sensor. Set 'Dc<>' to place Vb where you want it.  Press hard reset button to force re-initialization to the EKF. If get stuck saturated or not, remember to add a little bit of current 'Di<>' positive to engage saturation and negative to disengage saturation.
-    39. Bluetooth. In the logic it is visible as Serial1.  All the Serial1 API are non-blocking, so if Bluetooth not connected or has failed then nothing seems to happen. Another likely reason is baud rate mismatch between the HC-06 device (I couldn't get HC-05 to work) and Serial.begin(baud).  There is a project above this SOC_Particle project called BT-AT that runs the AT on HC-06. You need to set baud rate using that.  You should use 115200 or higher.  Lower rates caused the Serial API to be the slowest routines in the chain of call.  At 9600 the fastest READ time 'Dr<>' was 100 - 200 ms depending on the print interval 'Dp<>'.   It’s hard to understand why it was difficult to do the initial setup.   I think it was a combination of three things (maybe 4):
-        a) Either came configured 115200 or set it inadvertently using Arduino attempts to configure.    So try 115200 in BT-AT/main.h first for Serial1.   If that doesn’t work, try 38400.
-        b) The AT function does not echo anything if a setting is already in place!   It’s easy to miss the echos in all the confusion so a successful adjustment was not observed then subsequent attempts appear to fail.
-        c) When testing with phone, make sure to use the SOC_Particle app not the BT-AT app. And wait longer than you think is reasonable for the phone to find during ‘Pair new device’ activities.   Maybe wait up to 1 minute.
-        d) A Hail Mary would be to try configuring with Arduino then return here and repeat using /src/.ino.  (see 	BT-AT/arduino/sketch_mar30a_oneshot.ino)
-
+    39. Bluetooth. Native BLE used.  Significant improvement over HC-06 used in prototypes.  That device also added noise to system signal measurements by disturbing Vb.
     40. Current is a critical signal for availability.  If lose current also lose knowledge of instantaneous voc_stat because do not know how to adjust for rapid changes in Vb without current.  So the EKF useful only for steady state use. If add redundant current sensor then If current is available, it creates a triplex signal selection process where current sensors may be compared to each other and Coulomb counter may be compared to EKF to provide enough information to sort out the correct signals. For example, if the currents disagree and CC and EKF agree then the standby current sensor has faulted.  For that same situation and the CC and EKF disagree then either the active current sensor has likely failed. If the currents agree and CC and EKF disagree then the voltage sensor has likely failed.  All this consistent with proper and same calibration of current sensors' gains and setting biases so indicated currents are zero when actual current is zero. Need to cover small long duration current differences as well as large fast current difference failures.  These tend to compete in any logic. So two mechanisms are created to deal with them separately (ccd_fa and wrap_fa).  The Coulomb Counter Difference logic (ccd) detects slow small failures as the precise Coulomb Counters drift apart between the two current sensors.  The Wrap logic detects rapid failures as the sensed current is used to predict vb and then trips when compared to actual vb. Maximum currents are about 1C for a single rated capacity unit, e.g. 1P1S.  The trip points are sized to detect stuff no faster than that and as slow as C0.16.  The logic works better than this design range.
     41. Other fault notes:
        a. Every fail fault must change something on the display. The goal is that will prompt the user to run 'Pf' to see cause.
@@ -227,7 +224,7 @@ In the spirit of Software Engineering principles, I document perceived requireme
 
 ## Battery Cyclic Life
 
-LiFeP04 batteries that cycle a small amount of charge are expected to last over 8000 cycles.   That number was chosen by industry experts who just don't know what the limits are and picked the biggest number at the edge of their experience.
+LiFePO4 batteries that cycle a small amount of charge are expected to last over 8000 cycles.   That number was chosen by industry experts who just don't know what the limits are and picked the biggest number at the edge of their experience.
 
 Until known otherwise, cyclic life for this application is undefined.
 
@@ -240,23 +237,23 @@ Caution
 The voltage sensor is a 3.3v A/D on the PLC to measure 15v.   Exceeding 3.3v will blow the A/D and make the monitor mostly useless.   It would be difficult to know saturation, a critical sensing element for basic accuracy.   A voltage divider is soldered to do this.   If more batteries are added in series, then the low voltage leg of the divider will need less resistance.   See the 4k7 resistor on the right hand side of the main board diagram at top – feeding A1.  It's easy to add a parallel resistor to achieve this whereas the high voltage leg would require removing solder.   There is a way to add this resistor to the back of the main PLC board accessed by removing the cover of the device.   Remember to rescale and recalibrate the voltage measurement in the monitor application.
 
 Current Sensor Design
-Shunt return a small voltage for a current passing through it.   The voltage is small to avoid affecting system performance and generating heat.   The voltage is bipolar because current may either charge or discharge.   So an amplifier is required to generate a high voltage for a 3.3v unipolar A/D that does not change sign.   This is easy to do with a single op-amp. See Figure 3.  For a shunt that puts out 0.075v at rated current a gain of about 20 is needed.  The RC filtering (R1*C106) is performed on the output to also serve as anti-aliasing of op-amp and other circuit noise.
+Shunts return a small voltage for a current passing through it.   The voltage is small to avoid affecting system performance and generating heat.   The voltage is bipolar because current may either charge or discharge.   So an amplifier is required to generate a high voltage for a 3.3v unipolar A/D that does not change sign.   This is easy to do with a single op-amp. See Figure 3.  For a shunt that puts out 0.075v at rated current a gain of about 20 is needed.  The RC filtering (R1*C106) is performed on the output to also serve as anti-aliasing of op-amp and other circuit noise.
 
-A disadvantage of this design is that 4 A/D are needed for two sensors.   Each sensor needs the output voltage and also the common voltage.   There is a chip available, TSC2010-IDT, that does differential amplification using three built-in op-amps.   The base chip is TSC201.   The trailing "0" denotes 20 amplification.   There are others: the next size up, "1" is 60.  The IDT is the standard quality control for an SOIC-8 surface mount.   These sensors use high quality internal resistors and cost about $5.00 each but were not available until 6 months after building the Beta prototype.
+A differential amplifier circuit is made that uses 1/2 of 3v3 as a nominal reference.  For reliability one could either use active-standby with dual identical sensors of low gain or high-low with dual stage sensors - one low and one high gain.  I reason that most of our operation is low current draws for long time to discharge and high currents for short time to recharge.  Since the objective is to 'not run out' then a highly accurate low current sensor is preferred leading to high-low architecture.  The voltage sensor can be a voter for current by predicting the state-of-charge from reverse solving the voc-soc curve of the battery chemistry.  This can be done using an Extended Kalman Filter.
 
 
 ## Repository
 
 All information including code, data sheets, scripts, the source for this document is organized in the open GitHub repository https://github.com/davegutz/myStateOfCharge.   The MIT license is applied to make all this information open.
 Most information is in the primary application folder SOC_Particle, named after the first prototype:  a Particle Photon PLC running a 'state of charge' counting algorithm.
-Moving alphabetically, the first folder 'Battery State' is a record regarding the theory of LiFeP04 battery state of charge (SoC) monitoring.   The sub-folder 'EKF' is a record of theory of Extended Kalman Filter as applied to SoC.   Inside the 'sandbox' folder are Python models of this topic.
-The second folder 'dataReduction' collects raw CoolTerm data capture files '.txt.'   The README.md file at the top level has a listing of the different types of scripts run using the 'talk' function through CoolTerm UART transmit/receive interface to generate these files.   That is normally done as regression testing to understand code change.   Those are sometimes renamed as '.xls', '.xlsx', or '.ods' to plot by hand using Microsoft Excel or Open Document Spreadsheet.   By renaming them the hand work is remembered in the repository and not over-written by the next regression test runs through the script series.   The '.stc' files are CoolTerm configuration files that are useful to save.  The sub-folder 'figures' is a permanent collection of data reduction runs, see the 'py' folder of the data reduction Python scripts.  The sub-folder 'temp' is a scratch folder used by the Python scripts.   The '.csv' files in there are useful for debugging the Python scripts.
+Moving alphabetically, the first folder 'Battery State' is a record regarding the theory of LiFePO4 battery state of charge (SoC) monitoring.   The sub-folder 'EKF' is a record of theory of Extended Kalman Filter as applied to SoC.   Inside the 'sandbox' folder are Python models of this topic.
+The second folder 'dataReduction' collects raw puTTY data capture files '.txt.'   The README.md file at the top level has a listing of the different types of scripts run using the 'talk' function through puTTY UART transmit/receive interface to generate these files.   That is normally done as regression testing to understand code change.   Those are sometimes renamed as '.xls', '.xlsx', or '.ods' to plot by hand using Microsoft Excel or Open Document Spreadsheet.   By renaming them the hand work is remembered in the repository and not over-written by the next regression test runs through the script series.   The '.stc' files are puTTY configuration files that are useful to save.  The sub-folder 'figures' is a permanent collection of data reduction runs, see the 'py' folder of the data reduction Python scripts.  The sub-folder 'temp' is a scratch folder used by the Python scripts.   The '.csv' files in there are useful for debugging the Python scripts.
 The folder 'datasheets' has hardware datasheets as well as snapshots of any hand-drawn schematics in 'Schematics' and a folder 'pSpice' with LTSpice modeling of the circuits.
 The folder 'lib' is created by Visual Studio Particle Workbench to import Particle-specific code libraries.
 The folder 'py' was mentioned before.   It is the Python scripts used for data reduction.   It was handy to run the same scripts to overlay data on predicted model results.   So any design work could be performed by iterating on a particular script run that has a problem, modifying the Python model of the application to find solutions.   Inside 'py' is a folder 'pyDAGx' where I store my own Python libraries.   The 'venv' folder is maintained by pyCharm IDE.
 The folder 'src' has the application source.  The app is 'SOC_Particle.ino.'   Particle follows the Arduino naming convention.  The '.sav' files are my record of a concept that 'tweaked' the charging efficiency to match Coulomb Counting history to incidence of saturation.    The concept assumes the current sensors are calibrated perfectly.   Inside this folder are 'Adafruit' libraries imported by hand instead of the Particle process, 'hardware' libraries for miscellaneous devices, and 'myLibrary' with my stuff I've accumulated over time – mainly dynamic filters used for application logic.
 The folder 'target' is generated by the Particle Workbench to hold application .elf files.
-There is a gsheet in Appendix 3.   Links called 'Truck Camping ALL STUFF' that has a manifest of the prototype hardware.   See the tabs 'SoC Device Alpha' and 'SoC Device Beta.'   Alpha refers to the Photon device design with ADS cards feeding I2C.   Beta refers to the Argon design with pure OpAmp devices.
+There is a gsheet in Appendix 3.   Links called 'Truck Camping ALL STUFF' that has a manifest of the prototype hardware.   See the tabs 'SoC Device Alpha' and 'SoC Device Beta.'   Alpha refers to the Photon device design with ADS cards feeding I2C.   Beta refers to the Argon design with pure OpAmp devices.  We're exclusively Photon2 now.
 Design Process Philosophy
 For this project I followed a streamlined method that I hope 'self documents.'   Data reduction centers on an 'overplot' idea.   The run regression, I would overplot the result of old runs on new runs looking for and verifying differences.   To run verification, I would overplot the result of new runs on the new model, looking for differences.  In verification, there should be a perfect overplot.   There are some very rare instances where the data does not overlay perfectly.   The presumption is that in achieving a perfect overlay that design meets intent and I avoided a painfully detailed explanation of plot artifacts.   Design documentation is done at a higher level with a rough description, not too much detail that would detract from understanding.
 
@@ -270,26 +267,26 @@ The biggest problem with the initial ADS I2C solution is the throughput.   Every
 
 Eventually I realized that the Particle devices have plenty of fast A/D converters and that the real challenge was to make a high accuracy bipolar instrumentation amplifier.  Microelectronics make a 20:1 chip that matches the 3.3v and 0.075v ranges of the Particle A/D and shunt output range called TSC2010-IDT that is perfect for the task and costs less than $4.   It was not available due to COVID pandemic shortages, so instead I used two one-sided A/D converters to manage primary and common voltages of the one-sided OPA333 op-amp circuits to calculate sensed current.   This is less accurate but workable since there is plenty of A/D interfaces.
 
-The second situation that drove design is that Particle devices are morphing over time.   The Photon device is their first / second generation device with Wi-Fi interface and built-in EEPROM to handle power loss.   I interfaced to TX/RX UART an HC-06 standard Bluetooth (as opposed to the newer low-energy BLE) for monitoring by the user while moving.   When those ran out Particle offers up the third-generation Argon also with Wi-Fi that does not have built-in EEPROM but does have built-in BLE.  I bought 47L16 EERAM I2C modules to replace the EEPROM function.  This required considerable application programming to support.   I tried the BLE function but found that UART terminal apps to support it are poor.    So I continued on with the HC-06 since it was a ready solution.   The future of Particle is the Photon 2.   I would recommend the Photon 2 Development Kit.   They are not yet available.   It will require the EERAM and HC-06, most likely, unless UART BLE terminals magically appear.
+The second situation that drove design is that Particle devices are morphing over time.   The Photon device is their first / second generation device with Wi-Fi interface and built-in EEPROM to handle power loss.   I interfaced to TX/RX UART an HC-06 standard Bluetooth (as opposed to the newer low-energy BLE) for monitoring by the user while moving.   When those ran out Particle offers up the third-generation Argon also with Wi-Fi that does not have built-in EEPROM but does have built-in BLE.  I bought 47L16 EERAM I2C modules to replace the EEPROM function.  This required considerable application programming to support.   I tried the BLE function but found that UART terminal apps to support it are poor.    So I continued on with the HC-06 since it was a ready solution.   The future of Particle is the Photon 2.   I would recommend the Photon 2 Development Kit.   They are now available.   UART BLE terminals magically appeared for native BLE.  It works well.  The same Serial Bluetooth app used for HC-06 work well.  I am slowly phasing out any code that covers pre-Photon2 hardware.  Retained SRAM on Photon2 replaces EERAM; the 47L16 EERAM is Argon-specific and no longer needed.
 
-An almost third situation was software morphing.   Particle requires software versions to match hardware devices and those change over time.   Fortunately this application is simple enough that basic firmware could handle it and firmware bugs did not affect it.    I simply kept up with Particle's releases, always using the most recent as they came out.
+An almost third situation was software morphing.   Particle requires software versions to match hardware devices and those change over time.   Fortunately this application is simple enough that basic firmware could handle it and firmware bugs did not affect it.    I simply kept up with Particle's releases, always using the most recent as they came out.  This was especially important early in the Photon2 cycle as bugs were common.  Especially bad was a serial interface that was 10x slower than base Photon and that drove throughput for a while.
 
 
 ## User Interface
 
-The Serial port of the Particle devices is used for crude interactive interface.  An abbreviated version is available on the Serial1 Bluetooth interface.
+The Serial.print port of the Particle devices is used for crude interactive interface.  An abbreviated version is available on the  Bluetooth interface.  Both of accessed by the 'sendTxBuf' function.
 
-The idea is to install _puTTY_ and use the _Python_ interface provided by _GUI_TestSOC.py_.  I tried to set up a direct _Python_ serial driver but found the throughput is too slow.  _puTTY_ is a well known and well used portable serial monitor that runs very fast and friendly as a standalone executable on any platform.  I wrote a _Python_ _tKinter_ GUI that works with whatever automation is available.
+The idea is to install _puTTY_ and use the _Python_ interface provided by _GUI_TestSOC.py_.  I tried to set up a direct _Python_ serial driver but found the throughput is too slow.  _puTTY_ is a well known and well used portable serial monitor that runs very fast and friendly as a standalone executable on any platform.  I wrote a _Python_ _tKinter_ GUI call GUI_TestSOC.py that works with whatever automation is available.
 
 One starts at the top of the GUI and enters configuration. I like to store data separately from the GitHub repository because of space.  I use Google Drive.  Point the GUI at that for _dataReduction Folder_.  The GUI works out of the _py_ folder and moves results over.  It also is careful to backup any stored Serial data in the working folder that does not somehow get copied programmatically.  Next proceed pushing buttons top to bottom.  The init button will start puTTY and store a copy of the init string in the mouse paste buffer.  Right-click this into the puTTY window in Windows.  Ctrl-Shift-V in Linux.  _______ in macOS.
 
 The first start the device may be asking for input.  First take care of that or reset the device if you accidentally paste into its dialog.
 
-When init is complete go to start button and paste that then immediatly click on the reset button to start the timer.   The reset string is ready in the buffer for when the timer expires.
+When init is complete go to start button and paste that then immediatly click on the reset button to start the timer.   The reset string is ready in the buffer for when the timer expires.  Note that backup RAM is updated every  10 seconds so if you reset or depower before then you lose any * adjustments.  Also, when initializing stuff is not firm until the programs stops emitting '*'.  Those asterisks cause 'None' errors in the GUI Compare programs by polluting the data stream.
 
-Then save.   Then press Compare<>Sim.
+When your GUI run is done, 'DONE', then save.   Then press Compare<>.
 
-It’s all done using a system of two-letter codes.   The user connects a computer to the PLC and fires up some serial interface program such as puTTY.   Callbacks in the application watch for the codes, decode them, and make changes to the program.
+The communication language is all done using a system of two-letter codes.   The user connects a computer to the PLC and fires up some serial interface program such as puTTY.   Callbacks in the application watch for the codes, decode them, and make changes to the program.
 
 There is another [section](doc/TestSOC.md) that describes how to interface with puTTY using a python script [GUI_TestSOC.py](../SOC_Particle/py/GUI_TestSOC.py).
 
@@ -325,20 +322,20 @@ The shunt device and wiring are prime reliable.   This is a declaration that the
 
 Note that an important feature of this scheme is annunciation and user intervention.  Once the triplex logic isolates a failure it is in a mode where further isolation is not much better than a coin toss.   How do you choose between two different wristwatches telling different time?  If the user physically repairs a failure soon after annunciation then exposure to multiple failure scenario is negligible.
 
-Power loss is a normal event.   They are caused by user action and by the BMS.   To protect LiFeP04 chemistry, the BMS shuts off charging below 0 C and shuts off usage below 10v.   Features are added to Count Coulombs and monitor faults in presence of normal power loss occurrence.
+Power loss is a normal event.   They are caused by user action and by the BMS.   To protect LiFePO4 chemistry, the BMS shuts off charging below 0 C and shuts off usage below 10v.   Features are added to Count Coulombs and monitor faults in presence of normal power loss occurrence.
 
 Except for shutting off, the Battleborn batteries are sensitive to temperature.   Accuracy is improved with sensor but not terribly.  The most likely consequence of temperature sensor loss would be an unexpected BMS shutoff for low temperature while the device is predicting good time remaining.  Temperature sensor failures are monitored and displayed so the user can take action to reduce exposure.
 Real-Time Monitoring
 There are three possible ways:
-    • Connect CoolTerm to the USB
+    • Connect puTTY to the USB
     • Connect phone UART terminal to the USB
-    • Monitor HC-06 standard Bluetooth Serial Output
-All use the 'Serial' and 'Serial1' APIs in the Particle Workbench tools.   'Serial' is connected to the USB TX/RX.   'Serial' is used for all heavy troubleshooting and testing.   Various levels of verbosity print various styles of monitoring.   Verbosity level 0, 'v0', transmits nothing on 'Serial.'   Level 1, 'v1' is the most basic data stream.   So on.   Type 'h' to get a list of options.  'Serial1' content is a subset of 'Serial' content connected to Bluetooth TX/RX.   'Serial1' is useful for daily quick check.   The level 0, 'v0', form reproduces the OLED display on the Bluetooth monitor.
+    • Monitor Bluetooth Serial Output
+All use the 'Serial' and 'Serial1' APIs in the Particle Workbench tools.   'Serial' is connected to the USB TX/RX.   'Serial' is used for all heavy troubleshooting and testing.   Various levels of verbosity print various styles of monitoring.   Verbosity level 0, 'vv0', transmits nothing on 'Serial.'   Level 1, 'vv1' is the most basic data stream.   So on.   Type 'h' to get a list of options.  'Serial1' content is a subset of 'Serial' content connected to Bluetooth.   'Serial1' is useful for daily quick check.   The level 0, 'vv0', form reproduces the OLED display on the Bluetooth monitor.
 Appendix 2:  Regression Suite has lots of examples.
 
 
 ## Post Process Monitoring
-High sample rate is needed to properly book-keep current integration for spikes.  Once that is verified and built in the device build the monitoring process may have as long as 30 minutes between data points.   Sensor failures are on the order of 10 seconds between data points.   Two circular buffers manage this data collection.    Seven points are captured for any critical sensor failure and that buffer frozen until manually reset.   It may be downloaded using any of the three monitoring methods.  Any and all excess memory is used for the history.   The Argon PLCs have some extra EERAM beyond what's needed for sensor failures.   And the Argon PLCs have extra PRAM to access as long as the PLC is not depowered.   All these are available using any of the three monitoring methods.
+High sample rate is needed to properly book-keep current integration for spikes.  Once that is verified and built in the device build the monitoring process may have as long as 30 minutes between data points.   Sensor failures are on the order of 10 seconds between data points.   Two circular buffers manage this data collection.    Seven points are captured for any critical sensor failure and that buffer frozen until manually reset.   It may be downloaded using any of the three monitoring methods.  Any and all excess memory is used for the history.   The Photon2 PLCs have some extra EERAM beyond what's needed for sensor failures.   And the Photon2 PLCs have extra PRAM to access as long as the PLC is not depowered.   All these are available using any of the three monitoring methods.
 Resistor Quality
 The temperature range for this device is about 0C for a heated battery up to about 40C on hot summer day.   This is a small swing and 5% resistors would show about 1% effect.   And since the battery hysteresis, variation, life and the need to calibrate for installation effects drive accuracy, the resistor quality could be poor.   This is unnecessary because the high quality resistors are negligibly more expensive.   In the future, 1% 1/4 watt resistors should be procured.
 
@@ -348,7 +345,7 @@ The temperature range for this device is about 0C for a heated battery up to abo
 
 ## Battery Heating
 
-For some expenditure of charge, the battery can remain available for full functioning charge and discharge even when temperature outside, or inside the unheated RV, drop below the level where the battery management system (BMS) would normally shut off the terminals.  The BMS, present in all LiFeP04 batteries, does this to prevent damage to the chemistry.   This is all independent of sunshine, as many RVs, including mine, charge from the engine too.
+For some expenditure of charge, the battery can remain available for full functioning charge and discharge even when temperature outside, or inside the unheated RV, drop below the level where the battery management system (BMS) would normally shut off the terminals.  The BMS, present in all LiFePO4 batteries, does this to prevent damage to the chemistry.   This is all independent of sunshine, as many RVs, including mine, charge from the engine too.
 
 The limit of this feature is somewhere below -5F.   Any colder and the battery expend all its energy overnight keeping warm leaving nothing left to run a CPAP machine.
 
@@ -380,15 +377,12 @@ You need a clamping ammeter. Basic.  Best way to get the slope of the conversion
 
 Do a discharge-charge cycle to get a good practical value for the bias of the conversion.  Calculate integral of A over cycle and get endpoint to match start point.  This will also provide a good estimate for battery capacity to populate the model. (R1 visible easily).
 
-Tweak logic could be used to get rid of drift of small A measurement.  This integrates each freely counted current input and compares endpoints after long cycle.  Should be no difference.  If there is, tweak.  Not implemented - not worth complexity.
+Tweak logic could be used to get rid of drift of small A measurement.  This integrates, using soc_inf and dq_inf / dq_abs, each freely counted current input and compares endpoints after long cycle.  These are found using 'Q' print on the Talk function.  If there is a bias, tweak.  Automatic logic iot implemented - not worth complexity.  But the Dab+/- calculation may be useful to tweak DA adjustment.
 
->13.7 V is decent approximation for SoC>99.7, correct for temperature.
+Levels of filtered voc = vstat_f > 13.85 CHEM_NOM_VSAT is decent approximation for SoC>99.7, correct for temperature.
 
 Temperature correction in ambient range is about BATT_DVOC_DT=0.001875 V/deg C from 25 * number of cells = 4. This is estimated from the Battleborn characterization model I performed.
 
-The ADS module is delicate (ESD and handling).  I burned one out by
-accidentally touching terminals to back of OLED board.  I now mount the
-OLED board carefully off to the side.  Will need a hobby box to contain the final device
 
 ## Accuracy
 
@@ -425,27 +419,28 @@ OLED board carefully off to the side.  Will need a hobby box to contain the fina
 6. Real runs using battery heater to establish VOC(SoC, Tb) and determine capacity, which should be > rating.
 
 ## Boot checklist - after new software load
-1. Synchronize time if necessary. Use hotspot on phone.  Press left button and hold 3 sec to get blink blue. Use particle app to '+' device. Reset using right button to complete the process.  Time is UTC.  Unfortunately for device _soc1a_, the bar code on the Argon is hidden inside the case.   Then you must use the talk('U') feature of the interface programs.   This will work over Bluetooth for Argon.   Use Unix Epoch website and subtract (hours from Zulu)* 3600 and paste onto U.
-2. Update the version in constants.h for setup:  '#include xxxx.h'.
-3. Start CoolTerm record. Record Hd, Pf, Pa, brief v1 burst for the previous load.
+1. Synchronize time if necessary. Use hotspot on phone.  Press left button and hold 3 sec to get blink blue. Use particle app to '+' device. Reset using right button to complete the process.  Time is UTC.  UThen you must use the talk('UT') feature of the interface programs.   This will work over Bluetooth   Use Unix Epoch website and subtract (hours from Zulu)* 3600 and paste onto U. The GUI has a special button function that does all this over puTTY.
+2. Update the software version in version.h.
+3. Start puTTY record. Record Hd, Pf, Pa, brief vv1 burst for the previous load.
 4. On restart after load, check the retained parameter list (SRAM battery backed up).  The list is displayed on startup for convenience.  Go slowly with this if you've been tuning.
-5. Record Hd, Pf, Pa, brief v1 burst.  Confirm the 'unit =' is for the intended build install.
-6. Check Xm=0 before walk away from installed system. 
+5. Record Hd, Pf, Pa, brief vv1 burst.  Confirm the 'unit =' is for the intended build install.
+6. Check Faults are clear ('Rf'), history logging is clear ('HR'), modeling=0, UT is set, and soc, soc_ekf are reasonable before walk away from installed system. 
 
 ## Throughput
-1. Photon throughput driven by ADC read of ADS1013 device (current AD).  For Argon with EERAM 47L16 it is ADC write of parameters at 0.001 each. Manage this with blink logic in put_all_dynamic() of 'SavedPars' object, called with display update time DISPLAY_USER_DELAY (1.2 sec) in ino file.
+1. Photon throughput driven by ADC read.  Running 'vv99' calibration displays throughput usage in the far right column.
 2. There is a 6×1.2 delay between some transient events and when it is remembered by the EERAM.  If you're pushing buttons rapidly and repeating scripts you may run into stale data issue especially remembered charge states 'delta_q...' --> soc...
 3. Probably wiring quality drives the conversion count for Photon ADS (busy wait for I2C comm). Or could be flaky ADS devices.
-4. Per unit throughput (sec).   There is no ADS for pro1a and pro2p2.
+4. Per unit throughput (sec).
   ```
                                                                     (every 6 sec) 
           CONFIG_BARE   normal  sense_syn_sel   monitor   publishS  temp_load_and_filter  ADS Amp  ADS NoAmp convert
   pro0p   0.001         0.035   0.034600        0.000281  0.000096  0.044650              0.031940 0.001910
   pro1a   0.002         0.003   0.002060        0.000377  0.000190  0.048500
   pro2p2  0.002         not measured
-  pro3p2  not Meas      0.002   Not Meas -->
+  pro3p2  not Meas      0.002   Not Meas -->f
+  socXp2                0.007 (vv99)  --lots more functionality (EKF, input signal processing)
   ```
-  5. A Serial.print statement uses about 0.004 seconds.   Best way to measure is to simply 'Dr1;DP100;v1;' and watch dt.
+  5. A Serial.print statement uses about 0.004 seconds.   Best way to measure is to simply 'Dr1;DP100;vv1;' and watch dt.  'vv99' on USB prints throughput usage in the far right column.
 
 
 ## Dynamic Randles Model
@@ -490,168 +485,20 @@ See _Calibrate20230513.odt_.
 
 ## Appendix 2:  Regression Suite
     • All these must self initialize – correct the application until they do
-    • You have to start and stop data recording.  Use ctr-R and shift-ctr-R in CoolTerm.   You may use Arduino Serial but it is a little messier because it doesn't support multiple windows.
-    • Open two talk windows (ctr-T in CoolTerm) and copy-paste the two lines in the talk windows (start and reset in items below)
-    • Initiate by starting a recording (ctr-R) and running start line in first talk. Those without a second line self-terminate. You still have to stop recording (shift-ctr-R).
-    • Terminate by watching for reset of failure condition (or wait long enough) and running second line in second talk.
-    • Move to pyCharm and run 'CompareRunSim' after proper comment/uncomment in 'data_file_old_txt' assignment.
-    • Running with a bare device, need to set the modeling dscn bits 16, 32, 64, and 128. (Add 240 to whatever Xm you normally run with, e.g. 7 becomes 247 for fully bare and modeled.)
-    • The second lines below are to reset.  I recommend opening a second transmit window if using CoolTerm to have these ready to go.
-    • Copy and paste the lines into CoolTerm 'transmit' windows (ctr-T).  Or run in line mode (Options – Terminal – Line Mode) and use communication bar like in Arduino Serial App still copy and paste.
-    • Example set of plots, from offSitHysBms begin here:   Figure 21.
-       
-    ampHiFail:
-        start:  	Ff0;D^0;Xm247;Ca0.5;Dr100;DP1;HR;Pf;v2;W30;Dm50;Dn0.0001;
-        reset: Hs;Hs;Hs;Hs;Pf;DT0;DV0;DM0;DN0;Xp0;Rf;W200;+v0;Ca.5;Dr100;Rf;Pf;DP4;
-            ▪ Should detect and switch amp current failure (reset when current display changes from '50/diff' back to normal '0' and wait for CoolTerm to stop streaming.)
-            ▪ 'diff' will be displayed. After a bit more, current display will change to 0.
-            ▪ To evaluate plots, start looking at 'DOM 1' fig 3. Fault record (frozen). Will see 'diff' flashing on OLED even after fault cleared automatically (lost redundancy).
-
-    rapidTweakRegression:
-        start:  Ff0;HR;Xp10;
-            ◦ Should run three very large current discharge/recharge cycles without fault
-            ◦ Best test for seeing time skews and checking fault logic for false trips
-
-    rapidTweakRegression vA CH: Bm1;Bs1;SQ1.127;Sq1.127;Ff0;HR;Xp10;  for CompareRunRun.py Argon vs Photon builds.   This is the only test for that.
-      
-	offSitHysBms: operate around BMS off, starting above from about 11v, go below, come back up.  EXAMPLE PLOTS START HERE:  Figure 21.
-		start:  Ff0;D^0;Xp0;Xm247;Ca0.05;Rb;Rf;Dr100;DP1;Xts;Xa-162;Xf0.004;XW10;XT10;XC2;W2;Ph;HR;Pf;v2;W5;XR;
-     		reset:  XS;v0;Hd;Xp0;Ca.05;W5;Pf;Rf;Pf;v0;DP4;
-            ▪ Best test for seeing Randles model differences.  No faults
-            ▪ Only test to confirm on/off behavior.  Make sure comes back on.
-            ▪ It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shuttoff.
-            ▪ reset_s_ver because device reset on power up
-          offSitHysBms CH:  Ca0.014;
-          
-	triTweakDisch:
-		start:  Ff0;D^0;Xp0;v0;Xm15;Xtt;Ca1.;Ri;Mw0;Nw0;MC0.004;Mx0.04;NC0.004;Nx0.04;Mk1;Nk1;-Dm1;-Dn1;DP1;Rb;Pa;Xf0.02;Xa-29500;XW5;XT5;XC3;W2;HR;Pf;v2;W2;Fi1000;Fo1000;Fc1000;Fd1000;FV1;FI1;FT1;XR;
-		reset:  v0;Hd;XS;Dm0;Dn0;Fi1;Fo1;Fc1;Fd1;FV0;FI0;FT0;Xp0;Ca1.;Pf;DP4;
-            ▪ Should run three very large triangle wave current discharge/recharge cycles without fault.  
-          
-	coldStart:
-		start:  Ff0;D^-18;Xp0;Xm247;Fi1000;Fo1000;Ca0.93;Ds0.06;Sk0.5;Rb;Rf;Dr100;DP1;v2;W100;DI40;Fi1;Fo1;
-     		reset:  DI0;W10;v0;W5;Pf;Rf;Pf;v0;DP4;D^0;Ds0;Sk1;Fi1;Fo1;Ca0.93;
-            ▪ Should charge for a bit after hitting cutback on BMS.   Should see current gradually reduce.   Run until 'SAT' is displayed.   Could take ½ hour.
-            ▪ The Ds term biases voc(soc) by delta x and makes a different type of saturation experience, to accelerate the test.
-            ▪ Look at chart 'DOM 1' and verify that e_wrap misses ewlo_thr (thresholds moved as result of previous failures in this transient)
-            ▪ Don't remember why this problem on cold day only.
-
- 	ampHiFailFf:
-		start:  Ff1;D^0;Xm247;Ca0.5;Dr100;DP1;HR;Pf;v2;W30;Dm50;Dn0.0001;
-        		reset:  Hs;Hs;Hs;Hs;Pf;Hd;Ff0;DT0;DV0;DM0;DN0;Xp0;Rf;W200;+v0;Ca.5;Dr100;Rf;Pf;DP4;
-    • Should detect but not switch amp current failure. (See 'diff' and current!=0 on OLED).
-    • Run about 60s. Start by looking at 'DOM 1' fig 3. No fault record (keeps recording).  Verify that on Fig 3 the e_wrap goes through a threshold ~0.4 without tripping faults.  
-
- 	ampLoFail:
-		start:  Ff0;D^0;Xm247;Ca0.5;Dr100;DP1;HR;Pf;v2;W30;Dm-50;Dn0.0001;
-         		reset: Hs;Hs;Hs;Hs;Pf;DT0;DV0;DM0;DN0;Xp0;Rf;W200;+v0;Ca.5;Dr100;Rf;Pf;DP4;
-    • Should detect and switch amp current failure.
-    • Start looking at 'DOM 1' fig 3. Fault record (frozen). Will see 'diff' flashing on OLED even after fault cleared automatically (lost redundancy).
-
-	ampHiFailNoise:
-		start: Ff0;D^0;Xm247;Ca0.5;Dr100;DP1;HR;Pf;v2;W30;DT.05;DV0.05;DM.2;DN2;W50;Dm50;Dn0.0001;Ff0;
-         		reset:  Hs;Hs;Hs;Hs;Pf;DT0;DV0;DM0;DN0;Xp0;Rf;W200;+v0;Ca.5;Dr100;Rf;Pf;DP4;
-    • Noisy ampHiFail.  Should detect and switch amp current failure.
-    • Start looking at 'DOM 1' fig 3. Fault record (frozen). Will see 'diff' flashing on OLED even after fault cleared automatically (lost redundancy).
-
-	rapidTweakRegression40C: 
-		start:  Ff0;HR;D^15;Xp10;
-               	reset:  D^0;
-    • Should run three very large current discharge/recharge cycles without fault
-
- 	slowTweakRegression:
-		start:  Ff0;HR;Xp11;
-		reset:  self terminates
-    • Should run one very large slow (~15 min) current discharge/recharge cycle without fault.   It will take 60 seconds to start changing current.
-
-	satSit: 
-		start:  Ff0;D^0;Xp0;Xm247;Ca0.993;Rb;Rf;Dr100;DP1;Xts;Xa17;Xf0.002;XW10;XT10;XC1;W2;HR;Pf;v2;W5;XR;
-		reset:  XS;v0;Hd;Xp0;Ca.9962;W5;Pf;Rf;Pf;v0;DP4;
-    • Should run one saturation and de-saturation event without fault.   Takes about 15 minutes.
-    • operate around saturation, starting below, go above, come back down. Tune Ca to start just below vsat
-    • satSit CH:  Ca0.993
-
-	flatSitHys:
-    		start:  Ff0;D^0;Xp0;Xm247;Ca0.9;Rb;Rf;Dr100;DP1;Xts;Xa-81;Xf0.004;XW10;XT10;XC2;W2;Ph;HR;Pf;v2;W5;XR;
-     		reset:  XS;v0;Hd;Xp0;Ca.9;W5;Pf;Rf;Pf;v0;DP4;
-    • Operate around 0.9.  For CHINS, will check EKF with flat voc(soc).   Takes about 10 minutes.
-    • Make sure EKF soc (soc_ekf) tracks actual soc without wandering.
-
-	offSitHysBmsNoise:
-  		start:  Ff0;D^0;Xp0;Xm247;Ca0.05;Rb;Rf;Dr100;DP1;Xts;Xa-162;Xf0.004;XW10;XT10;XC2;W2;DT.05;DV0.10;DM.2;DN2;Ph;HR;Pf;v2;W5;XR;
-     		reset:  XS;v0;Hd;Xp0;DT0;DV0;DM0;DN0;Ca.05;W5;Pf;Rf;Pf;v0;DP4;
-    • Stress test with 2x normal Vb noise DV0.10.  Takes about 10 minutes.
-    • operate around saturation, starting above, go below, come back up. Tune Ca to start just above vsat. Go low enough to exercise hys reset 
-    • Make sure comes back on.
-    • It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shuttoff.
-
-	ampHiFailSlow:
-		start:  Ff0;D^0;Xm247;Ca0.5;Pf;v2;W2;Dr100;DP1;HR;Dm6;Dn0.0001;Fc0.02;Fd0.5;
-         		reset:  Hd;Xp0;Pf;Rf;W2;+v0;Dr100;DE20;Fc1;Fd1;Rf;Pf;
-    • Should detect and switch amp current failure. Will be slow (~6 min) detection as it waits for the EKF to wind up to produce a cc_diff fault.
-    • Will display “diff” on OLED due to 6 A difference before switch (not cc_diff).
-    • EKF should tend to follow voltage while soc wanders away.
-  
- 	vHiFail:
-		start:  Ff0;D^0;Xm247;Ca0.5;Dr100;DP1;HR;Pf;v2;W50;Dv0.8;
-      		reset:  Dv0;Hd;Xp0;Rf;W50;+v0;Dr100;Rf;Pf;DP4;
-    • Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.
-    • To diagnose, begin with DOM 1 fig. 2 or 3.   Look for e_wrap to go through ewl_thr.
-    • You may have to increase magnitude of injection (*Dv).  The threshold is 32 * r_ss.
-
- 	vHiFailFf:    
-		start: Ff1;D^0;Xm247;Ca0.5;Dr100;DP1;HR;Pf;v2;W50;Dv0.8;
-         		reset: Dv0;Ff0;Hd;Xp0;Rf;W50;+v0;Dr100;Rf;Pf;DP4;
-        ◦ Run for about 1 minute.
-        ◦ Should detect voltage failure (see DOM1 fig 2 or 3) but not display anything on OLED.
-
- 	pulseEKF: Xp6 # TODO: doesn't work now.
-
- 	pulseSS: Xp7
-        ◦ Should generate a very short <10 sec data burst with a pulse.  Look at plots for good overlay. e_wrap will have a delay.
-        ◦ This is the shortest of all tests.  Useful for quick checks.
-  
- 	tbFailMod:
-        start:Ff0;D^0;Ca.5;Xp0;W4;Xm247;DP1;Dr100;W2;HR;Pf;v2;Xv.002;Xu1;W200;Xu0;Xv1;W100;v0;Pf;
-        reset:Hd;Xp0;Xu0;Xv1;Ca.5;v0;Rf;Pf;DP4;
-        ◦  Run for 60 sec.   Plots DOM 1 Fig 2 or 3 should show Tb was detected as fault but not failed.
-
-    tbFailHdwe:  This script sometimes doesn't work but test performs fine manually
-        start:Ff0;D^0;Ca.5;Xp0;W4;Xm246;DP1;Dr100;W2;HR;Pf;v2;Xv.002;W50;Xu1;W200;Xu0;Xv1;W100;v0;Pf;
-		reset: Hd;Xp0;Xu0;Xv1;Ca.5;v0;Rf;Pf;DP4;
-            ◦ Should momentary flash '***' then clear itself.  All within 60 seconds.
-            ◦ 'Xp0' in reset puts Xm back to 247.
-
+    Automated using the GUI app.   When the GUI first opens press the 
 
 
 
 ## Appendix 3:  Special Testing (e.g. Gorilla Testing)
 
-    Scale battery
-    App:  NOM_UNIT_CAP in constants.h (setup #include xxxx.h)
-    Python:  scale_in in CompareRunSim.py or CompareRunRun.py (+Battery. NOM_UNIT_CAP)
-    Notes:  talk 'Sc' scales the on-board model in BatterySim only, not BatteryMonitor	
-
- 	dwell noise Ca.5:
-        start:  Ff0;HR;Di.1;Dv0;Dr100;DP1;v4;Ca.5;DT.05;DV0.05;DM.2;DN2;
-        reset: Xp0;v0;Hd;DT0;DV0;DM0;DN0;Di0;Dv0;DP4;
-
-    Dwell for >5 minutes. This operating condition found EKF failure one time.  Led to multi-framing the EKF (update time = 2.0).  Before change, update time of EKF was so short (0.1) that internal filter parameters were truncating. When plotted shows EKF staying on point, not wandering off.  Beware, a dwell has most parameters changing slowly.  Auto-scaling in python plots combined with truncation in data stream (but not python) makes some interesting artifacts.
-
-    dwell Ca.5:
-        start:  Ff0;HR;Di.1;Dr100;DP1;v4;Ca.5;
-        reset: Xp0;v0;Hd;DT0;DV0;DM0;DN0;Di0;Dv0;DP4;
-
-    Dwell for >5 minutes. This operating condition found EKF failure one time.  Led to multi-framing the EKF (update time = 2.0).  Before change, update time of EKF was so short (0.1) that internal filter parameters were truncating. When plotted shows EKF staying on point, not wandering off. Auto-scaling in python plots combined with truncation in data stream (but not python) makes some interesting artifacts.
-
+The GUI_TestSOC.py script has all the special testing you might need.
 
 ## Appendix 3.   Links
-'Truck Camping ALL STUFF.gsheet'	Multiply tabbed spreadsheet of the parts manifest, settings, hardware schematics, and what all. https://docs.google.com/spreadsheets/d/19PZ2GmKIlw14doqwePp9xxWH96coLm8WmXdIwlzdxjE/edit#gid=167481175
-
+'Solar Systems reverted 6/19/2024.gsheet'	Multiply tabbed spreadsheet of the parts manifest, settings, hardware schematics, and what all. https://docs.google.com/spreadsheets/d/1iI1kAzSHorZm2llb0ujyfut2skdUSZOoQhHEv8_PG2I/edit?gid=189116584#gid=189116584
 
 ## Powering your device
 
-The system is designed to be powered completely either from USB hooked to phone or device or from 12 V dc connector.   Normally in service the battery bank supplies 12 V and no USB is used.   The device saves fault information (EERAM 47L16) for cases when the battery banks management system powers off.  If the battery bank is off you can power with phone or device to extract information using UART terminal.   There are two UART terminals:  USB and HC-06 bluetooth.
+The system is designed to be powered completely either from USB hooked to phone or device or from 12 V dc connector.   Normally in service the battery bank supplies 12 V and no USB is used.   The Photon2 device saves fault information for cases when the battery banks management system powers off.  If the battery bank is off you can power with phone or device to extract information using UART terminal.   There are two UART terminals:  USB and Bluetooth.
 
 ## Redo Loop
 
@@ -661,7 +508,7 @@ Welcome to Particle Workbench - Configure for device - (pick appropriate OS) - (
 Make edits
 Press 'check' symbol when a .h or .cpp file is open and highlighted
 Press 'lightning' symbol
-'Talk' using CoolTerm
+'Talk' using puTTY
 
 More complex to deal with issues (always flashes despite device name difference)
 Ctrl-Shift-P - Particle:Clean Application and Device OS (local)
@@ -669,8 +516,8 @@ Ctrl-Shift-P - Particle:Compile Application (local) or Check button in Visual St
   Ctrl-Shift-P - Particle:Compile Application and Device OS (local) first time
 Ctrl-Shift-P - Particle:Cloud Flash or Ctrl-Shift-P - Particle:Local Flash
   Ctrl-Shift-P - Particle:Flash application and Device OS (local) first time
-Ctrl-Shift-P - Particle:Serial Monitor or CoolTerm(saves data)
-  'Talk' function using Monitor or CoolTerm(saves data)
+Ctrl-Shift-P - Particle:Serial Monitor or puTTY(saves data)
+  'Talk' function using Monitor or puTTY(saves data)
 
 Desktop settings
     .json has "particle.targetDevice": "proto"
@@ -692,29 +539,34 @@ View results
   pycharm
   'CompareRunRun'   run to run overplot
   'CompareRunSim'   run vs sim overplot
-  'CompareHist'     history vs sim overplot
+  'CompareHistSim'     history vs sim overplot
   'CompareFault'    fault vs sim overplot
 
 ## Device Interfaces
 
-### Particle Argon Device - assumed at least 1A max
-- Argon
-  + GND = to 2 GND rails
-  + A1  = L of 20k ohm from 12v and H of 4k7 ohm + 47uF to ground
-  + A3  = Filtered Vo of 'no amp' amp circuit
-  + A3  = Filtered Vc of both amp circuits (yes, single point of failure for both amps)
-  + A5  = Filtered Vo of 'amp' amp circuit
-  + D0  = SCA of ASD, SCA of OLED, and 4k7 3v3 jumper I2C pullup
-  + D1  = SCL of ASD, SCA of OLED, and 4k7 3v3 jumper I2C pullup
-  + D6  = Y-C of DS18 for Tb and 4k7 3v3 jumper pullup
-  + VIN = 5V Rail 1A maximum from 7805CT home-made 12-->5 V regulator
-  + 3v3 = 3v3 rail out supply to common of amp circuits, supply of OPA333, and R-OLED
-  + micro USB = Serial Monitor on PC (either Particle Workbench monitor or CoolTerm).   There is sufficient power in Particle devices to power the peripherals of this project on USB only
-  + USB  = 5v supply to VC-HC-06, R-1-wire
-  + TX  = RX of HC-06
-  + RX  = TX of HC-06
-  + D0-SDA = SDA-47L16 EERAM, Y-OLED
-  + D1-SCL = SCL-47L16 EERAM, B-OLED
+### Particle Photon 2 Device - assumed at least 1A max
+
+  ┌──────────┬──────────────────────────────────┐
+  │   Pin    │             Function             │
+  ├──────────┼──────────────────────────────────┤
+  | Gnd      | Ground                           |
+  ├──────────┼──────────────────────────────────┤
+  | 3v3      | 3.3 V supply for all peripherals |
+  ├──────────┼──────────────────────────────────┤
+  | VUSB     | 5 V supply for Photon2           |
+  ├──────────┼──────────────────────────────────┤
+  │ A4       │ Two-wire temperature sensor      │
+  ├──────────┼──────────────────────────────────┤
+  │ D7       │ Status LED                       │
+  ├──────────┼──────────────────────────────────┤
+  │ A0 (D11) │ Primary Ib amp ('amp')           │
+  ├──────────┼──────────────────────────────────┤
+  │ A1 (D12) │ Vb voltage sense                 │
+  ├──────────┼──────────────────────────────────┤
+  │ A2 (D13) │ Backup Ib amp ('no amp' / 'noa') │
+  ├──────────┼──────────────────────────────────┤
+  │ A5 (D14) │ Vc / Vr reference voltage        │
+  ├──────────┼──────────────────────────────────┤
 
 ### Voltage regulator (LM7805)
 
@@ -738,33 +590,6 @@ Vo  = 5v rail
     + pin- = 5k1 of G-Shunt 
     + pin+ = 98k of Vc, 98k of Vo, and 5k1 of Y-Shunt
 
-### No Amp circuit 'no amp'
-
-  For Argon Beta config, identical to 'amp' Amp circuit except A3 instead of A5.   Vc common to both amps (single failure point)
-  For Photon Alpha, direct feed to ADS-1013 and no OPA333
-
-### EERAM for Argon (47L16)
-- 47L16
-  + V+   = 5v rail 
-  + Vcap = Cap 106 10uF to Gnd rail.  Storage that powers EEPROM save on power loss 
-  + V-   = Gnd rail 
-  + SDA  = D0-SDA of Device 
-  + SCL  = D1-SCL of Device
-
-### 1-wire Temp (MAXIM DS18B20)  
-- Temperature sensor library at "https://github.com/particle-iot/OneWireLibrary"
-  + Y-C   = Device D6 
-  + R-VDD = 3V3 Rail 
-  + B-GND = GND Rail
-
-### Display SSD1306-compatible OLED 128x32
-
-Amazon:  5 Pieces I2C Display Module 0.91 Inch I2C OLED Display Module Blue I2C OLED Screen Driver DC 3.3V~5V(Blue Display Color).  Code from Adafruit SSD1306 library
-  + 1-GND = Gnd 
-  + 2-VCC = 3v3 
-  + 3-SCL = Device D1-SCL 
-  + 4-SDA = Device D0-SDA
-
 ### Shunt 75mv = 100A
 - Use custom harness that contains Shunt as junction box to obtain 12v, Gnd, Vshunts
   + R-12v 
@@ -772,72 +597,21 @@ Amazon:  5 Pieces I2C Display Module 0.91 Inch I2C OLED Display Module Blue I2C 
   + Y-Yellow shunt high 
   + G-Green shunt low
 
-### HC-06 Bluetooth Module
-- Attach directly to 5V and TX/RX
-  + VC  = 5v rail 
-  + GND = Gnd rail 
-  + TX  = RX of Device 
-  + RX  = TX of Device
-
-### ASD 1013 12-bit PHOTON ALPHA ONLY *****Amplified with OPA333 my custom board.   Avoids using negative absolute voltages on inputs - centers on 3v3 / 2
-
-- HiLetgo ADS1015 12 Bit Analog to Digital Development Board ADC Converter Module ADC Development Board for Arduino
-  $8.29 in Aug 2021 
-- I2C used
-- Code from Adafruit ADS1X15 library.   Differential = A0-A1 
-- Ti OPA333 Used.   $11.00 for 5 Amazon OPA333AIDBVR SOT23-5 mounted on SOT23-6 
-- No special code for OPA.  Hardware only.   Pre-amp for ADC 5:1. 
-  + 1 - V 3v3:  0.1uF to ground for transient power draws of the ADC 
-  + 2 - G = Gnd 
-  + 3 - SCL = Photon D1 
-  + 4 - SDA  = Photon D0 
-  + 5 - ADDR = 3v3 
-  + 6 - ALERT = NC 
-  + 7 - A0 = Green from shunt 
-  + 8 - A1 = Yellow from shunt 
-  + 9 - A2 = NC 
-  + 10 -A3 = NC
-
-### Particle Photon Device 1A max PHOTON ALPHA
-
-- Particle Photon boards have 9 PWM pins: D0, D1, D2, D3, A4, A5, WKP, RX, TX
-  + GND = to 2 GND rails 
-  + A1  = L of 20k ohm from 12v and H of 4k7 ohm + 47uF to ground 
-  + A3  = H of 'no amp' amp circuit 
-  + A3  = 8k2/1uF filter of Vc of both amp circuits (yes, single point of failure for both amps)
-  + A5  = H of 'amp' amp circuit 
-  + D0  = SCA of ASD, SCA of OLED, and 4k7 3v3 jumper I2C pullup 
-  + D1  = SCL of ASD, SCA of OLED, and 4k7 3v3 jumper I2C pullup 
-  + D6  = Y-C of DS18 for Tb and 4k7 3v3 jumper pullup 
-  + VIN = 5V Rail 1A maximum from 7805CT home-made 12-->5 V regulator 
-  + 3v3 = 3v3 rail out supply to common of amp circuits, supply of OPA333, and R-OLED 
-  + micro USB = Serial Monitor on PC (either Particle Workbench monitor or CoolTerm).   There is sufficient power in Particle devices to power the peripherals of this project on USB only 
-  + 5v  = supply to VC-HC-06, R-1-wire 
-  + TX  = RX of HC-06 
-  + RX  = TX of HC-06 
-  + SDA = SDA-ADS-1013 amp, SDA-ADS-1013 no amp, Y-OLED 
-  + SCL = SCL-ADS-1013 amp, SCL-ADS-1013 no amp, B-OLED
 
 ## FAQ
+
+### Device is not found when flashing
+
+If your Particle device is not found, start by ensuring it has power, trying a different USB port (the left side of the OMEN laptop often does not work), trying a different USB data cable (not just charge), and bypassing USB hubs. Common fixes include putting the device in DFU mode (blinking yellow) by holding MODE and RESET, and checking that your computer's Device Manager detects it. 
 
 ### SOS 4 Flashing lights on Photon 2 (Bus Fault)
 
 This is caused by using too much memory.  Reduce NSUM.
 
-### DS2482SearchBusCommand status=-7 in serial monitor
-
-This is caused by OLED failure.  Such a failure has taken out the entire 
-I2C monitor function including Tb measurement on DS2482.  You may temporarily correct this be recompiling and reflashing with '// #define CONFIG_SSD1306_OLED' in the constants.h.<> file (setup #include xxxx.h).  Permanently by replacing OLED.
-
 ### FRAG message in Serial
 
 When a Particle device's heap is corrupted by excessive 'new/delete/new' or 'String +=' operations, the default action is to drop the result of the operation without warning. I added checks for the worst offenders.  Typically the fix is to decrease NSUM in _constants.h_ by a little from the value that just works to compile without SRAM messages.
 You may get 'Insufficient room' messages too.  See that FAQ below.
-
-
-### How to save 'EERAM'
-
-This feature exists on Argon only (pro1a, soc1a) to save adjustments between boots or with power loss.   There is a capacitor on those units to power a save to the EERAM chip when main power is lost.  I2C writes are slow so they are sequenced.
 
 
 ### '*is' is 1 on Boot
@@ -935,21 +709,21 @@ You probably added some code and overflowed PROM.  Smaller NSUM in constants.h o
 Smaller NFLT/NSLT in constants.h or sp in retained.h
 
 
-### Problem:  The application overflows SRAM on compilation (Argon only?)
+### Problem:  The application overflows SRAM on compilation
 
 Smaller NFLT/NSLT in constants.h or sp in retained.h
 
 
 ### Problem:  . ? h
 
-CoolTerm - Options - Terminal:  Enter Key Emulation:  CR
+puTTY - Options - Terminal:  Enter Key Emulation:  CR
 
 
 ### Problem:  cTime very long.  If you look at year, it is 1999.
 
 The Photon ALPHA VBAT battery died or was disconnected.  Restore the battery.  Connect the photon to the network.   Use Particle app on phone to connect it to Wi-Fi at least once.
 
-The Argon device hasn't synchronized since last power up.   Connect to Wi-Fi.  It is most convenient to set up the Argon devices' default Wi-Fi to be your phone running hotspot.   Then just do Particle setup from the phone - start and exit.   TODO:  may be possible to save time information to the Argon EERAM.
+The device hasn't synchronized since last power up. Use the 'UT' function across BLE or use the button in GUI.
 
 
 ### Problem:  Tbh = Tbm in display 'Pf' (print faults)
@@ -962,26 +736,25 @@ This is normal for temperature.   Modeled Tb is very simple = to a constant + bi
 
 ## To get debug data
 
-  1. Set debug = 2 in main.h
+  1. Set debug = 4 using the talk feature ('vv4').  It's easiest to get puTTY operational using the GUI_TestSOC.py interface.
   2. Rebuild and upload
   3. Start _GUI_TestSOC.py_
-     - Browse to _SOC_Particle/py_
-     - Open _pyCharm_ or run _GUI_TestSOC.py_ from the command line
+     - Browse to _SOC_Particle/pyStateOfCharge
+     - Open _pyCharm_ or run _GUI_TestSOC.py from the command line
 
 See 'State of Charge Monitor.odt' for full set of requirements, testing, discussion and recommendations for going forward.
 
 ## Changelog
 
-20221220 Beta 
-  - Functional 
-    - hys_cap Hysteresis Capacitance decreased by factor of 10 to match cold charging (coldCharge v20221028 20221210.txt) (7 deg C). 
-    - The voc-soc curve shifts low about 0.07 (7% soc) on cold days, causing cc_diff and e_wrap_lo faults.   As a result, an additional scalar was put on saturation scalar for those fault logics.
+There have been two main GitHub branches so far.
+  https://github.com/davegutz/myStateOfCharge
+    Mar 2023 - May 2025 branches g20230308gamma, g20240109, and g20240704
+  https://github.com/davegutz/mySolarStateOfCharge
+    Jun 2025 - Mar 2026 branch master-with-BLE-Serial
 
-  - Argon Related.   Cannot get Photon anymore.   Also, will not have Argon available but Photon 2 will be someday.   Argon very much like Photon 2 with no EERAM 47L16 built into the A/S (retained).   Retained on Argon lasts only for reset.   For power, bought EERAM 47L16. 
-    - parameters.cpp/.h to manage EERAM 47L16 dump.   rp --> sp 
-    - BLE logic.  Nominally disabled (#undef USE_BLE) because there is no good UART terminal for BLE.   Using HC-06 same as Photon
 
-  - Simulation neatness 
+## Simulation neatness 
+
     - Everything in python verification model is lower case for battery unit (12 VDC bank)
     - nP and  nS done at hardware interfaces (mySensors.cpp/h and myCloud.cpp/h::assign_publist)
     - load function defined 
@@ -994,9 +767,7 @@ See 'State of Charge Monitor.odt' for full set of requirements, testing, discuss
 
 
 ## TODO
-- [ ] Need pulldown on Vb so loss of signal is real.  Not sure this is possible
+- [x] Need pulldown on Vb so loss of signal is real.  Not sure this is possible.  Followup:  loss of voltage does indeed go low.
 - [ ] Document Sen->ib_is_functional() in the DecisionTable file
-- [ ] Consider a lower gain amp for the amp device
-- [ ] Resolve 'WARN' for mlissing UT
-- [ x] Kalman filter of current measurement esp noa
-- [ ] Document spectrum study lombscargleVcOnly.py performed as described in its contents.  It will be interesting to see if Kalman filter can get rid of it - it should - it's a fundamental 1.6 Hz mode well within sample frequency of 10 Hz (Nyquist 5 Hz).  The mode is present on all voltage measurements.  There are some harmonics beyond Nyquist.  1.6, 4.7, 7.8, 10.9, 14, 17.1, 20.3, and 23.1 Hz sampled using 'Cx10000' at 185 Hz.  This appears as very large noise in Ib_noa due to amplification after sampling.   The noise is in the sampling process somewhere. Should disconnect everything connected to the Photon 2 to try to isolate to Photon or infrastructire.....update:  found on soc2p2 that disconnecting the wired BT transceiver reduce errors a lot.  It seems it pings and draws power when it does so.  Replaced with onboard BLE transceiver.  It remains to be seen that soc4p2 is quieter without the BT.
+- [x] Kalman filter of current measurement esp noa
+- [ ] Document spectrum study lombscargleVcOnly.py performed as described in its contents.  It will be interesting to see if Kalman filter can get rid of it - it should - it's a fundamental 1.6 Hz mode well within sample frequency of 10 Hz (Nyquist 5 Hz).  The mode is present on all voltage measurements.  There are some harmonics beyond Nyquist.  1.6, 4.7, 7.8, 10.9, 14, 17.1, 20.3, and 23.1 Hz sampled using 'Cx10000' at 185 Hz.  This appears as very large noise in Ib_noa due to amplification after sampling.   The noise is in the sampling process somewhere. Should disconnect everything connected to the Photon 2 to try to isolate to Photon or infrastructire.....update:  found on soc2p2 that disconnecting the wired BT transceiver reduce errors a lot.  It seems it pings and draws power when it does so.  Replaced with onboard BLE transceiver.  It remains to be seen that soc4p2 is quieter without the BT.  Followup 20250313: removing BT HC-06 cleaned up the noise on the desktop units but not soc4p2 in the truck. I disconnected everything and noise still there.  The only thing left to do is remove the Vb Module and run solely off laptop power on USB.

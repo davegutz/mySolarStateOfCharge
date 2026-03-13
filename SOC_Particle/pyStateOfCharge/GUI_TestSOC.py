@@ -27,7 +27,7 @@ import sys
 import time
 from configparser import ConfigParser
 import re
-from tkinter import ttk, filedialog
+from tkinter import filedialog
 import tkinter.simpledialog
 import tkinter.messagebox
 from CompareHistHist import compare_hist_hist
@@ -36,11 +36,9 @@ from CompareRunSim import compare_run_sim
 from CompareRunRun import compare_run_run
 from CompareRunHist import compare_run_hist
 from CountdownTimer import CountdownTimer
-from threading import Thread
 import shutil
 import pyperclip
 import subprocess
-import pyautogui
 import datetime
 import platform
 from Colors import Colors
@@ -60,9 +58,6 @@ else:
     except ImportError:
         from pynput.keyboard import Key, Controller
         _kb_backend = 'pynput'
-
-# sys.stdout = open('logs.txt', 'w')
-# sys.stderr = open('logse.txt', 'w')
 
 plat = sys.platform
 if plat == 'linux':
@@ -114,8 +109,8 @@ sel_list1 = [
     'pulseHard', 'tbFailMod1W', 'tbFailHdwe1W', 'tLoFailHdwe', 'DvMon', 'DvSim', 'faultParade', 'stepDown', 'stepUp', 'zero_with_pc',
     ]
 macro_sel_list = [
-    'end_early', 'hdwNoVbPcMidInit', 'modHalfInit', 'modHiInit', 'modHalfInitNoCc', 'modEmptInitBB', 'modEmptInitCHG',
-    'noisePackage', 'silentPackage', 'quiet', 'quietwait', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
+    'end_early', 'hdwNoVbPcMidInit', 'modHalfInit', 'modEmptInitBB', 'modEmptInitCHG',
+    'noisePackage', 'silentPackage', 'quiet', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
     'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50', 'c00',
     'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50', 'zeroPrepHdweNoVb', 'zero_set_hdwe_no_Vb',
     ]
@@ -207,8 +202,6 @@ lookup = {
         'flatSitHys': (680, 'Xm247;Ca0.9;Rb;Rf;Xts;Xa-81;Xf0.004;XW10000;XT10;XC2;W1;' + tranPrep + 'XR;XQ580000;Xa0;Xb0;' + quiet + cleanup, ("Operate around 0.9.  For CHINS, will check EKF with flat voc(soc).   Takes about 10 minutes.", "Make sure EKF soc (soc_ekf) tracks actual soc without wandering.")),
         'offSitHysBmsNoiseBB': (667, modEmptInitBB + slowTwitchDef + 'Xa-162;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage + quiet + cleanup, ("Stress test with 2x normal Vb noise DV0.10.  Takes about 10 minutes.", "operate around saturation, starting above, go below, come back up. Tune Ca to start just above vsat. Go low enough to exercise hys reset ", "Make sure comes back on.", "It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shutoff.")),
         'offSitHysBmsNoiseCHG': (667, modEmptInitCHG + slowTwitchDef + 'Xa-324;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage + quiet + cleanup, ("Stress test with 2x normal Vb noise DV0.10.  Takes about 10 minutes.", "operate around saturation, starting above, go below, come back up. Tune Ca to start just above vsat. Go low enough to exercise hys reset ", "Make sure comes back on.", "It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shutoff.")),
-        # 'ampHiFailSlow': (515, modHalfInit + tranPrep + c10 + 'Fi4,Fc0.0006;Fd0.5;XQ400000;' + c00 + quiet + cleanup, ("Active Standby Should detect and switch amp current failure. Will be slow (~6 min) detection as it waits for the EKF to wind up to produce a cc_diff fault.", "Will display “diff” on display due to 6 A difference before switch (not cc_diff).", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see cc_diff_fa")),
-        # 'noaHiFailSlow': (515, modHalfInit + tranPrep + d10 + 'Fc0.0006;Fd0.5;XQ400000;' + c00 + quiet + cleanup, ("Active Standby Should detect and switch amp current failure. Will be slow (~6 min) detection as it waits for the EKF to wind up to produce a cc_diff fault.", "Will display “diff” on display due to 6 A difference before switch (not cc_diff).", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see cc_diff_fa")),
         # TODO for all volatile and saved parameters in Battery.csv:  'tranPrep' no 'vv' statment.  'stream' starts data incl 'vv'.  All adjusts before 'stream'
         'ampHiFailSlow': (515, modHalfInit + 'Fi3;Fc0.0006;Fd0.5;' + tranPrep + c10 + 'XQ400000;' + c00 + quiet + cleanup, ("10A bias on amp, disable wrap, noa in range at 0A and reflects battery state. Artificially tight cc_diff threshold.  Will detect diff but no wrap. Will be slow (~6 min) cc_diff detection as it waits for the EKF to wind up to produce a cc_diff fault and complete isolation and switch to noa.", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see that cc_diff_fa does set")),
         'noaHiFailSlow': (515, modHalfInit+ 'Fc0.0006;' + tranPrep + d20 + 'XQ400000;' + c00 + quiet + cleanup, ("20A bias on noa, amp in range at 0A and reflects battery state. Artificially tight cc_diff threshold. Will detect and switch noa current failure due to wrap+diff. Once wrap trips diff won't be displayed. Cannnot ever produce a cc_diff fault because amp still used.", "Will display “diff” due to 20A difference.", "EKF won't move because fed by amp.", "Run for 6  minutes to verify not cc_diff_fa")),
@@ -347,13 +340,6 @@ class ExRoot:
                     os.makedirs(rec_folder_path)
                 self.root_config.set('Root Preferences', 'recordings path', rec_folder_path)
                 self.root_config.write(cfg_file)
-        return self.root_config
-
-    def save_root_config(self, config_path_):
-        if Path(config_path_).is_file():
-            with open(config_path_, 'w') as cfg_file:
-                self.root_config.write(cfg_file)
-            print('Saved', config_path_)
         return self.root_config
 
 
@@ -629,13 +615,10 @@ def compare_hist_hist_choose():
                 run_folder_path, ref_parent, ref_basename, ref_txt, ref_key = contain_all(run_path)
                 print('GUI_TestSOC compare_hist_hist_choose:  Ref', ref_basename, ref_key)
                 print('GUI_TestSOC compare_hist_hist_choose:  Test', test_basename, test_key)
-                # keys = [(ref_basename, ref_key), (test_basename, test_key)]
-                # master.withdraw()
                 compare_hist_hist(data_file_run=run_path, unit_key_run=ref_key,
                                   data_file_tst=testpath, unit_key_tst=test_key,
                                   dt_resample=30., strict_overplot=strict_overplot.get(),
                                   terse=terse.get())
-                # master.deiconify()
             else:
                 tk.messagebox.showerror(message='key not found in' + testpath)
         update_data_buttons()
@@ -670,7 +653,6 @@ def compare_hist_to_sim():
     if modeling.get():
         update_data_buttons()
         print('compare_hist_to_sim.  save_pdf_path', str(PurePosixPath(Test.version_path) / 'figures'))
-        # master.withdraw()
         answer = tk.simpledialog.askinteger(title=__file__, prompt="Simulation re-construction sample time in seconds",
                                             initialvalue=10)
         if answer is None:
@@ -678,7 +660,6 @@ def compare_hist_to_sim():
             return
         compare_hist_sim(data_file=Test.file_path, unit_key=Test.key, use_mon_csv=True, dt_resample=answer,
                          terse=terse.get(), strict_overplot=strict_overplot.get())
-        # master.deiconify()
     else:
         print('not possible')
 
@@ -690,10 +671,8 @@ def compare_run():
     update_data_buttons()
     if modeling.get():
         print('compare_run_sim.  save_pdf_path', str(PurePosixPath(Test.version_path) / 'figures'))
-        # master.withdraw()
         compare_run_sim(data_file=Test.file_path, unit_key=Test.key, strict_overplot=strict_overplot.get(),
                         terse=terse.get())
-        # master.deiconify()
     else:
         if not Ref.key_exists_in_file:
             tkinter.messagebox.showwarning(message="Ref Key '" + Ref.key + "' does not exist in " + Ref.file_txt)
@@ -701,11 +680,9 @@ def compare_run():
         print('GUI_TestSOC compare_run:  Ref', Ref.file_path, Ref.key)
         print('GUI_TestSOC compare_run:  Test', Test.file_path, Test.key)
         keys = [(Ref.file_txt, Ref.key), (Test.file_txt, Test.key)]
-        # master.withdraw()
         compare_run_run(keys=keys, data_file_folder_run=Ref.version_path, data_file_folder_test=Test.version_path,
                         terse=terse.get())
 
-        # master.deiconify()
 
 
 def compare_run_to_hist():
@@ -759,10 +736,8 @@ def compare_run_run_choose():
                 print('GUI_TestSOC compare_run_run_choose:  Ref', ref_basename, ref_key)
                 print('GUI_TestSOC compare_run_run_choose:  Test', test_basename, test_key)
                 keys = [(ref_basename, ref_key), (test_basename, test_key)]
-                # master.withdraw()
                 compare_run_run(keys=keys, data_file_folder_run=ref_folder_path, data_file_folder_test=test_folder_path,
                                 sync_to_ctime=True)
-                # master.deiconify()
             else:
                 tk.messagebox.showerror(message='key not found in' + testpath)
         update_data_buttons()
@@ -1135,44 +1110,6 @@ def ref_restore():
     Ref.label.pack(padx=5, pady=5)
 
 
-def stay_awake(up_set_min=3.):
-    """Keep computer awake using shift key when recording then return to previous state"""
-
-    # Timer starts
-    start_time = float(time.time())
-    up_time_min = 0.0
-    # FAILSAFE to FALSE feature is enabled by default so that you can easily stop execution of
-    # your pyautogui program by manually moving the mouse to the upper left corner of the screen.
-    # Once the mouse is in this location, pyautogui will throw an exception and exit.
-    pyautogui.FAILSAFE = False
-    putty_running = True
-    while putty_running > 0 and (up_time_min < up_set_min):
-        time.sleep(30.)
-        if sys.version_info.minor > 11:
-            if _kb_backend == 'evdev':
-                ui = UInput()
-                for i in range(0, 3):
-                    ui.write(ev.EV_KEY, ev.KEY_F15, 1)
-                    ui.syn()
-                    ui.write(ev.EV_KEY, ev.KEY_F15, 0)
-                    ui.syn()
-                ui.close()
-            else:
-                keyboard = Controller()
-                for i in range(0, 3):
-                    keyboard.press(Key.f15)  # f15 key does not disturb fullscreen
-                    keyboard.release(Key.f15)  # f15 key does not disturb fullscreen
-        else:
-            for i in range(0, 3):
-                pyautogui.press('f15')  # f15 key does not disturb fullscreen
-        up_time_min = (time.time() - start_time) / 60.
-        print(f"stay_awake: {up_time_min=} out of {up_set_min}")
-        # Check putty running
-        putty_running = look_putty(platform.system())
-
-    print(f"stay_awake: ending")
-
-
 def save_data():
     print(f"save_data: {putty_test_csv_path.get()=}")
     if size_of(putty_test_csv_path.get()) > 64:  # bytes
@@ -1308,9 +1245,6 @@ def start_putty():
         kill_putty(platform.system())
         print(f'restarting putty   putty -load {test_filename.get()}')
         subprocess.Popen(['putty', '-load', test_filename.get()], stdin=subprocess.PIPE, bufsize=1, universal_newlines=True)
-    # I don't thing stay awake is needed.  Use caffein
-    # thread = Thread(target=stay_awake, kwargs={'up_set_min': putty_timeout.get()})
-    # thread.start()
 
 
 def start_timer():
@@ -1351,8 +1285,6 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     from pathlib import Path, PurePosixPath
     import tkinter as tk
     from tkinter import ttk
-    result_ready = 0
-    thread_active = 0
 
     ex_root = ExRoot()
 
@@ -1375,8 +1307,6 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     master = tk.Tk(className='GUI_TestSOC')
     master.title('State of Charge')
     master.wm_minsize(width=min_width, height=main_height)
-    # master.iconphoto(False, tk.PhotoImage(file='./GUI_TestSOC.png'))
-    # master.geometry('%dx%d' % (master.winfo_screenwidth(), master.winfo_screenheight()))
     Ref = Exec(cf, 'ref', path_disp_len_=folder_reveal)
     Test = Exec(cf, 'test', path_disp_len_=folder_reveal)
     if platform.system() == 'Linux':
@@ -1491,7 +1421,6 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     option_panel_ctr.pack(side='left', expand=True, fill='both')
     option_panel_right = tk.Frame(option_panel)
     option_panel_right.pack(side='left', expand=True, fill='both')
-    putty_timeout = tk.DoubleVar(master, 720.)  # minutes maximum putty run without going to sleep
 
     # Option row
     option = tk.StringVar(master, str(cf['others']['option']))

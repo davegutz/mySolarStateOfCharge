@@ -1,9 +1,10 @@
 /*
  * Project SOC_Photon
   * Description:
-  * Monitor battery State of Charge (SOC) using Coulomb Counting (CC).  An experimental
-  * Extended Kalman Filter (EKF) method is developed alongside though not used to
-  * improve the CC yet.
+  * Monitor battery State of Charge (SOC) using Coulomb Counting (CC).  An experimental EKF is 
+  * used to estimate the SOC from voltage and temperature and to detect faults in the current
+  * sensor.  The EKF is also used to reset the CC when it drifts too far from the EKF estimate.
+  * The EKF is based on a simple battery model with a voltage source (VOC) and series resistance (Rss) that are functions of SOC and temperature.  The model parameters are stored in tables that can be generated from data or from a more complex model.  The EKF also estimates the hysteresis charge storage and diffusion effects that cause VOC to lag behind SOC changes.  The hysteresis model is used to improve the EKF performance and to detect faults in the current sensor by comparing the expected hysteresis voltage with the measured voltage.
   * By:  Dave Gutz September 2021
   * 09-Aug-2021   Initial Git commit.   Unamplified ASD1013 12-bit shunt voltage sensor
   * ??-Sep-2021   Added 1 Hz anti-alias filters (AAF) in hardware to cleanup the 60 Hz
@@ -27,6 +28,8 @@
   * 17-Apr-2024   Undo previous ib_/ap.nS() change
   * ....see git log for more details
   * 02-Feb-2026   BLE and HI_LO ib selection
+  * 13-Mar-2026   Add modeling and preserving parameters to control how much of the system is modeled
+  * and how much is preserved in faults.  Use claude code to clean up and simplify code
 //
 // MIT License
 //
@@ -259,7 +262,6 @@ void loop()
   boolean summarizing;
   static boolean boot_wait = true;  // waiting for a while before summarizing
   static Sync *Summarize = new Sync(SUMMARY_DELAY);
-  static Sync *ControlSync = new Sync(CONTROL_DELAY);
   unsigned long long elapsed = 0;
   unsigned long long elapsed_reset = 0;
   static boolean reset = true;
@@ -297,7 +299,6 @@ void loop()
   chitchat = Talk->update(now, reset);
   elapsed = ReadSensors->now() - start;
   elapsed_reset = ReadSensors->now() - start_reset;
-  control = ControlSync->update(now, reset);
   display_and_remember = DisplayUserSync->update(now, reset);
   boolean boot_summ = boot_wait && ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay()) ) && !sp.modeling();
   if ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay()) ) boot_wait = false;

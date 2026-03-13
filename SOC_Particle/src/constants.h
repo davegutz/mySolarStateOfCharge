@@ -82,7 +82,6 @@ const char unit[] = version_str "_" HDWE_UNIT;
 #define SUMMARY_WAIT          60000UL   // Summarize alive time before first save, ms (60000UL = 1 min) Dh
 #define PUBLISH_SERIAL_DELAY  400UL     // Serial print interval (400UL = 0.4 sec)
 #define DISPLAY_USER_DELAY    1200UL    // User display update (1200UL = 1.2 sec)
-#define CONTROL_DELAY         100UL     // Control read wait, ms (100UL = 0.1 sec)
 #define SNAP_WAIT             10000ULL  // Interval between fault snapshots (10000ULL = 10 sec)
 #define DP_MULT               4         // Multiples of read to capture data DP
 #define TBATT_TEMPCAL         0.56      // Maxim 1-wire plenum temp sense calibrate (0.56), C
