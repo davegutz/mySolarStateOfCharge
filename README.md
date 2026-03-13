@@ -72,27 +72,9 @@ Key documents inside `SOC_Particle/`:
 
 ---
 
-### [`BT-AT/`](BT-AT/README.md) — Bluetooth AT-Command Setup
-
-Utility firmware for configuring HC-06 / HC-05 Bluetooth UART modules using AT commands.  Used during early prototyping before the Photon2's native BLE was adopted.
-
----
-
-### [`eeprom_test/`](eeprom_test/README.md) — EERAM Test (Argon)
+### [`eeprom_test/`]— EERAM Test (Argon)
 
 Test project for the 47L16 EERAM I2C module used on the Particle Argon to provide battery-backed parameter storage.  Superseded on Photon2 by `retained` SRAM, but kept for reference.
-
----
-
-### [`ScanI2C_Photon/`](ScanI2C_Photon/README.md) — I2C Bus Scanner
-
-Scans and prints all devices found on the I2C bus.  Useful when assembling a new board to verify that OLED, EERAM, DS2482 one-wire bridge, and ADS modules are wired and addressed correctly.
-
----
-
-### [`SOC_data_collection_test/`](SOC_data_collection_test/README.md) — Serial Connection Test
-
-Tests and characterizes the USB and Bluetooth serial data collection path.  Used to benchmark throughput before committing to 10 Hz (100 ms) sensor update rates.
 
 ---
 
@@ -127,5 +109,5 @@ Power supply: 12 V battery → LM7805CT → 5 V (VIN) → Photon2 internal → 3
 ## License
 
 [MIT License](SOC_Particle/src/SOC_Particle.ino) — Copyright © 2024 Dave Gutz
-Repository: [github.com/davegutz/myStateOfCharge](https://github.com/davegutz/myStateOfCharge)
+Repository: [github.com/davegutz/mySolarStateOfCharge](https://github.com/davegutz/mySolarStateOfCharge)
 Contact: davegutz@alum.mit.edu

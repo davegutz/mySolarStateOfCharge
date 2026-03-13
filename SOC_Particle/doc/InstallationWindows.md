@@ -8,7 +8,7 @@ A serial port tool is required to interact.  puTTY is the most effective and int
 
 Install the desktop app from [here](https://desktop.github.com/)
 
-GitHub is tightly integrated with browser sessions.   Sign in to your GitHub first using the browser and browse to  [here](https://github.com/davegutz/myStateOfCharge)
+GitHub is tightly integrated with browser sessions.   Sign in to your GitHub first using the browser and browse to  [here](https://github.com/davegutz/mySolarStateOfCharge)
  
 - Code - Open with GitHub Desktop - Clone
 
