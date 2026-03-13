@@ -50,11 +50,9 @@ Battery cyclic life effects are neglected for this type of application, LiFePO4 
 ## Off-the-Shelf Hardware Description
 I used prototype boards to connect various off-the-shelf devices into a reliable, maintainable box.  The heart of the system is the Particle programmable logic controller (PLC) Photon2. Figure board layout shows the latest schematic using Stripboard, a prototyping 0.1 inch spaced board that underneath connects vertical elements with layered copper conductors and over the top and bottom connects signals into bus bars and horizontal elements that connect v+ and v- into bus bars. It's well worth it to buy the Photon2 developer kit that has headers and other peripherals such as USB installed.
 
-![layout](doc/board layout.png)
- <b>Fig.1 - State of Charge Wiring Diagram Board Layout</b>
+![Fig.1 - State of Charge Wiring Diagram Board Layout](doc/schematics1.png)
 
-<img src="doc/board layout.png" alt="State of Charge Wiring Diagram Board Layout"/>
- <b>Fig.1a - State of Charge Wiring Diagram Board Layout</b>
+**Fig.1 - State of Charge Wiring Diagram Board Layout**
 
 Device names are given using the Particle App with the device in Setup mode (push left button for 3 seconds to get blinking blue light).
 
@@ -546,27 +544,18 @@ View results
 
 ### Particle Photon 2 Device - assumed at least 1A max
 
-  ┌──────────┬──────────────────────────────────┐
-  │   Pin    │             Function             │
-  ├──────────┼──────────────────────────────────┤
-  | Gnd      | Ground                           |
-  ├──────────┼──────────────────────────────────┤
-  | 3v3      | 3.3 V supply for all peripherals |
-  ├──────────┼──────────────────────────────────┤
-  | VUSB     | 5 V supply for Photon2           |
-  ├──────────┼──────────────────────────────────┤
-  │ A4       │ Two-wire temperature sensor      │
-  ├──────────┼──────────────────────────────────┤
-  │ D7       │ Status LED                       │
-  ├──────────┼──────────────────────────────────┤
-  │ A0 (D11) │ Primary Ib amp ('amp')           │
-  ├──────────┼──────────────────────────────────┤
-  │ A1 (D12) │ Vb voltage sense                 │
-  ├──────────┼──────────────────────────────────┤
-  │ A2 (D13) │ Backup Ib amp ('no amp' / 'noa') │
-  ├──────────┼──────────────────────────────────┤
-  │ A5 (D14) │ Vc / Vr reference voltage        │
-  ├──────────┼──────────────────────────────────┤
+| Pin       | Function                          |
+|-----------|-----------------------------------|
+| Gnd       | Ground                            |
+| 3v3       | 3.3 V supply for all peripherals  |
+| VUSB      | 5 V supply for Photon2            |
+| D3        | One-wire temperature sensor       |
+| A3 (D0)   | Two-wire temperature sensor (alt) |
+| D7        | Status LED (heartbeat)            |
+| A0 (D11)  | Primary Ib amp ('amp')            |
+| A1 (D12)  | Vb voltage sense                  |
+| A2 (D13)  | Backup Ib amp ('no amp' / 'noa')  |
+| A5 (D14)  | Vc / Vr reference voltage         |
 
 ### Voltage regulator (LM7805)
 
@@ -581,6 +570,22 @@ Vo  = 5v rail
 - Use pSpice circuit model (SOC_photon/datasheets/opa333_asd1013_5beta.asc) to verify filters because OPA333 10uF high cap interacts with 1uF filter cap.  The Vb filter is a little more straightforward and same goals
 - Goal of filter design is 2*pi r/s = 1 hz -3dB bandwidth.  Large PWM inverter noise from system enters at 60 Hz
 - SOC calculation is equivalently a very slow time constant (integrator) so filter is between noise and usage
+
+![Fig.2 - Ib Filter Module Schematic](doc/schematics2.png)
+
+**Fig.2 - Ib Filter Module Schematic**
+
+### Tb 2-wire Temperature Module
+
+![Fig.3 - Tb 2-wire Module Schematic](doc/schematics3.png)
+
+**Fig.3 - Tb 2-wire Module Schematic**
+
+### Vb Voltage Sense Module
+
+![Fig.4 - Vb Module Schematic](doc/schematics4.png)
+
+**Fig.4 - Vb Module Schematic**
 
 ### Amp circuit 'amp'
 - Ti OPA333.  Vc formed by 2x 4k7 voltage divider on 3v3 rail to ground.  A4 to A3 and A5 with 106 10uF high cap. See notes about 'LPF'
