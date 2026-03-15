@@ -58,9 +58,9 @@ The primary Particle Photon2 firmware and companion Python tools.
 | `src/` | Firmware source — `SOC_Particle.ino` and all C++ modules |
 | `pyStateOfCharge/` | Python GUI (`GUI_TestSOC.py`) and data reduction scripts |
 | `dataReduction/` | Captured puTTY data files and puTTY session config |
-| `datasheets/` | Hardware datasheets, schematics (hand-drawn + LTSpice), pSpice models |
+| `datasheets/` | Hardware datasheets, research documents, pSpice models |
 | `Battery State/` | Theory documents, EKF derivation, Python sandbox models |
-| `doc/` | Installation guides, functional block diagrams, test procedures |
+| `doc/` | Installation guides, functional block diagrams, schematics (hand-drawn + LTSpice), test procedures |
 | `lib/` | Particle-managed third-party libraries |
 
 Key documents inside `SOC_Particle/`:

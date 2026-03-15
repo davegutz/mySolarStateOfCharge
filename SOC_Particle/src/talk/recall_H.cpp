@@ -65,7 +65,8 @@ boolean recall_H(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
         reset_all_fault_buffer("unit_h", mySum, sp.isum(), sp.nsum());
         sp.reset_his();
         sp.reset_flt();
-        Serial.printf("done\n");
+        Serial.printf("Reset infinite counter\n");
+        cp.inf_reset = true;        Serial.printf("done\n");
         break;
 
     case ( 's' ):  // Hs: History snapshot
