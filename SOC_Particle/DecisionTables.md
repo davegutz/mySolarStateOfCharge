@@ -21,38 +21,38 @@ sensors. The strategy for selection was the same active standby. Either both sen
 or one was clearly superior by design. I have a lot of experience with active-standby and could
 quickly write heuristic algorithms to manage this. The heart of the decision tables have just a few
 pithy calculations. With the various configurations I began with a non-amplified version of dubious
-precision that I called ‘NOA’ for non-amplified. The other I called ‘AMP’. When I went to two
-amplified sensors the standby I called ‘NOA’. For active – standby there are two states: normal and
-failed. The failed condition was called ‘latched_fail.’ The basic assumption is that the failures
+precision that I called 'NOA' for non-amplified. The other I called 'AMP'. When I went to two
+amplified sensors the standby I called 'NOA'. For active – standby there are two states: normal and
+failed. The failed condition was called 'latched_fail.' The basic assumption is that the failures
 are annunciated so user can fix right away. This reduced exposure to failure operation results in a
 very high reliability system. Along with this goes non-latching low level failures but latching high
 level decisions. There is a bug in this: ib_fa values are not annunciated and the failed signals are
 still used in logic. In the Hi-Lo I changed the name of bare variables to be ib_fa and added
-appropriate logic to the hard fault logic. I only ever ran this logic on a device in ‘Fake Fault’
+appropriate logic to the hard fault logic. I only ever ran this logic on a device in 'Fake Fault'
 mode so none of this mattered anyway. I was learning.
 
 
 I decided to pursue a Hi – Lo strategy in an attempt to prefer a very high gain, low ranging sensor
 for accuracy and the existing relatively low gain, high ranging sensor already used. I continued to
-use the same names, with ‘AMP’ referring to the high gain / low range and ‘NOA’ referring to the low
-gain / high range. The ‘NOA’ is inherently less preferred but now necessary because the solar system
+use the same names, with 'AMP' referring to the high gain / low range and 'NOA' referring to the low
+gain / high range. The 'NOA' is inherently less preferred but now necessary because the solar system
 occasionally deals with high currents. I split e_wrap logic to help decide. I kept the original
 e_wrap logic using the selected configuration in case it was useful to detect a bad final selection.
 I wanted to keep the high reliability with the same annunciation concept. This means the same
 latching / non-latching behavior and same low-level Hard Fault and Bare Detection. This started out
-also in ‘Fake Fault’ mode to learn.
+also in 'Fake Fault' mode to learn.
 
 
-'Hard Faults’ and ‘Bare Detection’ are the same between these two broad strategies.
+'Hard Faults' and 'Bare Detection' are the same between these two broad strategies.
 
 
-Perhaps if I ever truly deployed this device I would turn off ‘Fake Fault’ mode.
+Perhaps if I ever truly deployed this device I would turn off 'Fake Fault' mode.
 
 
-All parameters are unlatched unless ‘latch’ specifically in the name.
+All parameters are unlatched unless 'latch' specifically in the name.
 
 
-Hard Faults take precedence over reasoned faults in older ‘Active-Standby’ or newer ‘Hi-Lo’
+Hard Faults take precedence over reasoned faults in older 'Active-Standby' or newer 'Hi-Lo'
 
 
 Soft Faults are used in reasoning
@@ -63,20 +63,23 @@ Soft Faults are used in reasoning
 
 ### Fault::vc_check
 
+```text
 | # | vc_bare | ib_range_fail || vc_fa LATCH |
 | - | ------- | ------------- || ----------- |
 | 1 | T       | T             || T           |
+```
 
 > Notes:
 > ib_range_fail = abs(Ishunt_cal) >= IB_ABS_MAX_ (electrical)
 
-
 ### Shunt::convert Bare
 
+```text
 | # | HDWE_BARE | vc_bare | using_opamp || bare_shunt_ | ib_fa LATCH |
 | - | --------- | ------- | ----------- || ----------- | ----------- |
 | 3 | T         | ·       | ·           || F           | ·           |
 | 4 | F         | T       | T           || T           | T           |
+```
 
 > Notes:
 > vc_bare = Vc_ < VC_BARE_DETECTED
@@ -84,6 +87,7 @@ Soft Faults are used in reasoning
 
 ### Fault::shunt_check (Shunt->)
 
+```text
 | # | HDWE_BARE | vc_fa | bare_shunt_ | ib_range_fail | ib_no_sense || ib_fa LATCH | Comment |
 | - | --------- | ----- | ----------- | ------------- | ----------- || ----------- | ------- |
 | 1 | F         | ·     | T           | ·             | ·           || T           |         |
@@ -91,6 +95,7 @@ Soft Faults are used in reasoning
 | 3 | T         | ·     | ·           | ·             | T           || T           |         |
 | 4 | ·         | T     | ·           | ·             | ·           || T           |         |
 | 5 | ·         | ·     | ·           | ·             | ·           || F           | Default |
+```
 
 > Notes:
 > ib_range_fail = abs(Ishunt_cal) >= IB_ABS_MAX_ (electrical)
@@ -98,28 +103,34 @@ Soft Faults are used in reasoning
 
 ### Fault::vb_check
 
+```text
 | # | vb_low_conf | vb>=VB_MAX || vb_fa LATCH | Comment              |
 | - | ------------| ---------- || ----------- | -------------------- |
 | 1 | T           | ·          || T           | go to Active-Standby |
 | 2 | ·           | T          || T           |                      |
 | 3 | ·           | ·          || F           | Default              |
+```
 
 ### Fault::tb_check
 
+```text
 | # | Tb <= TB_MIN | Tb>=TB_MAX | tb_stale_per || tb_fa | Comment |
 | - | ------------ | ---------- | ------------ || ----- | ------- |
 | 1 | T            | ·          | ·            || T     |         |
 | 2 | ·            | T          | ·            || T     |         |
 | 3 | ·            | ·          | T            || T     |         |
 | 4 | ·            | ·          | ·            || F     | Default |
+```
 
 
 ### disconnect
 
+```text
 | # | ib_quiet || ib_dscn_fa | Comment |
 | - | -------- || ---------- | ------- |
 | 1 | T        || T          |         |
 | 2 | F        || F          | Default |
+```
 
 > Notes:
 > vb_fail = vb_sel_stat==0 || vb_fa = wrap_vb_fa || vb_fa
@@ -134,6 +145,7 @@ Soft Faults are used in reasoning
 
 ### Fault::ib_wrap
 
+```text
 | # | sat | (voc_soc – voc_stat) > ewhi_thr || < ewlo_thr | voc_soc() - voc_amp >= ewhi_thr_ | voc_soc() - voc_amp <= ewlo_thr_ | voc_soc() - voc_noa >= ewhi_thr_ | voc_soc() - voc_noa <= ewlo_thr_ || wrap_lo_m_fa | wrap_hi_m_fa | wrap_lo_n_fa | wrap_hi_n_fa | e_wrap_fa |
 | - | --- | --------------------------------------------- | -------------------------------- | -------------------------------- | -------------------------------- | -------------------------------- || ------------ | ------------ | ------------ | ------------ | --------- |
 | 1 | F   | T                                             | ·                                | ·                                | ·                                | ·                                || ·            | ·            | ·            | ·            | T         |
@@ -141,21 +153,26 @@ Soft Faults are used in reasoning
 | 3 | ·   | ·                                             | ·                                | T                                | ·                                | ·                                || ·            | T            | ·            | ·            | ·         |
 | 4 | ·   | ·                                             | ·                                | ·                                | T                                | ·                                || ·            | ·            | T            | ·            | ·         |
 | 5 | ·   | ·                                             | ·                                | ·                                | ·                                | T                                || ·            | ·            | ·            | T            | ·         |
+```
 
 ### Fault::ib_wrap
 
+```text
 | # | Rf | ib_diff_fa | wrap_m_and_n_fa || wrap_vb_fa | vb_sel_stat_ | latched_fail_ | Comment                 |
 | - | -- | ---------- | --------------- || ---------- | ------------ | ------------- | ----------------------- |
 | 1 | T  | ·          | ·               || F          | 1            | F             |                         |
 | 2 | ·  | F          | T               || T          | 0            | T             | Isolated to vb. Latches |
+```
 
 
 ### Fault::ib_diff
 
+```text
 | # | Rf | ib_lo_active_ | abs(ib_amp – ib_noa) >= IBATT_DISAGREE_THRESH || ib_diff_fa |
 | - | -- | ------------- | --------------------------------------------- || ---------- |
 | 1 | T  | ·             | ·                                             || F          |
 | 2 | ·  | T             | T                                             || T          |
+```
 
 > Notes:
 > Rf = reset_all_faults
@@ -166,9 +183,11 @@ Soft Faults are used in reasoning
 
 ### Reset
 
+```text
 | # | latched_fail_ | Ff | si | Rf | sp.mod_ib | sp.mod_vb | ib_sel_stat_last_ || wrap_vb_fa_ | vb_sel_stat_ | ib_sel_stat_ | latched_fail_ |
 | - | ------------- | ---| -- | -- | --------- | --------- | ----------------- || ----------- | ------------ | ------------ | ------------- |
 | 1 | x             | x  | x  | T  | x         | x         | x                 || F           | 1            | si          | F             |
+```
 
 > Notes:
 > Rf = reset_all_faults
@@ -178,9 +197,11 @@ Soft Faults are used in reasoning
 
 ### Fake Faults
 
+```text
 | # | Ff || ib_sel_stat | latched_fail_ |
 | - | ---|| ----------- | ------------- |
 | 1 | T  || si          | F             |
+```
 
 > Notes:
 > Ff = ap.fake_fault
@@ -189,6 +210,7 @@ Soft Faults are used in reasoning
 
 ### ib_decision_active_standby
 
+```text
 | #  | Section | latched_fail_ | Ff | si | Rf | mod_ib | ib_sel_stat_last_ | ib_amp_fa = ib_amp_bare_ | ib_noa_fa = ib_noa_bare_ | ib_diff_fa | vb_sel_stat_last_ | e_wrap_fa | cc_diff_fa || ib_decision_ | ib_sel_stat_ | latched_fail_ | red_loss() | Comment                                                               |
 | -- | ------- | ------------- | ---| -- | -- | ------ | ----------------- | ------------------------ | ------------------------ | ---------- | ----------------- | --------- | ---------- || ------------ | ------------ | ------------- | ---------- | --------------------------------------------------------------------- |
 | 1  |         | T             | ·  | ·  | ·  | .      | ·                 | ·                        | ·                        | ·          | ·                 | ·         | ·          || 10           | ·            | ·             | ·          | latch is a latch is a latch iff !latched_fail                         |
@@ -205,6 +227,7 @@ Soft Faults are used in reasoning
 | 12 | auto    | ·             | ·  | 1  | ·  | ·      | 0                 | ·                        | ·                        | ·          | ·                 | ·         | ·          || 8            | 0            | T             | T          |                                                                       |
 | 13 | auto    | ·             | ·  | 1  | ·  | ·      | -1                | ·                        | ·                        | ·          | ·                 | ·         | ·          || 8            | -1           | T             | T          |                                                                       |
 | 14 | auto    | ·             | ·  | 0  | ·  | ·      | x                 | ·                        | ·                        | ·          | ·                 | ·         | ·          || 9            | ·            | ·             | F          | Not reachable but here for completeness to avoid indecision           |
+```
 
 > Notes:
 > Rf = reset_all_faults
@@ -215,6 +238,7 @@ Soft Faults are used in reasoning
 
 ### red_loss
 
+```text
 | # | Ff | si | ib_sel_stat_last_ | ib_amp_fa = ib_amp_bare_ | ib_noa_fa = ib_noa_bare_ | ib_diff_fa | vb_fa || red_loss | Comment |
 | - | -- | -- | ----------------- | ------------------------ | ------------------------ | ---------- | ----- || -------- | ------- |
 | 1 | ·  | ·  | 0                 | ·                        | ·                        | ·          | ·     || T        |         |
@@ -226,6 +250,7 @@ Soft Faults are used in reasoning
 | 7 | ·  | ·  | ·                 | ·                        | T                        | ·          | ·     || T        |         |
 | 8 | ·  | ·  | ·                 | ·                        | ·                        | ·          | T     || T        |         |
 | 9 | ·  | ·  | ·                 | ·                        | ·                        | ·          | ·     || F        | Default |
+```
 
 > Notes:
 > Ff = ap.fake_fault
@@ -234,10 +259,12 @@ Soft Faults are used in reasoning
 
 ### bms off
 
+```text
 | # | temp_c < chem_.low_t | voc_stat < chem_.vb_down || bms_off |
 | - | -------------------- | ------------------------ || ------- |
 | 1 | T                    | ·                        || T       |
 | 2 | ·                    | T                        || T       |
+```
 
 
 ---
@@ -246,31 +273,34 @@ Soft Faults are used in reasoning
 
 ### Reset
 
+```text
 | # | latched_fail_ | Ff | si | Rf | sp.mod_ib | sp.mod_vb | ib_sel_stat_last_ (ibl) || wrap_vb_fa_ | vb_sel_stat_ | ib_choice | latched_fail_ |
 | - | ------------- | -- | -- | -- | --------- | --------- | ----------------------- || ----------- | ------------ | --------- | ------------- |
 | 1 | x             | x  | x  | T  | x         | x         | x                       || F           | 1            | si        | F             |
+```
 
 > Notes:
 > Ff = ap.fake_fault
 > si = sp.ib_force
-> ib_choice  (-1=noa, 0=def, 1=amp, 2=none) 
+> ib_choice  (-1=noa, 0=def, 1=amp, 2=none)
 
 
 ### Fault::ib_select_decision_hi_lo
 
+```text
 | #  | Section | latched_fail | si | Rf | sp.mod_ib | sp.mod_vb | ib_choice | ib_amp_fa | ib_noa_fa | ib_diff_fa | vb_sel_stat_last (vbl) | wrap_m_fa | wrap_n_fa | cc_diff_fa || ib_decision | ib_choice | latched_fail_ | red_loss | Comment                                                     |
 | -- | --------| ------------ | -- | -- | --------- | --------- | --------- | --------- | --------- | ---------- | ---------------------- | --------- | --------- | ---------- || ----------- | --------- | ------------- | -------- | ----------------------------------------------------------- |
 | 1  |         | T            | ·  | ·  | ·         | ·         | ·         | ·         | ·         | ·          | ·                      | ·         | ·         | ·          || last        | ·         | ·             | ·        | must reset (Rf) or reinstall and set nominal                |
 | 2  |         | ·            | ·  | ·  | ·         | ·         | ·         | T         | T         | ·          | ·                      | ·         | ·         | ·          || 1           | -2        | T             | ·        |                                                             |
 | 3  |         | ·            | 1  | ·  | ·         | ·         | ·         | F         | ·         | ·          | ·                      | ·         | ·         | ·          || 2           | 1         | T             | ·        | Forcing ib to one loses redundancy                          |
 | 4  |         | ·            | -1 | F  | ·         | ·         | ·         | ·         | F         | ·          | ·                      | ·         | ·         | ·          || 3           | -1        | T             | ·        | Forcing ib to one loses redundancy                          |
-| 5  | auto    | ·            | 0  | ·  | ·         | ·         | ·         | T         | F         | ·          | ·                      | ·         | ·         | ·          || 4           | -1        | T             | ·        | still ‘works’                                               |
-| 6  | auto    | ·            | 0  | ·  | ·         | ·         | ·         | F         | T         | ·          | ·                      | ·         | ·         | ·          || 5           | 1         | T             | ·        | still ‘works’                                               |
+| 5  | auto    | ·            | 0  | ·  | ·         | ·         | ·         | T         | F         | ·          | ·                      | ·         | ·         | ·          || 4           | -1        | T             | ·        | still 'works'                                               |
+| 6  | auto    | ·            | 0  | ·  | ·         | ·         | ·         | F         | T         | ·          | ·                      | ·         | ·         | ·          || 5           | 1         | T             | ·        | still 'works'                                               |
 | 7  | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | T          | 1                      | T         | F         | ·          || 6           | -1        | T             | ·        | ampHiFail                                                   |
 | 8  | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | T          | 1                      | F         | T         | ·          || 7           | 1         | T             | ·        | lose accy of tracking high current. NoaHiFail               |
 | 9  | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | T          | 1                      | T         | T         | ·          || 8           | 0         | F             | ·        | keep trying; ambiguous                                      |
 | 10 | auto    | ·            | 0  | ·  | ·         | ·         | ·         |·          | ·         | ·          | vbl                    | ·         | ·         | ·          || 0           | ibl       | vbl           | ·        | Default                                                     |
-| 11 | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | T          | ·                      | ·         | ·         | T          || 10          | -1        | T             | ·        | still ‘works’                                               |
+| 11 | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | T          | ·                      | ·         | ·         | T          || 10          | -1        | T             | ·        | still 'works'                                               |
 | 12 | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | ·          | vbl                    | ·         | ·         | ·          || 0           | ibl       | vbl           | ·        | Default                                                     |
 | 13 | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | ·          | ·                      | ·         | ·         | T          || 12          | 0         | F             | ·        | keep trying; ambiguous                                      |
 | 14 | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | ·          | vbl                    | ·         | ·         | ·          || 0           | ibl       | vbl           | ·        | Default                                                     |
@@ -283,44 +313,53 @@ Soft Faults are used in reasoning
 | 21 | ---->   | ·            | ·  | ·  | F         | F         | -1        | ·         | ·         | ·          | x                      | ·         | ·         | ·          || ·           | ·         | ·             | 1        |                                                             |
 | 22 | ---->   | ·            | ·  | ·  | F         | F         | x         | ·         | ·         | ·          | 0                      | ·         | ·         | ·          || ·           | ·         | ·             | 1        |                                                             |
 | 23 | ---->   | ·            | ·  | ·  | ·         | ·         | 0         | ·         | ·         | ·          | 1                      | ·         | ·         | ·          || ·           | ·         | ·             | 0        |                                                             |
+```
 
 > Notes:
 > Rf = reset_all_faults
 > ibl = last good ib value
 > vbl = last good vb value
-> ib_choice  (-1=noa, 0=def, 1=amp, 2=none) 
+> ib_choice  (-1=noa, 0=def, 1=amp, 2=none)
 > latched_fail = output of this table
 
 
 ### Fault::vb_select_decision_hi_lo
 
+```text
 | # | latched_fail_ | ib_diff_fa | wrap_m_fa | wrap_n_fa | vb_fa || wrap_vb_fa_ | vb_sel_stat_ | latched_fail_ |
 | - | ------------- | ---------- | --------- | --------- | ----- || ----------- | ------------ | ------------- |
 | 1 | T             | ·          | ·         | ·         | ·     || ·           | last         | ·             |
 | 2 | ·             | ·          | ·         | ·         | T     || ·           | 0            | T             |
 | 3 | ·             | F          | T         | T         | ·     || T           | 0            | T             |
 | 4 | ·             | T          | ·         | ·         | ·     || ·           | vbl          | ·             |
+```
 
 ### bms off
 
+```text
 | # | temp_c < chem_.low_t | voc_stat < chem_.vb_down || bms_off |
 | - | -------------------- | ------------------------ || ------- |
 | 1 | T                    | ·                        || T       |
 | 2 | ·                    | T                        || T       |
+```
 
 ### e_wrap
 
+```text
 | # | wrap_m_fa | wrap_n_fa || e_wrap_fa | Comment |
 | - | --------- | --------- || --------- | ------- |
 | 1 | T         | T         || T         |         |
 | 2 | ·         | ·         || F         | Default |
+```
 
 ### soft_reset
 
+```text
 | # | ib_choice_(-1=noa,0=def,1=amp,2=none) | ib_choice != ib_choice_last_ || cmd_reset |
 | - | ------------------------------------- | ---------------------------- || --------- |
 | 1 | -1                                    | T                            || T         |
 | 2 | ·                                     | ·                            || F         |
+```
 
 > Dm-50
 
