@@ -504,7 +504,7 @@ void serial_display(Sensors *Sen, BatteryMonitor *Mon)
       {
         disp_2 = " diff ";
         dispAssign(true, diff_ib);
-  }
+      }
       else if ( Sen->Flt->red_loss() )
       {
         disp_2 = " redl ";
@@ -526,7 +526,7 @@ void serial_display(Sensors *Sen, BatteryMonitor *Mon)
   String disp_Tbop = disp_0.substring(0, 4) + " " + disp_1.substring(0, 6) + " " + disp_2.substring(0, 7);
 
   // --------------------- Bottom line of Display ------------------------------
-  // Hrs EHK
+  // A-Hrs EHK
   sprintf(pr.buff, "%3.0f", pp.pubList.Amp_hrs_remaining_ekf);
   disp_0 = pr.buff;  // Default
 
@@ -560,7 +560,7 @@ void serial_display(Sensors *Sen, BatteryMonitor *Mon)
   }
   disp_1 = pr.buff;
 
-  // Hrs large
+  // A-Hrs large
   #ifdef HDWE_IB_HI_LO
     sprintf(pr.buff, "%3.0f", pp.pubList.Amp_hrs_remaining_soc);
     if ( Sen->saturated && blink==0 )

@@ -607,6 +607,7 @@ void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
   // Thresholds
   wrap_scalars(Mon);
 
+  // ib section of wrap logic - separate because has multiple sensors and complex selection logic
   // HI_LO-Only Logic
   #ifdef HDWE_IB_HI_LO
     LoopIbNoa->calculate(reset_loc, false, Sen->ib_noa(), Sen);
@@ -643,6 +644,8 @@ void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
     failAssign( (WrapHi->calculate(wrap_hi_flt(), WRAP_HI_S, WRAP_HI_R, Sen->T, reset_loc) && !vb_fa()), WRAP_HI_FA );  // not latched
     failAssign( (WrapLo->calculate(wrap_lo_flt(), WRAP_LO_S, WRAP_LO_R, Sen->T, reset_loc) && !vb_fa()), WRAP_LO_FA );  // not latched
   #endif
+
+  // vb section of wrap logic - separate because vb is single sensor and can latch
   failAssign( ( wrap_vb_fa() && !reset_loc ) ||
               ( !ib_diff_fa() && wrap_m_and_n_fa() && ib_really_quiet() ),
                WRAP_VB_FA);    // WRAP_VB_FA latches latches because vb is single sensor

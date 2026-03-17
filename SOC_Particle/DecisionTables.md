@@ -1,3 +1,5 @@
+<style>pre { white-space: pre; overflow-x: auto; }</style>
+
 # Decision Tables — SOC_Particle
 
 Auto-generated from `DecisionTables.ods`. The Active-Standby sheet is superseded by Hi-Lo and kept for reference only.
@@ -143,19 +145,23 @@ Soft Faults are used in reasoning
 
 ## Single Soft Faults
 
-### Fault::ib_wrap
+### Fault::ib_wrap ib section
 
 ```text
-| # | sat | (voc_soc – voc_stat) > ewhi_thr || < ewlo_thr | voc_soc() - voc_amp >= ewhi_thr_ | voc_soc() - voc_amp <= ewlo_thr_ | voc_soc() - voc_noa >= ewhi_thr_ | voc_soc() - voc_noa <= ewlo_thr_ || wrap_lo_m_fa | wrap_hi_m_fa | wrap_lo_n_fa | wrap_hi_n_fa | e_wrap_fa |
-| - | --- | --------------------------------------------- | -------------------------------- | -------------------------------- | -------------------------------- | -------------------------------- || ------------ | ------------ | ------------ | ------------ | --------- |
-| 1 | F   | T                                             | ·                                | ·                                | ·                                | ·                                || ·            | ·            | ·            | ·            | T         |
-| 2 | ·   | ·                                             | T                                | ·                                | ·                                | ·                                || T            | ·            | ·            | ·            | ·         |
-| 3 | ·   | ·                                             | ·                                | T                                | ·                                | ·                                || ·            | T            | ·            | ·            | ·         |
-| 4 | ·   | ·                                             | ·                                | ·                                | T                                | ·                                || ·            | ·            | T            | ·            | ·         |
-| 5 | ·   | ·                                             | ·                                | ·                                | ·                                | T                                || ·            | ·            | ·            | T            | ·         |
+| # | sat | (voc_soc – voc_stat) > ewhi_thr or < ewlo_thr | amp_wrap_hi | amp_wrap_lo | voc_soc() - voc_noa >= ewhi_thr_ | voc_soc() - voc_noa <= ewlo_thr_ || wrap_lo_m_fa | wrap_hi_m_fa | wrap_lo_n_fa | wrap_hi_n_fa | e_wrap_fa |
+| - | --- | --------------------------------------------- | ----------- | ----------- | -------------------------------- | -------------------------------- || ------------ | ------------ | ------------ | ------------ | --------- |
+| 1 | F   | T                                             | ·           | ·           | ·                                | ·                                || ·            | ·            | ·            | ·            | T         |
+| 2 | ·   | ·                                             | T           | ·           | ·                                | ·                                || T            | ·            | ·            | ·            | ·         |
+| 3 | ·   | ·                                             | ·           | T           | ·                                | ·                                || ·            | T            | ·            | ·            | ·         |
+| 4 | ·   | ·                                             | ·           | ·           | T                                | ·                                || ·            | ·            | T            | ·            | ·         |
+| 5 | ·   | ·                                             | ·           | ·           | ·                                | T                                || ·            | ·            | ·            | T            | ·         |
 ```
 
-### Fault::ib_wrap
+> Notes:
+> amp_wrap_hi = voc_soc() - voc_amp >= ewhi_thr
+> amp_wrap_lo = voc_soc() - voc_amp <= ewlo_thr
+
+### Fault::ib_wrap vb section
 
 ```text
 | # | Rf | ib_diff_fa | wrap_m_and_n_fa || wrap_vb_fa | vb_sel_stat_ | latched_fail_ | Comment                 |

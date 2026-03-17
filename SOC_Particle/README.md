@@ -220,6 +220,10 @@ In the spirit of Software Engineering principles, I document perceived requireme
         d) Constants for the application logic are derived from these values.
         e) C2 used in both R2 legs of the op-amp for symmetry.  Analysis indicates a theoretical transfer function asymmetry if two C2s are not used.   Why bother not putting in that capacitor for < $0.01?
 
+## Decision Tables
+
+See [DecisionTables.md](DecisionTables.md) for fault logic and sensor selection decision tables.
+
 ## Battery Cyclic Life
 
 LiFePO4 batteries that cycle a small amount of charge are expected to last over 8000 cycles.   That number was chosen by industry experts who just don't know what the limits are and picked the biggest number at the edge of their experience.
