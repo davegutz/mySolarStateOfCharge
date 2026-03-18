@@ -2,372 +2,253 @@
 
 # Decision Tables — SOC_Particle
 
-Auto-generated from `DecisionTables.ods`. The Active-Standby sheet is superseded by Hi-Lo and kept for reference only.
-
----
-
 ## Contents
 
-- [Summary](#summary)
 - [Single Hard Faults](#single-hard-faults)
-- [Single Soft Faults](#single-soft-faults)
-- [Active-Standby Selection (old)](#active-standby-selection-old)
-- [Hi-Lo Selection](#hi-lo-selection)
+- [Soft Faults](#soft-faults)
+- [Vb Selection](#vb-selection)
+- [Ib Active-Standby Selection](#ib-active-standby-selection)
+- [Ib Hi-Lo Selection](#ib-hi-lo-selection)
+- [Annunciation](#annunciation)
 
 ---
 
 ## Summary
 
-The first version was Active – Standby. I used it to manage various versions of dual high ranging
-sensors. The strategy for selection was the same active standby. Either both sensors were identical
-or one was clearly superior by design. I have a lot of experience with active-standby and could
-quickly write heuristic algorithms to manage this. The heart of the decision tables have just a few
-pithy calculations. With the various configurations I began with a non-amplified version of dubious
-precision that I called 'NOA' for non-amplified. The other I called 'AMP'. When I went to two
-amplified sensors the standby I called 'NOA'. For active – standby there are two states: normal and
-failed. The failed condition was called 'latched_fail.' The basic assumption is that the failures
-are annunciated so user can fix right away. This reduced exposure to failure operation results in a
-very high reliability system. Along with this goes non-latching low level failures but latching high
-level decisions. There is a bug in this: ib_fa values are not annunciated and the failed signals are
-still used in logic. In the Hi-Lo I changed the name of bare variables to be ib_fa and added
-appropriate logic to the hard fault logic. I only ever ran this logic on a device in 'Fake Fault'
-mode so none of this mattered anyway. I was learning.
+Auto-generated from `DecisionTables.ods`. The Active-Standby sheet is kept for
+reference; Hi-Lo is the active strategy.
 
+All parameters are unlatched unless `latch` specifically appears in the name.
+Hard Faults take precedence over Soft Faults. Soft Faults are used in reasoning.
+`·` = don't-care / any value.  `||` separates condition inputs from results.
 
-I decided to pursue a Hi – Lo strategy in an attempt to prefer a very high gain, low ranging sensor
-for accuracy and the existing relatively low gain, high ranging sensor already used. I continued to
-use the same names, with 'AMP' referring to the high gain / low range and 'NOA' referring to the low
-gain / high range. The 'NOA' is inherently less preferred but now necessary because the solar system
-occasionally deals with high currents. I split e_wrap logic to help decide. I kept the original
-e_wrap logic using the selected configuration in case it was useful to detect a bad final selection.
-I wanted to keep the high reliability with the same annunciation concept. This means the same
-latching / non-latching behavior and same low-level Hard Fault and Bare Detection. This started out
-also in 'Fake Fault' mode to learn.
+**Abbreviations**
 
+| Abbrev | Meaning |
+| ------ | ------- |
+| Rf     | `reset_all_faults` |
+| Ff     | `ap.fake_fault` |
+| si     | `sp.ib_force` |
+| ibl    | last good ib_sel value |
+| vbl    | last good vb_sel value |
 
-'Hard Faults' and 'Bare Detection' are the same between these two broad strategies.
-
-
-Perhaps if I ever truly deployed this device I would turn off 'Fake Fault' mode.
-
-
-All parameters are unlatched unless 'latch' specifically in the name.
-
-
-Hard Faults take precedence over reasoned faults in older 'Active-Standby' or newer 'Hi-Lo'
-
-
-Soft Faults are used in reasoning
 
 ---
 
 ## Single Hard Faults
 
-### Fault::vc_check
+### Fault::tb_check
 
 ```text
-| # | vc_bare | ib_range_fail || vc_fa LATCH |
-| - | ------- | ------------- || ----------- |
-| 1 | T       | T             || T           |
+| # | Tb       | Tb       | Persisted    || tb_fa |
+|   | <=TB_MIN | >=TB_MAX | tb_stale_flt ||       |
+| - | -------- | -------- | ------------ || ----- |
+| 1 | T        | ·        | ·            || T     |
+| 2 | ·        | T        | ·            || T     |
+| 3 | ·        | ·        | T            || T     |
 ```
-
-> Notes:
-> ib_range_fail = abs(Ishunt_cal) >= IB_ABS_MAX_ (electrical)
-
-### Shunt::convert Bare
-
-```text
-| # | HDWE_BARE | vc_bare | using_opamp || bare_shunt_ | ib_fa LATCH |
-| - | --------- | ------- | ----------- || ----------- | ----------- |
-| 3 | T         | ·       | ·           || F           | ·           |
-| 4 | F         | T       | T           || T           | T           |
-```
-
-> Notes:
-> vc_bare = Vc_ < VC_BARE_DETECTED
-
-
-### Fault::shunt_check (Shunt->)
-
-```text
-| # | HDWE_BARE | vc_fa | bare_shunt_ | ib_range_fail | ib_no_sense || ib_fa LATCH | Comment |
-| - | --------- | ----- | ----------- | ------------- | ----------- || ----------- | ------- |
-| 1 | F         | ·     | T           | ·             | ·           || T           |         |
-| 2 | F         | ·     | ·           | T             | ·           || T           |         |
-| 3 | T         | ·     | ·           | ·             | T           || T           |         |
-| 4 | ·         | T     | ·           | ·             | ·           || T           |         |
-| 5 | ·         | ·     | ·           | ·             | ·           || F           | Default |
-```
-
-> Notes:
-> ib_range_fail = abs(Ishunt_cal) >= IB_ABS_MAX_ (electrical)
-> ib_no_sense = abs(Ishunt_cal) >= NOM_UNIT_CAP * nP (physical)
 
 ### Fault::vb_check
 
 ```text
-| # | vb_low_conf | vb>=VB_MAX || vb_fa LATCH | Comment              |
-| - | ------------| ---------- || ----------- | -------------------- |
-| 1 | T           | ·          || T           | go to Active-Standby |
-| 2 | ·           | T          || T           |                      |
-| 3 | ·           | ·          || F           | Default              |
+| # | Ib_hdwe     | Vb        | vb       || vb_fa |
+|   | > IB_MIN_UP | <= vb_min | >=VB_MAX || LATCH |
+| - | ----------- | --------- | -------- || ----- |
+| 1 | T           | T         | ·        || T     |
+| 2 | ·           | ·         | T        || T     |
 ```
 
-### Fault::tb_check
+### Fault::vc_check
 
 ```text
-| # | Tb <= TB_MIN | Tb>=TB_MAX | tb_stale_per || tb_fa | Comment |
-| - | ------------ | ---------- | ------------ || ----- | ------- |
-| 1 | T            | ·          | ·            || T     |         |
-| 2 | ·            | T          | ·            || T     |         |
-| 3 | ·            | ·          | T            || T     |         |
-| 4 | ·            | ·          | ·            || F     | Default |
+| # | Vc <= vc_min    || vc_fa |
+|   | or Vc >= vc_max || LATCH |
+| - | --------------- || ----- |
+| 1 | T               || T     |
 ```
 
-
-### disconnect
+### Shunt::convert Bare
 
 ```text
-| # | ib_quiet || ib_dscn_fa | Comment |
-| - | -------- || ---------- | ------- |
-| 1 | T        || T          |         |
-| 2 | F        || F          | Default |
+| # | Vc <= vc_min    || using_opamp | Shunt→bare_shunt_ | ib_???_fa |
+|   | or Vc >= vc_max ||             |                   | LATCH     |
+| - | --------------- || ----------- | ----------------- | --------- |
+| 1 | T               || T           | T                 | T         |
 ```
 
-> Notes:
-> vb_fail = vb_sel_stat==0 || vb_fa = wrap_vb_fa || vb_fa
-> vb_low_conf = vb <= VB_MIN &&ib_hdwe*nP > IB_MIN_UP
-> ib_quiet = quiet(ib_noa + ib_amp) < quiet_thr
-> tb_stale_per = ersisted tb_stale_flt
+### Fault::shunt_check
+
+```text
+| # | Shunt→bare_shunt_ | vc_fa | abs(Ishunt_cal)  || ib_???_fa |
+|   |                   |       | >=IB_ABS_MAX_??? || LATCH     |
+| - | ----------------- | ----- | ---------------- || --------- |
+| 1 | T                 | ·     | ·                || T         |
+| 2 | ·                 | ·     | T                || T         |
+| 3 | ·                 | T     | ·                || T         |
+```
 
 
 ---
 
-## Single Soft Faults
-
-### Fault::ib_wrap ib section
-
-```text
-| # | sat | (voc_soc – voc_stat) > ewhi_thr or < ewlo_thr | amp_wrap_hi | amp_wrap_lo | voc_soc() - voc_noa >= ewhi_thr_ | voc_soc() - voc_noa <= ewlo_thr_ || wrap_lo_m_fa | wrap_hi_m_fa | wrap_lo_n_fa | wrap_hi_n_fa | e_wrap_fa |
-| - | --- | --------------------------------------------- | ----------- | ----------- | -------------------------------- | -------------------------------- || ------------ | ------------ | ------------ | ------------ | --------- |
-| 1 | F   | T                                             | ·           | ·           | ·                                | ·                                || ·            | ·            | ·            | ·            | T         |
-| 2 | ·   | ·                                             | T           | ·           | ·                                | ·                                || T            | ·            | ·            | ·            | ·         |
-| 3 | ·   | ·                                             | ·           | T           | ·                                | ·                                || ·            | T            | ·            | ·            | ·         |
-| 4 | ·   | ·                                             | ·           | ·           | T                                | ·                                || ·            | ·            | T            | ·            | ·         |
-| 5 | ·   | ·                                             | ·           | ·           | ·                                | T                                || ·            | ·            | ·            | T            | ·         |
-```
-
-> Notes:
-> amp_wrap_hi = voc_soc() - voc_amp >= ewhi_thr
-> amp_wrap_lo = voc_soc() - voc_amp <= ewlo_thr
-
-### Fault::ib_wrap vb section
-
-```text
-| # | Rf | ib_diff_fa | wrap_m_and_n_fa || wrap_vb_fa | vb_sel_stat_ | latched_fail_ | Comment                 |
-| - | -- | ---------- | --------------- || ---------- | ------------ | ------------- | ----------------------- |
-| 1 | T  | ·          | ·               || F          | 1            | F             |                         |
-| 2 | ·  | F          | T               || T          | 0            | T             | Isolated to vb. Latches |
-```
-
+## Soft Faults
 
 ### Fault::ib_diff
 
 ```text
-| # | Rf | ib_lo_active_ | abs(ib_amp – ib_noa) >= IBATT_DISAGREE_THRESH || ib_diff_fa |
-| - | -- | ------------- | --------------------------------------------- || ---------- |
-| 1 | T  | ·             | ·                                             || F          |
-| 2 | ·  | T             | T                                             || T          |
+| # | ib_diff           | ib_diff           || ib_diff_hi_fa | ib_diff_lo_fa | ib_diff_fa |
+|   | >= IB_DIFF_HI_FLT | <= IB_DIFF_LO_FLT ||               |               |            |
+| - | ----------------- | ----------------- || ------------- | ------------- | ---------- |
+| 1 | T                 | ·                 || T             | ·             | T          |
+| 2 | ·                 | T                 || ·             | T             | T          |
 ```
 
-> Notes:
-> Rf = reset_all_faults
+### Fault::ib_wrap; ib section
+
+```text
+| #  | HDWE_IB_HI_LO | sat | ib_really_quiet | ib_diff_fa | dv_dyn_active     | dv_dyn_active     | dv_dyn_amp      | dv_dyn_amp      | dv_dyn_noa      | dv_dyn_noa      || wrap_hi_m_fa | wrap_lo_m_fa | wrap_hi_n_fa | wrap_lo_n_fa | wrap_m_and_n_fa | wrap_lo_fa |
+|    |               |     |                 |            | > ewhi_thr_active | < ewlo_thr_active | >= ewhi_thr_amp | <= ewlo_thr_amp | >= ewhi_thr_noa | <= ewlo_thr_noa ||              |              |              |              |                 |            |
+| -- | ------------- | --- | --------------- | ---------- | ----------------- | ----------------- | --------------- | --------------- | --------------- | --------------- || ------------ | ------------ | ------------ | ------------ | --------------- | ---------- |
+| 1  | T             | ·   | ·               | ·          | ·                 | ·                 | T               | ·               | ·               | ·               || ·            | ·            | ·            | ·            | ·               | ·          |
+| 2  | T             | ·   | ·               | ·          | ·                 | ·                 | ·               | T               | ·               | ·               || ·            | T            | ·            | ·            | ·               | ·          |
+| 3  | T             | ·   | ·               | ·          | ·                 | ·                 | ·               | ·               | T               | ·               || T            | ·            | ·            | ·            | ·               | ·          |
+| 4  | T             | ·   | ·               | ·          | ·                 | ·                 | ·               | ·               | ·               | T               || ·            | ·            | ·            | T            | ·               | ·          |
+| 5  | T             | F   | T               | T          | ·                 | ·                 | T               | ·               | T               | ·               || T            | ·            | T            | ·            | T               | ·          |
+| 6  | T             | ·   | ·               | ·          | ·                 | ·                 | ·               | T               | ·               | T               || ·            | T            | ·            | T            | T               | T          |
+| 7  | F             | F   | ·               | ·          | T                 | ·                 | ·               | ·               | ·               | ·               || ·            | ·            | T            | ·            | ·               | ·          |
+| 8  | F             | ·   | ·               | ·          | ·                 | T                 | ·               | ·               | ·               | ·               || ·            | ·            | ·            | ·            | ·               | T          |
+| 9  | F             | ·   | ·               | ·          | ·                 | ·                 | ·               | T               | ·               | ·               || ·            | ·            | ·            | ·            | ·               | ·          |
+| 10 | F             | ·   | ·               | ·          | ·                 | ·                 | T               | ·               | ·               | ·               || ·            | T            | ·            | ·            | ·               | ·          |
+| 11 | F             | ·   | ·               | ·          | ·                 | ·                 | ·               | ·               | ·               | T               || T            | ·            | ·            | ·            | ·               | ·          |
+| 12 | F             | ·   | ·               | ·          | ·                 | ·                 | ·               | ·               | T               | ·               || ·            | ·            | ·            | T            | ·               | ·          |
+```
+
+### Fault::ib_wrap; vb section
+
+```text
+| # | ib_really_quiet | ib_diff_fa | wrap_m&n || wrap_vb_fa | vb_sel_stat |
+|   |                 |            |          || LATCH      |             |
+| - | --------------- | ---------- | -------- || ---------- | ----------- |
+| 1 | T               | F          | F        || T          | 1           |
+```
+
+> **Notes:**
+>
+> ib_diff = ib_amp – ib_noa
+>
+> voc_* = vb – dv_dyn_*
+>
+> dv_dyn_* = voc_soc – voc_*
+>
+> wrap_m&n = wrap_m_and_n_fa
+
 
 ---
 
-## Active-Standby Selection (old)
+## Vb Selection
 
-### Reset
-
-```text
-| # | latched_fail_ | Ff | si | Rf | sp.mod_ib | sp.mod_vb | ib_sel_stat_last_ || wrap_vb_fa_ | vb_sel_stat_ | ib_sel_stat_ | latched_fail_ |
-| - | ------------- | ---| -- | -- | --------- | --------- | ----------------- || ----------- | ------------ | ------------ | ------------- |
-| 1 | x             | x  | x  | T  | x         | x         | x                 || F           | 1            | si          | F             |
-```
-
-> Notes:
-> Rf = reset_all_faults
-> Ff = ap.fake_fault
-> si = sp.ib_force
-
-
-### Fake Faults
+### vb_selection
 
 ```text
-| # | Ff || ib_sel_stat | latched_fail_ |
-| - | ---|| ----------- | ------------- |
-| 1 | T  || si          | F             |
+| # | vb_fa   | wrap_vb_fa || vb_sel_stat | Comment                                                                                                                           |
+|   | LATCHED |            ||             |                                                                                                                                   |
+| - | ------- | ---------- || ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | T       | ·          || 0           | Simplex Vb always available without modification. But used carefully e.g. low Vb (potentially failed) is confirmed with Ib quiet. |
+| 2 | ·       | T          || 0           | ·                                                                                                                                 |
+| 3 | ·       | ·          || 1           | Default                                                                                                                           |
 ```
 
-> Notes:
-> Ff = ap.fake_fault
-> si = sp.ib_force
 
+---
+
+## Ib Active-Standby Selection
 
 ### ib_decision_active_standby
 
 ```text
-| #  | Section | latched_fail_ | Ff | si | Rf | mod_ib | ib_sel_stat_last_ | ib_amp_fa = ib_amp_bare_ | ib_noa_fa = ib_noa_bare_ | ib_diff_fa | vb_sel_stat_last_ | e_wrap_fa | cc_diff_fa || ib_decision_ | ib_sel_stat_ | latched_fail_ | red_loss() | Comment                                                               |
-| -- | ------- | ------------- | ---| -- | -- | ------ | ----------------- | ------------------------ | ------------------------ | ---------- | ----------------- | --------- | ---------- || ------------ | ------------ | ------------- | ---------- | --------------------------------------------------------------------- |
-| 1  |         | T             | ·  | ·  | ·  | .      | ·                 | ·                        | ·                        | ·          | ·                 | ·         | ·          || 10           | ·            | ·             | ·          | latch is a latch is a latch iff !latched_fail                         |
-| 2  |         | ·             | F  | ·  | ·  | ·      | ·                 | ·                        | ·                        | ·          | ·                 | ·         | ·          || 0            | 1            | F             | ·          |                                                                       |
-| 3  |         | ·             | ·  | ·  | ·  | ·      | ·                 | T                        | T                        | ·          | ·                 | ·         | ·          || 1            | 0            | T             | T          |                                                                       |
-| 4  |         | ·             | ·  | 1  | ·  | ·      | ·                 | F                        | ·                        | ·          | ·                 | ·         | ·          || 2            | 1            | T             | ·          | Forcing ib to one loses redundancy                                    |
-| 5  |         | ·             | ·  | ·  | F  | F      | -1                | ·                        | F                        | ·          | ·                 | ·         | ·          || 3            | -1           | T             | T          | Cannot reset except by hard reset or mod_ib set. Forces user to think |
-| 6  |         | ·             | ·  | -1 | F  | ·      | ·                 | ·                        | F                        | ·          | ·                 | ·         | ·          || 4            | -1           | T             | T          | Forcing ib to one loses redundancy                                    |
-| 7  | auto    | ·             | ·  | 0  | ·  | ·      | ·                 | T                        | F                        | ·          | ·                 | ·         | ·          || 5            | -1           | T             | T          | ib_amp is primary in active standby process                           |
-| 8  | auto    | ·             | ·  | 0  | ·  | ·      | ·                 | ·                        | ·                        | T          | 1                 | T         | ·          || 6            | -1           | T             | T          | Isolated to ib_amp                                                    |
-| 9  | auto    | ·             | ·  | 0  | ·  | ·      | ·                 | ·                        | ·                        | T          | ·                 | ·         | T          || 7            | -1           | T             | T          | Isolated to ib_amp                                                    |
-| 10 | auto    | ·             | ·  | -1 | ·  | ·      | 0                 | ·                        | ·                        | ·          | ·                 | ·         | ·          || 8            | 0            | T             | T          |                                                                       |
-| 11 | auto    | ·             | ·  | -1 | ·  | ·      | 1                 | ·                        | ·                        | ·          | ·                 | ·         | ·          || 8            | 1            | T             | T          |                                                                       |
-| 12 | auto    | ·             | ·  | 1  | ·  | ·      | 0                 | ·                        | ·                        | ·          | ·                 | ·         | ·          || 8            | 0            | T             | T          |                                                                       |
-| 13 | auto    | ·             | ·  | 1  | ·  | ·      | -1                | ·                        | ·                        | ·          | ·                 | ·         | ·          || 8            | -1           | T             | T          |                                                                       |
-| 14 | auto    | ·             | ·  | 0  | ·  | ·      | x                 | ·                        | ·                        | ·          | ·                 | ·         | ·          || 9            | ·            | ·             | F          | Not reachable but here for completeness to avoid indecision           |
-```
-
-> Notes:
-> Rf = reset_all_faults
-> Ff = ap.fake_fault
-> si = sp.ib_force
-> mod_ib = sp.mod_ib
-
-
-### red_loss
-
-```text
-| # | Ff | si | ib_sel_stat_last_ | ib_amp_fa = ib_amp_bare_ | ib_noa_fa = ib_noa_bare_ | ib_diff_fa | vb_fa || red_loss | Comment |
-| - | -- | -- | ----------------- | ------------------------ | ------------------------ | ---------- | ----- || -------- | ------- |
-| 1 | ·  | ·  | 0                 | ·                        | ·                        | ·          | ·     || T        |         |
-| 2 | ·  | ·  | 1                 | ·                        | ·                        | ·          | ·     || T        |         |
-| 3 | F  | -1 | ·                 | ·                        | ·                        | ·          | ·     || T        |         |
-| 4 | F  | 1  | ·                 | ·                        | ·                        | ·          | ·     || T        |         |
-| 5 | ·  | ·  | ·                 | ·                        | ·                        | T          | ·     || T        |         |
-| 6 | ·  | ·  | ·                 | T                        | ·                        | ·          | ·     || T        |         |
-| 7 | ·  | ·  | ·                 | ·                        | T                        | ·          | ·     || T        |         |
-| 8 | ·  | ·  | ·                 | ·                        | ·                        | ·          | T     || T        |         |
-| 9 | ·  | ·  | ·                 | ·                        | ·                        | ·          | ·     || F        | Default |
-```
-
-> Notes:
-> Ff = ap.fake_fault
-> si = sp.ib_force
-
-
-### bms off
-
-```text
-| # | temp_c < chem_.low_t | voc_stat < chem_.vb_down || bms_off |
-| - | -------------------- | ------------------------ || ------- |
-| 1 | T                    | ·                        || T       |
-| 2 | ·                    | T                        || T       |
+| #  | ib_force | mod_ib | ib_sel_stat_last | ib_amp_fa = | ib_noa_fa = | ib_diff_fa | vb_sel_stat_last | e_wrap_fa | cc_diff_fa || ib_decision | ib_sel_stat | latched_fail | red_loss() | Comment                                                               |
+|    | (si)     |        |                  | ib_amp_bare | ib_noa_bare |            |                  |           |            ||             |             |              |            |                                                                       |
+| -- | -------- | ------ | ---------------- | ----------- | ----------- | ---------- | ---------------- | --------- | ---------- || ----------- | ----------- | ------------ | ---------- | --------------------------------------------------------------------- |
+| 1  | ·        | ·      | ·                | ·           | ·           | ·          | ·                | ·         | ·          || 10          | ·           | ·            | ·          | latch is a latch is a latch iff !latched_fail                         |
+| 2  | ·        | ·      | ·                | T           | T           | ·          | ·                | ·         | ·          || 1           | 0           | T            | T          | ·                                                                     |
+| 3  | 1        | ·      | ·                | F           | ·           | ·          | ·                | ·         | ·          || 2           | 1           | T            | ·          | Forcing ib to one loses redundancy                                    |
+| 4  | ·        | F      | -1               | ·           | F           | ·          | ·                | ·         | ·          || 3           | -1          | T            | T          | Cannot reset except by hard reset or mod_ib set. Forces user to think |
+| 5  | -1       | ·      | ·                | ·           | F           | ·          | ·                | ·         | ·          || 4           | -1          | T            | T          | Forcing ib to one loses redundancy                                    |
+| 6  | 0        | ·      | ·                | T           | F           | ·          | ·                | ·         | ·          || 5           | -1          | T            | T          | ib_amp is primary in active standby process                           |
+| 7  | 0        | ·      | ·                | ·           | ·           | T          | 1                | T         | ·          || 6           | -1          | T            | T          | Isolated to ib_amp                                                    |
+| 8  | 0        | ·      | ·                | ·           | ·           | T          | ·                | ·         | T          || 7           | -1          | T            | T          | Isolated to ib_amp                                                    |
+| 9  | -1       | ·      | 0                | ·           | ·           | ·          | ·                | ·         | ·          || 8           | 0           | T            | T          | ·                                                                     |
+| 10 | -1       | ·      | 1                | ·           | ·           | ·          | ·                | ·         | ·          || 8           | 1           | T            | T          | ·                                                                     |
+| 11 | 1        | ·      | 0                | ·           | ·           | ·          | ·                | ·         | ·          || 8           | 0           | T            | T          | ·                                                                     |
+| 12 | 1        | ·      | -1               | ·           | ·           | ·          | ·                | ·         | ·          || 8           | -1          | T            | T          | ·                                                                     |
+| 13 | 0        | ·      | x                | ·           | ·           | ·          | ·                | ·         | ·          || 9           | ·           | ·            | F          | Not reachable but here for completeness to avoid indecision           |
+| 14 | ·        | ·      | ·                | ·           | ·           | ·          | ·                | ·         | ·          || 0           | 1           | ·            | ·          | Default                                                               |
 ```
 
 
 ---
 
-## Hi-Lo Selection
+## Ib Hi-Lo Selection
 
-### Reset
-
-```text
-| # | latched_fail_ | Ff | si | Rf | sp.mod_ib | sp.mod_vb | ib_sel_stat_last_ (ibl) || wrap_vb_fa_ | vb_sel_stat_ | ib_choice | latched_fail_ |
-| - | ------------- | -- | -- | -- | --------- | --------- | ----------------------- || ----------- | ------------ | --------- | ------------- |
-| 1 | x             | x  | x  | T  | x         | x         | x                       || F           | 1            | si        | F             |
-```
-
-> Notes:
-> Ff = ap.fake_fault
-> si = sp.ib_force
-> ib_choice  (-1=noa, 0=def, 1=amp, 2=none)
-
-
-### Fault::ib_select_decision_hi_lo
+### ib_decision_hi_lo()
 
 ```text
-| #  | Section | latched_fail | si | Rf | sp.mod_ib | sp.mod_vb | ib_choice | ib_amp_fa | ib_noa_fa | ib_diff_fa | vb_sel_stat_last (vbl) | wrap_m_fa | wrap_n_fa | cc_diff_fa || ib_decision | ib_choice | latched_fail_ | red_loss | Comment                                                     |
-| -- | --------| ------------ | -- | -- | --------- | --------- | --------- | --------- | --------- | ---------- | ---------------------- | --------- | --------- | ---------- || ----------- | --------- | ------------- | -------- | ----------------------------------------------------------- |
-| 1  |         | T            | ·  | ·  | ·         | ·         | ·         | ·         | ·         | ·          | ·                      | ·         | ·         | ·          || last        | ·         | ·             | ·        | must reset (Rf) or reinstall and set nominal                |
-| 2  |         | ·            | ·  | ·  | ·         | ·         | ·         | T         | T         | ·          | ·                      | ·         | ·         | ·          || 1           | -2        | T             | ·        |                                                             |
-| 3  |         | ·            | 1  | ·  | ·         | ·         | ·         | F         | ·         | ·          | ·                      | ·         | ·         | ·          || 2           | 1         | T             | ·        | Forcing ib to one loses redundancy                          |
-| 4  |         | ·            | -1 | F  | ·         | ·         | ·         | ·         | F         | ·          | ·                      | ·         | ·         | ·          || 3           | -1        | T             | ·        | Forcing ib to one loses redundancy                          |
-| 5  | auto    | ·            | 0  | ·  | ·         | ·         | ·         | T         | F         | ·          | ·                      | ·         | ·         | ·          || 4           | -1        | T             | ·        | still 'works'                                               |
-| 6  | auto    | ·            | 0  | ·  | ·         | ·         | ·         | F         | T         | ·          | ·                      | ·         | ·         | ·          || 5           | 1         | T             | ·        | still 'works'                                               |
-| 7  | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | T          | 1                      | T         | F         | ·          || 6           | -1        | T             | ·        | ampHiFail                                                   |
-| 8  | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | T          | 1                      | F         | T         | ·          || 7           | 1         | T             | ·        | lose accy of tracking high current. NoaHiFail               |
-| 9  | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | T          | 1                      | T         | T         | ·          || 8           | 0         | F             | ·        | keep trying; ambiguous                                      |
-| 10 | auto    | ·            | 0  | ·  | ·         | ·         | ·         |·          | ·         | ·          | vbl                    | ·         | ·         | ·          || 0           | ibl       | vbl           | ·        | Default                                                     |
-| 11 | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | T          | ·                      | ·         | ·         | T          || 10          | -1        | T             | ·        | still 'works'                                               |
-| 12 | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | ·          | vbl                    | ·         | ·         | ·          || 0           | ibl       | vbl           | ·        | Default                                                     |
-| 13 | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | ·          | ·                      | ·         | ·         | T          || 12          | 0         | F             | ·        | keep trying; ambiguous                                      |
-| 14 | auto    | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | ·          | vbl                    | ·         | ·         | ·          || 0           | ibl       | vbl           | ·        | Default                                                     |
-| 15 | ---->   | ·            | -1 | ·  | ·         | ·         | ·         | ·         | ·         | ·          | ·                      | ·         | ·         | ·          || 14          | 0         | T             | ·        |                                                             |
-| 16 | ---->   | ·            | -1 | ·  | ·         | ·         | ·         | ·         | ·         | ·          | ·                      | ·         | ·         | ·          || 14          | 1         | T             | ·        | Forcing ib loses redundancy                                 |
-| 17 | ---->   | ·            | 1  | ·  | ·         | ·         | ·         | ·         | ·         | ·          | ·                      | ·         | ·         | ·          || 14          | 0         | T             | ·        |                                                             |
-| 18 | ---->   | ·            | 1  | ·  | ·         | ·         | ·         | ·         | ·         | ·          | ·                      | ·         | ·         | ·          || 14          | -1        | T             | ·        | Forcing ib loses redundancy                                 |
-| 19 | ---->   | ·            | 0  | ·  | ·         | ·         | ·         | ·         | ·         | ·          | ·                      | ·         | ·         | ·          || 15          | ·         | F             | ·        | Not reachable but here for completeness to avoid indecision |
-| 20 | ---->   | ·            | ·  | ·  | F         | F         | 1         | ·         | ·         | ·          | x                      | ·         | ·         | ·          || ·           | ·         | ·             | 1        | if modeling get bogus display without the FF                |
-| 21 | ---->   | ·            | ·  | ·  | F         | F         | -1        | ·         | ·         | ·          | x                      | ·         | ·         | ·          || ·           | ·         | ·             | 1        |                                                             |
-| 22 | ---->   | ·            | ·  | ·  | F         | F         | x         | ·         | ·         | ·          | 0                      | ·         | ·         | ·          || ·           | ·         | ·             | 1        |                                                             |
-| 23 | ---->   | ·            | ·  | ·  | ·         | ·         | 0         | ·         | ·         | ·          | 1                      | ·         | ·         | ·          || ·           | ·         | ·             | 0        |                                                             |
+| #  | ib_force | ib_amp_fa | ib_noa_fa | ib_diff_fa | vb_sel_stat_last | wrap_m_fa | wrap_n_fa | cc_diff_fa | ib_choice || ib_decision | ib_choice | latched          | Comment                                                    |
+|    | (si)     |           |           |            | (vbl)            |           |           |            | last      ||             |           | (reset to clear) |                                                            |
+| -- | -------- | --------- | --------- | ---------- | ---------------- | --------- | --------- | ---------- | --------- || ----------- | --------- | ---------------- | ---------------------------------------------------------- |
+| 1  | ·        | T         | T         | ·          | ·                | ·         | ·         | ·          | ·         || 1           | none      | T                | ib not used                                                |
+| 2  | 1        | F         | ·         | ·          | ·                | ·         | ·         | ·          | ·         || 2           | amp       | T                | Forcing ib to one loses redundancy                         |
+| 3  | -1       | ·         | F         | ·          | ·                | ·         | ·         | ·          | ·         || 3           | noa       | T                | Forcing ib to one loses redundancy                         |
+| 4  | ·        | T         | F         | ·          | ·                | ·         | ·         | ·          | ·         || 4           | noa       | T                | still ‘works’                                              |
+| 5  | ·        | F         | T         | ·          | ·                | ·         | ·         | ·          | ·         || 5           | amp       | T                | still ‘works’                                              |
+| 6  | ·        | ·         | ·         | T          | 1                | T         | F         | ·          | ·         || 6           | noa       | T                | ampHiFail                                                  |
+| 7  | ·        | ·         | ·         | T          | 1                | F         | T         | ·          | ·         || 7           | amp       | T                | lose accy of tracking high current. NoaHiFail              |
+| 8  | ·        | ·         | ·         | T          | 1                | T         | T         | ·          | ·         || 8           | try       | F                | keep trying; ambiguous                                     |
+| 9  | ·        | ·         | ·         | T          | ·                | ·         | ·         | T          | ·         || 10          | noa       | T                | still ‘works’                                              |
+| 10 | ·        | ·         | ·         | ·          | ·                | ·         | ·         | T          | ·         || 12          | try       | F                | keep trying; ambiguous                                     |
+| 11 | -1       | ·         | ·         | ·          | ·                | ·         | ·         | ·          | !noa      || 14          | try       | F                | keep trying; ambiguous                                     |
+| 12 | -1       | ·         | ·         | ·          | ·                | ·         | ·         | ·          | ·         || 14          | amp       | T                | Forcing ib loses redundancy                                |
+| 13 | 1        | ·         | ·         | ·          | ·                | ·         | ·         | ·          | !amp      || 14          | try       | F                | keep trying; ambiguous                                     |
+| 14 | 1        | ·         | ·         | ·          | ·                | ·         | ·         | ·          | ·         || 14          | noa       | T                | Forcing ib loses redundancy                                |
+| 15 | ·        | ·         | ·         | ·          | ·                | ·         | ·         | ·          | ·         || 15          | try       | F                | Not reachable but here for completeness to avoid dead code |
+| 16 | ·        | ·         | ·         | ·          | ·                | ·         | ·         | ·          | ·         || 0           | try       | ·                | Default                                                    |
 ```
-
-> Notes:
-> Rf = reset_all_faults
-> ibl = last good ib value
-> vbl = last good vb value
-> ib_choice  (-1=noa, 0=def, 1=amp, 2=none)
-> latched_fail = output of this table
-
-
-### Fault::vb_select_decision_hi_lo
-
-```text
-| # | latched_fail_ | ib_diff_fa | wrap_m_fa | wrap_n_fa | vb_fa || wrap_vb_fa_ | vb_sel_stat_ | latched_fail_ |
-| - | ------------- | ---------- | --------- | --------- | ----- || ----------- | ------------ | ------------- |
-| 1 | T             | ·          | ·         | ·         | ·     || ·           | last         | ·             |
-| 2 | ·             | ·          | ·         | ·         | T     || ·           | 0            | T             |
-| 3 | ·             | F          | T         | T         | ·     || T           | 0            | T             |
-| 4 | ·             | T          | ·         | ·         | ·     || ·           | vbl          | ·             |
-```
-
-### bms off
-
-```text
-| # | temp_c < chem_.low_t | voc_stat < chem_.vb_down || bms_off |
-| - | -------------------- | ------------------------ || ------- |
-| 1 | T                    | ·                        || T       |
-| 2 | ·                    | T                        || T       |
-```
-
-### e_wrap
-
-```text
-| # | wrap_m_fa | wrap_n_fa || e_wrap_fa | Comment |
-| - | --------- | --------- || --------- | ------- |
-| 1 | T         | T         || T         |         |
-| 2 | ·         | ·         || F         | Default |
-```
-
-### soft_reset
-
-```text
-| # | ib_choice_(-1=noa,0=def,1=amp,2=none) | ib_choice != ib_choice_last_ || cmd_reset |
-| - | ------------------------------------- | ---------------------------- || --------- |
-| 1 | -1                                    | T                            || T         |
-| 2 | ·                                     | ·                            || F         |
-```
-
-> Dm-50
 
 
 ---
+
+## Annunciation
+
+### serial_display()
+
+```text
+| #  | not           | tcharge | bms_off | not    | sat | ib_choice | ib_amp_fa | ib_noa_fa | cc_diff_fa | ib_dscn_fa | ib_diff_fa | ib_choice | tb_fa | vb_sel_stat || time_long | accy | off | SAT | flt ekf | fail vb | fail ib | red loss | diff ib | conn | Tb character | Vb character | Ib character | AH ekf                | time character | AH cc                 |
+|    | HDWE_IB_HI_LO | < 24    |         | mod_ib |     | != 0      |           |           |            |            |            |           |       |             ||           |      |     |     |         |         |         |          |         |      | flash        | flash        | flash        | character flash       | flash          | character flash       |
+| -- | ------------- | ------- | ------- | ------ | --- | --------- | --------- | --------- | ---------- | ---------- | ---------- | --------- | ----- | ----------- || --------- | ---- | --- | --- | ------- | ------- | ------- | -------- | ------- | ---- | ------------ | ------------ | ------------ | --------------------- | -------------- | --------------------- |
+| 1  | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | T     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | T       | ·        | ·       | ·    | ****         | ·            | ·            | ·                     | ·              | ·                     |
+| 2  | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | ·        | ·       | ·    | Tb           | ·            | ·            | ·                     | ·              | ·                     |
+| 3  | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | 0           || ·         | ·    | ·   | ·   | ·       | T       | ·       | ·        | ·       | ·    | ·            | *fail        | ·            | ·                     | ·              | ·                     |
+| 4  | ·             | ·       | T       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | T   | ·   | ·       | ·       | ·       | ·        | ·       | ·    | ·            | off          | ·            | ·                     | ·              | ·                     |
+| 5  | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | ·        | ·       | ·    | ·            | Voc          | ·            | ·                     | ·              | ·                     |
+| 6  | ·             | ·       | ·       | ·      | ·   | ·         | T         | T         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | T       | ·        | ·       | ·    | ·            | ·            | *fail        | ·                     | ·              | ·                     |
+| 7  | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | 1         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | T       | ·        | ·       | ·    | ·            | ·            | *fail        | ·                     | ·              | ·                     |
+| 8  | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | -1        | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | T       | ·        | ·       | ·    | ·            | ·            | *amp         | ·                     | ·              | ·                     |
+| 9  | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | T          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | ·        | T       | ·    | ·            | ·            | *diff        | ·                     | ·              | ·                     |
+| 10 | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | !=0       | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | T        | ·       | ·    | ·            | ·            | redl         | ·                     | ·              | ·                     |
+| 11 | ·             | ·       | ·       | T      | ·   | ·         | ·         | ·         | ·          | T          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | ·        | ·       | T    | ·            | ·            | conn         | ·                     | ·              | ·                     |
+| 12 | T             | ·       | ·       | T      | ·   | ·         | T         | T         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | T       | ·        | ·       | ·    | ·            | ·            | *fail        | ·                     | ·              | ·                     |
+| 13 | T             | ·       | ·       | T      | ·   | ·         | ·         | ·         | ·          | T          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | ·        | ·       | T    | ·            | ·            | conn         | ·                     | ·              | ·                     |
+| 14 | T             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | T          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | ·        | T       | ·    | ·            | ·            | * diff       | ·                     | ·              | ·                     |
+| 15 | T             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | T        | ·       | ·    | ·            | ·            | redl         | ·                     | ·              | ·                     |
+| 16 | T             | ·       | ·       | T      | ·   | ·         | T         | T         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | T       | ·        | ·       | ·    | ·            | ·            | *fail        | ·                     | ·              | ·                     |
+| 17 | T             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | ·        | ·       | T    | ·            | ·            | conn         | ·                     | ·              | ·                     |
+| 18 | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | ·        | ·       | ·    | ·            | ·            | Ib           | ·                     | ·              | ·                     |
+| 19 | T             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | T          | ·          | F          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | T       | ·       | ·       | ·        | ·       | ·    | ·            | ·            | ·            | ----                  | ·              | ·                     |
+| 20 | T             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | T          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | T       | ·       | ·       | ·        | ·       | ·    | ·            | ·            | ·            | ----                  | ·              | ·                     |
+| 21 | T             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | ·        | ·       | ·    | ·            | ·            | ·            | Amp_hrs_remaining_ekf | ·              | ·                     |
+| 22 | ·             | T       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | ·           || T         | ·    | ·   | ·   | ·       | ·       | ·       | ·        | ·       | ·    | ·            | ·            | ·            | ·                     | ----           | ·                     |
+| 23 | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | ·        | ·       | ·    | ·            | ·            | ·            | ·                     | tcharge        | ·                     |
+| 24 | ·             | ·       | ·       | ·      | T   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | T   | ·       | ·       | ·       | ·        | ·       | ·    | ·            | ·            | ·            | ·                     | ·              | SAT                   |
+| 25 | ·             | ·       | ·       | ·      | ·   | ·         | T         | T         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | T       | ·        | ·       | ·    | ·            | ·            | ·            | ·                     | ·              | fail                  |
+| 26 | ·             | ·       | ·       | ·      | ·   | T         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | T    | ·   | ·   | ·       | ·       | ·       | ·        | ·       | ·    | ·            | ·            | ·            | ·                     | ·              | accy                  |
+| 27 | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | ·        | ·       | ·    | ·            | ·            | ·            | ·                     | ·              | Amp_hrs_remaining_soc |
+```

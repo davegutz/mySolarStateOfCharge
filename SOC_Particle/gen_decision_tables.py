@@ -395,6 +395,7 @@ def process_sheet(doc, sheet_name: str) -> str:
                 parts.append('')
                 parts.append('> **Notes:**')
                 for n in sec_notes:
+                    parts.append('>')
                     parts.append(f'> {n}')
             parts.append('')
 
@@ -446,7 +447,7 @@ def build_toc() -> str:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--ods', default='DecisionTables.ods')
-    ap.add_argument('--out', default='NewDecisionTables.md')
+    ap.add_argument('--out', default='DecisionTables.md')
     args = ap.parse_args()
 
     ods_path = Path(args.ods)
