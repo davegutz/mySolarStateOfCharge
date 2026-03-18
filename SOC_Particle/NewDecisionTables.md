@@ -131,7 +131,9 @@ Hard Faults take precedence over Soft Faults. Soft Faults are used in reasoning.
 | 1 | T               | F          | F               || T          | 1           |
 ```
 
-> Notes:
+> **Notes:**
+> voc_* = vb – dv_dyn_*
+> ib_diff = ib_amp – ib_noa
 
 
 ---
@@ -245,4 +247,5 @@ Hard Faults take precedence over Soft Faults. Soft Faults are used in reasoning.
 | 27 | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | ·     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | ·       | ·        | ·       | ·    | ·            | ·            | ·            | ·                     | ·              | Amp_hrs_remaining_soc |
 ```
 
-> Notes:
+> **Notes:**
+> 1. test a note

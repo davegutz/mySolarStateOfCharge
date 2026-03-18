@@ -331,18 +331,23 @@ def parse_sections(all_rows: list[dict]) -> list[tuple[str, list[dict], list[str
 
         if col0.lower().startswith('note'):
             in_notes = True
-            # Collect full row text as note
-            txt = '  '.join(v for v in sorted(row.values()) if v).strip()
-            notes.append(txt)
-            continue
+            continue                      # skip the 'Notes:' header itself
 
         if in_notes:
-            # Continuation note (col0 empty, data elsewhere)
-            if not col0 and not row_is_empty(row):
-                txt = '  '.join(v for v in sorted(row.values()) if v).strip()
-                notes.append(txt)
+            # A truly empty dict (no columns at all) ends the notes block.
+            # row_is_empty() only checks cols > 0, so note lines that have
+            # content only in col 0 would falsely appear empty to it.
+            if not row:
+                in_notes = False          # blank row ends the notes block
+                # fall through — empty row is not a section; safe to skip
+            else:
+                # Note lines: text is in col 0; fall back to other cols.
+                txt = col0 or ' '.join(
+                    v for k, v in sorted(row.items()) if k > 0 and v
+                )
+                if txt:
+                    notes.append(txt)
                 continue
-            in_notes = False
 
         if is_new_section(col0):
             if current_name is not None:
@@ -388,6 +393,7 @@ def process_sheet(doc, sheet_name: str) -> str:
             parts.append(blk)
             if sec_notes:
                 parts.append('')
+                parts.append('> **Notes:**')
                 for n in sec_notes:
                     parts.append(f'> {n}')
             parts.append('')
