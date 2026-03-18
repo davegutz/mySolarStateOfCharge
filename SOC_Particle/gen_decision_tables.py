@@ -165,7 +165,7 @@ def row_is_empty(row: dict) -> bool:
 # ── Header word-wrap ───────────────────────────────────────────────────────────
 
 # Headers longer than this are wrapped onto two lines.
-HEADER_WRAP = 16
+HEADER_WRAP = 8
 
 # Operators tried as split points (operator goes to START of line 2).
 # Logical connectives take priority over comparisons; em-dash is last
