@@ -50,7 +50,7 @@ struct Pins;
   #define VB_SEL_STAT_DEF 1
 #endif
 
-enum ibSel {UsingNoa=-1, UsingDef=0, UsingAmp=1, UsingNone=2};
+enum ibSel {UsingNoa=-1, KeepTrying=0, UsingAmp=1, UsingNone=2};
 enum dispw {conn=0, diff_ib=1, red_loss=2, fail_ib=3, fail_ibm=4, fail_vb=5, flt_tb=6, flt_ekf=7, SAT=8, off=9, accy=10, time_long=11, Count};
 
 /*

@@ -361,8 +361,8 @@ String Looparound::pretty_print(Sensors *Sen)
 Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *Sen):
   cc_diff_(0.), cc_diff_empty_slr_(1), disable_amp_fault_(false), ewsat_slr_(1),
   e_wrap_(0), e_wrap_filt_(0), fltw_(0UL), falw_(0UL),
-  ib_amp_hi_(false), ib_amp_invalid_(false), ib_amp_lo_(false), ib_choice_(UsingDef),
-  ib_choice_last_(UsingDef), ib_decision_(0), ib_diff_(0), ib_diff_f_(0), ib_lo_active_(true),
+  ib_amp_hi_(false), ib_amp_invalid_(false), ib_amp_lo_(false), ib_choice_(KeepTrying),
+  ib_choice_last_(KeepTrying), ib_decision_(0), ib_diff_(0), ib_diff_f_(0), ib_lo_active_(true),
   ib_lo_limited_hi_(false), ib_lo_limited_lo_(false),
   ib_noa_hi_(false), ib_noa_invalid_(false), ib_noa_lo_(false), ib_quiet_(0), ib_rate_(0),
   ib_sel_stat_(IB_SEL_STAT_DEF), ib_sel_stat_last_(IB_SEL_STAT_DEF), latch_(false),
@@ -1018,7 +1018,7 @@ void Fault::ib_decision_hi_lo(Sensors *Sen)
         }
         else if ( Sen->Flt->wrap_m_fa() && Sen->Flt->wrap_n_fa() )
         {
-          ib_choice_ = UsingDef;  // ambiguous; keep trying
+          ib_choice_ = KeepTrying;  // ambiguous; keep trying
           latch_ = false;
           ib_decision_ = 8;
         }
@@ -1037,7 +1037,7 @@ void Fault::ib_decision_hi_lo(Sensors *Sen)
       }
       else if ( cc_diff_fa() )  // don't know how to isolate due to weighting of amp and noa
       {
-        ib_choice_ = UsingDef;  // ambiguous; keep trying
+        ib_choice_ = KeepTrying;  // ambiguous; keep trying
         latch_ = false;
         ib_decision_ = 10;
       }
@@ -1050,7 +1050,7 @@ void Fault::ib_decision_hi_lo(Sensors *Sen)
     }
     else if ( cc_diff_fa() )  // don't know how to isolate due to weighting of amp and noa
     {
-        ib_choice_ = UsingDef;  // ambiguous; keep trying
+        ib_choice_ = KeepTrying;  // ambiguous; keep trying
         latch_ = false;
         ib_decision_ = 12;
     }
@@ -1335,7 +1335,7 @@ void Sensors::ib_choose_active_standby()
 void Sensors::ib_choose_hi_lo()
 {
   int8_t sel_stat = 0;
-  if ( Flt->ib_choice()==UsingDef )
+  if ( Flt->ib_choice()==KeepTrying )
   {
     Ib_hdwe = scale_select(Ib_noa_hdwe, sel_brk_hdwe, Ib_amp_hdwe, Ib_noa_hdwe, &sel_stat);
     Ib_hdwe_f = scale_select(Ib_noa_hdwe, sel_brk_hdwe, Ib_amp_hdwe_f, Ib_noa_hdwe_f, &sel_stat);

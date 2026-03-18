@@ -526,7 +526,7 @@ void serial_display(Sensors *Sen, BatteryMonitor *Mon)
   String disp_Tbop = disp_0.substring(0, 4) + " " + disp_1.substring(0, 6) + " " + disp_2.substring(0, 7);
 
   // --------------------- Bottom line of Display ------------------------------
-  // A-Hrs EHK
+  // A-Hrs EKF
   sprintf(pr.buff, "%3.0f", pp.pubList.Amp_hrs_remaining_ekf);
   disp_0 = pr.buff;  // Default
 
@@ -560,7 +560,7 @@ void serial_display(Sensors *Sen, BatteryMonitor *Mon)
   }
   disp_1 = pr.buff;
 
-  // A-Hrs large
+  // A-Hrs Coulomb counter remaining
   #ifdef HDWE_IB_HI_LO
     sprintf(pr.buff, "%3.0f", pp.pubList.Amp_hrs_remaining_soc);
     if ( Sen->saturated && blink==0 )
