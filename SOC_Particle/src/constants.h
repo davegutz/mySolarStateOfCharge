@@ -58,6 +58,7 @@
 #undef SOFT_DEPLOY_PHOTON
 #undef SOFT_DEBUG_QUEUE
 #undef IB_FORCE
+// #undef PLATFORM_ID
 
 // Setup
 #include "local_config.h"
@@ -70,6 +71,10 @@
 #ifndef DISAB_VB_FA
     #define DISAB_VB_FA false
 #endif
+// #ifndef PLATFORM_ID
+//     #define PLATFORM_ID  32
+// #endif
+
 const char unit[] = version_str "_" HDWE_UNIT;
 
 // Constants always defined

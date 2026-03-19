@@ -37,7 +37,8 @@ SHEETS = [
     'Vb Selection',
     'Ib Active-Standby Selection',
     'Ib Hi-Lo Selection',
-    'Annunciation',
+    'Annunciation - GUI Plot',
+    'Annunciation - Serial',
 ]
 
 # ── ODS helpers ────────────────────────────────────────────────────────────────

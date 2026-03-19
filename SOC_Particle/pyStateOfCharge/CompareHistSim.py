@@ -632,7 +632,7 @@ def main():  # Sample usage. OK on 20260217
     # Cut-pasted from GUI_TestSOC Run window
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/truckHist_20260302.csv'
 
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/turnaround 20260506_soc4p2_hi_lo_bb.csv'
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/hist20260319.csv'
     time_end = None
     plots = True
     use_mon_csv = False

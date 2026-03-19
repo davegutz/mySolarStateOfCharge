@@ -55,14 +55,6 @@
 //
 // See README.md
 */
-// This works when I'm using three platforms:   PHOTON = 6 and ARGON = 12 and PHOTON2 = (>=20)
-#ifndef PLATFORM_ID
-  #define PLATFORM_ID 6
-#endif
-#ifndef PLATFORM_PHOTON
-  #define PLATFORM_PHOTON 6
-#endif
-
 #include "constants.h"
 // Prevent mixing up local_config files (still could sneak soc0p through as pro0p)
 #undef ARDUINO
