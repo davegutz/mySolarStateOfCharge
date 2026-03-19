@@ -786,4 +786,48 @@ def save_clean_file_sim(sim_ver, csv_file, unit_key):
             output.write(s)
         print("Wrote(save_clean_file_sim):", csv_file)
 
+def save_fault_coverage(mon_run, csv_file, unit_key):
+    hdr_list = ['unit_fault', 'hm']
+    n_hdr = len(hdr_list)
+    flt_list = ['fltw', 'falw', 'ccd_fa', 'ib_diff_flt', 'ib_diff_fa',
+                'wrap_hi_flt', 'wrap_lo_flt', 'vc_flt', 'wrap_hi_m_flt', 'wrap_lo_m_flt', 'wrap_hi_n_flt',
+                'wrap_lo_n_flt', 'wrap_m_and_n_flt', 'red_loss', 'wrap_hi_fa', 'wrap_lo_fa', 'wv_fa', 'vc_fa',
+                'wrap_hi_m_fa', 'wrap_lo_m_fa', 'wrap_hi_n_fa', 'wrap_lo_n_fa', 'wrap_m_and_n_fa', 'ib_sel',
+                'ib_noa_bare_flt', 'ib_amp_bare_flt', 'ib_dscn_flt', 'ib_dscn_fa', 'ib_noa_flt', 'ib_noa_fa',
+                'ib_amp_flt', 'ib_amp_fa', 'vb_flt', 'vb_fa', 'tb_flt', 'tb_fa', 'bms_off', 'sat', 'red_loss']
+    default_header_str = ''
+    import numpy as np
+    m = 0
+    flt_data = []
+    mon_run.wrap_m_and_n_flt = ( (np.bool(mon_run.wrap_lo_n_flt) & np.bool(mon_run.wrap_lo_m_flt)) |
+                                 (np.bool(mon_run.wrap_hi_n_flt) & np.bool(mon_run.wrap_hi_m_flt)) )
+    mon_run.wrap_m_and_n_fa = ( (np.bool(mon_run.wrap_lo_n_fa) & np.bool(mon_run.wrap_lo_m_fa)) |
+                                 (np.bool(mon_run.wrap_hi_n_fa) & np.bool(mon_run.wrap_hi_m_fa)) )
+    for flt in hdr_list:
+        default_header_str += flt + ','
+    for flt in flt_list:
+        default_header_str += flt + ','
+        flt_data.append(getattr(mon_run, flt))
+        m += 1
+    n = len(mon_run.time)
+    date_time_start = datetime.now()
+    with open(csv_file, "w") as output:
+        output.write(default_header_str + "\n")
+        for i in range(n):
+            s = unit_key + ','
+            dt_dt = timedelta(seconds=mon_run.time[i] - mon_run.time[0])
+            time_stamp = date_time_start + dt_dt
+            s += time_stamp.strftime("%Y-%m-%dT%H:%M:%S,")
+            for j in range(m):
+                s += "{:2d},".format(np.bool(flt_data[j][i]))
+            s += "\n"
+            output.write(s)
+        s = 'covered: '
+        for j in range(m):
+            if any(flt_data[j][:] == 1):
+                s += flt_list[j] + ','
+        s += "\n"
+        output.write(s)
+
+    print("Wrote(save_fault_coverage):", csv_file)
 

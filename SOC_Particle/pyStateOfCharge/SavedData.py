@@ -188,6 +188,7 @@ class SavedData:
             self.wrap_m_and_n_flt = (self.wrap_lo_n_flt & self.wrap_lo_m_flt) | (self.wrap_hi_n_flt & self.wrap_hi_m_flt)
             self.fltw = np.array(fltw)
             self.falw = np.array(falw)
+            self.dispw = np.array(dispw)
             self.red_loss = np.bool_(np.array(fltw) & 2**7)
             self.wrap_hi_fa = np.bool_(np.array(falw) & 2**5)
             self.wrap_lo_fa = np.bool_(np.array(falw) & 2**6)

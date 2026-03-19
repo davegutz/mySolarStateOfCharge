@@ -20,7 +20,7 @@ import numpy.lib.recfunctions as rf
 import matplotlib.pyplot as plt
 from Battery import Battery, BatteryMonitor, is_sat, calculate_capacity, load_off_nominal_battery, \
     apply_off_nominal_battery
-from MonSim import replicate, save_clean_file, UserOptions
+from MonSim import replicate, save_clean_file, save_fault_coverage, UserOptions
 from resample import resample
 from PlotKiller import show_killer
 from DataOverModel import dom_plot
@@ -566,6 +566,7 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
         # Replicate
         data_file_clean = path_to_temp + '/' + data_file_txt.replace('.csv', '_hist' + '.csv', 1)
         mon_file_save = data_file_clean.replace(".csv", "_rep_hist.csv")
+        fault_coverage_file_save = data_file_clean.replace(".csv", "_fault_coverage_hist.csv")
         replicateOptions = UserOptions(mon_run=mon_run, sim_run=sim_run, run_type='HistSim', init_time=1.,
                                        verbose=False, max_time=time_end, use_vb_sim=False, scale_batt=scale_batt,
                                        use_mon_soc=use_mon_soc, add_voc_mon=dvoc_mon, add_voc_sim=dvoc_sim,
@@ -573,6 +574,7 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
                                        use_sat_mon=use_sat_mon)
         mon_ver, sim_ver, sim_s_ver, mon_r, sim_r, battery = replicate(replicateOptions)
         save_clean_file(mon_ver, mon_file_save, 'mon_rep_hist' + date_)
+        save_fault_coverage(mon_run, fault_coverage_file_save, 'fault_coverage_hist' + date_)
 
     # Plots
     if plots:
