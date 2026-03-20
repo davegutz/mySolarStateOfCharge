@@ -794,7 +794,7 @@ def save_fault_coverage(mon_run, csv_file, unit_key):
                 'wrap_lo_n_flt', 'wrap_m_and_n_flt', 'red_loss', 'wrap_hi_fa', 'wrap_lo_fa', 'wv_fa', 'vc_fa',
                 'wrap_hi_m_fa', 'wrap_lo_m_fa', 'wrap_hi_n_fa', 'wrap_lo_n_fa', 'wrap_m_and_n_fa', 'ib_sel',
                 'ib_noa_bare_flt', 'ib_amp_bare_flt', 'ib_dscn_flt', 'ib_dscn_fa', 'ib_noa_flt', 'ib_noa_fa',
-                'ib_amp_flt', 'ib_amp_fa', 'vb_flt', 'vb_fa', 'tb_flt', 'tb_fa', 'bms_off', 'sat', 'red_loss']
+                'ib_amp_flt', 'ib_amp_fa', 'vb_flt', 'vb_fa_lt', 'tb_flt', 'tb_fa', 'bms_off', 'sat', 'red_loss']
     default_header_str = ''
     import numpy as np
     m = 0

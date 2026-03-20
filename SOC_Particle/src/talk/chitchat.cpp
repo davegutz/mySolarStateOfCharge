@@ -92,7 +92,7 @@ void benign_zero(BatteryMonitor *Mon, Sensors *Sen) // BZ
   ap.ib_quiet_slr(1); // Fq 1
   ap.disab_ib_fa(0);  // FI 0
   ap.disab_tb_fa(0);  // FT 0
-  ap.disab_vb_fa(0);  // FV 0
+  ap.disab_vb_fa_lt(0);  // FV 0
 }
 
 

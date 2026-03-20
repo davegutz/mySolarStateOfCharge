@@ -196,7 +196,7 @@ class Battery(Coulombs):
     ap_ib_quiet_slr = None
     ap_disab_ib_fa = None
     ap_disab_tb_fa = None
-    ap_disab_vb_fa = None
+    ap_disab_vb_fa_lt = None
     sp_cutback_gain_slr = None
     ap_dv_voc_soc = None
     ap_ds_voc_soc = None

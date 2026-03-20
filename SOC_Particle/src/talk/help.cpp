@@ -118,7 +118,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.ib_quiet_slr_p->print_help();  // Fq
   ap.disab_ib_fa_p->print_help();  // FI
   ap.disab_tb_fa_p->print_help();  // FT
-  ap.disab_vb_fa_p->print_help();  // FV
+  ap.dis_vb_fa_lt_p->print_help();  // FV
 
   sendTxBuf("\nH<?>   Manage history\n", true, true);
   sendTxBuf("  Hd= ", true, true); sendTxBuf("dump summ log\n", true, true);

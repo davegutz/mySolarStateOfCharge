@@ -111,7 +111,7 @@ void  VolatilePars::initialize()
     V_[n_++] =(dc_dc_on_p     = new BooleanV("  ", "Xd", NULL,"DC-DC charger on",     "T=on",   0,    1,    &dc_dc_on_,         false));  // Xd
     V_[n_++] =(disab_ib_fa_p  = new BooleanV("  ", "FI", NULL,"Disab hard range ib",  "T=disab",0,    1,    &disab_ib_fa_,      false));  // FI
     V_[n_++] =(disab_tb_fa_p  = new BooleanV("  ", "FT", NULL,"Disab hard range tb",  "T=disab",0,    1,    &disab_tb_fa_,      DISAB_TB_FA));  // FT
-    V_[n_++] =(disab_vb_fa_p  = new BooleanV("  ", "FV", NULL,"Disab hard range vb",  "T=disab",0,    1,    &disab_vb_fa_,      DISAB_VB_FA));  // FV
+    V_[n_++] =(dis_vb_fa_lt_p  = new BooleanV("  ", "FV", NULL,"Disab hard range vb",  "T=disab",0,    1,   &dis_vb_fa_lt_,     DISAB_VB_FA_LT));  // FV
     V_[n_++] =(ds_voc_soc_p     = new FloatV("  ", "Ds", NULL,"VOC(SOC) del soc",     "slr",    -0.5, 0.5,  &ds_voc_soc_,       NOM_DS));  // Ds
     V_[n_++] =(dv_voc_soc_p     = new FloatV("  ", "Dy", NULL,"VOC(SOC) del v",       "v",      -50,  50,   &dv_voc_soc_,       NOM_DY));  // Dy
     V_[n_++] =(ewhi_slr_p       = new FloatV("  ", "Fi", NULL,"Slr wrap hi thr",      "slr",    0,    1000, &ewhi_slr_,         FI_NOM));  // Fi
@@ -271,8 +271,7 @@ void SavedPars::initialize()
     V_[n_++] =(Time_now_p       = new ULongV("* ", "UT", rP_, "UNIX time epoch",      "sec",    1669801880UL,  2100000000UL, &Time_now_, 1669801880UL,  false));  // UT
     V_[n_++] =(Type_p          = new Uint8tV("* ", "Xt", rP_, "Inj type",             "1sn 2sq 3tr 4 1C, 5 -1C, 8cs",  0,   10,  &type_,    0));  // Xt
     V_[n_++] =(Vb_bias_hdwe_p   = new FloatV("* ", "Dc", rP_, "Bias Vb sensor",       "v",      -10,  70,   &Vb_bias_hdwe_,     VOLT_BIAS));  // Dc
-    
-    V_[n_++] =(vsat_add_p       = new FloatV("  ", "DS", NULL,"Bias on nominal vsat", "v",      -2.,  2.,   &vsat_add_,         VSAT_ADD));  // DS
+    V_[n_++] =(vsat_add_p       = new FloatV("* ", "DS", NULL,"Bias on nominal vsat", "v",      -2.,  2.,   &vsat_add_,         VSAT_ADD));  // DS
 }
 
 // Number of differences between nominal EERAM and actual (don't count integator memories because they always change)

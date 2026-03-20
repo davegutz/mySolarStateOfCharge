@@ -130,7 +130,7 @@ void print_battery_header()
     String::format("EWLO_TRM_SLR, EWHI_TRM_SLR, WRAP_HI_AMP, WRAP_LO_AMP, WRAP_HI_NOA, WRAP_LO_NOA, ap_ewhi_slr, ap_ewlo_slr,") +
     String::format("IBATT_DISAGREE_THRESH, NOM_UNIT_CAP, sp_s_cap_mon, sp_s_cap_sim, RATED_TEMP, CHEM,") +
     String::format("WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR, WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_MOD_C_RATE, WRAP_SOC_MOD_OFF,") +
-    String::format("ap_cc_diff_slr, ap_ib_diff_slr, ap_ib_quiet_slr, ap_disab_ib_fa, ap_disab_tb_fa, ap_disab_vb_fa,") +
+    String::format("ap_cc_diff_slr, ap_ib_diff_slr, ap_ib_quiet_slr, ap_disab_ib_fa, ap_disab_tb_fa, ap_disab_vb_fa_lt,") +
     String::format("sp_cutback_gain_slr, ap_dv_voc_soc, ap_ds_voc_soc, sp_Dw, WRAP_LO_S, WRAP_LO_R, WRAP_HI_S, WRAP_HI_R,") +
     String::format("sp_vsat_add,") +
     String::format("\n");
@@ -157,7 +157,7 @@ void print_battery_serial()
     String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
       WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR, WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_MOD_C_RATE, WRAP_SOC_MOD_OFF) +
     String::format("%10.7f,%10.7f,%10.7f,  %d,%d,%d,",
-      ap.cc_diff_slr(), ap.ib_diff_slr(), ap.ib_quiet_slr(), ap.disab_ib_fa(), ap.disab_tb_fa(), ap.disab_vb_fa()) +
+      ap.cc_diff_slr(), ap.ib_diff_slr(), ap.ib_quiet_slr(), ap.disab_ib_fa(), ap.disab_tb_fa(), ap.disab_vb_fa_lt()) +
     String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
       sp.cutback_gain_slr(), ap.dv_voc_soc(), ap.ds_voc_soc(), sp.Dw(), WRAP_LO_S, WRAP_LO_R, WRAP_HI_S, WRAP_HI_R) +
     String::format("%10.7f,", sp.Vsat_add()) +

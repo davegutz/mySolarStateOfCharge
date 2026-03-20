@@ -109,7 +109,7 @@ struct ScaleBrk
 
 // Fail word bits.   A couple don't latch because single sensor fail in dual sensor system
 #define TB_FA         0   // Peristed, latched isolation of Tb failure, heals because soft type, T=failed
-#define VB_FA         1   // Peristed, latched isolation of Vb failure, latches because hard type, T=failed
+#define VB_FA_LT         1   // Peristed, latched isolation of Vb failure, latches because hard type, T=failed
 #define IB_AMP_FA     2   // Amp sensor selection memory, latches because hard type, T = amp failed
 #define IB_NOA_FA     3   // Noamp sensor selection memory, latches because hard type, T = no amp failed
 #define CC_DIFF_FA    4   // Accumulated Coulomb Counter difference used to isolate IB differences, heals functional type, T = faulted=failed 
@@ -322,9 +322,9 @@ public:
   void vb_check(Sensors *Sen, BatteryMonitor *Mon, const float _vb_min, const float _vb_max, const boolean reset);  // Range check Vb
   void vc_check(Sensors *Sen, BatteryMonitor *Mon, const float _vc_min, const float _vc_max, const boolean reset);  // Range check Vc
   boolean vb_clean() { return ( !vb_fail() ); };
-  boolean vb_fail() { return ( vb_fa() || vb_sel_stat_==0 ); };
+  boolean vb_fail() { return ( vb_fa_lt() || vb_sel_stat_==0 ); };
   int8_t vb_sel_stat() { return vb_sel_stat_; };
-  boolean vb_fa() { return failRead(VB_FA); };
+  boolean vb_fa_lt() { return failRead(VB_FA_LT); };
   boolean vb_flt() { return faultRead(VB_FLT); };
   int8_t vb_sel_stat_past() { return vb_sel_stat_last_; };
   boolean vc_fa() { return failRead(VC_FA); };
@@ -407,9 +407,13 @@ protected:
   int8_t ib_sel_stat_last_; // past value
   boolean latch_;    // There is a latched fail, T=latched fail
   boolean latch_fake_; // There would be a latched fail if not faking, T=latched fail
+  boolean rate_amp_;   // ib_amp rate fault, T=fault
+  boolean rate_noa_;   // ib_noa rate fault, T=fault
   boolean reset_all_faults_;  // Reset all fault logic, gets reset before serial call
   boolean reset_all_faults_print_;  // Reset all fault logic
   uint8_t *sp_preserving_;  // Saving fault buffer.   Stopped recording.  T=preserve
+  boolean splrr_amp_;       // ib_amp soft fault preceeded by local rate or range, T=preserve
+  boolean splrr_noa_;       // ib_noa soft fault preceeded by local rate or range, T=preserve
   int8_t tb_sel_stat_;      // Memory of Tb signal selection, 0=none, 1=sensor
   int8_t tb_sel_stat_last_; // past value
   int8_t vb_sel_stat_;      // Memory of Vb signal selection, 0=none, 1=sensor

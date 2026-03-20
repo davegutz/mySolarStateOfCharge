@@ -209,7 +209,7 @@ class SavedData:
             self.ib_amp_flt = np.bool_(fltw & 2 ** 2)
             self.ib_amp_fa = np.bool_(falw & 2 ** 2)
             self.vb_flt = np.bool_(np.array(fltw) & 2**1)
-            self.vb_fa = np.bool_(np.array(falw) & 2**1)
+            self.vb_fa_lt = np.bool_(np.array(falw) & 2**1)
             self.tb_flt = np.bool_(np.array(fltw) & 2**0)
             self.tb_fa = np.bool_(np.array(falw) & 2**0)
             self.time_long = np.bool_(np.array(dispw) & 2**11)

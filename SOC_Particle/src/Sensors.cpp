@@ -455,7 +455,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
   if ( sp.mod_vb() )
   {
     Vb_f = Vb;
-    if ( (Flt->wrap_vb_fa() || Flt->vb_fa()) && !ap.fake_faults() )
+    if ( (Flt->wrap_vb_fa() || Flt->vb_fa_lt()) && !ap.fake_faults() )
     {
       Vb = Mon->vb_model_rev() * ap.nS();
       sample_time_vb_ = Sim->sample_time();
@@ -469,7 +469,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
   else
   {
     Vb_f = Vb_hdwe_f;
-    if ( (Flt->wrap_vb_fa() || Flt->vb_fa()) && !ap.fake_faults() )
+    if ( (Flt->wrap_vb_fa() || Flt->vb_fa_lt()) && !ap.fake_faults() )
     {
       Vb = Mon->vb_model_rev() * ap.nS();
       sample_time_vb_ = Sim->sample_time();
@@ -718,6 +718,6 @@ void Sensors::vb_load(const uint16_t vb_pin, const boolean reset)
 // Print analog voltage
 void Sensors::vb_print()
 {
-  Serial.printf("reset, T, vb_dscn, Vb_raw, sp.Vb_bias_hdwe(), Vb_hdwe, vb_flt(), vb_fa(), wv_fa=, %d, %7.3f, %d, %d, %7.3f,  %7.3f, %d, %d, %d,\n",
-    reset, T, sp.mod_vb_dscn(), Vb_raw, sp.Vb_bias_hdwe(), Vb_hdwe, Flt->vb_flt(), Flt->vb_fa(), Flt->wrap_vb_fa());
+  Serial.printf("reset, T, vb_dscn, Vb_raw, sp.Vb_bias_hdwe(), Vb_hdwe, vb_flt(), vb_fa_lt(), wv_fa=, %d, %7.3f, %d, %d, %7.3f,  %7.3f, %d, %d, %d,\n",
+    reset, T, sp.mod_vb_dscn(), Vb_raw, sp.Vb_bias_hdwe(), Vb_hdwe, Flt->vb_flt(), Flt->vb_fa_lt(), Flt->wrap_vb_fa());
 }

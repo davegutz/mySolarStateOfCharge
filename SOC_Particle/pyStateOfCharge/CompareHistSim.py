@@ -487,7 +487,7 @@ def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=Fa
                                     ('ib_amp_flt', 0),
                                     ('ib_noa_fa', 0),
                                     ('ib_amp_fa', 0),
-                                    ('vb_fa', 0),
+                                    ('vb_fa_lt', 0),
                                     ('tb_fa', 0),
                                     ('wrap_lo_m_fa', 0),
                                     ('wrap_lo_m_flt', 0),

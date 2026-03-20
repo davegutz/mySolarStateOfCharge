@@ -68,8 +68,8 @@
 #ifndef DISAB_TB_FA
     #define DISAB_TB_FA false
 #endif
-#ifndef DISAB_VB_FA
-    #define DISAB_VB_FA false
+#ifndef DISAB_VB_FA_LT
+    #define DISAB_V false
 #endif
 // #ifndef PLATFORM_ID
 //     #define PLATFORM_ID  32

@@ -135,7 +135,7 @@ soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
   // time_long_2_str((time_t)sp.Time_now(), pr.buff);
   // txBuf = String::format(" time %ld hms:  %s\n", sp.Time_now(), pr.buff);
   // sendTxBuf(txBuf, true, true);
-   if ( Sen->Flt->falw() || Sen->Flt->fltw() )  sendTxBuf("There are faults\n", true, true);
+   if ( Sen->Flt->falw()>0UL || Sen->Flt->fltw()>0UL )  sendTxBuf("There are faults\n", true, true);
   }
 
 // Quick print critical selection parameters
@@ -162,7 +162,7 @@ void debug_qs(BatteryMonitor *Mon, Sensors *Sen)
   String txBuf;
 
   txBuf = String::format("Selection:\n %d  Amp->bare\n %d  NoAmp->bare\n %d  ib diff fail\n %d  wrap hi fail\n %d  wrap lo fail\n %d  wrap volt fail\n %d  cc diff fail\n %d  sp.ib_force()\n %d  vb fail\n %d  Tb fail\n",
-    Sen->ShuntAmp->bare_shunt(), Sen->ShuntNoAmp->bare_shunt(), Sen->Flt->ib_diff_fa(), Sen->Flt->wrap_hi_fa(), Sen->Flt->wrap_lo_fa(), Sen->Flt->wrap_vb_fa(), Sen->Flt->cc_diff_fa(), sp.ib_force(), Sen->Flt->vb_fa(), Sen->Flt->tb_fa()) +
+    Sen->ShuntAmp->bare_shunt(), Sen->ShuntNoAmp->bare_shunt(), Sen->Flt->ib_diff_fa(), Sen->Flt->wrap_hi_fa(), Sen->Flt->wrap_lo_fa(), Sen->Flt->wrap_vb_fa(), Sen->Flt->cc_diff_fa(), sp.ib_force(), Sen->Flt->vb_fa_lt(), Sen->Flt->tb_fa()) +
     String::format(" %d  fake\n %d  ib choice\n %d  ib choice past\n %d  ib decision\n %d  vb sel stat\n %d  vb sel stat past\n %d  tb sel stat\n %d  tb sel stat past\n %d  latch\n %d  latch_fake\n",
     ap.fake_faults(), Sen->Flt->ib_choice(), Sen->Flt->ib_choice_past(), Sen->Flt->ib_decision(), Sen->Flt->vb_sel_stat(), Sen->Flt->vb_sel_stat_past(), Sen->Flt->tb_sel_status(), Sen->Flt->tb_sel_stat_past(), Sen->Flt->latched_fail(), Sen->Flt->latch_fake()) +
     String::format(" %d  preserving faults\n", Sen->Flt->preserving());

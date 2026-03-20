@@ -51,7 +51,7 @@ Hard Faults take precedence over Soft Faults. Soft Faults are used in reasoning.
 ### Fault::vb_check
 
 ```text
-| # | Ib_hdwe     | Vb        | vb       || vb_fa |
+| # | Ib_hdwe     | Vb        | vb       || vb_fa_lt |
 |   | > IB_MIN_UP | <= vb_min | >=VB_MAX || LATCH |
 | - | ----------- | --------- | -------- || ----- |
 | 1 | T           | T         | ·        || T     |
@@ -149,7 +149,7 @@ Hard Faults take precedence over Soft Faults. Soft Faults are used in reasoning.
 ### vb_selection
 
 ```text
-| # | vb_fa   | wrap_vb_fa || vb_sel_stat | Comment                                                                                                                           |
+| # | vb_fa_lt   | wrap_vb_fa || vb_sel_stat | Comment                                                                                                                           |
 |   | LATCHED |            ||             |                                                                                                                                   |
 | - | ------- | ---------- || ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | 1 | T       | ·          || 0           | Simplex Vb always available without modification. But used carefully e.g. low Vb (potentially failed) is confirmed with Ib quiet. |

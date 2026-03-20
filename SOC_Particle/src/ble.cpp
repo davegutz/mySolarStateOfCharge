@@ -24,6 +24,7 @@
 */
 
 #include "ble.h"
+#include "serial.h"
 #include "command.h"
 #include "debug.h"
 

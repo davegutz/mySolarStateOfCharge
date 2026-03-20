@@ -244,7 +244,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const bo
         voltage_low_ = voc_stat_ < chem_.vb_rising;
         if ( voltage_low_ != voltage_low_past ) Serial.printf("\nBMS ON  voc_stat%7.3f vb_down%7.3f vb_rising%7.3f bms_off %d voltage_low %d \n\n", voc_stat_, chem_.vb_down, chem_.vb_rising, bms_off_, voltage_low_);
     }
-    bms_off_ = (tb_f_ <= chem_.low_t) || ( Sen->Flt->ib_really_quiet() && voltage_low_ && !Sen->Flt->vb_fa() && !sp.tweak_test() );    // KISS
+    bms_off_ = (tb_f_ <= chem_.low_t) || ( Sen->Flt->ib_really_quiet() && voltage_low_ && !Sen->Flt->vb_fa_lt() && !sp.tweak_test() );    // KISS
     Sen->bms_off = bms_off_;
     ib_charge_ = ib_;
     float ib_charge_ekf = ib_charge_;
@@ -263,7 +263,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const bo
     voc_ = vb_ - dvdyn;
     if ( !ap.fake_faults() )
     {
-        if ( (bms_off_ && voltage_low_) ||  Sen->Flt->vb_fa() )
+        if ( (bms_off_ && voltage_low_) ||  Sen->Flt->vb_fa_lt() )
         {
             voc_ = voc_stat_ = voc_dead_ = vb_;  // Keep high to avoid chatter with voc_stat_ used above in voltage_low
         }
@@ -284,7 +284,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const bo
     {
         static unsigned long long ekf_now_past = Sen->now;
         float ddq_dt = ib_charge_ekf;
-        boolean freeze = Sen->Flt->vb_fa() || bms_off_;  // Freeze EKF with voltage fault or bms_off
+        boolean freeze = Sen->Flt->vb_fa_lt() || bms_off_;  // Freeze EKF with voltage fault or bms_off
 
         now_ekf_ = Sen->now;
         dt_ekf_ = float(now_ekf_ - ekf_now_past) / 1e3;
