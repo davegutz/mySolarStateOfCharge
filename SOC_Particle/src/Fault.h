@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include "application.h"
 #include "myLibrary/myFilters.h"
 // #include "Battery.h"
 #include "constants.h"
@@ -32,6 +33,20 @@
 // #include "Sync.h"
 #include "parameters.h"
 // #include "myLibrary/KF_1x1.h"
+
+// Bit manipulation macros (if not provided by Particle/Arduino)
+#ifndef bitSet
+  #define bitSet(value, bit) ((value) |= (1UL << (bit)))
+#endif
+#ifndef bitClear
+  #define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
+#endif
+#ifndef bitRead
+  #define bitRead(value, bit) (((value) >> (bit)) & 1)
+#endif
+#ifndef bitWrite
+  #define bitWrite(value, bit, bitvalue) (bitvalue ? bitSet(value, bit) : bitClear(value, bit))
+#endif
 
 // AD
 // extern PublishPars pp;  // For publishing

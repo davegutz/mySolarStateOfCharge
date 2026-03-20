@@ -36,10 +36,6 @@
 // Sensors
 #include "Sensors.h"
 
-// Display
-#include "Adafruit/Adafruit_GFX.h"
-#include "Adafruit/Adafruit_SSD1306.h"
-
 const size_t UART_TX_BUF_SIZE = 20;
 
 extern SavedPars sp;    // Various parameters to be static at system level and saved through power cycle

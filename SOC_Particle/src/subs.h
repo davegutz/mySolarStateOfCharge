@@ -24,6 +24,7 @@
 #ifndef _MY_SUBS_H
 #define _MY_SUBS_H
 
+#include "application.h"
 #include "myLibrary/myFilters.h"
 #include "Battery.h"
 #include "constants.h"
@@ -36,10 +37,6 @@
 // Sensors
 #include "Sensors.h"
 #include "serial.h"
-
-// Display
-#include "Adafruit/Adafruit_GFX.h"
-#include "Adafruit/Adafruit_SSD1306.h"
 
 extern SavedPars sp;    // Various parameters to be static at system level and saved through power cycle
 extern PublishPars pp;  // For publishing
