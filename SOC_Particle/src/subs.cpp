@@ -92,26 +92,26 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
 
   // Gather and apply inputs
   if ( sp.mod_ib() )
-    Sen->Ib_model_in = sp.inj_bias() + sp.ib_bias_all();
+    Sen->Ib_model_in(sp.inj_bias() + sp.ib_bias_all());
   else
-    Sen->Ib_model_in = Sen->Ib_hdwe;
+    Sen->Ib_model_in(Sen->Ib_hdwe());
   Sen->temp_load_and_filter(Sen, true);
   if ( sp.mod_tb() )
   {
-    Sen->Tb = Sen->Tb_model;
-    Sen->Tb_f = Sen->Tb_model_filt;
-    Sen->Tb_f_rate = Sen->Tb_model_filt_rate;
+    Sen->Tb(Sen->Tb_model());
+    Sen->Tb_f(Sen->Tb_model_filt());
+    Sen->Tb_f_rate(Sen->Tb_model_filt_rate());
   }
   else
   {
-    Sen->Tb = Sen->Tb_hdwe;
-    Sen->Tb_f = Sen->Tb_hdwe_filt;
-    Sen->Tb_f_rate = Sen->Tb_hdwe_filt_rate;
+    Sen->Tb(Sen->Tb_hdwe());
+    Sen->Tb_f(Sen->Tb_hdwe_filt());
+    Sen->Tb_f_rate(Sen->Tb_hdwe_filt_rate());
   }
   if ( use_soc_in )
   {
-    Mon->apply_soc(soc_in, Sen->Tb_f);  // saves sp.delta_q and sp.T_state
-    Sen->Sim->apply_soc(soc_in, Sen->Tb_f);  // saves sp.delta_q and sp.T_state
+    Mon->apply_soc(soc_in, Sen->Tb_f());  // saves sp.delta_q and sp.T_state
+    Sen->Sim->apply_soc(soc_in, Sen->Tb_f());  // saves sp.delta_q and sp.T_state
   }
   #ifdef DEBUG_INIT
     if ( sp.debug()==-1 )
@@ -119,7 +119,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
       Serial.printf("before harvest_temp, use_soc_in %d falw %ld tb_fa %d:  ", use_soc_in, Sen->Flt->falw(), Sen->Flt->tb_fa()); debug_m1(Mon, Sen);
     }
   #endif
-  if ( !Sen->Flt->tb_fa() ) harvest_temp_change(Sen->Tb_f, Mon, Sen->Sim, Sen->Tb_f_rate, 0.);
+  if ( !Sen->Flt->tb_fa() ) harvest_temp_change(Sen->Tb_f(), Mon, Sen->Sim, Sen->Tb_f_rate(), 0.);
   
   #ifdef DEBUG_INIT
     if ( sp.debug()==-1 ){ Serial.printf("after harvest_temp:  cp.soft_sim_hold %d:  ", cp.soft_sim_hold); debug_m1(Mon, Sen);}
@@ -141,22 +141,22 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #endif
   if ( !sp.mod_vb() )
   {
-    Sen->Sim->apply_soc(Sen->Sim->soc(), Sen->Tb_f);
+    Sen->Sim->apply_soc(Sen->Sim->soc(), Sen->Tb_f());
   }
   #ifdef DEBUG_INIT
     if ( sp.debug()==-1 ){ Serial.printf("S.a_b: sp.mod_vb() %d:  ", sp.mod_vb()); debug_m1(Mon, Sen);}
   #endif
   // Call calculate twice because sat_ is a used-before-calculated (UBC)
   // Simple 'call twice' method because sat_ is discrete no analog which would require iteration
-  Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on(), true) * ap.nS();
+  Sen->Vb_model(Sen->Sim->calculate(Sen, ap.dc_dc_on(), true) * ap.nS());
   #ifdef DEBUG_INIT
     if ( sp.debug()==-1 ){ Serial.printf("S.a_b1:  "); debug_m1(Mon, Sen);}
   #endif
-  Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on(), true) * ap.nS();  // Call again because sat is a UBC
+  Sen->Vb_model(Sen->Sim->calculate(Sen, ap.dc_dc_on(), true) * ap.nS());  // Call again because sat is a UBC
   #ifdef DEBUG_INIT
     if ( sp.debug()==-1 ){ Serial.printf("S.a_b2:  "); debug_m1(Mon, Sen);}
   #endif
-  Sen->Ib_model = Sen->Sim->ib_fut() * ap.nP();
+  Sen->Ib_model(Sen->Sim->ib_fut() * ap.nP());
   #ifdef DEBUG_INIT
     if ( sp.debug()==-1 ){ Serial.printf("S.a_b3:  "); debug_m1(Mon, Sen);}
   #endif
@@ -171,26 +171,26 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   // Signal preparations
   if ( sp.mod_vb() )
   {
-    Sen->Vb = Sen->Vb_model;
+    Sen->Vb(Sen->Vb_model());
   }
   else
   {
-    Sen->Vb = Sen->Vb_hdwe;
+    Sen->Vb(Sen->Vb_hdwe());
   }
   if ( sp.mod_ib() )
   {
-    Sen->Ib = Sen->Ib_model;
+    Sen->Ib(Sen->Ib_model());
   }
   else
   {
-    Sen->Ib = Sen->Ib_hdwe;
+    Sen->Ib(Sen->Ib_hdwe());
   }
   #ifdef DEBUG_INIT
     if ( sp.debug()==-1 ){ Serial.printf("SENIB:  "); debug_m1(Mon, Sen);}
   #endif
   if ( sp.mod_vb() && !cp.soft_sim_hold )
   {
-    Mon->apply_soc(Sen->Sim->soc(), Sen->Tb_f);
+    Mon->apply_soc(Sen->Sim->soc(), Sen->Tb_f());
   }
   Mon->init_battery_mon(true, Sen);
   #ifdef DEBUG_INIT
@@ -248,7 +248,7 @@ void load_ib_vb(const boolean reset, const boolean reset_temp, const boolean res
   if ( sp.debug()==15 ) Sen->vb_print();
 
   // Power calculation
-  Sen->Wb = Sen->Vb*Sen->Ib;
+  Sen->Wb(Sen->Vb()*Sen->Ib());
 }
 
 // Calculate Ah remaining for display to user
@@ -262,11 +262,11 @@ void  monitor(const boolean reset, const boolean reset_temp, const boolean reset
   Mon->calculate(Sen, reset_temp, reset_ekf);
 
   // Debounce saturation calculation done in ekf using voc model
-  Sen->sat = Mon->is_sat(reset);
-  Sen->saturated = Is_sat_delay->calculate(Sen->sat, T_SAT*ap.s_t_sat(), T_DESAT*ap.s_t_sat(), min(Sen->T, T_SAT/2.), reset);
+  Sen->sat(Mon->is_sat(reset));
+  Sen->saturated(Is_sat_delay->calculate(Sen->sat(), T_SAT*ap.s_t_sat(), T_DESAT*ap.s_t_sat(), min(Sen->T(), T_SAT/2.), reset));
 
   // Memory store
-  Mon->count_coulombs(Sen, reset_temp, Mon->ib_charge(), Sen->sat, Sen->saturated);
+  Mon->count_coulombs(Sen, reset_temp, Mon->ib_charge(), Sen->sat(), Sen->saturated());
 
   // Charge charge time for display
   Mon->calc_charge_time(Mon->q(), Mon->q_capacity(), Sen->ib(), Mon->soc());
@@ -312,14 +312,14 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const boo
   //  Inputs:  Sen->Tb_f(past), Sen->Ib_model_in
   //  States: Sim->soc(past)
   //  Outputs:  Tb_hdwe, Ib_model, Vb_model, sp.inj_bias, Sim.model_saturated
-  Sen->Vb_model = Sen->Sim->calculate(Sen, ap.dc_dc_on(), reset) * ap.nS() + Sen->Vb_add();
-  Sen->Ib_model = Sen->Sim->ib_fut() * ap.nP();
+  Sen->Vb_model(Sen->Sim->calculate(Sen, ap.dc_dc_on(), reset) * ap.nS() + Sen->Vb_add());
+  Sen->Ib_model(Sen->Sim->ib_fut() * ap.nP());
   cp.model_cutback = Sen->Sim->cutback();
   cp.model_saturated = Sen->Sim->saturated();
 
   // Inputs:  Sim->Ib
-  Sen->Ib_amp_model = max(min(Sen->Ib_model + Sen->Ib_amp_add() + Sen->Ib_amp_noise(), Sen->Ib_amp_max()), Sen->Ib_amp_min());  // Dm
-  Sen->Ib_noa_model = max(min(Sen->Ib_model + Sen->Ib_noa_add() + Sen->Ib_noa_noise(), Sen->Ib_noa_max()), Sen->Ib_noa_min());  // Dn
+  Sen->Ib_amp_model(max(min(Sen->Ib_model() + Sen->Ib_amp_add() + Sen->Ib_amp_noise(), Sen->Ib_amp_max()), Sen->Ib_amp_min()));  // Dm
+  Sen->Ib_noa_model(max(min(Sen->Ib_model() + Sen->Ib_noa_add() + Sen->Ib_noa_noise(), Sen->Ib_noa_max()), Sen->Ib_noa_min()));  // Dn
 
   // Select
   //  Inputs:                                       --->   Outputs:
@@ -368,35 +368,35 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const boo
   Sen->Sim->count_coulombs(Sen, reset_temp, Mon, false);
 
   // Injection test
-  if ( (Sen->start_inj <= Sen->now) && (Sen->now <= Sen->end_inj) && (Sen->now > 0ULL) ) // in range, test in progress
+  if ( (Sen->start_inj() <= Sen->now()) && (Sen->now() <= Sen->end_inj()) && (Sen->now() > 0ULL) ) // in range, test in progress
   {
     // Shift times because sampling is asynchronous: improve repeatibility
-    if ( Sen->elapsed_inj==0ULL )
+    if ( Sen->elapsed_inj()==0ULL )
     {
-      Sen->end_inj += Sen->now - Sen->start_inj;
-      Sen->stop_inj += Sen->now - Sen->start_inj;
-      Sen->start_inj = Sen->now;
-      Serial.printf("SYNC,%7.3f\n", double(Sen->now)/1000.);
+      Sen->end_inj(Sen->end_inj() + Sen->now() - Sen->start_inj());
+      Sen->stop_inj(Sen->stop_inj() + Sen->now() - Sen->start_inj());
+      Sen->start_inj(Sen->now());
+      Serial.printf("SYNC,%7.3f\n", double(Sen->now())/1000.);
     }
 
-    Sen->elapsed_inj = Sen->now - Sen->start_inj + 1UL; // Shift by 1 because using ==0 as reset button
+    Sen->elapsed_inj(Sen->now() - Sen->start_inj() + 1UL); // Shift by 1 because using ==0 as reset button
 
     // Put a stop to this but retain sp.amp_ to scale fault and history printouts properly
-    if (Sen->now > Sen->stop_inj)
+    if (Sen->now() > Sen->stop_inj())
     {
       sp.put_Inj_bias(0);
       sp.put_Type(0);
     }
   }
 
-  else if ( Sen->elapsed_inj && sp.tweak_test() )  // Done.  elapsed_inj set to 0 is the reset button
+  else if ( Sen->elapsed_inj() && sp.tweak_test() )  // Done.  elapsed_inj set to 0 is the reset button
   {
     Serial.printf("STOP echo\n");
-    Sen->elapsed_inj = 0ULL;
+    Sen->elapsed_inj(0ULL);
     chit("vv0;", ASAP);    // Turn off echo
     chit("Xp0;", SOON);    // Reset
   }
-  Sen->Sim->calc_inj(Sen->elapsed_inj, sp.type(), sp.Amp(ap.nP()), sp.freq());
+  Sen->Sim->calc_inj(Sen->elapsed_inj(), sp.type(), sp.Amp(ap.nP()), sp.freq());
 
   // Quiet logic.   Reset to ready state at soc=0.5; do not change Modeling.  Passes at least once before running chit.
   static unsigned long long millis_past = System.millis();
@@ -439,7 +439,7 @@ void serial_display(Sensors *Sen, BatteryMonitor *Mon)
     disp_1 = "*fail";
     dispAssign(true, fail_vb);
   }
-  else if ( Sen->bms_off )
+  else if ( Sen->bms_off() )
   {
     disp_1 = " off ";
     dispAssign(true, off);
@@ -563,7 +563,7 @@ void serial_display(Sensors *Sen, BatteryMonitor *Mon)
   // A-Hrs Coulomb counter remaining
   #ifdef HDWE_IB_HI_LO
     sprintf(pr.buff, "%3.0f", pp.pubList.Amp_hrs_remaining_soc);
-    if ( Sen->saturated && blink==0 )
+    if ( Sen->saturated() && blink==0 )
     {
       disp_2 = "SAT";
       dispAssign(true, SAT);
@@ -591,7 +591,7 @@ void serial_display(Sensors *Sen, BatteryMonitor *Mon)
     }
   #else
     sprintf(pr.buff, "%3.0f", min(pp.pubList.Amp_hrs_remaining_soc, 999.));
-    if (Sen->saturated && blink==0)
+    if (Sen->saturated() && blink==0)
     {
       disp_2 = "SAT";
       dispAssign(true, SAT);

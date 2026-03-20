@@ -32,13 +32,13 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 void Flt_st::assign(const unsigned long now, BatteryMonitor *Mon, Sensors *Sen)
 {
   this->t_flt = now;
-  this->Tb_hdwe_filt = int16_t(Sen->Tb_hdwe_filt*SCL_600);
-  this->vb_hdwe_filt = int16_t(Sen->Vb_hdwe_f/ap.nS()*sp.vb_hist_slr());
-  this->ib_amp_hdwe_filt = int16_t(Sen->Ib_amp_hdwe_f/ap.nP()*sp.ib_hist_m_slr());
-  this->ib_noa_hdwe_filt = int16_t(Sen->Ib_noa_hdwe_f/ap.nP()*sp.ib_hist_n_slr());
-  this->Tb_filt = int16_t(Sen->Tb_f*SCL_600);
-  this->vb_filt = int16_t(Sen->Vb_f/ap.nS()*sp.vb_hist_slr());
-  this->ib_filt = int16_t(Sen->Ib_f/ap.nP()*sp.ib_hist_n_slr());
+  this->Tb_hdwe_filt = int16_t(Sen->Tb_hdwe_filt()*SCL_600);
+  this->vb_hdwe_filt = int16_t(Sen->Vb_hdwe_f()/ap.nS()*sp.vb_hist_slr());
+  this->ib_amp_hdwe_filt = int16_t(Sen->Ib_amp_hdwe_f()/ap.nP()*sp.ib_hist_m_slr());
+  this->ib_noa_hdwe_filt = int16_t(Sen->Ib_noa_hdwe_f()/ap.nP()*sp.ib_hist_n_slr());
+  this->Tb_filt = int16_t(Sen->Tb_f()*SCL_600);
+  this->vb_filt = int16_t(Sen->Vb_f()/ap.nS()*sp.vb_hist_slr());
+  this->ib_filt = int16_t(Sen->Ib_f()/ap.nP()*sp.ib_hist_n_slr());
   this->soc = int16_t(Mon->soc()*SCL_16000);
   this->soc_min = int16_t(Mon->soc_min()*SCL_16000);
   this->soc_ekf = int16_t(Mon->soc_ekf()*SCL_16000);

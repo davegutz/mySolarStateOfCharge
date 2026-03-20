@@ -137,9 +137,9 @@ protected:
   uint8_t vc_pin_;      // Common voltage pin, for !HDWE_ADS1013_AMP_NOA
   uint8_t vo_pin_;      // Output voltage pin, for !HDWE_ADS1013_AMP_NOA
   uint8_t vr_pin_;      // Reference voltage pin, for TSC1200 or INA181
-  int Vc_raw_;          // Raw analog read, integer       
+  int Vc_raw_;          // Raw analog read, integer
   float Vc_;            // Sensed Vc, common op amp voltage ref, V
-  int Vo_raw_;          // Raw analog read, integer       
+  int Vo_raw_;          // Raw analog read, integer
   float Vo_;            // Sensed Vo, output of op amp, V
   float Vo_Vc_;         // Sensed Vo-Vc, difference in output of op amps, V
   boolean using_opamp_; // Using differential hardware amp
@@ -156,58 +156,123 @@ public:
   Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *ReadTemp, Sync *Talk, Sync *Summarize,
     unsigned long long time_now, unsigned long long millis, BatteryMonitor *Mon);
   ~Sensors();
-  int Vb_raw;                 // Raw analog read, integer
-  float Vb;                   // Selected battery bank voltage, V
-  float Vb_f;                 // Selected filtered battery bank voltage, V
-  float Vb_hdwe;              // Sensed battery bank voltage, V
-  float Vb_hdwe_f;            // Sensed, filtered battery bank voltage, V
-  float Vb_model;             // Modeled battery bank voltage, V
-  float Vb_volt;              // Sensed battery bank voltage at ADC, V
-  float Vc;                   // Selected common reference voltage, V
-  float Vc_hdwe;              // Sensed common reference voltage, V
-  double Tb;                  // Selected battery bank temp, C
-  double Tb_f;                // Selected filtered battery bank temp, C
-  double Tb_f_rate;           // Selected filtered battery bank temp rate, C/s
-  double Tb_hdwe;             // Sensed battery temp, C
-  double Tb_hdwe_filt;        // Filtered, sensed battery temp, C
-  double Tb_hdwe_filt_rate;   // Filtered, sensed battery temp, C/s
-  double Tb_model;            // Temperature used for battery bank temp in model, C
-  double Tb_model_filt;       // Filtered, modeled battery bank temp, C
-  double Tb_model_filt_rate;  // Filtered, modeled battery bank temp rate, C/s
-  float Ib;                   // Selected battery bank current, A
-  float Ib_f;                 // Selected filtered battery bank current, A
-  float Ib_amp;               // Initial selected amp battery bank current, A
-  float Ib_amp_hdwe;          // Sensed amp battery bank current, A
-  float Ib_amp_hdwe_f;        // Sensed, filtered amp battery bank current, A
-  float Ib_amp_hdwe_kf;       // Sensed, kalman filtered amp battery bank current, A
-  float Ib_amp_model;         // Modeled amp battery bank current, A
-  float Ib_amp_rms;           // Amp battery bank current noise RMS, A
-  float Ib_hdwe_f;            // Sensed, selected filtered battery bank current, A
-  float Ib_hdwe_kf;           // Sensed, selected kalman filtered battery bank current, A
-  float Ib_hdwe_f_cal;        // Sensed, filtered selected battery bank current for cal display, A
-  float Ib_noa;               // Initial selected noa battery bank current, A
-  float Ib_noa_hdwe;          // Sensed noa battery bank current, A
-  float Ib_noa_hdwe_f;        // Sensed, filtered noa battery bank current, A
-  float Ib_noa_hdwe_kf;       // Sensed, kalman filtered noa battery bank current, A
-  float Ib_noa_rms;           // Noa battery bank current noise RMS, A
-  float Ib_noa_model;         // Modeled noa battery bank current, A
-  float Ib_hdwe;              // Sensed battery bank current, A
-  float Ib_hdwe_model;        // Selected model hardware signal, A
-  float Ib_model;             // Modeled battery bank current, A
-  float Ib_model_in;          // Battery bank current input to model (modified by cutback), A
-  float Vb_rms;               // Battery bank voltage noise RMS, V
-  float Vc_rms;               // Battery bank voltage noise RMS, V
-  float Wb;                   // Sensed battery bank power, use to compare to other shunts, W
-  unsigned long long now;     // Time at sample, ms
-  unsigned long long now_temp;// Time at sample, ms
-  double T;                   // Update time, s
-  boolean reset;              // Reset flag, T = reset
-  double T_filt;              // Filter update time, s
-  double T_temp;              // Temperature update time, s
+  // Getters and setters for encapsulated member variables
+  void Vb_raw(const int input) { Vb_raw_ = input; }
+  int Vb_raw() { return Vb_raw_; }
+  void Vb(const float input) { Vb_ = input; }
+  float Vb() { return Vb_; }
+  void Vb_f(const float input) { Vb_f_ = input; }
+  float Vb_f() { return Vb_f_; }
+  void Vb_hdwe(const float input) { Vb_hdwe_ = input; }
+  float Vb_hdwe() { return Vb_hdwe_; }
+  void Vb_hdwe_f(const float input) { Vb_hdwe_f_ = input; }
+  float Vb_hdwe_f() { return Vb_hdwe_f_; }
+  void Vb_model(const float input) { Vb_model_ = input; }
+  float Vb_model() { return Vb_model_; }
+  void Vb_volt(const float input) { Vb_volt_ = input; }
+  float Vb_volt() { return Vb_volt_; }
+  void Vc(const float input) { Vc_ = input; }
+  float Vc() { return Vc_; }
+  void Vc_hdwe(const float input) { Vc_hdwe_ = input; }
+  float Vc_hdwe() { return Vc_hdwe_; }
+  void Tb(const double input) { Tb_ = input; }
+  double Tb() { return Tb_; }
+  void Tb_f(const double input) { Tb_f_ = input; }
+  double Tb_f() { return Tb_f_; }
+  void Tb_f_rate(const double input) { Tb_f_rate_ = input; }
+  double Tb_f_rate() { return Tb_f_rate_; }
+  void Tb_hdwe(const double input) { Tb_hdwe_ = input; }
+  double Tb_hdwe() { return Tb_hdwe_; }
+  void Tb_hdwe_filt(const double input) { Tb_hdwe_filt_ = input; }
+  double Tb_hdwe_filt() { return Tb_hdwe_filt_; }
+  void Tb_hdwe_filt_rate(const double input) { Tb_hdwe_filt_rate_ = input; }
+  double Tb_hdwe_filt_rate() { return Tb_hdwe_filt_rate_; }
+  void Tb_model(const double input) { Tb_model_ = input; }
+  double Tb_model() { return Tb_model_; }
+  void Tb_model_filt(const double input) { Tb_model_filt_ = input; }
+  double Tb_model_filt() { return Tb_model_filt_; }
+  void Tb_model_filt_rate(const double input) { Tb_model_filt_rate_ = input; }
+  double Tb_model_filt_rate() { return Tb_model_filt_rate_; }
+  void Ib(const float input) { Ib_ = input; }
+  float Ib() { return Ib_; }
+  void Ib_f(const float input) { Ib_f_ = input; }
+  float Ib_f() { return Ib_f_; }
+  void Ib_amp(const float input) { Ib_amp_ = input; }
+  float Ib_amp() { return Ib_amp_; }
+  void Ib_amp_hdwe(const float input) { Ib_amp_hdwe_ = input; }
+  float Ib_amp_hdwe() { return Ib_amp_hdwe_; }
+  void Ib_amp_hdwe_f(const float input) { Ib_amp_hdwe_f_ = input; }
+  float Ib_amp_hdwe_f() { return Ib_amp_hdwe_f_; }
+  void Ib_amp_hdwe_kf(const float input) { Ib_amp_hdwe_kf_ = input; }
+  float Ib_amp_hdwe_kf() { return Ib_amp_hdwe_kf_; }
+  void Ib_amp_model(const float input) { Ib_amp_model_ = input; }
+  float Ib_amp_model() { return Ib_amp_model_; }
+  void Ib_amp_rms(const float input) { Ib_amp_rms_ = input; }
+  float Ib_amp_rms() { return Ib_amp_rms_; }
+  void Ib_hdwe_f(const float input) { Ib_hdwe_f_ = input; }
+  float Ib_hdwe_f() { return Ib_hdwe_f_; }
+  void Ib_hdwe_kf(const float input) { Ib_hdwe_kf_ = input; }
+  float Ib_hdwe_kf() { return Ib_hdwe_kf_; }
+  void Ib_hdwe_f_cal(const float input) { Ib_hdwe_f_cal_ = input; }
+  float Ib_hdwe_f_cal() { return Ib_hdwe_f_cal_; }
+  void Ib_noa(const float input) { Ib_noa_ = input; }
+  float Ib_noa() { return Ib_noa_; }
+  void Ib_noa_hdwe(const float input) { Ib_noa_hdwe_ = input; }
+  float Ib_noa_hdwe() { return Ib_noa_hdwe_; }
+  void Ib_noa_hdwe_f(const float input) { Ib_noa_hdwe_f_ = input; }
+  float Ib_noa_hdwe_f() { return Ib_noa_hdwe_f_; }
+  void Ib_noa_hdwe_kf(const float input) { Ib_noa_hdwe_kf_ = input; }
+  float Ib_noa_hdwe_kf() { return Ib_noa_hdwe_kf_; }
+  void Ib_noa_rms(const float input) { Ib_noa_rms_ = input; }
+  float Ib_noa_rms() { return Ib_noa_rms_; }
+  void Ib_noa_model(const float input) { Ib_noa_model_ = input; }
+  float Ib_noa_model() { return Ib_noa_model_; }
+  void Ib_hdwe(const float input) { Ib_hdwe_ = input; }
+  float Ib_hdwe() { return Ib_hdwe_; }
+  void Ib_hdwe_model(const float input) { Ib_hdwe_model_ = input; }
+  float Ib_hdwe_model() { return Ib_hdwe_model_; }
+  void Ib_model(const float input) { Ib_model_ = input; }
+  float Ib_model() { return Ib_model_; }
+  void Ib_model_in(const float input) { Ib_model_in_ = input; }
+  float Ib_model_in() { return Ib_model_in_; }
+  void Vb_rms(const float input) { Vb_rms_ = input; }
+  float Vb_rms() { return Vb_rms_; }
+  void Vc_rms(const float input) { Vc_rms_ = input; }
+  float Vc_rms() { return Vc_rms_; }
+  void Wb(const float input) { Wb_ = input; }
+  float Wb() { return Wb_; }
+  void now(const unsigned long long input) { now_ = input; }
+  unsigned long long now() { return now_; }
+  void now_temp(const unsigned long long input) { now_temp_ = input; }
+  unsigned long long now_temp() { return now_temp_; }
+  void T(const double input) { T_ = input; }
+  double T() { return T_; }
+  void reset(const boolean input) { reset_ = input; }
+  boolean reset() { return reset_; }
+  void T_filt(const double input) { T_filt_ = input; }
+  double T_filt() { return T_filt_; }
+  void T_temp(const double input) { T_temp_ = input; }
+  double T_temp() { return T_temp_; }
+  void elapsed_inj(const unsigned long long input) { elapsed_inj_ = input; }
+  unsigned long long elapsed_inj() { return elapsed_inj_; }
+  void start_inj(const unsigned long long input) { start_inj_ = input; }
+  unsigned long long start_inj() { return start_inj_; }
+  void stop_inj(const unsigned long long input) { stop_inj_ = input; }
+  unsigned long long stop_inj() { return stop_inj_; }
+  void end_inj(const unsigned long long input) { end_inj_ = input; }
+  unsigned long long end_inj() { return end_inj_; }
+  void control_time(const double input) { control_time_ = input; }
+  double control_time() { return control_time_; }
+  void display(const boolean input) { display_ = input; }
+  boolean display() { return display_; }
+  void bms_off(const boolean input) { bms_off_ = input; }
+  boolean bms_off() { return bms_off_; }
   Sync *ReadSensors;          // Handle to debug read time
   Sync *ReadTemp;             // Handle to debug read temperature time
-  boolean sat;                // Battery potential saturation status based on Temp and VOC
-  boolean saturated;          // Battery confirmed saturation status based on Temp and VOC
+  void sat(const boolean input) { sat_ = input; }
+  boolean sat() { return sat_; }
+  void saturated(const boolean input) { saturated_ = input; }
+  boolean saturated() { return saturated_; }
   Shunt *ShuntAmp;            // Ib sense amplified
   Shunt *ShuntNoAmp;          // Ib sense non-amplified
   TempSensor* SensorTb;       // Tb sense
@@ -217,32 +282,25 @@ public:
   LagExp* TbSenseFilt;        // Linear filter for Tb. There are 1 Hz AAFs in hardware for Vb and Ib
   SlidingDeadband *SdTb;      // Non-linear filter for Tb
   BatterySim *Sim;            // Used to model Vb and Ib.   Use Talk 'Xp?' to toggle model on/off
-  unsigned long long elapsed_inj;  // Injection elapsed time, ms
-  unsigned long long start_inj;// Start of calculated injection, ms
-  unsigned long long stop_inj; // Stop of calculated injection, ms
-  unsigned long long end_inj;  // End of print injection, ms
-  double control_time;        // Decimal time, seconds since 1/1/2021
-  boolean display;            // Use display
-  boolean bms_off;            // Calculated by BatteryMonitor, battery off, low voltage, switched by battery management system?
   unsigned long long dt_ib(void) { return dt_ib_; }; // ms since last update of selected Ib sample
   void select_temp(BatteryMonitor *Mon);  // Make final signal selection
   void select_volt_and_current(BatteryMonitor *Mon);  // Make final signal selection
-  float ib() { return Ib / ap.nP(); };                            // Battery unit current, A
-  float ib_amp() { return Ib_amp / ap.nP(); };                    // Battery amp unit current, A
-  float ib_amp_hdwe() { return Ib_amp_hdwe / ap.nP(); };          // Battery amp unit current, A
-  float ib_amp_hdwe_f() { return Ib_amp_hdwe_f / ap.nP(); };      // Battery amp 2-pole filtered unit current, A
-  float ib_amp_hdwe_kf() { return Ib_amp_hdwe_kf / ap.nP(); };    // Battery amp kalman filtered unit current, A
-  float ib_amp_model() { return Ib_amp_model / ap.nP(); };        // Battery amp model unit current, A
+  float ib() { return Ib_ / ap.nP(); };                            // Battery unit current, A
+  float ib_amp() { return Ib_amp_ / ap.nP(); };                    // Battery amp unit current, A
+  float ib_amp_hdwe() { return Ib_amp_hdwe_ / ap.nP(); };          // Battery amp unit current, A
+  float ib_amp_hdwe_f() { return Ib_amp_hdwe_f_ / ap.nP(); };      // Battery amp 2-pole filtered unit current, A
+  float ib_amp_hdwe_kf() { return Ib_amp_hdwe_kf_ / ap.nP(); };    // Battery amp kalman filtered unit current, A
+  float ib_amp_model() { return Ib_amp_model_ / ap.nP(); };        // Battery amp model unit current, A
   float ib_amp_vo_vc() { return ShuntAmp->Vo_Vc(); };             // Battery amp kalman filter input, V
   float ib_amp_vo_vc_f() { return ShuntAmp->Vo_Vc_kf(); };        // Battery amp kalman filter output, V
-  float ib_hdwe() { return Ib_hdwe / ap.nP(); };                  // Battery select hardware unit current, A
-  float ib_hdwe_model() { return Ib_hdwe_model / ap.nP(); };      // Battery select hardware model unit current, A
-  float ib_model() { return Ib_model / ap.nP(); };                // Battery select model unit current, A
-  float ib_model_in() { return Ib_model_in / ap.nP(); };          // Battery select model input unit current, A
-  float ib_noa() { return Ib_noa / ap.nP(); };                    // Battery noa unit current, A
-  float ib_noa_hdwe() { return Ib_noa_hdwe / ap.nP(); };          // Battery no amp unit current, A
-  float ib_noa_hdwe_kf() { return Ib_noa_hdwe_kf / ap.nP(); };    // Battery no amp kalman filtered unit current, A
-  float ib_noa_model() { return Ib_noa_model / ap.nP(); };        // Battery no amp model unit current, A
+  float ib_hdwe() { return Ib_hdwe_ / ap.nP(); };                  // Battery select hardware unit current, A
+  float ib_hdwe_model() { return Ib_hdwe_model_ / ap.nP(); };      // Battery select hardware model unit current, A
+  float ib_model() { return Ib_model_ / ap.nP(); };                // Battery select model unit current, A
+  float ib_model_in() { return Ib_model_in_ / ap.nP(); };          // Battery select model input unit current, A
+  float ib_noa() { return Ib_noa_ / ap.nP(); };                    // Battery noa unit current, A
+  float ib_noa_hdwe() { return Ib_noa_hdwe_ / ap.nP(); };          // Battery no amp unit current, A
+  float ib_noa_hdwe_kf() { return Ib_noa_hdwe_kf_ / ap.nP(); };    // Battery no amp kalman filtered unit current, A
+  float ib_noa_model() { return Ib_noa_model_ / ap.nP(); };        // Battery no amp model unit current, A
   float ib_noa_vo_vc() { return ShuntNoAmp->Vo_Vc(); };           // Battery no amp kalman filter input, V
   float ib_noa_vo_vc_f() { return ShuntNoAmp->Vo_Vc_kf(); };      // Battery no amp kalman filter output, V
   float Ib_amp_add();
@@ -253,7 +311,6 @@ public:
   float Ib_noa_min();
   float Ib_amp_noise();
   float Ib_noa_noise();
-  float Ib_noise();
   unsigned long long inst_millis() { return inst_millis_; };
   unsigned long long inst_time() { return inst_time_; };
   void pretty_print();
@@ -266,15 +323,15 @@ public:
   void shunt_select_initial(const boolean reset);   // Choose between shunts for model
   void temp_load_and_filter(Sensors *Sen, const boolean reset_temp);
   float Tb_noise();
-  float vb() { return Vb / ap.nS(); };                            // Battery select unit voltage, V
-  float vb_hdwe() { return Vb_hdwe / ap.nS(); };                  // Battery select hardware unit voltage, V
-  float vb_hdwe_f() { return Vb_hdwe_f / ap.nS(); };              // Battery select hardware unit voltage filtered, V
+  float vb() { return Vb_ / ap.nS(); };                            // Battery select unit voltage, V
+  float vb_hdwe() { return Vb_hdwe_ / ap.nS(); };                  // Battery select hardware unit voltage, V
+  float vb_hdwe_f() { return Vb_hdwe_f_ / ap.nS(); };              // Battery select hardware unit voltage filtered, V
   void vb_load(const uint16_t vb_pin, const boolean reset);       // Analog read of Vb
-  float vb_model() { return (Vb_model / ap.nS()); };              // Battery select model unit voltage, V
+  float vb_model() { return (Vb_model_ / ap.nS()); };              // Battery select model unit voltage, V
   float Vb_add();
   float Vb_noise();
   void vb_print(void);                  // Print Vb result
-  float vc_hdwe() { return Vc_hdwe; };  // Common select hardware unit voltage, V
+  float vc_hdwe() { return Vc_hdwe_; };  // Common select hardware unit voltage, V
   Fault *Flt;
   ScaleBrk *sel_brk_hdwe;                  // Active/active scale break
 protected:
@@ -302,4 +359,61 @@ protected:
   LagExp *VbFilt;       // Noise filter for calibration
   RecursiveRMSMonitorFP *VbRMS; // RMS noise monitor for Vb
   RecursiveRMSMonitorFP *VcRMS; // RMS noise monitor for Vc
+  int Vb_raw_;                 // Raw analog read, integer
+  float Vb_;                   // Selected battery bank voltage, V
+  float Vb_f_;                 // Selected filtered battery bank voltage, V
+  float Vb_hdwe_;              // Sensed battery bank voltage, V
+  float Vb_hdwe_f_;            // Sensed, filtered battery bank voltage, V
+  float Vb_model_;             // Modeled battery bank voltage, V
+  float Vb_volt_;              // Sensed battery bank voltage at ADC, V
+  float Vc_;                   // Selected common reference voltage, V
+  float Vc_hdwe_;              // Sensed common reference voltage, V
+  double Tb_;                  // Selected battery bank temp, C
+  double Tb_f_;                // Selected filtered battery bank temp, C
+  double Tb_f_rate_;           // Selected filtered battery bank temp rate, C/s
+  double Tb_hdwe_;             // Sensed battery temp, C
+  double Tb_hdwe_filt_;        // Filtered, sensed battery temp, C
+  double Tb_hdwe_filt_rate_;   // Filtered, sensed battery temp, C/s
+  double Tb_model_;            // Temperature used for battery bank temp in model, C
+  double Tb_model_filt_;       // Filtered, modeled battery bank temp, C
+  double Tb_model_filt_rate_;  // Filtered, modeled battery bank temp rate, C/s
+  float Ib_;                   // Selected battery bank current, A
+  float Ib_f_;                 // Selected filtered battery bank current, A
+  float Ib_amp_;               // Initial selected amp battery bank current, A
+  float Ib_amp_hdwe_;          // Sensed amp battery bank current, A
+  float Ib_amp_hdwe_f_;        // Sensed, filtered amp battery bank current, A
+  float Ib_amp_hdwe_kf_;       // Sensed, kalman filtered amp battery bank current, A
+  float Ib_amp_model_;         // Modeled amp battery bank current, A
+  float Ib_amp_rms_;           // Amp battery bank current noise RMS, A
+  float Ib_hdwe_f_;            // Sensed, selected filtered battery bank current, A
+  float Ib_hdwe_kf_;           // Sensed, selected kalman filtered battery bank current, A
+  float Ib_hdwe_f_cal_;        // Sensed, filtered selected battery bank current for cal display, A
+  float Ib_noa_;               // Initial selected noa battery bank current, A
+  float Ib_noa_hdwe_;          // Sensed noa battery bank current, A
+  float Ib_noa_hdwe_f_;        // Sensed, filtered noa battery bank current, A
+  float Ib_noa_hdwe_kf_;       // Sensed, kalman filtered noa battery bank current, A
+  float Ib_noa_rms_;           // Noa battery bank current noise RMS, A
+  float Ib_noa_model_;         // Modeled noa battery bank current, A
+  float Ib_hdwe_;              // Sensed battery bank current, A
+  float Ib_hdwe_model_;        // Selected model hardware signal, A
+  float Ib_model_;             // Modeled battery bank current, A
+  float Ib_model_in_;          // Battery bank current input to model (modified by cutback), A
+  float Vb_rms_;               // Battery bank voltage noise RMS, V
+  float Vc_rms_;               // Battery bank voltage noise RMS, V
+  float Wb_;                   // Sensed battery bank power, use to compare to other shunts, W
+  unsigned long long now_;     // Time at sample, ms
+  unsigned long long now_temp_;// Time at sample, ms
+  double T_;                   // Update time, s
+  boolean reset_;              // Reset flag, T = reset
+  double T_filt_;              // Filter update time, s
+  double T_temp_;              // Temperature update time, s
+  unsigned long long elapsed_inj_;  // Injection elapsed time, ms
+  unsigned long long start_inj_;// Start of calculated injection, ms
+  unsigned long long stop_inj_; // Stop of calculated injection, ms
+  unsigned long long end_inj_;  // End of print injection, ms
+  double control_time_;        // Decimal time, seconds since 1/1/2021
+  boolean display_;            // Use display
+  boolean bms_off_;            // Calculated by BatteryMonitor, battery off, low voltage, switched by battery management system?
+  boolean sat_;                // Battery potential saturation status based on Temp and VOC
+  boolean saturated_;          // Battery confirmed saturation status based on Temp and VOC
 };

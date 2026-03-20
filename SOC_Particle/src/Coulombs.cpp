@@ -166,9 +166,9 @@ float Coulombs::count_coulombs(Sensors *Sen, const boolean reset_temp, const flo
   const boolean saturated)
 {
     // Inputs
-    dt_ = Sen->T;
-    tb_f_ = Sen->Tb_f;
-    tb_f_rate_ = Sen->Tb_f_rate;
+    dt_ = Sen->T();
+    tb_f_ = Sen->Tb_f();
+    tb_f_rate_ = Sen->Tb_f_rate();
     d_delta_q_ = charge_curr * dt_;
 
     // State change

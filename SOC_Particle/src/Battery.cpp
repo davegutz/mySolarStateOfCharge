@@ -220,10 +220,10 @@ BatteryMonitor::~BatteryMonitor() {}
 float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const boolean reset_ekf)
 {
     // Inputs
-    tb_f_ = Sen->Tb_f;
-    tb_f_rate_ = Sen->Tb_f_rate;
+    tb_f_ = Sen->Tb_f();
+    tb_f_rate_ = Sen->Tb_f_rate();
     vsat_ = calc_vsat();
-    dt_ =  Sen->T;
+    dt_ =  Sen->T();
     vb_ = Sen->vb();
     ib_ = Sen->ib();
     ib_ = max(min(ib_, IMAX_NUM), -IMAX_NUM);  // Overflow protection when ib_ past value used
@@ -245,7 +245,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const bo
         if ( voltage_low_ != voltage_low_past ) Serial.printf("\nBMS ON  voc_stat%7.3f vb_down%7.3f vb_rising%7.3f bms_off %d voltage_low %d \n\n", voc_stat_, chem_.vb_down, chem_.vb_rising, bms_off_, voltage_low_);
     }
     bms_off_ = (tb_f_ <= chem_.low_t) || ( Sen->Flt->ib_really_quiet() && voltage_low_ && !Sen->Flt->vb_fa_lt() && !sp.tweak_test() );    // KISS
-    Sen->bms_off = bms_off_;
+    Sen->bms_off(bms_off_);
     ib_charge_ = ib_;
     float ib_charge_ekf = ib_charge_;
     if ( bms_off_ && !bms_charging_ && sp.mod_vb())  // Don't let a single hard vb fail ruin count
@@ -282,11 +282,11 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const bo
     // EKF 1x1
     if ( eframe_ == 0 || reset_ekf )
     {
-        static unsigned long long ekf_now_past = Sen->now;
+        static unsigned long long ekf_now_past = Sen->now();
         float ddq_dt = ib_charge_ekf;
         boolean freeze = Sen->Flt->vb_fa_lt() || bms_off_;  // Freeze EKF with voltage fault or bms_off
 
-        now_ekf_ = Sen->now;
+        now_ekf_ = Sen->now();
         dt_ekf_ = float(now_ekf_ - ekf_now_past) / 1e3;
         ekf_now_past = now_ekf_;
         if ( ddq_dt>0. && !sp.tweak_test() ) ddq_dt *= coul_eff_;
@@ -528,29 +528,29 @@ boolean BatteryMonitor::solve_ekf(const boolean reset, const boolean reset_temp,
     if ( !reset && !reset_temp ) return false;
 
     // Average dynamic inputs through the initialization period before apply EKF
-    static double Tb_avg = Sen->Tb_f;
-    static float Vb_avg = Sen->Vb;
-    static float Ib_avg = Sen->Ib;
+    static double Tb_avg = Sen->Tb_f();
+    static float Vb_avg = Sen->Vb();
+    static float Ib_avg = Sen->Ib();
     static uint16_t n_avg = 0;
     if ( reset )
     {
-        Tb_avg = Sen->Tb_f;
-        Vb_avg = Sen->Vb;
-        Ib_avg = Sen->Ib;
+        Tb_avg = Sen->Tb_f();
+        Vb_avg = Sen->Vb();
+        Ib_avg = Sen->Ib();
         n_avg = 0;
     }
     if ( reset_temp )  // The idea is to average the noisey inputs that happen over reset_temp time period
     {
         n_avg++;
-        Tb_avg = (Tb_avg*float(n_avg-1) + Sen->Tb_f) / float(n_avg);
-        Vb_avg = (Vb_avg*float(n_avg-1) + Sen->Vb) / float(n_avg);
-        Ib_avg = (Ib_avg*float(n_avg-1) + Sen->Ib) / float(n_avg);
+        Tb_avg = (Tb_avg*float(n_avg-1) + Sen->Tb_f()) / float(n_avg);
+        Vb_avg = (Vb_avg*float(n_avg-1) + Sen->Vb()) / float(n_avg);
+        Ib_avg = (Ib_avg*float(n_avg-1) + Sen->Ib()) / float(n_avg);
     }
     else  // remember inputs in avg and return
     {
-        Tb_avg = Sen->Tb_f;
-        Vb_avg = Sen->Vb;
-        Ib_avg = Sen->Ib;
+        Tb_avg = Sen->Tb_f();
+        Vb_avg = Sen->Vb();
+        Ib_avg = Sen->Ib();
         n_avg = 0;
         return ( true );
     }
@@ -573,7 +573,7 @@ boolean BatteryMonitor::solve_ekf(const boolean reset, const boolean reset_temp,
 
     #ifdef DEBUG_INIT
         if ( sp.debug()==-1 && reset_temp) Serial.printf("sek: Vb%7.3f Vba%7.3f voc_soc%7.3f voc_stat%7.3f voc_sol%7.3f cnt %d dx%8.4f e%10.6f soc_sol%8.4f\n",
-            Sen->Vb, Vb_avg, voc_soc_, voc_stat_, voc_solved, ice_->count(), ice_->dx(), ice_->e(), soc_solved);
+            Sen->Vb(), Vb_avg, voc_soc_, voc_stat_, voc_solved, ice_->count(), ice_->dx(), ice_->e(), soc_solved);
     #endif
 
     return ( ice_->count()<SOLV_MAX_COUNTS );
@@ -650,9 +650,9 @@ BatterySim::~BatterySim() {}
 float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean reset)
 {
     // Inputs
-    tb_f_ = Sen->Tb_f;
-    dt_ = Sen->T;
-    ib_in_ = Sen->Ib_model_in / ap.nP();
+    tb_f_ = Sen->Tb_f();
+    dt_ = Sen->T();
+    ib_in_ = Sen->Ib_model_in() / ap.nP();
     if ( reset ) ib_fut_ = ib_in_;
     ib_ = max(min(ib_fut_, IMAX_NUM), -IMAX_NUM);  //  Past value ib_.  Overflow protection when ib_ past value used
     vsat_ = calc_vsat();
@@ -753,7 +753,7 @@ float BatterySim::calc_inj(const unsigned long long now, const uint8_t type, con
 
     // Sample at instant of signal injection
     sample_time_z_ = sample_time_;
-    sample_time_ = System.millis();
+    sample_time_ = millis();
 
     // Return if time 0
     if ( now == 0ULL )
@@ -822,9 +822,9 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
     if ( ib_charge_>0. ) d_delta_q_s_ *= coul_eff_;
 
     // Rate limit temperature.  When modeling, initialize to no change
-    tb_f_ = Sen->Tb_f;
-    tb_f_rate_ = Sen->Tb_f_rate;
-    
+    tb_f_ = Sen->Tb_f();
+    tb_f_rate_ = Sen->Tb_f_rate();
+
     // Saturation and re-init.   Goal is to set q_capacity and hold it so remember last saturation status
     // But if not modeling in real world, set to Monitor when Monitor saturated and reset_temp to EKF otherwise
     static boolean reset_temp_past = reset_temp;   // needed because model called first in reset_temp path; need to pick up latest

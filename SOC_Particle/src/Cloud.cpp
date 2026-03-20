@@ -45,12 +45,12 @@ void assign_publist(Publish* pubList, const unsigned long long now, const String
   pubList->now = now;
   pubList->unit = unit + batt.c_str();
   pubList->hm_string =hm_string;
-  pubList->Tb = Sen->Tb;
+  pubList->Tb = Sen->Tb();
   // Log.info("    assign_publist pubList->Tb=%9.5f", pubList->Tb);
   if ( sp.ib_force()>-1 )
-    pubList->Ib = Sen->Ib;
+    pubList->Ib = Sen->Ib();
   else
-    pubList->Ib = Sen->Ib_hdwe_f;
+    pubList->Ib = Sen->Ib_hdwe_f();
   pubList->tcharge = Mon->tcharge();
   pubList->Voc = Mon->voc()*ap.nS();
   pubList->sat = Mon->sat();

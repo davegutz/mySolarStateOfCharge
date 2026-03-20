@@ -282,7 +282,7 @@ void loop()
     Ds2482.loop();
   #endif
   if ( now - last_sync > ONE_DAY_MILLIS || reset )  sync_time(now, &last_sync, &millis_flip);
-  Sen->control_time = double(Sen->now)/1000.;
+  Sen->control_time(double(Sen->now())/1000.);
   char buffer[32];
   time_long_2_str(time_now, buffer);
   hm_string = String(buffer);
@@ -305,13 +305,14 @@ void loop()
         cp.tb_info.t_c = Ds2482.tempC(0);
         cp.tb_info.ready = Ds2482.ready();
     #endif
-    Sen->T_temp = ReadTemp->updateTime();
+    Sen->T_temp(ReadTemp->updateTime());
     if ( reset_temp )
     {
-      Sen->Tb_model = Sen->Tb_model_filt = NOMINAL_TB + ap.Tb_bias_model();
-    
+      Sen->Tb_model(NOMINAL_TB + ap.Tb_bias_model());
+      Sen->Tb_model_filt(NOMINAL_TB + ap.Tb_bias_model());
+
       if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 396 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt, %11.8f %11.8f\n",
-        Sen->Tb_model, Sen->Tb_model_filt), true, true);
+        Sen->Tb_model(), Sen->Tb_model_filt()), true, true);
     }
     // Log.info("ino:  temp_load_and_filter");
     
@@ -319,7 +320,7 @@ void loop()
     Sen->select_temp(Mon);
 
     if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 403 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
-        reset_temp, Sen->Sim->tb_f(), Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate), true, true);
+        reset_temp, Sen->Sim->tb_f(), Sen->Tb_model(), Sen->Tb_model_filt(), Sen->Tb_hdwe_filt_rate()), true, true);
     // Log.info("ino:  print_temp_serial");
     print_temp_serial(reset_temp, Sen);
   }
@@ -340,7 +341,7 @@ void loop()
   if ( read )
   {
     // Log.info("ino:  read");
-    Sen->reset = reset;
+    Sen->reset(reset);
 
     // Check for really slow data capture and run EKF each read frame
     // ap.eframe_mult() = max(int(float(READ_DELAY)*float(EKF_EFRAME_MULT)/float(ReadSensors->delay())+0.9999), 1);
@@ -371,10 +372,10 @@ void loop()
     monitor(reset, reset_temp, reset_ekf, now, Is_sat_delay, Mon, Sen);
 
     // Re-init Coulomb Counter to EKF if it is different than EKF or if never saturated
-    Mon->regauge(Sen->Tb_f);
+    Mon->regauge(Sen->Tb_f());
 
     // Empty battery
-    if ( sp.modeling() && reset && Sen->Sim->q()<=0. ) Sen->Ib = 0.;
+    if ( sp.modeling() && reset && Sen->Sim->q()<=0. ) Sen->Ib(0.);
 
     // Debug for read
     if ( sp.debug()==12 ) debug_12(Mon, Sen);

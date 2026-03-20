@@ -68,7 +68,7 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                 case ( 'm' ):  // Cm<>:  assign curve charge state in fraction to model only (ekf if modeling)
                     if ( ap.init_sim_soc_p->success() )  // Apply crude limit to prevent user error
                     {
-                        Sen->Sim->apply_soc(ap.init_sim_soc(), Sen->Tb_f);
+                        Sen->Sim->apply_soc(ap.init_sim_soc(), Sen->Tb_f());
                         Serial.printf("soc%8.4f, dq%7.3f, soc_mod%8.4f, dq mod%7.3f,\n",
                             Mon->soc(), Mon->delta_q(), Sen->Sim->soc(), Sen->Sim->delta_q());
                         if ( sp.modeling() ) cp.cmd_reset_sim(); // Does not block.  Commands a reset
@@ -84,12 +84,12 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
             {
                 case ( 'h' ):  //   Dh<>:  Summary sample time input  TODO:  not sure this section needed since nominalizing capability added 11/2025
                     if ( ap.sum_delay_p->success() )
-                        Sen->Summarize->delay(max(ap.read_delay(), ap.sum_delay()), Sen->now);  // validated
+                        Sen->Summarize->delay(max(ap.read_delay(), ap.sum_delay()), Sen->now());  // validated
                     else if (ap.value_str()=="0" || ap.value_str()=="")
                     {
                         Serial.printf("setting NOMINAL instead\n");
                         ap.sum_delay_p->set_nominal();
-                        Sen->Summarize->delay(max(ap.read_delay(), ap.sum_delay()), Sen->now);
+                        Sen->Summarize->delay(max(ap.read_delay(), ap.sum_delay()), Sen->now());
                     }
                     break;
 

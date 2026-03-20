@@ -180,18 +180,18 @@ void print_rapid_header(void)
 }
 void print_rapid_serial(const boolean reset, Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
-  // if ( Sen->T == 0.) return;
-  double cTime = double(Sen->now)/1000.;
-  
+  // if ( Sen->T() == 0.) return;
+  double cTime = double(Sen->now())/1000.;
+
   sprintf(pr.buff,  "%s,%s,%13.4f,%8.4f,   %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,   ", \
-    pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T,
+    pubList->unit.c_str(), pubList->hm_string.c_str(), cTime, Sen->T(),
     reset, Sen->reset_temp(), cp.soft_reset_print, cp.soft_reset_sim_print, Sen->Flt->reset_all_faults_print(), cp.ekf_reset_print,
     cp.kf_reset_print, Mon->initializing(), Sen->Sim->initializing());
     Serial.printf("%s", pr.buff);
 
   sprintf(pr.buff,  "%d,%10.4f,%10.4f,%2d,%2d,%2d,%2d,%2d,   %11.8f,%11.8f,%11.8f,  ", \
     CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(), pubList->sat, pubList->saturated, sp.ib_force(), sp.modeling(), Mon->bms_off(),
-    Sen->Tb, Sen->Tb_f, Sen->Tb_f_rate);
+    Sen->Tb(), Sen->Tb_f(), Sen->Tb_f_rate());
     Serial.printf("%s", pr.buff);
 
   sprintf(pr.buff,  "%11.7f,%11.7f,%11.7f,%11.7f,   %11.7f,%11.7f,%11.7f,%11.7f,%11.7f,%11.7f,", \
@@ -273,7 +273,7 @@ void print_shunt_serial(const boolean reset, Sensors *Sen)
 {
   if ( ( sp.debug()==2  ) && cp.publishS )
   {
-    double cTime = double(Sen->now)/1000.;
+    double cTime = double(Sen->now())/1000.;
 
     sprintf(pr.buff, "shunt_unit,%13.4f, %d, %d,  %11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,  ",
       cTime, reset, cp.kf_reset_print,
@@ -343,7 +343,7 @@ void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *
 {
   if ( (sp.debug()==2 || sp.debug()==4 || sp.debug()==61 )  && cp.publishS )
   {
-      double cTime = double(Sen->now)/1000.;
+      double cTime = double(Sen->now())/1000.;
 
       sprintf(pr.buff, "unit_sel,%13.4f, %d, %d, %d, %10.7f, %8.6f,%8.6f,%8.6f,%8.6f,%8.6f,   %d,%8.6f,%8.6f,%8.6f,%8.6f,   %8.6f,%8.6f, ",
           cTime, reset, Sen->Flt->reset_all_faults_print(), sp.ib_force(),
@@ -431,7 +431,7 @@ void print_sim_serial(const boolean initializing_all, const boolean reset_temp, 
     if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)
     {
         // if ( Sim->dt() == 0. ) return;
-        double cTime = double(Sen->now)/1000.;
+        double cTime = double(Sen->now())/1000.;
 
         sprintf(pr.buff, "unit_sim, %13.4f, %8.4f, %d, %10.4f, %d, %11.8f, %7.6f,%7.6f, ",
             cTime, Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->tb_f(), Sim->vsat(), Sim->voc_stat());
@@ -467,11 +467,11 @@ void print_temp_serial(const boolean reset, Sensors *Sen)
 {
   if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  || sp.debug()==16 )
   {
-    // if ( Sen->T_temp == 0. ) return;
-    double cTime = double(Sen->now_temp)/1000.;
+    // if ( Sen->T_temp() == 0. ) return;
+    double cTime = double(Sen->now_temp())/1000.;
     Serial.printf("temp_unit, %13.4f, %8.4f, %11.8f, %11.8f, %11.8f, %d, %11.8f, %11.8f, %11.8f, %11.8f, %11.8f,  %11.8f,\n",
-      cTime, Sen->T_temp, Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb, reset, Sen->Tb_hdwe_filt, Sen->Tb_model_filt, Sen->Tb_f, Sen->Tb_hdwe_filt_rate,
-      Sen->Tb_model_filt_rate, Sen->Tb_f_rate);
+      cTime, Sen->T_temp(), Sen->Tb_hdwe(), Sen->Tb_model(), Sen->Tb(), reset, Sen->Tb_hdwe_filt(), Sen->Tb_model_filt(), Sen->Tb_f(), Sen->Tb_hdwe_filt_rate(),
+      Sen->Tb_model_filt_rate(), Sen->Tb_f_rate());
     // Log.info("    print_temp_serial cTime,%9.3f,", cTime);
   }
 }
