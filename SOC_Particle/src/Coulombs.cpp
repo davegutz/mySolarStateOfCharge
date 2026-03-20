@@ -40,15 +40,16 @@ extern PublishPars pp;    // For publishing
 Coulombs::Coulombs() {}
 Coulombs::Coulombs(double *sp_delta_q, const float q_cap_rated,
   const double s_coul_eff, const float dx_voc, const float dy_voc, const float dz_voc)
-  : q_(q_cap_rated), q_capacity_(q_cap_rated), q_cap_rated_(q_cap_rated),
-    q_cap_rated_scaled_(q_cap_rated), q_min_(0.), sat_(true), soc_(1.), soc_min_(0.), sp_delta_q_(sp_delta_q),
-    chem_()
+  : resetting_(false), d_delta_q_(0.), delta_q_abs_(0.), delta_q_inf_(0.), delta_q_neg_(0.), delta_q_pos_(0.), dt_(0.),
+    q_(q_cap_rated), q_capacity_(q_cap_rated), q_cap_rated_(q_cap_rated), q_cap_rated_scaled_(q_cap_rated), q_inf_(0.), q_min_(0.),
+    sat_(true), saturated_(false), soc_(1.), soc_ekf_min_(0.), soc_inf_(0.), soc_min_(0.), sp_delta_q_(sp_delta_q),
+    tb_f_(0.), tb_f_rate_(0.), time_neg_(0.), time_pos_(0.), chem_()
     {
+      coul_eff_ = chem_.coul_eff*s_coul_eff;
+      soc_ekf_min_ = chem_.soc_ekf_min;
       put_dx_voc(dx_voc);
       put_dy_voc(dy_voc);
       put_dz_voc(dz_voc);
-      coul_eff_ = (chem_.coul_eff*s_coul_eff);
-      soc_ekf_min_ = chem_.soc_ekf_min;
     }
 Coulombs::~Coulombs() {}
 

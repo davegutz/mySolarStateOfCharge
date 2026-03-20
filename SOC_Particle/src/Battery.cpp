@@ -39,10 +39,12 @@ extern PublishPars pp;  // For publishing
 // constructors
 Battery::Battery(double *sp_delta_q, const float d_voc_soc, const float dx_voc, const float dy_voc,
                 const float dz_voc)
-    : Coulombs(sp_delta_q, (NOM_UNIT_CAP*3600), COULOMBIC_EFF_SCALE, dx_voc, dy_voc, dz_voc), bms_charging_(false),
-	bms_off_(false), dt_(0.1), dv_dsoc_(0.3), dv_dyn_(0.), dv_hys_(0.), ib_(0.), ibs_(0.), ioc_(0.), print_now_(false),
-    tb_f_(NOMINAL_TB), vb_(NOMINAL_VB), voc_(NOMINAL_VB),  voc_soc_(NOMINAL_VB), voc_stat_(NOMINAL_VB),
-    voltage_low_(false), vsat_(NOMINAL_VB)
+    : Coulombs(sp_delta_q, (NOM_UNIT_CAP*3600), COULOMBIC_EFF_SCALE, dx_voc, dy_voc, dz_voc),
+    bms_charging_(false), bms_off_(false), dt_(0.1), dv_dsoc_(0.3), dv_dyn_(0.), dv_hys_(0.), 
+    ib_(0.), ibs_(0.), ib_dyn_(0.), initializing_(false), ioc_(0.), nom_vsat_(0.),
+    print_now_(false), soft_reset_print_(false), tb_f_(NOMINAL_TB), vb_(NOMINAL_VB),
+    voc_(NOMINAL_VB), voc_soc_(NOMINAL_VB), voc_stat_(NOMINAL_VB), voltage_low_(false), vsat_(NOMINAL_VB),
+    ChargeTransfer_(nullptr), rand_A_(nullptr), rand_B_(nullptr), rand_C_(nullptr), rand_D_(nullptr)
 {
     nom_vsat_   = chem_.v_sat - HDB_VB;   // Center in hysteresis
     ChargeTransfer_ = new LagExp(EKF_NOM_DT, chem_.tau_ct, -NOM_UNIT_CAP, NOM_UNIT_CAP);  // Update time and time constant changed on the fly
@@ -148,9 +150,10 @@ float Battery::voc_soc_tab(const float soc, const double tb_f)
 // Battery monitor class
 BatteryMonitor::BatteryMonitor(const float dx_voc, const float dy_voc, const float dz_voc):
     Battery(sp.delta_q_ptr(), VM, dx_voc, dy_voc, dz_voc),
-	amp_hrs_remaining_ekf_(0.), amp_hrs_remaining_soc_(0.), eframe_(0), ekf_conv_(false), ib_charge_(0.), ib_past_(0.),
-    q_ekf_(NOM_UNIT_CAP*3600.), soc_ekf_(1.0), tcharge_(0.), tcharge_ekf_(0.), voc_dead_(NOMINAL_VB),
-    y_filt_(0.)
+    SdVb_(nullptr), EKF_converged(nullptr), ice_(nullptr),
+    amp_hrs_remaining_ekf_(0.), amp_hrs_remaining_soc_(0.), eframe_(0), ekf_conv_(false), 
+    ib_charge_(0.), ib_past_(0.), q_ekf_(NOM_UNIT_CAP*3600.), soc_ekf_(1.0), tcharge_(0.), 
+    tcharge_ekf_(0.), vb_model_rev_(NOMINAL_VB), voc_dead_(NOMINAL_VB), voc_stat_f_(NOMINAL_VB), y_filt_(0.)
 {
     voc_dead_ = calc_vsat() - HDB_VB;
     // EKF
@@ -582,8 +585,12 @@ boolean BatteryMonitor::solve_ekf(const boolean reset, const boolean reset_temp,
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Battery model class for reference use mainly in regression testing
 BatterySim::BatterySim(const float dx_voc, const float dy_voc, const float dz_voc) :
-    Battery(sp.delta_q_model_ptr(), VS, dx_voc, dy_voc, dz_voc), duty_(0UL), ib_fut_(0.),
-    ib_in_(0.), model_cutback_(true), q_(NOM_UNIT_CAP*3600.), sample_time_(0UL), sample_time_z_(0UL), sat_ib_max_(0.)
+    Battery(sp.delta_q_model_ptr(), VS, dx_voc, dy_voc, dz_voc), 
+    Sin_inj_(nullptr), Sq_inj_(nullptr), Tri_inj_(nullptr), Cos_inj_(nullptr),
+    duty_(0UL), d_delta_q_s_(0.), ib_charge_(0.), ib_fut_(0.), ib_in_(0.), ib_sat_(0.5),
+    model_cutback_(true), model_saturated_(false), q_(NOM_UNIT_CAP*3600.), 
+    sample_time_(0UL), sample_time_z_(0UL), sat_cutback_gain_(1000.), sat_ib_max_(0.), 
+    sat_ib_null_(0.), hys_(nullptr)
 {
     // ChargeTransfer dynamic model for EKF
     // Resistance values add up to same resistance loss as matched to installed battery

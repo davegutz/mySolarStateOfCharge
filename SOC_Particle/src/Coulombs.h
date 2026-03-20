@@ -43,14 +43,12 @@ public:
   Coulombs(double *sp_delta_q, const float q_cap_rated,
     const double s_coul_eff, const float dx_voc, const float dy_voc, const float dz_voc);
   ~Coulombs();
-  // operators
-  // functions
   void apply_cap_scale(const float scale);
   void apply_delta_q(const double delta_q);
-  void apply_resetting(const boolean resetting){ resetting_ = resetting; };
-  void apply_soc(const float soc, const double tb_f);
   void apply_delta_q_t(const boolean reset);
   void apply_delta_q_t(const double delta_q, const double tb_f);
+  void apply_resetting(const boolean resetting){ resetting_ = resetting; };
+  void apply_soc(const float soc, const double tb_f);
   void assign_all_mod() { chem_.assign_all_chm(); };
   double calculate_capacity(const double tb_f);
   Chemistry *chem() { return &chem_; };
@@ -59,8 +57,8 @@ public:
   void coul_eff(const double coul_eff) { coul_eff_ = coul_eff; };
   virtual float count_coulombs(Sensors *Sen, const boolean reset_temp, const float charge_curr, const boolean sat,
   const boolean saturated);
-  double delta_q() { return(*sp_delta_q_); };
   double d_delta_q() { return(d_delta_q_); };
+  double delta_q() { return(*sp_delta_q_); };
   double delta_q_abs() { return nice_zero(delta_q_abs_, 1e-6); }
   double delta_q_inf() { return(delta_q_inf_); };
   double delta_q_neg() { return nice_zero(delta_q_neg_, 1e-6); }
@@ -75,11 +73,11 @@ public:
   float q_cap_rated_scaled(){ return (q_cap_rated_scaled_); };
   float q_capacity(){ return (q_capacity_); };
   float q_inf(){ return (q_inf_); };
+  boolean sat() { return(sat_); };
+  boolean saturated() { return(saturated_); };
   float soc() { return(soc_); };
   float soc_inf() { return(soc_inf_); };
   float soc_min() { return(soc_min_); };
-  boolean sat() { return(sat_); };
-  boolean saturated() { return(saturated_); };
   double time_neg() { return(time_neg_); };
   double time_pos() { return(time_pos_); };
   virtual float vsat(void) = 0;

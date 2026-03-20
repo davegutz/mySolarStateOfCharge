@@ -96,44 +96,42 @@ public:
   Battery(double *sp_delta_q, const float d_voc_soc, const float dx_voc, const float dy_voc,
                 const float dz_voc);
   ~Battery();
-  // operators
-  // functions
-  boolean bms_off() { return bms_off_; };
   virtual float calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc);
   float calc_soc_voc_slope(float soc, double tb_f);
   float calc_vsat(void);
   virtual float calculate(const double tb_f, const float soc_frac, float curr_in, const double dt, const boolean dc_dc_on);
-  float chargeTransfer_rstate() { return ChargeTransfer_->rstate(); };
-  float chargeTransfer_lstate() { return ChargeTransfer_->lstate(); };
   float chargeTransfer_a() { return ChargeTransfer_->a(); };
   float chargeTransfer_b() { return ChargeTransfer_->b(); };
   float chargeTransfer_c() { return ChargeTransfer_->c(); };
+  float chargeTransfer_lstate() { return ChargeTransfer_->lstate(); };
+  float chargeTransfer_rstate() { return ChargeTransfer_->rstate(); };
   float chargeTransfer_T() { return ChargeTransfer_->T(); };
   float chargeTransfer_tau() { return ChargeTransfer_->tau(); };
+  boolean bms_off() { return bms_off_; };
   float C_rate() { return ib_ / NOM_UNIT_CAP; }
   String decode(const uint8_t mod);
   float dqdt() { return chem_.dqdt; };
-  float dt() { return dt_; };  // s
+  float dt() { return dt_; };
   float dv_dsoc() { return dv_dsoc_; };
   float dv_dyn() { return dv_dyn_; };
   float dv_hys() { return dv_hys_; };
-  float ib() { return ib_; };            // Battery terminal current, A
-  float ibs() { return ibs_; };          // Hysteresis input current, A
-  float ib_dyn() { return ib_dyn_; };    // Battery terminal current lagged by charge transfer, A
-  float ib_dyn_r() { return ChargeTransfer_->reset(); };
-  float ib_dyn_T() { return ChargeTransfer_->T(); };
+  float ib() { return ib_; };
+  float ib_dyn() { return ib_dyn_; };
   float ib_dyn_lstate() { return ChargeTransfer_->lstate(); };
+  float ib_dyn_r() { return ChargeTransfer_->reset(); };
   float ib_dyn_rstate() { return ChargeTransfer_->rstate(); };
+  float ib_dyn_T() { return ChargeTransfer_->T(); };
   boolean initializing() { return initializing_; };
-  float ioc() { return ioc_; };          // Hysteresis output current, A
+  float ibs() { return ibs_; };
+  float ioc() { return ioc_; };
   virtual void pretty_print();
   void print_signal(const boolean print) { print_now_ = print; };
-  double tb_f() { return tb_f_; };            // Battery temp, C
-  float vb() { return vb_; };            // Battery terminal voltage, V
+  double tb_f() { return tb_f_; };
+  float vb() { return vb_; };
   float voc() { return voc_; };
   float voc_soc() { return voc_soc_; };
-  float voc_stat() { return voc_stat_; };
   float voc_soc_tab(const float soc, const double tb_f);
+  float voc_stat() { return voc_stat_; };
   boolean voltage_low() { return voltage_low_; };
   float vsat() { return vsat_; };
 protected:
@@ -174,8 +172,6 @@ class BatteryMonitor: public Battery, public EKF_1x1
 public:
   BatteryMonitor(const float dx_voc, const float dy_voc, const float dz_voc);
   ~BatteryMonitor();
-  // operators
-  // functions
   float amp_hrs_remaining_ekf() { return amp_hrs_remaining_ekf_; };
   float amp_hrs_remaining_soc() { return amp_hrs_remaining_soc_; };
   float calc_charge_time(const double q, const float q_capacity, const float charge_curr, const float soc);
@@ -183,6 +179,8 @@ public:
   float calculate(Sensors *Sen, const boolean reset,  const boolean reset_ekf);
   boolean converged_ekf() { return ekf_conv_; };
   double delta_q_ekf() { return delta_q_ekf_; };
+  double delta_q_ekf_;         // Charge deficit represented by charge calculated by ekf, C
+  float dv_dyn() { return dv_dyn_; };
   float hx() { return hx_; };
   float ib_charge() { return ib_charge_; };
   void init_battery_mon(const boolean reset, Sensors *Sen);
@@ -196,20 +194,18 @@ public:
   float soc_ekf() { return soc_ekf_; };
   boolean solve_ekf(const boolean reset, const boolean reset_temp, Sensors *Sen);
   float tcharge() { return tcharge_; };
-  float dv_dyn() { return dv_dyn_; };
   float vb_model_rev() { return vb_model_rev_; };
   float voc_dead() { return voc_dead_; };
   float voc_stat_f() { return voc_stat_f_; };
-  double y() { return y_; };
-  double y_filt() { return y_filt_; };
-  double delta_q_ekf_;         // Charge deficit represented by charge calculated by ekf, C
-  float vocStatFilt_rstate() { return VocStatFilt->rstate(); };
-  float vocStatFilt_lstate() { return VocStatFilt->lstate(); };
   float vocStatFilt_a() { return VocStatFilt->a(); };
   float vocStatFilt_b() { return VocStatFilt->b(); };
   float vocStatFilt_c() { return VocStatFilt->c(); };
+  float vocStatFilt_lstate() { return VocStatFilt->lstate(); };
+  float vocStatFilt_rstate() { return VocStatFilt->rstate(); };
   float vocStatFilt_T() { return VocStatFilt->T(); };
   float vocStatFilt_tau() { return VocStatFilt->tau(); };
+  double y() { return y_; };
+  double y_filt() { return y_filt_; };
 protected:
   LagTustin *Yfilt = new LagTustin(2., WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
   SlidingDeadband *SdVb_;  // Sliding deadband filter for Vb
@@ -241,28 +237,26 @@ class BatterySim: public Battery
 public:
   BatterySim(const float dx_voc, const float dy_voc, const float dz_voc);
   ~BatterySim();
-  // operators
-  // functions
-  float calculate(Sensors *Sen, const boolean dc_dc_on, const boolean reset);
   float calc_inj(const unsigned long long now, const uint8_t type, const float amp, const double freq);
   virtual float calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc);
+  float calculate(Sensors *Sen, const boolean dc_dc_on, const boolean reset);
   float count_coulombs(Sensors *Sen, const boolean reset, BatteryMonitor *Mon, const boolean initializing_all);
   boolean cutback() { return model_cutback_; };
   double delta_q() { return *sp_delta_q_; };
   float d_delta_q_s() { return d_delta_q_s_; };
   unsigned long int dt_long(void) { return sample_time_ - sample_time_z_; };
-  void hys_pretty_print () { hys_->pretty_print(0., 0., 0.); };
   float hys_state() { return hys_->dv_hys(); };
   void hys_state(const float st) { hys_->dv_hys(st); };
-  void init_hys(const float hys) { hys_->init(hys); };
+  void hys_pretty_print () { hys_->pretty_print(0., 0., 0.); };
   float ib_charge() { return ib_charge_; };
   float ib_fut() { return ib_fut_; };
   float ib_in() { return ib_in_; };
   float ib_s() { return ib_; };
   void init_battery_sim(const boolean reset, Sensors *Sen);
+  void init_hys(const float hys) { hys_->init(hys); };
   void pretty_print(void);
-  unsigned long int sample_time(void) { return sample_time_; };
   boolean saturated() { return model_saturated_; };
+  unsigned long int sample_time(void) { return sample_time_; };
   float voc() { return voc_; };
   float voc_stat() { return voc_stat_; };
 protected:

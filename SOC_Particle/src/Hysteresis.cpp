@@ -27,9 +27,9 @@ extern SavedPars sp;    // Various parameters to be static at system level and s
 
 
 Hysteresis::Hysteresis()
-: disabled_(false), res_(0), soc_(0), ib_(0), ibs_(0), ioc_(0), dv_hys_(0), dv_dot_(0){};
+: disabled_(false), res_(0), slr_(1.), soc_(0), ib_(0), ibs_(0), ioc_(0), dv_hys_(0), dv_dot_(0){};
 Hysteresis::Hysteresis(Chemistry *chem)
-: disabled_(false), res_(0), soc_(0), ib_(0), ibs_(0), ioc_(0), dv_hys_(0), dv_dot_(0), chem_(chem){}
+: disabled_(false), res_(0), slr_(1.), soc_(0), ib_(0), ibs_(0), ioc_(0), dv_hys_(0), dv_dot_(0), chem_(chem){}
 
 // Calculate
 float Hysteresis::calculate(const float ib, const float soc, const float hys_scale)

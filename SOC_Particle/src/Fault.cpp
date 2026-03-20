@@ -50,8 +50,10 @@ String bitMapPrint(char *buf, const int16_t fw, const uint8_t num)
 // Class Looparound
 Looparound::Looparound(BatteryMonitor *Mon, Sensors *Sen, const float wrap_hi_amp, const float wrap_lo_amp, const double wrap_trim_gain,
     const float imax, const float imin, const float err_max):
-  chem_(Mon->chem()), e_wrap_(0.), e_wrap_filt_(0.), e_wrap_rate_(0.), e_wrap_trim_(0.), e_wrap_trimmed_(0.), hi_fail_(false), hi_fault_(false), ib_(0.),
-  ib_past_(0), imax_(imax), imin_(imin), lo_fail_(false), lo_fault_(false), Mon_(Mon), reset_(false), Sen_(Sen), voc_(0.), wrap_hi_amp_(wrap_hi_amp), wrap_lo_amp_(wrap_lo_amp),
+  chem_(Mon->chem()), e_wrap_(0.), e_wrap_filt_(0.), e_wrap_rate_(0.), e_wrap_trim_(0.), e_wrap_trimmed_(0.), 
+  ewhi_thr_(0.), ewhi_thr_base_(0.), ewlo_thr_(0.), ewlo_thr_base_(0.), hi_fail_(false), hi_fault_(false), 
+  ib_(0.), ib_dyn_(0.), ib_past_(0.), imax_(imax), imin_(imin), lo_fail_(false), lo_fault_(false), Mon_(Mon), 
+  reset_(false), Sen_(Sen), vb_(0.), voc_(0.), voc_soc_(0.), wrap_hi_amp_(wrap_hi_amp), wrap_lo_amp_(wrap_lo_amp),
   wrap_trim_gain_(wrap_trim_gain)
 {
   ChargeTransfer_ = new LagExp(EKF_NOM_DT, chem_->tau_ct, -NOM_UNIT_CAP, NOM_UNIT_CAP);     // actual update time provided run time

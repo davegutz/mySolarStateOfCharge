@@ -151,7 +151,6 @@ public:
   float e_wrap() { return e_wrap_; };
   float e_wrap_filt() { return e_wrap_filt_; };
   float e_wrap_rate() { return e_wrap_rate_; };
-  boolean reset() { return reset_; };
   float e_wrap_trim() { return e_wrap_trim_; };
   float e_wrap_trimmed() { return e_wrap_trimmed_; };
   float ewhi_thr() { return ewhi_thr_; };
@@ -169,13 +168,14 @@ public:
   float ib_dyn_tau() { return ChargeTransfer_->tau(); };
   float ib_wrp_a() { return WrapErrFilt_->a(); };
   float ib_wrp_b() { return WrapErrFilt_->b(); };
-  float ib_wrp_state() { return WrapErrFilt_->state(); };
   float ib_wrp_rate() { return WrapErrFilt_->rate(); };
+  float ib_wrp_state() { return WrapErrFilt_->state(); };
   float ib_wrp_T() { return WrapErrFilt_->T(); };
   float ib_wrp_tau() { return WrapErrFilt_->tau(); };
   uint8_t lo_fail() { return lo_fail_; };
   uint8_t lo_fault() { return lo_fault_; };
   String pretty_print(Sensors *Sen);
+  boolean reset() { return reset_; };
   float vb() { return vb_; };
   float voc() { return voc_; };
   float voc_soc() { return voc_soc_; };
@@ -224,38 +224,35 @@ public:
   Fault();
   Fault(const double T, uint8_t *sp_preserving, BatteryMonitor *Mon, Sensors *Sen);
   ~Fault();
+  boolean cc_diff_fa() { return failRead(CC_DIFF_FA); };
   float cc_diff() { return cc_diff_; };
   void cc_diff(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
-  boolean cc_diff_fa() { return failRead(CC_DIFF_FA); };
-  float cc_diff_thr_;     // Threshold Coulomb Counters difference faults, soc fraction
   float cc_diff_thr() { return cc_diff_thr_; };
+  float cc_diff_thr_;     // Threshold Coulomb Counters difference faults, soc fraction
+  boolean disable_amp_fault() { return disable_amp_fault_; };
   boolean dscn_fa() { return failRead(IB_DSCN_FA); };
   boolean dscn_flt() { return faultRead(IB_DSCN_FLT); };
-  boolean disable_amp_fault() { return disable_amp_fault_; };
   float dv_dyn_m() { return LoopIbAmp->dv_dyn(); };
   float dv_dyn_n() { return LoopIbNoa->dv_dyn(); };
   float e_wrap() { return e_wrap_; };
   float e_wrap_filt() { return e_wrap_filt_; };
   float e_wrap_m() { return LoopIbAmp->e_wrap(); };
-  boolean e_wrap_m_r() { return LoopIbAmp->reset(); };
   float e_wrap_m_filt() { return LoopIbAmp->e_wrap_filt(); };
+  boolean e_wrap_m_r() { return LoopIbAmp->reset(); };
   float e_wrap_m_trim() { return LoopIbAmp->e_wrap_trim(); };
   float e_wrap_n() { return LoopIbNoa->e_wrap(); };
   float e_wrap_n_filt() { return LoopIbNoa->e_wrap_filt(); };
   float e_wrap_rate() { return e_wrap_rate_; };
   float ewmin_slr() { return ewmin_slr_; };
   float ewsat_slr() { return ewsat_slr_; };
-  uint32_t fltw() { return fltw_; };
   uint32_t falw() { return falw_; };
-  TFDelay *IbLoLimitedLo;   // Persistence low amp limited low active status
-  TFDelay *IbLoLimitedHi;   // Persistence low amp limited high active status
-  boolean ib_noa_invalid() { return ib_noa_invalid_; };
+  uint32_t fltw() { return fltw_; };
   boolean ib_amp_bare() { return faultRead(IB_AMP_BARE);  };
   boolean ib_amp_fa() { return failRead(IB_AMP_FA); };
   boolean ib_amp_flt() { return faultRead(IB_AMP_FLT);  };
   boolean ib_amp_hi() { return ib_amp_hi_; };
-  boolean ib_amp_lo() { return ib_amp_lo_; };
   boolean ib_amp_invalid() { return ib_amp_invalid_; };
+  boolean ib_amp_lo() { return ib_amp_lo_; };
   ibSel ib_choice() { return ib_choice_; };
   ibSel ib_choice_past() { return ib_choice_last_; };
   uint16_t ib_decision() { return ib_decision_;  };
@@ -263,14 +260,14 @@ public:
   void ib_decision_hi_lo(Sensors *Sen);
   void ib_diff(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
   float ib_diff() { return ( ib_diff_ ); };
-  float ib_diff_f() { return ( ib_diff_f_ ); };
   boolean ib_diff_fa() { return ( failRead(IB_DIFF_HI_FA) || failRead(IB_DIFF_LO_FA) ); };
+  float ib_diff_f() { return ( ib_diff_f_ ); };
   boolean ib_diff_hi_fa() { return failRead(IB_DIFF_HI_FA); };
   boolean ib_diff_hi_flt() { return faultRead(IB_DIFF_HI_FLT); };
   boolean ib_diff_lo_fa() { return failRead(IB_DIFF_LO_FA); };
   boolean ib_diff_lo_flt() { return faultRead(IB_DIFF_LO_FLT); };
-  float ib_diff_thr_;     // Threshold current difference faults, A
   float ib_diff_thr() { return ib_diff_thr_; };
+  float ib_diff_thr_;     // Threshold current difference faults, A
   boolean ib_dscn_fa() { return failRead(IB_DSCN_FA); };
   boolean ib_dscn_flt() { return faultRead(IB_DSCN_FLT); };
   float ib_dyn_m() { return LoopIbAmp->ib_dyn(); };
@@ -282,35 +279,38 @@ public:
   boolean ib_noa_fa() { return failRead(IB_NOA_FA); };
   boolean ib_noa_flt() { return faultRead(IB_NOA_FLT); };
   boolean ib_noa_hi() { return ib_noa_hi_; };
+  boolean ib_noa_invalid() { return ib_noa_invalid_; };
   boolean ib_noa_lo() { return ib_noa_lo_; };
-  float ib_quiet_thr_;     // Threshold below which ib is quiet, A pk
-  float ib_quiet_thr() { return ib_quiet_thr_; };
-  void ib_range(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
-  int8_t ib_sel_stat() { return ib_sel_stat_; };
-  void ib_sel_stat(const int sel_stat) { ib_sel_stat_ = sel_stat; };
   void ib_quiet(const boolean reset, Sensors *Sen);
   float ib_quiet() { return ib_quiet_; };
-  boolean ib_really_quiet() { return ib_really_quiet_; };
+  float ib_quiet_thr() { return ib_quiet_thr_; };
+  float ib_quiet_thr_;     // Threshold below which ib is quiet, A pk
   float ib_rate() { return ib_rate_; };
+  void ib_range(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
+  boolean ib_really_quiet() { return ib_really_quiet_; };
+  int8_t ib_sel_stat() { return ib_sel_stat_; };
+  void ib_sel_stat(const int sel_stat) { ib_sel_stat_ = sel_stat; };
   void ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon);
-  int8_t latched_fail() { return latch_; };
-  void latched_fail(const boolean cmd) { latch_ = cmd; };
+  TFDelay *IbLoLimitedHi;   // Persistence low amp limited high active status
+  TFDelay *IbLoLimitedLo;   // Persistence low amp limited low active status
   int8_t latch_fake() { return latch_fake_; };
   void latch_fake(const boolean cmd) { latch_fake_ = cmd; };
+  int8_t latched_fail() { return latch_; };
+  void latched_fail(const boolean cmd) { latch_ = cmd; };
   Looparound *LoopIbAmp;    // Looparound for Ib amp
   Looparound *LoopIbNoa;    // Looparound for Ib noa
   boolean no_fails() { return !latch_; };
   boolean no_fails_fake() { return !latch_fake_; };
-  void preserving(const boolean cmd) {  sp.put_Preserving(cmd); }; // TODO:  Parameter class with = operator --> put. Then *sp_preserving = cmd
   boolean preserving() { return *sp_preserving_; };
+  void preserving(const boolean cmd) {  sp.put_Preserving(cmd); }; // TODO:  Parameter class with = operator --> put. Then *sp_preserving = cmd
   void pretty_print(Sensors *Sen, BatteryMonitor *Mon);
   boolean record() { if ( ap.fake_faults() ) return no_fails_fake(); else return no_fails(); };
   boolean red_loss() { return faultRead(RED_LOSS); };
-  void reset_all_faults(const boolean cmd) { reset_all_faults_ = cmd; };
   boolean reset_all_faults() { return reset_all_faults_; };
+  void reset_all_faults(const boolean cmd) { reset_all_faults_ = cmd; };
   boolean reset_all_faults_print() { return reset_all_faults_print_; };
-  void select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const boolean reset);
   void reset_all_faults_select();
+  void select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const boolean reset);
   void shunt_check(Sensors *Sen, BatteryMonitor *Mon, const boolean reset);  // Range check Ib signals
   void shunt_select_initial(const boolean reset);   // Choose between shunts for model
   void tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, const boolean reset);  // Range check Tb
@@ -320,36 +320,36 @@ public:
   int8_t tb_sel_status() { return tb_sel_stat_; };
   void tb_stale(const boolean reset, Sensors *Sen);
   void vb_check(Sensors *Sen, BatteryMonitor *Mon, const float _vb_min, const float _vb_max, const boolean reset);  // Range check Vb
-  void vc_check(Sensors *Sen, BatteryMonitor *Mon, const float _vc_min, const float _vc_max, const boolean reset);  // Range check Vc
   boolean vb_clean() { return ( !vb_fail() ); };
   boolean vb_fail() { return ( vb_fa_lt() || vb_sel_stat_==0 ); };
-  int8_t vb_sel_stat() { return vb_sel_stat_; };
   boolean vb_fa_lt() { return failRead(VB_FA_LT); };
   boolean vb_flt() { return faultRead(VB_FLT); };
+  int8_t vb_sel_stat() { return vb_sel_stat_; };
   int8_t vb_sel_stat_past() { return vb_sel_stat_last_; };
+  void vc_check(Sensors *Sen, BatteryMonitor *Mon, const float _vc_min, const float _vc_max, const boolean reset);  // Range check Vc
   boolean vc_fa() { return failRead(VC_FA); };
   boolean vc_flt() { return faultRead(VC_FLT); };
-  boolean wrap_m_and_n_fa() { return ( (failRead(WRAP_LO_M_FA) && failRead(WRAP_LO_N_FA)) ||
-                                       (failRead(WRAP_HI_M_FA) && failRead(WRAP_HI_N_FA))  ); };
+  void wrap_err_filt_state(const float in) { WrapErrFilt->state(in); }
   boolean wrap_hi_and_lo_fa() { return ( failRead(WRAP_HI_FA) && failRead(WRAP_LO_FA) ); };
-  boolean wrap_hi_or_lo_fa() { return ( failRead(WRAP_HI_FA) || failRead(WRAP_LO_FA) ); };
   boolean wrap_hi_fa() { return failRead(WRAP_HI_FA); };
   boolean wrap_hi_flt() { return faultRead(WRAP_HI_FLT); };
   boolean wrap_hi_m_fa() { return failRead(WRAP_HI_M_FA); };
   boolean wrap_hi_m_flt() { return faultRead(WRAP_HI_M_FLT); };
   boolean wrap_hi_n_fa() { return failRead(WRAP_HI_N_FA); };
   boolean wrap_hi_n_flt() { return faultRead(WRAP_HI_N_FLT); };
+  boolean wrap_hi_or_lo_fa() { return ( failRead(WRAP_HI_FA) || failRead(WRAP_LO_FA) ); };
   boolean wrap_lo_fa() { return failRead(WRAP_LO_FA); };
   boolean wrap_lo_flt() { return faultRead(WRAP_LO_FLT);  };
   boolean wrap_lo_m_fa() { return failRead(WRAP_LO_M_FA); };
   boolean wrap_lo_m_flt() { return faultRead(WRAP_LO_M_FLT); };
   boolean wrap_lo_n_fa() { return failRead(WRAP_LO_N_FA); };
   boolean wrap_lo_n_flt() { return faultRead(WRAP_LO_N_FLT); };
+  boolean wrap_m_and_n_fa() { return ( (failRead(WRAP_LO_M_FA) && failRead(WRAP_LO_N_FA)) ||
+                                       (failRead(WRAP_HI_M_FA) && failRead(WRAP_HI_N_FA))  ); };
   boolean wrap_m_fa() { return failRead(WRAP_LO_M_FA) || failRead(WRAP_HI_M_FA); };
   boolean wrap_n_fa() { return failRead(WRAP_LO_N_FA) || failRead(WRAP_HI_N_FA); };
   void wrap_scalars(BatteryMonitor *Mon);
   boolean wrap_vb_fa() { return failRead(WRAP_VB_FA); };
-  void wrap_err_filt_state(const float in) { WrapErrFilt->state(in); }
 protected:
   TFDelay *CcdiffPer;       // Persistence cc_diff ekf fail amp
   TFDelay *IbAmpHardFail;   // Persistence ib hard fail amp

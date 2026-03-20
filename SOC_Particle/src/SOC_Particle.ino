@@ -100,8 +100,8 @@ CommandPars cp = CommandPars();       // Various control parameters commanding a
 PublishPars pp = PublishPars();       // Common parameters for publishing.  Future-proof cloud monitoring
 BleCharacteristic rxCharacteristic("rx", BleCharacteristicProperty::WRITE_WO_RSP, rxUuid, serviceUuid, onBLE_DataReceived, NULL);
 BleCharacteristic txCharacteristic("tx", BleCharacteristicProperty::NOTIFY, txUuid, serviceUuid);
-unsigned long long millis_flip = System.millis(); // Timekeeping
-unsigned long long last_sync = System.millis();   // Timekeeping
+unsigned long long millis_flip = millis(); // Timekeeping
+unsigned long long last_sync = millis();   // Timekeeping
 
 int num_timeouts = 0;           // Number of Particle.connect() needed to unfreeze
 String hm_string = "00:00";     // time, hh:mm
@@ -204,13 +204,13 @@ void setup()
   }
   else sendTxBuf("clean\n", true, true);
 
-  // Determine System.millis() at turn of Time.now   Used to improve accuracy of timing.
+  // Determine millis() at turn of Time.now   Used to improve accuracy of timing.
   long time_begin = Time.now();
   uint16_t count = 0;
   while ( Time.now()==time_begin && count++<1000 )
   {
     delay(1);
-    millis_flip = System.millis()%1000;
+    millis_flip = millis()%1000;
   }
 
   // Enable and print stored history
@@ -241,8 +241,8 @@ void setup()
 void loop()
 {
   // Synchronization
-  static unsigned long long now = (unsigned long long) System.millis();
-  now = (unsigned long long) System.millis();
+  static unsigned long long now = (unsigned long long) millis();
+  now = (unsigned long long) millis();
   boolean chitchat = false;
   static Sync *Talk = new Sync(TALK_DELAY);
   boolean read = false;
@@ -261,8 +261,8 @@ void loop()
   static boolean reset_kf = true;
   static boolean reset_temp = true;
   static boolean reset_publish = true;
-  static unsigned long long start = System.millis();
-  static unsigned long long start_reset = System.millis();
+  static unsigned long long start = millis();
+  static unsigned long long start_reset = millis();
 
    // Monitor to count Coulombs and run EKF
   static BatteryMonitor *Mon = new BatteryMonitor(0., 0., sp.Dw());
@@ -465,7 +465,7 @@ void loop()
   if ( cp.soft_reset || cp.soft_reset_sim )
   {
     reset = reset_temp = reset_kf = reset_publish = true;
-    start_reset = System.millis();
+    start_reset = millis();
     if ( cp.soft_reset_sim ) cp.cmd_soft_sim_hold();
   }
   if ( cp.ekf_reset ) cp.ekf_reset_print = reset_ekf = true;

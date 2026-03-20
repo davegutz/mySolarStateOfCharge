@@ -59,7 +59,7 @@ float TempSensor::sample(Sensors *Sen)
   static double Tb_hdwe = 0.;
 
   Tb_volt_ = float(analogRead(VTb_pin_))*VTB_CONV_GAIN;
-  sample_time_ = System.millis();
+  sample_time_ = millis();
 
   float res = Tb_volt_ * float(HDWE_RS_2WIRE) / (V3V3 - Tb_volt_);
   #ifdef USE_SH_2WIRE
@@ -145,7 +145,7 @@ void Shunt::convert(const boolean disconnect, const boolean reset, Sensors *Sen)
         vshunt_int_ = 0;
       #endif
       sample_time_z_ = sample_time_;
-      sample_time_ = System.millis();
+      sample_time_ = millis();
     }
     else
     {
@@ -231,7 +231,7 @@ void Shunt::sample_Vc()
 void Shunt::sample_Vo()
 {
   sample_time_z_ = sample_time_;
-  sample_time_ = System.millis();
+  sample_time_ = millis();
   Vo_raw_ = analogRead(vo_pin_);
   Vo_ =  float(Vo_raw_)*VO_CONV_GAIN;
 }
@@ -239,9 +239,19 @@ void Shunt::sample_Vo()
 
 // Class Sensors
 Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *ReadTemp, Sync *Talk, Sync *Summarize,
-  unsigned long long time_now, unsigned long long millis, BatteryMonitor *Mon): Tb_(NOMINAL_TB), Tb_f_(NOMINAL_TB), Tb_hdwe_(NOMINAL_TB),
-  Tb_hdwe_filt_(NOMINAL_TB), Tb_model_(NOMINAL_TB), Tb_model_filt_(NOMINAL_TB),  inst_millis_(millis), inst_time_(time_now),
-  reset_temp_(false),  sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_vb_(0UL), sample_time_vb_hdwe_(0UL)
+  unsigned long long time_now, unsigned long long millis, BatteryMonitor *Mon):
+  AmpFilt(nullptr), dt_ib_(0ULL), dt_ib_hdwe_(0ULL), IbAmpRMS(nullptr), IbNoaRMS(nullptr),
+  inst_millis_(millis), inst_time_(time_now), NoaFilt(nullptr), Prbn_Tb_(nullptr), Prbn_Vb_(nullptr), Prbn_Ib_amp_(nullptr), Prbn_Ib_noa_(nullptr),
+  reset_temp_(false), sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_tb_(0UL), sample_time_vb_(0UL), sample_time_vb_hdwe_(0UL),
+  SelFiltCal(nullptr), VbFilt(nullptr), VbRMS(nullptr), VcRMS(nullptr), Vb_raw_(0), Vb_(NOMINAL_VB), Vb_f_(NOMINAL_VB), Vb_hdwe_(NOMINAL_VB),
+  Vb_hdwe_f_(NOMINAL_VB), Vb_model_(NOMINAL_VB), Vb_volt_(NOMINAL_VB), Vc_(0.), Vc_hdwe_(0.),
+  Tb_(NOMINAL_TB), Tb_f_(NOMINAL_TB), Tb_f_rate_(0.), Tb_hdwe_(NOMINAL_TB), Tb_hdwe_filt_(NOMINAL_TB), Tb_hdwe_filt_rate_(0.),
+  Tb_model_(NOMINAL_TB), Tb_model_filt_(NOMINAL_TB), Tb_model_filt_rate_(0.),
+  Ib_(0.), Ib_f_(0.), Ib_amp_(0.), Ib_amp_hdwe_(0.), Ib_amp_hdwe_f_(0.), Ib_amp_hdwe_kf_(0.), Ib_amp_model_(0.), Ib_amp_rms_(0.),
+  Ib_hdwe_f_(0.), Ib_hdwe_kf_(0.), Ib_hdwe_f_cal_(0.), Ib_noa_(0.), Ib_noa_hdwe_(0.), Ib_noa_hdwe_f_(0.), Ib_noa_hdwe_kf_(0.), Ib_noa_rms_(0.),
+  Ib_noa_model_(0.), Ib_hdwe_(0.), Ib_hdwe_model_(0.), Ib_model_(0.), Ib_model_in_(0.),
+  Vb_rms_(0.), Vc_rms_(0.), Wb_(0.), now_(0ULL), now_temp_(0ULL), T_(0.), reset_(false), T_filt_(0.), T_temp_(0.),
+  elapsed_inj_(0ULL), start_inj_(0ULL), stop_inj_(0ULL), end_inj_(0ULL), control_time_(0.), display_(true), bms_off_(false), sat_(false), saturated_(false)
 {
   T_ = T;
   T_filt_ = T;
@@ -712,7 +722,7 @@ void Sensors::vb_load(const uint16_t vb_pin, const boolean reset)
     Vb_raw_ = 0;
     Vb_hdwe_ = 0.;
   }
-  sample_time_vb_hdwe_ = System.millis();
+  sample_time_vb_hdwe_ = millis();
 }
 
 // Print analog voltage
