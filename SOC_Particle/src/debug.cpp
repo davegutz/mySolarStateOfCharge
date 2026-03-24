@@ -135,8 +135,21 @@ soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
   // time_long_2_str((time_t)sp.Time_now(), pr.buff);
   // txBuf = String::format(" time %ld hms:  %s\n", sp.Time_now(), pr.buff);
   // sendTxBuf(txBuf, true, true);
-   if ( Sen->Flt->falw()>0UL || Sen->Flt->fltw()>0UL )  sendTxBuf("There are faults\n", true, true);
+  if ( Sen->Flt->fltw()>0UL || Sen->Flt->falw()>0UL )
+  {
+    if ( Sen->Flt->falw()>0UL )
+      sendTxBuf("THERE ARE FAILURES:  ", true, true);
+    else if ( Sen->Flt->fltw()>0UL )
+      sendTxBuf("there are faults:  ", true, true);
+    txBuf = String::format("fltw %lu falw %lu\n", Sen->Flt->fltw(), Sen->Flt->falw());
+    sendTxBuf(txBuf, true, true);
   }
+  else
+  {
+    txBuf = String::format("no faults:  fltw %lu falw %lu\n", Sen->Flt->fltw(), Sen->Flt->falw());
+    sendTxBuf(txBuf, true, true);
+  }
+}
 
 // Quick print critical selection parameters
 void debug_qf(BatteryMonitor *Mon, Sensors *Sen)
