@@ -45,9 +45,9 @@ public:
   ~Coulombs();
   void apply_cap_scale(const float scale);
   void apply_delta_q(const double delta_q);
-  void apply_delta_q_t(const boolean reset);
+  void apply_delta_q_t(const bool reset);
   void apply_delta_q_t(const double delta_q, const double tb_f);
-  void apply_resetting(const boolean resetting){ resetting_ = resetting; };
+  void apply_resetting(const bool resetting){ resetting_ = resetting; };
   void apply_soc(const float soc, const double tb_f);
   void assign_all_mod() { chem_.assign_all_chm(); };
   double calculate_capacity(const double tb_f);
@@ -55,8 +55,8 @@ public:
   void chem_pretty_print () { chem_.pretty_print(); };
   double coul_eff() { return ( coul_eff_ ); };
   void coul_eff(const double coul_eff) { coul_eff_ = coul_eff; };
-  virtual float count_coulombs(Sensors *Sen, const boolean reset_temp, const float charge_curr, const boolean sat,
-  const boolean saturated);
+  virtual float count_coulombs(Sensors *Sen, const bool reset_temp, const float charge_curr, const bool sat,
+  const bool saturated);
   double d_delta_q() { return(d_delta_q_); };
   double delta_q() { return(*sp_delta_q_); };
   double delta_q_abs() { return nice_zero(delta_q_abs_, 1e-6); }
@@ -73,8 +73,8 @@ public:
   float q_cap_rated_scaled(){ return (q_cap_rated_scaled_); };
   float q_capacity(){ return (q_capacity_); };
   float q_inf(){ return (q_inf_); };
-  boolean sat() { return(sat_); };
-  boolean saturated() { return(saturated_); };
+  bool sat() { return(sat_); };
+  bool saturated() { return(saturated_); };
   float soc() { return(soc_); };
   float soc_inf() { return(soc_inf_); };
   float soc_min() { return(soc_min_); };
@@ -82,7 +82,7 @@ public:
   double time_pos() { return(time_pos_); };
   virtual float vsat(void) = 0;
 protected:
-  boolean resetting_ = false;  // Sticky flag to coordinate user testing of coulomb counters, T=performing an external reset of counter
+  bool resetting_ = false;  // Sticky flag to coordinate user testing of coulomb counters, T=performing an external reset of counter
   double coul_eff_;   // Coulombic efficiency - the fraction of charging input that gets turned into usable Coulombs
   double d_delta_q_;  // Change in charge for update, C
   double delta_q_abs_;// Total charge book-kept since reset, not reset on saturation, C
@@ -96,8 +96,8 @@ protected:
   double q_cap_rated_scaled_;// Applied rated capacity at t_rated_, after scaling, C
   float q_inf_;       // Same as q_ but not reset on saturation, C
   float q_min_;       // Floor on charge available to use, C
-  boolean sat_;       // Indication that battery is potentially saturated, T=saturated
-  boolean saturated_; // Battery is confirmed saturated, T=saturated
+  bool sat_;       // Indication that battery is potentially saturated, T=saturated
+  bool saturated_; // Battery is confirmed saturated, T=saturated
   float soc_;         // Fraction of saturation charge (q_capacity_) available (0-1)
   float soc_ekf_min_; // Minimum SOC for EKF operation
   float soc_inf_;     // Fraction of saturation charge (q_capacity_) available (-inf - inf)

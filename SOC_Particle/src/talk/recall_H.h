@@ -25,6 +25,6 @@
 #define _RECALL_H
 #include "../Battery.h"
 
-boolean recall_H(const char letter_1, BatteryMonitor *Mon, Sensors *Sen);
+bool recall_H(const char letter_1, BatteryMonitor *Mon, Sensors *Sen);
 
 #endif

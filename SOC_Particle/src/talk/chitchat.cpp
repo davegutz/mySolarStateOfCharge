@@ -174,7 +174,7 @@ void chit(const String from, const urgency when)
 
 
 // Parse inputs to queues
-bool chitter(const boolean chitchat, BatteryMonitor *Mon, Sensors *Sen)
+bool chitter(const bool chitchat, BatteryMonitor *Mon, Sensors *Sen)
 {
   urgency request;
   String nibble;
@@ -377,7 +377,7 @@ void cmd_echo(urgency request)
 void describe(BatteryMonitor *Mon, Sensors *Sen)
 {
   int INT_in = -1;
-  boolean found = false;
+  bool found = false;
   uint16_t modeling_past = sp.modeling();
   char letter_0 = '\0';
   char letter_1 = '\0';

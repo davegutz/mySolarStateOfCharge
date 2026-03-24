@@ -243,24 +243,24 @@ void loop()
   // Synchronization
   static unsigned long long now = (unsigned long long) millis();
   now = (unsigned long long) millis();
-  boolean chitchat = false;
+  bool chitchat = false;
   static Sync *Talk = new Sync(TALK_DELAY);
-  boolean read = false;
+  bool read = false;
   static Sync *ReadSensors = new Sync(READ_DELAY);
-  boolean read_temp = false;
+  bool read_temp = false;
   static Sync *ReadTemp = new Sync(TEMP_DELAY);
-  boolean display_and_remember;
+  bool display_and_remember;
   static Sync *DisplayUserSync = new Sync(DISPLAY_USER_DELAY);
-  boolean summarizing;
-  static boolean boot_wait = true;  // waiting for a while before summarizing
+  bool summarizing;
+  static bool boot_wait = true;  // waiting for a while before summarizing
   static Sync *Summarize = new Sync(SUMMARY_DELAY);
   unsigned long long elapsed = 0;
   unsigned long long elapsed_reset = 0;
-  static boolean reset = true;
-  static boolean reset_ekf = true;
-  static boolean reset_kf = true;
-  static boolean reset_temp = true;
-  static boolean reset_publish = true;
+  static bool reset = true;
+  static bool reset_ekf = true;
+  static bool reset_kf = true;
+  static bool reset_temp = true;
+  static bool reset_publish = true;
   static unsigned long long start = millis();
   static unsigned long long start_reset = millis();
 
@@ -292,7 +292,7 @@ void loop()
   elapsed = ReadSensors->now() - start;
   elapsed_reset = ReadSensors->now() - start_reset;
   display_and_remember = DisplayUserSync->update(now, reset);
-  boolean boot_summ = boot_wait && ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay()) ) && !sp.modeling();
+  bool boot_summ = boot_wait && ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay()) ) && !sp.modeling();
   if ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay()) ) boot_wait = false;
   summarizing = Summarize->update(now, false) || boot_summ;
 
@@ -385,7 +385,7 @@ void loop()
     {
       // Log.info("ino:  assign_publist ReadSensors->now()=%lld", ReadSensors->now());
       assign_publist(&pp.pubList, ReadSensors->now(), unit, hm_string, Sen, num_timeouts, Mon);
-      static boolean wrote_last_time = false;
+      static bool wrote_last_time = false;
       if ( wrote_last_time )
         digitalWrite(myPins->status_led, LOW);
       else

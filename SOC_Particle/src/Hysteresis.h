@@ -46,9 +46,9 @@ public:
   float look_hys(const float dv, const float soc);
   float look_slr(const float dv, const float soc);
   void pretty_print(const float dx, const float dy, const float dz);
-  float update(const double dt, const boolean init_high, const boolean init_low, const float e_wrap, const float hys_scale, const boolean reset);
+  float update(const double dt, const bool init_high, const bool init_low, const float e_wrap, const float hys_scale, const bool reset);
 protected:
-  boolean disabled_;    // Hysteresis disabled by low scale input < 1e-5, T=disabled
+  bool disabled_;    // Hysteresis disabled by low scale input < 1e-5, T=disabled
   float res_;          // Variable resistance value, ohms
   float slr_;          // Variable scalar
   float soc_;          // State of charge input, dimensionless

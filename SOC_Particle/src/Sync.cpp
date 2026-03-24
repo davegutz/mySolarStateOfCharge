@@ -38,7 +38,7 @@ Sync::Sync(unsigned long long delay)
 }
 
 // Check and count 
-boolean Sync::update(boolean reset, unsigned long long now, boolean andCheck)
+bool Sync::update(bool reset, unsigned long long now, bool andCheck)
 {
   now_ = now;
   updateDiff_ = now_ - last_;
@@ -50,7 +50,7 @@ boolean Sync::update(boolean reset, unsigned long long now, boolean andCheck)
   }
   return( stat_ );
 }
-boolean Sync::update(unsigned long long now, boolean reset, boolean andCheck)
+bool Sync::update(unsigned long long now, bool reset, bool andCheck)
 {
   now_ = now;
   updateDiff_ = now_ - last_;
@@ -62,7 +62,7 @@ boolean Sync::update(unsigned long long now, boolean reset, boolean andCheck)
   }
   return( stat_ );
 }
-boolean Sync::update(unsigned long long now, boolean reset)
+bool Sync::update(unsigned long long now, bool reset)
 {
   now_ = now;
   updateDiff_ = now_ - last_;
@@ -74,7 +74,7 @@ boolean Sync::update(unsigned long long now, boolean reset)
   }
   return( stat_ );
 }
-boolean Sync::updateN(unsigned long long now, boolean reset, boolean orCheck)
+bool Sync::updateN(unsigned long long now, bool reset, bool orCheck)
 {
   now_ = now;
   updateDiff_ = now_ - last_;

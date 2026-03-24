@@ -35,9 +35,9 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 extern CommandPars cp;  // Various parameters shared at system level
 extern Flt_st mySum[NSUM];  // Summaries for saving charge history
 
-boolean recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
+bool recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
 {
-    boolean found = true;
+    bool found = true;
     switch ( letter_1 )
     {
         case ( 'b' ):  // Rb:  Reset battery states (also hys)

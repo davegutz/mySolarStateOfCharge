@@ -31,10 +31,10 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 extern CommandPars cp;  // Various parameters shared at system level
 extern Flt_st mySum[NSUM];  // Summaries for saving charge history
 
-boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sensors *Sen, uint16_t modeling_past)
+bool followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sensors *Sen, uint16_t modeling_past)
 {
-    boolean reset = false;
-    boolean found = true;
+    bool reset = false;
+    bool found = true;
     char buffer[32];
     switch ( letter_0 )
     {

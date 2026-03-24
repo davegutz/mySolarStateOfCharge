@@ -32,7 +32,7 @@ public:
   void e(const double e_in) { e_ = e_in; };
   void increment() { count_++; };
   void init(const double xmax, const double xmin, const double eInit);
-  double iterate(const boolean verbose, const uint16_t success_count, const boolean en_no_soln);
+  double iterate(const bool verbose, const uint16_t success_count, const bool en_no_soln);
   double x() { return x_; };
 protected:
     uint16_t count_;    // Iteration counter
@@ -42,7 +42,7 @@ protected:
     double dx_;          // Input change
     double e_;           // Error
     double ep_;          // Past error
-    boolean limited_;   // On limits
+    bool limited_;   // On limits
     double x_;           // Input
     double xmax_;        // Maximum input
     double xmin_;        // Minimum input

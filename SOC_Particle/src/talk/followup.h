@@ -24,4 +24,4 @@
 #pragma once
 #include "../Battery.h"
 
-boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sensors *Sen, uint16_t modeling_past);
+bool followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sensors *Sen, uint16_t modeling_past);

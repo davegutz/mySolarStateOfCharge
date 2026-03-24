@@ -12,8 +12,8 @@ struct Publish
   double Tb;
   float Ib;
   float Voc;
-  boolean sat;
-  boolean saturated;
+  bool sat;
+  bool saturated;
   float tcharge;
   float Amp_hrs_remaining_ekf;
   float Amp_hrs_remaining_soc;

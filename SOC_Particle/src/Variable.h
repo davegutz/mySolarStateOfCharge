@@ -28,7 +28,7 @@
 #include "PrinterPars.h"
 #include "ble.h"
 
-void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendBLE);
+void sendTxBuf(const String& txBuf, const bool sendSerial, const bool sendBLE);
 
 extern PrinterPars pr;  // Print buffer
 
@@ -48,7 +48,7 @@ public:
     Variable(){}
 
     Variable(const String &prefix, const String &code, SerialRAM *ram, const String &description, const String &units,
-        const boolean check_for_off_on_init=true)
+        const bool check_for_off_on_init=true)
     {
         prefix_ = prefix;
         code_ = code;
@@ -67,19 +67,19 @@ public:
     // void app(fptr ptr) { app_ = ptr; }
     String code() { return code_; }
     const char* description() { return description_.c_str(); }
-    boolean success() { return success_; }
+    bool success() { return success_; }
     const char* units() { return units_.c_str(); }
 
     // Placeholders
     virtual uint16_t assign_addr(uint16_t next){return next;}
     virtual void get(){};
-    virtual boolean is_corrupt(){return false;};
-    virtual boolean is_eeram(){return is_eeram_;};
-    virtual boolean is_off(){return false;};
-    virtual boolean off_nominal(){return false;};
+    virtual bool is_corrupt(){return false;};
+    virtual bool is_eeram(){return is_eeram_;};
+    virtual bool is_off(){return false;};
+    virtual bool off_nominal(){return false;};
     virtual void print(){};
-    virtual boolean print_adjust(const String &str){return false;};
-    boolean print_nominalize()
+    virtual bool print_adjust(const String &str){return false;};
+    bool print_nominalize()
     {
         set_nominal();
         sendTxBuf(" Nominalizing:  ", true, true);
@@ -93,10 +93,10 @@ protected:
     address16b addr_;
     String units_;
     String description_;
-    boolean is_eeram_;      // eeram
-    boolean check_for_off_on_init_;  // check for off-nominal on initialization
+    bool is_eeram_;      // eeram
+    bool check_for_off_on_init_;  // check for off-nominal on initialization
     String prefix_;         // either "* " saved or "  " not saved
-    boolean success_;       // result of print_adjust
+    bool success_;       // result of print_adjust
 };
 
 
@@ -105,8 +105,8 @@ class BooleanV: public Variable
 public:
     BooleanV(){}
 
-    BooleanV(const String &prefix, const String &code, SerialRAM *ram, const String &description, const String &units, const boolean min, const boolean max,
-    boolean *store, const boolean _default=false, const boolean check_for_off_on_init=true):
+    BooleanV(const String &prefix, const String &code, SerialRAM *ram, const String &description, const String &units, const bool min, const bool max,
+    bool *store, const bool _default=false, const bool check_for_off_on_init=true):
         Variable(prefix, code, ram, description, units, check_for_off_on_init)
     {
         min_ = min;
@@ -118,13 +118,13 @@ public:
 
     ~BooleanV(){}
 
-    uint16_t assign_addr(boolean next)
+    uint16_t assign_addr(bool next)
     {
         addr_.a16 = next;
-        return next + sizeof(boolean);
+        return next + sizeof(bool);
     }
 
-    boolean check_set_put(boolean val)
+    bool check_set_put(bool val)
     {
         if ( val>max_ || val<min_ )
         {
@@ -144,19 +144,19 @@ public:
         if ( is_eeram_ ) *val_ = rP_->read(addr_.a16);
     }
 
-    virtual boolean is_corrupt()
+    virtual bool is_corrupt()
     {
-        boolean corrupt = *val_ > max_ || *val_ < min_;
+        bool corrupt = *val_ > max_ || *val_ < min_;
         if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
         return corrupt;
     }
 
-    virtual boolean is_off()
+    virtual bool is_off()
     {
         return off_nominal() && check_for_off_on_init_;
     }
 
-    virtual boolean off_nominal()
+    virtual bool off_nominal()
     {
         return *val_ != default_;
     }
@@ -183,7 +183,7 @@ public:
         sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
-    virtual boolean print_adjust(const String &str)
+    virtual bool print_adjust(const String &str)
     {
         print();
         if ( str == "" ) success_ = print_nominalize();
@@ -192,7 +192,7 @@ public:
         return success_;
     }
 
-    boolean print_adj_print(const boolean input)
+    bool print_adj_print(const bool input)
     {
         print();
         success_ = check_set_put(input);
@@ -207,10 +207,10 @@ public:
     }
 
 protected:
-    boolean *val_;
-    boolean min_;
-    boolean max_;
-    boolean default_;
+    bool *val_;
+    bool min_;
+    bool max_;
+    bool default_;
 };
 
 
@@ -220,7 +220,7 @@ public:
     DoubleV(){}
 
     DoubleV(const String &prefix, const String &code, SerialRAM *ram, const String &description, const String &units, const double min, const double max, double *store,
-        const double _default=0, const boolean check_for_off_on_init=true):
+        const double _default=0, const bool check_for_off_on_init=true):
         Variable(prefix, code, ram, description, units, check_for_off_on_init)
     {
         min_ = min;
@@ -238,7 +238,7 @@ public:
         return next + sizeof(double);
     }
 
-    boolean check_set_put(double val)
+    bool check_set_put(double val)
     {
         if ( val>max_ || val<min_ )
         {
@@ -261,19 +261,19 @@ public:
         }
     }
 
-    virtual boolean is_corrupt()
+    virtual bool is_corrupt()
     {
-        boolean corrupt = *val_ > max_ || *val_ < min_;
+        bool corrupt = *val_ > max_ || *val_ < min_;
         if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
         return corrupt;
     }
 
-    virtual boolean is_off()
+    virtual bool is_off()
     {
         return off_nominal() && check_for_off_on_init_;
     }
 
-    virtual boolean off_nominal()
+    virtual bool off_nominal()
     {
         return abs(*val_-default_)>1e-4;
     }
@@ -300,7 +300,7 @@ public:
         sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
-    virtual boolean print_adjust(const String &str)
+    virtual bool print_adjust(const String &str)
     {
         print();
         if ( str == "" ) success_ = print_nominalize();
@@ -309,7 +309,7 @@ public:
         return success_;
     }
 
-    boolean print_adj_print(const double input)
+    bool print_adj_print(const double input)
     {
         print();
         success_ = check_set_put(input);
@@ -337,7 +337,7 @@ public:
     FloatV(){}
 
     FloatV(const String &prefix, const String &code, SerialRAM *ram, const String &description, const String &units, const float min, const float max,
-    float *store, const float _default=0, const boolean check_for_off_on_init=true):
+    float *store, const float _default=0, const bool check_for_off_on_init=true):
         Variable(prefix, code, ram, description, units, check_for_off_on_init)
     {
         min_ = min;
@@ -355,7 +355,7 @@ public:
         return next + sizeof(float);
     }
 
-    boolean check_set_put(float val)
+    bool check_set_put(float val)
     {
         if ( val>max_ || val<min_ )
         {
@@ -378,19 +378,19 @@ public:
         }
     }
 
-    virtual boolean is_corrupt()
+    virtual bool is_corrupt()
     {
-        boolean corrupt = *val_ > max_ || *val_ < min_;
+        bool corrupt = *val_ > max_ || *val_ < min_;
         if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
         return corrupt;
     }
 
-    virtual boolean is_off()
+    virtual bool is_off()
     {
         return off_nominal() && check_for_off_on_init_;
     }
 
-    virtual boolean off_nominal()
+    virtual bool off_nominal()
     {
         return abs(*val_-default_)>1e-4;
     }
@@ -417,7 +417,7 @@ public:
         sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
-    virtual boolean print_adjust(const String &str)
+    virtual bool print_adjust(const String &str)
     {
         print();
         if ( str == "" ) success_ = print_nominalize();
@@ -426,7 +426,7 @@ public:
         return success_;
     }
 
-    boolean print_adj_print(const float input)
+    bool print_adj_print(const float input)
     {
         print();
         success_ = check_set_put(input);
@@ -454,7 +454,7 @@ public:
     IntV(){}
 
     IntV(const String &prefix, const String &code, SerialRAM *ram, const String &description, const String &units, const int min, const int max, int *store,
-        const int _default=0, const boolean check_for_off_on_init=true):
+        const int _default=0, const bool check_for_off_on_init=true):
         Variable(prefix, code, ram, description, units, check_for_off_on_init)
     {
         min_ = min;
@@ -472,7 +472,7 @@ public:
         return next + sizeof(int);
     }
 
-    boolean check_set_put(int val)
+    bool check_set_put(int val)
     {
         if ( val>max_ || val<min_ )
         {
@@ -495,19 +495,19 @@ public:
         }
     }
 
-    virtual boolean is_corrupt()
+    virtual bool is_corrupt()
     {
-        boolean corrupt = *val_ > max_ || *val_ < min_;
+        bool corrupt = *val_ > max_ || *val_ < min_;
         if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
         return corrupt;
     }
 
-    virtual boolean is_off()
+    virtual bool is_off()
     {
         return off_nominal() && check_for_off_on_init_;
     }
 
-    virtual boolean off_nominal()
+    virtual bool off_nominal()
     {
         return *val_ != default_;
     }
@@ -533,7 +533,7 @@ public:
         sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
     
-    virtual boolean print_adjust(const String &str)
+    virtual bool print_adjust(const String &str)
     {
         print();
         if ( str == "" ) success_ = print_nominalize();
@@ -542,7 +542,7 @@ public:
         return success_;
     }
 
-    boolean print_adj_print(const int input)
+    bool print_adj_print(const int input)
     {
         print();
         success_ = check_set_put(input);
@@ -570,7 +570,7 @@ public:
     Int8tV(){}
 
     Int8tV(const String &prefix, const String &code, SerialRAM *ram, const String &description, const String &units, const int8_t min, const int8_t max,
-        int8_t *store, const int8_t _default=0, const boolean check_for_off_on_init=true):
+        int8_t *store, const int8_t _default=0, const bool check_for_off_on_init=true):
         Variable(prefix, code, ram, description, units, check_for_off_on_init)
     {
         min_ = min;
@@ -588,7 +588,7 @@ public:
         return next + sizeof(int8_t);
     }
 
-    boolean check_set_put(int8_t val)
+    bool check_set_put(int8_t val)
     {
         if ( val>max_ || val<min_ )
         {
@@ -611,19 +611,19 @@ public:
         }
     }
 
-    virtual boolean is_corrupt()
+    virtual bool is_corrupt()
     {
-        boolean corrupt = *val_ > max_ || *val_ < min_;
+        bool corrupt = *val_ > max_ || *val_ < min_;
         if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
         return corrupt;
     }
 
-    virtual boolean is_off()
+    virtual bool is_off()
     {
         return off_nominal() && check_for_off_on_init_;
     }
 
-    virtual boolean off_nominal()
+    virtual bool off_nominal()
     {
         return *val_ != default_;
     }
@@ -650,7 +650,7 @@ public:
         sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
     
-    virtual boolean print_adjust(const String &str)
+    virtual bool print_adjust(const String &str)
     {
         print();
         if ( str == "" ) success_ = print_nominalize();
@@ -659,7 +659,7 @@ public:
         return success_;
     }
 
-    boolean print_adj_print(const int8_t input)
+    bool print_adj_print(const int8_t input)
     {
         print();
         success_ = check_set_put(input);
@@ -687,7 +687,7 @@ public:
     Uint16tV(){}
 
     Uint16tV(const String &prefix, const String &code, SerialRAM *ram, const String &description, const String &units, const uint16_t min, const uint16_t max,
-    uint16_t *store, const uint16_t _default=0, const boolean check_for_off_on_init=true):
+    uint16_t *store, const uint16_t _default=0, const bool check_for_off_on_init=true):
         Variable(prefix, code, ram, description, units, check_for_off_on_init)
     {
         min_ = min;
@@ -705,7 +705,7 @@ public:
         return next + sizeof(uint16_t);
     }
 
-    boolean check_set_put(uint16_t val)
+    bool check_set_put(uint16_t val)
     {
         if ( val>max_ || val<min_ )
         {
@@ -725,14 +725,14 @@ public:
         if ( is_eeram_ ) *val_ = rP_->read(addr_.a16);
     }
 
-    virtual boolean is_corrupt()
+    virtual bool is_corrupt()
     {
-        boolean corrupt = *val_ > max_ || *val_ < min_;
+        bool corrupt = *val_ > max_ || *val_ < min_;
         if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
         return corrupt;
     }
 
-    virtual boolean is_off()
+    virtual bool is_off()
     {
         return off_nominal() && check_for_off_on_init_;
     }
@@ -740,7 +740,7 @@ public:
     void new_maximum(const uint16_t new_max) { max_ = new_max; }
     void new_default(const uint16_t new_def) { default_ = max(min(new_def, max_), min_); }
 
-    virtual boolean off_nominal()
+    virtual bool off_nominal()
     {
         return *val_ != default_;
     }
@@ -767,7 +767,7 @@ public:
         sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
-    virtual boolean print_adjust(const String &str)
+    virtual bool print_adjust(const String &str)
     {
         print();
         if ( str == "" ) success_ = print_nominalize();
@@ -776,7 +776,7 @@ public:
         return success_;
     }
 
-    boolean print_adj_print(const uint16_t input)
+    bool print_adj_print(const uint16_t input)
     {
         print();
         success_ = check_set_put(input);
@@ -803,7 +803,7 @@ public:
     Uint8tV(){}
 
     Uint8tV(const String &prefix, const String &code, SerialRAM *ram, const String &description, const String &units, const uint8_t min, const uint8_t max,
-    uint8_t *store, const uint8_t _default=0, const boolean check_for_off_on_init=true):
+    uint8_t *store, const uint8_t _default=0, const bool check_for_off_on_init=true):
         Variable(prefix, code, ram, description, units, check_for_off_on_init)
     {
         min_ = min;
@@ -821,7 +821,7 @@ public:
         return next + sizeof(uint8_t);
     }
 
-    boolean check_set_put(uint8_t val)
+    bool check_set_put(uint8_t val)
     {
         if ( val>max_ || val<min_ )
         {
@@ -841,19 +841,19 @@ public:
         if ( is_eeram_ ) *val_ = rP_->read(addr_.a16);
     }
 
-    virtual boolean is_corrupt()
+    virtual bool is_corrupt()
     {
-        boolean corrupt = *val_ > max_ || *val_ < min_;
+        bool corrupt = *val_ > max_ || *val_ < min_;
         if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
         return corrupt;
     }
 
-    virtual boolean is_off()
+    virtual bool is_off()
     {
         return off_nominal() && check_for_off_on_init_;
     }
 
-    virtual boolean off_nominal()
+    virtual bool off_nominal()
     {
         return *val_ != default_;
     }
@@ -880,7 +880,7 @@ public:
         sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
-    virtual boolean print_adjust(const String &str)
+    virtual bool print_adjust(const String &str)
     {
         print();
         if ( str == "" ) success_ = print_nominalize();
@@ -889,7 +889,7 @@ public:
         return success_;
     }
 
-    boolean print_adj_print(const uint8_t input)
+    bool print_adj_print(const uint8_t input)
     {
         print();
         success_ = check_set_put(input);
@@ -917,7 +917,7 @@ public:
     ULongV(){}
 
     ULongV(const String &prefix, const String &code, SerialRAM *ram, const String &description, const String &units, const unsigned long min, const unsigned long max,
-    unsigned long *store, const unsigned long _default=0, const boolean check_for_off_on_init=true):
+    unsigned long *store, const unsigned long _default=0, const bool check_for_off_on_init=true):
         Variable(prefix, code, ram, description, units, check_for_off_on_init)
     {
         min_ = min;
@@ -935,7 +935,7 @@ public:
         return next + sizeof(unsigned long);
     }
 
-    boolean check_set_put(unsigned long val)
+    bool check_set_put(unsigned long val)
     {
         if ( val>max_ || val<min_ )
         {
@@ -958,19 +958,19 @@ public:
         }
     }
 
-    virtual boolean is_corrupt()
+    virtual bool is_corrupt()
     {
-        boolean corrupt = *val_ > max_ || *val_ < min_;
+        bool corrupt = *val_ > max_ || *val_ < min_;
         if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
         return corrupt;
     }
 
-    virtual boolean is_off()
+    virtual bool is_off()
     {
         return off_nominal() && check_for_off_on_init_;
     }
 
-    virtual boolean off_nominal()
+    virtual bool off_nominal()
     {
         return *val_ != default_;
     }
@@ -997,7 +997,7 @@ public:
         sendTxBuf(String::format("%s\n", pr.buff), true, true);
     }
 
-    virtual boolean print_adjust(const String &str)
+    virtual bool print_adjust(const String &str)
     {
         print();
         if ( str == "" ) success_ = print_nominalize();
@@ -1006,7 +1006,7 @@ public:
         return success_;
     }
 
-    boolean print_adj_print(const unsigned long input)
+    bool print_adj_print(const unsigned long input)
     {
         print();
         success_ = check_set_put(input);

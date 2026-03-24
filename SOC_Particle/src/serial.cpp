@@ -87,7 +87,7 @@ String finish_request(const String in_str)
 }
 
 // Test for string completion character
-boolean is_finished(const char in_char)
+bool is_finished(const char in_char)
 {
     return  in_char == '\n' ||
             in_char == '\0' ||
@@ -141,9 +141,9 @@ void print_battery_header()
 void print_battery_serial()
  {  
   #ifdef HDWE_IB_HI_LO
-    boolean hdwe_ib_hi_lo = true;
+    bool hdwe_ib_hi_lo = true;
   #else
-    boolean hdwe_ib_hi_lo = false;
+    bool hdwe_ib_hi_lo = false;
   #endif
   String txBuf;
   txBuf = String::format("Battery_val,%d,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
@@ -178,7 +178,7 @@ void print_rapid_header(void)
   Serial.printf("soc_s, soc_ekf, soc, soc_min, d_delta_q, delta_q,");
   Serial.printf("\n");
 }
-void print_rapid_serial(const boolean reset, Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
+void print_rapid_serial(const bool reset, Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
   // if ( Sen->T() == 0.) return;
   double cTime = double(Sen->now())/1000.;
@@ -208,7 +208,7 @@ void print_rapid_serial(const boolean reset, Publish *pubList, Sensors *Sen, Bat
 
     // Log.info("    print_rapid_create_string cTime,%9.3f,", cTime);
 }
-void print_rapid_data(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, const boolean reset_temp)
+void print_rapid_data(const bool reset, Sensors *Sen, BatteryMonitor *Mon, const bool reset_temp)
 {
   static uint8_t last_read_debug = 0;     // Remember first time with new debug to print headers
   if ( ( sp.debug()==1 || sp.debug()==2 || sp.debug()==3 || sp.debug()==4 ) )
@@ -269,7 +269,7 @@ void print_shunt_header(Sensors *Sen)
 
   Serial.printf("\n");
 }
-void print_shunt_serial(const boolean reset, Sensors *Sen)
+void print_shunt_serial(const bool reset, Sensors *Sen)
 {
   if ( ( sp.debug()==2  ) && cp.publishS )
   {
@@ -339,7 +339,7 @@ void print_signal_sel_header(void)
   Serial.printf("  fltw, falw, dispw,");
   Serial.printf("\n");
 }
-void print_signal_sel_serial(const boolean reset, Sensors *Sen, BatteryMonitor *Mon, BatterySim *Sim)
+void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon, BatterySim *Sim)
 {
   if ( (sp.debug()==2 || sp.debug()==4 || sp.debug()==61 )  && cp.publishS )
   {
@@ -426,7 +426,7 @@ void print_sim_header(void)
   Serial.printf("bms_off_s, voltage_low_s,");
   Serial.printf("\n");
 }
-void print_sim_serial(const boolean initializing_all, const boolean reset_temp, Sensors *Sen, BatterySim *Sim)
+void print_sim_serial(const bool initializing_all, const bool reset_temp, Sensors *Sen, BatterySim *Sim)
 {
     if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)
     {
@@ -463,7 +463,7 @@ void print_temp_header(void)
 {
  Serial.printf("unit_t, c_time_t, Tt, Tb_hdwe, Tb_model, Tb, reset_temp_t,  Tb_hdwe_filt, Tb_model_filt,Tb_f,  Tb_hdwe_filt_rate, Tb_model_filt_rate, Tb_f_rate,\n");
 }
-void print_temp_serial(const boolean reset, Sensors *Sen)
+void print_temp_serial(const bool reset, Sensors *Sen)
 {
   if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  || sp.debug()==16 )
   {
@@ -477,7 +477,7 @@ void print_temp_serial(const boolean reset, Sensors *Sen)
 }
 
 // General purpose transmitter
-void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean sendBLE)
+void sendTxBuf(const String& txBuf, const bool sendSerial, const bool sendBLE)
 {
     // USB serial
     if ( sendSerial ) Serial.print(txBuf);
@@ -485,7 +485,7 @@ void sendTxBuf(const String& txBuf, const boolean sendSerial, const boolean send
     // BLE notify (chunked)
     if ( sendBLE ) bleSendChunked(txCharacteristic, reinterpret_cast<const uint8_t*>(txBuf.c_str()), txBuf.length());
 }
-void sendTxBuf(const char* txBuf, const boolean sendSerial, const boolean sendBLE)
+void sendTxBuf(const char* txBuf, const bool sendSerial, const bool sendBLE)
 {
   // Calculate the length of the char array
   size_t bufLength = strlen(txBuf);
@@ -514,7 +514,7 @@ void sendTxBuf(const char* txBuf, const boolean sendSerial, const boolean sendBL
 void serialEvent()
 {
   static String serial_str = "";
-  static boolean serial_ready = false;
+  static bool serial_ready = false;
 
   // Each pass try to complete input from avaiable
   while ( !serial_ready && Serial.available() )

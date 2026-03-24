@@ -62,14 +62,14 @@ public:
   ~TempSensor();
   // operators
   // functions
-  boolean tb_stale_flt() { return tb_stale_flt_; };
+  bool tb_stale_flt() { return tb_stale_flt_; };
   unsigned long long sample_time() { return sample_time_; };
   float sample(Sensors *Sen);
   float noise();
   float Tb_volt(){ return Tb_volt_; };
 protected:
   SlidingDeadband *SdTb;
-  boolean tb_stale_flt_;  // One-wire did not update last pass
+  bool tb_stale_flt_;  // One-wire did not update last pass
   uint16_t VTb_pin_;      // Using 2wire
   double Tb_volt_;              // Sensed battery temp voltage from ADC, V
   unsigned long long sample_time_;  // Sample time
@@ -82,14 +82,14 @@ class Shunt
 public:
   Shunt();
   Shunt(const String name, const uint8_t port, float *sp_ib_scale, float *sp_Ib_bias, const float v2a_s,
-    const uint8_t vc_pin, const uint8_t vo_pin, const uint8_t vh3v3_pin, const boolean using_opAmp, const boolean using_kf);
+    const uint8_t vc_pin, const uint8_t vo_pin, const uint8_t vh3v3_pin, const bool using_opAmp, const bool using_kf);
   ~Shunt();
   // operators
   // functions
-  boolean bare_shunt() { return ( bare_shunt_ ); };
-  void dscn_cmd(const boolean cmd) { dscn_cmd_ = cmd; };
+  bool bare_shunt() { return ( bare_shunt_ ); };
+  void dscn_cmd(const bool cmd) { dscn_cmd_ = cmd; };
   unsigned long long dt_ms() { return sample_time_ - sample_time_z_; }; // ms
-  void convert(const boolean disconnect, const boolean reset, Sensors *Sen);
+  void convert(const bool disconnect, const bool reset, Sensors *Sen);
   float get_v() { return KF_->get_v(); };
   float Ishunt_cal() { return Ishunt_cal_; };
   float ishunt_cal() { return Ishunt_cal_ / ap.nP(); };
@@ -100,9 +100,9 @@ public:
   void print_serial_header(const char suffix);
   void print_serial();
   void pretty_print();
-  void sample(const boolean reset_kf);
+  void sample(const bool reset_kf);
   void sample_combine();
-  void sample_filter_kf(const boolean reset_kf);
+  void sample_filter_kf(const bool reset_kf);
   void sample_Vc();
   void sample_Vo();
   float scale() { return ( *sp_ib_scale_ ); };
@@ -119,7 +119,7 @@ public:
 protected:
   String name_;         // For print statements, multiple instances
   uint8_t port_;        // Octal I2C port used by Acafruit_ADS1015
-  boolean bare_shunt_;  // If ADS to be ignored
+  bool bare_shunt_;  // If ADS to be ignored
   float v2a_s_;         // Selected shunt conversion gain, A/V
   int16_t vshunt_int_;  // Sensed shunt voltage, count
   int16_t vshunt_int_0_;// Interim conversion, count
@@ -130,10 +130,10 @@ protected:
   float Ishunt_cal_kf_; // Sensed kalman filtered bank current, calibrated ADC, A
   float *sp_ib_bias_;   // Global bias, A
   float *sp_ib_scale_;  // Global scale, A
-  boolean reset_;       // Status of reset command input
+  bool reset_;       // Status of reset command input
   unsigned long long sample_time_;   // Exact moment of hardware sample, ms
   unsigned long long sample_time_z_; // Exact moment of past hardware sample, ms
-  boolean dscn_cmd_;    // User command to ignore hardware, T=ignore
+  bool dscn_cmd_;    // User command to ignore hardware, T=ignore
   uint8_t vc_pin_;      // Common voltage pin, for !HDWE_ADS1013_AMP_NOA
   uint8_t vo_pin_;      // Output voltage pin, for !HDWE_ADS1013_AMP_NOA
   uint8_t vr_pin_;      // Reference voltage pin, for TSC1200 or INA181
@@ -142,8 +142,8 @@ protected:
   int Vo_raw_;          // Raw analog read, integer
   float Vo_;            // Sensed Vo, output of op amp, V
   float Vo_Vc_;         // Sensed Vo-Vc, difference in output of op amps, V
-  boolean using_opamp_; // Using differential hardware amp
-  boolean using_kf_;    // Using Kalman Filter.  If not, set filter = input
+  bool using_opamp_; // Using differential hardware amp
+  bool using_kf_;    // Using Kalman Filter.  If not, set filter = input
   KalmanFilter *KF_;    // Noise filter
 };
 
@@ -247,8 +247,8 @@ public:
   unsigned long long now_temp() { return now_temp_; }
   void T(const double input) { T_ = input; }
   double T() { return T_; }
-  void reset(const boolean input) { reset_ = input; }
-  boolean reset() { return reset_; }
+  void reset(const bool input) { reset_ = input; }
+  bool reset() { return reset_; }
   void T_filt(const double input) { T_filt_ = input; }
   double T_filt() { return T_filt_; }
   void T_temp(const double input) { T_temp_ = input; }
@@ -263,16 +263,16 @@ public:
   unsigned long long end_inj() { return end_inj_; }
   void control_time(const double input) { control_time_ = input; }
   double control_time() { return control_time_; }
-  void display(const boolean input) { display_ = input; }
-  boolean display() { return display_; }
-  void bms_off(const boolean input) { bms_off_ = input; }
-  boolean bms_off() { return bms_off_; }
+  void display(const bool input) { display_ = input; }
+  bool display() { return display_; }
+  void bms_off(const bool input) { bms_off_ = input; }
+  bool bms_off() { return bms_off_; }
   Sync *ReadSensors;          // Handle to debug read time
   Sync *ReadTemp;             // Handle to debug read temperature time
-  void sat(const boolean input) { sat_ = input; }
-  boolean sat() { return sat_; }
-  void saturated(const boolean input) { saturated_ = input; }
-  boolean saturated() { return saturated_; }
+  void sat(const bool input) { sat_ = input; }
+  bool sat() { return sat_; }
+  void saturated(const bool input) { saturated_ = input; }
+  bool saturated() { return saturated_; }
   Shunt *ShuntAmp;            // Ib sense amplified
   Shunt *ShuntNoAmp;          // Ib sense non-amplified
   TempSensor* SensorTb;       // Tb sense
@@ -314,19 +314,19 @@ public:
   unsigned long long inst_millis() { return inst_millis_; };
   unsigned long long inst_time() { return inst_time_; };
   void pretty_print();
-  void reset_temp(const boolean reset) { reset_temp_ = reset; };
-  boolean reset_temp() { return ( reset_temp_ ); };
+  void reset_temp(const bool reset) { reset_temp_ = reset; };
+  bool reset_temp() { return ( reset_temp_ ); };
   unsigned long long sample_time_ib(void) { return sample_time_ib_; };
   unsigned long long sample_time_vb(void) { return sample_time_vb_; };
   void select_print(Sensors *Sen, BatteryMonitor *Mon);
   void shunt_print();         // Print selection result
-  void shunt_select_initial(const boolean reset);   // Choose between shunts for model
-  void temp_load_and_filter(Sensors *Sen, const boolean reset_temp);
+  void shunt_select_initial(const bool reset);   // Choose between shunts for model
+  void temp_load_and_filter(Sensors *Sen, const bool reset_temp);
   float Tb_noise();
   float vb() { return Vb_ / ap.nS(); };                            // Battery select unit voltage, V
   float vb_hdwe() { return Vb_hdwe_ / ap.nS(); };                  // Battery select hardware unit voltage, V
   float vb_hdwe_f() { return Vb_hdwe_f_ / ap.nS(); };              // Battery select hardware unit voltage filtered, V
-  void vb_load(const uint16_t vb_pin, const boolean reset);       // Analog read of Vb
+  void vb_load(const uint16_t vb_pin, const bool reset);       // Analog read of Vb
   float vb_model() { return (Vb_model_ / ap.nS()); };              // Battery select model unit voltage, V
   float Vb_add();
   float Vb_noise();
@@ -349,7 +349,7 @@ protected:
   PRBS_7 *Prbn_Vb_;     // Vb noise generator model only
   PRBS_7 *Prbn_Ib_amp_; // Ib amplified sensor noise generator model only
   PRBS_7 *Prbn_Ib_noa_; // Ib non-amplified sensor noise generator model only
-  boolean reset_temp_;  // Keep track of temperature reset, stored for plotting, T=reset
+  bool reset_temp_;  // Keep track of temperature reset, stored for plotting, T=reset
   unsigned long long sample_time_ib_;       // Exact moment of selected Ib sample, ms
   unsigned long long sample_time_ib_hdwe_;  // Exact moment of Ib sample, ms
   unsigned long long sample_time_tb_;       // Exact moment of selected Tb sample, ms
@@ -404,7 +404,7 @@ protected:
   unsigned long long now_;     // Time at sample, ms
   unsigned long long now_temp_;// Time at sample, ms
   double T_;                   // Update time, s
-  boolean reset_;              // Reset flag, T = reset
+  bool reset_;              // Reset flag, T = reset
   double T_filt_;              // Filter update time, s
   double T_temp_;              // Temperature update time, s
   unsigned long long elapsed_inj_;  // Injection elapsed time, ms
@@ -412,8 +412,8 @@ protected:
   unsigned long long stop_inj_; // Stop of calculated injection, ms
   unsigned long long end_inj_;  // End of print injection, ms
   double control_time_;        // Decimal time, seconds since 1/1/2021
-  boolean display_;            // Use display
-  boolean bms_off_;            // Calculated by BatteryMonitor, battery off, low voltage, switched by battery management system?
-  boolean sat_;                // Battery potential saturation status based on Temp and VOC
-  boolean saturated_;          // Battery confirmed saturation status based on Temp and VOC
+  bool display_;            // Use display
+  bool bms_off_;            // Calculated by BatteryMonitor, battery off, low voltage, switched by battery management system?
+  bool sat_;                // Battery potential saturation status based on Temp and VOC
+  bool saturated_;          // Battery confirmed saturation status based on Temp and VOC
 };

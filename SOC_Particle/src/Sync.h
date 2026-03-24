@@ -33,15 +33,15 @@ public:
   Sync(void);
   Sync(unsigned long long delay);
   // Functions
-  boolean update(boolean reset, unsigned long long now, boolean andCheck);
-  boolean update(unsigned long long now, boolean reset, boolean andCheck);
-  boolean update(unsigned long long now, boolean reset);
-  boolean updateN(unsigned long long now, boolean reset, boolean orCheck);
+  bool update(bool reset, unsigned long long now, bool andCheck);
+  bool update(unsigned long long now, bool reset, bool andCheck);
+  bool update(unsigned long long now, bool reset);
+  bool updateN(unsigned long long now, bool reset, bool orCheck);
   unsigned long long delay() { return(delay_); }
   void delay(unsigned long long new_delay) { delay_ = new_delay; updateTimeInput_ = float(delay_)/1000.f; }
   void delay(unsigned long long new_delay, unsigned long long now) { delay_ = new_delay; updateTimeInput_ = float(delay_)/1000.f; last_ = now; }
   unsigned long long last() { return(last_); }
-  boolean stat() { return(stat_); }
+  bool stat() { return(stat_); }
   unsigned long long updateDiff() { return(updateDiff_); }
   double updateTime() { return(updateTime_); }
   double updateTimeInput() { return(updateTimeInput_); }
@@ -50,7 +50,7 @@ private:
   unsigned long long delay_;
   unsigned long long last_;
   unsigned long long now_;
-  boolean stat_;
+  bool stat_;
   unsigned long long updateDiff_;
   double updateTime_;
   double updateTimeInput_;

@@ -33,7 +33,7 @@ void benign_zero(BatteryMonitor *Mon, Sensors *Sen);
 void chat();
 void chatter();
 void chit(const String cmd, const enum urgency when);
-bool chitter(const boolean chitchat, BatteryMonitor *Mon, Sensors *Sen);
+bool chitter(const bool chitchat, BatteryMonitor *Mon, Sensors *Sen);
 String chit_nibble_ctl();
 String chit_nibble_inp();
 void cmd_echo(urgency request);

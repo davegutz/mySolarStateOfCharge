@@ -33,7 +33,7 @@ public:
   ~EKF_1x1();
   // operators
   // functions
-  void predict_ekf(const double u, const boolean freeze);
+  void predict_ekf(const double u, const bool freeze);
   virtual void pretty_print(void);
   void print_ekf_serial(BatteryMonitor *Mon);
   double Tb_f_for_hx() { return ( Tb_f_for_hx_); };
@@ -60,7 +60,7 @@ protected:
   double P_post_;
   double hx_; // Output of observation function h(x)
   double H_;  // Jacobian of h(x)
-  boolean freeze_;  // Command to freeze x_ and P_
+  bool freeze_;  // Command to freeze x_ and P_
   unsigned long long now_ekf_;  // Time value extracted from sensors, ms
   double dt_ekf_;   // Update time for EKF major frame
   double Tb_f_for_hx_;  // Tb_f used for the hx_ calculation, C

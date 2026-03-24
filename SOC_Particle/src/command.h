@@ -31,7 +31,7 @@
 // DS2482 data union
 typedef union {
 	float t_c;
-	boolean ready;
+	bool ready;
 } Tb_union;
 
 
@@ -59,26 +59,26 @@ public:
   String queue_str;         // Hold chit_chat queue data - queue with Control pass, 1 per Control pass
   String soon_str;          // Hold chit_chat soon data - priority with next Control pass, 1 per Control pass
   String asap_str;          // Hold chit_chat asap data - no waiting, ASAP all of now_str processed before Control pass
-  boolean freeze;           // Stop applying (describe()) the queues
-  boolean inp_token;        // Whether inp_str is complete
-  boolean cmd_token;        // Whether cmd_str has been applied
-  boolean chitchat;         // Outer frame call, used in chitchat functions
-  boolean inf_reset;        // Use talk to reset infinite counter
-  boolean model_cutback;    // On model cutback
-  boolean model_saturated;  // Sim on cutback and saturated
+  bool freeze;           // Stop applying (describe()) the queues
+  bool inp_token;        // Whether inp_str is complete
+  bool cmd_token;        // Whether cmd_str has been applied
+  bool chitchat;         // Outer frame call, used in chitchat functions
+  bool inf_reset;        // Use talk to reset infinite counter
+  bool model_cutback;    // On model cutback
+  bool model_saturated;  // Sim on cutback and saturated
   unsigned long num_v_print;// Number of print echos made, for checking on BLE
-  boolean publishS;         // Print serial monitor data
-  boolean soft_reset;       // Use talk to reset all
-  boolean soft_reset_print;       // Use talk to reset all
-  boolean soft_reset_sim;   // Use talk to reset sim only
-  boolean soft_reset_sim_print;   // Use talk to reset sim only
-  boolean soft_sim_hold;    // Use talk to reset sim only
+  bool publishS;         // Print serial monitor data
+  bool soft_reset;       // Use talk to reset all
+  bool soft_reset_print;       // Use talk to reset all
+  bool soft_reset_sim;   // Use talk to reset sim only
+  bool soft_reset_sim_print;   // Use talk to reset sim only
+  bool soft_sim_hold;    // Use talk to reset sim only
   Tb_union tb_info;         // Use cp to pass DS2482 I2C information
-  boolean write_summary;    // Use talk to issue a write command to summary
-  boolean ekf_reset;        // Reset Extended Kalman Filter
-  boolean ekf_reset_print;  // Reset Extended Kalman Filter status saved for printing
-  boolean kf_reset;         // Reset kalman filters
-  boolean kf_reset_print;   // Reset kalman filters status saved for printing
+  bool write_summary;    // Use talk to issue a write command to summary
+  bool ekf_reset;        // Reset Extended Kalman Filter
+  bool ekf_reset_print;  // Reset Extended Kalman Filter status saved for printing
+  bool kf_reset;         // Reset kalman filters
+  bool kf_reset_print;   // Reset kalman filters status saved for printing
   uint8_t ble_first_char;   // Control boot communication, psuedo token
   uint32_t disp_word;       // Display status bitmapped word (see dispw:: enum)
 

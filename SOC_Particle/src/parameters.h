@@ -38,10 +38,10 @@ public:
     Parameters();
     ~Parameters();
     // Do everything
-    boolean find_adjust(const String &str);
+    bool find_adjust(const String &str);
     virtual void initialize() {}
-    boolean is_corrupt();
-    virtual void pretty_print(const boolean all){}
+    bool is_corrupt();
+    virtual void pretty_print(const bool all){}
     void set_nominal();
     String value_str() { return value_str_; }
 protected:
@@ -58,7 +58,7 @@ public:
     VolatilePars();
     ~VolatilePars();
     virtual void initialize();
-    virtual void pretty_print(const boolean all);
+    virtual void pretty_print(const bool all);
 
     FloatV *cc_diff_slr_p;
     FloatV *cycles_inj_p;
@@ -126,14 +126,14 @@ public:
     void cc_diff_slr(const float input) { cc_diff_slr_ = input; }
     float cycles_inj() { return cycles_inj_; }
     void cycles_inj(const float input) { cycles_inj_ = input; }
-    boolean dc_dc_on() { return dc_dc_on_; }
-    void dc_dc_on(const boolean input) { dc_dc_on_ = input; }
-    boolean disab_ib_fa() { return disab_ib_fa_; }
-    void disab_ib_fa(const boolean input) { disab_ib_fa_ = input; }
-    boolean disab_tb_fa() { return disab_tb_fa_; }
-    void disab_tb_fa(const boolean input) { disab_tb_fa_ = input; }
-    boolean disab_vb_fa_lt() { return dis_vb_fa_lt_; }
-    void disab_vb_fa_lt(const boolean input) { dis_vb_fa_lt_ = input; }
+    bool dc_dc_on() { return dc_dc_on_; }
+    void dc_dc_on(const bool input) { dc_dc_on_ = input; }
+    bool disab_ib_fa() { return disab_ib_fa_; }
+    void disab_ib_fa(const bool input) { disab_ib_fa_ = input; }
+    bool disab_tb_fa() { return disab_tb_fa_; }
+    void disab_tb_fa(const bool input) { disab_tb_fa_ = input; }
+    bool disab_vb_fa_lt() { return dis_vb_fa_lt_; }
+    void disab_vb_fa_lt(const bool input) { dis_vb_fa_lt_ = input; }
     float ds_voc_soc() { return ds_voc_soc_; }
     void ds_voc_soc(const float input) { ds_voc_soc_ = input; }
     float dv_voc_soc() { return dv_voc_soc_; }
@@ -154,10 +154,10 @@ public:
     void ewhi_slr(const float input) { ewhi_slr_ = input; }
     float ewlo_slr() { return ewlo_slr_; }
     void ewlo_slr(const float input) { ewlo_slr_ = input; }
-    boolean fail_tb() { return fail_tb_; }
-    void fail_tb(const boolean input) { fail_tb_ = input; }
-    boolean fake_faults() { return fake_faults_; }
-    void fake_faults(const boolean input) { fake_faults_ = input; }
+    bool fail_tb() { return fail_tb_; }
+    void fail_tb(const bool input) { fail_tb_ = input; }
+    bool fake_faults() { return fake_faults_; }
+    void fake_faults(const bool input) { fake_faults_ = input; }
     float hys_scale() { return hys_scale_; }
     void hys_scale(const float input) { hys_scale_ = input; }
     float hys_state() { return hys_state_; }
@@ -258,10 +258,10 @@ protected:
 
     float cc_diff_slr_;          // Scale cc_diff detection thresh, scalar
     float cycles_inj_;           // Number of injection cycles
-    boolean dc_dc_on_;           // DC-DC charger is on
-    boolean dis_vb_fa_lt_;        // Disable hard fault range failures for vb
-    boolean disab_ib_fa_;        // Disable hard fault range failures for ib
-    boolean disab_tb_fa_;        // Disable hard fault range failures for tb
+    bool dc_dc_on_;           // DC-DC charger is on
+    bool dis_vb_fa_lt_;        // Disable hard fault range failures for vb
+    bool disab_ib_fa_;        // Disable hard fault range failures for ib
+    bool disab_tb_fa_;        // Disable hard fault range failures for tb
     float ds_voc_soc_;           // VOC(SOC) delta soc on input, frac
     float dv_voc_soc_;           // VOC(SOC) del v, V
     uint8_t eframe_mult_;        // Frame multiplier for EKF execution.  Number of READ executes for each EKF execution
@@ -272,8 +272,8 @@ protected:
     float ekf_x_;                // ekf temporary set x, soc
     float ewhi_slr_;             // Scale wrap hi detection thresh, scalar
     float ewlo_slr_;             // Scale wrap lo detection thresh, scalar
-    boolean fail_tb_;            // Make hardware bus read ignore Tb and fail it
-    boolean fake_faults_;        // Faults faked (ignored).  Used to evaluate a configuration, deploy it without disrupting use
+    bool fail_tb_;            // Make hardware bus read ignore Tb and fail it
+    bool fake_faults_;        // Faults faked (ignored).  Used to evaluate a configuration, deploy it without disrupting use
     float hys_scale_;            // Sim hysteresis scalar
     float hys_state_;            // Sim hysteresis state
     float ib_amp_add_;           // Fault injection bias on amp, A
@@ -378,7 +378,7 @@ public:
     void nominalize_fault_array();
     void nominalize_history_array();
     int num_diffs();
-    virtual void pretty_print(const boolean all);
+    virtual void pretty_print(const bool all);
     void pretty_print_modeling();
     void print_fault_array();
     void print_fault_header(Publish *pubList);
@@ -389,20 +389,20 @@ public:
     float ib_hist_m_slr() { if ( abs(amp_) > SCL_40 ) return SCL_30000/abs(amp_); else return SCL_600; }
     float ib_hist_n_slr() { if ( abs(amp_) > SCL_40 ) return SCL_30000/abs(amp_); else return SCL_60; }
     float vb_hist_slr() { if ( abs(amp_) > SCL_40 ) return SCL_1500/abs(amp_); else return SCL_1200; }
-    boolean mod_all_dscn() { return ( 111<modeling() ); }                // Bare all
-    boolean mod_any() { return ( mod_ib() || mod_tb() || mod_vb() ); }  // Modeling any
-    boolean mod_none_dscn() { return ( 16>modeling() ); }                // Bare nothing
-    boolean mod_any_dscn() { return ( 15<modeling() ); }                 // Bare any
-    boolean mod_ib_all_dscn() { return ( 191<modeling() ); }             // Nothing connected to ib sensors in I2C on SDA/SCL
-    boolean mod_ib_any_dscn() { return ( mod_ib_amp_dscn() || mod_ib_noa_dscn() ); }  // Nothing connected to ib sensors in I2C on SDA/SCL
-    boolean mod_ib_noa_dscn() { return ( 1<<7 & modeling() ); }          // Nothing connected to noa ib sensors in I2C on SDA/SCL
-    boolean mod_ib_amp_dscn() { return ( 1<<6 & modeling() ); }          // Nothing connected to amp ib sensors in I2C on SDA/SCL
-    boolean mod_vb_dscn() { return ( 1<<5 & modeling() ); }              // Nothing connected to vb on A1
-    boolean mod_tb_dscn() { return ( 1<<4 & modeling() ); }              // Nothing connected to one-wire Tb sensor on D6
-    boolean mod_ib() { return ( 1<<2 & modeling() || mod_ib_all_dscn() ); }  // Using Sim as source of ib
-    boolean mod_vb() { return ( 1<<1 & modeling() || mod_vb_dscn() ); }  // Using Sim as source of vb
-    boolean mod_tb() { return ( 1<<0 & modeling() || mod_tb_dscn() ); }  // Using Sim as source of tb
-    boolean mod_none() { return ( 0==modeling() ); }                     // Using all
+    bool mod_all_dscn() { return ( 111<modeling() ); }                // Bare all
+    bool mod_any() { return ( mod_ib() || mod_tb() || mod_vb() ); }  // Modeling any
+    bool mod_none_dscn() { return ( 16>modeling() ); }                // Bare nothing
+    bool mod_any_dscn() { return ( 15<modeling() ); }                 // Bare any
+    bool mod_ib_all_dscn() { return ( 191<modeling() ); }             // Nothing connected to ib sensors in I2C on SDA/SCL
+    bool mod_ib_any_dscn() { return ( mod_ib_amp_dscn() || mod_ib_noa_dscn() ); }  // Nothing connected to ib sensors in I2C on SDA/SCL
+    bool mod_ib_noa_dscn() { return ( 1<<7 & modeling() ); }          // Nothing connected to noa ib sensors in I2C on SDA/SCL
+    bool mod_ib_amp_dscn() { return ( 1<<6 & modeling() ); }          // Nothing connected to amp ib sensors in I2C on SDA/SCL
+    bool mod_vb_dscn() { return ( 1<<5 & modeling() ); }              // Nothing connected to vb on A1
+    bool mod_tb_dscn() { return ( 1<<4 & modeling() ); }              // Nothing connected to one-wire Tb sensor on D6
+    bool mod_ib() { return ( 1<<2 & modeling() || mod_ib_all_dscn() ); }  // Using Sim as source of ib
+    bool mod_vb() { return ( 1<<1 & modeling() || mod_vb_dscn() ); }  // Using Sim as source of vb
+    bool mod_tb() { return ( 1<<0 & modeling() || mod_tb_dscn() ); }  // Using Sim as source of tb
+    bool mod_none() { return ( 0==modeling() ); }                     // Using all
 
     // put
     void put_all_dynamic();
@@ -434,7 +434,7 @@ public:
     void put_fault(const Flt_st input, const uint8_t i) { fault_[i].copy_to_Flt_ram_from(input); }
     //
     Flt_st put_history(const Flt_st input, const uint8_t i);
-    boolean tweak_test() { return ( 1<<3 & modeling() ); } // Driving signal injection completely using software inj_bias 
+    bool tweak_test() { return ( 1<<3 & modeling() ); } // Driving signal injection completely using software inj_bias 
     FloatV *amp_p;
     FloatV *cutback_gain_slr_p;
     IntV *debug_p;

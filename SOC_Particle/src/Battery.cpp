@@ -54,7 +54,7 @@ Battery::~Battery() {}
 // functions
 
 // Placeholder; not used
-float Battery::calculate(const double tb_f, const float soc_frac, float curr_in, const double dt, const boolean dc_dc_on)
+float Battery::calculate(const double tb_f, const float soc_frac, float curr_in, const double dt, const bool dc_dc_on)
 {
     return 0.;
 }
@@ -220,7 +220,7 @@ BatteryMonitor::~BatteryMonitor() {}
         -
         gnd
 */ 
-float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const boolean reset_ekf)
+float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool reset_ekf)
 {
     // Inputs
     tb_f_ = Sen->Tb_f();
@@ -236,7 +236,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const bo
 
     // Battery management system model
     bms_charging_ = ib_ > IB_MIN_UP;
-    boolean voltage_low_past = voltage_low_;
+    bool voltage_low_past = voltage_low_;
     if ( !bms_off_ || reset_temp)
     {
         voltage_low_ = voc_stat_ < chem_.vb_down;
@@ -287,7 +287,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const bo
     {
         static unsigned long long ekf_now_past = Sen->now();
         float ddq_dt = ib_charge_ekf;
-        boolean freeze = Sen->Flt->vb_fa_lt() || bms_off_;  // Freeze EKF with voltage fault or bms_off
+        bool freeze = Sen->Flt->vb_fa_lt() || bms_off_;  // Freeze EKF with voltage fault or bms_off
 
         now_ekf_ = Sen->now();
         dt_ekf_ = float(now_ekf_ - ekf_now_past) / 1e3;
@@ -311,7 +311,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const boolean reset_temp, const bo
         y_filt_ = Yfilt->calculate(y_, reset_temp, min(dt_ekf_, EKF_T_RESET));
         // EKF convergence.  Audio industry found that detection of quietness requires no more than
         // second order filter of the signal.   Anything more is 'gilding the lily'
-        boolean conv = abs(y_filt_)<ap.ekf_conv() && !cp.soft_reset && !cp.ekf_reset;  // Initialize false
+        bool conv = abs(y_filt_)<ap.ekf_conv() && !cp.soft_reset && !cp.ekf_reset;  // Initialize false
         ekf_conv_ = EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_ekf_, EKF_T_RESET), cp.soft_reset || cp.ekf_reset);
         
         if ( sp.debug()==37 )
@@ -425,7 +425,7 @@ void BatteryMonitor::ekf_update(double *hx, double *H, double *x, double *tb)
 
 // Initialize
 // Works in 12 V batteryunits.   Scales up/down to number of series/parallel batteries on output/input.
-void BatteryMonitor::init_battery_mon(const boolean reset, Sensors *Sen)
+void BatteryMonitor::init_battery_mon(const bool reset, Sensors *Sen)
 {
     if ( !reset )
     {
@@ -463,9 +463,9 @@ void BatteryMonitor::init_soc_ekf(const float soc)
     State:
         sat_mem    Battery saturation status, T/F
 */
-boolean BatteryMonitor::is_sat(const boolean reset)
+bool BatteryMonitor::is_sat(const bool reset)
 {
-    static boolean sat_mem;
+    static bool sat_mem;
     if ( reset)
         sat_mem = tb_f_ > chem_.low_t && (voc_dead_ >= vsat_);
     else
@@ -526,7 +526,7 @@ float BatteryMonitor::r_ss () { return chem_.r_ss * ap.slr_res(); };
     OUTPUTS:
         Mon->soc_ekf
 */
-boolean BatteryMonitor::solve_ekf(const boolean reset, const boolean reset_temp, Sensors *Sen)
+bool BatteryMonitor::solve_ekf(const bool reset, const bool reset_temp, Sensors *Sen)
 {
     if ( !reset && !reset_temp ) return false;
 
@@ -654,7 +654,7 @@ BatterySim::~BatterySim() {}
         gnd
 
 */
-float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean reset)
+float BatterySim::calculate(Sensors *Sen, const bool dc_dc_on, const bool reset)
 {
     // Inputs
     tb_f_ = Sen->Tb_f();
@@ -672,7 +672,7 @@ float BatterySim::calculate(Sensors *Sen, const boolean dc_dc_on, const boolean 
 
     // Hysteresis model
     hys_->calculate(ib_in_, soc_, ap.hys_scale());
-    boolean init_low = bms_off_ || ( soc_<(soc_min_+HYS_SOC_MIN_MARG) && ib_>HYS_IB_THR );
+    bool init_low = bms_off_ || ( soc_<(soc_min_+HYS_SOC_MIN_MARG) && ib_>HYS_IB_THR );
     dv_hys_ = hys_->update(dt_, sat_, init_low, 0.0, ap.hys_scale(), reset);
     voc_ = voc_stat_ + dv_hys_;
     ioc_ = hys_->ioc();
@@ -823,7 +823,7 @@ Outputs:
     soc_min_        Estimated soc where battery BMS will shutoff current, fraction
     q_min_          Estimated charge at low voltage shutdown, C\
 */
-float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, BatteryMonitor *Mon, const boolean initializing_all) 
+float BatterySim::count_coulombs(Sensors *Sen, const bool reset_temp, BatteryMonitor *Mon, const bool initializing_all) 
 {
     d_delta_q_s_ = ib_charge_ * dt_;
     if ( ib_charge_>0. ) d_delta_q_s_ *= coul_eff_;
@@ -834,7 +834,7 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
 
     // Saturation and re-init.   Goal is to set q_capacity and hold it so remember last saturation status
     // But if not modeling in real world, set to Monitor when Monitor saturated and reset_temp to EKF otherwise
-    static boolean reset_temp_past = reset_temp;   // needed because model called first in reset_temp path; need to pick up latest
+    static bool reset_temp_past = reset_temp;   // needed because model called first in reset_temp path; need to pick up latest
     if ( initializing_all ) reset_temp_past = true;
     if ( !sp.mod_vb() )  // Real world init to track Monitor
     {
@@ -881,7 +881,7 @@ float BatterySim::count_coulombs(Sensors *Sen, const boolean reset_temp, Battery
 
 // Initialize
 // Works in 12 V batteryunits.   Scales up/down to number of series/parallel batteries on output/input.
-void BatterySim::init_battery_sim(const boolean reset, Sensors *Sen)
+void BatterySim::init_battery_sim(const bool reset, Sensors *Sen)
 {
     if ( !reset )
     {

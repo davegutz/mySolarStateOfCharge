@@ -115,7 +115,7 @@ void Coulombs::apply_delta_q(const double delta_q)
 }
 
 // Memory set, adjust book-keeping as needed.  q_cap_ etc presesrved
-void Coulombs::apply_delta_q_t(const boolean reset)
+void Coulombs::apply_delta_q_t(const bool reset)
 {
   if ( !reset ) return;
   q_capacity_ = calculate_capacity(tb_f_);
@@ -163,8 +163,8 @@ Outputs:
   soc_min_        Estimated soc where battery BMS will shutoff current, fraction
   q_min_          Estimated charge at low voltage shutdown, C\
 */
-float Coulombs::count_coulombs(Sensors *Sen, const boolean reset_temp, const float charge_curr, const boolean sat,
-  const boolean saturated)
+float Coulombs::count_coulombs(Sensors *Sen, const bool reset_temp, const float charge_curr, const bool sat,
+  const bool saturated)
 {
     // Inputs
     dt_ = Sen->T();

@@ -55,9 +55,9 @@ struct Pins
   uint16_t Vom_pin;     // Amp (m) output voltage
   uint16_t Vh3v3_pin;   // 3.3V voltage
   uint16_t VTb_pin;     // Tb 2wire measurement voltage
-  boolean using_opAmp;// Using differential hardware amp
-  boolean using_hv3v3;  // Using differential hardware amp
-  boolean using_VTb;    // Using I2C port for 2wire temperature measurement (RTD)
+  bool using_opAmp;     // Using differential hardware amp
+  bool using_hv3v3;  // Using differential hardware amp
+  bool using_VTb;    // Using I2C port for 2wire temperature measurement (RTD)
   Pins(void) {}
   Pins(uint16_t pin_1_wire, uint16_t status_led, uint16_t Vb_pin, uint16_t Vcn_pin, uint16_t Von_pin, uint16_t Vcm_pin, uint16_t Vom_pin)
   {
@@ -92,7 +92,7 @@ struct Pins
     this->using_opAmp = true;
     this->using_hv3v3 = true;
   }
-  Pins(uint16_t pin_1_wire, uint16_t status_led, uint16_t Vb_pin, uint16_t Von_pin, uint16_t Vom_pin, uint16_t Vh3v3_pin, uint16_t VTb_pin, boolean using_2wire)
+  Pins(uint16_t pin_1_wire, uint16_t status_led, uint16_t Vb_pin, uint16_t Von_pin, uint16_t Vom_pin, uint16_t Vh3v3_pin, uint16_t VTb_pin, bool using_2wire)
   {
     this->pin_1_wire = pin_1_wire;
     this->status_led = status_led;
@@ -111,12 +111,12 @@ struct Pins
 // Headers
 void sample_burst(Pins *myPins, Sensors *SenS);
 void harvest_temp_change(const double tb_f, BatteryMonitor *Mon, BatterySim *Sim, const float rate, const float dt);
-void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const boolean use_soc_in);
-void load_ib_vb(const boolean reset, const boolean reset_temp, const boolean reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon);
-void monitor(const boolean reset, const boolean reset_temp,  const boolean reset_ekf, const unsigned long long now,
+void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const bool use_soc_in);
+void load_ib_vb(const bool reset, const bool reset_temp, const bool reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon);
+void monitor(const bool reset, const bool reset_temp,  const bool reset_ekf, const unsigned long long now,
   TFDelay *Is_sat_delay, BatteryMonitor *Mon, Sensors *Sen);
 void serial_display(Sensors *Sen, BatteryMonitor *Mon);
-void sense_synth_select(const boolean reset, const boolean reset_temp, const boolean reset_kf, const unsigned long long now,
+void sense_synth_select(const bool reset, const bool reset_temp, const bool reset_kf, const unsigned long long now,
   const unsigned long long elapsed, Pins *myPins, BatteryMonitor *Mon, Sensors *Sen);
 void sync_time(unsigned long long now, unsigned long long *last_sync, unsigned long long *millis_flip);
 String time_long_2_str(const time_t current_time, char *tempStr);

@@ -39,7 +39,7 @@ EKF_1x1::~EKF_1x1() {}
 
 // functions
 //1x1 Extended Kalman Filter predict
-void EKF_1x1::predict_ekf(double u, const boolean freeze)
+void EKF_1x1::predict_ekf(double u, const bool freeze)
 {
   /*
   1x1 Extended Kalman Filter predict

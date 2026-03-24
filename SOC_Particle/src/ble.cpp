@@ -67,7 +67,7 @@ void onBLE_DataReceived(const uint8_t* data, size_t len, const BlePeerDevice& pe
 
   // Parse input
   static String serial_str = "";
-  static boolean serial_ready = false;
+  static bool serial_ready = false;
   // Each pass try to complete input from avaiable
   ii = 0;
   while ( !serial_ready && ( ii < len ) )

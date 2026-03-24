@@ -64,7 +64,7 @@ Looparound::Looparound(BatteryMonitor *Mon, Sensors *Sen, const float wrap_hi_am
 }
 
 // Update the loop
-void Looparound::calculate(const boolean reset, const boolean disable_fault, const float ib, Sensors *Sen)
+void Looparound::calculate(const bool reset, const bool disable_fault, const float ib, Sensors *Sen)
 {
   reset_ = reset || Sen_->Flt->reset_all_faults();
   ib_ = ib;
@@ -202,7 +202,7 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
 }
 
 // Coulomb Counter difference test - failure conditions track poorly
-void Fault::cc_diff(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
+void Fault::cc_diff(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
 {
   cc_diff_ = Mon->soc_ekf() - Mon->soc(); // These are filtered in their construction (EKF is a dynamic filter and 
                                           // Coulomb counter is wrapa big integrator)
@@ -220,9 +220,9 @@ void Fault::cc_diff(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
 }
 
 // Compare current sensors - failure conditions large difference
-void Fault::ib_diff(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
+void Fault::ib_diff(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
 {
-  boolean reset_loc = reset || reset_all_faults_;
+  bool reset_loc = reset || reset_all_faults_;
   if ( disable_amp_fault_ ) ib_diff_ = 0.;
   else if ( ib_lo_limited_hi_ ) ib_diff_ = max(0., ib_diff_);  // limit error when low amp is pegged high
   else if ( ib_lo_limited_lo_ ) ib_diff_ = min(0., ib_diff_);  // limit error when low amp is pegged low
@@ -242,9 +242,9 @@ void Fault::ib_diff(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
 }
 
 // Compare current sensors - failure conditions large difference
-void Fault::ib_logic(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
+void Fault::ib_logic(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
 {
-  boolean reset_loc = reset || reset_all_faults_;
+  bool reset_loc = reset || reset_all_faults_;
 
   // Difference error, filter, check, persist, doesn't latch
   if ( sp.mod_ib() )
@@ -298,9 +298,9 @@ void Fault::ib_logic(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
 // Detect no signal present based on detection of quiet signal.
 // Research by sound industry found that 2-pole filtering is the sweet spot between seeing noise
 // and actual motion without 'guilding the lily'
-void Fault::ib_quiet(const boolean reset, Sensors *Sen)
+void Fault::ib_quiet(const bool reset, Sensors *Sen)
 {
-  boolean reset_loc = reset | reset_all_faults_;
+  bool reset_loc = reset | reset_all_faults_;
 
   // Rate (has some filtering)
   if ( !sp.mod_ib() )
@@ -339,9 +339,9 @@ void Fault::ib_quiet(const boolean reset, Sensors *Sen)
 }
 
 // Range checks latch
-void Fault::ib_range(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
+void Fault::ib_range(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
 {
-  boolean reset_loc = reset | reset_all_faults_;
+  bool reset_loc = reset | reset_all_faults_;
   if ( reset_loc )
   {
     failAssign(false, IB_AMP_FA);
@@ -395,9 +395,9 @@ void Fault::ib_range(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
 
 // Voltage wraparound logic for current selection
 // Avoid using hysteresis data for this test and accept more generous thresholds
-void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
+void Fault::ib_wrap(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
 {
-  boolean reset_loc = reset | reset_all_faults_;
+  bool reset_loc = reset | reset_all_faults_;
   if ( reset_loc )
   {
     failAssign(false, WRAP_VB_FA);
@@ -572,7 +572,7 @@ txBuf = String::format("") +
 
 //          Tb, Tb_f
 //          latch_
-void Fault::select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const boolean reset)
+void Fault::select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const bool reset)
 {
   // Reset
   if ( reset_all_faults_ )
@@ -763,7 +763,7 @@ void Fault::ib_decision_active_standby(Sensors *Sen)
 // Outputs:  ib_decision_, ib_choice_, latch_
 void Fault::ib_decision_hi_lo(Sensors *Sen)
 {
-  boolean latch_last = latch_;
+  bool latch_last = latch_;
   if ( latch_ )
     // ib_decision_ = xx;   lgv
     {}
@@ -899,9 +899,9 @@ void Fault::reset_all_faults_select()
 }
 
 // Checks analog current.  Latches
-void Fault::shunt_check(Sensors *Sen, BatteryMonitor *Mon, const boolean reset)
+void Fault::shunt_check(Sensors *Sen, BatteryMonitor *Mon, const bool reset)
 {
-  boolean reset_loc = reset | reset_all_faults_;
+  bool reset_loc = reset | reset_all_faults_;
   if ( reset_loc )
   {
     failAssign(false, IB_AMP_FA);
@@ -933,9 +933,9 @@ void Fault::shunt_check(Sensors *Sen, BatteryMonitor *Mon, const boolean reset)
 }
 
 // Check Tb 2-wire analog voltage.  Latches
-void Fault::tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, const boolean reset)
+void Fault::tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, const bool reset)
 {
-  boolean reset_loc = reset | reset_all_faults_;
+  bool reset_loc = reset | reset_all_faults_;
   if ( reset_loc )
   {
     failAssign(false, TB_FA);
@@ -958,9 +958,9 @@ void Fault::tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, con
 }
 
 // Temp stale check
-void Fault::tb_stale(const boolean reset, Sensors *Sen)
+void Fault::tb_stale(const bool reset, Sensors *Sen)
 {
-  boolean reset_loc = reset | reset_all_faults_;
+  bool reset_loc = reset | reset_all_faults_;
 
   if ( ap.disab_tb_fa() || reset_loc || (sp.mod_tb() && !ap.fail_tb()) )
   {
@@ -976,9 +976,9 @@ void Fault::tb_stale(const boolean reset, Sensors *Sen)
 }
 
 // Check analog voltage.  Latches
-void Fault::vb_check(Sensors *Sen, BatteryMonitor *Mon, const float _vb_min, const float _vb_max, const boolean reset)
+void Fault::vb_check(Sensors *Sen, BatteryMonitor *Mon, const float _vb_min, const float _vb_max, const bool reset)
 {
-  boolean reset_loc = reset | reset_all_faults_;
+  bool reset_loc = reset | reset_all_faults_;
   if ( reset_loc )
   {
     failAssign(false, VB_FA_LT);
@@ -994,9 +994,9 @@ void Fault::vb_check(Sensors *Sen, BatteryMonitor *Mon, const float _vb_min, con
     failAssign( vb_fa_lt() || VbHardFail->calculate(vb_flt(), VB_HARD_SET, VB_HARD_RESET, Sen->T(), reset_loc), VB_FA_LT);
   }
 }
-void Fault::vc_check(Sensors *Sen, BatteryMonitor *Mon, const float _vc_min, const float _vc_max, const boolean reset)
+void Fault::vc_check(Sensors *Sen, BatteryMonitor *Mon, const float _vc_min, const float _vc_max, const bool reset)
 {
-  boolean reset_loc = reset | reset_all_faults_;
+  bool reset_loc = reset | reset_all_faults_;
   if ( reset_loc )
   {
     failAssign(false, VC_FA);

@@ -37,11 +37,11 @@ Parameters::Parameters():n_(0) {};
 
 Parameters::~Parameters(){};
 
-boolean Parameters::find_adjust(const String &str)
+bool Parameters::find_adjust(const String &str)
 {
     uint8_t count = 0;
-    boolean found = false;
-    boolean success = false;
+    bool found = false;
+    bool success = false;
     String substr = str.substring(0, 2);
     value_str_ = str.substring(2);
     if ( substr.length()<2 )
@@ -75,9 +75,9 @@ boolean Parameters::find_adjust(const String &str)
 
 }
 
-boolean Parameters::is_corrupt()
+bool Parameters::is_corrupt()
 {
-    boolean corruption = false;
+    bool corruption = false;
     for ( int i=0; i<n_; i++ ) corruption |= V_[i]->is_corrupt();
     if ( corruption )
     {
@@ -169,7 +169,7 @@ void  VolatilePars::initialize()
 }
 
 // Print only the volatile paramters (non-eeram)
-void VolatilePars::pretty_print(const boolean all)
+void VolatilePars::pretty_print(const bool all)
 {
     #ifndef SOFT_DEPLOY_PHOTON
         if ( all )
@@ -290,7 +290,7 @@ void SavedPars::mem_print()
 }
 
 // Print
-void SavedPars::pretty_print(const boolean all)
+void SavedPars::pretty_print(const bool all)
 {
     if ( all )
     {

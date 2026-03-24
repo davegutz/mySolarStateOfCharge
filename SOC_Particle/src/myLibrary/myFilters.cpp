@@ -84,7 +84,7 @@ bool DetectRise::calculate(const int in)
 // constructors
 TFDelay::TFDelay()
     : timer_(0), nt_(0), nf_(0), T_(1), T_init_(1) {}
-TFDelay::TFDelay(const boolean in, const double Tt, const double Tf, const double T)
+TFDelay::TFDelay(const bool in, const double Tt, const double Tf, const double T)
     : timer_(0), nt_(int(fmax(round(Tt/T)+1,0))), nf_(int(fmax(round(Tf/T+1),0))), T_(T), T_init_(T)
 {
   if ( Tt==0 ) nt_ = 0;
@@ -95,7 +95,7 @@ TFDelay::TFDelay(const boolean in, const double Tt, const double Tf, const doubl
 TFDelay::~TFDelay() {}
 // operators
 // functions
-boolean TFDelay::calculate(const boolean in)
+bool TFDelay::calculate(const bool in)
 {
   if ( timer_ >= 0 )
   {
@@ -119,9 +119,9 @@ boolean TFDelay::calculate(const boolean in)
   // Serial.print(", nf_="); Serial.print(nf_);Serial.print(", return=");Serial.println(timer_>=0);
   return ( timer_ > 0 );
 }
-boolean TFDelay::calculate(const boolean in, const int RESET)
+bool TFDelay::calculate(const bool in, const int RESET)
 {
-  boolean out;
+  bool out;
   if (RESET>0)
   {
       if ( in ) timer_ = nf_;
@@ -134,20 +134,20 @@ boolean TFDelay::calculate(const boolean in, const int RESET)
   }
   return ( out );
 }
-boolean TFDelay::calculate(const boolean in, const double Tt, const double Tf)
+bool TFDelay::calculate(const bool in, const double Tt, const double Tf)
 {
   nt_ = int(fmax(round(Tt/T_)+1,0));  // dag 8/19/2022 was missing '+1'
   nf_ = int(fmax(round(Tf/T_)+1,0));  // dag 8/19/2022 was missing '+1'
   return(TFDelay::calculate(in));
 }
-boolean TFDelay::calculate(const boolean in, const double Tt, const double Tf, const double T)
+bool TFDelay::calculate(const bool in, const double Tt, const double Tf, const double T)
 {
   T_ = T;
   nt_ = int(fmax(round(Tt/T_)+1, 0));  // dag 8/19/2022 was missing '+1'
   nf_ = int(fmax(round(Tf/T_)+1, 0));  // dag 8/19/2022 was missing '+1'
   return(TFDelay::calculate(in));
 }
-boolean TFDelay::calculate(const boolean in, const double Tt, const double Tf, const int RESET)
+bool TFDelay::calculate(const bool in, const double Tt, const double Tf, const int RESET)
 {
   if (RESET>0)
   {
@@ -156,7 +156,7 @@ boolean TFDelay::calculate(const boolean in, const double Tt, const double Tf, c
   }
   return(TFDelay::calculate(in, Tt, Tf));
 }
-boolean TFDelay::calculate(const boolean in, const double Tt, const double Tf, const double T, const int RESET)
+bool TFDelay::calculate(const bool in, const double Tt, const double Tf, const double T, const int RESET)
 {
   double T_loc = T;
   if (RESET>0)
@@ -165,7 +165,7 @@ boolean TFDelay::calculate(const boolean in, const double Tt, const double Tf, c
     else timer_ = -nt_;
     T_loc = T_init_;
   }
-  boolean res = TFDelay::calculate(in, Tt, Tf, T_loc);
+  bool res = TFDelay::calculate(in, Tt, Tf, T_loc);
   return(res);
 }
 
@@ -698,7 +698,7 @@ void DiscreteIntegrator::newState(double newState)
   lstate_ = max(min(newState, max_), min_);
   rstate_ = 0.0;
 }
-double DiscreteIntegrator::calculate(double in, boolean RESET, double init_value)
+double DiscreteIntegrator::calculate(double in, bool RESET, double init_value)
 {
   reset_ = (RESET > 0);
   if (reset_)
@@ -723,7 +723,7 @@ double DiscreteIntegrator::calculate(double in, boolean RESET, double init_value
   }
   return (lstate_);
 }
-double DiscreteIntegrator::calculate(double in, double T, boolean RESET, double init_value)
+double DiscreteIntegrator::calculate(double in, double T, bool RESET, double init_value)
 {
   T_ = T;
   reset_ = (RESET > 0);
@@ -749,7 +749,7 @@ double DiscreteIntegrator::calculate(double in, double T, boolean RESET, double 
   }
   return (lstate_);
 }
-double DiscreteIntegrator::calculate(double in, double T, boolean RESET, double init_value, double max, double min)
+double DiscreteIntegrator::calculate(double in, double T, bool RESET, double init_value, double max, double min)
 {
   T_ = T;
   max_ = max;;

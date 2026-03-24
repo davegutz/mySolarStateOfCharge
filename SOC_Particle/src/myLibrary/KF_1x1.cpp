@@ -101,7 +101,7 @@ KalmanFilter::~KalmanFilter()
     x_ = nullptr;
 }
 
-double KalmanFilter::calculate(const boolean reset, const double dt, const double in)
+double KalmanFilter::calculate(const bool reset, const double dt, const double in)
 {
     double out = 0.;
     reset_ = reset;

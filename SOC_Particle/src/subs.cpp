@@ -76,7 +76,7 @@ if ( sp.debug()==-1 ) Serial.printf("exit harvest_temp_change:  Delta_q %10.1f t
 
 // Complete initialization of all parameters in Mon and Sim including EKF
 // Force current to be zero because initial condition undefined otherwise with charge integration
-void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const boolean use_soc_in)
+void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const bool use_soc_in)
 {
   // Sample debug statements
   #ifdef DEBUG_INIT
@@ -227,7 +227,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
 
 // Load high fidelity signals; filtered in hardware the same bandwidth, sampled the same
 // Outputs:   Sen->Ib_model_in, Sen->Ib_hdwe, 
-void load_ib_vb(const boolean reset, const boolean reset_temp, const boolean reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon)
+void load_ib_vb(const bool reset, const bool reset_temp, const bool reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon)
 {
   // Load shunts Ib
   // Outputs:  Sen->Ib_model_in, Sen->Ib_hdwe, Sen->Vb, Sen->Wb
@@ -255,7 +255,7 @@ void load_ib_vb(const boolean reset, const boolean reset_temp, const boolean res
 // Inputs:  sp.mon_chm, Sen->Ib, Sen->Vb, Sen->Tb_f
 // States:  Mon.soc, Mon.soc_ekf
 // Outputs: tcharge_wt, tcharge_ekf, Voc, Voc_filt
-void  monitor(const boolean reset, const boolean reset_temp, const boolean reset_ekf, const unsigned long long now,
+void  monitor(const bool reset, const bool reset_temp, const bool reset_ekf, const unsigned long long now,
   TFDelay *Is_sat_delay, BatteryMonitor *Mon, Sensors *Sen)
 {
   // EKF - calculates tb_f_, voc_stat_, voc_ as functions of sensed parameters vb & ib (not soc)
@@ -281,11 +281,11 @@ void  monitor(const boolean reset, const boolean reset_temp, const boolean reset
 // States:  Sim.soc
 // Outputs: Sim.tb_f_, Sen->Tb_f, Sen->Ib, Sen->Ib_model,
 //   Sen->Vb_model, Sen->Tb_f, sp.inj_bias
-void sense_synth_select(const boolean reset, const boolean reset_temp, const boolean reset_kf, const unsigned long long now,
+void sense_synth_select(const bool reset, const bool reset_temp, const bool reset_kf, const unsigned long long now,
   const unsigned long long elapsed,  Pins *myPins, BatteryMonitor *Mon, Sensors *Sen)
 {
   static unsigned long long int last_snap = now;
-  boolean storing_fault_data = ( now - last_snap )>SNAP_WAIT;
+  bool storing_fault_data = ( now - last_snap )>SNAP_WAIT;
   if ( storing_fault_data || reset ) last_snap = now;
 
   // Load Ib and Vb
@@ -338,8 +338,8 @@ void sense_synth_select(const boolean reset, const boolean reset_temp, const boo
     fails_repeated = 0;
     Sen->Flt->preserving(false);
   }
-  static boolean record_past = Sen->Flt->record();
-  boolean instant_of_failure = record_past && !Sen->Flt->record();
+  static bool record_past = Sen->Flt->record();
+  bool instant_of_failure = record_past && !Sen->Flt->record();
   if ( storing_fault_data || instant_of_failure )
   {
     if ( Sen->Flt->record() ) fails_repeated = 0;

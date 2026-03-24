@@ -86,7 +86,7 @@ float TempSensor::sample(Sensors *Sen)
 Shunt::Shunt()
 : name_("None"), port_(0x00), bare_shunt_(false){}
 Shunt::Shunt(const String name, const uint8_t port, float *sp_ib_scale,  float *sp_Ib_bias, const float v2a_s,
-  const uint8_t vc_pin, const uint8_t vo_pin, const uint8_t vh3v3_pin, const boolean using_opAmp, const boolean using_kf)
+  const uint8_t vc_pin, const uint8_t vo_pin, const uint8_t vh3v3_pin, const bool using_opAmp, const bool using_kf)
 : name_(name), port_(port), bare_shunt_(false), v2a_s_(v2a_s),
   vshunt_int_(0), vshunt_int_0_(0), vshunt_int_1_(0), vshunt_(0), Ishunt_cal_(0),
   sp_ib_bias_(sp_Ib_bias), sp_ib_scale_(sp_ib_scale), sample_time_(0UL), sample_time_z_(0UL), dscn_cmd_(false),
@@ -134,7 +134,7 @@ void Shunt::pretty_print()
 }
 
 // Convert sampled shunt data to Ib engineering units
-void Shunt::convert(const boolean disconnect, const boolean reset, Sensors *Sen)
+void Shunt::convert(const bool disconnect, const bool reset, Sensors *Sen)
 {
   #ifdef HDWE_ADS1013_AMP_NOA
     if ( !bare_shunt_ && !dscn_cmd_ )
@@ -187,7 +187,7 @@ void Shunt::convert(const boolean disconnect, const boolean reset, Sensors *Sen)
 }
 
 // Sample and filter amplifier Vo-Vc
-void Shunt::sample(const boolean reset_kf)
+void Shunt::sample(const bool reset_kf)
 {
   sample_Vo();
   sample_Vc();
@@ -203,7 +203,7 @@ void Shunt::sample_combine()
 }
 
 // Apply Kalman filter to Vo-Vc
-void Shunt::sample_filter_kf(const boolean reset_kf)
+void Shunt::sample_filter_kf(const bool reset_kf)
 {
   if ( using_kf_ )
     vshunt_kf_ = KF_->calculate(reset_kf, dt_ms()/1000., Vo_Vc_);
@@ -609,7 +609,7 @@ void Sensors::shunt_print()
 // Inputs: sp.ib_force (user override), Mon (EKF status)
 // States:  Ib_fail_noa_
 // Outputs:  Ib_hdwe_, Ib_model_in_, Vb_sel_status_
-void Sensors::shunt_select_initial(const boolean reset)
+void Sensors::shunt_select_initial(const bool reset)
 {
     // Current signal selection, based on if there or not.
     // Over-ride 'permanent' with Talk(sp.ib_force) = Talk('s')
@@ -662,7 +662,7 @@ void Sensors::shunt_select_initial(const boolean reset)
 }
 
 // Load and filter Tb
-void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
+void Sensors::temp_load_and_filter(Sensors *Sen, const bool reset_temp)
 {
   // Log.info("  temp_load_and_filter:  calling sample");
   reset_temp_ = reset_temp;
@@ -706,7 +706,7 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
 }
 
 // Load analog voltage
-void Sensors::vb_load(const uint16_t vb_pin, const boolean reset)
+void Sensors::vb_load(const uint16_t vb_pin, const bool reset)
 {
   if ( !sp.mod_vb_dscn() )
   {
