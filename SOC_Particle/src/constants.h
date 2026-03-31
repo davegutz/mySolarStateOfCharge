@@ -403,7 +403,9 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #if !defined(EKF_CONV)
     #define EKF_CONV    0.025 // EKF tracking error indicating convergence, V (0.025)
 #endif
-
+#if !defined(ASK_DURING_BOOT)
+    #define ASK_DURING_BOOT       1   // Flag to ask for application of this file to * retained adjustements 0=retain,1=ask,2=force default
+#endif
 
 // Conversion gains
 // Voltage measurement gains

@@ -222,14 +222,19 @@ void setup()
   }
   sp.nsum(NSUM);  // Store
 
-  // Ask to renominalize
-  if ( ASK_DURING_BOOT )
+  // Ask to renominalize or force nominal.  Set in config file (see local_config.h for presesntly used config file)
+  if ( ASK_DURING_BOOT == 1 )
   {
     // Log.info("setup renominalize");
     if ( sp.num_diffs() )
     {
       wait_on_user_input();
     }
+  }
+  else if ( ASK_DURING_BOOT == 2 )
+  {
+    sendTxBuf("NOMINAL FORCED saved parameters\n\n", true, true);
+    sp.set_nominal();
   }
 
   // Log.info("setup end");
