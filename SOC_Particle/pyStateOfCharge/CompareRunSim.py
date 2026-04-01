@@ -121,6 +121,13 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
         mon_ver, sim_ver, sim_s_ver, mon, sim, Battery = replicate(replicateOptions)
         pass
         save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
+        
+        # Check if replicate broke early due to skip
+        if mon_ver is None:
+            print("\nCompareRunSim: Replication broke early due to data skip. Aborting without plots.")
+            tkinter.messagebox.showerror(title="Data Integrity Error",
+                                         message="CompareRunSim: Replication broke early due to data skip.\n\nAborting without plots.")
+            return fig_list, fig_files
 
     # Plots
     if plots:
@@ -177,8 +184,8 @@ def main():  # Example usage.  ok on 20260217
 
     # Cut-pasted from GUI_TestSOC Run window
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/truckTurnOnFault_soc4p2_hi_lo_bb.csv'
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/turnaround 20260506_soc4p2_hi_lo_bb.csv'
-    unit_key = 'g20250612a_soc4p2_hi_lo_bb'
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc3p2_hi_lo_bb.csv'
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = None
     plots = True
     use_mon_soc_ = False

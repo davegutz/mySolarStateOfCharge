@@ -102,7 +102,7 @@ void Looparound::calculate(const bool reset, const bool disable_fault, const flo
   // e_wrap using present values
   e_wrap_trimmed_ = e_wrap_ + e_wrap_trim_;
   e_wrap_filt_ = WrapErrFilt_->calculate(e_wrap_trimmed_, reset_, min(Sen_->T(), F_MAX_T_WRAP));
-  e_wrap_rate_ = WrapErrFilt_->rate();  // TODO:  wrap rates not needed?
+  e_wrap_rate_ = WrapErrFilt_->rate();
 
   // Thresholds. Scalars are calculated by Flt->wrap_scalars()
   ewhi_thr_base_ = Mon_->r_ss() * wrap_hi_amp_ * ap.ewhi_slr();

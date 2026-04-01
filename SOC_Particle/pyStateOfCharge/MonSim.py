@@ -350,6 +350,7 @@ def replicate(OPT: UserOptions):
         if SN.mon_run.skip_ekf[i_ekf] or SN.mon_run.skip_temp[i_temp] or SN.mon_run.skip_sel[G.i] or \
                 SN.mon_run.skip_mon[G.i] or SN.sim_run.skip_sim[G.i]:
             print(f"\n\n************** Data integrity degraded by skip.  A digit could have been inserted anywhere in data.  Break.")
+            print(f"\nCheck for W too short before vv4 or TEMP_INIT_DELAY or TEMP_DELAY too long in SOC_Particle.ino")
             print("   now {:5.3f}".format(now),
                   "   time_end {:5.3f}\n\n".format(t[-1]),
                   )

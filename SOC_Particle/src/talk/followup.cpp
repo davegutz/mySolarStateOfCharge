@@ -82,7 +82,7 @@ bool followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sen
         case ( 'D' ):
             switch ( letter_1 )
             {
-                case ( 'h' ):  //   Dh<>:  Summary sample time input  TODO:  not sure this section needed since nominalizing capability added 11/2025
+                case ( 'h' ):  //   Dh<>:  Summary sample time input  Not sure this section needed since nominalizing capability added 11/2025
                     if ( ap.sum_delay_p->success() )
                         Sen->Summarize->delay(max(ap.read_delay(), ap.sum_delay()), Sen->now());  // validated
                     else if (ap.value_str()=="0" || ap.value_str()=="")

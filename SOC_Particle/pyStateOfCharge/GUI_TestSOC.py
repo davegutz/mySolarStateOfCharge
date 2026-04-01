@@ -24,6 +24,7 @@
 
 """Define a class to manage configuration using files for memory (poor man's database)"""
 import sys
+import os
 import time
 from configparser import ConfigParser
 import re
@@ -66,6 +67,28 @@ elif plat == 'darwin':
     default_dr = '/Users/daveg/Library/CloudStorage/GoogleDrive-davegutz2006@gmail.com/My Drive/GitHubArchive/SOC_Particle/dataReduction'
 else:
     default_dr = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction'
+
+# Tee stdout/stderr to a log file so Console.app shows output when launched as a .app bundle
+_log_dir = os.path.expanduser("~/Library/Logs") if plat == 'darwin' else os.path.expanduser("~")
+os.makedirs(_log_dir, exist_ok=True)
+_log_file = open(os.path.join(_log_dir, "GUI_TestSOC.log"), 'a', buffering=1)
+
+
+class _Tee:
+    def __init__(self, *streams):
+        self._streams = streams
+
+    def write(self, data):
+        for s in self._streams:
+            s.write(data)
+
+    def flush(self):
+        for s in self._streams:
+            s.flush()
+
+
+sys.stdout = _Tee(sys.__stdout__, _log_file)
+sys.stderr = _Tee(sys.__stderr__, _log_file)
 
 # Configuration for entire folder selection read with filepaths
 def_dict = {
@@ -137,7 +160,7 @@ tempCleanup = 'Rf;XD; '
 time_stamp = 'XY;'
 zeroPrepHdweNoVb = 'HR;Dh1000;W34;Fi2;Fo2;Rs;W34;'
 zero_set_hdwe_no_Vb = 'vv0;Xm2;Ca0.50;W20;BZ;Ff1;DP1;HR;Fi2;Fo2;Rf;vv99;W1;<Xm2;<XD;'
-tranPrep = 'HR;Dh1000;W2;Rs;W38;vv4;W17;'
+tranPrep = 'HR;Dh1000;W2;Rs;W48;vv4;W17;'
 slowTranPrep = 'HR;vv4;W2;Rs;' + slow + 'W5;'
 slowTwitchDef = 'Rb;Rf;Sh0;Xts;Xf0.004;Mm1000;Mn-1000;Nm1000;Nn-1000;XW10000;XT10;XC2;'
 fastTwitchDef = 'Rb;Rf;Xts;Xf0.002;XW10000;XT10;XC1;'
@@ -835,7 +858,9 @@ def grab_init():
     except:
         current_ut = ''
         print(f"current_ut blank ***No Internet??")
-    add_to_clip_board(init.get() + current_ut)
+    init_command = init.get() + current_ut
+    print(f"Init command to paste: {init_command}")
+    add_to_clip_board(init_command)
     # Grab the rest
     grab_all_nominal()
     init_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black')
@@ -1442,23 +1467,29 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     # init row
     empty_csv_path = tk.StringVar(master, str(PurePosixPath(Test.dataReduction_folder) / 'empty.csv'))
     _, init_val, _ = lookup.get('satInit')
-    init = tk.StringVar(master, init_val)
-    init_label = tk.Label(option_panel_left, text='init & clear:', font=label_font_gentle)
-    init_label.pack(padx=5, pady=5)
     if platform.system() == 'Darwin':
-        init_button = myButton(option_panel_ctr, text=init.get(), command=grab_init, fg="purple", bg=bg_color,
+        init_button = myButton(option_panel_ctr, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg=bg_color,
                                justify=tk.LEFT, font=("Arial", 8))
     else:
-        init_button = myButton(option_panel_ctr, text=init.get(), command=grab_init, fg="purple", bg=bg_color,
+        init_button = myButton(option_panel_ctr, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg=bg_color,
                                wraplength=wrap_length, justify=tk.LEFT, font=("Arial", 8))
+    init = tk.StringVar(master, init_val)
+    init_label = tk.Label(option_panel_ctr, text='init & clear:', font=label_font_gentle)
     if platform.system() == 'Linux':
         paste_label = tk.Label(option_panel_right, text='ctrl-shift-ins to paste', font=label_font_gentle)
+        cmd_label = tk.Label(option_panel_ctr, text=init.get(), font=label_font_gentle)
+        init_label.pack(padx=5, pady=5)
     elif platform.system() == 'Darwin':
         paste_label = tk.Label(option_panel_right, text='ctrl-shift-V to paste', font=label_font_gentle)
+        cmd_label = tk.Label(option_panel_ctr, text=init.get(), font=label_font_gentle)
+        init_label.pack(padx=5, pady=5)
     else:
         paste_label = tk.Label(option_panel_right, text='right-click to paste', font=label_font_gentle)
+        cmd_label = tk.Label(option_panel_ctr, text=init.get(), font=label_font_gentle)
+        init_label.pack(padx=5, pady=5)
     init_button.pack(padx=5, pady=5)
     paste_label.pack(padx=5, pady=5)
+    cmd_label.pack(padx=5, pady=5)
 
     # start row
     start = tk.StringVar(master, '')

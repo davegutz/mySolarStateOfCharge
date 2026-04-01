@@ -219,6 +219,7 @@ In the spirit of Software Engineering principles, I document perceived requireme
         c) There are tables of R1, R2, and C2 for standard op-amp designs that produce a range of filters all at 0.15 s +/- 10% filtering.  These are in the 'RC Filter Selection' tab mentioned above.  I try to fix R1 value to be consistent with high level op-amp designed with impedance of the 3v3 splitter that produces Vr.   I use 1k resistors there so don't want to vary R1 too much.  From the 5k1 design condition the table shows alternatives for 4k7 and 5k6 in case 5k1 are in short supply.
         d) Constants for the application logic are derived from these values.
         e) C2 used in both R2 legs of the op-amp for symmetry.  Analysis indicates a theoretical transfer function asymmetry if two C2s are not used.   Why bother not putting in that capacitor for < $0.01?
+    47. Loss of Vb sends fault logic low so a pulldown resistor on Vb is not needed.
 
 ## Decision Tables
 
@@ -778,7 +779,3 @@ There have been two main GitHub branches so far.
 
 
 ## TODO
-- [x] Need pulldown on Vb so loss of signal is real.  Not sure this is possible.  Followup:  loss of voltage does indeed go low.
-- [ ] Document Sen->ib_is_functional() in the DecisionTable file
-- [x] Kalman filter of current measurement esp noa
-- [ ] Document spectrum study lombscargleVcOnly.py performed as described in its contents.  It will be interesting to see if Kalman filter can get rid of it - it should - it's a fundamental 1.6 Hz mode well within sample frequency of 10 Hz (Nyquist 5 Hz).  The mode is present on all voltage measurements.  There are some harmonics beyond Nyquist.  1.6, 4.7, 7.8, 10.9, 14, 17.1, 20.3, and 23.1 Hz sampled using 'Cx10000' at 185 Hz.  This appears as very large noise in Ib_noa due to amplification after sampling.   The noise is in the sampling process somewhere. Should disconnect everything connected to the Photon 2 to try to isolate to Photon or infrastructire.....update:  found on soc2p2 that disconnecting the wired BT transceiver reduce errors a lot.  It seems it pings and draws power when it does so.  Replaced with onboard BLE transceiver.  It remains to be seen that soc4p2 is quieter without the BT.  Followup 20250313: removing BT HC-06 cleaned up the noise on the desktop units but not soc4p2 in the truck. I disconnected everything and noise still there.  The only thing left to do is remove the Vb Module and run solely off laptop power on USB.

@@ -322,7 +322,6 @@ void KalmanFilter::print_serial()
 
 
 // print_signal_select for data collection
-// TODO:  delete the _T, _tau, _rstate, _lstate stuff
 void print_signal_sel_header(void)
 {
   Serial.printf("unit_s,c_time_sel,reset,resaf,user_sel,   cc_dif,  ib_amp_hdwe,ib_noa_hdwe,ib_amp_model,ib_noa_model,ib_model,  kfres,vovcm,vovcn,ib_amp_hdwe_kf,ib_noa_hdwe_kf,  ib_diff, ib_diff_f,");

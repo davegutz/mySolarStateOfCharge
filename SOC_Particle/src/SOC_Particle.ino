@@ -329,7 +329,7 @@ void loop()
       Sen->Tb_model(NOMINAL_TB + ap.Tb_bias_model());
       Sen->Tb_model_filt(NOMINAL_TB + ap.Tb_bias_model());
 
-      if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 396 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt, %11.8f %11.8f\n",
+      if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 336 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt, %11.8f %11.8f\n",
         Sen->Tb_model(), Sen->Tb_model_filt()), true, true);
     }
     // Log.info("ino:  temp_load_and_filter");
@@ -337,7 +337,7 @@ void loop()
     Sen->temp_load_and_filter(Sen, reset_temp);
     Sen->select_temp(Mon);
 
-    if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 403 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
+    if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 340 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
         reset_temp, Sen->Sim->tb_f(), Sen->Tb_model(), Sen->Tb_model_filt(), Sen->Tb_hdwe_filt_rate()), true, true);
     // Log.info("ino:  print_temp_serial");
     print_temp_serial(reset_temp, Sen);

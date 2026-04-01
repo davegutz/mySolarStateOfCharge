@@ -575,6 +575,14 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
         mon_ver, sim_ver, sim_s_ver, mon_r, sim_r, battery = replicate(replicateOptions)
         save_clean_file(mon_ver, mon_file_save, 'mon_rep_hist' + date_)
         save_fault_coverage(mon_run, fault_coverage_file_save, 'fault_coverage_hist' + date_)
+        
+        # Check if replicate broke early due to skip
+        if mon_ver is None:
+            print("\nCompareHistSim: Replication broke early due to data skip. Aborting without plots.")
+            import tkinter.messagebox
+            tkinter.messagebox.showerror(title="Data Integrity Error",
+                                         message="CompareHistSim: Replication broke early due to data skip.\n\nAborting without plots.")
+            return fig_list, fig_files
 
     # Plots
     if plots:

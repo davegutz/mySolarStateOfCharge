@@ -351,4 +351,3 @@ void Chemistry::pretty_print()
 #endif
 }
 
-// TODO:  dx, dy, dz should be properties of Tables

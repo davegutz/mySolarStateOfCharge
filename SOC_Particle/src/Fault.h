@@ -317,7 +317,7 @@ public:
   bool no_fails() { return !latch_; };
   bool no_fails_fake() { return !latch_fake_; };
   bool preserving() { return *sp_preserving_; };
-  void preserving(const bool cmd) {  sp.put_Preserving(cmd); }; // TODO:  Parameter class with = operator --> put. Then *sp_preserving = cmd
+  void preserving(const bool cmd) {  sp.put_Preserving(cmd); };
   void pretty_print(Sensors *Sen, BatteryMonitor *Mon);
   bool record() { if ( ap.fake_faults() ) return no_fails_fake(); else return no_fails(); };
   bool red_loss() { return faultRead(RED_LOSS); };

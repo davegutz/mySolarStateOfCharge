@@ -722,6 +722,9 @@ def print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
 
 
 def save_clean_file(mon_ver, csv_file, unit_key):
+    if mon_ver is None:
+        print("save_clean_file: mon_ver is None (broke early due to skip), skipping save.")
+        return
     default_header_str = "unit,               hm,                  cTime,        dt,       sat,sel,mod,\
       Tb,Tb_rap,Tb_f,Tb_f_rap,Tb_f_rate,Tb_f_rate_rap, vb,  ib,  ib_dyn, ioc,  voc_soc,    vsat,dv_dyn,voc_stat,voc_stat_f,voc_ekf,     y,    soc_s,soc_ekf,soc,ib_lag,voc_soc_new,"
     n = len(mon_ver.time)
