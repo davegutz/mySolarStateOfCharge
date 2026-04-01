@@ -474,6 +474,7 @@ protected:
     uint16_t nsum_;         // Length of Sum array for history
 
     float amp_;
+    bool booted_;                // True if device has been bootstrapped (i.e. initialized)
     float cutback_gain_slr_;
     float Dw_;
     int debug_;
@@ -496,6 +497,5 @@ protected:
     uint8_t type_;
     float Vb_bias_hdwe_;
     float vsat_add_;             // Saturation voltage bias, V
-    bool booted_;                // True if device has been bootstrapped (i.e. initialized)
 
 };

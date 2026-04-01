@@ -117,10 +117,10 @@ public:
 
     ~BooleanV(){}
 
-    uint16_t assign_addr(bool next)
+    uint16_t assign_addr(uint16_t next)
     {
         addr_.a16 = next;
-        return next + sizeof(bool);
+        return next + sizeof(uint32_t);  // bool is padded to 4 bytes in struct layout
     }
 
     bool check_set_put(bool val)
