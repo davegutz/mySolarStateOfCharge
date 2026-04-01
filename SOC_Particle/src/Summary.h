@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,7 @@
 // SOFTWARE.
 
 
-#ifndef _MY_SUMMARY_H
-#define _MY_SUMMARY_H
+#pragma once
 
 #include "Sensors.h"
 #include "command.h"
@@ -32,5 +31,3 @@
 // Function prototypes
 void print_all_fault_buffer(const String code, struct Flt_st *sum, const uint16_t iflt, const uint16_t nflt);
 void reset_all_fault_buffer(const String code, struct Flt_st *sum, const uint16_t iflt, const uint16_t nflt);
-
-#endif

@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,7 @@
 // SOFTWARE.
 
 
-#ifndef COULOMBS_H_
-#define COULOMBS_H_
+#pragma once
 
 #include "Battery.h"
 #include "Chemistry_BMS.h"
@@ -109,5 +108,3 @@ protected:
   double time_pos_;   // Time spent accumulating delta_q_pos_, s
   Chemistry chem_;    // Chemistry
 };
-
-#endif

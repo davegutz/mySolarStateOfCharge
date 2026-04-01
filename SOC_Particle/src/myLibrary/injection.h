@@ -2,7 +2,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,7 @@
 // SOFTWARE.
 
 
-#ifndef INJECTION_H
-#define INJECTION_H
+#pragma once
 
 #include "math.h"
 #define PI          3.1415926535897932384626433832795
@@ -171,5 +170,3 @@ class TriInj
   protected:
     double t_last_;
 };
-
-#endif

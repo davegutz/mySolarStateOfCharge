@@ -6,8 +6,7 @@
   04-Nov-2022   Dave Gutz   Created
  ****************************************************/
 
-#ifndef _iterate_H
-#define _iterate_H
+#pragma once
 
 #include "application.h"   // Needed for Photon?
 #include "math.h"
@@ -48,5 +47,3 @@ protected:
     double xmin_;        // Minimum input
     double xp_;          // Past input
 };
-
-#endif

@@ -11,8 +11,7 @@
 
 */
 
-#ifndef _SerialRAM_h
-#define _SerialRAM_h
+#pragma once
 
 const uint16_t MAX_EERAM = 0x07FF;
 
@@ -65,9 +64,4 @@ public:
 		return t;
 	}
 };
-
-
-
-
-#endif
 

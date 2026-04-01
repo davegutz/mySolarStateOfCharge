@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef VARIABLE_H_
-#define VARIABLE_H_
+#pragma once
 
 #include "hardware/SerialRAM.h"
 #include "PrinterPars.h"
@@ -146,9 +145,7 @@ public:
 
     virtual bool is_corrupt()
     {
-        sendTxBuf(String::format("\nval:%d max:%d min:%d", *val_, max_, min_), true, true);
         bool corrupt = *val_ > max_ || *val_ < min_;
-        // if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
         if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
         return corrupt;
     }
@@ -266,7 +263,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
         return corrupt;
     }
 
@@ -382,9 +379,7 @@ public:
 
     virtual bool is_corrupt()
     {
-        sendTxBuf(String::format("\nval:%7.6f max:%7.6f min:%7.6f %s", *val_, max_, min_, code_.c_str()), true, true);
         bool corrupt = *val_ > max_ || *val_ < min_;
-        // if ( corrupt ) Serial.printf("\n%s %s corrupt, val:%7.3f max:%7.3f min:%7.3f\n", code_.c_str(), description_.c_str(), *val_, max_, min_ );
         if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
         return corrupt;
     }
@@ -502,7 +497,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
         return corrupt;
     }
 
@@ -618,7 +613,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
         return corrupt;
     }
 
@@ -732,7 +727,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
         return corrupt;
     }
 
@@ -848,7 +843,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
         return corrupt;
     }
 
@@ -965,7 +960,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
         return corrupt;
     }
 
@@ -1030,5 +1025,3 @@ protected:
     unsigned long max_;
     unsigned long default_;
 };
-
-#endif

@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _SERIAL_H
-#define _SERIAL_H
+#pragma once
 
 #include "myLibrary/myFilters.h"
 #include "Battery.h"
@@ -67,5 +66,3 @@ void rapid_print(const bool reset, Sensors *Sen, BatteryMonitor *Mon);
 void sendTxBuf(const String& txBuf, const bool sendSerial, const bool sendBLE);
 void sendTxBuf(const char* txBuf, const bool sendSerial, const bool sendBLE);
 void wait_on_user_input();
-
-#endif

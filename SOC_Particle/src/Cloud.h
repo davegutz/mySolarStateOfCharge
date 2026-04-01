@@ -1,5 +1,4 @@
-#ifndef _cloud_h
-#define _cloud_h
+#pragma once
 
 #include "Battery.h"
 
@@ -21,5 +20,3 @@ struct Publish
 
 void assign_publist(Publish* pubList, const unsigned long long now, const String unit, const String hm_string,
   Sensors* Sen, const int num_timeouts, BatteryMonitor* Mon);
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef _myTables_h
-#define _myTables_h
+#pragma once
 // #define t_double double
 
 // Interpolating, clipping, 1 and 2-D arbitrarily spaced table look-up
@@ -77,6 +76,4 @@ protected:
   unsigned int n2_;
   double *y_;
 };
-
-#endif
 

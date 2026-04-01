@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,7 @@
 // SOFTWARE.
 
 
-#ifndef CHEMISTRY_BMS_H_
-#define CHEMISTRY_BMS_H_
+#pragma once
 
 
 // Battery Management System - built into battery
@@ -90,6 +89,3 @@ public:
   void put_dz_voc(const double dz_voc) { voc_T_->put_dz(dz_voc); }
 
 };
-
-
-#endif

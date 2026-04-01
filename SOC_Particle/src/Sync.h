@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,7 @@
 //
 // 17-Feb-2021  Dave Gutz   Create
 
-#ifndef _SYNC_H
-#define _SYNC_H
+#pragma once
 
 // Duct Sim Class
 class Sync
@@ -55,5 +54,3 @@ private:
   double updateTime_;
   double updateTimeInput_;
 };
-
-#endif

@@ -1,7 +1,7 @@
 /*  Low-energy Bluetooth low-level utilities
 
 27-Dec-2025 	DA Gutz 	Created
-// Copyright (C) 2025 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
