@@ -328,7 +328,7 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
     #define FO_NOM    1.0 // Lo wrap threshold nominal scalar (1.0)  // Fo
 #endif
 #if !defined(VSAT_ADD)
-    #define VSAT_ADD    0.0 // Bias on nominal vsat (0.0)
+    #define VSAT_ADD    0.0f // Bias on nominal vsat (0.0f)
 #endif
 #if !defined(VTAB_BIAS)
     #define VTAB_BIAS   0.0 // Bias on voc_soc table (* 'Dw'), V (0.0)
@@ -404,7 +404,7 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
     #define EKF_CONV    0.025 // EKF tracking error indicating convergence, V (0.025)
 #endif
 #if !defined(ASK_DURING_BOOT)
-    #define ASK_DURING_BOOT       1   // Flag to ask for application of this file to * retained adjustements 0=retain,1=ask,2=force default
+    #define ASK_DURING_BOOT       0   // Flag to ask for application of this file to * retained adjustements 0=retain,1=ask,2=force default
 #endif
 
 // Conversion gains

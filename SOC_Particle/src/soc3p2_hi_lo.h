@@ -15,13 +15,13 @@
 // #define LOGHANDLE
 
 // Miscellaneous
-#define ASK_DURING_BOOT       1   // Flag to ask for application of this file to * retained adjustments 0=retain,1=ask,2=force default
+#define ASK_DURING_BOOT       0   // Flag to ask for application of this file to * retained adjustments 0=retain,1=ask,2=force default
 #define MODELING              247 // Nominal modeling bitmap (* 'Xm'), 0=all hdwe, 1+=Tb, 2+=Vb, 4+=Ib, 7=all model.  +240 for discn
 
 // Sensor biases
 #define CURR_BIAS_AMP         0.00  // Calibration of amplified shunt sensor (* 'DA'), A
 #define CURR_BIAS_NOA         0.00  // Calibration of non-amplified shunt sensor (* 'DB'), A
-#define VOLT_BIAS              0.18 // Bias on Vb sensor (* 'Dc'), V
+#define VOLT_BIAS             0.18f // Bias on Vb sensor (* 'Dc'), V
 #define TEMP_BIAS               0.0 // Bias on Tb sensor (* 'Dt'), deg C
 #define VTAB_BIAS               0.0 // Bias on voc_soc table (* 'Dw'), V
 

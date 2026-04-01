@@ -1,5 +1,5 @@
 {
     "particle.firmwareVersion": "6.2.1",
     "particle.targetPlatform": "p2",
-    "particle.targetDevice": "soc4p2"
+    "particle.targetDevice": "soc3p2"
 }

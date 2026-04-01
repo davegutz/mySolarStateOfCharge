@@ -78,10 +78,14 @@ bool Parameters::find_adjust(const String &str)
 bool Parameters::is_corrupt()
 {
     bool corruption = false;
-    for ( int i=0; i<n_; i++ ) corruption |= V_[i]->is_corrupt();
+    for ( int i=0; i<n_; i++ )
+    {
+        if ( V_[i]->is_corrupt() ) sendTxBuf(String::format("\n%s %s corrupt", V_[i]->code().c_str(), V_[i]->description()), true, true);
+        corruption |= V_[i]->is_corrupt();
+    }
     if ( corruption )
     {
-        Serial.printf("\ncorrupt****\n");
+        sendTxBuf(String::format("\ncorrupt****\n"), true, true);
         pretty_print(false);
     }
     return corruption;
@@ -243,9 +247,10 @@ SavedPars::~SavedPars() {}
 
 void SavedPars::initialize()
 {
-    #define NSAV 23
+    #define NSAV 24
     V_ = new Variable*[NSAV];
     V_[n_++] =(amp_p            = new FloatV("* ", "Xa", rP_, "Inj amp",              "Amps pk",-1e6, 1e6,  &amp_,              0));  // Xa
+    V_[n_++] =(booted_p       = new BooleanV("  ", "Bb", rP_, "Clean boot",       "T=clean",     0,    1,   &booted_,           false));  // Bb
     V_[n_++] =(cutback_gain_slr_p=new FloatV("* ", "Sk", rP_, "Cutback gain scalar",  "slr",    -1e6, 1e6,  &cutback_gain_slr_, 1));  // Sk
     V_[n_++] =(debug_p            = new IntV("* ", "vv", rP_, "Verbosity",            "int",    -128, 128,  &debug_,            VV));  // vv
     V_[n_++] =(delta_q_model_p = new DoubleV("* ", "qs", rP_, "Charge chg Sim",       "C",      -1e8, 1e5,  &delta_q_model_,    0, false));   // qs
@@ -268,10 +273,10 @@ void SavedPars::initialize()
     V_[n_++] =(modeling_p      = new Uint8tV("* ", "Xm", rP_, "Modeling bitmap",      "[0x]",   0,    255,  &modeling_,         MODELING));         // Xm
     V_[n_++] =(preserving_p    = new Uint8tV("* ", "X?", rP_, "Preserving fault",     "T=Preserve",0,   1,  &preserving_,       0,          false));  // X?
     V_[n_++] =(Tb_bias_hdwe_p   = new FloatV("* ", "Dt", rP_, "Bias Tb sensor",       "dg C",   -500, 500,  &Tb_bias_hdwe_,     TEMP_BIAS));        // Dt
-    V_[n_++] =(Time_now_p       = new ULongV("* ", "UT", rP_, "UNIX time epoch",      "sec",    1669801880UL,  2100000000UL, &Time_now_, 1669801880UL,  false));  // UT
+    V_[n_++] =(Time_now_p       = new ULongV("* ", "UT", rP_, "UNIX time epoch",      "sec",    0UL,  2100000000UL, &Time_now_, 1669801880UL,  false));  // UT
     V_[n_++] =(Type_p          = new Uint8tV("* ", "Xt", rP_, "Inj type",             "1sn 2sq 3tr 4 1C, 5 -1C, 8cs",  0,   10,  &type_,    0));  // Xt
     V_[n_++] =(Vb_bias_hdwe_p   = new FloatV("* ", "Dc", rP_, "Bias Vb sensor",       "v",      -10,  70,   &Vb_bias_hdwe_,     VOLT_BIAS));  // Dc
-    V_[n_++] =(vsat_add_p       = new FloatV("* ", "DS", NULL,"Bias on nominal vsat", "v",      -2.,  2.,   &vsat_add_,         VSAT_ADD));  // DS
+    V_[n_++] =(vsat_add_p       = new FloatV("* ", "DS", rP_, "Bias on nominal vsat", "v",      -2.,  2.,   &vsat_add_,         VSAT_ADD));  // DS
 }
 
 // Number of differences between nominal EERAM and actual (don't count integator memories because they always change)

@@ -193,7 +193,8 @@ void setup()
   // the SRAM is not explicitly initialized.   This is by design, as SRAM must be remembered between boots
   // Time is never changed by this operation.  It could be corrupt.  Change using "UT" talk feature.
   sendTxBuf("Check corruption......", true, true);
-  if ( sp.is_corrupt() )
+  bool corrupt = sp.is_corrupt();
+  if ( corrupt )
   {
     sendTxBuf("\n\n", true, true);
     sp.pretty_print( false );
@@ -202,7 +203,7 @@ void setup()
     sendTxBuf("Fixed corruption\n", true, true);
     sp.pretty_print(true);
   }
-  else sendTxBuf("clean\n", true, true);
+  else sendTxBuf("\nclean\n", true, true);
 
   // Determine millis() at turn of Time.now   Used to improve accuracy of timing.
   long time_begin = Time.now();
@@ -223,6 +224,23 @@ void setup()
   sp.nsum(NSUM);  // Store
 
   // Ask to renominalize or force nominal.  Set in config file (see local_config.h for presesntly used config file)
+  sp.get_booted();  // get the stored booted state.  This is a hack to ensure that we don't have to wait for the normal backup on reset to occur.
+  sendTxBuf(String::format("booted = %d\n", sp.booted()), true, true);
+  if ( ASK_DURING_BOOT == 0 && !sp.booted() )  // automatically renominalize and reboot after a dirty boot.
+  {
+    sp.set_nominal();  // sets booted to false by the way
+    sp.put_booted(true);  // sets booted to true so on next startups we don't have to renominalize to clean a dirty boot.
+    sendTxBuf("\n\nSet booted true and stored...", true, true);
+    System.backupRamSync();  // Force backup of RAM to ensure booted = true is saved.  This is important because the system reset below is a no-wait reset that doesn't wait for the normal backup on reset to occur.
+    delay(1000);
+    sendTxBuf("backup Ram synced *\n", true, true);
+    sp.get_booted();  // get the stored booted state.  This is a hack to ensure that we don't have to wait for the normal backup on reset to occur.
+    sendTxBuf(String::format("booted = %d\n", sp.booted()), true, true);
+    sendTxBuf("booted should be true\n\n", true, true);
+    delay(1000);          // Ensures true saves before rebooting.
+    // System.reset(RESET_NO_WAIT);
+  }
+  
   if ( ASK_DURING_BOOT == 1 )
   {
     // Log.info("setup renominalize");
@@ -230,11 +248,6 @@ void setup()
     {
       wait_on_user_input();
     }
-  }
-  else if ( ASK_DURING_BOOT == 2 )
-  {
-    sendTxBuf("NOMINAL FORCED saved parameters\n\n", true, true);
-    sp.set_nominal();
   }
 
   // Log.info("setup end");

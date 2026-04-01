@@ -146,8 +146,10 @@ public:
 
     virtual bool is_corrupt()
     {
+        sendTxBuf(String::format("\nval:%d max:%d min:%d", *val_, max_, min_), true, true);
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        // if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
         return corrupt;
     }
 
@@ -380,8 +382,10 @@ public:
 
     virtual bool is_corrupt()
     {
+        sendTxBuf(String::format("\nval:%7.6f max:%7.6f min:%7.6f %s", *val_, max_, min_, code_.c_str()), true, true);
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) Serial.printf("\n%s %s corrupt", code_.c_str(), description_.c_str());
+        // if ( corrupt ) Serial.printf("\n%s %s corrupt, val:%7.3f max:%7.3f min:%7.3f\n", code_.c_str(), description_.c_str(), *val_, max_, min_ );
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
         return corrupt;
     }
 

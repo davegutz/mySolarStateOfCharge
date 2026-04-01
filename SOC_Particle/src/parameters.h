@@ -336,6 +336,8 @@ public:
  
     // parameter list
     float Amp(const float nP) { return amp_ * nP; }
+    bool booted() { return booted_; }
+    void booted(const bool input) { booted_ = input; }
     float cutback_gain_slr() { return cutback_gain_slr_; }
     int debug() { return debug_;}
     double delta_q() { return delta_q_;}
@@ -407,6 +409,8 @@ public:
     // put
     void put_all_dynamic();
     void put_amp(const float input) { amp_p->check_set_put(input); }
+    void put_booted(const bool input) { booted_p->check_set_put(input); }
+    void get_booted() { booted_p->get(); }
     void put_cutback_gain_slr(const float input) { cutback_gain_slr_p->check_set_put(input); }
     void put_Debug(const int input) { debug_p->check_set_put(input); }
     void put_Delta_q(const double input) { delta_q_p->check_set_put(input); }
@@ -436,6 +440,7 @@ public:
     Flt_st put_history(const Flt_st input, const uint8_t i);
     bool tweak_test() { return ( 1<<3 & modeling() ); } // Driving signal injection completely using software inj_bias 
     FloatV *amp_p;
+    BooleanV *booted_p;
     FloatV *cutback_gain_slr_p;
     IntV *debug_p;
     DoubleV *delta_q_p;
@@ -492,6 +497,7 @@ protected:
     uint8_t type_;
     float Vb_bias_hdwe_;
     float vsat_add_;             // Saturation voltage bias, V
+    bool booted_;                // True if device has been bootstrapped (i.e. initialized)
 
 };
 
