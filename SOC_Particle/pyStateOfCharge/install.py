@@ -61,10 +61,9 @@ if sys.platform == 'linux':
         login = os.getlogin()
     except OSError:
         login = os.environ['LOGNAME']
-    terminal_title = "GUI_TestSOC"
     desktop_entry = f"""[Desktop Entry]
 Name=GUI_TestSOC
-Exec=bash -c 'printf "\\033]0;{terminal_title}\\007"; exec {sys.executable} /home/{login}/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/pyStateOfCharge/GUI_TestSOC.py'
+Exec={sys.executable} /home/{login}/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/pyStateOfCharge/GUI_TestSOC.py
 Path=/home/{login}/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/pyStateOfCharge
 Icon=/home/{login}/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/pyStateOfCharge/GUI_TestSOC.png
 StartupWMClass=GUI_TestSOC

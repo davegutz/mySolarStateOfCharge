@@ -60,6 +60,9 @@ else:
         from pynput.keyboard import Key, Controller
         _kb_backend = 'pynput'
 
+sys.stdout.write("\033]0;SOC\007")
+sys.stdout.flush()
+
 plat = sys.platform
 if plat == 'linux':
     default_dr = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction'
