@@ -44,7 +44,7 @@ class PlotKiller(tk.Toplevel):
         self.pdf_path = pdf_path_
         self.pdf_base = pdf_base_
         tk.Toplevel.__init__(self)
-        self.title(caller)
+        self.title("SOC-close")
         tk.Button(self, command=self.close_figs, text="close " + message, font=("Courier", 12)).grid(row=0, column=0, columnspan=4, padx=15, pady=15)
         tk.Label(self, text="t_min:", font=("Courier", 10)).grid(row=1, column=0, padx=5, pady=5, sticky='e')
         self.t_min_var = tk.StringVar()

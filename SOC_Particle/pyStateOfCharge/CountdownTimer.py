@@ -30,9 +30,10 @@ bg_color = "lightgray"
 
 
 class CountdownTimer(tk.Toplevel):
-    def __init__(self,  root_, time_, max_flash=30, exit_function=None, trigger=False):
+    def __init__(self,  root_, time_, max_flash=30, exit_function=None, trigger=False, title="SOC-countdown"):
         """Block caller task asking to close all plots then doing so"""
         tk.Toplevel.__init__(self)
+        self.title(title)
         self.root = root_
         self.flasher_window = None
         self.flasher_label = None
