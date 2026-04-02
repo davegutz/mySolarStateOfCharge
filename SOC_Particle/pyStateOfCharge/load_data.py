@@ -15,7 +15,7 @@
 """Utility to load data from csv files"""
 from CompareFault import add_stuff_f, filter_Tb, IB_BAND
 from SavedData import SavedData, SavedDataSim
-from Battery import Battery, BatteryMonitor, load_off_nominal_battery
+from Battery import Battery, BatteryMonitor, load_off_nominal_battery, apply_off_nominal_battery
 from DataOverModel import write_clean_file
 from Util import rename_all
 from resample import remove_nan
@@ -115,8 +115,6 @@ def load_data(path_to_data, skip, unit_key, zero_zero, time_end, rated_batt_cap=
     unit_key_shunt = "shunt_unit"
 
     sync = find_sync(path_to_data)
-    batt = BatteryMonitor()
-
     # Load battery (ref)
     battery_file_clean = write_clean_file(path_to_data, type_='_battery', hdr_key=battery_hdr,
                                           unit_key=battery_val, skip=skip)
@@ -129,10 +127,12 @@ def load_data(path_to_data, skip, unit_key, zero_zero, time_end, rated_batt_cap=
     if battery_raw is not None:
         # Scroll through all off-nominals make dictionary
         Battery_off_dict = load_off_nominal_battery(Battery_to_add=battery_raw)
+        apply_off_nominal_battery(Battery, Battery_off_dict)
     if Battery_off_dict is None:
         return None, None, None, None, None, None
 
     # Load fault
+    batt = BatteryMonitor()
     temp_flt_file_clean = write_clean_file(path_to_data, type_='_flt', hdr_key='fltb',
                                            unit_key='unit_f', skip=skip, comment_str='---')
     if temp_flt_file_clean:

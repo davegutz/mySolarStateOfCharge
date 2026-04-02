@@ -129,16 +129,11 @@ class Battery(Coulombs):
     VB_DC_DC = 13.5  # Estimated dc-dc charger, V
     HDB_VBATT = 0.05  # Half deadband to filter vb, V (0.05)
     WRAP_ERR_FILT = 4.  # Wrap error filter time constant, s (4)
-    MAX_WRAP_ERR_FILT = 10.  # Anti-windup wrap error filter, V (10)
-    IB_ABS_MAX_AMP = 12.  # Hard range limit of bank sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_AMP_R1 / SHUNT_AMP_R2 *1.05) but saw -11.48 A (12)
-    IB_ABS_MAX_NOA = 78.5  # Hard range limit of sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_NOA_R1 / SHUNT_NOA_R2 *1.05) A (78.5)
     MAX_TRIM_RATE = 0.005  # Max allowable amp e_wraptrim rate, V/s (0.005)
     F_MAX_T_WRAP = 2.8  # Maximum update time of Wrap filter for stability at WRAP_ERR_FILT, s (2.8)
     D_SOC_S = 0.  # Bias on soc to voc-soc lookup to simulate error in estimation, esp cold battery near 0 C
     VB_OFF_BB = 10.  # BMS shutoff level, Battleborn, v (10)
     VB_OFF_CH = 11.  # BMS shutoff level, CHINS, v (11)
-    AMP_WRAP_TRIM_GAIN = 0.015  # Amp looparound trim gain r/s (0.015)
-    NOA_WRAP_TRIM_GAIN = 0.0  # Noa looparound trim gain r/s (0.0)
     WRAP_LO_S = 9.  # Wrap low failure set time, sec (9) // 9 is legacy must be quicker than SAT test
     WRAP_LO_R = (WRAP_LO_S/2.)  # Wrap low failure reset time, sec ('up 1, down 2')
     WRAP_HI_S = WRAP_LO_S  # Wrap high failure set time, sec (WRAP_LO_S)
@@ -202,6 +197,12 @@ class Battery(Coulombs):
     ap_ds_voc_soc = None
     sp_Dw = None
     sp_vsat_add = None
+    AMP_WRAP_TRIM_GAIN = None
+    NOA_WRAP_TRIM_GAIN = None
+    MAX_WRAP_ERR_FILT = None
+    IB_ABS_MAX_AMP = None
+    IB_ABS_MAX_NOA = None
+
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
     #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
@@ -924,6 +925,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.saved.e_wrap_m.append(self.e_wrap_m)
         self.saved.e_wrap_m_filt.append(self.e_wrap_m_filt)
         self.saved.e_wrap_m_trim.append(self.e_wrap_m_trim)
+        self.saved.e_wrap_n_trim.append(self.e_wrap_n_trim)
         self.saved.ib_dyn_n.append(self.LoopIbNoa.ib_dyn)
         self.saved.dv_dyn_n.append(self.LoopIbNoa.dv_dyn)
         self.saved.e_wrap_n.append(self.e_wrap_n)
