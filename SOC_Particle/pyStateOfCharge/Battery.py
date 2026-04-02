@@ -103,115 +103,114 @@ def apply_off_nominal_battery(Battery_, Battery_off_dict):
 
 
 class Battery(Coulombs):
+
     # Battery constants
-    NOM_SYS_VOLT = 12.  # Nominal system output, V, at which the reported amps are used (12)
-    mxeps_bb = 1.05  # Numerical maximum of coefficient model with scaled soc
-    TCHARGE_DISPLAY_DEADBAND = 0.1  # Inside this +/- deadband, charge time is displayed '---', A
-    DF2 = 0.70  # Threshold to reset Coulomb Counter if different from ekf, fraction (0.05)
-    EKF_CONV = 2e-3  # EKF tracking error indicating convergence, V (1e-3)
-    EKF_T_CONV = 30.  # EKF set convergence test time, sec (30.)
-    EKF_T_RESET = (EKF_T_CONV / 2.)  # EKF reset test time, sec ('up 1, down 2')
-    EKF_NOM_DT = 0.1  # EKF nominal update time, s (initialization; actual value varies)
-    TAU_Y_FILT = 5.  # EKF y-filter time constant, sec (5.)
-    MIN_Y_FILT = -0.5  # EKF y-filter minimum, V (-0.5)
-    MAX_Y_FILT = 0.5  # EKF y-filter maximum, V (0.5)
-    WN_Y_FILT = 0.1  # EKF y-filter-2 natural frequency, r/s (0.1)
-    ZETA_Y_FILT = 0.9  # EKF y-filter-2 damping factor (0.9)
-    TMAX_FILT = 3.  # Maximum y-filter-2 sample time, s (3.)
-    EKF_Q_SD_NORM = 0.0015  # Standard deviation of normal EKF process uncertainty, V (0.0015)
-    EKF_R_SD_NORM = 0.5  # Standard deviation of normal EKF state uncertainty, fraction (0-1) (0.5)
-    IMAX_NUM = 100000.  # Overflow protection since ib past value used
-    HYS_SOC_MIN_MARG = 0.15  # Add to soc_min to set thr for detecting low endpoint condition for reset of hysteresis
-    HYS_IB_THR = 1.  # Ignore reset if opposite situation exists
-    ap_hys_scale = 1.  # Used to disable hysteresis from sim on the app
-    IB_MIN_UP = 0.2  # Min up charge current for come alive, BMS logic, and fault
-    cp_eframe_mult = 20  # Run EKF 20 times slower than Coulomb Counter
-    VB_DC_DC = 13.5  # Estimated dc-dc charger, V
-    HDB_VBATT = 0.05  # Half deadband to filter vb, V (0.05)
-    WRAP_ERR_FILT = 4.  # Wrap error filter time constant, s (4)
-    MAX_TRIM_RATE = 0.005  # Max allowable amp e_wraptrim rate, V/s (0.005)
-    F_MAX_T_WRAP = 2.8  # Maximum update time of Wrap filter for stability at WRAP_ERR_FILT, s (2.8)
-    D_SOC_S = 0.  # Bias on soc to voc-soc lookup to simulate error in estimation, esp cold battery near 0 C
-    VB_OFF_BB = 10.  # BMS shutoff level, Battleborn, v (10)
-    VB_OFF_CH = 11.  # BMS shutoff level, CHINS, v (11)
-    WRAP_LO_S = 9.  # Wrap low failure set time, sec (9) // 9 is legacy must be quicker than SAT test
-    WRAP_LO_R = (WRAP_LO_S/2.)  # Wrap low failure reset time, sec ('up 1, down 2')
-    WRAP_HI_S = WRAP_LO_S  # Wrap high failure set time, sec (WRAP_LO_S)
-    WRAP_HI_R = (WRAP_HI_S/2.)  # Wrap high failure reset time, sec ('up 1, down 2')
-    WRAP_HI_AMP = 3.2  # Wrap high voltage threshold amplified, A(3.2)
-    WRAP_LO_AMP = -4.  # Wrap high voltage threshold amplified, A (-4)
-    WRAP_HI_NOA = 6.4  # Wrap high voltage threshold non-amplified, A(32)
-    WRAP_LO_NOA = -8.  # Wrap high voltage threshold non-amplified, A (-40)
-    hdwe_ib_hi_lo = 1.  # Type of selection logic philosophy. Only True is implemented and debugged now
-    HDWE_IB_HI_LO_NOA_LO = -11. # Fully NOA unit discharge transition, A (-11, soc4p2)
-    HDWE_IB_HI_LO_AMP_LO = -10. # Fully NOA unit discharge transition, A (-10, soc4p2)
-    HDWE_IB_HI_LO_AMP_HI = 10.  # Fully NOA unit charge transition, A (10, soc4p2)
-    HDWE_IB_HI_LO_NOA_HI = 11.  # Fully NOA unit charge transition, A (11, soc4p2)
-    WRAP_SOC_HI_OFF = 0.97  # Disable e_wrap_hi when saturated (0.97)
-    WRAP_SOC_LO_OFF_REL = 0.2  # Disable e_wrap when near empty (soc lo for high Tb where soc_min=.2, voltage cutback, 0.2)
-    WRAP_SOC_LO_OFF_ABS = 0.35  # Disable e_wrap when near empty (soc lo any Tb, 0.35)
-    WRAP_HI_SAT_MARG = 0.2  # Wrap voltage margin to saturation, V (0.2)
-    WRAP_MOD_C_RATE = 0.02  # Moderate charge rate threshold to engage wrap threshold (0.02 to prevent trip near saturation .05 too large)
-    WRAP_SOC_MOD_OFF = 0.85  # Disable e_wrap_lo when nearing saturated and moderate C_rate(0.85)
-    WRAP_SOC_HI_SLR = 1000.  # Huge to disable e_wrap (1000)
-    WRAP_SOC_LO_SLR = 60.  # Large to disable e_wrap (60. for startup)
-    VOC_STAT_FILT = 120.  # Clean up noise (120)
-    VB_MIN = 2.  # Signal selection hard fault threshold, V (0.  < 2. < 10 bms shutoff, reads ~3 without power when off)
-    VB_MAX = 17.  # Signal selection hard fault threshold, V (17. < VB_CONV_GAIN*4095)
-    TB_MAX = 60.  # Signal selection hard fault threshold 2wire only, C (60.)
-    TB_MIN = -40.  # Signal selection hard fault threshold 2wire only, C (-40.)
-    TB_FILT = 120.  # Temperature filter lag, s (120)
-    T_RLIM = 0.00085  # Temperature sensor rate limit to minimize jumps in Coulomb counting, deg C/s (0.00085 allows 0.05 deg for 1 minute)
-    DISAB_LO_SET = 0.4  # Disable lo=amp wrap fault set persistence, s (0.4)
-    DISAB_LO_RESET = 0.8  # Disable lo=amp wrap fault reset persistence, s (0.8)
-    SHUNT_AMP_GAIN = 1.  # hdwe gain, A/V
-    SHUNT_NOA_GAIN = 1.  # hdwe gain, A/V
-    NS = 1  # Number serial batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
-    NP = 1  # Number parallel batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
-    KF_Q_STD = 0.0003  # Shunt KF process uncertainty
-    KF_R_STD = 0.1000  # Shunt KF state uncertainty
-    ap_dc_dc_on = None  # Truck charging
-    EWLO_TRM_SLR = None
-    EWHI_TRM_SLR = None
-    EWHI_SLR = 1.
-    EWLO_SLR = 1.
-    IBATT_DISAGREE_THRESH = None
-    IB_DIFF_SLR = None
-    NOM_UNIT_CAP = 108.4  # Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah
-    sp_s_cap_mon = None
-    sp_s_cap_sim = None
-    RATED_TEMP = None
-    CHEM = None
-    skip_battery = None
-    sp_ib_disch_slr = None
-    ap_ewhi_slr = None
-    ap_ewlo_slr = None
+    AMP_WRAP_TRIM_GAIN = None
     ap_cc_diff_slr = None
-    ap_ib_diff_slr = None
-    ap_ib_quiet_slr = None
+    ap_dc_dc_on = None  # Truck charging
     ap_disab_ib_fa = None
     ap_disab_tb_fa = None
     ap_disab_vb_fa_lt = None
-    sp_cutback_gain_slr = None
-    ap_dv_voc_soc = None
     ap_ds_voc_soc = None
-    sp_Dw = None
-    sp_vsat_add = None
-    AMP_WRAP_TRIM_GAIN = None
-    NOA_WRAP_TRIM_GAIN = None
-    MAX_WRAP_ERR_FILT = None
+    ap_dv_voc_soc = None
+    ap_eframe_mult = None
+    ap_ewhi_slr = None
+    ap_ewlo_slr = None
+    ap_hys_scale = None
+    ap_ib_diff_slr = None
+    ap_ib_quiet_slr = None
+    CHEM = None
+    D_SOC_S = 0.  # Bias on soc to voc-soc lookup to simulate error in estimation, esp cold battery near 0 C
+    DF2 = None
+    DISAB_LO_RESET = None
+    DISAB_LO_SET = None
+    EKF_CONV = None
+    EKF_NOM_DT = None
+    EKF_Q_SD_NORM = None
+    EKF_R_SD_NORM = None
+    EKF_T_CONV = None
+    EKF_T_RESET = None
+    EWHI_SLR = None
+    EWHI_TRM_SLR = None
+    EWLO_SLR = None
+    EWLO_TRM_SLR = None
+    F_MAX_T_WRAP = None
+    HDB_VB = None
+    hdwe_ib_hi_lo = None
+    HDWE_IB_HI_LO_AMP_HI = None
+    HDWE_IB_HI_LO_AMP_LO = None
+    HDWE_IB_HI_LO_NOA_HI = None
+    HDWE_IB_HI_LO_NOA_LO = None
+    HYS_IB_THR = None
+    HYS_SOC_MIN_MARG = None
     IB_ABS_MAX_AMP = None
     IB_ABS_MAX_NOA = None
+    IB_DIFF_SLR = None
+    IB_MIN_UP = None
+    IBATT_DISAGREE_THRESH = None
+    IMAX_NUM = None
+    KF_Q_STD = None
+    KF_R_STD = None
+    MAX_TRIM_RATE = None
+    MAX_WRAP_ERR_FILT = None
+    MAX_Y_FILT = None
+    MIN_Y_FILT = None
+    MXEPS = None
+    NOA_WRAP_TRIM_GAIN = None
+    NOM_UNIT_CAP = 108.4
+    NOMINAL_VB = None
+    NP = None
+    NS = None
+    RATED_TEMP = None
+    SHUNT_AMP_GAIN = None
+    SHUNT_NOA_GAIN = None
+    skip_battery = None
+    sp_cutback_gain_slr = None
+    sp_Dw = None
+    sp_ib_disch_slr = None
+    sp_s_cap_mon = None
+    sp_s_cap_sim = None
+    sp_vsat_add = None
+    T_RLIM = None
+    TAU_Y_FILT = None
+    TB_FILT = None
+    TB_MAX = None
+    TB_MIN = None
+    TCHARGE_DISPLAY_DEADBAND = None
+    TMAX_FILT = None
+    VB_DC_DC = None
+    VB_MAX = None
+    VB_MIN = None
+    VOC_STAT_FILT = None
+    WN_Y_FILT = None
+    WRAP_ERR_FILT = None
+    WRAP_HI_AMP = None
+    WRAP_HI_NOA = None
+    WRAP_HI_R = None
+    WRAP_HI_S = None
+    WRAP_HI_SAT_MARG = None
+    WRAP_LO_AMP = None
+    WRAP_LO_NOA = None
+    WRAP_LO_R = None
+    WRAP_LO_S = None
+    WRAP_MOD_C_RATE = None
+    WRAP_SOC_HI_OFF = None
+    WRAP_SOC_HI_SLR = None
+    WRAP_SOC_LO_OFF_ABS = None
+    WRAP_SOC_LO_OFF_REL = None
+    WRAP_SOC_LO_SLR = None
+    WRAP_SOC_MOD_OFF = None
+    ZETA_Y_FILT = None
 
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
-    #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
+    #                         what gets delivered, e.g. Wshunt / NOMINAL_VB.  Also varies 0.2 - 0.4 C currents
     #                         or 20 - 40 A for a 100 Ah battery"""
 
     # Battery model:  Randles' dynamics, SOC-VOC model
 
     """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
-                            what gets delivered, e.g.Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
+                            what gets delivered, e.g.Wshunt / NOMINAL_VB.  Also varies 0.2 - 0.4 C currents
                             or 20 - 40 A for a 100 Ah battery"""
 
     def __init__(self, OPT=None, q_cap_rated=NOM_UNIT_CAP*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
@@ -230,7 +229,7 @@ class Battery(Coulombs):
         self.chem = mod_code
         self.nz = None
         self.q = 0  # Charge, C
-        self.voc = Battery.NOM_SYS_VOLT  # Model open circuit voltage, V
+        self.voc = Battery.NOMINAL_VB  # Model open circuit voltage, V
         self.voc_stat = self.voc  # Static model open circuit voltage from charge process, V
         self.voc_stat_past = self.voc_stat
         self.voc_stat_f = self.voc_stat
@@ -239,7 +238,7 @@ class Battery(Coulombs):
         self.ib_dyn_T = 0.  # Randles update time, s
         self.ib_dyn_rstate = 0.  # Randles rstate, A
         self.ib_dyn_lstate = 0.  # Randles lstate, A
-        self.vb = Battery.NOM_SYS_VOLT  # Battery voltage at post, V
+        self.vb = Battery.NOMINAL_VB  # Battery voltage at post, V
         self.ib = 0.  # Current into battery post, A
         self.ib_in = 0.  # Current into calculate, A
         self.ib_charge = 0.  # Current into count_coulombs, A
@@ -440,8 +439,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.eframe = 0
         if OPT is not None:
             self.eframe_mult = OPT.eframe_mult
-            self.dt_eframe = self.dt*self.eframe_mult
-        self.sdb_voc = SlidingDeadband(Battery.HDB_VBATT)
+            self.dt_eframe = self.dt*self.ap_eframe_mult
+        self.sdb_voc = SlidingDeadband(Battery.HDB_VB)
         self.e_wrap = 0.
         self.e_wrap_filt = 0.
         self.e_wrap_rate = 0.
@@ -698,7 +697,7 @@ class BatteryMonitor(Battery, EKF1x1):
                                          min(self.dt_eframe, Battery.EKF_T_RESET), self.reset_ekf)
             # print(f"{reset_ekf=} {self.soc_ekf} {self.x=} {self.voc_stat_ekf=}")
         self.eframe += 1
-        if self.reset_ekf or self.eframe >= self.eframe_mult:  # '>=' ensures reset with changes on the fly
+        if self.reset_ekf or self.eframe >= self.ap_eframe_mult:  # '>=' ensures reset with changes on the fly
             self.eframe = 0
 
         # Filtered voc
@@ -1333,7 +1332,7 @@ class BatterySim(Battery):
 # Other functions
 def is_sat(tb_f, rated_temp, voc, soc, nom_vsat, dvoc_dt, low_t, vsat_add=0.):
     vsat = sat_voc(tb_f, rated_temp, nom_vsat, dvoc_dt, vsat_add=vsat_add)
-    return tb_f > low_t and (voc >= vsat or soc >= Battery.mxeps_bb)
+    return tb_f > low_t and (voc >= vsat or soc >= Battery.MXEPS)
 
 
 def sat_voc(tb_f, rated_temp, vsat, dvoc_dt, vsat_add=0.):

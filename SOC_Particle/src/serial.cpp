@@ -133,6 +133,9 @@ void print_battery_header()
     String::format("ap_cc_diff_slr, ap_ib_diff_slr, ap_ib_quiet_slr, ap_disab_ib_fa, ap_disab_tb_fa, ap_disab_vb_fa_lt,") +
     String::format("sp_cutback_gain_slr, ap_dv_voc_soc, ap_ds_voc_soc, sp_Dw, WRAP_LO_S, WRAP_LO_R, WRAP_HI_S, WRAP_HI_R,") +
     String::format("sp_vsat_add, AMP_WRAP_TRIM_GAIN, NOA_WRAP_TRIM_GAIN, MAX_WRAP_ERR_FILT,") +
+    String::format("TCHARGE_DISPLAY_DEADBAND, EKF_CONV, EKF_T_CONV, EKF_T_RESET, EKF_NOM_DT, DF2, TAU_Y_FILT, MIN_Y_FILT, MAX_Y_FILT, WN_Y_FILT, ZETA_Y_FILT, TMAX_FILT,") +
+    String::format("EKF_Q_SD_NORM, EKF_R_SD_NORM, HYS_SOC_MIN_MARG, HYS_IB_THR, VOC_STAT_FILT, VB_DC_DC, TB_FILT, VB_MAX, VB_MIN, IB_MIN_UP, TB_MAX, TB_MIN,") +
+    String::format("WRAP_ERR_FILT, F_MAX_T_WRAP, WRAP_HI_SAT_MARG, IMAX_NUM, DISAB_LO_SET, DISAB_LO_RESET, MAX_TRIM_RATE, T_RLIM, NOMINAL_VB, HDB_VB, ap_eframe_mult, MXEPS,") +
     String::format("\n");
 
   sendTxBuf(txBuf, true, true);
@@ -161,6 +164,12 @@ void print_battery_serial()
     String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
       sp.cutback_gain_slr(), ap.dv_voc_soc(), ap.ds_voc_soc(), sp.Dw(), WRAP_LO_S, WRAP_LO_R, WRAP_HI_S, WRAP_HI_R) +
     String::format("%10.7f,%10.7f,%10.7f,%10.7f,", sp.Vsat_add(), AMP_WRAP_TRIM_GAIN, NOA_WRAP_TRIM_GAIN, MAX_WRAP_ERR_FILT) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      TCHARGE_DISPLAY_DEADBAND, EKF_CONV, EKF_T_CONV, EKF_T_RESET, EKF_NOM_DT, DF2, TAU_Y_FILT, MIN_Y_FILT, MAX_Y_FILT, WN_Y_FILT, ZETA_Y_FILT, TMAX_FILT) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      EKF_Q_SD_NORM, EKF_R_SD_NORM, HYS_SOC_MIN_MARG, HYS_IB_THR, VOC_STAT_FILT, VB_DC_DC, TB_FILT, VB_MAX, VB_MIN, IB_MIN_UP, TB_MAX, TB_MIN) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      WRAP_ERR_FILT, F_MAX_T_WRAP, WRAP_HI_SAT_MARG, IMAX_NUM, DISAB_LO_SET, DISAB_LO_RESET, MAX_TRIM_RATE, T_RLIM, NOMINAL_VB, HDB_VB, ap.eframe_mult(), MXEPS) +
     String::format("\n");
 
     sendTxBuf(txBuf, true, true);
