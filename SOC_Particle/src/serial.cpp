@@ -125,17 +125,18 @@ void print_all_header(Sensors *Sen)
 void print_battery_header()
 {
   String txBuf;
-  txBuf = String::format("Battery_hdr, hdwe_ib_hi_lo, HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI, IB_ABS_MAX_NOA, IB_ABS_MAX_AMP, KF_Q_STD, KF_R_STD,") +
-    String::format("SHUNT_AMP_GAIN, SHUNT_NOA_GAIN, NS, NP, sp_ib_disch_slr, ap_hys_scale, ap_dc_dc_on,") +
-    String::format("EWLO_TRM_SLR, EWHI_TRM_SLR, WRAP_HI_AMP, WRAP_LO_AMP, WRAP_HI_NOA, WRAP_LO_NOA, ap_ewhi_slr, ap_ewlo_slr,") +
-    String::format("IBATT_DISAGREE_THRESH, NOM_UNIT_CAP, sp_s_cap_mon, sp_s_cap_sim, RATED_TEMP, CHEM,") +
-    String::format("WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR, WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_MOD_C_RATE, WRAP_SOC_MOD_OFF,") +
-    String::format("ap_cc_diff_slr, ap_ib_diff_slr, ap_ib_quiet_slr, ap_disab_ib_fa, ap_disab_tb_fa, ap_disab_vb_fa_lt,") +
-    String::format("sp_cutback_gain_slr, ap_dv_voc_soc, ap_ds_voc_soc, sp_Dw, WRAP_LO_S, WRAP_LO_R, WRAP_HI_S, WRAP_HI_R,") +
-    String::format("sp_vsat_add, AMP_WRAP_TRIM_GAIN, NOA_WRAP_TRIM_GAIN, MAX_WRAP_ERR_FILT,") +
-    String::format("TCHARGE_DISPLAY_DEADBAND, EKF_CONV, EKF_T_CONV, EKF_T_RESET, EKF_NOM_DT, DF2, TAU_Y_FILT, MIN_Y_FILT, MAX_Y_FILT, WN_Y_FILT, ZETA_Y_FILT, TMAX_FILT,") +
-    String::format("EKF_Q_SD_NORM, EKF_R_SD_NORM, HYS_SOC_MIN_MARG, HYS_IB_THR, VOC_STAT_FILT, VB_DC_DC, TB_FILT, VB_MAX, VB_MIN, IB_MIN_UP, TB_MAX, TB_MIN,") +
-    String::format("WRAP_ERR_FILT, F_MAX_T_WRAP, WRAP_HI_SAT_MARG, IMAX_NUM, DISAB_LO_SET, DISAB_LO_RESET, MAX_TRIM_RATE, T_RLIM, NOMINAL_VB, HDB_VB, ap_eframe_mult, MXEPS,") +
+  txBuf = String::format("Battery_hdr, hdwe_ib_hi_lo, AMP_WRAP_TRIM_GAIN, ap_cc_diff_slr, ap_dc_dc_on, ap_disab_ib_fa, ap_disab_tb_fa, ap_disab_vb_fa_lt,") +
+    String::format("ap_ds_voc_soc, ap_dv_voc_soc, ap_eframe_mult, ap_ewhi_slr, ap_ewlo_slr, ap_hys_scale, ap_ib_diff_slr, ap_ib_quiet_slr,") +
+    String::format("CHEM, DF2, DISAB_LO_RESET, DISAB_LO_SET, EKF_CONV, EKF_NOM_DT, EKF_Q_SD_NORM, EKF_R_SD_NORM,") +
+    String::format("EKF_T_CONV, EKF_T_RESET, EWHI_TRM_SLR, EWLO_TRM_SLR, F_MAX_T_WRAP, HDB_VB, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_AMP_LO,") +
+    String::format("HDWE_IB_HI_LO_NOA_HI, HDWE_IB_HI_LO_NOA_LO, HYS_IB_THR, HYS_SOC_MIN_MARG, IB_ABS_MAX_AMP, IB_ABS_MAX_NOA, IB_MIN_UP, IBATT_DISAGREE_THRESH,") +
+    String::format("IMAX_NUM, KF_Q_STD, KF_R_STD, MAX_TRIM_RATE, MAX_WRAP_ERR_FILT, MAX_Y_FILT, MIN_Y_FILT, MXEPS,") +
+    String::format("NOA_WRAP_TRIM_GAIN, NOMINAL_VB, NOM_UNIT_CAP, NP, NS, RATED_TEMP, SHUNT_AMP_GAIN, SHUNT_NOA_GAIN,") +
+    String::format("sp_cutback_gain_slr, sp_Dw, sp_ib_disch_slr, sp_s_cap_mon, sp_s_cap_sim, sp_vsat_add, TAU_Y_FILT, TB_FILT,") +
+    String::format("TB_MAX, TB_MIN, TCHARGE_DISPLAY_DEADBAND, TMAX_FILT, T_RLIM, VB_DC_DC, VB_MAX, VB_MIN,") +
+    String::format("VOC_STAT_FILT, WN_Y_FILT, WRAP_ERR_FILT, WRAP_HI_AMP, WRAP_HI_NOA, WRAP_HI_R, WRAP_HI_S, WRAP_HI_SAT_MARG,") +
+    String::format("WRAP_LO_AMP, WRAP_LO_NOA, WRAP_LO_R, WRAP_LO_S, WRAP_MOD_C_RATE, WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR,") +
+    String::format("WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_SOC_MOD_OFF, ZETA_Y_FILT,") +
     String::format("\n");
 
   sendTxBuf(txBuf, true, true);
@@ -149,27 +150,30 @@ void print_battery_serial()
     bool hdwe_ib_hi_lo = false;
   #endif
   String txBuf;
-  txBuf = String::format("Battery_val,%d,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
-      hdwe_ib_hi_lo, HDWE_IB_HI_LO_NOA_LO, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_NOA_HI, IB_ABS_MAX_NOA, IB_ABS_MAX_AMP, KF_Q_STD, KF_R_STD) +
-    String::format("%10.7f,%10.7f,%4.2f,%4.2f,%10.7f,%10.7f,%d,",
-      SHUNT_AMP_GAIN, SHUNT_NOA_GAIN, NS, NP, sp.ib_disch_slr(), ap.hys_scale(), ap.dc_dc_on()) +
+  txBuf = String::format("Battery_val,%d,%10.7f,%10.7f,%d,%d,%d,%d,%10.7f,%10.7f,",
+      hdwe_ib_hi_lo, AMP_WRAP_TRIM_GAIN, ap.cc_diff_slr(), ap.dc_dc_on(), ap.disab_ib_fa(), ap.disab_tb_fa(), ap.disab_vb_fa_lt(), ap.ds_voc_soc(), ap.dv_voc_soc()) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%d,%10.7f,",
+      ap.eframe_mult(), ap.ewhi_slr(), ap.ewlo_slr(), ap.hys_scale(), ap.ib_diff_slr(), ap.ib_quiet_slr(), CHEM, DF2) +
     String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
-      EWLO_TRM_SLR, EWHI_TRM_SLR, WRAP_HI_AMP, WRAP_LO_AMP, WRAP_HI_NOA, WRAP_LO_NOA, ap.ewhi_slr(), ap.ewlo_slr())+
-    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%d,",
-      IBATT_DISAGREE_THRESH, NOM_UNIT_CAP, ap.s_cap_mon(), ap.s_cap_sim(), RATED_TEMP, CHEM) +
+      DISAB_LO_RESET, DISAB_LO_SET, EKF_CONV, EKF_NOM_DT, EKF_Q_SD_NORM, EKF_R_SD_NORM, EKF_T_CONV, EKF_T_RESET) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      EWHI_TRM_SLR, EWLO_TRM_SLR, F_MAX_T_WRAP, HDB_VB, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_NOA_HI, HDWE_IB_HI_LO_NOA_LO) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      HYS_IB_THR, HYS_SOC_MIN_MARG, IB_ABS_MAX_AMP, IB_ABS_MAX_NOA, IB_MIN_UP, IBATT_DISAGREE_THRESH, IMAX_NUM, KF_Q_STD) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      KF_R_STD, MAX_TRIM_RATE, MAX_WRAP_ERR_FILT, MAX_Y_FILT, MIN_Y_FILT, MXEPS, NOA_WRAP_TRIM_GAIN, NOMINAL_VB) +
+    String::format("%10.7f,%10.7f,%4.2f,%4.2f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      NOM_UNIT_CAP, NP, NS, RATED_TEMP, SHUNT_AMP_GAIN, SHUNT_NOA_GAIN, sp.cutback_gain_slr(), sp.Dw()) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      sp.ib_disch_slr(), ap.s_cap_mon(), ap.s_cap_sim(), sp.Vsat_add(), TAU_Y_FILT, TB_FILT, TB_MAX, TB_MIN) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      TCHARGE_DISPLAY_DEADBAND, TMAX_FILT, T_RLIM, VB_DC_DC, VB_MAX, VB_MIN, VOC_STAT_FILT, WN_Y_FILT) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      WRAP_ERR_FILT, WRAP_HI_AMP, WRAP_HI_NOA, WRAP_HI_R, WRAP_HI_S, WRAP_HI_SAT_MARG, WRAP_LO_AMP, WRAP_LO_NOA) +
     String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
-      WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR, WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_MOD_C_RATE, WRAP_SOC_MOD_OFF) +
-    String::format("%10.7f,%10.7f,%10.7f,  %d,%d,%d,",
-      ap.cc_diff_slr(), ap.ib_diff_slr(), ap.ib_quiet_slr(), ap.disab_ib_fa(), ap.disab_tb_fa(), ap.disab_vb_fa_lt()) +
-    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
-      sp.cutback_gain_slr(), ap.dv_voc_soc(), ap.ds_voc_soc(), sp.Dw(), WRAP_LO_S, WRAP_LO_R, WRAP_HI_S, WRAP_HI_R) +
-    String::format("%10.7f,%10.7f,%10.7f,%10.7f,", sp.Vsat_add(), AMP_WRAP_TRIM_GAIN, NOA_WRAP_TRIM_GAIN, MAX_WRAP_ERR_FILT) +
-    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
-      TCHARGE_DISPLAY_DEADBAND, EKF_CONV, EKF_T_CONV, EKF_T_RESET, EKF_NOM_DT, DF2, TAU_Y_FILT, MIN_Y_FILT, MAX_Y_FILT, WN_Y_FILT, ZETA_Y_FILT, TMAX_FILT) +
-    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
-      EKF_Q_SD_NORM, EKF_R_SD_NORM, HYS_SOC_MIN_MARG, HYS_IB_THR, VOC_STAT_FILT, VB_DC_DC, TB_FILT, VB_MAX, VB_MIN, IB_MIN_UP, TB_MAX, TB_MIN) +
-    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
-      WRAP_ERR_FILT, F_MAX_T_WRAP, WRAP_HI_SAT_MARG, IMAX_NUM, DISAB_LO_SET, DISAB_LO_RESET, MAX_TRIM_RATE, T_RLIM, NOMINAL_VB, HDB_VB, ap.eframe_mult(), MXEPS) +
+      WRAP_LO_R, WRAP_LO_S, WRAP_MOD_C_RATE, WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR, WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL) +
+    String::format("%10.7f,%10.7f,%10.7f,",
+      WRAP_SOC_LO_SLR, WRAP_SOC_MOD_OFF, ZETA_Y_FILT) +
     String::format("\n");
 
     sendTxBuf(txBuf, true, true);
