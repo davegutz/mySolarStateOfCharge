@@ -1531,8 +1531,6 @@ def overall_batt(mv, sv, filename,
         fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
         fig_files.append(fig_file_name)
         if S.save_plots and not S.terse:
-
-
             plt.savefig(fig_file_name, format="png")
 
         plt.figure()  # Batt 2

@@ -642,7 +642,7 @@ def main():  # Sample usage. OK on 20260217
     # Cut-pasted from GUI_TestSOC Run window
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/truckHist_20260302.csv'
 
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/hist20260319.csv'
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/hist 20260406 soc4p2_hi_lo bb_soc4p2_hi_lo_bb.csv'
     time_end = None
     plots = True
     use_mon_csv = False
@@ -651,8 +651,8 @@ def main():  # Sample usage. OK on 20260217
     dt_resample = 900
     Tb_force = None
     request_history = None
-    strict_overplot = False
-    terse = False
+    strict_overplot = True
+    terse = True
     fig_files = None
     fig_list = None
     show_killer_ = True

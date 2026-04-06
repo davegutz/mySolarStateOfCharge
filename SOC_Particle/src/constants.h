@@ -142,24 +142,24 @@ const float T_DESAT =         20;       // De-saturation time, sec
 #define MAX_ERR_FILT          10.       // Current sensor difference Filter maximum windup, A (10.)
 #define MAX_ERR_T             10.       // Maximum update time allowed to avoid instability, s (10.)
 #define IB_HARD_SET           1.        // Signal selection volt range fail persistence, s (1.)
-#define IB_HARD_RESET         1.        // Signal selection volt range fail reset persistence, s (1.)
+#define IB_HARD_RESET         2.        // Signal selection volt range fail reset persistence, s (2.)
 #define IB_LO_ACTIVE_SET      0.2       // Ib low range sensor is in-range persistence, s (0.2)
 #define IB_LO_ACTIVE_RESET    0.4       // Ib low range sensor is in-range reset persistence, s (0.4)
 #define VB_MAX                17.       // Signal selection hard fault threshold, V (17. < VB_CONV_GAIN*4095)
 #define VB_MIN                2.        // Signal selection hard fault threshold, V (0.  < 2. < 10 bms shutoff, reads ~3 without power when off)
-#define VC_MAX                1.85      // Signal selection hard fault threshold, V (3.9/2 +20%)
-#define VC_MIN                1.4       // Signal selection hard fault threshold, V (2.8/2 -20%)
+#define VC_MAX                2.15      // Signal selection hard fault threshold, V (2.15, 1.85 too low)  // 1.65*1.3 is max ADC reading with 1.65v ref, but see 1.9v on truck with no power, so set at 2.15v to avoid false fault on truck when off
+#define VC_MIN                1.1       // Signal selection hard fault threshold, V (1.1, 1.4 too high)
 #define IB_MIN_UP             0.2       // Min up charge current for come alive, BMS logic, and fault
 #ifdef HDWE_2WIRE
     #define TB_MAX                60.       // Signal selection hard fault threshold 2wire only, C (60.)
     #define TB_MIN               -40.       // Signal selection hard fault threshold 2wire only, C (-40.)
 #endif
 #define TB_HARD_SET           1.        // Signal selection Tb 2-wire range fail persistence, s (1.)
-#define TB_HARD_RESET         1.        // Signal selection Tb 2-wire range fail reset persistence, s (1.)
+#define TB_HARD_RESET         2.        // Signal selection Tb 2-wire range fail reset persistence, s (2.)
 #define VB_HARD_SET           1.        // Signal selection volt range fail persistence, s (1.)
-#define VB_HARD_RESET         1.        // Signal selection volt range fail reset persistence, s (1.)
+#define VB_HARD_RESET         2.        // Signal selection volt range fail reset persistence, s (2.)
 #define VC_HARD_SET           1.        // Signal selection volt range fail persistence, s (1.)
-#define VC_HARD_RESET         1.        // Signal selection volt range fail reset persistence, s (1.)
+#define VC_HARD_RESET         2.        // Signal selection volt range fail reset persistence, s (2.)
 #define TB_NOISE              0.        // Tb added noise amplitude, deg C pk-pk
 #define TB_NOISE_SEED         0xe2      // Tb added noise seed 0-255 = 0x00-0xFF (0xe2) 
 #define VB_NOISE              0.        // Vb added noise amplitude, V pk-pk
@@ -190,7 +190,7 @@ const float WRAP_HI_R = (WRAP_HI_S/2.); // Wrap high failure reset time, sec ('u
 const float IBATT_DISAGREE_SET = (WRAP_LO_S-1.); // Signal selection current disagree fail persistence, s (WRAP_LO_S-1) // must be quicker than wrap lo
 #define IBATT_INST_DIFF_SET   0.2       // Persistence on instantaneous current difference, s (0.2)
 #define IBATT_INST_DIFF_RESET 0.0       // Persistence reset on instantaneous current difference, s (0.0)
-#define IBATT_DISAGREE_RESET  1.0       // Signal selection current disagree reset persistence, s (1.)
+#define IBATT_DISAGREE_RESET  2.0       // Signal selection current disagree reset persistence, s (2.)
 #define TAU_Q_FILT      0.5             // Quiet rate time constant, sec (0.5)
 #define MIN_Q_FILT      -5.0            // Quiet filter minimum, V (-0.5)
 #define MAX_Q_FILT      5.0             // Quiet filter maximum, V (0.5)
@@ -233,7 +233,7 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #define HDWE_SHC_2WIRE  1.0265e-7       // 2-wire thermistor characteristic, Steinhart-Hart (1.0265e-7; see '2-wireRTD.ods')
 #define SIZE_MARG         1.05          // Threshold margin, scalar (1.05)
 #define MAX_NOA_RATE        1.0         // Max reasonable noa rate used to disable amp e_wrap logic, A/s (1.0)
-#define CC_DIFF_RESET       1.0         // Signal selection cc_diff ekf test reset persistence, s (1.)
+#define CC_DIFF_RESET       2.0         // Signal selection cc_diff ekf test reset persistence, s (2.)
 #define CC_DIFF_SET         5.0         // Signal selection cc_diff ekf test set persistence, s (5. to handle sawtooth action on cc_diff)
 #define DISAB_LO_SET       0.4          // Disable lo=amp wrap fault set persistence, s (0.4)
 #define DISAB_LO_RESET     0.8          // Disable lo=amp wrap fault reset persistence, s (0.8)
