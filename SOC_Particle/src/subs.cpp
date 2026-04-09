@@ -349,7 +349,7 @@ void sense_synth_select(const bool reset, const bool reset_temp, const bool rese
       sp.put_Iflt(sp.iflt() + 1);
       if ( sp.iflt()>sp.nflt() - 1 ) sp.put_Iflt(0);  // wrap buffer
       Flt_st fault_snap;
-      fault_snap.assign(Time.now(), Mon, Sen);
+      fault_snap.assign_unfilt(Time.now(), Mon, Sen);
       sp.put_fault(fault_snap, sp.iflt());
     }
     else if ( fails_repeated < 4 )

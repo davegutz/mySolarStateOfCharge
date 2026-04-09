@@ -107,6 +107,8 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.s_cap_mon_p->print_help();  // SQ
   ap.s_cap_sim_p->print_help();  // Sq
   ap.Vb_scale_p->print_help();  // SV
+  ap.s_cap_mon_p->print_help();  // SQ
+  ap.snap_wait_p->print_help();  // SW
   ap.q_std_p->print_help();  // Kq
   ap.r_std_p->print_help();  // Kr
 

@@ -331,7 +331,6 @@ public:
   float Vb_add();
   float Vb_noise();
   void vb_print(void);                  // Print Vb result
-  float vc_hdwe() { return Vc_hdwe_; };  // Common select hardware unit voltage, V
   Fault *Flt;
   ScaleBrk *sel_brk_hdwe;                  // Active/active scale break
 protected:

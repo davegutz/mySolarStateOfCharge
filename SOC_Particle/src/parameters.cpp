@@ -108,7 +108,7 @@ VolatilePars::~VolatilePars(){}
 
 void  VolatilePars::initialize()
 {
-    #define NVOL 60
+    #define NVOL 61
     V_ = new Variable*[NVOL];
     V_[n_++] =(cc_diff_slr_p    = new FloatV("  ", "Fc", NULL,"Slr cc_diff thr",      "slr",    0,    1000, &cc_diff_slr_,      1));  // Fc
     V_[n_++] =(cycles_inj_p     = new FloatV("  ", "XC", NULL,"Number prog cycle",    "float",  0,    1000, &cycles_inj_,       0));  // XC
@@ -170,9 +170,10 @@ void  VolatilePars::initialize()
     V_[n_++] =(s_cap_mon_p      = new FloatV("  ", "SQ", NULL,"Scalar cap Mon",       "slr",    0,    1000, &s_cap_mon_,   1.));  // SQ
     V_[n_++] =(s_cap_sim_p      = new FloatV("  ", "Sq", NULL,"Scalar cap Sim",       "slr",    0,    1000, &s_cap_sim_,   1.));  // Sq
     V_[n_++] =(Vb_scale_p       = new FloatV("  ", "SV", NULL,"Scale Vb sensor",      "v",      -1e5, 1e5,  &Vb_scale_,    VB_SCALE));  // SV
+    V_[n_++] =(snap_wait_p      = new ULongV("  ", "SW", NULL,"Snap wait",            "ms",     0UL,  10000UL,  &snap_wait_,   SNAP_WAIT));  // SW
 }
 
-// Print only the volatile paramters (non-eeram)
+
 void VolatilePars::pretty_print(const bool all)
 {
     #ifndef SOFT_DEPLOY_PHOTON

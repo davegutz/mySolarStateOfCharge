@@ -366,14 +366,14 @@ void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon
       Serial.printf("%s", pr.buff);
 
       sprintf(pr.buff, "   %8.6f,%7.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%2d,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,",
-          Sen->vc_hdwe(), Mon->voc_soc(), Sen->Flt->e_wrap(), Sen->Flt->e_wrap_filt(), Sen->Flt->ib_dyn_m(), Sen->Flt->dv_dyn_m(),
+          Sen->Vc_hdwe(), Mon->voc_soc(), Sen->Flt->e_wrap(), Sen->Flt->e_wrap_filt(), Sen->Flt->ib_dyn_m(), Sen->Flt->dv_dyn_m(),
           Sen->Flt->e_wrap_m(), Sen->Flt->e_wrap_m_r(), Sen->Flt->e_wrap_m_filt(), Sen->Flt->LoopIbAmp->e_wrap_trim(), Sen->Flt->LoopIbNoa->e_wrap_trim(),
           Sen->Flt->ib_dyn_n(), Sen->Flt->dv_dyn_n(), Sen->Flt->e_wrap_n(), Sen->Flt->e_wrap_n_filt(),
           Sen->Flt->LoopIbNoa->e_wrap_trim());
       Serial.printf("%s", pr.buff);
 
         sprintf(pr.buff, "  %d,%d,%8.6f,%8.6f,%8.6f, %d,%8.6f,  %d,%8.6f,%8.6f, %d,%8.6f,  %d, %d, ",
-            Sen->Flt->ib_sel_stat(), Sen->Flt->ib_choice(), Sen->vc_hdwe(), Sen->ib_hdwe(), Sim->ib_s(), sp.mod_ib(), Sen->ib(),
+            Sen->Flt->ib_sel_stat(), Sen->Flt->ib_choice(), Sen->Vc_hdwe(), Sen->ib_hdwe(), Sim->ib_s(), sp.mod_ib(), Sen->ib(),
             Sen->Flt->vb_sel_stat(), Sen->vb_hdwe(), Sen->vb_model(), sp.mod_vb(), Sen->vb(),
             sp.mod_tb(), Sen->Flt->tb_fa());
       Serial.printf("%s", pr.buff);

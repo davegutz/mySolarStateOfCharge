@@ -34,6 +34,7 @@ struct Flt_st
   unsigned long t_flt = 1UL; // Timestamp seconds since start of epoch
   int16_t Tb_hdwe_filt = 0;  // Battery bank temperature, hardware, C
   int16_t vb_hdwe_filt = 0;  // Battery single unit measured potential, hardware, V
+  int16_t Vc_hdwe = 0;  // Common voltage used Ib sensing, hardware, V
   int16_t ib_amp_hdwe_filt = 0;  // Battery single unit measured input current, amp, A
   int16_t ib_noa_hdwe_filt = 0;  // Battery single unit measured input current, no amp, A
   int16_t Tb_filt = 0;       // Battery bank temperature, filtered, C
@@ -52,6 +53,7 @@ struct Flt_st
   uint32_t falw = 0;    // Fail word
   unsigned long dummy = 0;  // padding to absorb Wire.write corruption
   void assign(const unsigned long now, BatteryMonitor *Mon, Sensors *Sen);
+  void assign_unfilt(const unsigned long now, BatteryMonitor *Mon, Sensors *Sen);
   void copy_to_Flt_ram_from(Flt_st input);
   void get() {};
   void nominal();
@@ -73,6 +75,7 @@ public:
   void put_t_flt(const unsigned long value)     { t_flt = value; };
   void put_Tb_hdwe_filt(const int16_t value)         { Tb_hdwe_filt = value; };
   void put_vb_hdwe_filt(const int16_t value)         { vb_hdwe_filt = value; };
+  void put_Vc_hdwe(const int16_t value)              { Vc_hdwe = value; };
   void put_ib_amp_hdwe_filt(const int16_t value)     { ib_amp_hdwe_filt = value; };
   void put_ib_noa_hdwe_filt(const int16_t value)     { ib_noa_hdwe_filt = value; };
   void put_Tb_filt(const int16_t value)              { Tb_filt = value; };

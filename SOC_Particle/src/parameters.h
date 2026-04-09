@@ -118,6 +118,7 @@ public:
     FloatV *nS_p;
     FloatV *s_cap_mon_p;
     FloatV *s_cap_sim_p;
+    ULongV *snap_wait_p;
     FloatV *Vb_scale_p;
 
     // accessors
@@ -301,6 +302,7 @@ protected:
     unsigned long int samp_points_; // Number of sample readings to take, !=0 initiates sampling
     float slr_res_;              // Scalar Randles R0, slr
     unsigned long int sum_delay_; // Minor frame divisor, div
+    unsigned long int snap_wait_; // Wait after snap before print, ms
     unsigned long int tail_inj_; // Tail after end injection, ms
     unsigned long int talk_delay_; // Talk frame, ms
     float Tb_bias_model_;        // Bias on Tb for model
