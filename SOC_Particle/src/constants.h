@@ -142,8 +142,6 @@ const float T_DESAT =         20;       // De-saturation time, sec
 #define TAU_ERR_FILT          5.        // Current sensor difference filter time constant, s (5.)
 #define MAX_ERR_FILT          10.       // Current sensor difference Filter maximum windup, A (10.)
 #define MAX_ERR_T             10.       // Maximum update time allowed to avoid instability, s (10.)
-#define IB_HARD_SET           1.        // Signal selection volt range fail persistence, s (1.)
-#define IB_HARD_RESET         2.        // Signal selection volt range fail reset persistence, s (2.)
 #define IB_LO_ACTIVE_SET      0.2       // Ib low range sensor is in-range persistence, s (0.2)
 #define IB_LO_ACTIVE_RESET    0.4       // Ib low range sensor is in-range reset persistence, s (0.4)
 #define VB_MAX                17.       // Signal selection hard fault threshold, V (17. < VB_CONV_GAIN*4095)
@@ -241,6 +239,12 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #define MAX_TRIM_RATE    0.005          // Max allowable amp e_wraptrim rate, V/s (0.005)
 
 // Default values for constants that can be overridden
+#if !defined(IB_HARD_SET)
+    #define IB_HARD_SET        1.0          // Signal selection volt range fail persistence, s (1.)
+#endif
+#if !defined(IB_HARD_RESET)
+    #define IB_HARD_RESET      2.0          // Signal selection volt range fail reset persistence, s (2.)
+#endif
 #if !defined(NOM_DS)
     #define NOM_DS             0.0          // Nominal VOC(SOC) del soc (Ds) 0.0)
 #endif
