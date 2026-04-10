@@ -37,6 +37,7 @@ from ComparePlotSettings import rescale_time_axes
 
 
 class PlotKiller(tk.Toplevel):
+    # noinspection PyUnusedLocal
     def __init__(self, message, caller, fig_list_=None, fig_files_=None, pdf_path_='.', pdf_base_=None):
         """Block caller task asking to close all plots then doing so"""
         self.fig_list = fig_list_

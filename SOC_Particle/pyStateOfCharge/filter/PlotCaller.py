@@ -23,31 +23,9 @@ Dependencies:
 """
 from json.encoder import encode_basestring
 
-import numpy as np
-import matplotlib.pyplot as plt
-from datetime import datetime
-from Battery import Battery, overall_batt
-from myFilters import LagExp
-# below suppresses runtime error display******************
-# import os
-# os.environ["KIVY_NO_CONSOLELOG"] = "1"
-# from kivy.utils import platform  # failed experiment to run BLE data plotting realtime on android
-# if platform != 'linux':
-#     from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files
 from unite_pictures import unite_pictures_into_pdf, cleanup_fig_files
-import Chemistry_BMS
-from Colors import Colors
-import re
-from local_paths import version_from_data_file, local_paths
 import os
-import sys
 import ast
-import textwrap
-
-
-# def plq(plt_, sx, st, sy, yt, slr=1, add=0., color='black', linestyle='-', label=None, marker=None,
-#         markersize=None, markevery=None, stairs=False, warn=True):
-
 
 
 def extract(function_call_string: str) -> list[str]:

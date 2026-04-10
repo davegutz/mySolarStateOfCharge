@@ -1,5 +1,10 @@
 # Copyright (C) 2026 Dave Gutz
 #
+# noinspection PyAttributeOutsideInit,PyUnresolvedReferences
+# type: ignore
+#
+# pylint: disable=invalid-name, no-member, attribute-defined-outside-init
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
@@ -23,6 +28,7 @@ from plot.plq import plq as plq
 from plot.PlotOptions import PlotOptions
 
 
+# noinspection PyPep8Naming
 def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     if fig_files is None:
         fig_files = []
@@ -32,12 +38,13 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     plt.suptitle(S.plot_title + ' Ult 1')
     plt.rcParams['legend.fontsize'] = 6
     print('Ult 1', end=':  ')
+    # noinspection PyRedundantParentheses
     if (hasattr(S.mr, 'mib') and all(S.mr.mib == 0)) or (hasattr(S.mr, 'mod_data') and all(S.mr.mod_data < 64)):
         plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe', color='green', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'ib_amp_hdwe', color='red', linestyle='--', warn=False)
         plq(plt, S.mr, 'time', S.mr, 'ib_noa_hdwe', color='blue', linestyle='-.')
         plq(plt, S.mv, 'time', S.mv, 'ib_noa_hdwe', color='orange', linestyle=':', warn=False)
-    elif (hasattr(S.mr, 'mod') and all(S.mr.mod >= 255.)) or (not (S.strict_overplot) \
+    elif (hasattr(S.mr, 'mod') and all(S.mr.mod >= 255.)) or (not (S.strict_overplot)
                                                               and not(S.run_type=='HistSim' or S.run_type=='HistHist')):
         plq(plt, S.mr, 'time', S.mr, 'ib_amp_model', add=1., color='green', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'ib_amp_model', add=1., color='red', linestyle='--', warn=False)

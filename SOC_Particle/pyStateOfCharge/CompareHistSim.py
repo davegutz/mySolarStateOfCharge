@@ -1,6 +1,10 @@
 # CompareHistSim.py:  load fault, hist, summ data and compare to simulation.
 # Copyright (C) 2026 Dave Gutz
 #
+# noinspection PyPep8Naming,PyUnboundLocalVariable,PyShadowingNames,PyShadowingBuiltins,PyUnresolvedReferences,PyAttributeOutsideInit
+# type: ignore
+# pylint: disable=invalid-name, used-before-assignment, redefined-outer-name, redefined-builtin, no-member, attribute-defined-outside-init
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
@@ -18,8 +22,8 @@
 import numpy as np
 import numpy.lib.recfunctions as rf
 import matplotlib.pyplot as plt
-from Battery import Battery, BatteryMonitor, is_sat, calculate_capacity, load_off_nominal_battery, \
-    apply_off_nominal_battery
+from battery_constants import load_off_nominal_battery, apply_off_nominal_battery
+from Battery import Battery, BatteryMonitor, is_sat, calculate_capacity
 from MonSim import replicate, save_clean_file, save_fault_coverage, UserOptions
 from resample import resample
 from PlotKiller import show_killer
@@ -44,8 +48,9 @@ IB_BAND = 1.  # Threshold to declare charging or discharging
 TB_BAND = 25.  # Band around temperature to group data and correct.  Large value means no banding, effectively
 
 # Calculate thresholds from global input values listed above (review these)
+# noinspection PyPep8Naming
 def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb):
-    # There is no fault logic in the python code, so hard code it here
+    # There is no fault logic in the Python code, so hard code it here
     WRAP_HI_A = 32.  # Wrap high voltage threshold, A (32 after testing; 16=0.2v)
     WRAP_LO_A = -32.  # Wrap high voltage threshold, A (-32, -20 too small on truck -16=-0.2v)
     WRAP_HI_SAT_MARG = 0.2  # Wrap voltage margin to saturation, V (0.2)
@@ -199,15 +204,7 @@ def filter_Tb(raw, tb_forr, mon, tb_band=5., rated_batt_cap=None):
         t_s_min = h.time_min[0]
         t_e_min = h.time_min[-1]
         dt_hys_min = 1.  # ??????????????????????????????
-        dt_hys_sec = dt_hys_min * 60.
-        hys_time_min = np.arange(t_s_min, t_e_min, dt_hys_min, dtype=float)
         print(f" {t_s_min=} {t_e_min=} {dt_hys_min=}  days of data = {(t_e_min-t_s_min)/(24.*60)} ", end='')
-        for i in range(len(hys_time_min)):
-            t_sec = hys_time_min[i] * 60.
-            ib_f = np.interp(t_sec, h.time_sec, h.ib_f)
-            soc = np.interp(t_sec, h.time_sec, h.soc)
-        for i in range(len(h.time_ux)):
-            t_min = int(float(h.time_ux[i]) / 60.)
         h = rf.rec_append_fields(h, 'sat', saturated_)
         h = rf.rec_append_fields(h, 'saturated', saturated_)
         h = rf.rec_append_fields(h, 'bms_off', bms_off_)
@@ -243,7 +240,7 @@ def shift_time(mr, extra_shift=0.):
 
 
 def add_chm(hist, mon_t_=False, mon=None, chm=None):
-    if mon_t_ is False or mon is None:
+    if not mon_t_ or mon is None:
         print("add_chm:  not executing")
         if chm is not None:
             chm_s = []
@@ -270,7 +267,7 @@ def add_delta_q(hist):
     return hist
 
 def add_mod(hist, mon_t_=False, mon=None):
-    if mon_t_ is False or mon is None:
+    if not mon_t_ or mon is None:
         print("add_mod:  not executing")
         return hist
     else:
@@ -282,7 +279,7 @@ def add_mod(hist, mon_t_=False, mon=None):
 
 
 def add_qcrs(hist, mon_t_=False, mon=None, qcrs=None, t_rated=None, dqdt=None):
-    if mon_t_ is False or mon is None:
+    if not mon_t_ or mon is None:
         print("add_qcrs:  not executing")
         if qcrs is not None:
             qcrs_m = []
@@ -313,6 +310,7 @@ def add_qcrs(hist, mon_t_=False, mon=None, qcrs=None, t_rated=None, dqdt=None):
     return hist
 
 
+# noinspection PyPep8Naming
 def scale_large_time(D):
     if D is None:
         return D
@@ -322,6 +320,7 @@ def scale_large_time(D):
     return D
 
 
+# noinspection PyPep8Naming
 def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=False, unit_key=None,
                        sync_time=None, dt_resample=10, Tb_force=None, skip=1):
     """Load history, reconstruct samples by linear interpolation and normalize all soc and Tb to 20C"""
@@ -343,7 +342,6 @@ def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=Fa
     apply_off_nominal_battery(Battery, Battery_off_dict)
 
     rated_batt_cap = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_mon
-    rated_batt_cap_s = Battery.NOM_UNIT_CAP * Battery.sp_s_cap_sim
     qcrs = rated_batt_cap * 3600.
 
 
@@ -435,7 +433,7 @@ def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=Fa
             # Rename
             f_raw = rename_all(f_raw)
             fault = add_stuff_f(f_raw, batt, ib_band=IB_BAND, rated_batt_cap=rated_batt_cap, Dw=dvoc_mon,
-                                time_sync=sync_time, unit=unit, ap_ib_diff_slr=Battery_off_dict['ap_ib_diff_slr'],
+                                time_sync=sync_time, ap_ib_diff_slr=Battery_off_dict['ap_ib_diff_slr'],
                                 ap_ib_quiet_slr=Battery_off_dict['ap_ib_quiet_slr'])
             print("\nfault after add_stuff_f:\n", fault.dtype.names, fault, "\n")
             fault = filter_Tb(fault, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap)  # tb_band=100 disables banding
@@ -520,6 +518,7 @@ def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=Fa
         return mon, sim, unit, fault, hist_20C, filename, Battery
 
 
+# noinspection PyPep8Naming
 def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=False, unit_key=None,
                      sync_time=None, dt_resample=10, Tb_force=None, request_history=None, strict_overplot=False,
                      terse=False, fig_list=None, fig_files=None, show_killer_=True):
@@ -562,6 +561,7 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
     use_sat_mon = True
 
     # Load history, normalizing all soc and Tb to 20C
+    # noinspection PyShadowingNames
     mon_run, sim_run, unit, fault, hist_20C, load_filename, Battery = \
         load_hist_and_prep(data_file=data_file, time_end=time_end, plots=plots, use_mon_csv=use_mon_csv,
                            unit_key=unit_key, sync_time=sync_time, dt_resample=dt_resample, Tb_force=Tb_force)
@@ -640,6 +640,7 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
     return fig_list, fig_files
 
 
+# noinspection PyUnusedLocal,PyPep8Naming
 def main():  # Sample usage. OK on 20260217
 
     import sys
@@ -652,11 +653,11 @@ def main():  # Sample usage. OK on 20260217
     # Cut-pasted from GUI_TestSOC Run window
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/truckHist_20260302.csv'
 
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/sample fault_soc3p2_hi_lo_bb.csv'
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/fault soc4p2 20260410.csv'
     time_end = None
     plots = True
     use_mon_csv = False
-    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
+    unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     sync_time = None
     dt_resample = 10
     Tb_force = None

@@ -33,7 +33,6 @@ GUI_TestSOC_path = str(PurePosixPath(os.getcwd()) / 'GUI_TestSOC.png')
 if sys.platform == 'win32':
 
     # Check executable is local
-    x=1;
     if sys.executable.__contains__(str(Path("venv") / "Scripts" / "python")):
         pass
     else:

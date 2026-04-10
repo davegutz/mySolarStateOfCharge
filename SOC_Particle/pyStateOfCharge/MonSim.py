@@ -1,6 +1,11 @@
 # MonSim:  Monitor and Simulator replication of Particle Photon Application
 # Copyright (C) 2026 Dave Gutz
 #
+# noinspection PyAttributeOutsideInit,PyUnresolvedReferences
+# type: ignore
+#
+# pylint: disable=invalid-name, no-member, attribute-defined-outside-init
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
@@ -17,18 +22,14 @@
 a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
-from SavedData import SavedData as SavedData
-from SavedData import SavedDataSim as SavedDataSim
 from MonSimNomConfig import *  # Global config parameters.   Overwrite in your own calls for studies
-from Battery import BatteryMonitor, BatterySim, is_sat, Retained, apply_off_nominal_battery
+from battery_constants import apply_off_nominal_battery
+from Battery import BatteryMonitor, BatterySim, is_sat, Retained
 from UserOptions import UserOptions
-from dataclasses import dataclass
-from Battery import overall_batt
-from Battery import Battery as Battery
-from typing import Optional
 from filter.TFDelay import TFDelay
 from MonSimClasses import *
 from MonSimPrint import *
+# noinspection PyPep8Naming
 import Globals as G
 
 def battery_size(mr, sr, scale_in_, unit_cap_rated_):
@@ -93,6 +94,7 @@ def vb_from_raw_or_selected(use_raw, mr):
 #  Replicate the application in its entirety here.
 #  There are no 'bank' parameters anywhere in this model.   It is assumed that all inputs from the application have
 #  been converted to the single battery unit 12v form, S1P1, lower-case nomenclature.
+# noinspection PyPep8Naming
 def replicate(OPT: UserOptions):
     """TODO:
     7. Fig. 9 EKF 2a: hx(soc) negative slope?  This needs to be run just below saturation

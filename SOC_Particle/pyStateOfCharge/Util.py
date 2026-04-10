@@ -1,5 +1,4 @@
-import os
-from pathlib import Path, PurePosixPath
+from pathlib import PurePosixPath
 import numpy.lib.recfunctions as rfn
 
 

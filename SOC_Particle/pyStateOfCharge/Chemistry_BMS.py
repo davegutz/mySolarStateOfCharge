@@ -49,6 +49,8 @@ class BMS:
 
 class Chemistry(BMS):
     """Properties of battery"""
+
+    # noinspection PyPep8Naming
     def __init__(self, mod_code=0, dvoc=0., unit=None, Dw=0.):
         BMS.__init__(self)
         self.rated_temp = 0.  # Temperature at NOM_UNIT_CAP, deg C
@@ -165,6 +167,7 @@ class Chemistry(BMS):
         self.lu_n_hys = myTables.TableInterp1D(t_soc0, t_dv_min0)
 
     # Assign CHINS chemistry
+    # noinspection PyPep8Naming
     def assign_CH(self):
         # Constants
         # self.cap = see below
@@ -236,6 +239,7 @@ class Chemistry(BMS):
         self.lu_n_hys = myTables.TableInterp1D(t_soc1, t_dv_min1)
 
     # Assign CHINS chemistry
+    # noinspection PyPep8Naming
     def assign_CHG(self):
         # Constants
         # self.cap = see below

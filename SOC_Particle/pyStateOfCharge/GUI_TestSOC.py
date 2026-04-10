@@ -1,4 +1,5 @@
 #! /bin/sh
+# noinspection PySingleQuotedDocstring
 "exec" "`dirname $0`/venv/bin/python3" "$0" "$@"
 #  #! /Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/py/venv/bin/python
 # The #! operates for macOS only. 'Python Launcher' (Python Script Preferences) option for 'Allow override with #! in script' is checked.
@@ -9,6 +10,10 @@
 #
 #  2023-Jun-15  Dave Gutz   Create
 # Copyright (C) 2026 Dave Gutz
+#
+# noinspection PyTypeChecker,PyArgumentList,PyCallingNonCallable,PyUnfilledParameters,SpellCheckingInspection,PyPep8Naming,PyUnboundLocalVariable,PyShadowingNames,PyShadowingBuiltins
+# type: ignore
+# pylint: disable=all, invalid-name, used-before-assignment, redefined-outer-name, redefined-builtin
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -25,6 +30,7 @@
 """Define a class to manage configuration using files for memory (poor man's database)"""
 import sys
 import os
+from pathlib import Path, PurePosixPath
 import time
 from configparser import ConfigParser
 import re
@@ -51,6 +57,7 @@ else:
     from tkinter import Button as myButton
 bg_color = 'lightgray'
 if sys.version_info.major == 3 and sys.version_info.minor < 12:
+    # noinspection PyUnusedImports
     import pyautogui
 else:
     try:
@@ -319,7 +326,8 @@ class Begini(ConfigParser):
             self.config_file_path = str(PurePosixPath('/Users/daveg/.local') / config_txt)
         else:
             config_txt = PurePosixPath(config_basename).stem + '.ini'
-            self.config_file_path = str(Path(os.getenv('LOCALAPPDATA')) / config_txt)
+            local_app_data = os.getenv('LOCALAPPDATA') or str(Path.home() / 'AppData' / 'Local')
+            self.config_file_path = str(Path(local_app_data) / config_txt)
         print('config file', self.config_file_path)
         if Path(self.config_file_path).is_file():
             self.read(self.config_file_path)
@@ -372,6 +380,7 @@ class ExRoot:
 # Executive class to control the global variables
 class Exec:
     def __init__(self, cf_=None, ind=None, level=None, path_disp_len_=25):
+        self.root_config = None
         self.cf = cf_
         self.ind = ind
         self.level = level
@@ -386,7 +395,7 @@ class Exec:
         self.unit = self.cf[self.ind]['unit']
         if self.version is None:
             self.version = 'undefined'
-        self.version_path = str(PurePosixPath(self.dataReduction_folder) / self.version)
+        self.version_path = str(PurePosixPath(self.dataReduction_folder or '.') / (self.version or 'undefined'))
         if not Path(self.version_path).is_dir():
             tk.messagebox.showerror(title="Error",
                                     message=self.version_path + " unavailable. Abort opening\nTurn on Drive & refresh" +
@@ -425,7 +434,7 @@ class Exec:
         else:
             self.file_txt = create_file_txt(name_override, self.unit, self.battery)
             self.key = create_file_key(self.version, self.unit, self.battery)
-        self.file_path = str(PurePosixPath(self.version_path) / self.file_txt)
+        self.file_path = str(PurePosixPath(self.version_path or '.') / (self.file_txt or 'undefined'))
         self.update_file_label()
         self.file_exists = Path(self.file_path).is_file()
         self.update_file_label()
@@ -483,7 +492,7 @@ class Exec:
         self.cf[self.ind]['version'] = self.version
         self.cf.save_to_file()
         self.version_button.config(text=self.version)
-        self.version_path = str(PurePosixPath(self.dataReduction_folder) / self.version)
+        self.version_path = str(PurePosixPath(self.dataReduction_folder or '.') / (self.version or 'undefined'))
         os.makedirs(self.version_path, exist_ok=True)
         self.create_file_path_and_key()
         self.update_key_label()
@@ -575,7 +584,7 @@ class Exec:
             self.key_label.config(bg='lightgreen')
         else:
             self.key_label.config(bg='pink')
-        test_filename.set(putty_connection.get(Test.unit))
+        test_filename.set(putty_connection.get(Test.unit or '', ''))
 
     def update_unit_button(self):
         self.unit_button.config(text=self.unit)
@@ -608,18 +617,18 @@ def clear_data(silent=False, nowait=False):
         wait_size = 0
     if enter_size > 64:  # bytes
         if wait_size > enter_size and not nowait:
-            if silent is False:
+            if not silent:
                 print('stop data first')
             tkinter.messagebox.showwarning(message="stop data first")
         else:
             # create empty file
             if not save_putty():
-                if silent is False:
+                if not silent:
                     tkinter.messagebox.showwarning(message="putty may be open already")
                 else:
                     update_data_buttons()
     else:
-        if silent is False:
+        if not silent:
             print('putty test file non-existent or too small (<64 bytes) probably already done')
             tkinter.messagebox.showwarning(message="Nothing to clear")
 
@@ -643,7 +652,7 @@ def compare_hist_hist_choose():
                 print('GUI_TestSOC compare_hist_hist_choose:  Test', test_basename, test_key)
                 compare_hist_hist(data_file_run=run_path, unit_key_run=ref_key,
                                   data_file_tst=testpath, unit_key_tst=test_key,
-                                  dt_resample=30., strict_overplot=strict_overplot.get(),
+                                  dt_resample=30.,
                                   terse=terse.get())
             else:
                 tk.messagebox.showerror(message='key not found in' + testpath)
@@ -823,15 +832,11 @@ def create_file_txt(option_, unit_, battery_):
 def empty_file(target):
     # create empty file
     try:
-        open(empty_csv_path.get(), 'x')
-    except FileExistsError:
-        pass
-    shutil.copyfile(empty_csv_path.get(), target)
-    print('emptied', putty_test_csv_path.get())
-    try:
-        os.remove(empty_csv_path.get())
-    except OSError:
-        pass
+        with open(target, 'w') as _:
+            pass
+    except Exception as e:
+        print(f"empty_file: failed to empty {target} with {e}")
+    print('emptied', target)
 
 
 def enter_mod_in_app():
@@ -858,7 +863,7 @@ def grab_init():
     try:
         current_ut = 'UT' + str(int(time.time())) + ';'
         print(f"current_ut {current_ut}")
-    except:
+    except AttributeError:
         current_ut = ''
         print(f"current_ut blank ***No Internet??")
     init_command = init.get() + current_ut
@@ -905,7 +910,7 @@ def grab_time():
 def handle_modeling(*_args):
     cf['others']['modeling'] = str(modeling.get())
     cf.save_to_file()
-    if modeling.get() is True:
+    if modeling.get():
         ref_remove()
     else:
         ref_restore()
@@ -919,7 +924,7 @@ def handle_macro(*_args):
     if macro_option_.__contains__('CH'):
         if Test.battery == 'bb' or Ref.battery == 'bb':
             confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "bb." Continue?')
-            if confirmation is False:
+            if not confirmation:
                 print('start over')
                 tkinter.messagebox.showwarning(message='try again')
                 option.set('try again')
@@ -927,7 +932,7 @@ def handle_macro(*_args):
     elif macro_option_.__contains__('BB'):
         if Test.battery == 'ch' or Ref.battery == 'ch' or Test.battery == 'chg' or Ref.battery == 'chg':
             confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "ch." Continue?')
-            if confirmation is False:
+            if not confirmation:
                 print('start over')
                 tkinter.messagebox.showwarning(message='try again')
                 option.set('try again')
@@ -947,7 +952,7 @@ def handle_option(*_args):
     if option_.__contains__('CH'):
         if Test.battery == 'bb' or Ref.battery == 'bb':
             confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "bb." Continue?')
-            if confirmation is False:
+            if not confirmation:
                 print('start over')
                 tkinter.messagebox.showwarning(message='try again')
                 option.set('try again')
@@ -955,7 +960,7 @@ def handle_option(*_args):
     elif option_.__contains__('BB'):
         if Test.battery == 'ch' or Ref.battery == 'ch' or Test.battery == 'chg' or Ref.battery == 'chg':
             confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "cc." Continue?')
-            if confirmation is False:
+            if not confirmation:
                 print('start over')
                 tkinter.messagebox.showwarning(message='try again')
                 option.set('try again')
@@ -1018,7 +1023,7 @@ def kill_putty(sys_=None, silent=True):
         command = 'pkill putty'
     else:
         print(f"kill_putty: SYS = {sys_} unknown")
-    if silent is False:
+    if not silent:
         print(command + '\n')
         print(Colors.bg.brightblack, Colors.fg.wheat)
         result = run_shell_cmd(command, silent=silent)
@@ -1042,7 +1047,7 @@ def look_putty(sys_=None, silent=True):
         command = 'tbd'
     else:
         print(f"kill_putty: SYS = {sys_} unknown")
-    if silent is False:
+    if not silent:
         print(command + '\n')
         print(Colors.bg.brightblack, Colors.fg.wheat)
         result = run_shell_cmd(command, silent=silent)
@@ -1107,7 +1112,7 @@ def lookup_start():
 
 
 def lookup_test():
-    test_filename.set(putty_connection.get(Test.unit))
+    test_filename.set(putty_connection.get(Test.unit or '', ''))
 
 
 def putty_size():
@@ -1124,8 +1129,8 @@ def ref_remove():
     run_sim_hist_button.config(text='Run Both of These')
     hist_sim_button.config(text='Compare Hist Sim')
     hist_hist_button.forget()
-    hist_sim_button.pack(side=tk.LEFT, padx=5, pady=5)
-    run_sim_hist_button.pack(side=tk.RIGHT, padx=5, pady=5)
+    hist_sim_button.pack(side='left', padx=5, pady=5)
+    run_sim_hist_button.pack(side='right', padx=5, pady=5)
     Ref.label.forget()
 
 
@@ -1134,7 +1139,7 @@ def ref_restore():
     run_x_button.config(text='Compare Run Run')
     run_sim_hist_button.forget()
     hist_sim_button.forget()
-    hist_hist_button.pack(side=tk.LEFT, padx=5, pady=5)
+    hist_hist_button.pack(side='left', padx=5, pady=5)
     Ref.label.pack(padx=5, pady=5)
 
 
@@ -1151,7 +1156,7 @@ def save_data():
                 print('Test.file_path', Test.file_path)
         if Path(Test.file_path).is_file() and Path(Test.file_path).stat().st_size > 0:  # bytes
             confirmation = tk.messagebox.askyesno('query overwrite', 'File exists:  overwrite?')
-            if confirmation is False:
+            if not confirmation:
                 print('skipped overwrite')
                 tkinter.messagebox.showwarning(message='retained ' + Test.file_path)
                 return
@@ -1189,7 +1194,7 @@ def save_data_as():
                 print('Test.file_path', Test.file_path)
         if Path(Test.file_path).is_file() and Path(Test.file_path).stat().st_size > 0:  # bytes
             confirmation = tk.messagebox.askyesno('query overwrite', 'File exists:  overwrite?')
-            if confirmation is False:
+            if not confirmation:
                 print('reset and use clear')
                 tkinter.messagebox.showwarning(message='reset and use clear')
                 return
@@ -1221,7 +1226,7 @@ def save_progress():
                 print('Test.file_path', Test.file_path)
         if Path(Test.file_path).is_file() and Path(Test.file_path).stat().st_size > 0:  # bytes
             confirmation = tk.messagebox.askyesno('query overwrite', 'File exists:  overwrite?')
-            if confirmation is False:
+            if not confirmation:
                 print('skipped overwrite')
                 tkinter.messagebox.showwarning(message='Nothing changed')
                 return
@@ -1294,10 +1299,10 @@ def swap_run_test():
 def tksleep(t):
     """emulating time.sleep(seconds)"""
     ms = int(t*1000)
-    root = tk._get_default_root()
-    var = tk.IntVar(root)
-    root.after(ms, lambda: var.set(1))
-    root.wait_variable(var)
+    var = tk.IntVar(master)
+    var.set(0)
+    master.after(ms, var.set, 1)
+    master.wait_variable(var)
 
 
 def update_data_buttons():
@@ -1310,7 +1315,6 @@ def update_data_buttons():
 
 if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     import os
-    from pathlib import Path, PurePosixPath
     import tkinter as tk
     from tkinter import ttk
 
@@ -1344,8 +1348,9 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
         putty_test_csv_path = tk.StringVar(master, '/Users/daveg/.local/putty_test.csv')
         path_to_temp = tk.StringVar(master, '/Users/daveg/.local')
     else:
-        putty_test_csv_path = tk.StringVar(master, str(Path(os.getenv('LOCALAPPDATA')) / 'Temp' / 'putty_test.csv'))
-        path_to_temp = tk.StringVar(master, str(Path(os.getenv('LOCALAPPDATA')) / 'Temp'))
+        local_app_data_ = os.getenv('LOCALAPPDATA') or str(Path.home() / 'AppData' / 'Local')
+        putty_test_csv_path = tk.StringVar(master, str(Path(local_app_data_) / 'Temp' / 'putty_test.csv'))
+        path_to_temp = tk.StringVar(master, str(Path(local_app_data_) / 'Temp'))
     print(f"{putty_test_csv_path.get()=}")
     icon_path = str(PurePosixPath(ex_root.script_loc) / 'GUI_TestSOC.png')
     master.iconphoto(False, tk.PhotoImage(file=icon_path))
@@ -1384,8 +1389,8 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
                                  command=Ref.enter_data_reduction_folder,
                                  fg="blue", bg=bg_color)
     working_label.pack(padx=5, pady=5)
-    Test.folder_button.pack(padx=5, pady=5, anchor=tk.W)
-    Ref.folder_button.pack(padx=5, pady=5, anchor=tk.E)
+    Test.folder_button.pack(padx=5, pady=5, anchor='w')
+    Ref.folder_button.pack(padx=5, pady=5, anchor='e')
 
     # Version row
     tk.Label(top_panel_left, text="Version", font=label_font).pack(pady=2)
@@ -1405,7 +1410,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     ref_unit.trace_add('write', handle_run_unit)
     Ref.unit_button.pack(pady=2)
     
-    test_filename = tk.StringVar(master, putty_connection.get(Test.unit))
+    test_filename = tk.StringVar(master, putty_connection.get(Test.unit or '', ''))
 
     # Battery row
     tk.Label(top_panel_left, text="Battery", font=label_font).pack(pady=2, expand=True, fill='both')
@@ -1429,7 +1434,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     tk.Label(top_panel_left, text="", font=label_font).pack(pady=2, expand=True, fill='both')
     tk.Label(top_panel_left_ctr, text="", font=label_font).pack(pady=2, expand=True, fill='both')
     swap_button = myButton(top_panel_right, text="swap Ref<-->Test", command=swap_run_test, bg=bg_color)
-    swap_button.pack(side=tk.RIGHT, padx=5, pady=5)
+    swap_button.pack(side='right', padx=5, pady=5)
 
     # Image
     pic_path = str(PurePosixPath(ex_root.script_loc) / 'GUI_TestSOC.png')
@@ -1461,21 +1466,19 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     sel1.pack(padx=5, pady=5)
     option.trace_add('write', handle_option)
     Test.label = tk.Label(option_panel_ctr, text=Test.file_txt)
-    Test.label.pack(padx=5, pady=5, anchor=tk.W)
+    Test.label.pack(padx=5, pady=5, anchor='w')
     Ref.label = tk.Label(option_panel_right, text=Ref.file_txt)
-    Ref.label.pack(padx=5, pady=5, anchor=tk.E)
+    Ref.label.pack(padx=5, pady=5, anchor='e')
     Test.create_file_path_and_key(cf['others']['option'])
     Ref.create_file_path_and_key(cf['others']['option'])
 
-    # init row
-    empty_csv_path = tk.StringVar(master, str(PurePosixPath(Test.dataReduction_folder) / 'empty.csv'))
     _, init_val, _ = lookup.get('satInit')
     if platform.system() == 'Darwin':
         init_button = myButton(option_panel_ctr, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg=bg_color,
-                               justify=tk.LEFT, font=("Arial", 8))
+                               justify='left', font=("Arial", 8))
     else:
         init_button = myButton(option_panel_ctr, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg=bg_color,
-                               wraplength=wrap_length, justify=tk.LEFT, font=("Arial", 8))
+                               wraplength=wrap_length, justify='left', font=("Arial", 8))
     init = tk.StringVar(master, init_val)
     init_label = tk.Label(option_panel_ctr, text='init & clear:', font=label_font_gentle)
     if platform.system() == 'Linux':
@@ -1500,10 +1503,10 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     start_label.pack(padx=5, pady=5, expand=True, fill='x')
     if platform.system() == 'Darwin':
         start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="purple", bg=bg_color,
-                                justify=tk.LEFT, font=butt_font)
+                                justify='left', font=butt_font)
     else:
         start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="purple", bg=bg_color, wraplength=wrap_length,
-                                justify=tk.LEFT, font=butt_font)
+                                justify='left', font=butt_font)
     start_button.pack(padx=5, pady=5, expand=True, fill='both')
     timer_val = tk.IntVar(master, 0)
 
@@ -1530,10 +1533,10 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     macro = tk.StringVar(master, '')
     if platform.system() == 'Darwin':
         macro_button = myButton(macro_panel_ctr, text=macro.get(), command=grab_macro, fg="purple", bg=bg_color,
-                                justify=tk.LEFT, font=butt_font)
+                                justify='left', font=butt_font)
     else:
         macro_button = myButton(macro_panel_ctr, text=macro.get(), command=grab_macro, fg="purple", bg=bg_color, wraplength=wrap_length,
-                                justify=tk.LEFT, font=butt_font)
+                                justify='left', font=butt_font)
     macro_button.pack(padx=5, pady=5)
     get_time_button = myButton(macro_panel_right, text='grab time copy/paste buffer', command=grab_time,
                                fg="blue", bg=bg_color)
@@ -1551,30 +1554,30 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     note_panel_ctr.pack(side='left', expand=True, fill='both')
     note_panel_right = tk.Frame(note_panel)
     note_panel_right.pack(side='left', expand=True, fill='both')
-    ev1_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify=tk.LEFT, font=note_font)
-    ev1_label.pack(padx=5, pady=5, anchor=tk.W)
-    ev2_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify=tk.LEFT, font=note_font)
-    ev2_label.pack(padx=5, pady=5, anchor=tk.W)
-    ev3_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify=tk.LEFT, font=note_font)
-    ev3_label.pack(padx=5, pady=5, anchor=tk.W)
-    ev4_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify=tk.LEFT, font=note_font)
-    ev4_label.pack(padx=5, pady=5, anchor=tk.W)
+    ev1_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify='left', font=note_font)
+    ev1_label.pack(padx=5, pady=5, anchor='w')
+    ev2_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify='left', font=note_font)
+    ev2_label.pack(padx=5, pady=5, anchor='w')
+    ev3_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify='left', font=note_font)
+    ev3_label.pack(padx=5, pady=5, anchor='w')
+    ev4_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify='left', font=note_font)
+    ev4_label.pack(padx=5, pady=5, anchor='w')
 
     # Save row
     sav_panel = tk.Frame(master)
     sav_panel.pack(expand=True, fill='both')
     save_data_label = tk.Label(sav_panel, text='save data:', font=label_font_gentle)
-    save_data_label.pack(side=tk.LEFT, padx=5, pady=5)
+    save_data_label.pack(side='left', padx=5, pady=5)
     save_data_button = myButton(sav_panel, text='save data', command=save_data, fg="red", bg=bg_color,
-                                wraplength=wrap_length, justify=tk.LEFT, font=butt_font_large)
-    save_data_button.pack(side=tk.LEFT, padx=5, pady=5)
+                                wraplength=wrap_length, justify='left', font=butt_font_large)
+    save_data_button.pack(side='left', padx=5, pady=5)
 
 
     save_progress_label = tk.Label(sav_panel, text='          ', font=label_font_gentle)
-    save_progress_label.pack(side=tk.LEFT, padx=5, pady=5)
+    save_progress_label.pack(side='left', padx=5, pady=5)
     save_progress_button = myButton(sav_panel, text='save progress', command=save_progress, fg="black", bg=bg_color,
-                                    wraplength=wrap_length, justify=tk.LEFT)
-    save_progress_button.pack(side=tk.LEFT, padx=5, pady=5)
+                                    wraplength=wrap_length, justify='left')
+    save_progress_button.pack(side='left', padx=5, pady=5)
 
 
     terse_str = cf['others']['terse']
@@ -1583,7 +1586,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     else:
         terse = tk.BooleanVar(master, False)
     terse_button = tk.Checkbutton(sav_panel, text='terse plots', variable=terse, onvalue=True, offvalue=False)
-    terse_button.pack(side=tk.LEFT, pady=2, fill='x')
+    terse_button.pack(side='left', pady=2, fill='x')
     terse.trace_add('write', handle_terse)
 
 
@@ -1593,16 +1596,16 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     else:
         strict_overplot = tk.BooleanVar(master, False)
     strict_overplot_button = tk.Checkbutton(sav_panel, text='strict_overplot plots', variable=strict_overplot, onvalue=True, offvalue=False)
-    strict_overplot_button.pack(side=tk.LEFT, pady=2, fill='x')
+    strict_overplot_button.pack(side='left', pady=2, fill='x')
     strict_overplot.trace_add('write', handle_strict_overplot)
 
 
     clear_data_button = myButton(sav_panel, text='clear', command=clear_data_verbose, fg="red", bg=bg_color,
-                                 wraplength=wrap_length, justify=tk.RIGHT)
-    clear_data_button.pack(side=tk.RIGHT, padx=5, pady=5)
+                                 wraplength=wrap_length, justify='right')
+    clear_data_button.pack(side='right', padx=5, pady=5)
     save_data_as_button = myButton(sav_panel, text='save as', command=save_data_as, fg="red", bg=bg_color,
-                                   wraplength=wrap_length, justify=tk.LEFT)
-    save_data_as_button.pack(side=tk.RIGHT, padx=5, pady=5)
+                                   wraplength=wrap_length, justify='left')
+    save_data_as_button.pack(side='right', padx=5, pady=5)
 
 
     # Run panel
@@ -1612,53 +1615,53 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     tk.Label(run_sep_panel, text=' ', font=("Courier", 2), bg='darkgray').pack(expand=True, fill='x')
     run_panel = tk.Frame(master)
     run_panel.pack(expand=True, fill='x')
-    tk.Label(run_panel, text='------->', font=("Courier", 8), bg='lightgreen').pack(side=tk.LEFT)
+    tk.Label(run_panel, text='------->', font=("Courier", 8), bg='lightgreen').pack(side='left')
     if platform.system() == 'Darwin':
         run_x_button = myButton(run_panel, text=' Compare ', command=compare_run, fg="green", bg=bg_color,
-                                  justify=tk.LEFT, font=butt_font_large)
+                                  justify='left', font=butt_font_large)
         hist_hist_button = myButton(run_panel, text='Compare Hist Hist', command=compare_hist_hist_run, fg="green",
-                                    bg=bg_color, justify=tk.LEFT, font=butt_font_large)
+                                    bg=bg_color, justify='left', font=butt_font_large)
         hist_sim_button = myButton(run_panel, text=' Compare ', command=compare_hist_to_sim, fg="green", bg=bg_color,
-                                   justify=tk.LEFT, font=butt_font_large)
+                                   justify='left', font=butt_font_large)
         run_sim_hist_button = myButton(run_panel, text=' Compare ', command=compare_run_to_hist, fg="green", bg=bg_color,
-                                       justify=tk.LEFT, font=butt_font_large)
+                                       justify='left', font=butt_font_large)
     else:
         run_x_button = myButton(run_panel, text=' Compare ', command=compare_run, fg="green", bg=bg_color,
-                              wraplength=wrap_length, justify=tk.LEFT, font=butt_font_large)
+                              wraplength=wrap_length, justify='left', font=butt_font_large)
         hist_hist_button = myButton(run_panel, text='Compare Hist Hist', command=compare_hist_hist_run, fg="green",
-                                    bg=bg_color, justify=tk.LEFT, font=butt_font_large)
+                                    bg=bg_color, justify='left', font=butt_font_large)
         hist_sim_button = myButton(run_panel, text=' Compare ', command=compare_hist_to_sim, fg="green", bg=bg_color,
-                                   justify=tk.LEFT, font=butt_font_large)
+                                   justify='left', font=butt_font_large)
         run_sim_hist_button = myButton(run_panel, text=' Compare ', command=compare_run_to_hist, fg="green", bg=bg_color,
-                                   justify=tk.LEFT, font=butt_font_large)
+                                   justify='left', font=butt_font_large)
     mod_in_app_button = myButton(run_panel, text=mod_in_app.get(), command=enter_mod_in_app, fg="green", bg=bg_color)
-    run_x_button.pack(side=tk.LEFT, padx=5, pady=5)
-    hist_hist_button.pack(side=tk.LEFT, padx=5, pady=5)
-    mod_in_app_button.pack(side=tk.RIGHT, padx=5, pady=5)
-    hist_sim_button.pack(side=tk.RIGHT, padx=5, pady=5)
-    run_sim_hist_button.pack(side=tk.RIGHT, padx=5, pady=5)
+    run_x_button.pack(side='left', padx=5, pady=5)
+    hist_hist_button.pack(side='left', padx=5, pady=5)
+    mod_in_app_button.pack(side='right', padx=5, pady=5)
+    hist_sim_button.pack(side='right', padx=5, pady=5)
+    run_sim_hist_button.pack(side='right', padx=5, pady=5)
 
     # Compare panel
     compare_sep_panel = tk.Frame(master)
     compare_sep_panel.pack(expand=True, fill='x')
     tk.Label(compare_sep_panel, text=' ', font=("Courier", 2), bg='darkgray').pack(expand=True, fill='x')
-    tk.ttk.Separator(compare_sep_panel, orient='horizontal').pack(pady=5, side=tk.TOP)
+    tk.ttk.Separator(compare_sep_panel, orient='horizontal').pack(pady=5, side='top')
     compare_panel = tk.Frame(master)
     compare_panel.pack(expand=True, fill='x')
     choose_label = tk.Label(compare_panel, text='choose existing files:')
-    choose_label.pack(side=tk.LEFT, padx=5, pady=5)
+    choose_label.pack(side='left', padx=5, pady=5)
     run_sim_choose_button = myButton(compare_panel, text='Compare Run Sim Choose', command=compare_run_sim_choose,
-                                     fg="blue", bg=bg_color, wraplength=wrap_length, justify=tk.LEFT, font=butt_font)
-    run_sim_choose_button.pack(side=tk.LEFT, padx=5, pady=5)
+                                     fg="blue", bg=bg_color, wraplength=wrap_length, justify='left', font=butt_font)
+    run_sim_choose_button.pack(side='left', padx=5, pady=5)
     run_run_choose_button = myButton(compare_panel, text='Compare Run Run Choose', command=compare_run_run_choose,
-                                     fg="blue", bg=bg_color, wraplength=wrap_length, justify=tk.LEFT, font=butt_font)
-    run_run_choose_button.pack(side=tk.LEFT, padx=5, pady=5)
+                                     fg="blue", bg=bg_color, wraplength=wrap_length, justify='left', font=butt_font)
+    run_run_choose_button.pack(side='left', padx=5, pady=5)
     run_sim_choose_button = myButton(compare_panel, text='Compare Hist Sim Choose', command=compare_hist_sim_choose,
-                                     fg="blue", bg=bg_color, wraplength=wrap_length, justify=tk.LEFT, font=butt_font)
-    run_sim_choose_button.pack(side=tk.LEFT, padx=5, pady=5)
+                                     fg="blue", bg=bg_color, wraplength=wrap_length, justify='left', font=butt_font)
+    run_sim_choose_button.pack(side='left', padx=5, pady=5)
     hist_hist_choose_button = myButton(compare_panel, text='Compare Hist Hist Choose', command=compare_hist_hist_choose,
-                                       fg="blue", bg=bg_color, wraplength=wrap_length, justify=tk.LEFT, font=butt_font)
-    hist_hist_choose_button.pack(side=tk.LEFT, padx=5, pady=5)
+                                       fg="blue", bg=bg_color, wraplength=wrap_length, justify='left', font=butt_font)
+    hist_hist_choose_button.pack(side='left', padx=5, pady=5)
 
     # Begin
     handle_test_unit()

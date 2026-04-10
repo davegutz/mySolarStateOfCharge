@@ -13,6 +13,10 @@
 #
 # See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
 
+# type: ignore
+# noinspection PyPep8Naming,PyUnresolvedReferences,PyAttributeOutsideInit,PyArgumentList,PyCallingNonCallable,PyUnboundLocalVariable,PyUnfilledParameters
+# pylint: disable=invalid-name, no-member, attribute-defined-outside-init, used-before-assignment, redefined-outer-name, redefined-builtin
+
 """Depending on platform locate the temp folders."""
 
 import os
@@ -21,13 +25,12 @@ from pathlib import Path, PurePosixPath
 
 
 def local_paths(version_folder='no_name'):
-    path_to_local = None
     if platform.system() == 'Linux':
         path_to_local = '/home/daveg/.local/SOC_Particle'
     elif platform.system() == 'Darwin':
         path_to_local = '/Users/daveg/.local/SOC_Particle'
     else:
-        path_to_local = str(Path(os.getenv('LOCALAPPDATA')) / 'SOC_Particle')
+        path_to_local = str(Path(os.getenv('LOCALAPPDATA') or '.') / 'SOC_Particle')
 
     if not Path(path_to_local).is_dir():
         os.mkdir(path_to_local)

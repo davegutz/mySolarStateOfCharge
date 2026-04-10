@@ -18,6 +18,9 @@ All attributes are initialized to None and populated at runtime by the
 configuration loader, except NOM_UNIT_CAP which has a fixed default."""
 
 
+import numpy as np
+
+
 class BatteryConstants:
     AMP_WRAP_TRIM_GAIN = 10.0
     ap_cc_diff_slr = 1.0
@@ -82,6 +85,7 @@ class BatteryConstants:
     sp_cutback_gain_slr = 1.0
     sp_Dw = 0.0
     sp_ib_disch_slr = 1.0
+    sp_ib_disch_slr_z = None
     sp_s_cap_mon = 1.0
     sp_s_cap_sim = 1.0
     sp_vsat_add = 0.0
@@ -115,3 +119,48 @@ class BatteryConstants:
     WRAP_SOC_LO_SLR = 60.0
     WRAP_SOC_MOD_OFF = 0.85
     ZETA_Y_FILT = 0.707
+
+
+# noinspection PyPep8Naming
+def load_off_nominal_battery(Battery_to_add=None):
+    # Load off-nominal Battery values.  Load Battery
+    if Battery_to_add is not None:
+        # Scroll through all off-nominals make dictionary
+        Battery_off_dict = {}
+        for field_name in Battery_to_add.dtype.names:
+            print(f"field_name {field_name}  ", end='')
+            try:
+                Battery_off_dict[field_name] = Battery_to_add[field_name][0]  # Use first entry only.  Discard the rest
+            except IndexError:
+                Battery_off_dict[field_name] = Battery_to_add[field_name]
+                print(f"Battery_off field_name {field_name}   value {Battery_to_add[field_name]}")
+        # print(self.Battery_off_dict)
+        # Print affected values
+        print(f"dictionary to apply to Battery class")
+        if Battery_off_dict:
+            for key in dir(Battery_to_add):
+                if key in Battery_off_dict and not key.startswith('__'):
+                    print(f"Battery.{key} {getattr(Battery_to_add, key)} --> ", end='')
+                    print("Battery.{:s} = {:8.6g}".format(key, Battery_off_dict[key]))
+        return Battery_off_dict
+    else:
+        return None
+
+
+# noinspection PyPep8Naming
+def apply_off_nominal_battery(Battery_, Battery_off_dict):
+    print(f"dictionary to apply to immutable Battery class")
+    if Battery_off_dict:
+        # Check exist
+        for key in Battery_off_dict:
+            if not np.isnan(Battery_off_dict[key]):
+                if not key.startswith('__')  and  key in dir(Battery_):
+                    print(f"Battery.{key} = {getattr(Battery_, key)} to be replaced")
+                else:
+                    print(f"{key} MISSING  *****************")
+                    # exit(1)
+        # Make translation
+        for key in dir(Battery_):
+            if key in Battery_off_dict and not key.startswith('__'):
+                print(f"Battery.{key} {getattr(Battery_, key)} --> ", end='')
+                setattr(Battery_, key, Battery_off_dict[key])

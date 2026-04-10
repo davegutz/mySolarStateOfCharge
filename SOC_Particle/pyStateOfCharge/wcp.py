@@ -106,7 +106,7 @@ def wcp(filepaths=None, silent=False, supported='*'):
                                                 initialfile=cf.get_tuple_item_as_strlist('wcp', 'filepaths'))
         cf.put_tuple_item('wcp', 'filepaths', filepaths)
         if filepaths is None or filepaths == '':
-            if silent is False:
+            if not silent:
                 input('\nNo files chosen')
             else:
                 messagebox.showinfo(title='Message:', message='No files chosen')

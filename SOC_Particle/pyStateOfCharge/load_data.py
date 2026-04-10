@@ -15,7 +15,8 @@
 """Utility to load data from csv files"""
 from CompareFault import add_stuff_f, filter_Tb, IB_BAND
 from SavedData import SavedData, SavedDataSim
-from Battery import Battery, BatteryMonitor, load_off_nominal_battery, apply_off_nominal_battery
+from Battery import Battery, BatteryMonitor
+from battery_constants import load_off_nominal_battery, apply_off_nominal_battery
 from DataOverModel import write_clean_file
 from Util import rename_all
 from resample import remove_nan

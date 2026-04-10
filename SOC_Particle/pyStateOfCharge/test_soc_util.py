@@ -164,7 +164,7 @@ def configurator(filepath):
 
 # Open text file in editor
 def display_result(txt_path, platform, silent):
-    if silent is False:
+    if not silent:
         if platform == 'Darwin':
             subprocess.Popen(['open', '-a', 'TextEdit', txt_path])
 

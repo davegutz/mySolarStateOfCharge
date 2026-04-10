@@ -18,8 +18,6 @@ a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 
-import ComparePlotSettings
-from ComparePlotSettings import rescale_time_axes
 from MonSim import replicate, save_clean_file, UserOptions
 from unite_pictures import cleanup_fig_files, precleanup_fig_files, pngs_to_pdf
 from CompareFault import over_fault
@@ -35,7 +33,6 @@ import tkinter.messagebox
 from local_paths import version_from_data_file, local_paths
 import os
 from pathlib import Path, PurePosixPath
-import plot.gp as gp
 from plot.PlotOptions import PlotOptions
 plt.rcParams['axes.grid'] = True
 plt.rcParams['legend.fontsize'] = 'small'
@@ -44,8 +41,10 @@ plt.rcParams['legend.fontsize'] = 'small'
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
+
+# noinspection PyPep8Naming
 def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw=0.,  use_mon_soc_=False,
-                    verbose=True, scale_batt=1., slr_hys_sim=1., request_history=5, Battery=None, init_time=None,
+                    verbose=True, scale_batt=1., slr_hys_sim=1., request_history=5, init_time=None,
                     time_shift=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
                     fig_list=None, show_killer_=True):
 
@@ -70,6 +69,10 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
         fig_files = []
     if fig_list is None:
         fig_list = []
+
+    mon_ver = None
+    sim_ver = None
+    sim_s_ver = None
 
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
@@ -153,9 +156,8 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
 
         else:
             fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_run, sim_s_ver, filename, fig_files,
-                                           plot_title=plot_title, fig_list=fig_list, run_str='',
-                                           ver_str='_ver', strict_overplot=strict_overplot, terse=S.terse,
-                                           run_type='RunSim', save_plots=S.save_plots)
+                                           plot_title=plot_title, fig_list=fig_list, strict_overplot=strict_overplot,
+                                           terse=S.terse, run_type='RunSim', save_plots=S.save_plots)
 
         # Copies
         if S.save_plots and not S.terse:
@@ -176,6 +178,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
     return fig_list, fig_files
 
 
+# noinspection PyUnusedLocal
 def main():  # Example usage.  ok on 20260217
     if sys.platform == 'linux':
         gdrive = '/home/daveg/gdrive/'
@@ -183,8 +186,8 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     # Cut-pasted from GUI_TestSOC Run window
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/noaHiFail_soc2p2_hi_lo_bb.csv'
-    unit_key = 'g20250612a_soc2p2_hi_lo_bb'
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/noaHiFail_soc3p2_hi_lo_bb.csv'
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = None
     plots = True
     use_mon_soc_ = False
@@ -194,7 +197,7 @@ def main():  # Example usage.  ok on 20260217
     request_history = 5
     init_time = None
     time_shift = None
-    strict_overplot = False
+    strict_overplot = True
     terse = True
     mon_str = ''
 

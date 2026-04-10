@@ -22,23 +22,18 @@ Dependencies:
     - reportlab  (figures, pdf)
 """
 
-from unite_pictures import cleanup_fig_files
 from local_paths import version_from_data_file, local_paths
 from plot.PlotOptions import PlotOptions
-from Battery import overall_batt
 import matplotlib.pyplot as plt
-from datetime import datetime
 import plot.off_on as off_on
 import plot.sim_s as sim_s
 from Colors import Colors
 import plot.dom as dom
 import plot.ult as ult
 import plot.gp as gp
-import numpy as np
 import sys
 import re
-import os
-from pathlib import Path, PurePosixPath
+from pathlib import PurePosixPath
 
 if sys.platform == 'darwin':
     import matplotlib
@@ -46,11 +41,9 @@ if sys.platform == 'darwin':
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
+# noinspection PyPep8Naming
 def dom_plot(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title=None, fig_list=None, plot_init=False,
-             run_str='_run', ver_str='_ver', strict_overplot=False, terse=False, run_type=None, save_plots=False):
-
-#     print(f"\ndom_plot:\n{mr=}\n{mv=}\n{sr=}\n{sv=}\n{smr=}\n{smv=}\n{filename=}\n{fig_files=}\n{plot_title=}\n\
-# {fig_list=}\n{plot_init=}\n{run_str=}\n{ver_str=}\n{strict_overplot=}\n{terse=}\n{run_type=}\n{save_plots=}\n")
+             strict_overplot=False, terse=False, run_type=None, save_plots=False):
 
     print('dom_plot', end=':  ')
     if fig_files is None:
@@ -59,10 +52,6 @@ def dom_plot(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title=None
                              strict_overplot=strict_overplot, run_type=run_type, terse=terse, save_plots=save_plots)
 
     if not figOptions.terse:
-        # fig_list, fig_files = hist.hs_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
-        #                                     strict_overplot=strict_overplot)
-        # fig_list, fig_files = hist.hs_tune_plots(mr, mv, sr, sv, smv, filename, fig_files=fig_files, plot_title=plot_title, fig_list=fig_list,
-        #                                          strict_overplot=strict_overplot)
         fig_list, fig_files = dom.ekf_plots(figOptions, fig_files=fig_files, fig_list=fig_list)
         if  plot_init and hasattr(smv, 'time') and hasattr(sr, 'time'):
             fig_list, fig_files = dom.init_1(figOptions, fig_files=fig_files, fig_list=fig_list)

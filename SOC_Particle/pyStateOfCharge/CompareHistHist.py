@@ -21,12 +21,10 @@ from DataOverModel import dom_plot
 from unite_pictures import cleanup_fig_files, precleanup_fig_files, pngs_to_pdf
 from datetime import datetime
 from local_paths import version_from_data_file, local_paths
-import os
 from pathlib import Path, PurePosixPath
 from CompareHistSim import load_hist_and_prep
 from CompareFault import overall_fault, over_fault
 from plot.PlotOptions import PlotOptions
-import sys
 
 plt.rcParams['axes.grid'] = True
 plt.rcParams['legend.fontsize'] = 'small'
@@ -37,6 +35,8 @@ plt.rcParams['figure.dpi'] = 100  # Also increase display DPI for consistency
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
+
+# noinspection PyPep8Naming
 def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None, unit_key_tst=None,
                       dt_resample=10, plots=True, terse=False):
 
@@ -65,7 +65,6 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
         mon_run.time -= d_time
 
     # File path operations
-    data_file_txt = PurePosixPath(data_file_run).name
     version = version_from_data_file(data_file_run)
     path_to_temp, save_pdf_path, _ = local_paths(version)
 
@@ -94,8 +93,8 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
         if hist_20C_run is not None and len(hist_20C_run.time) > 1:
             sim_run = None
             fig_list, fig_files = dom_plot(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename_run, fig_files,
-                                           plot_title=plot_title, fig_list=fig_list, run_str='_'+unit_run,
-                                           ver_str='_'+unit_tst, run_type='HistHist', terse=S.terse, save_plots=S.save_plots)
+                                           plot_title=plot_title, fig_list=fig_list, run_type='HistHist', terse=S.terse,
+                                           save_plots=S.save_plots)
             fig_list, fig_files = overall_fault(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename_run,
                                                 fig_files, plot_title=plot_title, fig_list=fig_list,
                                                 run_type='HistHist', save_plots=S.save_plots)

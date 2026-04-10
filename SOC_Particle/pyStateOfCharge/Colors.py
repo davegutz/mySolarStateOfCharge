@@ -13,6 +13,7 @@ class Colors:
     strikethrough = '\033[09m'
     invisible = '\033[08m'
 
+    # noinspection PyPep8Naming
     class fg:
         black = '\033[30m'
         red = '\033[31m'
@@ -31,6 +32,7 @@ class Colors:
         lightcyan = '\033[96m'
         wheat = '\033[33m'
 
+    # noinspection PyPep8Naming
     class bg:
         black = '\033[40m'
         red = '\033[41m'

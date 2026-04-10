@@ -24,18 +24,17 @@ from unite_pictures import cleanup_fig_files, precleanup_fig_files, pngs_to_pdf
 import matplotlib.pyplot as plt
 from datetime import datetime
 from PlotKiller import show_killer
-import os
 from pathlib import Path, PurePosixPath
 from load_data import load_data, calculate_master_sync
 from local_paths import version_from_data_path, local_paths
-import sys
-import ComparePlotSettings
 from plot.PlotOptions import  PlotOptions
 
 # Suppress all UserWarning messages
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
+
+# noinspection PyPep8Naming
 def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=None, sync_to_ctime=False,
                     terse=True):
 
@@ -78,7 +77,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
 
     # Synchronize
     # Time since beginning of data to sync pulses
-    if sync_info_run.is_empty is False and sync_info_test.is_empty is False and \
+    if not sync_info_run.is_empty and not sync_info_test.is_empty and \
             sync_info_run.length == sync_info_test.length and (sync_info_run.length > 0 or sync_to_ctime is True):
         # Make target sync vector
         master_sync_del = calculate_master_sync(sync_info_run.del_mon, sync_info_test.del_mon)
@@ -139,6 +138,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     return True
 
 
+# noinspection PyUnusedLocal
 def main():
     import sys
     if sys.platform == 'linux':
