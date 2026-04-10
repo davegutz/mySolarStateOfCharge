@@ -123,7 +123,7 @@ const char unit[] = version_str "_" HDWE_UNIT;
 
 #define NFLT    7  // Number of saved SRAM fault data slices 10 s intervals (7)
 #define NHIS   43  // Number of saved SRAM history data slices. If NFLT + NHIS too large will get compile error BACKUPSRAM, BACKUPSRAM_USER  (45)
-#define NSUM 2200  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error SRAM, or GUI FRAG msg (2845) or SOS 4 Bus Fault (2500)
+#define NSUM 2000  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error SRAM, or GUI FRAG msg (2845) or SOS 4 Bus Fault (2500)
 
 #define HDB_TBATT             0.06      // Half deadband to filter Tb, F (0.06)
 #define HDB_VB                0.05      // Half deadband to filter Vb, V (0.05)
