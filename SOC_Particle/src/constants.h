@@ -424,10 +424,7 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #endif
 const float VC_CONV_GAIN = float(PHOTON_ADC_VOLT) / float(PHOTON_ADC_COUNT) * float(VC_S);
 const float VO_CONV_GAIN = float(PHOTON_ADC_VOLT) / float(PHOTON_ADC_COUNT) * float(VO_S);
-#if defined(HDWE_ADS1013_AMP_NOA)
-    const float SHUNT_AMP_GAIN = SHUNT_GAIN * SHUNT_AMP_R1 / SHUNT_AMP_R2;
-    const float SHUNT_NOA_GAIN = SHUNT_GAIN;
-#elif defined(HDWE_IB_HI_LO) & !defined(HDWE_BARE)
+#if defined(HDWE_IB_HI_LO) & !defined(HDWE_BARE)
     const float SHUNT_AMP_GAIN = SHUNT_GAIN * SHUNT_AMP_R1 / SHUNT_AMP_R2;
     const float SHUNT_NOA_GAIN = SHUNT_GAIN * SHUNT_NOA_R1 / SHUNT_NOA_R2;
 #elif !defined(HDWE_BARE)

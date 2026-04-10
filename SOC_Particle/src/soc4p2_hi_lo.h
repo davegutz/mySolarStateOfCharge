@@ -56,9 +56,6 @@
 #define FO_NOM 200. // Lo wrap threshold nominal scalar (1.0)  // Fo
 #define DISAB_VB_FA_LT true
 #define DISAB_TB_FA true          // Had high out of range failure.  Want to keep running without latch on the truck
-#define IB_HARD_SET        0.1          // Signal selection volt range fail persistence, s (1.)
-#define IB_HARD_RESET      0.2          // Signal selection volt range fail reset persistence, s (2.)
-#define SNAP_WAIT          0ULL         // Interval between fault snapshots (10000ULL = 10 sec)
 
 // ekf tune
 #define WRAP_SOC_HI_OFF     0.94        // Disable e_wrap_hi when saturated (0.94)

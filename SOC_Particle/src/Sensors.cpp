@@ -136,40 +136,28 @@ void Shunt::pretty_print()
 // Convert sampled shunt data to Ib engineering units
 void Shunt::convert(const bool disconnect, const bool reset, Sensors *Sen)
 {
-  #ifdef HDWE_ADS1013_AMP_NOA
-    if ( !bare_shunt_ && !dscn_cmd_ )
-    {
-      #ifndef HDWE_BARE
-        vshunt_int_ = readADC_Differential_0_1(name_);
-      #else
-        vshunt_int_ = 0;
-      #endif
-      sample_time_z_ = sample_time_;
-      sample_time_ = millis();
-    }
-    else
-    {
-      vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0;
-    }
-    vshunt_ = computeVolts(vshunt_int_);
+  #ifndef HDWE_BARE
+    static bool Vc_low_prev = false;
+    static float Vc_prev = Vc_;
+    bool Vc_low = Vc_ < VC_BARE_DETECTED;
+    bare_shunt_ = Vc_low && Vc_low_prev && !reset;
+    Vc_low_prev = Vc_low;
+    if ( bare_shunt_ ) Vc_ = Vc_prev;
+    else Vc_prev = Vc_;
   #else
-    #ifndef HDWE_BARE
-      bare_shunt_ = Vc_ < VC_BARE_DETECTED;
-    #else
-      bare_shunt_ = false;
-    #endif
-    if ( !bare_shunt_ && !dscn_cmd_ )
-    {
-      vshunt_ = Vo_Vc_;
-      vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0;
-    }
-    else
-    {
-      vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0; vshunt_ = 0.; vshunt_kf_ = 0.;
-      Vc_raw_ = 0; Vc_ = 0.; Vo_raw_ = 0; Vo_ = 0.;
-      Ishunt_cal_ = 0.;
-    }
+    bare_shunt_ = false;
   #endif
+  if ( !bare_shunt_ && !dscn_cmd_ )
+  {
+    vshunt_ = Vo_Vc_;
+    vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0;
+  }
+  else
+  {
+    vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0; vshunt_ = 0.; vshunt_kf_ = 0.;
+    Vc_raw_ = 0; Vc_ = 0.; Vo_raw_ = 0; Vo_ = 0.;
+    Ishunt_cal_ = 0.;
+  }
   if ( disconnect )
   {
     Ishunt_cal_ = 0.;

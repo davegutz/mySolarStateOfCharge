@@ -158,13 +158,8 @@ void setup()
   // Photon2 only accepts 100 and 400 khz
   #if !defined(HDWE_BARE) && !defined(HDWE_2WIRE)
     // Log.info("setup I2C Wire");
-    #ifdef HDWE_ADS1013_AMP_NOA
-      Wire.setSpeed(CLOCK_SPEED_100KHZ);
-      sendTxBuf("Nominal Wire setup for ADS1013\n", true, true);
-    #else
-      Wire.setSpeed(CLOCK_SPEED_100KHZ);
-      sendTxBuf("Wire started\n", true, true);
-    #endif
+    Wire.setSpeed(CLOCK_SPEED_100KHZ);
+    sendTxBuf("Wire started\n", true, true);
     Wire.begin();
     delay(1000);
   #endif
@@ -344,16 +339,14 @@ void loop()
   }
 
   // Sample Ib
-  #ifndef HDWE_ADS1013_AMP_NOA
-    if ( read )
-    {
-      // Log.info("Read shunt");
-      if ( reset_kf )sendTxBuf(" SOC_Particle:  reseting kfs\n", true, true);
-      Sen->ShuntAmp->sample(reset_kf);
-      // Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.f);
-      Sen->ShuntNoAmp->sample(reset_kf);
-    }
-  #endif
+  if ( read )
+  {
+    // Log.info("Read shunt");
+    if ( reset_kf )sendTxBuf(" SOC_Particle:  reseting kfs\n", true, true);
+    Sen->ShuntAmp->sample(reset_kf);
+    // Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.f);
+    Sen->ShuntNoAmp->sample(reset_kf);
+  }
 
   // Input all other sensors and do high rate calculations
   if ( read )

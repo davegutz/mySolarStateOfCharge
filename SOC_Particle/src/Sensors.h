@@ -134,8 +134,8 @@ protected:
   unsigned long long sample_time_;   // Exact moment of hardware sample, ms
   unsigned long long sample_time_z_; // Exact moment of past hardware sample, ms
   bool dscn_cmd_;    // User command to ignore hardware, T=ignore
-  uint8_t vc_pin_;      // Common voltage pin, for !HDWE_ADS1013_AMP_NOA
-  uint8_t vo_pin_;      // Output voltage pin, for !HDWE_ADS1013_AMP_NOA
+  uint8_t vc_pin_;      // Common voltage pin
+  uint8_t vo_pin_;      // Output voltage pin
   uint8_t vr_pin_;      // Reference voltage pin, for TSC1200 or INA181
   int Vc_raw_;          // Raw analog read, integer
   float Vc_;            // Sensed Vc, common op amp voltage ref, V
