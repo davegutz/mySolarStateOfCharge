@@ -32,11 +32,8 @@ from load_data import load_data, remove_nan, remove_0T
 from local_paths import version_from_data_file, local_paths
 from CompareFault import add_stuff_f
 from Util import rename_all
-import os
 from pathlib import Path, PurePosixPath
 from plot.PlotOptions import PlotOptions
-import sys
-import ComparePlotSettings
 
 # Suppress all UserWarning messages
 import warnings
@@ -316,6 +313,15 @@ def add_qcrs(hist, mon_t_=False, mon=None, qcrs=None, t_rated=None, dqdt=None):
     return hist
 
 
+def scale_large_time(D):
+    if D is None:
+        return D
+    time_ux = np.atleast_1d(D.time_ux)
+    if np.any(time_ux > 1e12):
+        D.time_ux /= 1000.
+    return D
+
+
 def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=False, unit_key=None,
                        sync_time=None, dt_resample=10, Tb_force=None, skip=1):
     """Load history, reconstruct samples by linear interpolation and normalize all soc and Tb to 20C"""
@@ -364,6 +370,8 @@ def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=Fa
     else:
         print("data from", temp_sum_file_clean, "empty after loading")
 
+    s_raw = scale_large_time(s_raw)
+
     # Load history
     h_raw = None
     temp_hist_file_clean = write_clean_file(data_file, type_='_flt', hdr_key='fltb', unit_key='unit_h',
@@ -372,6 +380,7 @@ def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=Fa
         h_raw = np.genfromtxt(temp_hist_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
     else:
         print("data from", temp_hist_file_clean, "empty after loading")
+    h_raw = scale_large_time(h_raw)
 
     # Load fault
     temp_flt_file_clean = write_clean_file(data_file, type_='_flt', hdr_key='fltb', unit_key='unit_f',
@@ -381,6 +390,7 @@ def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=Fa
     else:
         f_raw = None
         print("data from", temp_flt_file_clean, "empty after loading")
+    f_raw = scale_large_time(f_raw)
 
     # Save files
     filename = None
@@ -434,7 +444,7 @@ def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=Fa
 
     # sums and history
     h_combo_raw = hstack2((h_raw, s_raw))
-    if h_combo_raw is None:
+    if h_combo_raw is None or np.atleast_1d(h_combo_raw.time_ux).size < 2:
         return None, None, unit, fault, None, filename, Battery
     else:
         h_combo_raw = np.unique(h_combo_raw)
@@ -642,13 +652,13 @@ def main():  # Sample usage. OK on 20260217
     # Cut-pasted from GUI_TestSOC Run window
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/truckHist_20260302.csv'
 
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/hist 20260406 soc4p2_hi_lo bb_soc4p2_hi_lo_bb.csv'
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/sample fault_soc3p2_hi_lo_bb.csv'
     time_end = None
     plots = True
     use_mon_csv = False
-    unit_key = 'g20250612a_soc4p2_hi_lo_bb'
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     sync_time = None
-    dt_resample = 900
+    dt_resample = 10
     Tb_force = None
     request_history = None
     strict_overplot = True
