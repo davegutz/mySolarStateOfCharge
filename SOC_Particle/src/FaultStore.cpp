@@ -54,7 +54,7 @@ void Flt_st::assign(const unsigned long now, BatteryMonitor *Mon, Sensors *Sen)
 }
 
 // struct Flt_st.  This file needed to avoid circular reference to sp in header files
-void Flt_st::assign_unfilt(const unsigned long now, BatteryMonitor *Mon, Sensors *Sen)
+void Flt_st::assign_unfilt(const unsigned long long now, BatteryMonitor *Mon, Sensors *Sen)
 {
   this->t_flt = now;
   this->Tb_hdwe_filt = int16_t(Sen->Tb_hdwe()*SCL_600);
@@ -106,7 +106,7 @@ void Flt_st::copy_to_Flt_ram_from(Flt_st input)
 // Nominal values
 void Flt_st::nominal()
 {
-  this->t_flt = 1UL;
+  this->t_flt = 1ULL;
   this->Tb_hdwe_filt = int16_t(0);
   this->vb_hdwe_filt = int16_t(0);
   this->Vc_hdwe_sum = int16_t(0);
@@ -137,9 +137,9 @@ void Flt_st::pretty_print(const String code)
   if ( this->t_flt > 1UL )
   {
     Serial.printf("code %s\n", code.c_str());
-    time_long_2_str((time_t)this->t_flt, buffer);
+    time_long_2_str((time_t)(this->t_flt / 1000ULL), buffer);
     Serial.printf("buffer %s\n", buffer);
-    Serial.printf("t %ld\n", this->t_flt);
+    Serial.printf("t %lld\n", this->t_flt);
     Serial.printf("Tb_hdwe_filt %7.3f\n", float(this->Tb_hdwe_filt)/SCL_600);
     Serial.printf("vb_hdwe_filt %7.3f\n", float(this->vb_hdwe_filt)/sp.vb_hist_slr());
     Serial.printf("Vc_hdwe_sum %7.3f\n", float(this->Vc_hdwe_sum)/SCL_3000);
@@ -180,8 +180,8 @@ void Flt_st::print_flt(const String code)
 
   if ( this->t_flt > 1UL )
   {
-    time_long_2_str(this->t_flt, buffer);
-    txBuf = String::format("%s, %s, %ld, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.4f, %7.4f, %7.4f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %ld, %ld,\n",
+    time_long_2_str((time_t)(this->t_flt / 1000ULL), buffer);
+    txBuf = String::format("%s, %s, %lld, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.4f, %7.4f, %7.4f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %ld, %ld,\n",
       code.c_str(), buffer, this->t_flt,
       float(this->Tb_hdwe_filt)/SCL_600,
       float(this->vb_hdwe_filt)/sp.vb_hist_slr(),
