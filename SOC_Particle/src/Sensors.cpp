@@ -244,7 +244,7 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   inst_millis_(millis), inst_time_(time_now), NoaFilt(nullptr), Prbn_Tb_(nullptr), Prbn_Vb_(nullptr), Prbn_Ib_amp_(nullptr), Prbn_Ib_noa_(nullptr),
   reset_temp_(false), sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_tb_(0UL), sample_time_vb_(0UL), sample_time_vb_hdwe_(0UL),
   SelFiltCal(nullptr), VbFilt(nullptr), VbRMS(nullptr), VcRMS(nullptr), Vb_raw_(0), Vb_(NOMINAL_VB), Vb_f_(NOMINAL_VB), Vb_hdwe_(NOMINAL_VB),
-  Vb_hdwe_f_(NOMINAL_VB), Vb_model_(NOMINAL_VB), Vb_volt_(NOMINAL_VB), Vc_(0.), Vc_hdwe_(0.),
+  Vb_hdwe_f_(NOMINAL_VB), Vb_model_(NOMINAL_VB), Vb_volt_(NOMINAL_VB), Vc_(0.), Vc_hdwe_(0.), Vc_hdwe_sum_(0.),
   Tb_(NOMINAL_TB), Tb_f_(NOMINAL_TB), Tb_f_rate_(0.), Tb_hdwe_(NOMINAL_TB), Tb_hdwe_filt_(NOMINAL_TB), Tb_hdwe_filt_rate_(0.),
   Tb_model_(NOMINAL_TB), Tb_model_filt_(NOMINAL_TB), Tb_model_filt_rate_(0.),
   Ib_(0.), Ib_f_(0.), Ib_amp_(0.), Ib_amp_hdwe_(0.), Ib_amp_hdwe_f_(0.), Ib_amp_hdwe_kf_(0.), Ib_amp_model_(0.), Ib_amp_rms_(0.),
@@ -393,6 +393,7 @@ void Sensors::pretty_print()
   Serial.printf(" Vb_model%8.4f; V\n", Vb_model_);
   Serial.printf(" Vc%8.4f; V\n", Vc_);
   Serial.printf(" Vc_hdwe%8.4f; V\n", Vc_hdwe_);
+  Serial.printf(" Vc_hdwe_sum%8.4f; V\n", Vc_hdwe_sum_);
   Serial.printf(" Tb%9.5f; C\n", Tb_);
   Serial.printf(" Tb_f%9.5f; C\n", Tb_f_);
   Serial.printf(" Tb_f_rate%11.8f; C/s\n", Tb_f_rate_);
@@ -635,6 +636,7 @@ void Sensors::shunt_select_initial(const bool reset)
     Ib_amp_hdwe_kf_ = ShuntAmp->Ishunt_cal_kf() + hdwe_add;    // Sense fault injection feeds logic, not model
     Ib_amp_hdwe_f_ = AmpFilt->calculate(Ib_amp_hdwe_, reset, AMP_FILT_TAU, T_);
     Vc_hdwe_ = max(ShuntAmp->Vc(), ShuntNoAmp->Vc());
+    Vc_hdwe_sum_ = ShuntAmp->Vc() + ShuntNoAmp->Vc();
     Ib_noa_hdwe_ = ShuntNoAmp->Ishunt_cal() + hdwe_add;  // Sense fault injection feeds logic, not model
     Ib_noa_hdwe_kf_ = ShuntNoAmp->Ishunt_cal_kf() + hdwe_add;  // Sense fault injection feeds logic, not model
     Ib_noa_hdwe_f_ = NoaFilt->calculate(Ib_noa_hdwe_, reset, AMP_FILT_TAU, T_);

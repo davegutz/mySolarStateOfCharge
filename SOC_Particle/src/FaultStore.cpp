@@ -34,7 +34,7 @@ void Flt_st::assign(const unsigned long now, BatteryMonitor *Mon, Sensors *Sen)
   this->t_flt = now;
   this->Tb_hdwe_filt = int16_t(Sen->Tb_hdwe_filt()*SCL_600);
   this->vb_hdwe_filt = int16_t(Sen->Vb_hdwe_f()/ap.nS()*sp.vb_hist_slr());
-  this->Vc_hdwe = int16_t(Sen->Vc_hdwe()*SCL_6000);
+  this->Vc_hdwe_sum = int16_t((Sen->ShuntAmp->Vc() + Sen->ShuntNoAmp->Vc())*SCL_3000);
   this->ib_amp_hdwe_filt = int16_t(Sen->Ib_amp_hdwe_f()/ap.nP()*sp.ib_hist_m_slr());
   this->ib_noa_hdwe_filt = int16_t(Sen->Ib_noa_hdwe_f()/ap.nP()*sp.ib_hist_n_slr());
   this->Tb_filt = int16_t(Sen->Tb_f()*SCL_600);
@@ -59,7 +59,7 @@ void Flt_st::assign_unfilt(const unsigned long now, BatteryMonitor *Mon, Sensors
   this->t_flt = now;
   this->Tb_hdwe_filt = int16_t(Sen->Tb_hdwe()*SCL_600);
   this->vb_hdwe_filt = int16_t(Sen->Vb_hdwe()/ap.nS()*sp.vb_hist_slr());
-  this->Vc_hdwe = int16_t(Sen->Vc_hdwe()*SCL_6000);
+  this->Vc_hdwe_sum = int16_t((Sen->ShuntAmp->Vc() + Sen->ShuntNoAmp->Vc())*SCL_3000);
   this->ib_amp_hdwe_filt = int16_t(Sen->Ib_amp_hdwe()/ap.nP()*sp.ib_hist_m_slr());
   this->ib_noa_hdwe_filt = int16_t(Sen->Ib_noa_hdwe()/ap.nP()*sp.ib_hist_n_slr());
   this->Tb_filt = int16_t(Sen->Tb_f()*SCL_600);
@@ -84,7 +84,7 @@ void Flt_st::copy_to_Flt_ram_from(Flt_st input)
   t_flt = input.t_flt;
   Tb_hdwe_filt = input.Tb_hdwe_filt;
   vb_hdwe_filt = input.vb_hdwe_filt;
-  Vc_hdwe = input.Vc_hdwe;
+  Vc_hdwe_sum = input.Vc_hdwe_sum;
   ib_amp_hdwe_filt = input.ib_amp_hdwe_filt;
   ib_noa_hdwe_filt = input.ib_noa_hdwe_filt;
   Tb_filt = input.Tb_filt;
@@ -109,7 +109,7 @@ void Flt_st::nominal()
   this->t_flt = 1UL;
   this->Tb_hdwe_filt = int16_t(0);
   this->vb_hdwe_filt = int16_t(0);
-  this->Vc_hdwe = int16_t(0);
+  this->Vc_hdwe_sum = int16_t(0);
   this->ib_amp_hdwe_filt = int16_t(0);
   this->ib_noa_hdwe_filt = int16_t(0);
   this->Tb_filt = int16_t(0);
@@ -142,7 +142,7 @@ void Flt_st::pretty_print(const String code)
     Serial.printf("t %ld\n", this->t_flt);
     Serial.printf("Tb_hdwe_filt %7.3f\n", float(this->Tb_hdwe_filt)/SCL_600);
     Serial.printf("vb_hdwe_filt %7.3f\n", float(this->vb_hdwe_filt)/sp.vb_hist_slr());
-    Serial.printf("Vc_hdwe %7.3f\n", float(this->Vc_hdwe)/SCL_6000);
+    Serial.printf("Vc_hdwe_sum %7.3f\n", float(this->Vc_hdwe_sum)/SCL_3000);
     Serial.printf("ib_amp_hdwe_filt %7.3f\n", float(this->ib_amp_hdwe_filt)/sp.ib_hist_m_slr());
     Serial.printf("ib_noa_hdwe_filt %7.3f\n", float(this->ib_noa_hdwe_filt)/sp.ib_hist_n_slr());
     Serial.printf("Tb_filt %7.3f\n", float(this->Tb_filt)/SCL_600);
@@ -185,7 +185,7 @@ void Flt_st::print_flt(const String code)
       code.c_str(), buffer, this->t_flt,
       float(this->Tb_hdwe_filt)/SCL_600,
       float(this->vb_hdwe_filt)/sp.vb_hist_slr(),
-      float(this->Vc_hdwe)/SCL_6000,
+      float(this->Vc_hdwe_sum)/SCL_3000,
       float(this->ib_amp_hdwe_filt)/sp.ib_hist_m_slr(),
       float(this->ib_noa_hdwe_filt)/sp.ib_hist_n_slr(),
       float(this->Tb_filt)/SCL_600,

@@ -175,6 +175,8 @@ public:
   float Vc() { return Vc_; }
   void Vc_hdwe(const float input) { Vc_hdwe_ = input; }
   float Vc_hdwe() { return Vc_hdwe_; }
+  void Vc_hdwe_sum(const float input) { Vc_hdwe_sum_ = input; }
+  float Vc_hdwe_sum() { return Vc_hdwe_sum_; }
   void Tb(const double input) { Tb_ = input; }
   double Tb() { return Tb_; }
   void Tb_f(const double input) { Tb_f_ = input; }
@@ -367,6 +369,7 @@ protected:
   float Vb_volt_;              // Sensed battery bank voltage at ADC, V
   float Vc_;                   // Selected common reference voltage, V
   float Vc_hdwe_;              // Sensed common reference voltage, V
+  float Vc_hdwe_sum_;          // Sensed common reference voltage sum, V
   double Tb_;                  // Selected battery bank temp, C
   double Tb_f_;                // Selected filtered battery bank temp, C
   double Tb_f_rate_;           // Selected filtered battery bank temp rate, C/s

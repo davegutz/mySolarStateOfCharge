@@ -87,7 +87,6 @@ const char unit[] = version_str "_" HDWE_UNIT;
 #define SUMMARY_WAIT          60000UL   // Summarize alive time before first save, ms (60000UL = 1 min) Dh
 #define PUBLISH_SERIAL_DELAY  400UL     // Serial print interval (400UL = 0.4 sec)
 #define DISPLAY_USER_DELAY    1200UL    // User display update (1200UL = 1.2 sec)
-#define SNAP_WAIT             10000ULL  // Interval between fault snapshots (10000ULL = 10 sec)
 #define DP_MULT               4         // Multiples of read to capture data DP
 #define TBATT_TEMPCAL         0.56      // Maxim 1-wire plenum temp sense calibrate (0.56), C
 #define MAX_TEMP_READS        10        // Number of consequetive temp queries allowed (10)
@@ -111,6 +110,7 @@ const char unit[] = version_str "_" HDWE_UNIT;
 #define SCL_600               600.      // Data storage integer scaling
 #define SCL_1200              1200.     // Data storage integer scaling
 #define SCL_1500              1500.     // Data storage integer scaling
+#define SCL_3000              3000.f    // Data storage integer scaling
 #define SCL_6000              6000.     // Data storage integer scaling
 #define SCL_16000             16000.    // Data storage integer scaling
 #define SCL_30000             30000.    // Data storage integer scaling
@@ -410,6 +410,9 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #endif
 #if !defined(ASK_DURING_BOOT)
     #define ASK_DURING_BOOT       0   // Flag to ask for application of this file to * retained adjustements 0=retain,1=ask,2=force default
+#endif
+#if !defined(SNAP_WAIT)
+    #define SNAP_WAIT             10000ULL  // Interval between fault snapshots (10000ULL = 10 sec)
 #endif
 
 // Conversion gains

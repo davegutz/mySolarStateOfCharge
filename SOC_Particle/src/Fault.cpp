@@ -486,7 +486,8 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
     String::format(" wrap_m_and_n_fa %d\n", Sen->Flt->wrap_m_and_n_fa()) +
     String::format(" Tbh%9.5f Tbm=%9.5f sel%9.5f\n", Sen->Tb_hdwe(), Sen->Tb_model(), Sen->Tb()) +
     String::format(" Vbh%7.3f Vbm %7.3f sel%7.3f\n", Sen->Vb_hdwe(), Sen->Vb_model(), Sen->Vb()) +
-    String::format(" V3v3%7.3f\n", Sen->ShuntAmp->Vc()*2.) +
+    String::format(" Vc_h_m%7.3f\n", Sen->ShuntAmp->Vc()) +
+    String::format(" Vc_h_n%7.3f\n", Sen->ShuntNoAmp->Vc()) +
     String::format(" Imh%7.3f Imm %7.3f Ib%7.3f\n", Sen->Ib_amp_hdwe(), Sen->Ib_amp_model(), Sen->Ib()) +
     String::format(" Inh%7.3f Inm %7.3f Ib%7.3f\n", Sen->Ib_noa_hdwe(), Sen->Ib_noa_model(), Sen->Ib()) +
     String::format(" Ibh%7.3f Ibh %7.3f Ib%7.3f\n\n", Sen->Ib_hdwe(), Sen->Ib_hdwe_model(), Sen->Ib());
