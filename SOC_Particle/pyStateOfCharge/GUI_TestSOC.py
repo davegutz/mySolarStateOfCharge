@@ -1144,6 +1144,7 @@ def ref_restore():
 
 
 def save_data():
+    global timer
     print(f"save_data: {putty_test_csv_path.get()=}")
     if size_of(putty_test_csv_path.get()) > 64:  # bytes
         # For custom option, redefine Test.file_path if requested
@@ -1165,6 +1166,9 @@ def save_data():
         tksleep(0.1)
         copy_clean(putty_test_csv_path.get(), Test.file_path)
         print('copied ', putty_test_csv_path.get(), '\nto\n', Test.file_path)
+        if timer is not None:
+            timer.close()
+            timer = None
         save_data_button.config(bg='green', activebackground='green', fg='red', activeforeground='red',
                                 text='data saved')
         empty_file(putty_test_csv_path.get())
@@ -1177,6 +1181,7 @@ def save_data():
 
 
 def save_data_as():
+    global timer
     if size_of(putty_test_csv_path.get()) > 512:  # bytes
         # For custom option, redefine Test.file_path if requested
         if option.get() == 'custom':
@@ -1203,6 +1208,9 @@ def save_data_as():
         tksleep(0.1)
         copy_clean(putty_test_csv_path.get(), Test.file_path)
         print('copied ', putty_test_csv_path.get(), '\nto\n', Test.file_path)
+        if timer is not None:
+            timer.close()
+            timer = None
         save_data_as_button.config(bg='green', activebackground='green', fg='red', activeforeground='red',
                                    text='data saved as')
         empty_file(putty_test_csv_path.get())
@@ -1215,6 +1223,7 @@ def save_data_as():
 
 
 def save_progress():
+    global timer
     if size_of(putty_test_csv_path.get()) > 64:  # bytes
         # For custom option, redefine Test.file_path if requested
         new_file_txt = None
@@ -1234,6 +1243,9 @@ def save_progress():
                                     text='data saving')
         tksleep(0.1)
         copy_clean(putty_test_csv_path.get(), Test.file_path)
+        if timer is not None:
+            timer.close()
+            timer = None
         save_progress_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black',
                                     text='save_progress')
         print('copied ', putty_test_csv_path.get(), '\nto\n', Test.file_path)
@@ -1281,7 +1293,8 @@ def start_putty():
 
 
 def start_timer():
-    CountdownTimer(master, timer_val.get(), max_flash=60, exit_function=None, trigger=True)
+    global timer
+    timer = CountdownTimer(master, timer_val.get(), max_flash=60, exit_function=None, trigger=True)
 
 
 def swap_run_test():
@@ -1336,11 +1349,18 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     bg_color = "lightgray"
 
     # Master and header
+    print("creating master")
     master = tk.Tk(className='GUI_TestSOC')
+    print("master created")
     master.title('State of Charge')
     master.wm_minsize(width=min_width, height=main_height)
+    timer = None
+    print("creating Ref")
     Ref = Exec(cf, 'ref', path_disp_len_=folder_reveal)
+    print("Ref created")
+    print("creating Test")
     Test = Exec(cf, 'test', path_disp_len_=folder_reveal)
+    print("Test created")
     if platform.system() == 'Linux':
         putty_test_csv_path = tk.StringVar(master, '/home/daveg/.local/putty_test.csv')
         path_to_temp = tk.StringVar(master, '/home/daveg/.local')
@@ -1352,8 +1372,10 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
         putty_test_csv_path = tk.StringVar(master, str(Path(local_app_data_) / 'Temp' / 'putty_test.csv'))
         path_to_temp = tk.StringVar(master, str(Path(local_app_data_) / 'Temp'))
     print(f"{putty_test_csv_path.get()=}")
+    print("loading icon")
     icon_path = str(PurePosixPath(ex_root.script_loc) / 'GUI_TestSOC.png')
     master.iconphoto(False, tk.PhotoImage(file=icon_path))
+    print("icon loaded")
     top_panel = tk.Frame(master)
     top_panel.pack(expand=True, fill='both')
     top_panel_left = tk.Frame(top_panel)

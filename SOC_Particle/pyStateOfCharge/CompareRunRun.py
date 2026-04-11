@@ -62,18 +62,18 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
         load_data(data_file_run, 1, unit_key_run, zero_zero, time_end)
     sim_s_run = None
-    mon_run.str = 'r1'
-    sim_run.str = 's1'
-    f_run.str = 'f1'
+    mon_run.str_ = 'r1'
+    sim_run.str_ = 's1'
+    f_run.str_ = 'f1'
 
     # Load new test data
     data_file_test = str(PurePosixPath(data_file_folder_test) / data_file_txt_test)
     mon_test, sim_test, f_test, data_file_ver_clean, temp_flt_file_ver_clean, sync_info_test = \
         load_data(data_file_test, 1, unit_key_test, zero_zero, time_end)
     sim_s_test = None
-    mon_test.str = 'r2'
-    sim_test.str = 's2'
-    f_test.str = 'f2'
+    mon_test.str_ = 'r2'
+    sim_test.str_ = 's2'
+    f_test.str_ = 'f2'
 
     # Synchronize
     # Time since beginning of data to sync pulses

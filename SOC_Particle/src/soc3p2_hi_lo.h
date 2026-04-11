@@ -16,8 +16,7 @@
 
 // Miscellaneous
 #define ASK_DURING_BOOT       0   // Flag to ask for application of this file to * retained adjustments 0=retain,1=ask,2=force default
-// #define MODELING              247 // Nominal modeling bitmap (* 'Xm'), 0=all hdwe, 1+=Tb, 2+=Vb, 4+=Ib, 7=all model.  +240 for discn
-#define MODELING              0 // Nominal modeling bitmap (* 'Xm'), 0=all hdwe, 1+=Tb, 2+=Vb, 4+=Ib, 7=all model.  +240 for discn
+#define MODELING              247 // Nominal modeling bitmap (* 'Xm'), 0=all hdwe, 1+=Tb, 2+=Vb, 4+=Ib, 7=all model.  +240 for discn
 
 // Sensor biases
 #define CURR_BIAS_AMP         0.00  // Calibration of amplified shunt sensor (* 'DA'), A
@@ -53,8 +52,6 @@
 // Faults
 #define FAKE_FAULTS           true    // What to do with faults, T=detect and display them but don't change signals
 #define CC_DIFF_SOC_DIS_THRESH  0.5   // Signal selection threshold for Coulomb counter EKF disagree test (0.2, 0.1 too small on truck)
-#define FI_NOM 200. // Hi wrap threshold nominal scalar (1.0)  // Fi
-#define FO_NOM 200. // Lo wrap threshold nominal scalar (1.0)  // Fo
 #define DISAB_VB_FA_LT true
 #define DISAB_TB_FA true          // Had high out of range failure.  Want to keep running without latch on the truck
 
