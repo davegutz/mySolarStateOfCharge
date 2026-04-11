@@ -41,18 +41,67 @@ extern SavedPars sp;    // Various parameters to be static at system level and s
 extern VolatilePars ap; // Various adjustment parameters shared at system level
 struct Pins;
 
-// #ifdef HDWE_IB_HI_LO
-//   #define IB_SEL_STAT_DEF 0
-//   #define TB_SEL_STAT_DEF 1
-//   #define VB_SEL_STAT_DEF 1
-// #else
-//   #define IB_SEL_STAT_DEF 1
-//   #define TB_SEL_STAT_DEF 1
-//   #define VB_SEL_STAT_DEF 1
-// #endif
+
+// Particle Photon 2 (P2) debounced analog read
+class AnalogReadP2
+{
+public:
+  AnalogReadP2() {};
+  AnalogReadP2(const uint16_t pin): dead_(false), dead_prev_(false), lgv_(0), pin_(pin), 
+    raw_(0), raw_debounced_(0), raw_low_(false), raw_low_prev_(false) {};
+  ~AnalogReadP2() {};
+
+  // operators
+
+  // functions
+
+  // Hold last-good-value on exactly the 2nd consecutive low read (glitch); pass raw_ otherwise.
+  // 1st low: pass raw_  2nd consecutive low: return lgv_  3rd+ (persistent): pass raw_
+  int32_t analogReadDebounced(const int32_t debounce_level, const bool reset, const String name)
+  {
+    raw_ = analogRead(pin_);
+    raw_low_ = raw_ < debounce_level;
+    if ( reset ) raw_low_prev_ = raw_low_;
+    dead_ = raw_low_ && raw_low_prev_ && !reset;  // two consecutive low readings
+    raw_low_prev_ = raw_low_;
+    if ( !raw_low_ )
+    {
+      lgv_ = raw_;             // update last-good-value on every valid reading
+      raw_debounced_ = raw_;   // pass through
+    }
+    else if ( dead_ && !dead_prev_ && !reset )
+    {
+      raw_debounced_ = lgv_;   // exactly 2nd consecutive low: hold last good value
+      sendTxBuf(String::format("trip %s reset %d raw %d < %d raw_low %d dead %d raw_low_prev %d lgv_ %d raw_debounced %d \n",
+        name.c_str(), reset, raw_, debounce_level, raw_low_, dead_, raw_low_prev_, lgv_, raw_debounced_), true, true);
+    }
+    else
+    {
+      raw_debounced_ = raw_;   // 1st low, or persistent (3rd+): pass raw_ through
+    }
+    dead_prev_ = dead_;
+    if ( sp.debug()==57 )
+      sendTxBuf(String::format("not yet dead %s reset %d raw %d < %d raw_low %d dead %d raw_low_prev %d lgv_ %d raw_debounced %d \n",
+        name.c_str(), reset, raw_, debounce_level, raw_low_, dead_, raw_low_prev_, lgv_, raw_debounced_), true, true);
+
+    return ( raw_debounced_ );
+  }
+  bool dead() { return dead_; }
 
 
-// DS18-based temp sensor
+protected:
+  bool dead_;
+  bool dead_prev_;
+  int32_t lgv_;
+  uint16_t pin_;
+  int32_t raw_;
+  int32_t raw_debounced_;
+  bool raw_low_;
+  bool raw_low_prev_;
+};
+
+
+// 2-wire temp sensor
 class TempSensor
 {
 public:
@@ -145,6 +194,8 @@ protected:
   bool using_opamp_; // Using differential hardware amp
   bool using_kf_;    // Using Kalman Filter.  If not, set filter = input
   KalmanFilter *KF_;    // Noise filter
+  AnalogReadP2 *Vc_read_; // Debounced analog read for Vc
+  TFDelay *Bare_delay_;   // Persistence declaring bare_ after Vc_read_ transition
 };
 
 

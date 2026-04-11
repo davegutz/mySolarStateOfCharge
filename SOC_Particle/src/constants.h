@@ -220,7 +220,6 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #define VO_S                1.0         // Vo sense scalar (1.0)
 #define VTB_S               1.0         // VTb sense scalar (1.0)
 #define AMP_FILT_TAU        4.0         // Ib filters time constant for calibration only, s (4.0)
-#define VC_BARE_DETECTED    0.16        // Level of common voltage to declare circuit unconnected, V (0.16)
 #define V3V3                3.3         // Theoretical nominal V3v3, V (3.3)
 #define HALF_V3V3         (V3V3/2.)     // Theoretical center of differential TSC2010
 #define USE_SH_2WIRE                    // Use Steinhart-Hart 2-wire temperature characteristic when defined
@@ -352,6 +351,9 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #if !defined(SHUNT_NOA_R2)
     #define SHUNT_NOA_R2    33200. // Internal amp resistance 29.4x, ohms (33200)
 #endif
+#if !defined(VC_BARE_DETECTED)
+    #define VC_BARE_DETECTED 500  // Level of common voltage to declare circuit unconnected, V (50UL)
+#endif  
 
 // Vb Hardware
 #if !defined(VB_SENSE_R_LO)
@@ -413,6 +415,12 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #endif
 #if !defined(SNAP_WAIT)
     #define SNAP_WAIT             10000ULL  // Interval between fault snapshots (10000ULL = 10 sec)
+#endif
+#if !defined(RAW_BARE_S)
+    #define RAW_BARE_S   1. // Raw bare set persistence, s (1)
+#endif
+#if !defined(RAW_BARE_R)
+    #define RAW_BARE_R   2. // Raw bare reset persistence, s (2)
 #endif
 
 // Conversion gains

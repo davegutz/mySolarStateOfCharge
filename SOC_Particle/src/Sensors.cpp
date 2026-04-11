@@ -34,6 +34,7 @@ extern PrinterPars pr;  // Print buffer
 extern PublishPars pp;  // For publishing
 extern SavedPars sp;    // Various parameters to be static at system level and saved through power cycle
 
+
 // class TempSensor
 // constructors
 TempSensor::TempSensor(const uint16_t pin, const bool parasitic, const uint16_t conversion_delay)
@@ -96,6 +97,8 @@ Shunt::Shunt(const String name, const uint8_t port, float *sp_ib_scale,  float *
   if ( using_opamp_ ) Serial.printf("Ib %s sense ADC pin %d started using OpAmp and 3V3 pin %d\n", name_.c_str(), vo_pin_, vr_pin_);
   else Serial.printf("Ib %s sense ADC pins %d and %d started\n", name_.c_str(), vo_pin_, vc_pin_);
   KF_ = new KalmanFilter(0.1, 0., KF_Q_STD, KF_R_STD);
+  Vc_read_ = new AnalogReadP2(using_opamp_ ? vr_pin_ : vc_pin_);
+  Bare_delay_ = new TFDelay(false, RAW_BARE_S, RAW_BARE_R, sample_time_);
 }
 Shunt::~Shunt() {}
 // operators
@@ -136,14 +139,9 @@ void Shunt::pretty_print()
 // Convert sampled shunt data to Ib engineering units
 void Shunt::convert(const bool disconnect, const bool reset, Sensors *Sen)
 {
+  reset_ = reset;
   #ifndef HDWE_BARE
-    static bool Vc_low_prev = false;
-    static float Vc_prev = Vc_;
-    bool Vc_low = Vc_ < VC_BARE_DETECTED;
-    bare_shunt_ = Vc_low && Vc_low_prev && !reset;
-    Vc_low_prev = Vc_low;
-    if ( bare_shunt_ ) Vc_ = Vc_prev;
-    else Vc_prev = Vc_;
+    bare_shunt_ = Bare_delay_->calculate(Vc_read_->dead(), RAW_BARE_S, RAW_BARE_R, Sen->T(),reset_);
   #else
     bare_shunt_ = false;
   #endif
@@ -205,12 +203,12 @@ void Shunt::sample_Vc()
 {
   if ( using_opamp_ )
   {
-    Vc_raw_ = analogRead(vr_pin_);
+    Vc_raw_ = Vc_read_->analogReadDebounced(VC_BARE_DETECTED, reset_, name_);
     Vc_ =  float(Vc_raw_)*VH3V3_CONV_GAIN + ap.vc_add();
   }
   else
   {
-    Vc_raw_ = analogRead(vc_pin_);
+    Vc_raw_ = Vc_read_->analogReadDebounced(VC_BARE_DETECTED, reset_, name_);
     Vc_ =  float(Vc_raw_)*VC_CONV_GAIN + ap.vc_add();
   }
 }
