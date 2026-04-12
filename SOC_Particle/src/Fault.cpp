@@ -522,7 +522,7 @@ txBuf = String::format("") +
     String::format("1 vb      %d  %d 'Fv 1  SV, *Dc/*Dv'.", vb_flt(), vb_fa_lt()) +
     String::format("  bms_off %d\n", Mon->bms_off()) +
     String::format("0 tb      %d  %d 'Ft 1'\n\n", tb_flt(), tb_fa()) +
-    String::format("B-time_long%2d\n", dispRead(time_long)) +
+    // String::format("B-time_long%2d\n", dispRead(time_long)) +  // distracting
     String::format("A-accy     %2d\n", dispRead(accy)) +
     String::format("9-off      %2d\n", dispRead(off)) +
     String::format("8-SAT      %2d\n", dispRead(SAT)) +

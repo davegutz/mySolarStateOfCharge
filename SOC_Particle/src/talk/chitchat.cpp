@@ -100,22 +100,74 @@ void benign_zero(BatteryMonitor *Mon, Sensors *Sen) // BZ
 // Freezing with ctl_str bypasses the rest queues are allowed to keep building
 void chatter()
 {
+  static int ctl_str_len_max = 0;
+  static int asap_str_len_max = 0;
+  static int soon_str_len_max = 0;
+  static int queue_str_len_max = 0;
+  static int last_str_len_max = 0;
   if ( !cp.cmd_str.length() && !cp.freeze )
   {
     // Always pull from control and asap if available and run them
-    if ( cp.ctl_str.length() ) cp.cmd_str = chat_cmd_from(&cp.ctl_str);
-    else if ( cp.asap_str.length() ) cp.cmd_str = chat_cmd_from(&cp.asap_str);
+    if ( cp.ctl_str.length() )
+    {
+      int cmd_len = cp.ctl_str.length();
+      if (cmd_len > ctl_str_len_max)
+      {
+        ctl_str_len_max = cmd_len;
+        Serial.printf("New max ctl_str length: %d\n", ctl_str_len_max);
+      }
+      cp.cmd_str = chat_cmd_from(&cp.ctl_str);
+    }
+
+    else if ( cp.asap_str.length() )
+    {
+      int cmd_len = cp.asap_str.length();
+      if (cmd_len > asap_str_len_max)
+      {
+        asap_str_len_max = cmd_len;
+        Serial.printf("New max asap_str length: %d\n", asap_str_len_max);
+      }
+      cp.cmd_str = chat_cmd_from(&cp.asap_str);
+    }
 
     // Otherwise run the other queues when chitchat frame is running
     else if ( cp.chitchat )
     {
-      if ( cp.soon_str.length() ) cp.cmd_str = chat_cmd_from(&cp.soon_str);
+      if ( cp.soon_str.length() )
+      {
+        int cmd_len = cp.soon_str.length();
+        if (cmd_len > soon_str_len_max)
+        {
+          soon_str_len_max = cmd_len;
+          Serial.printf("New max soon_str length: %d\n", soon_str_len_max);
+        }
+        cp.cmd_str = chat_cmd_from(&cp.soon_str);
+      } 
 
-      else if ( cp.queue_str.length() ) cp.cmd_str = chat_cmd_from(&cp.queue_str);
+      else if ( cp.queue_str.length() )
+      {
+        int cmd_len = cp.queue_str.length();
+        if (cmd_len > queue_str_len_max)
+        {
+          queue_str_len_max = cmd_len;
+          Serial.printf("New max queue_str length: %d\n", queue_str_len_max);
+        }
+        cp.cmd_str = chat_cmd_from(&cp.queue_str);
+      }
 
-      else if ( cp.last_str.length() ) cp.cmd_str = chat_cmd_from(&cp.last_str);
+      else if ( cp.last_str.length() )
+      {
+        int cmd_len = cp.last_str.length();
+        if (cmd_len > last_str_len_max)
+        {
+          last_str_len_max = cmd_len;
+          Serial.printf("New max last_str length: %d\n", last_str_len_max);
+        }
+        cp.cmd_str = chat_cmd_from(&cp.last_str);
+      } 
     }
   }
+
   #ifdef SOFT_DEBUG_QUEUE
     if ( cp.chitchat || ( cp.freeze && cp.chitchat && cp.asap_str.length() ) || ( !cp.freeze && cp.asap_str.length() ) ) debug_queue("chatter exit");
   #endif

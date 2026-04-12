@@ -117,10 +117,10 @@ void debug_q(BatteryMonitor *Mon, Sensors *Sen)
 
   debug_qf(Mon, Sen);
 
-  txBuf = String::format("ib_amp_fail %d\nib_noa_fail %d\nvb_fail %d\nTb%7.3f\nvb%7.3f\nvoc%7.3f\nvoc_filt%7.3f\nvoc_stat%7.3f\nvoc_stat_f%7.3f\nvoc_soc%7.3f\nvsat%7.3f\nib%7.3f\nsoc_m%8.4f\n\
+  txBuf = String::format("ib_amp_fail %d\nib_noa_fail %d\nvb_fail %d\nTb%7.3f\nvb%7.3f\nvoc%7.3f\nvoc_filt%7.3f\nvoc_stat%7.3f\nvoc_stat_f%7.3f\nvoc_soc%7.3f\nvsat%7.3f\nVc%7.3f\nib%7.3f\nsoc_m%8.4f\n\
 soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
     Sen->Flt->ib_amp_fa(), Sen->Flt->ib_noa_fa(), Sen->Flt->vb_fail(),
-    Sen->Tb_f(), Mon->vb(), Mon->voc(), Mon->voc_dead(), Mon->voc_stat(), Mon->voc_stat_f(), Mon->voc_soc(), Mon->vsat(), Mon->ib(), Sen->Sim->soc(), Mon->soc_ekf(),
+    Sen->Tb_f(), Mon->vb(), Mon->voc(), Mon->voc_dead(), Mon->voc_stat(), Mon->voc_stat_f(), Mon->voc_soc(), Mon->vsat(), Sen->Vc(), Mon->ib(), Sen->Sim->soc(), Mon->soc_ekf(),
     Mon->soc(), Mon->soc_min(), Mon->soc_inf(), sp.modeling());
   sendTxBuf(txBuf, true, true);
 

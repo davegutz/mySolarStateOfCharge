@@ -97,6 +97,27 @@ class _Tee:
             s.flush()
 
 
+last_task = None
+last_task_args = ()
+last_task_kwargs = {}
+
+
+def register_last_task(func, *args, **kwargs):
+    global last_task, last_task_args, last_task_kwargs
+    last_task = func
+    last_task_args = args
+    last_task_kwargs = kwargs
+
+
+def run_previous_task():
+    global last_task, last_task_args, last_task_kwargs
+    if last_task is not None:
+        print(f"Running previous task: {last_task.__name__}")
+        last_task(*last_task_args, **last_task_kwargs)
+    else:
+        print("No previous task to run")
+
+
 sys.stdout = _Tee(sys.__stdout__, _log_file)
 sys.stderr = _Tee(sys.__stderr__, _log_file)
 
@@ -212,15 +233,15 @@ lookup = {
         'ampHiEmptFail': (118, modLoInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
         'ampHiFail': (118, modHalfInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
         'noaHiFail': (118, modHalfInit + tranPrep + d50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp. With ib_diff only nothing changes then should isolate to the noa by wrap and choose amp.", "'diff' will be displayed then ib_fail due to wrap of noa", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen).", "Loss of ib set 'accy' because loss of current sensing at high currents.")),
-        'rapidTweakRegression': (205, slow + 'Rs;W4;Xp10;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without latched fail', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A.  And Noa will fault and fail temprorarily')),
+        'rapidTweakRegression': (262, slow + 'Rs;W8;Xp10;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without latched fail', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A.  And Noa will fault and fail temprorarily')),
         'allProto': (552, modHalfInit + tranPrep + c50 + 'XQ25000;' + c00 + tempCleanup + '  Rs;W4;Xp10;  Rs;W4;Xp13;  ' + modHalfInitNoCc + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ('Proto multi', "Must have same 'vv*' throughout", "No 'HR' either")),
         'pulseSoft': (75, synced_slow_pulse + 'XS;Dm0;Dn0;vv0;Xm255;Ca.5;Pm;W2;Rs;W20;vv4;W10;' + 'Xp7;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a current sensor pulse.  Look at plots for good overlay. e_wrap should be nearly flat after a pulse response.", "This is the shortest of all tests.  Also useful for quick check tests.", "")),
         'pulseHard': (75, synced_slow_pulse + 'XS;Dm0;Dn0;vv0;Xm255;Ca.5;Pm;W2;Rs;W20;vv4;W10;' + 'Xp8;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hardware current pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Also useful for quick check tests.", "")),
-        'rapidTweakRegressionH0': (205, 'Sh0;' + slow + 'Rs;W4;Xp10;Pf;W2;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'No hysteresis. Best test for seeing time skews and checking fault logic for false trips', 'Tease out cause of e_wrap faults.  e_wrap MUST be flat!', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
-        'offLowSoc': (130, modEmptInitGen + tranPrep  + vm12 + 'XQ55000;' + dv0 + quiet + cleanup, ('Test for clean faults on shutoff.',)),
-        'offSitHysBmsBB': (800, modEmptInitBB + slowTwitchDef + 'Xa-162;' + tranPrep + twitch + 'XQ568000;' + 'Pf;W2;Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
+        'rapidTweakRegressionH0': (262, 'Sh0;' + slow + 'Rs;W4;Xp10;Pf;W2;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'No hysteresis. Best test for seeing time skews and checking fault logic for false trips', 'Tease out cause of e_wrap faults.  e_wrap MUST be flat!', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
+        'offLowSoc': (172, modEmptInitGen + tranPrep  + vm12 + 'XQ55000;' + dv0 + quiet + cleanup, ('Test for clean faults on shutoff.',)),
+        'offSitHysBmsBB': (740, modEmptInitBB + slowTwitchDef + 'Xa-162;' + tranPrep + twitch + 'XQ568000;' + 'Pf;W2;Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
         'offSitHysBmsCHG': (800, modEmptInitCHG + slowTwitchDef + 'Xa-324;' + tranPrep + twitch + 'XQ568000;' + 'Pf;W2;Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
-        'triTweakDisch': (205, slow + 'Rs;W4;Xp13;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A.  Also hyst evident in one _s model')),
+        'triTweakDisch': (262, slow + 'Rs;W4;Xp13;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A.  Also hyst evident in one _s model')),
         'ampHiFailFf': (138, modHalfInit + tranPrep + 'Ff1;' + c50 + 'XQ40000;' + c00 + quiet + cleanup, ("Should detect but not switch amp current failure. (See 'diff' and current!=0 on display).", "Run about 60s. Start by looking at 'Ult 1'. No fault record (keeps recording).  Verify that on Fig 3 the e_wrap goes through a threshold ~0.4 without change of 'ib_sel_stat'", "This show when deploy with Fake Faults (Ff) don't throw false trips (it happened)", "ib_amp limited by max range e.g. 12.6.  ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
         'ampLoFail': (150, modHalfInit + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
         'ampLoFullFail': (150, modFullInit + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Should detect and switch amp current failure before saturation tripped (would only be a problem for noa).", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
@@ -228,7 +249,7 @@ lookup = {
         'noaLoFullFail': (144, modFullInit + 'DS-0.30' + tranPrep + dm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Race with artificially low SAT logic to detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display.", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
         'ampHiFailNoise': (107, modHalfInit + tranPrep + noisePackage + c50 + 'XQ25000;' + c00 + silentPackage + quiet + cleanup, ("Noisy ampHiFail.  Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
         'noaHiFailNoise': (107, modHalfInit + tranPrep + noisePackage + d50 + 'XQ25000;' + c00 + silentPackage + quiet + cleanup, ("Noisy ampHiFail.  Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
-        'rapidTweakRegression40C': (200, 'D^15;' + slow + 'Rs;W4;Xp10;' + quiet + cleanup, ("Should run three very large current discharge/recharge cycles without fault", "Self-terminates", 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
+        'rapidTweakRegression40C': (262, 'D^15;' + slow + 'Rs;W4;Xp10;' + quiet + cleanup, ("Should run three very large current discharge/recharge cycles without fault", "Self-terminates", 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'slowTweakRegression': (682, slow + 'Rs;W4;Xp11' + quiet + cleanup, ("Should run one very large slow (~15 min) current discharge/recharge cycle without fault.   It will take 60 seconds to start changing current.", 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
         'satSitBB': (656, 'Xm247;Ca0.9962;' + fastTwitchDef + 'Xa17;' + tranPrep + 'XR;XQ600000;' + 'Xa0;' + quiet + cleanup, ("Should run one saturation and de-saturation event without fault.   Takes about 15 minutes.", "operate around saturation, starting below, go above, come back down. Tune Ca to start just below vsat",)),
         'satSitCHG': (656, 'Xm247;Ca0.986;' + fastTwitchDef + 'Xa17;' + tranPrep + 'XR;XQ600000;' + 'Xa0;' + quiet + cleanup, ("Should run one saturation and de-saturation event without fault.   Takes about 15 minutes.", "operate around saturation, starting below, go above, come back down. Tune Ca to start just below vsat",)),
@@ -685,6 +706,7 @@ def compare_hist_sim_choose():
 
 
 def compare_hist_to_sim():
+    register_last_task(compare_hist_to_sim)
     if modeling.get():
         update_data_buttons()
         print('compare_hist_to_sim.  save_pdf_path', str(PurePosixPath(Test.version_path) / 'figures'))
@@ -700,6 +722,7 @@ def compare_hist_to_sim():
 
 
 def compare_run():
+    register_last_task(compare_run)
     if not Test.key_exists_in_file:
         tkinter.messagebox.showwarning(message="Test Key '" + Test.key + "' does not exist in " + Test.file_txt)
         return
@@ -721,6 +744,7 @@ def compare_run():
 
 
 def compare_run_to_hist():
+    register_last_task(compare_run_to_hist)
     if not Test.key_exists_in_file:
         tkinter.messagebox.showwarning(message="Test Key '" + Test.key + "' does not exist in " + Test.file_txt)
         return
@@ -734,6 +758,7 @@ def compare_run_to_hist():
 
 
 def compare_hist_hist_run():
+    register_last_task(compare_hist_hist_run)
     if not Test.key_exists_in_file:
         tkinter.messagebox.showwarning(message="Test Key '" + Test.key + "' does not exist in " + Test.file_txt)
         return
@@ -851,6 +876,7 @@ def enter_mod_in_app():
 
 
 def grab_macro():
+    register_last_task(grab_macro)
     add_to_clip_board(macro.get())
     macro_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black')
     init_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black')
@@ -859,6 +885,7 @@ def grab_macro():
 
 
 def grab_init():
+    register_last_task(grab_init)
     # Grab command to update time in EEPROM
     try:
         current_ut = 'UT' + str(int(time.time())) + ';'
@@ -880,6 +907,7 @@ def grab_init():
 
 
 def grab_start():
+    register_last_task(grab_start)
     add_to_clip_board(start.get())
     grab_all_nominal()
     save_data_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black',
@@ -1526,10 +1554,15 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     if platform.system() == 'Darwin':
         start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="purple", bg=bg_color,
                                 justify='left', font=butt_font)
+        prev_button = myButton(option_panel_right, text='Run Prev', command=run_previous_task, fg="blue", bg=bg_color,
+                                justify='left', font=butt_font)
     else:
         start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="purple", bg=bg_color, wraplength=wrap_length,
                                 justify='left', font=butt_font)
+        prev_button = myButton(option_panel_right, text='Run Prev', command=run_previous_task, fg="blue", bg=bg_color, wraplength=wrap_length,
+                                justify='left', font=butt_font)
     start_button.pack(padx=5, pady=5, expand=True, fill='both')
+    prev_button.pack(padx=5, pady=5)
     timer_val = tk.IntVar(master, 0)
 
     # macro panel

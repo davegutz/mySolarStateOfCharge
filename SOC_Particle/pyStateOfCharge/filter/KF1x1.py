@@ -148,7 +148,7 @@ class KF1x1VarDt:
 
         self.P = (np.eye(self.x.shape[0]) - self.K @ self.H) @ self.P
 
-        return float(self.x[0])
+        return float(self.x[0, 0])
 
     def init_kf(self, soc, p_init):
         """Initialize on demand"""

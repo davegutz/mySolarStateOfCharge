@@ -496,7 +496,7 @@ if __name__ == "__main__":
     2.  Press Cx16000 to collect ss data for 60s
     3.  After 60 s press Sweep then OK.  When it reaches 5.0 Hz again press OK to stop then VCO OK to go back steady
     """
-    data_file = 'C:/Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/pyStateOfCharge/noise_study/sweepchirp3_soc2p2_hi_lo_chg.csv'  # Cx46000, new base 20251231
+    data_file = './noise_study/sweepchirp3_soc2p2_hi_lo_chg.csv'  # Cx46000, new base 20251231
     doing_doe = True  # Toggle this to see various kf implemented in python
     cutoff_freq_hz = 0.05  # hpf
     Qstd = 0.0003  # Standard deviation of acceleration noise
