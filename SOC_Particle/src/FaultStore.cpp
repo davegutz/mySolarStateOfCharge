@@ -29,7 +29,7 @@ extern SavedPars sp;       // Various parameters to be static at system level an
 extern VolatilePars ap; // Various adjustment parameters shared at system level
 
 // struct Flt_st.  This file needed to avoid circular reference to sp in header files
-void Flt_st::assign(const unsigned long now, BatteryMonitor *Mon, Sensors *Sen)
+void Flt_st::assign(const unsigned long long now, BatteryMonitor *Mon, Sensors *Sen)
 {
   this->t_flt = now;
   this->Tb_hdwe_filt = int16_t(Sen->Tb_hdwe_filt()*SCL_600);

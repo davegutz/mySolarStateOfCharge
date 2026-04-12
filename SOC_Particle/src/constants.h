@@ -351,9 +351,9 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #if !defined(SHUNT_NOA_R2)
     #define SHUNT_NOA_R2    33200. // Internal amp resistance 29.4x, ohms (33200)
 #endif
-#if !defined(VC_BARE_DETECTED)
-    #define VC_BARE_DETECTED 500  // Level of common voltage to declare circuit unconnected, V (50UL)
-#endif  
+#if !defined(VRAW_BARE_DETECTED)
+  #define VRAW_BARE_DETECTED 500 // Level of common voltage to declare circuit unconnected, V (50UL)
+#endif
 
 // Vb Hardware
 #if !defined(VB_SENSE_R_LO)

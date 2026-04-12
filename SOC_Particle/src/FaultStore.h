@@ -52,7 +52,7 @@ struct Flt_st
   uint32_t fltw = 0;    // Fault word
   uint32_t falw = 0;    // Fail word
   unsigned long dummy = 0;  // padding to absorb Wire.write corruption
-  void assign(const unsigned long now, BatteryMonitor *Mon, Sensors *Sen);
+  void assign(const unsigned long long now, BatteryMonitor *Mon, Sensors *Sen);
   void assign_unfilt(const unsigned long long now, BatteryMonitor *Mon, Sensors *Sen);
   void copy_to_Flt_ram_from(Flt_st input);
   void get() {};

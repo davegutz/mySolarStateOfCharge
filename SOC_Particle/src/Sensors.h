@@ -87,8 +87,6 @@ public:
     return ( raw_debounced_ );
   }
   bool dead() { return dead_; }
-
-
 protected:
   bool dead_;
   bool dead_prev_;
@@ -113,7 +111,7 @@ public:
   // functions
   bool tb_stale_flt() { return tb_stale_flt_; };
   unsigned long long sample_time() { return sample_time_; };
-  float sample(Sensors *Sen);
+  float sample(Sensors *Sen, const bool reset);
   float noise();
   float Tb_volt(){ return Tb_volt_; };
 protected:
@@ -122,6 +120,8 @@ protected:
   uint16_t VTb_pin_;      // Using 2wire
   double Tb_volt_;              // Sensed battery temp voltage from ADC, V
   unsigned long long sample_time_;  // Sample time
+  uint32_t Tb_raw_ = 0;
+  AnalogReadP2 *Tb_read_;
 };
 
 
@@ -195,6 +195,7 @@ protected:
   bool using_kf_;    // Using Kalman Filter.  If not, set filter = input
   KalmanFilter *KF_;    // Noise filter
   AnalogReadP2 *Vc_read_; // Debounced analog read for Vc
+  AnalogReadP2 *Vo_read_; // Debounced analog read for Vo
   TFDelay *Bare_delay_;   // Persistence declaring bare_ after Vc_read_ transition
 };
 
@@ -411,6 +412,7 @@ protected:
   LagExp *VbFilt;       // Noise filter for calibration
   RecursiveRMSMonitorFP *VbRMS; // RMS noise monitor for Vb
   RecursiveRMSMonitorFP *VcRMS; // RMS noise monitor for Vc
+  AnalogReadP2 *Vb_read_;      // Vb sense debounce
   int Vb_raw_;                 // Raw analog read, integer
   float Vb_;                   // Selected battery bank voltage, V
   float Vb_f_;                 // Selected filtered battery bank voltage, V

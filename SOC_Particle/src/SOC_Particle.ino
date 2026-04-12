@@ -443,7 +443,7 @@ void loop()
     sp.put_Ihis(sp.ihis() + 1);
     if ( sp.ihis() > (sp.nhis() - 1) ) sp.put_Ihis(0);  // wrap buffer
     Flt_st hist_snap, hist_bounced;
-    hist_snap.assign(Time.now(), Mon, Sen);
+    hist_snap.assign(Sen->now(), Mon, Sen);
     hist_bounced = sp.put_history(hist_snap, sp.ihis());
 
     sp.put_Isum(sp.isum() + 1);

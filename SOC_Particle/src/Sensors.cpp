@@ -40,26 +40,29 @@ extern SavedPars sp;    // Various parameters to be static at system level and s
 TempSensor::TempSensor(const uint16_t pin, const bool parasitic, const uint16_t conversion_delay)
 : tb_stale_flt_(true)
 {
-   SdTb = new SlidingDeadband(HDB_TBATT);
-   Serial.printf("Tb started\n");
+  SdTb = new SlidingDeadband(HDB_TBATT);
+  Serial.printf("Tb started\n");
 }
 TempSensor::TempSensor(const uint16_t pin, const bool parasitic, const uint16_t conversion_delay, const uint16_t VTb_pin)
 : tb_stale_flt_(true), VTb_pin_(VTb_pin)
 {
-   SdTb = new SlidingDeadband(HDB_TBATT);
-   Serial.printf("Tb started\n");
+  Tb_read_ = new AnalogReadP2(VTb_pin_);
+  SdTb = new SlidingDeadband(HDB_TBATT);
+  Serial.printf("Tb started\n");
 }
 TempSensor::~TempSensor() {}
 // operators
 // functions
-float TempSensor::sample(Sensors *Sen)
+float TempSensor::sample(Sensors *Sen, const bool reset)
 {
   // Log.info("  TempSensor::sample");
   // Read Sensor
   // MAXIM conversion 1-wire Tp plenum temperature
   static double Tb_hdwe = 0.;
 
-  Tb_volt_ = float(analogRead(VTb_pin_))*VTB_CONV_GAIN;
+  int Tb_raw_ = 0;
+  Tb_raw_ = Tb_read_->analogReadDebounced(VRAW_BARE_DETECTED, reset, "Tb");
+  Tb_volt_ = float(Tb_raw_)*VTB_CONV_GAIN;
   sample_time_ = millis();
 
   float res = Tb_volt_ * float(HDWE_RS_2WIRE) / (V3V3 - Tb_volt_);
@@ -98,6 +101,8 @@ Shunt::Shunt(const String name, const uint8_t port, float *sp_ib_scale,  float *
   else Serial.printf("Ib %s sense ADC pins %d and %d started\n", name_.c_str(), vo_pin_, vc_pin_);
   KF_ = new KalmanFilter(0.1, 0., KF_Q_STD, KF_R_STD);
   Vc_read_ = new AnalogReadP2(using_opamp_ ? vr_pin_ : vc_pin_);
+  Vc_read_ = new AnalogReadP2(using_opamp_ ? vr_pin_ : vc_pin_);
+  Vo_read_ = new AnalogReadP2(vo_pin_);
   Bare_delay_ = new TFDelay(false, RAW_BARE_S, RAW_BARE_R, sample_time_);
 }
 Shunt::~Shunt() {}
@@ -201,14 +206,13 @@ void Shunt::sample_filter_kf(const bool reset_kf)
 // Sample Vc = Vr centering signal for amplifier
 void Shunt::sample_Vc()
 {
+  Vc_raw_ = Vc_read_->analogReadDebounced(VRAW_BARE_DETECTED, reset_, name_);
   if ( using_opamp_ )
   {
-    Vc_raw_ = Vc_read_->analogReadDebounced(VC_BARE_DETECTED, reset_, name_);
     Vc_ =  float(Vc_raw_)*VH3V3_CONV_GAIN + ap.vc_add();
   }
   else
   {
-    Vc_raw_ = Vc_read_->analogReadDebounced(VC_BARE_DETECTED, reset_, name_);
     Vc_ =  float(Vc_raw_)*VC_CONV_GAIN + ap.vc_add();
   }
 }
@@ -218,7 +222,7 @@ void Shunt::sample_Vo()
 {
   sample_time_z_ = sample_time_;
   sample_time_ = millis();
-  Vo_raw_ = analogRead(vo_pin_);
+  Vo_raw_ = Vo_read_->analogReadDebounced(VRAW_BARE_DETECTED, reset_, name_);
   Vo_ =  float(Vo_raw_)*VO_CONV_GAIN;
 }
 
@@ -277,6 +281,7 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   NoaFilt = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*ap.nS()*ap.nP(), NOM_UNIT_CAP*ap.nS()*ap.nP());
   SelFiltCal = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*ap.nS()*ap.nP(), NOM_UNIT_CAP*ap.nS()*ap.nP());
   VbFilt = new LagExp(T, AMP_FILT_TAU, 0., NOMINAL_VB*2.5);
+  Vb_read_ = new AnalogReadP2(pins->Vb_pin);
   IbAmpRMS = new RecursiveRMSMonitorFP();
   IbNoaRMS = new RecursiveRMSMonitorFP();
   VbRMS = new RecursiveRMSMonitorFP();
@@ -655,7 +660,7 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const bool reset_temp)
   // Log.info("  temp_load_and_filter:  calling sample");
   reset_temp_ = reset_temp;
   #ifndef HDWE_BARE
-    Tb_hdwe_ = SensorTb->sample(Sen);  // Must sample even if using model
+    Tb_hdwe_ = SensorTb->sample(Sen, reset_temp_);  // Must sample even if using model
 
     Tb_model_filt_ = TbModelFilt->calculate(Tb_model_, reset_temp_, ap.tb_filt(), min(T_temp_, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
     Tb_model_filt_rate_ = TbModelFilt->rate();
@@ -699,7 +704,7 @@ void Sensors::vb_load(const uint16_t vb_pin, const bool reset)
   if ( !sp.mod_vb_dscn() )
   {
     #if !defined(HDWE_BARE)
-      Vb_raw_ = analogRead(vb_pin);
+      Vb_raw_ = Vb_read_-> analogReadDebounced(VRAW_BARE_DETECTED, reset, "Vb");
       Vb_volt_ = Vb_raw_ * VB_RAW_CONV_GAIN;
       Vb_hdwe_ =  float(Vb_raw_)*VB_CONV_GAIN*ap.Vb_scale() + float(VB_A) + sp.Vb_bias_hdwe();
     #endif

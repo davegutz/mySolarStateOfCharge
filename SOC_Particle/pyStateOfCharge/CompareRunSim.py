@@ -186,8 +186,8 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     # Cut-pasted from GUI_TestSOC Run window
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/noaHiFail_soc3p2_hi_lo_bb.csv'
-    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/BMS 20260412_soc4p2_hi_lo_bbX.csv'
+    unit_key = 'g20250612a_soc4p2_hi_lo_bb'
     time_end = None
     plots = True
     use_mon_soc_ = False
@@ -197,8 +197,8 @@ def main():  # Example usage.  ok on 20260217
     request_history = 5
     init_time = None
     time_shift = None
-    strict_overplot = True
-    terse = True
+    strict_overplot = False
+    terse = False
     mon_str = ''
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,
