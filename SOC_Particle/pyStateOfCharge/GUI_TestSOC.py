@@ -904,6 +904,25 @@ def grab_init():
     start_putty()
 
 
+def monitor_putty_done():
+    if Path(putty_test_csv_path.get()).is_file():
+        try:
+            with open(putty_test_csv_path.get(), 'rb') as f:
+                f.seek(0, 2)
+                size = f.tell()
+                # Read last 1024 bytes to check for ***DONE***
+                f.seek(max(0, size - 1024))
+                last_data = f.read().decode('utf-8', errors='ignore')
+                if '***DONE***' in last_data:
+                    print(f"***DONE*** detected in {putty_test_csv_path.get()}")
+                    save_data()
+                    tk.messagebox.showinfo(title='Done ' + start_button.cget('text'), message='Run Complete')
+                    return
+        except Exception as e:
+            print(f"Error monitoring putty file: {e}")
+    master.after(1000, monitor_putty_done)
+
+
 def grab_start():
     register_last_task(grab_start)
     add_to_clip_board(start.get())
@@ -915,6 +934,7 @@ def grab_start():
     grab_all_nominal()
     start_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black')
     start_timer()
+    monitor_putty_done()
 
 
 def grab_all_nominal():
@@ -1064,28 +1084,27 @@ def kill_putty(sys_=None, silent=True):
 
 
 def look_putty(sys_=None, silent=True):
-    command = ''
     if sys_ == 'Linux':
-        return subprocess.check_output(['ps']).decode('ascii').__contains__('putty')
+        try:
+            output = subprocess.check_output(['pgrep', '-f', 'putty']).decode('ascii')
+            return len(output.strip()) > 0
+        except subprocess.CalledProcessError:
+            return False
     elif sys_ == 'Windows':
-        return subprocess.check_output(['tasklist']).decode('ascii').__contains__('putty.exe')
+        try:
+            output = subprocess.check_output(['tasklist', '/FI', 'IMAGENAME eq putty.exe', '/NH']).decode('ascii')
+            return 'putty.exe' in output.lower()
+        except subprocess.CalledProcessError:
+            return False
     elif sys_ == 'Darwin':
-        command = 'tbd'
+        try:
+            output = subprocess.check_output(['pgrep', '-f', 'putty']).decode('ascii')
+            return len(output.strip()) > 0
+        except subprocess.CalledProcessError:
+            return False
     else:
-        print(f"kill_putty: SYS = {sys_} unknown")
-    if not silent:
-        print(command + '\n')
-        print(Colors.bg.brightblack, Colors.fg.wheat)
-        result = run_shell_cmd(command, silent=silent)
-        print(Colors.reset)
-        print(command + '\n')
-        if result == -1:
-            print(Colors.fg.blue, 'failed.', Colors.reset)
-            return None, False
-    else:
-        result = run_shell_cmd(command, silent=False, save_stdout=True)
-        print(f"run_shell_cmd {result=}")
-    return result
+        print(f"look_putty: SYS = {sys_} unknown")
+        return False
 
 
 def lookup_macro():
@@ -1307,15 +1326,21 @@ def size_of(path):
 
 def start_putty():
     lookup_test()
+    if look_putty(platform.system()):
+        print("PuTTY already open.  Skipping restart.")
+        return
+
     enter_size = putty_size()
     if enter_size >= 64:
         if not save_putty():
             tkinter.messagebox.showwarning(message="putty may be open already")
         enter_size = putty_size()
+
     if enter_size < 64:
         kill_putty(platform.system())
         print(f'restarting putty   putty -load {test_filename.get()}')
-        subprocess.Popen(['putty', '-load', test_filename.get()], stdin=subprocess.PIPE, bufsize=1, universal_newlines=True)
+        subprocess.Popen(['putty', '-load', test_filename.get()], 
+                         stdin=subprocess.PIPE, bufsize=1, universal_newlines=True)
 
 
 def start_timer():
