@@ -40,13 +40,13 @@ extern BleCharacteristic txCharacteristic;
 
 void sample_burst(Pins *myPins, Sensors *Sen)
 {
-  unsigned long int local_micros_init = micros();
+  uint32_t local_micros_init = micros();
   if ( ap.samp_points() > 0 )
   {
     Serial.printf("u_cx, time, vovcn, vovcnkf,\n");
-    for (unsigned long int i=0; i<ap.samp_points(); i++ )  // Cx
+    for (uint32_t i=0; i<ap.samp_points(); i++ )  // Cx
     {
-      unsigned long int local_micros = micros();
+      uint32_t local_micros = micros();
       if ( i== 0 ) local_micros_init = local_micros;
       Sen->ShuntNoAmp->sample_Vo();
       Sen->ShuntNoAmp->sample_Vc();
@@ -255,7 +255,7 @@ void load_ib_vb(const bool reset, const bool reset_temp, const bool reset_kf, Se
 // Inputs:  sp.mon_chm, Sen->Ib, Sen->Vb, Sen->Tb_f
 // States:  Mon.soc, Mon.soc_ekf
 // Outputs: tcharge_wt, tcharge_ekf, Voc, Voc_filt
-void  monitor(const bool reset, const bool reset_temp, const bool reset_ekf, const unsigned long long now,
+void  monitor(const bool reset, const bool reset_temp, const bool reset_ekf, const uint64_t now,
   TFDelay *Is_sat_delay, BatteryMonitor *Mon, Sensors *Sen)
 {
   // EKF - calculates tb_f_, voc_stat_, voc_ as functions of sensed parameters vb & ib (not soc)
@@ -281,10 +281,10 @@ void  monitor(const bool reset, const bool reset_temp, const bool reset_ekf, con
 // States:  Sim.soc
 // Outputs: Sim.tb_f_, Sen->Tb_f, Sen->Ib, Sen->Ib_model,
 //   Sen->Vb_model, Sen->Tb_f, sp.inj_bias
-void sense_synth_select(const bool reset, const bool reset_temp, const bool reset_kf, const unsigned long long now,
-  const unsigned long long elapsed,  Pins *myPins, BatteryMonitor *Mon, Sensors *Sen)
+void sense_synth_select(const bool reset, const bool reset_temp, const bool reset_kf, const uint64_t now,
+  const uint64_t elapsed,  Pins *myPins, BatteryMonitor *Mon, Sensors *Sen)
 {
-  static unsigned long long int last_snap = now;
+  static uint64_t last_snap = now;
   bool storing_fault_data = ( now - last_snap )>SNAP_WAIT;
   if ( storing_fault_data || reset ) last_snap = now;
 
@@ -399,10 +399,10 @@ void sense_synth_select(const bool reset, const bool reset_temp, const bool rese
   Sen->Sim->calc_inj(Sen->elapsed_inj(), sp.type(), sp.Amp(ap.nP()), sp.freq());
 
   // Quiet logic.   Reset to ready state at soc=0.5; do not change Modeling.  Passes at least once before running chit.
-  static unsigned long long millis_past = millis();
-  static unsigned long int until_q_past = ap.until_q();
+  static uint64_t millis_past = millis();
+  static uint32_t until_q_past = ap.until_q();
   if ( ap.until_q()>0UL && until_q_past==0UL ) until_q_past = ap.until_q();
-  ap.until_q( (unsigned long) max(0, (long) ap.until_q()  - (long)(millis() - millis_past)) );
+  ap.until_q( (uint32_t) max(0, (long) ap.until_q()  - (long)(millis() - millis_past)) );
   if ( ap.until_q()==0UL && until_q_past>0UL )
   {
     chit("BZ;", SOON);
@@ -661,7 +661,7 @@ void serial_display(Sensors *Sen, BatteryMonitor *Mon)
 
 
 // Time synchro for web information
-void sync_time(unsigned long long now, unsigned long long *last_sync, unsigned long long *millis_flip)
+void sync_time(uint64_t now, uint64_t *last_sync, uint64_t *millis_flip)
 {
   *last_sync = millis();
 
@@ -683,7 +683,7 @@ void sync_time(unsigned long long now, unsigned long long *last_sync, unsigned l
 String time_long_2_str(const time_t time, char *tempStr)
 {
     // Serial.printf("Time.year:  time_t %d ul %d as-is %d\n", 
-    //   Time.year((time_t) 1703267248), Time.year((unsigned long )1703267248), Time.year(time));
+    //   Time.year((time_t) 1703267248), Time.year((uint32_t )1703267248), Time.year(time));
     uint32_t year = Time.year(time);
     uint8_t month = Time.month(time);
     uint8_t day = Time.day(time);

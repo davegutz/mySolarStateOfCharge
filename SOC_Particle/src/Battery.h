@@ -236,14 +236,14 @@ class BatterySim: public Battery
 public:
   BatterySim(const float dx_voc, const float dy_voc, const float dz_voc);
   ~BatterySim();
-  float calc_inj(const unsigned long long now, const uint8_t type, const float amp, const double freq);
+  float calc_inj(const uint64_t now, const uint8_t type, const float amp, const double freq);
   virtual float calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc);
   float calculate(Sensors *Sen, const bool dc_dc_on, const bool reset);
   float count_coulombs(Sensors *Sen, const bool reset, BatteryMonitor *Mon, const bool initializing_all);
   bool cutback() { return model_cutback_; };
   double delta_q() { return *sp_delta_q_; };
   float d_delta_q_s() { return d_delta_q_s_; };
-  unsigned long int dt_long(void) { return sample_time_ - sample_time_z_; };
+  uint32_t dt_long(void) { return sample_time_ - sample_time_z_; };
   float hys_state() { return hys_->dv_hys(); };
   void hys_state(const float st) { hys_->dv_hys(st); };
   void hys_pretty_print () { hys_->pretty_print(0., 0., 0.); };
@@ -255,7 +255,7 @@ public:
   void init_hys(const float hys) { hys_->init(hys); };
   void pretty_print(void);
   bool saturated() { return model_saturated_; };
-  unsigned long int sample_time(void) { return sample_time_; };
+  uint32_t sample_time(void) { return sample_time_; };
   float voc() { return voc_; };
   float voc_stat() { return voc_stat_; };
 protected:
@@ -272,8 +272,8 @@ protected:
   bool model_cutback_;   // Indicate that modeled current being limited on saturation cutback, T = cutback limited
   bool model_saturated_; // Indicator of maximal cutback, T = cutback saturated
   double q_;                // Charge, C
-  unsigned long int sample_time_;       // Exact moment of hardware signal generation, ms
-  unsigned long int sample_time_z_;     // Exact moment of past hardware signal generation, ms
+  uint32_t sample_time_;       // Exact moment of hardware signal generation, ms
+  uint32_t sample_time_z_;     // Exact moment of past hardware signal generation, ms
   float sat_cutback_gain_; // Gain to retard ib when voc exceeds vsat, dimensionless
   float sat_ib_max_;       // Current cutback to be applied to modeled ib output, A
   float sat_ib_null_;      // Current cutback value for voc=vsat, A

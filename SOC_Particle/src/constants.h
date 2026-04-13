@@ -82,7 +82,7 @@ const char unit[] = version_str "_" HDWE_UNIT;
 #define ONE_DAY_MILLIS        86400000UL// Number of milliseconds in one day (24*60*60*1000)
 #define TALK_DELAY            313UL      // Talk wait, ms (313UL = 0.313 sec)
 #define READ_DELAY            100UL     // Sensor read wait, ms (100UL = 0.1 sec) Dr
-#define TEMP_DELAY            6000UL    // Sensor read wait, ms (4000UL = 4.0 sec) Dq
+#define TEMP_DELAY            6000UL    // Sensor read wait, ms (6000UL = 6.0 sec) Dq
 #define SUMMARY_DELAY         1800000UL // Battery state tracking and reporting, ms (1800000UL = 30 min) Dh
 #define SUMMARY_WAIT          60000UL   // Summarize alive time before first save, ms (60000UL = 1 min) Dh
 #define PUBLISH_SERIAL_DELAY  400UL     // Serial print interval (400UL = 0.4 sec)
@@ -133,8 +133,7 @@ const char unit[] = version_str "_" HDWE_UNIT;
     #define T_SAT                 24        // Saturation time, sec (>21 for no SAT with Dv0.82)
 #endif
 const float T_DESAT =         20;       // De-saturation time, sec
-#define TEMP_PARASITIC        true      // DS18 sensor power. true means leave it on all the time (true)
-#define TEMP_DELAY_DS18       1         // Time to block temperature sensor read in DS18 routine, ms (1)
+#define TEMP_PARASITIC        true      // Temperature sensor power. true means leave it on all the time (true)
 #ifndef TEMP_INIT_DELAY
     #define TEMP_INIT_DELAY       7000     // It takes 10 seconds first read of DS18 (10000)
 #endif
@@ -149,10 +148,8 @@ const float T_DESAT =         20;       // De-saturation time, sec
 #define VC_MAX                2.15      // Signal selection hard fault threshold, V (2.15, 1.85 too low)  // 1.65*1.3 is max ADC reading with 1.65v ref, but see 1.9v on truck with no power, so set at 2.15v to avoid false fault on truck when off
 #define VC_MIN                1.1       // Signal selection hard fault threshold, V (1.1, 1.4 too high)
 #define IB_MIN_UP             0.2       // Min up charge current for come alive, BMS logic, and fault
-#ifdef HDWE_2WIRE
-    #define TB_MAX                60.       // Signal selection hard fault threshold 2wire only, C (60.)
-    #define TB_MIN               -40.       // Signal selection hard fault threshold 2wire only, C (-40.)
-#endif
+#define TB_MAX                60.       // Signal selection hard fault threshold 2wire only, C (60.)
+#define TB_MIN               -40.       // Signal selection hard fault threshold 2wire only, C (-40.)
 #define TB_HARD_SET           1.        // Signal selection Tb 2-wire range fail persistence, s (1.)
 #define TB_HARD_RESET         2.        // Signal selection Tb 2-wire range fail reset persistence, s (2.)
 #define VB_HARD_SET           1.        // Signal selection volt range fail persistence, s (1.)
@@ -309,6 +306,9 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #endif
 #if !defined(KF_USE_AMP)
     #define KF_USE_AMP        false
+#endif
+#if !defined(HDWE_2WIRE)
+    #define HDWE_2WIRE        true
 #endif
 #if !defined(KF_USE_NOA)
     #define KF_USE_NOA        true

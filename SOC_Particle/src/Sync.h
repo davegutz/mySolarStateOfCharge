@@ -30,27 +30,27 @@ class Sync
 public:
   // Constructors
   Sync(void);
-  Sync(unsigned long long delay);
+  Sync(uint64_t delay);
   // Functions
-  bool update(bool reset, unsigned long long now, bool andCheck);
-  bool update(unsigned long long now, bool reset, bool andCheck);
-  bool update(unsigned long long now, bool reset);
-  bool updateN(unsigned long long now, bool reset, bool orCheck);
-  unsigned long long delay() { return(delay_); }
-  void delay(unsigned long long new_delay) { delay_ = new_delay; updateTimeInput_ = float(delay_)/1000.f; }
-  void delay(unsigned long long new_delay, unsigned long long now) { delay_ = new_delay; updateTimeInput_ = float(delay_)/1000.f; last_ = now; }
-  unsigned long long last() { return(last_); }
+  bool update(bool reset, uint64_t now, bool andCheck);
+  bool update(uint64_t now, bool reset, bool andCheck);
+  bool update(uint64_t now, bool reset);
+  bool updateN(uint64_t now, bool reset, bool orCheck);
+  uint64_t delay() { return(delay_); }
+  void delay(uint64_t new_delay) { delay_ = new_delay; updateTimeInput_ = float(delay_)/1000.f; }
+  void delay(uint64_t new_delay, uint64_t now) { delay_ = new_delay; updateTimeInput_ = float(delay_)/1000.f; last_ = now; }
+  uint64_t last() { return(last_); }
   bool stat() { return(stat_); }
-  unsigned long long updateDiff() { return(updateDiff_); }
+  uint64_t updateDiff() { return(updateDiff_); }
   double updateTime() { return(updateTime_); }
   double updateTimeInput() { return(updateTimeInput_); }
-  unsigned long long now() { return(now_); }
+  uint64_t now() { return(now_); }
 private:
-  unsigned long long delay_;
-  unsigned long long last_;
-  unsigned long long now_;
+  uint64_t delay_;
+  uint64_t last_;
+  uint64_t now_;
   bool stat_;
-  unsigned long long updateDiff_;
+  uint64_t updateDiff_;
   double updateTime_;
   double updateTimeInput_;
 };

@@ -915,8 +915,8 @@ class ULongV: public Variable
 public:
     ULongV(){}
 
-    ULongV(const String &prefix, const String &code, SerialRAM *ram, const String &description, const String &units, const unsigned long min, const unsigned long max,
-    unsigned long *store, const unsigned long _default=0, const bool check_for_off_on_init=true):
+    ULongV(const String &prefix, const String &code, SerialRAM *ram, const String &description, const String &units, const uint32_t min, const uint32_t max,
+    uint32_t *store, const uint32_t _default=0, const bool check_for_off_on_init=true):
         Variable(prefix, code, ram, description, units, check_for_off_on_init)
     {
         min_ = min;
@@ -931,10 +931,10 @@ public:
     uint16_t assign_addr(uint16_t next)
     {
         addr_.a16 = next;
-        return next + sizeof(unsigned long);
+        return next + sizeof(uint32_t);
     }
 
-    bool check_set_put(unsigned long val)
+    bool check_set_put(uint32_t val)
     {
         if ( val>max_ || val<min_ )
         {
@@ -1000,12 +1000,12 @@ public:
     {
         print();
         if ( str == "" ) success_ = print_nominalize();
-        else success_ = check_set_put((unsigned long) str.toInt());
+        else success_ = check_set_put((uint32_t) str.toInt());
         print();
         return success_;
     }
 
-    bool print_adj_print(const unsigned long input)
+    bool print_adj_print(const uint32_t input)
     {
         print();
         success_ = check_set_put(input);
@@ -1020,8 +1020,8 @@ public:
     }
 
 protected:
-    unsigned long *val_;
-    unsigned long min_;
-    unsigned long max_;
-    unsigned long default_;
+    uint32_t *val_;
+    uint32_t min_;
+    uint32_t max_;
+    uint32_t default_;
 };

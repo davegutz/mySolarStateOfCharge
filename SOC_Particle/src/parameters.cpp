@@ -388,7 +388,7 @@ void SavedPars::put_all_dynamic()
             break;
 
         case ( 2 ):
-            put_Time_now(max( Time_now_, (unsigned long)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
+            put_Time_now(max( Time_now_, (uint32_t)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
             blink = 0;
             break;
 

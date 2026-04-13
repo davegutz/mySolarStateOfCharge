@@ -18,7 +18,7 @@
  * 
  * @return A String object containing an ASCII representation of the value.
  */
-String toString(uint64_t value, unsigned char base = 10);
+String toString(uint64_t value, uint8_t base = 10);
 
 /**
  * @brief Convert an signed 64-bit integer to a string (ASCII decimal signed integer)

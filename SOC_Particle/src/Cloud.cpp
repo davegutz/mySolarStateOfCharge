@@ -30,7 +30,7 @@ extern CommandPars cp;            // Various parameters to be common at system l
 extern PublishPars pp;            // For publishing
 
 // Assignments
-void assign_publist(Publish* pubList, const unsigned long long now, const String unit, const String hm_string,
+void assign_publist(Publish* pubList, const uint64_t now, const String unit, const String hm_string,
   Sensors* Sen, const int num_timeouts, BatteryMonitor* Mon)
 {
   String batt;

@@ -177,11 +177,11 @@ double tab2(double x1, double x2, double *v1, double *v2, double *y, int n1,
 // constructors
 TableInterp::TableInterp()
     : n1_(0) {}
-TableInterp::TableInterp(const unsigned int n, double x[])
+TableInterp::TableInterp(const uint16_t n, double x[])
     : n1_(n)
 {
   x_ = new double[n1_];
-  for (unsigned int i = 0; i < n1_; i++)
+  for (uint16_t i = 0; i < n1_; i++)
   {
     x_[i] = x[i];
   }
@@ -200,7 +200,7 @@ double TableInterp::interp(void)
 void TableInterp::pretty_print(void)
 {
 #ifndef SOFT_DEPLOY_PHOTON
-  unsigned int i;
+  uint16_t i;
   Serial.printf("    x={");
   for ( i = 0; i < n1_; i++ )
   {
@@ -221,11 +221,11 @@ void TableInterp::pretty_print(void)
 // 1-D Interpolation Table Lookup
 // constructors
 TableInterp1D::TableInterp1D() : TableInterp() {}
-TableInterp1D::TableInterp1D(const unsigned int n, double x[], double v[])
+TableInterp1D::TableInterp1D(const uint16_t n, double x[], double v[])
     : TableInterp(n, x)
 {
   v_ = new double[n1_];
-  for (unsigned int i = 0; i < n1_; i++)
+  for (uint16_t i = 0; i < n1_; i++)
   {
     v_[i] = v[i];
   }
@@ -244,11 +244,11 @@ double TableInterp1D::interp(double x)
 // 1-D Interpolation Table Lookup
 // constructors
 TableInterp1Dclip::TableInterp1Dclip() : TableInterp() {}
-TableInterp1Dclip::TableInterp1Dclip(const unsigned int n, double x[], double v[])
+TableInterp1Dclip::TableInterp1Dclip(const uint16_t n, double x[], double v[])
     : TableInterp(n, x)
 {
   v_ = new double[n1_];
-  for (unsigned int i = 0; i < n1_; i++)
+  for (uint16_t i = 0; i < n1_; i++)
   {
     v_[i] = v[i];
   }
@@ -276,19 +276,19 @@ v = {v11, v12, ...v1n, v21, v22, ...v2n, ...............  vm1, vm2, ...vmn}
 */
 // constructors
 TableInterp2D::TableInterp2D() : TableInterp() {}
-TableInterp2D::TableInterp2D(const unsigned int n, const unsigned int m, double x[],
+TableInterp2D::TableInterp2D(const uint16_t n, const uint16_t m, double x[],
                              double y[], double v[])
     : TableInterp(n, x), dx_(0.), dy_(0.), dz_(0.)
 {
   n2_ = m;
   y_ = new double[n2_];
-  for (unsigned int j = 0; j < n2_; j++)
+  for (uint16_t j = 0; j < n2_; j++)
   {
     y_[j] = y[j];
   }
   v_ = new double[n1_ * n2_];
-  for (unsigned int i = 0; i < n1_; i++)
-    for (unsigned int j = 0; j < n2_; j++)
+  for (uint16_t i = 0; i < n1_; i++)
+    for (uint16_t j = 0; j < n2_; j++)
     {
       v_[i + j * n1_] = v[i + j * n1_];
     }
@@ -325,7 +325,7 @@ static double  vTbl[24]  =
 void TableInterp2D::pretty_print()
 {
 #ifndef SOFT_DEPLOY_PHOTON
-  unsigned int i, j;
+  uint16_t i, j;
   Serial.printf("    dx%7.3f dy%7.3f dz%7.3f\n", dx_, dy_, dz_);
   Serial.printf("    y={"); for ( j=0; j<n2_; j++ ) Serial.printf("%7.3f, ", y_[j] - dy_); Serial.printf("};\n");
   Serial.printf("    x={"); for ( i=0; i<n1_; i++ ) Serial.printf("%7.3f, ", x_[i] - dx_); Serial.printf("};\n");

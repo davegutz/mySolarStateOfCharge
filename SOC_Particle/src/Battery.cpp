@@ -285,7 +285,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool 
     // EKF 1x1
     if ( eframe_ == 0 || reset_ekf )
     {
-        static unsigned long long ekf_now_past = Sen->now();
+        static uint64_t ekf_now_past = Sen->now();
         float ddq_dt = ib_charge_ekf;
         bool freeze = Sen->Flt->vb_fa_lt() || bms_off_;  // Freeze EKF with voltage fault or bms_off
 
@@ -755,7 +755,7 @@ float BatterySim::calc_soc_voc(const float soc, const double tb_f, float *dv_dso
 }
 
 // Injection model, calculate inj bias based on time since boot
-float BatterySim::calc_inj(const unsigned long long now, const uint8_t type, const float amp, const double freq)
+float BatterySim::calc_inj(const uint64_t now, const uint8_t type, const float amp, const double freq)
 {
 
     // Sample at instant of signal injection

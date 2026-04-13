@@ -202,24 +202,24 @@ public:
     void q_std(const float input) { q_std_ = input; }
     float r_std() { return r_std_; }
     void r_std(const float input) { r_std_ = input; }
-    unsigned long int read_delay() { return read_delay_; }
-    void read_delay(const unsigned long int input) { read_delay_ = input; }
+    uint32_t read_delay() { return read_delay_; }
+    void read_delay(const uint32_t input) { read_delay_ = input; }
     float s_cap_mon() { return s_cap_mon_; }
     void s_cap_mon(const float input) { s_cap_mon_ = input; }
     float s_cap_sim() { return s_cap_sim_; }
     void s_cap_sim(const float input) { s_cap_sim_ = input; }
     float s_t_sat() { return s_t_sat_; }
     void s_t_sat(const float input) { s_t_sat_ = input; }
-    unsigned long int samp_points() { return samp_points_; }
-    void samp_points(const unsigned long int input) { samp_points_ = input; }
+    uint32_t samp_points() { return samp_points_; }
+    void samp_points(const uint32_t input) { samp_points_ = input; }
     float slr_res() { return slr_res_; }
     void slr_res(const float input) { slr_res_ = input; }
-    unsigned long int sum_delay() { return sum_delay_; }
-    void sum_delay(const unsigned long int input) { sum_delay_ = input; }
-    unsigned long int tail_inj() { return tail_inj_; }
-    void tail_inj(const unsigned long int input) { tail_inj_ = input; }
-    unsigned long int talk_delay() { return talk_delay_; }
-    void talk_delay(const unsigned long int input) { talk_delay_ = input; }
+    uint32_t sum_delay() { return sum_delay_; }
+    void sum_delay(const uint32_t input) { sum_delay_ = input; }
+    uint32_t tail_inj() { return tail_inj_; }
+    void tail_inj(const uint32_t input) { tail_inj_ = input; }
+    uint32_t talk_delay() { return talk_delay_; }
+    void talk_delay(const uint32_t input) { talk_delay_ = input; }
     float Tb_bias_model() { return Tb_bias_model_; }
     void Tb_bias_model(const float input) { Tb_bias_model_ = input; }
     float tb_filt() { return tb_filt_; }
@@ -228,10 +228,10 @@ public:
     void Tb_noise_amp(const float input) { Tb_noise_amp_ = input; }
     float tb_stale_time_slr() { return tb_stale_time_slr_; }
     void tb_stale_time_slr(const float input) { tb_stale_time_slr_ = input; }
-    unsigned long int temp_delay() { return temp_delay_; }
-    void temp_delay(const unsigned long int input) { temp_delay_ = input; }
-    unsigned long int until_q() { return until_q_; }
-    void until_q(const unsigned long int input) { until_q_ = input; }
+    uint32_t temp_delay() { return temp_delay_; }
+    void temp_delay(const uint32_t input) { temp_delay_ = input; }
+    uint32_t until_q() { return until_q_; }
+    void until_q(const uint32_t input) { until_q_ = input; }
     float vb_add() { return vb_add_; }
     void vb_add(const float input) { vb_add_ = input; }
     float Vb_noise_amp() { return Vb_noise_amp_; }
@@ -242,8 +242,8 @@ public:
     void vc_add(const float input) { vc_add_ = input; }
     float voc_stat_filt() { return voc_stat_filt_; }
     void voc_stat_filt(const float input) { voc_stat_filt_ = input; }
-    unsigned long int wait_inj() { return wait_inj_; }
-    void wait_inj(const unsigned long int input) { wait_inj_ = input; }
+    uint32_t wait_inj() { return wait_inj_; }
+    void wait_inj(const uint32_t input) { wait_inj_ = input; }
 
     // Put into RAM and check for validity
     void put_ib_scale_amp(const float input) { ib_scale_amp_p->check_set_put(input); }
@@ -295,28 +295,28 @@ protected:
     uint8_t print_mult_;         // Print multiplier for objects
     float q_std_;                // kf q_std set, v
     float r_std_;                // kf q_std set, v
-    unsigned long int read_delay_; // Minor frame, ms
+    uint32_t read_delay_; // Minor frame, ms
     float s_cap_mon_;            // Scalar cap Mon
     float s_cap_sim_;            // Scalar cap Sim
     float s_t_sat_;              // Scalar on saturation test time set and reset
-    unsigned long int samp_points_; // Number of sample readings to take, !=0 initiates sampling
+    uint32_t samp_points_; // Number of sample readings to take, !=0 initiates sampling
     float slr_res_;              // Scalar Randles R0, slr
-    unsigned long int sum_delay_; // Minor frame divisor, div
-    unsigned long int snap_wait_; // Wait after snap before print, ms
-    unsigned long int tail_inj_; // Tail after end injection, ms
-    unsigned long int talk_delay_; // Talk frame, ms
+    uint32_t sum_delay_; // Minor frame divisor, div
+    uint32_t snap_wait_; // Wait after snap before print, ms
+    uint32_t tail_inj_; // Tail after end injection, ms
+    uint32_t talk_delay_; // Talk frame, ms
     float Tb_bias_model_;        // Bias on Tb for model
     float tb_filt_;              // TbFilt time constant, s
     float Tb_noise_amp_;         // Tb noise amplitude model only, deg C pk-pk
     float tb_stale_time_slr_;    // Scalar on persistences of Tb hardware stale check
-    unsigned long int temp_delay_; // Temp frame, ms
-    unsigned long int until_q_;  // Time until set vv0, ms
+    uint32_t temp_delay_; // Temp frame, ms
+    uint32_t until_q_;  // Time until set vv0, ms
     float vb_add_;               // Fault injection bias, V
     float Vb_noise_amp_;         // Vb bank noise amplitude model only, V pk-pk
     float Vb_scale_;             // Scale Vb sensor
     float vc_add_;               // Shunt Vc/Vr Fault injection bias, V
     float voc_stat_filt_;        // VocStatFilt time constant, s
-    unsigned long int wait_inj_; // Wait before start injection, ms
+    uint32_t wait_inj_; // Wait before start injection, ms
 
 };
 
@@ -365,7 +365,7 @@ public:
     uint8_t preserving() { return preserving_; }
     uint8_t *preserving_ptr() { return &preserving_; }
     float Tb_bias_hdwe() { return Tb_bias_hdwe_; }
-    unsigned long Time_now() { return Time_now_; }
+    uint32_t Time_now() { return Time_now_; }
     uint8_t type() { return type_; }
     float Vb_bias_hdwe() { return Vb_bias_hdwe_; }
     float Vsat_add() { return vsat_add_; }
@@ -431,7 +431,7 @@ public:
     void put_Inj_bias(const float input) { inj_bias_p->check_set_put(input); }
     void put_Preserving(const uint8_t input) { preserving_p->check_set_put(input); }
     void put_Tb_bias_hdwe(const float input) { Tb_bias_hdwe_p->check_set_put(input); }
-    void put_Time_now(const unsigned long input) { Time_now_p->check_set_put(input); }
+    void put_Time_now(const uint32_t input) { Time_now_p->check_set_put(input); }
     void put_Type(const uint8_t input) { Type_p->check_set_put(input); }
     void put_Vb_bias_hdwe(const float input) { Vb_bias_hdwe_p->check_set_put(input); }
     
@@ -495,7 +495,7 @@ protected:
     uint8_t modeling_;
     uint8_t preserving_;
     float Tb_bias_hdwe_;
-    unsigned long Time_now_;
+    uint32_t Time_now_;
     uint8_t type_;
     float Vb_bias_hdwe_;
     float vsat_add_;             // Saturation voltage bias, V

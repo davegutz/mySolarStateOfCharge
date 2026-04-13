@@ -100,8 +100,8 @@ CommandPars cp = CommandPars();       // Various control parameters commanding a
 PublishPars pp = PublishPars();       // Common parameters for publishing.  Future-proof cloud monitoring
 BleCharacteristic rxCharacteristic("rx", BleCharacteristicProperty::WRITE_WO_RSP, rxUuid, serviceUuid, onBLE_DataReceived, NULL);
 BleCharacteristic txCharacteristic("tx", BleCharacteristicProperty::NOTIFY, txUuid, serviceUuid);
-unsigned long long millis_flip = millis(); // Timekeeping
-unsigned long long last_sync = millis();   // Timekeeping
+uint64_t millis_flip = millis(); // Timekeeping
+uint64_t last_sync = millis();   // Timekeeping
 
 int num_timeouts = 0;           // Number of Particle.connect() needed to unfreeze
 String hm_string = "00:00";     // time, hh:mm
@@ -127,7 +127,7 @@ void setup()
   BLE.advertise(&data);
 
   // Time
-  sp.put_Time_now(max(sp.Time_now(), (unsigned long)Time.now()));  // Synch with web when possible
+  sp.put_Time_now(max(sp.Time_now(), (uint32_t)Time.now()));  // Synch with web when possible
   Time.setTime( (time_t) (sp.Time_now()) );
 
   // Peripherals (non-Photon2)
@@ -152,19 +152,6 @@ void setup()
   myPins = new Pins(D3, D7, D12, D11, D13, D14, D0, true);
   pinMode(myPins->status_led, OUTPUT);
   digitalWrite(myPins->status_led, LOW);
-
-
-  // I2C for OLED, ADS, backup EERAM, DS2482
-  // Photon2 only accepts 100 and 400 khz
-  #if !defined(HDWE_BARE) && !defined(HDWE_2WIRE)
-    // Log.info("setup I2C Wire");
-    Wire.setSpeed(CLOCK_SPEED_100KHZ);
-    sendTxBuf("Wire started\n", true, true);
-    Wire.begin();
-    delay(1000);
-  #endif
-
-  // Display (after start Wire)
 
   // 1-Wire chip card for I2C (after start Wire)
   #if defined(HDWE_2WIRE)
@@ -232,8 +219,7 @@ void setup()
     sp.get_booted();  // get the stored booted state.  This is a hack to ensure that we don't have to wait for the normal backup on reset to occur.
     sendTxBuf(String::format("booted = %d\n", sp.booted()), true, true);
     sendTxBuf("booted should be true\n\n", true, true);
-    delay(1000);          // Ensures true saves before rebooting.
-    // System.reset(RESET_NO_WAIT);
+    delay(1000);          // Ensures true saves before rebooting
   }
   
   if ( ASK_DURING_BOOT == 1 )
@@ -254,8 +240,8 @@ void setup()
 void loop()
 {
   // Synchronization
-  static unsigned long long now = (unsigned long long) millis();
-  now = (unsigned long long) millis();
+  static uint64_t now = (uint64_t) millis();
+  now = (uint64_t) millis();
   bool chitchat = false;
   static Sync *Talk = new Sync(TALK_DELAY);
   bool read = false;
@@ -267,21 +253,21 @@ void loop()
   bool summarizing;
   static bool boot_wait = true;  // waiting for a while before summarizing
   static Sync *Summarize = new Sync(SUMMARY_DELAY);
-  unsigned long long elapsed = 0;
-  unsigned long long elapsed_reset = 0;
+  uint64_t elapsed = 0;
+  uint64_t elapsed_reset = 0;
   static bool reset = true;
   static bool reset_ekf = true;
   static bool reset_kf = true;
   static bool reset_temp = true;
   static bool reset_publish = true;
-  static unsigned long long start = millis();
-  static unsigned long long start_reset = millis();
+  static uint64_t start = millis();
+  static uint64_t start_reset = millis();
 
    // Monitor to count Coulombs and run EKF
   static BatteryMonitor *Mon = new BatteryMonitor(0., 0., sp.Dw());
 
   // Sensor conversions.  The embedded model 'Sim' is contained in Sensors
-  unsigned long long time_now = (unsigned long long) Time.now();
+  uint64_t time_now = (uint64_t) Time.now();
   static Sensors *Sen = new Sensors(EKF_NOM_DT, 0, myPins, ReadSensors, ReadTemp, Talk, Summarize, time_now, start, Mon);
 
   // Battery saturation debounce
@@ -418,7 +404,7 @@ void loop()
   {
     // Log.info("display and remember");
     serial_display(Sen, Mon);
-    sp.put_Time_now(max( sp.Time_now(), (unsigned long)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
+    sp.put_Time_now(max( sp.Time_now(), (uint32_t)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
   }
 
   // Discuss things with the user

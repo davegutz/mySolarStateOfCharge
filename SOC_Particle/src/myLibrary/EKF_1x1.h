@@ -61,7 +61,7 @@ protected:
   double hx_; // Output of observation function h(x)
   double H_;  // Jacobian of h(x)
   bool freeze_;  // Command to freeze x_ and P_
-  unsigned long long now_ekf_;  // Time value extracted from sensors, ms
+  uint64_t now_ekf_;  // Time value extracted from sensors, ms
   double dt_ekf_;   // Update time for EKF major frame
   double Tb_f_for_hx_;  // Tb_f used for the hx_ calculation, C
   double x_for_hx_;     // soc used for the hx_ calculation, scalar

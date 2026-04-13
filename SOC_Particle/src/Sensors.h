@@ -110,7 +110,7 @@ public:
   // operators
   // functions
   bool tb_stale_flt() { return tb_stale_flt_; };
-  unsigned long long sample_time() { return sample_time_; };
+  uint64_t sample_time() { return sample_time_; };
   float sample(Sensors *Sen, const bool reset);
   float noise();
   float Tb_volt(){ return Tb_volt_; };
@@ -119,7 +119,7 @@ protected:
   bool tb_stale_flt_;  // One-wire did not update last pass
   uint16_t VTb_pin_;      // Using 2wire
   double Tb_volt_;              // Sensed battery temp voltage from ADC, V
-  unsigned long long sample_time_;  // Sample time
+  uint64_t sample_time_;  // Sample time
   uint32_t Tb_raw_ = 0;
   AnalogReadP2 *Tb_read_;
 };
@@ -137,7 +137,7 @@ public:
   // functions
   bool bare_shunt() { return ( bare_shunt_ ); };
   void dscn_cmd(const bool cmd) { dscn_cmd_ = cmd; };
-  unsigned long long dt_ms() { return sample_time_ - sample_time_z_; }; // ms
+  uint64_t dt_ms() { return sample_time_ - sample_time_z_; }; // ms
   void convert(const bool disconnect, const bool reset, Sensors *Sen);
   float get_v() { return KF_->get_v(); };
   float Ishunt_cal() { return Ishunt_cal_; };
@@ -155,7 +155,7 @@ public:
   void sample_Vc();
   void sample_Vo();
   float scale() { return ( *sp_ib_scale_ ); };
-  unsigned long long sample_time(void) { return sample_time_; };
+  uint64_t sample_time(void) { return sample_time_; };
   float v2a_s() { return v2a_s_ ; };
   float vshunt() { return vshunt_; };
   int16_t vshunt_int() { return vshunt_int_; };
@@ -180,8 +180,8 @@ protected:
   float *sp_ib_bias_;   // Global bias, A
   float *sp_ib_scale_;  // Global scale, A
   bool reset_;       // Status of reset command input
-  unsigned long long sample_time_;   // Exact moment of hardware sample, ms
-  unsigned long long sample_time_z_; // Exact moment of past hardware sample, ms
+  uint64_t sample_time_;   // Exact moment of hardware sample, ms
+  uint64_t sample_time_z_; // Exact moment of past hardware sample, ms
   bool dscn_cmd_;    // User command to ignore hardware, T=ignore
   uint8_t vc_pin_;      // Common voltage pin
   uint8_t vo_pin_;      // Output voltage pin
@@ -206,7 +206,7 @@ class Sensors
 public:
   Sensors();
   Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *ReadTemp, Sync *Talk, Sync *Summarize,
-    unsigned long long time_now, unsigned long long millis, BatteryMonitor *Mon);
+    uint64_t time_now, uint64_t millis, BatteryMonitor *Mon);
   ~Sensors();
   // Getters and setters for encapsulated member variables
   void Vb_raw(const int input) { Vb_raw_ = input; }
@@ -295,10 +295,10 @@ public:
   float Vc_rms() { return Vc_rms_; }
   void Wb(const float input) { Wb_ = input; }
   float Wb() { return Wb_; }
-  void now(const unsigned long long input) { now_ = input; }
-  unsigned long long now() { return now_; }
-  void now_temp(const unsigned long long input) { now_temp_ = input; }
-  unsigned long long now_temp() { return now_temp_; }
+  void now(const uint64_t input) { now_ = input; }
+  uint64_t now() { return now_; }
+  void now_temp(const uint64_t input) { now_temp_ = input; }
+  uint64_t now_temp() { return now_temp_; }
   void T(const double input) { T_ = input; }
   double T() { return T_; }
   void reset(const bool input) { reset_ = input; }
@@ -307,14 +307,14 @@ public:
   double T_filt() { return T_filt_; }
   void T_temp(const double input) { T_temp_ = input; }
   double T_temp() { return T_temp_; }
-  void elapsed_inj(const unsigned long long input) { elapsed_inj_ = input; }
-  unsigned long long elapsed_inj() { return elapsed_inj_; }
-  void start_inj(const unsigned long long input) { start_inj_ = input; }
-  unsigned long long start_inj() { return start_inj_; }
-  void stop_inj(const unsigned long long input) { stop_inj_ = input; }
-  unsigned long long stop_inj() { return stop_inj_; }
-  void end_inj(const unsigned long long input) { end_inj_ = input; }
-  unsigned long long end_inj() { return end_inj_; }
+  void elapsed_inj(const uint64_t input) { elapsed_inj_ = input; }
+  uint64_t elapsed_inj() { return elapsed_inj_; }
+  void start_inj(const uint64_t input) { start_inj_ = input; }
+  uint64_t start_inj() { return start_inj_; }
+  void stop_inj(const uint64_t input) { stop_inj_ = input; }
+  uint64_t stop_inj() { return stop_inj_; }
+  void end_inj(const uint64_t input) { end_inj_ = input; }
+  uint64_t end_inj() { return end_inj_; }
   void control_time(const double input) { control_time_ = input; }
   double control_time() { return control_time_; }
   void display(const bool input) { display_ = input; }
@@ -336,7 +336,7 @@ public:
   LagExp* TbSenseFilt;        // Linear filter for Tb. There are 1 Hz AAFs in hardware for Vb and Ib
   SlidingDeadband *SdTb;      // Non-linear filter for Tb
   BatterySim *Sim;            // Used to model Vb and Ib.   Use Talk 'Xp?' to toggle model on/off
-  unsigned long long dt_ib(void) { return dt_ib_; }; // ms since last update of selected Ib sample
+  uint64_t dt_ib(void) { return dt_ib_; }; // ms since last update of selected Ib sample
   void select_temp(BatteryMonitor *Mon);  // Make final signal selection
   void select_volt_and_current(BatteryMonitor *Mon);  // Make final signal selection
   float ib() { return Ib_ / ap.nP(); };                            // Battery unit current, A
@@ -365,13 +365,13 @@ public:
   float Ib_noa_min();
   float Ib_amp_noise();
   float Ib_noa_noise();
-  unsigned long long inst_millis() { return inst_millis_; };
-  unsigned long long inst_time() { return inst_time_; };
+  uint64_t inst_millis() { return inst_millis_; };
+  uint64_t inst_time() { return inst_time_; };
   void pretty_print();
   void reset_temp(const bool reset) { reset_temp_ = reset; };
   bool reset_temp() { return ( reset_temp_ ); };
-  unsigned long long sample_time_ib(void) { return sample_time_ib_; };
-  unsigned long long sample_time_vb(void) { return sample_time_vb_; };
+  uint64_t sample_time_ib(void) { return sample_time_ib_; };
+  uint64_t sample_time_vb(void) { return sample_time_vb_; };
   void select_print(Sensors *Sen, BatteryMonitor *Mon);
   void shunt_print();         // Print selection result
   void shunt_select_initial(const bool reset);   // Choose between shunts for model
@@ -389,25 +389,25 @@ public:
   ScaleBrk *sel_brk_hdwe;                  // Active/active scale break
 protected:
   LagExp *AmpFilt;      // Noise filter for calibration
-  unsigned long long dt_ib_;                // Delta update of selected Ib sample, ms
-  unsigned long long dt_ib_hdwe_;           // Delta update of Ib sample, ms
+  uint64_t dt_ib_;                // Delta update of selected Ib sample, ms
+  uint64_t dt_ib_hdwe_;           // Delta update of Ib sample, ms
   RecursiveRMSMonitorFP *IbAmpRMS; // RMS noise monitor for amp
   RecursiveRMSMonitorFP *IbNoaRMS; // RMS noise monitor for noa
   void ib_choose_active_standby(void);   // Deliberate choice based on inputs and results
   void ib_choose_hi_lo(void);   // Deliberate choice based on inputs and results
-  unsigned long long inst_millis_;          // millis offset to account for setup() time, ms
-  unsigned long long inst_time_;            // UTC Zulu at instantiation, s
+  uint64_t inst_millis_;          // millis offset to account for setup() time, ms
+  uint64_t inst_time_;            // UTC Zulu at instantiation, s
   LagExp *NoaFilt;      // Noise filter for calibration
   PRBS_7 *Prbn_Tb_;     // Tb noise generator model only
   PRBS_7 *Prbn_Vb_;     // Vb noise generator model only
   PRBS_7 *Prbn_Ib_amp_; // Ib amplified sensor noise generator model only
   PRBS_7 *Prbn_Ib_noa_; // Ib non-amplified sensor noise generator model only
   bool reset_temp_;  // Keep track of temperature reset, stored for plotting, T=reset
-  unsigned long long sample_time_ib_;       // Exact moment of selected Ib sample, ms
-  unsigned long long sample_time_ib_hdwe_;  // Exact moment of Ib sample, ms
-  unsigned long long sample_time_tb_;       // Exact moment of selected Tb sample, ms
-  unsigned long long sample_time_vb_;       // Exact moment of selected Vb sample, ms
-  unsigned long long sample_time_vb_hdwe_;  // Exact moment of Vb sample, ms
+  uint64_t sample_time_ib_;       // Exact moment of selected Ib sample, ms
+  uint64_t sample_time_ib_hdwe_;  // Exact moment of Ib sample, ms
+  uint64_t sample_time_tb_;       // Exact moment of selected Tb sample, ms
+  uint64_t sample_time_vb_;       // Exact moment of selected Vb sample, ms
+  uint64_t sample_time_vb_hdwe_;  // Exact moment of Vb sample, ms
   LagExp *SelFiltCal;      // Noise filter for calibration
   LagExp *VbFilt;       // Noise filter for calibration
   RecursiveRMSMonitorFP *VbRMS; // RMS noise monitor for Vb
@@ -456,16 +456,16 @@ protected:
   float Vb_rms_;               // Battery bank voltage noise RMS, V
   float Vc_rms_;               // Battery bank voltage noise RMS, V
   float Wb_;                   // Sensed battery bank power, use to compare to other shunts, W
-  unsigned long long now_;     // Time at sample, ms
-  unsigned long long now_temp_;// Time at sample, ms
+  uint64_t now_;     // Time at sample, ms
+  uint64_t now_temp_;// Time at sample, ms
   double T_;                   // Update time, s
   bool reset_;              // Reset flag, T = reset
   double T_filt_;              // Filter update time, s
   double T_temp_;              // Temperature update time, s
-  unsigned long long elapsed_inj_;  // Injection elapsed time, ms
-  unsigned long long start_inj_;// Start of calculated injection, ms
-  unsigned long long stop_inj_; // Stop of calculated injection, ms
-  unsigned long long end_inj_;  // End of print injection, ms
+  uint64_t elapsed_inj_;  // Injection elapsed time, ms
+  uint64_t start_inj_;// Start of calculated injection, ms
+  uint64_t stop_inj_; // Stop of calculated injection, ms
+  uint64_t end_inj_;  // End of print injection, ms
   double control_time_;        // Decimal time, seconds since 1/1/2021
   bool display_;            // Use display
   bool bms_off_;            // Calculated by BatteryMonitor, battery off, low voltage, switched by battery management system?

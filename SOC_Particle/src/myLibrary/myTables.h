@@ -12,14 +12,14 @@ class TableInterp
 {
 public:
   TableInterp();
-  TableInterp(const unsigned int n, double x[]);
+  TableInterp(const uint16_t n, double x[]);
   virtual ~TableInterp();
   // operators
   // functions
   virtual double interp(void);
   void pretty_print();
 protected:
-  unsigned int n1_;
+  uint16_t n1_;
   double *x_;
   double *v_;
 };
@@ -29,7 +29,7 @@ class TableInterp1D : public TableInterp
 {
 public:
   TableInterp1D();
-  TableInterp1D(const unsigned int n, double x[], double v[]);
+  TableInterp1D(const uint16_t n, double x[], double v[]);
   ~TableInterp1D();
   //operators
   //functions
@@ -43,7 +43,7 @@ class TableInterp1Dclip : public TableInterp
 {
 public:
   TableInterp1Dclip();
-  TableInterp1Dclip(const unsigned int n, double x[], double v[]);
+  TableInterp1Dclip(const uint16_t n, double x[], double v[]);
   ~TableInterp1Dclip();
   //operators
   //functions
@@ -57,7 +57,7 @@ class TableInterp2D : public TableInterp
 {
 public:
   TableInterp2D();
-  TableInterp2D(const unsigned int n, const unsigned int m, double x[],
+  TableInterp2D(const uint16_t n, const uint16_t m, double x[],
                 double y[], double v[]);
   ~TableInterp2D();
   //operators
@@ -73,7 +73,7 @@ protected:
   double dx_;  // Bias on input into table lookup
   double dy_;  // Bias on input into table lookup
   double dz_;  // Bias on calculated output of table lookup
-  unsigned int n2_;
+  uint16_t n2_;
   double *y_;
 };
 

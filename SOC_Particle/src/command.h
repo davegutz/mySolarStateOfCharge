@@ -65,7 +65,7 @@ public:
   bool inf_reset;        // Use talk to reset infinite counter
   bool model_cutback;    // On model cutback
   bool model_saturated;  // Sim on cutback and saturated
-  unsigned long num_v_print;// Number of print echos made, for checking on BLE
+  uint32_t num_v_print;// Number of print echos made, for checking on BLE
   bool publishS;         // Print serial monitor data
   bool soft_reset;       // Use talk to reset all
   bool soft_reset_print;       // Use talk to reset all

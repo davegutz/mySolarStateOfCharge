@@ -227,16 +227,16 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sendTxBuf("  Xp20:collect fast\n", true, true);
   sendTxBuf("  Xp21:collect slow\n", true, true);
   ap.cycles_inj_p->print_help();  // XC
+  sendTxBuf(" XD  ", true, true); sendTxBuf("DONE message\n", true, true);
+  sendTxBuf(" XK  ", true, true); sendTxBuf("READY message\n", true, true);
   sendTxBuf(" XR  ", true, true); sendTxBuf("RUN inj\n", true, true);
   sendTxBuf(" XS  ", true, true); sendTxBuf("STOP inj\n", true, true);
+  sendTxBuf(" XY  ", true, true); sendTxBuf("SYNC message\n", true, true);
   ap.s_t_sat_p->print_help();  // Xs
   ap.tail_inj_p->print_help();  // XT
   ap.wait_inj_p->print_help();  // XW
   ap.fail_tb_p->print_help();  // Xu
   ap.tb_stale_time_slr_p->print_help();  // Xv
-  // sp.testB_p->print_help();  // XB
-  // sp.testD_p->print_help();  // XD
-  // sp.testY_p->print_help();  // XY
   sendTxBuf("\nurgency of cmds: -=ASAP,*=SOON, '' or +=QUEUE, <=LAST\n", true, true);
   #endif
 }

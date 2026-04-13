@@ -112,10 +112,10 @@ void sample_burst(Pins *myPins, Sensors *SenS);
 void harvest_temp_change(const double tb_f, BatteryMonitor *Mon, BatterySim *Sim, const float rate, const float dt);
 void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const bool use_soc_in);
 void load_ib_vb(const bool reset, const bool reset_temp, const bool reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon);
-void monitor(const bool reset, const bool reset_temp,  const bool reset_ekf, const unsigned long long now,
+void monitor(const bool reset, const bool reset_temp,  const bool reset_ekf, const uint64_t now,
   TFDelay *Is_sat_delay, BatteryMonitor *Mon, Sensors *Sen);
 void serial_display(Sensors *Sen, BatteryMonitor *Mon);
-void sense_synth_select(const bool reset, const bool reset_temp, const bool reset_kf, const unsigned long long now,
-  const unsigned long long elapsed, Pins *myPins, BatteryMonitor *Mon, Sensors *Sen);
-void sync_time(unsigned long long now, unsigned long long *last_sync, unsigned long long *millis_flip);
+void sense_synth_select(const bool reset, const bool reset_temp, const bool reset_kf, const uint64_t now,
+  const uint64_t elapsed, Pins *myPins, BatteryMonitor *Mon, Sensors *Sen);
+void sync_time(uint64_t now, uint64_t *last_sync, uint64_t *millis_flip);
 String time_long_2_str(const time_t current_time, char *tempStr);

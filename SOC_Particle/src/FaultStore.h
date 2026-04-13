@@ -31,7 +31,7 @@ String time_long_2_str(const time_t current_time, char *tempStr);
 // SRAM retention summary
 struct Flt_st
 {
-  unsigned long long t_flt = 1ULL; // Timestamp ms since start of epoch
+  uint64_t t_flt = 1ULL; // Timestamp ms since start of epoch
   int16_t Tb_hdwe_filt = 0;  // Battery bank temperature, hardware, C
   int16_t vb_hdwe_filt = 0;  // Battery single unit measured potential, hardware, V
   int16_t Vc_hdwe_sum = 0;  // Common voltage used Ib sensing, hardware, V
@@ -51,9 +51,9 @@ struct Flt_st
   int16_t e_wrap_n_filt = 0;// Wrap noa model error, filtered, V
   uint32_t fltw = 0;    // Fault word
   uint32_t falw = 0;    // Fail word
-  unsigned long dummy = 0;  // padding to absorb Wire.write corruption
-  void assign(const unsigned long long now, BatteryMonitor *Mon, Sensors *Sen);
-  void assign_unfilt(const unsigned long long now, BatteryMonitor *Mon, Sensors *Sen);
+  uint32_t dummy = 0;  // padding to absorb Wire.write corruption
+  void assign(const uint64_t now, BatteryMonitor *Mon, Sensors *Sen);
+  void assign_unfilt(const uint64_t now, BatteryMonitor *Mon, Sensors *Sen);
   void copy_to_Flt_ram_from(Flt_st input);
   void get() {};
   void nominal();
@@ -72,7 +72,7 @@ public:
   void put(const Flt_st input);
   void put_nominal();
 
-  void put_t_flt(const unsigned long long value) { t_flt = value; };
+  void put_t_flt(const uint64_t value) { t_flt = value; };
   void put_Tb_hdwe_filt(const int16_t value)         { Tb_hdwe_filt = value; };
   void put_vb_hdwe_filt(const int16_t value)         { vb_hdwe_filt = value; };
   void put_Vc_hdwe_sum(const int16_t value)              { Vc_hdwe_sum = value; };

@@ -43,7 +43,11 @@ bool recall_X(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
     switch ( letter_1 )
     {
         case ( 'D' ): // XD  display a message
-            Serial.printf("\n\n*** DONE***\n\n");
+            Serial.printf("\n\n***DONE***\n\n");
+            break;
+
+        case ( 'K' ): // XK  display a message
+            Serial.printf("\n\n***READY***\n\n");
             break;
 
         case ( 'p' ): // Xp<>:  injection program
@@ -133,7 +137,7 @@ bool recall_X(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             if ( Sen->now()>TEMP_INIT_DELAY )
             {
                 Sen->start_inj(ap.wait_inj() + Sen->now());
-                Sen->stop_inj(ap.wait_inj() + (Sen->now() + min((unsigned long long)(ap.cycles_inj() / max(sp.freq()/(2.*PI), 1e-6) *1000.), ULLONG_MAX)));
+                Sen->stop_inj(ap.wait_inj() + (Sen->now() + min((uint64_t)(ap.cycles_inj() / max(sp.freq()/(2.*PI), 1e-6) *1000.), ULLONG_MAX)));
                 Sen->end_inj(Sen->stop_inj() + ap.tail_inj());
                 Serial.printf("**\n*** RUN: at %s, %7.3f cycles %s to %s with %ld wait and %ld tail\n\n",
                     toString(Sen->now()).c_str(), ap.cycles_inj(), toString(Sen->start_inj()).c_str(), toString(Sen->stop_inj()).c_str(), ap.wait_inj(), ap.tail_inj());
