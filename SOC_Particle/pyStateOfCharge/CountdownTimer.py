@@ -39,6 +39,7 @@ class CountdownTimer(tk.Toplevel):
         self.max_flashes = int(max_flash)
         self.flashes = 0
         self.attributes('-topmost', True)
+        self.attributes('-topmost', False)
         self.initial_time = time_
         self.time = tk.IntVar(self, time_ + 1)
         self.lift()
@@ -79,6 +80,7 @@ class CountdownTimer(tk.Toplevel):
 
     def begin(self):
         """Countdown in seconds then exit"""
+        self.bell()
         if self.trigger:
             self.trigger = False
             self._countdown_after_id = self.after(1000, self.begin)
@@ -115,6 +117,9 @@ class CountdownTimer(tk.Toplevel):
         self.flasher_label = tk.Label(self.flasher_window, text=text, bg='red', fg='black', font=("Courier", 96))
         self.flasher_label.pack(side='bottom')
         self.flasher_window.configure(bg='red')
+        self.flasher_window.attributes('-topmost', True)
+        self.flasher_window.attributes('-topmost', False)
+        self.flasher_window.lift()
         self.bell()
 
         # update window after 500ms
