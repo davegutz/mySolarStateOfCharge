@@ -1238,12 +1238,105 @@ def lookup_test():
     test_filename.set(plink_connection.get(Test.unit or '', ''))
 
 
+def check_auto_plink():
+    plink_path = Path(plink_test_csv_path.get())
+    auto_plink_path = plink_path.parent / 'auto_plink.csv'
+    if auto_plink_path.is_file():
+        print(f"Acknowledged: {auto_plink_path} exists.")
+    else:
+        with open(auto_plink_path, 'w') as f:
+            f.write('#folder, version, unit, battery, macro,\n')
+        print(f"Prepopulated {auto_plink_path} with header.")
+    print(f"Report: plink_test.csv location is {plink_path}")
+
+
 def plink_size():
     if Path(plink_test_csv_path.get()).is_file():
         enter_size = Path(plink_test_csv_path.get()).stat().st_size  # bytes
     else:
         enter_size = 0
     return enter_size
+
+
+def grab_auto():
+    plink_path = Path(plink_test_csv_path.get())
+    auto_plink_path = plink_path.parent / 'auto_plink.csv'
+    if not auto_plink_path.is_file():
+        print(f"Error: {auto_plink_path} not found.")
+        tkinter.messagebox.showerror(title="File Not Found", message=f"Could not find {auto_plink_path}")
+        return
+
+    print(f"Reading {auto_plink_path}...")
+    try:
+        with open(auto_plink_path, 'r') as f:
+            lines = f.readlines()
+        
+        header = None
+        data_lines = []
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith('#'):
+                header = [f.strip() for f in line.lstrip('#').split(',')]
+                print(f"Fields: {header}")
+                continue
+            
+            if header:
+                values = [v.strip() for v in line.split(',')]
+                # Map values to header fields for display
+                display_parts = []
+                for i in range(min(len(header), len(values))):
+                    if header[i]:
+                        display_parts.append(f"{header[i]}: {values[i]}")
+                display_line = " | ".join(display_parts)
+                data_lines.append(display_line)
+            else:
+                data_lines.append(line)
+
+        if not data_lines:
+            print("No data lines found in auto_plink.csv")
+            return
+
+        all_lines_text = "\n".join(data_lines)
+        print(f"All configurations:\n{all_lines_text}")
+
+        # Custom wide dialog
+        dialog = tk.Toplevel(master)
+        dialog.title("Automate Configurations?")
+        dialog.geometry("1200x400") # 2x wider than previous 600
+        dialog.grab_set()
+        dialog.transient(master)
+
+        msg_label = tk.Label(dialog, text=all_lines_text, justify='left', font=('Courier', 10))
+        msg_label.pack(padx=20, pady=20, fill='both', expand=True)
+
+        prompt_label = tk.Label(dialog, text="Do you want to run these configurations automatically?", font=('Arial', 11, 'bold'))
+        prompt_label.pack(pady=10)
+
+        result = tk.BooleanVar(value=False)
+
+        def on_yes():
+            result.set(True)
+            dialog.destroy()
+
+        def on_no():
+            result.set(False)
+            dialog.destroy()
+
+        btn_frame = tk.Frame(dialog)
+        btn_frame.pack(pady=20)
+        tk.Button(btn_frame, text="Yes", width=10, command=on_yes).pack(side='left', padx=10)
+        tk.Button(btn_frame, text="No", width=10, command=on_no).pack(side='left', padx=10)
+
+        master.wait_window(dialog)
+        
+        answer = result.get()
+        print(f"User response for automatic run: {'Yes' if answer else 'No'}")
+
+    except Exception as e:
+        print(f"Error reading auto_plink.csv: {e}")
+        tkinter.messagebox.showerror(title="Read Error", message=f"Error reading auto_plink.csv: {e}")
 
 
 def ref_remove():
@@ -1737,6 +1830,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
         plink_test_csv_path = tk.StringVar(master, str(Path(local_app_data_) / 'Temp' / 'plink_test.csv'))
         path_to_temp = tk.StringVar(master, str(Path(local_app_data_) / 'Temp'))
     print(f"{plink_test_csv_path.get()=}")
+    check_auto_plink()
     print("loading icon")
     icon_path = str(PurePosixPath(ex_root.script_loc) / 'GUI_TestSOC.png')
     master.iconphoto(False, tk.PhotoImage(file=icon_path))
@@ -1909,7 +2003,10 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
         prev_button = myButton(option_panel_right, text='Run Prev', command=run_previous_task, fg="blue", bg=bg_color, wraplength=wrap_length,
                                 justify='left', font=butt_font)
     start_button.pack(padx=5, pady=5, expand=True, fill='both')
-    prev_button.pack(padx=5, pady=5)
+    prev_button.pack(side='left', padx=5, pady=5)
+    auto_button = myButton(option_panel_right, text='AUTO', command=grab_auto, fg="blue", bg=bg_color,
+                           justify='left', font=butt_font)
+    auto_button.pack(side='left', padx=5, pady=5)
     timer_val = tk.IntVar(master, 0)
 
     # macro panel
