@@ -883,7 +883,7 @@ def grab_macro():
     get_time_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
 
 
-def grab_init():
+def grab_init(command_to_append='', force_if_ready=False):
     register_last_task(grab_init)
     # Grab command to update time in EEPROM
     try:
@@ -893,16 +893,21 @@ def grab_init():
         current_ut = ''
         print(f"current_ut blank ***No Internet??")
     init_command = init.get() + current_ut
+    if command_to_append:
+        init_command += command_to_append
     print(f"Init command to paste: {init_command}")
     add_to_clip_board(init_command)
     # Grab the rest
     grab_all_nominal()
     init_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black')
-    clear_data_silent()
-    print('cleared plink data file')
+    if not force_if_ready:
+        clear_data_silent()
+        print('cleared plink data file')
+    else:
+        print('skipping clear_data because force_if_ready is True')
     Test.create_file_path_and_key()
     Test.update_key_label()
-    start_plink()
+    return start_plink(command_to_paste=init_command, force_if_ready=force_if_ready)
 
 
 def monitor_plink_done():
@@ -926,7 +931,29 @@ def monitor_plink_done():
 
 def grab_start():
     register_last_task(grab_start)
-    add_to_clip_board(start.get())
+    start_command = start.get()
+    print(f"Start command to paste: {start_command}")
+    # Force restart if the already running plink process is 'READY'
+    if look_plink(platform.system()):
+        if not is_plink_ready():
+            print("Plink is already open but NOT READY.")
+            tkinter.messagebox.showinfo(title="Not Ready",
+                                       message="Please wait until terminal is READY or run the START HERE button.")
+            return
+
+        # If it is READY, we restart and only send the start_command
+        # We still need to call grab_all_nominal and update labels
+        grab_all_nominal()
+        Test.create_file_path_and_key()
+        Test.update_key_label()
+        if not start_plink(command_to_paste=start_command, force_if_ready=True):
+            return
+    else:
+        # If not open at all, use grab_init to bundle both init and start
+        if not grab_init(command_to_append=start_command, force_if_ready=True):
+            return
+
+    add_to_clip_board(start_command)
     grab_all_nominal()
     save_data_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black',
                             text='save data')
@@ -1063,19 +1090,20 @@ def handle_test_unit(*_args):
 def kill_plink(sys_=None, silent=True):
     command = ''
     if sys_ == 'Linux':
-        command = 'pkill -e plink'
+        command = 'pkill -e plink; pkill -f "gnome-terminal --zoom=0.8"'
     elif sys_ == 'Windows':
         command = 'taskkill /f /im plink.exe'
     elif sys_ == 'Darwin':
         command = 'pkill plink'
     else:
         print(f"kill_plink: SYS = {sys_} unknown")
+        return -1
+
+    print(f"Terminating Plink with command: {command}")
     if not silent:
-        print(command + '\n')
         print(Colors.bg.brightblack, Colors.fg.wheat)
         result = run_shell_cmd(command, silent=silent)
         print(Colors.reset)
-        print(command + '\n')
         if result == -1:
             print(Colors.fg.blue, 'failed.', Colors.reset)
             return None, False
@@ -1325,11 +1353,43 @@ def size_of(path):
         return 0
 
 
-def start_plink():
+def is_plink_ready():
+    if Path(plink_test_csv_path.get()).is_file():
+        try:
+            with open(plink_test_csv_path.get(), 'rb') as f:
+                f.seek(0, 2)
+                size = f.tell()
+                # Read last 1024 bytes to check for ***READY***
+                f.seek(max(0, size - 1024))
+                last_data = f.read().decode('utf-8', errors='ignore')
+                # Check for ***READY*** with an extra line feed as requested
+                if '***READY***\n' in last_data:
+                    return True
+        except Exception as e:
+            print(f"Error checking plink ready: {e}")
+    return False
+
+
+def start_plink(command_to_paste=None, force_if_ready=False):
     lookup_test()
     if look_plink(platform.system()):
-        print("Plink already open.  Skipping restart.")
-        return
+        if force_if_ready:
+            if is_plink_ready():
+                print("Plink is READY. Restarting to automate command.")
+                kill_plink(platform.system())
+                tksleep(0.5)  # Give some time for the process to exit
+                # Proceed to restart logic below
+            else:
+                print("Plink is already open but NOT READY.")
+                tkinter.messagebox.showinfo(title="Not Ready",
+                                           message="Please wait until terminal is READY or run the START HERE button.")
+                return False
+        else:
+            print("Plink already open. Skipping restart.")
+            if command_to_paste:
+                print(f"Plink already open. CANNOT automatically paste command: {command_to_paste}")
+                print("Please paste it manually into the terminal.")
+            return True
 
     enter_size = plink_size()
     if enter_size >= 64:
@@ -1344,7 +1404,13 @@ def start_plink():
             term = shutil.which('gnome-terminal') or shutil.which('xterm') or 'x-terminal-emulator'
             # Use bash -c for an interactive window that pipes output to tee and stays open
             # User provided: gnome-terminal -- bash -c 'plink -load testsoc3p2 | tee ~/.local/plink_test.csv; exec bash'
-            plink_cmd = f"plink -load {test_filename.get()} | tee {plink_test_csv_path.get()}; exec bash"
+            plink_base_cmd = f"plink -load {test_filename.get()} | tee {plink_test_csv_path.get()}"
+            if command_to_paste:
+                # (echo 'command'; cat) | plink ... ensures the command is sent and the session remains interactive
+                plink_cmd = f"(echo '{command_to_paste}'; cat) | {plink_base_cmd}; exec bash"
+            else:
+                plink_cmd = f"{plink_base_cmd}; exec bash"
+
             if 'gnome-terminal' in term:
                 # zoom 0.8 is roughly "two sizes smaller" (standard is 1.0, 0.9 is one size, 0.8 is two)
                 cmd = [term, '--zoom=0.8', '--', 'bash', '-c',
@@ -1362,17 +1428,30 @@ def start_plink():
                 subprocess.Popen(cmd)
         elif platform.system() == 'Windows':
             # 'color 0A' sets black background (0) and light green foreground (A)
-            cmd = ['cmd', '/c', 'start', 'cmd', '/k', f"color 0A && plink -load {test_filename.get()} -tee {plink_test_csv_path.get()}"]
+            plink_base_cmd = f"plink -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
+            if command_to_paste:
+                # (echo command & type CON) | plink ... is the Windows equivalent for sending a command then remaining interactive
+                plink_cmd = f"(echo {command_to_paste} & type CON) | {plink_base_cmd}"
+            else:
+                plink_cmd = plink_base_cmd
+
+            cmd = ['cmd', '/c', 'start', 'cmd', '/k', f"color 0A && {plink_cmd}"]
             print(f"Running command: {' '.join(cmd)}")
             subprocess.Popen(cmd)
         elif platform.system() == 'Darwin':
+             if command_to_paste:
+                 plink_cmd = f"(echo '{command_to_paste}'; cat) | plink -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
+             else:
+                 plink_cmd = f"plink -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
+
              script = (f'tell application "Terminal" to do script '
                        f'"printf \\"\\\\e]11;#000000\\\\a\\\\e]10;#00ff00\\\\a\\"; clear; '
-                       f'plink -load {test_filename.get()} -tee {plink_test_csv_path.get()}"\n'
+                       f'{plink_cmd}"\n'
                        f'tell application "Terminal" to set font size of window 1 to 10')
              cmd = ['osascript', '-e', script]
              print(f"Running command: {shlex.join(cmd)}")
              subprocess.Popen(cmd)
+    return True
 
 
 def start_timer():
