@@ -101,6 +101,7 @@ class _Tee:
 last_task = None
 last_task_args = ()
 last_task_kwargs = {}
+plink_pid = None
 
 
 def register_last_task(func, *args, **kwargs):
@@ -1088,6 +1089,47 @@ def handle_test_unit(*_args):
 
 
 def kill_plink(sys_=None, silent=True):
+    global plink_pid
+    command = ''
+    if plink_pid:
+        if sys_ == 'Windows':
+            command = f'taskkill /f /pid {plink_pid} /t'
+            print(f"Terminating Plink with command: {command}")
+            try:
+                run_shell_cmd(command, silent=silent)
+                plink_pid = None
+                return 0
+            except Exception as e:
+                print(f"Error killing PID {plink_pid}: {e}")
+                plink_pid = None
+        else:
+            # On Linux/macOS, find the parent PID (PPID)
+            ppid = None
+            try:
+                # Get the parent PID using ps
+                ppid_out = subprocess.check_output(['ps', '-o', 'ppid=', '-p', str(plink_pid)]).decode().strip()
+                if ppid_out:
+                    ppid = int(ppid_out)
+            except Exception:
+                pass
+
+            if ppid and ppid > 1: # Avoid killing init (PID 1)
+                # Kill both the process and its parent
+                command = f'kill -9 {plink_pid} {ppid}'
+                print(f"Terminating Plink and parent terminal with command: {command}")
+            else:
+                command = f'kill -9 {plink_pid}'
+                print(f"Terminating Plink with command: {command}")
+
+            try:
+                run_shell_cmd(command, silent=silent)
+                plink_pid = None
+                return 0
+            except Exception as e:
+                print(f"Error killing PID {plink_pid}: {e}")
+                plink_pid = None
+
+    # If we reached here, either plink_pid was None or we want to be sure
     command = ''
     if sys_ == 'Linux':
         command = 'pkill -e plink; pkill -f "gnome-terminal --zoom=0.8"'
@@ -1096,7 +1138,8 @@ def kill_plink(sys_=None, silent=True):
     elif sys_ == 'Darwin':
         command = 'pkill plink'
     else:
-        print(f"kill_plink: SYS = {sys_} unknown")
+        if sys_ is not None:
+            print(f"kill_plink: SYS = {sys_} unknown")
         return -1
 
     print(f"Terminating Plink with command: {command}")
@@ -1371,6 +1414,7 @@ def is_plink_ready():
 
 
 def start_plink(command_to_paste=None, force_if_ready=False):
+    global plink_pid
     lookup_test()
     if look_plink(platform.system()):
         if force_if_ready:
@@ -1416,16 +1460,93 @@ def start_plink(command_to_paste=None, force_if_ready=False):
                 cmd = [term, '--zoom=0.8', '--', 'bash', '-c',
                        f"echo -e '\\e]11;#000000\\a\\e]10;#00ff00\\a'; clear; {plink_cmd}"]
                 print(f"Running command: {shlex.join(cmd)}")
-                subprocess.Popen(cmd)
+                proc = subprocess.Popen(cmd)
+                tksleep(1.0) # Wait for terminal to spawn plink
+                try:
+                    # Debug: Print full result of pgrep and ps -ef | grep plink
+                    pgrep_search = f"plink -load {test_filename.get()}"
+                    print(f"Debug: pgrep -a -f result for '{pgrep_search}':")
+                    try:
+                        pgrep_out = subprocess.check_output(['pgrep', '-a', '-f', pgrep_search]).decode()
+                        print(pgrep_out)
+                    except subprocess.CalledProcessError:
+                        print("No processes found with pgrep.")
+
+                    print(f"Debug: ps -ef | grep plink result:")
+                    try:
+                        ps_out = subprocess.check_output(['ps', '-ef']).decode()
+                        # Filter lines containing 'plink' excluding the grep/ps process if possible
+                        plink_lines = [line for line in ps_out.splitlines() if 'plink' in line and 'grep' not in line]
+                        print("\n".join(plink_lines))
+                    except Exception as e:
+                        print(f"Error running ps: {e}")
+
+                    # Find the newest plink process matching our session
+                    out = subprocess.check_output(['pgrep', '-n', '-f', pgrep_search]).decode().strip()
+                    if out:
+                        plink_pid = int(out)
+                except Exception:
+                    plink_pid = proc.pid
+                print(f"Spawned PID: {plink_pid}")
             elif 'xterm' in term:
                 # xterm -bg black -fg green -fs 10 (assuming default is ~12)
                 cmd = [term, '-bg', 'black', '-fg', 'green', '-fs', '10', '-e', f"bash -c '{plink_cmd}'"]
                 print(f"Running command: {shlex.join(cmd)}")
-                subprocess.Popen(cmd)
+                proc = subprocess.Popen(cmd)
+                tksleep(1.0) # Wait for terminal to spawn plink
+                try:
+                    # Debug: Print full result of pgrep and ps -ef | grep plink
+                    pgrep_search = f"plink -load {test_filename.get()}"
+                    print(f"Debug: pgrep -a -f result for '{pgrep_search}':")
+                    try:
+                        pgrep_out = subprocess.check_output(['pgrep', '-a', '-f', pgrep_search]).decode()
+                        print(pgrep_out)
+                    except subprocess.CalledProcessError:
+                        print("No processes found with pgrep.")
+
+                    print(f"Debug: ps -ef | grep plink result:")
+                    try:
+                        ps_out = subprocess.check_output(['ps', '-ef']).decode()
+                        plink_lines = [line for line in ps_out.splitlines() if 'plink' in line and 'grep' not in line]
+                        print("\n".join(plink_lines))
+                    except Exception as e:
+                        print(f"Error running ps: {e}")
+
+                    out = subprocess.check_output(['pgrep', '-n', '-f', pgrep_search]).decode().strip()
+                    if out:
+                        plink_pid = int(out)
+                except Exception:
+                    plink_pid = proc.pid
+                print(f"Spawned PID: {plink_pid}")
             else:
                 cmd = [term, '-e', f"bash -c '{plink_cmd}'"]
                 print(f"Running command: {shlex.join(cmd)}")
-                subprocess.Popen(cmd)
+                proc = subprocess.Popen(cmd)
+                tksleep(1.0) # Wait for terminal to spawn plink
+                try:
+                    # Debug: Print full result of pgrep and ps -ef | grep plink
+                    pgrep_search = f"plink -load {test_filename.get()}"
+                    print(f"Debug: pgrep -a -f result for '{pgrep_search}':")
+                    try:
+                        pgrep_out = subprocess.check_output(['pgrep', '-a', '-f', pgrep_search]).decode()
+                        print(pgrep_out)
+                    except subprocess.CalledProcessError:
+                        print("No processes found with pgrep.")
+
+                    print(f"Debug: ps -ef | grep plink result:")
+                    try:
+                        ps_out = subprocess.check_output(['ps', '-ef']).decode()
+                        plink_lines = [line for line in ps_out.splitlines() if 'plink' in line and 'grep' not in line]
+                        print("\n".join(plink_lines))
+                    except Exception as e:
+                        print(f"Error running ps: {e}")
+
+                    out = subprocess.check_output(['pgrep', '-n', '-f', pgrep_search]).decode().strip()
+                    if out:
+                        plink_pid = int(out)
+                except Exception:
+                    plink_pid = proc.pid
+                print(f"Spawned PID: {plink_pid}")
         elif platform.system() == 'Windows':
             # 'color 0A' sets black background (0) and light green foreground (A)
             plink_base_cmd = f"plink -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
@@ -1437,7 +1558,21 @@ def start_plink(command_to_paste=None, force_if_ready=False):
 
             cmd = ['cmd', '/c', 'start', 'cmd', '/k', f"color 0A && {plink_cmd}"]
             print(f"Running command: {' '.join(cmd)}")
-            subprocess.Popen(cmd)
+            proc = subprocess.Popen(cmd)
+            tksleep(1.0)
+            try:
+                # Find the newest plink process
+                out = subprocess.check_output(['tasklist', '/FI', 'IMAGENAME eq plink.exe', '/NH', '/FO', 'CSV']).decode('ascii')
+                # tasklist output in CSV: "plink.exe","1234","Console","1","5,678 K"
+                lines = out.strip().split('\n')
+                if lines:
+                    last_line = lines[-1]
+                    parts = last_line.split(',')
+                    if len(parts) > 1:
+                        plink_pid = int(parts[1].strip('"'))
+            except Exception:
+                plink_pid = proc.pid
+            print(f"Spawned PID: {plink_pid}")
         elif platform.system() == 'Darwin':
              if command_to_paste:
                  plink_cmd = f"(echo '{command_to_paste}'; cat) | plink -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
@@ -1450,7 +1585,15 @@ def start_plink(command_to_paste=None, force_if_ready=False):
                        f'tell application "Terminal" to set font size of window 1 to 10')
              cmd = ['osascript', '-e', script]
              print(f"Running command: {shlex.join(cmd)}")
-             subprocess.Popen(cmd)
+             proc = subprocess.Popen(cmd)
+             tksleep(1.0)
+             try:
+                 out = subprocess.check_output(['pgrep', '-n', '-f', f"plink -load {test_filename.get()}"]).decode().strip()
+                 if out:
+                     plink_pid = int(out)
+             except Exception:
+                 plink_pid = proc.pid
+             print(f"Spawned PID: {plink_pid}")
     return True
 
 
