@@ -200,8 +200,8 @@ def main():  # Example usage.  ok on 20260217
     time_shift = None
     strict_overplot = True
     terse = True
-    mon_str = ''
     hardcopy = True
+    mon_str = ''
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,
                     use_mon_soc_=use_mon_soc_, verbose=verbose, scale_batt=scale_batt, slr_hys_sim=slr_hys_sim,
