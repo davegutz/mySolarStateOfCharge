@@ -43,6 +43,7 @@ from CompareRunSim import compare_run_sim
 from CompareRunRun import compare_run_run
 from CompareRunHist import compare_run_hist
 from CountdownTimer import CountdownTimer
+import matplotlib.pyplot as plt
 import shutil
 import pyperclip
 import shlex
@@ -103,6 +104,9 @@ last_task_args = ()
 last_task_kwargs = {}
 plink_pid = None
 auto_running = False  # Track if AUTO process is active
+auto_fig_list = None  # Handles to figures from the most recently completed AUTO case
+auto_case_index = 0   # Current AUTO case index (0-based)
+auto_case_total = 0   # Total number of AUTO cases
 
 
 def register_last_task(func, *args, **kwargs):
@@ -737,8 +741,8 @@ def compare_run():
     update_data_buttons()
     if modeling.get():
         print('compare_run_sim.  save_pdf_path', str(PurePosixPath(Test.version_path) / 'figures'))
-        compare_run_sim(data_file=Test.file_path, unit_key=Test.key, strict_overplot=strict_overplot.get(),
-                        terse=terse.get(), hardcopy=hardcopy.get())
+        return compare_run_sim(data_file=Test.file_path, unit_key=Test.key, strict_overplot=strict_overplot.get(),
+                               terse=terse.get(), hardcopy=hardcopy.get())
     else:
         if not Ref.key_exists_in_file:
             tkinter.messagebox.showwarning(message="Ref Key '" + Ref.key + "' does not exist in " + Ref.file_txt)
@@ -1282,6 +1286,31 @@ def plink_size():
     return enter_size
 
 
+def close_auto_windows(close_figs=False):
+    """Close plink terminal, PlotKiller and timer windows for AUTO mode.
+    close_figs=True: close all figures (AUTO start, no handles yet).
+    close_figs=False: close previous case's figures by handle, leaving the new case's figures intact."""
+    global timer, auto_fig_list
+    kill_plink(platform.system())
+    if timer is not None:
+        try:
+            timer.close()
+        except Exception:
+            pass
+        timer = None
+    for widget in master.winfo_children():
+        if isinstance(widget, tk.Toplevel):
+            try:
+                t = widget.title()
+                if t in ('SOC-close', 'SOC-countdown'):
+                    widget.destroy()
+            except Exception:
+                pass
+    if close_figs:
+        plt.close('all')
+        auto_fig_list = None
+
+
 def grab_auto():
     plink_path = Path(plink_test_csv_path.get())
     auto_plink_path = plink_path.parent / 'auto_plink.csv'
@@ -1376,7 +1405,10 @@ def grab_auto():
             return
         
         print("User response for automatic run: Yes")
-        
+
+        # Close all PlotKiller/timer windows and figures before starting AUTO
+        close_auto_windows(close_figs=True)
+
         # Save configuration
         saved_config = {
             'folder': Test.dataReduction_folder,
@@ -1400,17 +1432,27 @@ def grab_auto():
                 except Exception:
                     pass
 
-        # Set modeling and auto over-write to True for AUTO
+        # Set modeling, auto over-write, and hardcopy to True for AUTO
         modeling.set(True)
         set_red(modeling_button)
         auto_overwrite.set(True)
         set_red(auto_overwrite_button)
+        hardcopy.set(True)
+        set_red(hardcopy_button)
         auto_running = True
 
         # Process each line
         def process_next_config(index):
-            global auto_running
+            global auto_running, auto_fig_list, auto_case_index, auto_case_total
             if index >= len(data_rows):
+                # Close the last case's figures by handle before restoring
+                if auto_fig_list is not None:
+                    for fig in auto_fig_list:
+                        try:
+                            plt.close(fig)
+                        except Exception:
+                            pass
+                    auto_fig_list = None
                 # Restore configuration
                 print(f"Restoring configuration: {saved_config}")
                 auto_running = False
@@ -1485,6 +1527,19 @@ def grab_auto():
                 hardcopy.set(config['hardcopy'] == 'True')
                 set_red(hardcopy_button)
 
+            # Close previous case's figures by handle before starting the new case
+            if index > 0 and auto_fig_list is not None:
+                for fig in auto_fig_list:
+                    try:
+                        plt.close(fig)
+                    except Exception:
+                        pass
+                auto_fig_list = None
+
+            # Track AUTO case progress (used by start_plink for status print)
+            auto_case_index = index
+            auto_case_total = len(data_rows)
+
             # Trigger START HERE button
             print(f"Triggering START HERE for config {index+1}")
             grab_init(force_if_ready=True, force_kill=True)
@@ -1519,9 +1574,8 @@ def grab_auto():
                             last_data = f.read().decode('utf-8', errors='ignore')
                             if '***DONE***' in last_data:
                                 print(f"***DONE*** detected for config {index+1}")
-                                # Close timer window before starting next config
-                                if timer is not None:
-                                    timer.close()
+                                # Close PlotKiller and timer windows; leave figures open between cases
+                                close_auto_windows(close_figs=False)
                                 # Give a small delay before next config to ensure everything is settled
                                 master.after(1000, lambda: process_next_config(index + 1))
                                 return
@@ -1561,7 +1615,7 @@ def ref_restore():
 
 
 def save_data():
-    global timer
+    global timer, auto_fig_list
     print(f"save_data: {plink_test_csv_path.get()=}")
     if size_of(plink_test_csv_path.get()) > 64:  # bytes
         # For custom option, redefine Test.file_path if requested
@@ -1596,7 +1650,9 @@ def save_data():
         Test.create_file_path_and_key(name_override=new_file_txt)
         if auto_overwrite.get():
             print('auto over-write triggering comparison')
-            compare_run()
+            result = compare_run()
+            if result is not None:
+                auto_fig_list = result[0]
     else:
         print('plink test file non-existent or too small (<64 bytes) probably already done')
         tkinter.messagebox.showwarning(message="Nothing to save")
@@ -1808,6 +1864,8 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False):
                 except Exception:
                     pass
                 print(f"Spawned PID: {plink_pid}  PPID: {ppid}")
+                if auto_running:
+                    print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
             elif 'xterm' in term:
                 # xterm -bg black -fg green -fs 10 (assuming default is ~12)
                 cmd = [term, '-bg', 'black', '-fg', 'green', '-fs', '10', '-e', f"bash -c '{plink_cmd}'"]
@@ -1847,6 +1905,8 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False):
                 except Exception:
                     pass
                 print(f"Spawned PID: {plink_pid}  PPID: {ppid}")
+                if auto_running:
+                    print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
             else:
                 cmd = [term, '-e', f"bash -c '{plink_cmd}'"]
                 print(f"Running command: {shlex.join(cmd)}")
@@ -1885,6 +1945,8 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False):
                 except Exception:
                     pass
                 print(f"Spawned PID: {plink_pid}  PPID: {ppid}")
+                if auto_running:
+                    print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
         elif platform.system() == 'Windows':
             # 'color 0A' sets black background (0) and light green foreground (A)
             plink_base_cmd = f"plink -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
@@ -1923,6 +1985,8 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False):
             except Exception:
                 pass
             print(f"Spawned PID: {plink_pid}  PPID: {ppid}")
+            if auto_running:
+                print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
         elif platform.system() == 'Darwin':
              if command_to_paste:
                  plink_cmd = f"(echo '{command_to_paste}'; cat) | plink -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
@@ -1953,6 +2017,8 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False):
              except Exception:
                  pass
              print(f"Spawned PID: {plink_pid}  PPID: {ppid}")
+             if auto_running:
+                 print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
     return True
 
 

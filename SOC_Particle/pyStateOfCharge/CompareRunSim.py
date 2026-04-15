@@ -21,7 +21,7 @@ Coulomb Counter built in."""
 from MonSim import replicate, save_clean_file, UserOptions
 from unite_pictures import cleanup_fig_files, precleanup_fig_files, pngs_to_pdf
 from CompareFault import over_fault
-from Util import rename_all
+from Util import rename_all, save_struct_to_csv
 import matplotlib.pyplot as plt
 from datetime import datetime
 from load_data import load_data
@@ -74,6 +74,9 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
     mon_ver = None
     sim_ver = None
     sim_s_ver = None
+    mon = None
+    sim = None
+    filename = None
 
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
@@ -132,6 +135,24 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
             tkinter.messagebox.showerror(title="Data Integrity Error",
                                          message="CompareRunSim: Replication broke early due to data skip.\n\nAborting without plots.")
             return fig_list, fig_files
+
+    # Save all time-dependent struct data to CSV files in the figures folder
+    if hardcopy and plots:
+        filename = data_file_clean.replace('.csv', '')
+        if filename is None:
+            print("save_struct_to_csv: no filename available, skipping CSV export")
+        else:
+            for obj, struct_name in (
+                (mon_run,   'mon_run'),
+                (mon_ver,   'mon_ver'),
+                (sim_run,   'sim_run'),
+                (sim_ver,   'sim_ver'),
+                (sim_s_run, 'sim_s_run'),
+                (sim_s_ver, 'sim_s_ver'),
+                (mon,       'mon'),
+                (sim,       'sim'),
+            ):
+                save_struct_to_csv(obj, filename + '_' + struct_name + '.csv')
 
     # Plots
     if plots:
