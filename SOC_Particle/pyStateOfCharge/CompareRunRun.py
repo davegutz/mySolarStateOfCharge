@@ -135,7 +135,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     cleanup_fig_files(fig_files)
     print('DONE')
 
-    return True
+    return fig_list, fig_files
 
 
 # noinspection PyUnusedLocal

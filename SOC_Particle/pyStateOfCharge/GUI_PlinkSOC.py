@@ -748,8 +748,8 @@ def compare_run():
         print('GUI_TestSOC compare_run:  Ref', Ref.file_path, Ref.key)
         print('GUI_TestSOC compare_run:  Test', Test.file_path, Test.key)
         keys = [(Ref.file_txt, Ref.key), (Test.file_txt, Test.key)]
-        compare_run_run(keys=keys, data_file_folder_run=Ref.version_path, data_file_folder_test=Test.version_path,
-                        terse=terse.get(), hardcopy=hardcopy.get())
+        return compare_run_run(keys=keys, data_file_folder_run=Ref.version_path, data_file_folder_test=Test.version_path,
+                               terse=terse.get(), hardcopy=hardcopy.get())
 
 
 
@@ -894,7 +894,7 @@ def grab_macro():
     get_time_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
 
 
-def grab_init(command_to_append='', force_if_ready=False, force_kill=False):
+def grab_init(command_to_append='', force_if_ready=False, force_kill=False, fg_color='#ffffff'):
     register_last_task(grab_init)
     # Grab command to update time in EEPROM
     try:
@@ -918,7 +918,7 @@ def grab_init(command_to_append='', force_if_ready=False, force_kill=False):
         print('skipping clear_data because force_if_ready is True')
     Test.create_file_path_and_key()
     Test.update_key_label()
-    return start_plink(command_to_paste=init_command, force_if_ready=force_if_ready, force_kill=force_kill)
+    return start_plink(command_to_paste=init_command, force_if_ready=force_if_ready, force_kill=force_kill, fg_color=fg_color)
 
 
 def monitor_plink_done():
@@ -961,7 +961,7 @@ def grab_start():
             return
     else:
         # If not open at all, use grab_init to bundle both init and start
-        if not grab_init(command_to_append=start_command, force_if_ready=True):
+        if not grab_init(command_to_append=start_command, force_if_ready=True, fg_color='#00ff00'):
             return
 
     add_to_clip_board(start_command)
@@ -1556,8 +1556,13 @@ def grab_auto():
                             last_data = f.read().decode('utf-8', errors='ignore')
                             if '***DONE***' in last_data:
                                 print(f"***DONE*** detected for config {index+1}")
-                                # Close PlotKiller and timer windows; leave figures open between cases
+                                is_last = (index + 1 >= len(data_rows))
                                 close_auto_windows(close_figs=False)
+                                # Close all matplotlib figures for intermediate cases directly here,
+                                # before scheduling the next config, so the timing is unambiguous.
+                                if not is_last:
+                                    plt.close('all')
+                                    master.quit()  # exit PlotKiller's nested mainloop
                                 # Give a small delay before next config to ensure everything is settled
                                 master.after(1000, lambda: process_next_config(index + 1))
                                 return
@@ -1765,7 +1770,7 @@ def is_plink_ready():
     return False
 
 
-def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False):
+def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, fg_color='#00ff00'):
     global plink_pid
     lookup_test()
     if look_plink(platform.system()):
@@ -1815,7 +1820,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False):
             if 'gnome-terminal' in term:
                 # zoom 0.8 is roughly "two sizes smaller" (standard is 1.0, 0.9 is one size, 0.8 is two)
                 cmd = [term, '--zoom=0.8', '--', 'bash', '-c',
-                       f"echo -e '\\e]11;#000000\\a\\e]10;#00ff00\\a'; clear; {plink_cmd}"]
+                       f"echo -e '\\e]11;#000000\\a\\e]10;{fg_color}\\a'; clear; {plink_cmd}"]
                 print(f"Running command: {shlex.join(cmd)}")
                 proc = subprocess.Popen(cmd)
                 tksleep(1.0) # Wait for terminal to spawn plink
@@ -1946,7 +1951,8 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False):
             else:
                 plink_cmd = plink_base_cmd
 
-            cmd = ['cmd', '/c', 'start', 'cmd', '/k', f"color 0A && {plink_cmd}"]
+            win_color = '0A' if fg_color == '#00ff00' else '0F'
+            cmd = ['cmd', '/c', 'start', 'cmd', '/k', f"color {win_color} && {plink_cmd}"]
             print(f"Running command: {' '.join(cmd)}")
             proc = subprocess.Popen(cmd)
             tksleep(1.0)
@@ -2095,7 +2101,8 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     check_auto_plink()
     print("loading icon")
     icon_path = str(PurePosixPath(ex_root.script_loc) / 'GUI_TestSOC.png')
-    master.iconphoto(False, tk.PhotoImage(file=icon_path))
+    _icon_photo = tk.PhotoImage(file=icon_path)
+    master.iconphoto(False, _icon_photo)
     print("icon loaded")
     top_panel = tk.Frame(master)
     top_panel.pack(expand=True, fill='both')
@@ -2189,9 +2196,8 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     swap_button = myButton(top_panel_right, text="swap Ref<-->Test", command=swap_run_test, bg=bg_color)
     swap_button.pack(side='right', padx=5, pady=5)
 
-    # Image
-    pic_path = str(PurePosixPath(ex_root.script_loc) / 'GUI_TestSOC.png')
-    picture = tk.PhotoImage(file=pic_path).subsample(5, 5)
+    # Image — reuse the PhotoImage already loaded for the window icon
+    picture = _icon_photo.subsample(5, 5)
     label = tk.Label(top_panel_right_ctr, image=picture)
     label.pack(padx=5, pady=5, expand=True, fill='both')
 
