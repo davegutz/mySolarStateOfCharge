@@ -1366,6 +1366,26 @@ def grab_auto():
             return
         
         print("User response for automatic run: Yes")
+        
+        # Save configuration
+        saved_config = {
+            'folder': Test.dataReduction_folder,
+            'version': Test.version,
+            'unit': test_unit.get(),
+            'battery': test_battery.get(),
+            'macro': macro_option.get(),
+            'option': option.get()
+        }
+        print(f"Saved configuration: {saved_config}")
+
+        def set_red(widget):
+            try:
+                widget.config(fg='red', activeforeground='red')
+            except Exception:
+                try:
+                    widget.config(fg='red')
+                except Exception:
+                    pass
 
         # Process each line
         for values in data_rows:
@@ -1382,33 +1402,63 @@ def grab_auto():
             if 'folder' in config:
                 Test.dataReduction_folder = config['folder']
                 Test.update_folder_button()
+                set_red(Test.folder_button)
                 tkinter.messagebox.showinfo("Update", f"Changed folder to: {config['folder']}")
 
             if 'version' in config:
                 Test.version = config['version']
                 Test.update_version_button()
+                set_red(Test.version_button)
                 tkinter.messagebox.showinfo("Update", f"Changed version to: {config['version']}")
 
             if 'unit' in config:
                 test_unit.set(config['unit'])
+                set_red(Test.unit_button)
                 tkinter.messagebox.showinfo("Update", f"Changed unit to: {config['unit']}")
 
             if 'battery' in config:
                 test_battery.set(config['battery'])
+                set_red(Test.battery_button)
                 tkinter.messagebox.showinfo("Update", f"Changed battery to: {config['battery']}")
 
             if 'macro' in config:
                 if config['macro'] in macro_lookup:
                     macro_option.set(config['macro'])
+                    set_red(macro_sel)
                     tkinter.messagebox.showinfo("Update", f"Changed macro to: {config['macro']}")
                 elif config['macro'] in lookup:
                     # If it's in 'lookup' but not 'macro_lookup', it's likely intended as an 'option'
                     option.set(config['macro'])
+                    set_red(sel)
+                    set_red(sel1)
                     lookup_start()
                     tkinter.messagebox.showinfo("Update", f"Changed option to: {config['macro']}")
                 else:
                     print(f"Error: Macro '{config['macro']}' not found in macro_lookup or lookup. Skipping.")
                     tkinter.messagebox.showerror("Error", f"Macro '{config['macro']}' is invalid and will be skipped.")
+
+        # Restore configuration
+        print(f"Restoring configuration: {saved_config}")
+        Test.dataReduction_folder = saved_config['folder']
+        Test.update_folder_button()
+        Test.version = saved_config['version']
+        Test.update_version_button()
+        test_unit.set(saved_config['unit'])
+        test_battery.set(saved_config['battery'])
+        macro_option.set(saved_config['macro'])
+        option.set(saved_config['option'])
+        
+        # Restore colors
+        Test.folder_button.config(fg='blue', activeforeground='blue')
+        Test.version_button.config(fg='blue', activeforeground='blue')
+        Test.unit_button.config(fg='black', activeforeground='black')
+        Test.battery_button.config(fg='black', activeforeground='black')
+        macro_sel.config(fg='black', activeforeground='black')
+        sel.config(fg='black', activeforeground='black')
+        sel1.config(fg='black', activeforeground='black')
+
+        lookup_start()
+        tkinter.messagebox.showinfo("Restore", "Restored previous configuration.")
 
     except Exception as e:
         print(f"Error reading auto_plink.csv: {e}")
