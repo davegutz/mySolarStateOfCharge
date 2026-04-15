@@ -38,24 +38,21 @@ from ComparePlotSettings import rescale_time_axes
 
 def do_hardcopy(fig_list, fig_files, pdf_path, pdf_base):
     """Save figures to PNGs, assemble a timestamped PDF, then remove the PNGs."""
-    import os
     from datetime import datetime
     from unite_pictures import precleanup_fig_files, pngs_to_pdf
-    if fig_list is None or fig_files is None or pdf_base is None:
+    if not fig_list or not fig_files or not pdf_base:
         return
-    for fig, fig_file in zip(fig_list, fig_files):
-        plt.figure(fig.number)
-        plt.savefig(fig_file, format="png")
-        print("saved", fig_file)
-    precleanup_fig_files(output_pdf_name=pdf_base, path_to_pdfs=pdf_path)
-    date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-    print('creating pdf...')
-    pngs_to_pdf(png_folder=pdf_path, output_pdf=pdf_base + '_' + date_time + '.pdf')
-    for fig_file in fig_files:
-        try:
-            os.remove(fig_file)
-        except OSError:
-            pass
+    try:
+        for fig, fig_file in zip(fig_list, fig_files):
+            plt.figure(fig.number)
+            plt.savefig(fig_file, format="png")
+            print("saved", fig_file)
+        precleanup_fig_files(output_pdf_name=pdf_base, path_to_pdfs=pdf_path)
+        date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        print('\ncreating pdf...')
+        pngs_to_pdf(png_folder=pdf_path, output_pdf=pdf_base + '_' + date_time + '.pdf')
+    except Exception as e:
+        print(f"do_hardcopy ERROR: {e}")
 
 
 class PlotKiller(tk.Toplevel):
@@ -103,32 +100,18 @@ class PlotKiller(tk.Toplevel):
         self.destroy()
 
 
-def show_and_kill(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None, auto=False):
+def show_and_kill(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None, hardcopy=False):
     plt.show()
     time.sleep(1)
-    if auto:
-        print("AUTO mode: calling hardcopy and closing plots.")
+    if hardcopy:
         do_hardcopy(fig_list, fig_files, pdf_path, pdf_base)
-        if fig_list is None:
-            plt.close('all')
-        else:
-            for fig in fig_list:
-                plt.close(fig)
-    else:
-        PlotKiller(string, caller, fig_list, fig_files, pdf_path, pdf_base)
+    PlotKiller(string, caller, fig_list, fig_files, pdf_path, pdf_base)
 
 
-def show_killer(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None, auto=False):
-    if auto:
-        print("AUTO mode: calling hardcopy and closing plots.")
+def show_killer(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None, hardcopy=False):
+    if hardcopy:
         do_hardcopy(fig_list, fig_files, pdf_path, pdf_base)
-        if fig_list is None:
-            plt.close('all')
-        else:
-            for fig in fig_list:
-                plt.close(fig)
-    else:
-        PlotKiller(string, caller, fig_list, fig_files, pdf_path, pdf_base)
+    PlotKiller(string, caller, fig_list, fig_files, pdf_path, pdf_base)
 
 
 def simple_plot1():

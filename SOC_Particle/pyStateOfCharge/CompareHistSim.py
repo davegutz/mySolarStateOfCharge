@@ -521,7 +521,7 @@ def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=Fa
 # noinspection PyPep8Naming
 def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=False, unit_key=None,
                      sync_time=None, dt_resample=10, Tb_force=None, request_history=None, strict_overplot=False,
-                     terse=False, fig_list=None, fig_files=None, show_killer_=True, auto=False):
+                     terse=False, fig_list=None, fig_files=None, show_killer_=True, hardcopy=False):
 
     print(f"\ncompare_hist_sim: \
     \n{data_file=} \
@@ -538,6 +538,7 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
     \n{fig_files=} \
     \n{fig_list=} \
     \n{show_killer_=} \
+    \n{hardcopy=} \
     \n")
 
     if fig_files is None:
@@ -599,7 +600,7 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
         plot_title = load_filename + '   ' + date_time
         filename = str(PurePosixPath(save_pdf_path) / load_filename)
 
-        S = PlotOptions(terse=terse)
+        S = PlotOptions(terse=terse, save_plots=hardcopy)
 
         if fault is not None and len(fault.time) > 1:
             fig_list, fig_files = over_fault(fault, filename, fig_files=fig_files, plot_title=plot_title,
@@ -623,7 +624,7 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
 
         if S.save_plots and not S.terse:
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-            print('creating pdf...')
+            print('\ncreating pdf...')
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename+'_'+date_time+'.pdf')
 
         print('showing plots...')
@@ -633,7 +634,7 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
         else:
             string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         if show_killer_:
-            show_killer(string, 'CompareFault', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, auto=auto)
+            show_killer(string, 'CompareFault', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, hardcopy=hardcopy)
         cleanup_fig_files(fig_files)
         print('DONE')
 
@@ -667,10 +668,11 @@ def main():  # Sample usage. OK on 20260217
     fig_files = None
     fig_list = None
     show_killer_ = True
+    hardcopy = False
 
     compare_hist_sim(data_file=data_file, use_mon_csv=use_mon_csv, unit_key=unit_key, dt_resample=dt_resample,
                      plots=plots, Tb_force=Tb_force, request_history=request_history,
-                     strict_overplot=strict_overplot, terse=terse)
+                     strict_overplot=strict_overplot, terse=terse, hardcopy=hardcopy)
 
 
 if __name__ == '__main__':  # Example usage.  Ran ok 20260217

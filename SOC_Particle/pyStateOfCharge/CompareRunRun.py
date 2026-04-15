@@ -36,9 +36,9 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 # noinspection PyPep8Naming
 def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=None, sync_to_ctime=False,
-                    terse=True, auto=False):
+                    terse=True, hardcopy=False):
 
-    print(f"\ncompare_run_run:\n{keys=}\n{data_file_folder_run=}\n{data_file_folder_test=}\n{sync_to_ctime=}\n{terse=}\n")
+    print(f"\ncompare_run_run:\n{keys=}\n{data_file_folder_run=}\n{data_file_folder_test=}\n{sync_to_ctime=}\n{terse=}\n{hardcopy=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     # date_ = datetime.now().strftime("%y%m%d")
@@ -106,7 +106,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     filename = str(PurePosixPath(save_pdf_path) / filename)
     plot_title = dir_root_run + '/' + data_root_run + '__' + dir_root_test + '/' + data_root_test + '   ' + date_time
 
-    S = PlotOptions(terse=terse)
+    S = PlotOptions(terse=terse, save_plots=hardcopy)
 
     if not S.terse:
         if temp_flt_file_run_clean and len(f_run.time_ux) > 1:
@@ -124,14 +124,14 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     # Copies
     if S.save_plots and not S.terse:
         precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-        print('creating pdf...')
+        print('\ncreating pdf...')
         pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
 
     print('showing plots...')
     plt.show(block=False)
 
     string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
-    show_killer(string, 'CompareRunRun', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, auto=auto)
+    show_killer(string, 'CompareRunRun', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, hardcopy=hardcopy)
     cleanup_fig_files(fig_files)
     print('DONE')
 
@@ -153,9 +153,10 @@ def main():
     data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a'
     sync_to_ctime = False
     terse = True
+    hardcopy = False
 
     compare_run_run(keys=keys, data_file_folder_run=data_file_folder_run, data_file_folder_test=data_file_folder_test,
-                    sync_to_ctime=sync_to_ctime, terse=terse)
+                    sync_to_ctime=sync_to_ctime, terse=terse, hardcopy=hardcopy)
 
 
 if __name__ == '__main__':  # Example usage.  Ran ok 20260217

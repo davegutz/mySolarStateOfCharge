@@ -596,7 +596,7 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:14.6f}".format(SN.mon_run.ib_sel[G.i]),
           "{:14.6f}".format(SN.mon_run.ib[G.i]), "{:12.6f}".format(mon.ib),
           "{:14.6f}".format(SN.mon_run.ib_amp_hdwe[G.i]), "{:12.6f}".format(mon.ib_amp_hdwe),
-          "{:14.6f}".format(SN.mon_run.ib_noa_model[G.i]), "{:12.6f}".format(mon.ib_amp_model),
+          "{:14.6f}".format(SN.mon_run.ib_noa_model[G.i]), "{:12.6f}".format(mon.ib_noa_model),
           "{:14.6f}".format(SN.mon_run.ib_noa_hdwe[G.i]), "{:12.6f}".format(mon.ib_noa_hdwe),
           "{:14.6f}".format(SN.mon_run.ib_noa_model[G.i]), "{:12.6f}".format(mon.ib_noa_model),
           "{:14.6f}".format(SN.mon_run.ib_h[G.i]), "{:12.6f}".format(mon.ib_hdwe),

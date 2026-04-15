@@ -145,6 +145,7 @@ def_dict = {
         'modeling': True,
         'strict_overplot':True,
         'terse': True,
+        'hardcopy': False,
         'auto_overwrite': False,
     },
     }
@@ -721,7 +722,7 @@ def compare_hist_to_sim():
             print('enter operation cancelled')
             return
         compare_hist_sim(data_file=Test.file_path, unit_key=Test.key, use_mon_csv=True, dt_resample=answer,
-                         terse=terse.get(), strict_overplot=strict_overplot.get(), auto=auto_running)
+                         terse=terse.get(), strict_overplot=strict_overplot.get(), hardcopy=hardcopy.get())
     else:
         print('not possible')
 
@@ -735,7 +736,7 @@ def compare_run():
     if modeling.get():
         print('compare_run_sim.  save_pdf_path', str(PurePosixPath(Test.version_path) / 'figures'))
         compare_run_sim(data_file=Test.file_path, unit_key=Test.key, strict_overplot=strict_overplot.get(),
-                        terse=terse.get(), auto=auto_running)
+                        terse=terse.get(), hardcopy=hardcopy.get())
     else:
         if not Ref.key_exists_in_file:
             tkinter.messagebox.showwarning(message="Ref Key '" + Ref.key + "' does not exist in " + Ref.file_txt)
@@ -744,7 +745,7 @@ def compare_run():
         print('GUI_TestSOC compare_run:  Test', Test.file_path, Test.key)
         keys = [(Ref.file_txt, Ref.key), (Test.file_txt, Test.key)]
         compare_run_run(keys=keys, data_file_folder_run=Ref.version_path, data_file_folder_test=Test.version_path,
-                        terse=terse.get(), auto=auto_running)
+                        terse=terse.get(), hardcopy=hardcopy.get())
 
 
 
@@ -780,7 +781,7 @@ def compare_hist_hist_run():
     print('GUI_TestSOC compare_hist_hist_run:  Test', Test.file_path, Test.key)
     compare_hist_hist(data_file_run=Ref.file_path, unit_key_run=Ref.key,
                       data_file_tst=Test.file_path, unit_key_tst=Test.key,
-                      dt_resample=answer, terse=terse.get(), auto=auto_running)
+                      dt_resample=answer, terse=terse.get(), hardcopy=hardcopy.get())
 
 
 # Choose file to perform compare_run_run on
@@ -1073,6 +1074,11 @@ def handle_run_unit(*_args):
 
 def handle_strict_overplot(*_args):
     cf['others']['strict_overplot'] = str(strict_overplot.get())
+    cf.save_to_file()
+
+
+def handle_hardcopy(*_args):
+    cf['others']['hardcopy'] = str(hardcopy.get())
     cf.save_to_file()
 
 
@@ -1378,7 +1384,8 @@ def grab_auto():
             'macro': macro_option.get(),
             'option': option.get(),
             'modeling': modeling.get(),
-            'auto_overwrite': auto_overwrite.get()
+            'auto_overwrite': auto_overwrite.get(),
+            'hardcopy': hardcopy.get(),
         }
         print(f"Saved configuration: {saved_config}")
 
@@ -1415,7 +1422,8 @@ def grab_auto():
                 option.set(saved_config['option'])
                 modeling.set(saved_config['modeling'])
                 auto_overwrite.set(saved_config['auto_overwrite'])
-                
+                hardcopy.set(saved_config['hardcopy'])
+
                 # Restore colors
                 Test.folder_button.config(fg='blue', activeforeground='blue')
                 Test.version_button.config(fg='blue', activeforeground='blue')
@@ -1469,6 +1477,9 @@ def grab_auto():
                     lookup_start()
                 else:
                     print(f"Error: Macro '{config['macro']}' not found in macro_lookup or lookup. Skipping.")
+
+            if 'hardcopy' in config:
+                hardcopy.set(config['hardcopy'] == 'True')
 
             # Trigger START HERE button
             print(f"Triggering START HERE for config {index+1}")
@@ -2281,6 +2292,11 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     strict_overplot_button.pack(side='left', pady=2, fill='x')
     strict_overplot.trace_add('write', handle_strict_overplot)
 
+    hardcopy_str = cf['others'].get('hardcopy', 'False')
+    hardcopy = tk.BooleanVar(master, hardcopy_str == 'True')
+    hardcopy_button = tk.Checkbutton(sav_panel, text='hardcopy', variable=hardcopy, onvalue=True, offvalue=False)
+    hardcopy_button.pack(side='left', pady=2, fill='x')
+    hardcopy.trace_add('write', handle_hardcopy)
 
     clear_data_button = myButton(sav_panel, text='clear', command=clear_data_verbose, fg="red", bg=bg_color,
                                  wraplength=wrap_length, justify='right')

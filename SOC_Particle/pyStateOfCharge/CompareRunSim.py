@@ -46,7 +46,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw=0.,  use_mon_soc_=False,
                     verbose=True, scale_batt=1., slr_hys_sim=1., request_history=5, init_time=None,
                     time_shift=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
-                    fig_list=None, show_killer_=True, auto=False):
+                    fig_list=None, show_killer_=True, hardcopy=False):
 
     print(f"\n compare_run_sim: \
     \n{data_file=} \
@@ -62,6 +62,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
     \n{time_shift=} \
     \n{strict_overplot=} \
     \n{terse=} \
+    \n{hardcopy=} \
     \n{mon_str=} \
     \n")
 
@@ -145,7 +146,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
         filename = str(PurePosixPath(save_pdf_path) / aug_file)
         plot_title = dir_root_test + '/' + data_root_test + '   ' + date_time
 
-        S = PlotOptions(terse=terse)
+        S = PlotOptions(terse=terse, save_plots=hardcopy)
         if not S.terse and f is not None and temp_flt_file_clean and len(f.time_ux) > 1 and not strict_overplot:
             fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                              fig_list=fig_list, cc_dif_tol=cc_dif_tol, save_plots=S.save_plots)
@@ -162,7 +163,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
         # Copies
         if S.save_plots and not S.terse:
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-            print('creating pdf...')
+            print('\ncreating pdf...')
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
 
         print('showing plots...')
@@ -171,7 +172,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
 
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         if show_killer_:
-            show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, auto=auto)
+            show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, hardcopy=hardcopy)
         cleanup_fig_files(fig_files)
         print('DONE')
 
@@ -186,8 +187,8 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     # Cut-pasted from GUI_TestSOC Run window
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/BMS 20260412_soc4p2_hi_lo_bbX.csv'
-    unit_key = 'g20250612a_soc4p2_hi_lo_bb'
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiEmptFail_soc3p2_hi_lo_bb.csv'
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = None
     plots = True
     use_mon_soc_ = False
@@ -197,14 +198,15 @@ def main():  # Example usage.  ok on 20260217
     request_history = 5
     init_time = None
     time_shift = None
-    strict_overplot = False
-    terse = False
+    strict_overplot = True
+    terse = True
     mon_str = ''
+    hardcopy = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,
                     use_mon_soc_=use_mon_soc_, verbose=verbose, scale_batt=scale_batt, slr_hys_sim=slr_hys_sim,
                     request_history=request_history, init_time=init_time, time_shift=time_shift,
-                    strict_overplot=strict_overplot, terse=terse)
+                    strict_overplot=strict_overplot, terse=terse, hardcopy=hardcopy)
 
 
 # import cProfile
