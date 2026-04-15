@@ -240,10 +240,8 @@ lookup = {
                     'Xm247;Ca0.9962;' + fastTwitchDef + 'Xa17;' + slowTranPrep + 'XR;XQ600000;' + 'Xa0;' +  # satSitBB
                     quiet + cleanup + '<XD;',
                     ('All the best transients BB', "Must have same 'vv*' throughout", "")),
-        # 'ampHiEmptFail': (153, modLoInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
-        'ampHiEmptFail': (153, modLoInit + 'vv4;W40;vv0;' + cleanup + '<XD;', ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
-        # 'ampHiFail': (153, modHalfInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
-        'ampHiFail': (153, modHalfInit + 'vv4;W40;vv0;' + cleanup + '<XD;', ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
+        'ampHiEmptFail': (153, modLoInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
+        'ampHiFail': (153, modHalfInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
         'noaHiFail': (153, modHalfInit + tranPrep + d50 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 50A into amp. With ib_diff only nothing changes then should isolate to the noa by wrap and choose amp.", "'diff' will be displayed then ib_fail due to wrap of noa", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen).", "Loss of ib set 'accy' because loss of current sensing at high currents.")),
         'rapidTweakRegression': (262, slow + 'Rs;W8;Xp10;' + quiet + cleanup + '<XD;', ('Should run three very large current discharge/recharge cycles without latched fail', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A.  And Noa will fault and fail temprorarily')),
         'allProto': (552, modHalfInit + tranPrep + c50 + 'XQ25000;' + c00 + tempCleanup + '  Rs;W4;Xp10;  Rs;W4;Xp13;  ' + modHalfInitNoCc + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup + '<XD;', ('Proto multi', "Must have same 'vv*' throughout", "No 'HR' either")),
@@ -1312,6 +1310,7 @@ def close_auto_windows(close_figs=False):
 
 
 def grab_auto():
+    global auto_running, auto_fig_list, auto_case_index, auto_case_total
     plink_path = Path(plink_test_csv_path.get())
     auto_plink_path = plink_path.parent / 'auto_plink.csv'
     if not auto_plink_path.is_file():
@@ -1445,15 +1444,7 @@ def grab_auto():
         def process_next_config(index):
             global auto_running, auto_fig_list, auto_case_index, auto_case_total
             if index >= len(data_rows):
-                # Close the last case's figures by handle before restoring
-                if auto_fig_list is not None:
-                    for fig in auto_fig_list:
-                        try:
-                            plt.close(fig)
-                        except Exception:
-                            pass
-                    auto_fig_list = None
-                # Restore configuration
+                # Restore configuration (last case's figures remain open)
                 print(f"Restoring configuration: {saved_config}")
                 auto_running = False
                 Test.dataReduction_folder = saved_config['folder']
@@ -1526,15 +1517,6 @@ def grab_auto():
             if 'hardcopy' in config:
                 hardcopy.set(config['hardcopy'] == 'True')
                 set_red(hardcopy_button)
-
-            # Close previous case's figures by handle before starting the new case
-            if index > 0 and auto_fig_list is not None:
-                for fig in auto_fig_list:
-                    try:
-                        plt.close(fig)
-                    except Exception:
-                        pass
-                auto_fig_list = None
 
             # Track AUTO case progress (used by start_plink for status print)
             auto_case_index = index
@@ -1650,6 +1632,14 @@ def save_data():
         Test.create_file_path_and_key(name_override=new_file_txt)
         if auto_overwrite.get():
             print('auto over-write triggering comparison')
+            # In AUTO mode close the previous case's figures now, before new ones are created
+            if auto_running and auto_fig_list is not None:
+                for _fig in auto_fig_list:
+                    try:
+                        plt.close(_fig)
+                    except Exception:
+                        pass
+                auto_fig_list = None
             result = compare_run()
             if result is not None:
                 auto_fig_list = result[0]

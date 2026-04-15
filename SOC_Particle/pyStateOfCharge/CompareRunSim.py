@@ -136,10 +136,10 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
                                          message="CompareRunSim: Replication broke early due to data skip.\n\nAborting without plots.")
             return fig_list, fig_files
 
-    # Save all time-dependent struct data to CSV files in the figures folder
+    # Save all time-dependent struct data to CSV files in the temp folder
     if hardcopy and plots:
-        filename = data_file_clean.replace('.csv', '')
-        if filename is None:
+        filename_root = data_file_clean.replace('.csv', '')
+        if filename_root is None:
             print("save_struct_to_csv: no filename available, skipping CSV export")
         else:
             for obj, struct_name in (
@@ -152,7 +152,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
                 (mon,       'mon'),
                 (sim,       'sim'),
             ):
-                save_struct_to_csv(obj, filename + '_' + struct_name + '.csv')
+                save_struct_to_csv(obj, filename_root + '_' + struct_name + '.csv')
 
     # Plots
     if plots:
