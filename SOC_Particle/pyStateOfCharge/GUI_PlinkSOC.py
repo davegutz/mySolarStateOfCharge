@@ -1295,11 +1295,12 @@ def grab_auto():
             if not line:
                 continue
             if line.startswith('#'):
-                header_line = line
-                header_fields = [f.strip() for f in line.lstrip('#').split(',')]
-                # Filter out empty fields that might occur if there's a trailing comma
-                header_fields = [f for f in header_fields if f]
-                print(f"Fields: {header_fields}")
+                if header_line is None:
+                    header_line = line
+                    header_fields = [f.strip() for f in line.lstrip('#').split(',')]
+                    # Filter out empty fields that might occur if there's a trailing comma
+                    header_fields = [f for f in header_fields if f]
+                    print(f"Fields: {header_fields}")
                 continue
             
             if header_line is not None:
@@ -1374,7 +1375,9 @@ def grab_auto():
             'unit': test_unit.get(),
             'battery': test_battery.get(),
             'macro': macro_option.get(),
-            'option': option.get()
+            'option': option.get(),
+            'modeling': modeling.get(),
+            'auto_overwrite': auto_overwrite.get()
         }
         print(f"Saved configuration: {saved_config}")
 
@@ -1387,78 +1390,128 @@ def grab_auto():
                 except Exception:
                     pass
 
+        # Set modeling and auto over-write to True for AUTO
+        modeling.set(True)
+        set_red(modeling_button)
+        auto_overwrite.set(True)
+        set_red(auto_overwrite_button)
+
         # Process each line
-        for values in data_rows:
+        def process_next_config(index):
+            if index >= len(data_rows):
+                # Restore configuration
+                print(f"Restoring configuration: {saved_config}")
+                Test.dataReduction_folder = saved_config['folder']
+                Test.update_folder_button()
+                Test.version = saved_config['version']
+                Test.update_version_button()
+                test_unit.set(saved_config['unit'])
+                test_battery.set(saved_config['battery'])
+                macro_option.set(saved_config['macro'])
+                option.set(saved_config['option'])
+                modeling.set(saved_config['modeling'])
+                auto_overwrite.set(saved_config['auto_overwrite'])
+                
+                # Restore colors
+                Test.folder_button.config(fg='blue', activeforeground='blue')
+                Test.version_button.config(fg='blue', activeforeground='blue')
+                Test.unit_button.config(fg='black', activeforeground='black')
+                Test.battery_button.config(fg='black', activeforeground='black')
+                macro_sel.config(fg='black', activeforeground='black')
+                sel.config(fg='black', activeforeground='black')
+                sel1.config(fg='black', activeforeground='black')
+                modeling_button.config(fg='black', activeforeground='black')
+                auto_overwrite_button.config(fg='black', activeforeground='black')
+
+                lookup_start()
+                tkinter.messagebox.showinfo("Restore", "Restored previous configuration. AUTO complete.")
+                return
+
+            values = data_rows[index]
             # Map values to fields
             config = {}
             for i in range(min(len(header_fields), len(values))):
                 config[header_fields[i]] = values[i]
 
-            print(f"Processing configuration: {config}")
+            print(f"Processing configuration {index+1}/{len(data_rows)}: {config}")
 
-            # Mapping of header fields to GUI actions
-            # Expected headers: folder, version, unit, battery, macro
-            
             if 'folder' in config:
                 Test.dataReduction_folder = config['folder']
                 Test.update_folder_button()
                 set_red(Test.folder_button)
-                tkinter.messagebox.showinfo("Update", f"Changed folder to: {config['folder']}")
 
             if 'version' in config:
                 Test.version = config['version']
                 Test.update_version_button()
                 set_red(Test.version_button)
-                tkinter.messagebox.showinfo("Update", f"Changed version to: {config['version']}")
 
             if 'unit' in config:
                 test_unit.set(config['unit'])
                 set_red(Test.unit_button)
-                tkinter.messagebox.showinfo("Update", f"Changed unit to: {config['unit']}")
 
             if 'battery' in config:
                 test_battery.set(config['battery'])
                 set_red(Test.battery_button)
-                tkinter.messagebox.showinfo("Update", f"Changed battery to: {config['battery']}")
 
             if 'macro' in config:
                 if config['macro'] in macro_lookup:
                     macro_option.set(config['macro'])
                     set_red(macro_sel)
-                    tkinter.messagebox.showinfo("Update", f"Changed macro to: {config['macro']}")
                 elif config['macro'] in lookup:
                     # If it's in 'lookup' but not 'macro_lookup', it's likely intended as an 'option'
                     option.set(config['macro'])
                     set_red(sel)
                     set_red(sel1)
                     lookup_start()
-                    tkinter.messagebox.showinfo("Update", f"Changed option to: {config['macro']}")
                 else:
                     print(f"Error: Macro '{config['macro']}' not found in macro_lookup or lookup. Skipping.")
-                    tkinter.messagebox.showerror("Error", f"Macro '{config['macro']}' is invalid and will be skipped.")
 
-        # Restore configuration
-        print(f"Restoring configuration: {saved_config}")
-        Test.dataReduction_folder = saved_config['folder']
-        Test.update_folder_button()
-        Test.version = saved_config['version']
-        Test.update_version_button()
-        test_unit.set(saved_config['unit'])
-        test_battery.set(saved_config['battery'])
-        macro_option.set(saved_config['macro'])
-        option.set(saved_config['option'])
-        
-        # Restore colors
-        Test.folder_button.config(fg='blue', activeforeground='blue')
-        Test.version_button.config(fg='blue', activeforeground='blue')
-        Test.unit_button.config(fg='black', activeforeground='black')
-        Test.battery_button.config(fg='black', activeforeground='black')
-        macro_sel.config(fg='black', activeforeground='black')
-        sel.config(fg='black', activeforeground='black')
-        sel1.config(fg='black', activeforeground='black')
+            # Trigger START HERE button
+            print(f"Triggering START HERE for config {index+1}")
+            grab_init(force_if_ready=True)
 
-        lookup_start()
-        tkinter.messagebox.showinfo("Restore", "Restored previous configuration.")
+            # Wait for READY, then click START BUTTON, then wait for DONE
+            def check_ready_and_start():
+                if Path(plink_test_csv_path.get()).is_file():
+                    try:
+                        with open(plink_test_csv_path.get(), 'rb') as f:
+                            f.seek(0, 2)
+                            size = f.tell()
+                            f.seek(max(0, size - 1024))
+                            last_data = f.read().decode('utf-8', errors='ignore')
+                            if '***READY***' in last_data:
+                                print(f"***READY*** detected for config {index+1}. Triggering start_button.")
+                                grab_start()
+                                # After starting, wait for DONE
+                                master.after(1000, check_completion)
+                                return
+                    except Exception as e:
+                        print(f"Error monitoring plink file for READY in AUTO: {e}")
+                
+                master.after(1000, check_ready_and_start)
+
+            def check_completion():
+                if Path(plink_test_csv_path.get()).is_file():
+                    try:
+                        with open(plink_test_csv_path.get(), 'rb') as f:
+                            f.seek(0, 2)
+                            size = f.tell()
+                            f.seek(max(0, size - 1024))
+                            last_data = f.read().decode('utf-8', errors='ignore')
+                            if '***DONE***' in last_data:
+                                print(f"***DONE*** detected for config {index+1}")
+                                # Give a small delay before next config to ensure everything is settled
+                                master.after(1000, lambda: process_next_config(index + 1))
+                                return
+                    except Exception as e:
+                        print(f"Error monitoring plink file for DONE in AUTO: {e}")
+                
+                master.after(1000, check_completion)
+
+            master.after(1000, check_ready_and_start)
+
+        # Start the sequential processing
+        process_next_config(0)
 
     except Exception as e:
         print(f"Error reading auto_plink.csv: {e}")
