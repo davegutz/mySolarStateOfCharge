@@ -102,6 +102,7 @@ last_task = None
 last_task_args = ()
 last_task_kwargs = {}
 plink_pid = None
+auto_running = False  # Track if AUTO process is active
 
 
 def register_last_task(func, *args, **kwargs):
@@ -720,7 +721,7 @@ def compare_hist_to_sim():
             print('enter operation cancelled')
             return
         compare_hist_sim(data_file=Test.file_path, unit_key=Test.key, use_mon_csv=True, dt_resample=answer,
-                         terse=terse.get(), strict_overplot=strict_overplot.get())
+                         terse=terse.get(), strict_overplot=strict_overplot.get(), auto=auto_running)
     else:
         print('not possible')
 
@@ -734,7 +735,7 @@ def compare_run():
     if modeling.get():
         print('compare_run_sim.  save_pdf_path', str(PurePosixPath(Test.version_path) / 'figures'))
         compare_run_sim(data_file=Test.file_path, unit_key=Test.key, strict_overplot=strict_overplot.get(),
-                        terse=terse.get())
+                        terse=terse.get(), auto=auto_running)
     else:
         if not Ref.key_exists_in_file:
             tkinter.messagebox.showwarning(message="Ref Key '" + Ref.key + "' does not exist in " + Ref.file_txt)
@@ -743,7 +744,7 @@ def compare_run():
         print('GUI_TestSOC compare_run:  Test', Test.file_path, Test.key)
         keys = [(Ref.file_txt, Ref.key), (Test.file_txt, Test.key)]
         compare_run_run(keys=keys, data_file_folder_run=Ref.version_path, data_file_folder_test=Test.version_path,
-                        terse=terse.get())
+                        terse=terse.get(), auto=auto_running)
 
 
 
@@ -779,7 +780,7 @@ def compare_hist_hist_run():
     print('GUI_TestSOC compare_hist_hist_run:  Test', Test.file_path, Test.key)
     compare_hist_hist(data_file_run=Ref.file_path, unit_key_run=Ref.key,
                       data_file_tst=Test.file_path, unit_key_tst=Test.key,
-                      dt_resample=answer, terse=terse.get())
+                      dt_resample=answer, terse=terse.get(), auto=auto_running)
 
 
 # Choose file to perform compare_run_run on
@@ -1395,12 +1396,15 @@ def grab_auto():
         set_red(modeling_button)
         auto_overwrite.set(True)
         set_red(auto_overwrite_button)
+        auto_running = True
 
         # Process each line
         def process_next_config(index):
+            global auto_running
             if index >= len(data_rows):
                 # Restore configuration
                 print(f"Restoring configuration: {saved_config}")
+                auto_running = False
                 Test.dataReduction_folder = saved_config['folder']
                 Test.update_folder_button()
                 Test.version = saved_config['version']

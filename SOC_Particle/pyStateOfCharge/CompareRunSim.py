@@ -46,7 +46,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw=0.,  use_mon_soc_=False,
                     verbose=True, scale_batt=1., slr_hys_sim=1., request_history=5, init_time=None,
                     time_shift=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
-                    fig_list=None, show_killer_=True):
+                    fig_list=None, show_killer_=True, auto=False):
 
     print(f"\n compare_run_sim: \
     \n{data_file=} \
@@ -171,7 +171,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
 
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         if show_killer_:
-            show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename)
+            show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, auto=auto)
         cleanup_fig_files(fig_files)
         print('DONE')
 

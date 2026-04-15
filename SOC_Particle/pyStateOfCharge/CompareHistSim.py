@@ -521,7 +521,7 @@ def load_hist_and_prep(data_file=None, time_end=None, plots=True, use_mon_csv=Fa
 # noinspection PyPep8Naming
 def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=False, unit_key=None,
                      sync_time=None, dt_resample=10, Tb_force=None, request_history=None, strict_overplot=False,
-                     terse=False, fig_list=None, fig_files=None, show_killer_=True):
+                     terse=False, fig_list=None, fig_files=None, show_killer_=True, auto=False):
 
     print(f"\ncompare_hist_sim: \
     \n{data_file=} \
@@ -633,7 +633,7 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
         else:
             string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         if show_killer_:
-            show_killer(string, 'CompareFault', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename)
+            show_killer(string, 'CompareFault', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, auto=auto)
         cleanup_fig_files(fig_files)
         print('DONE')
 

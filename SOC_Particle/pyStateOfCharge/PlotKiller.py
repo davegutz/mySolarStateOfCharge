@@ -36,6 +36,28 @@ bg_color = "lightgray"
 from ComparePlotSettings import rescale_time_axes
 
 
+def do_hardcopy(fig_list, fig_files, pdf_path, pdf_base):
+    """Save figures to PNGs, assemble a timestamped PDF, then remove the PNGs."""
+    import os
+    from datetime import datetime
+    from unite_pictures import precleanup_fig_files, pngs_to_pdf
+    if fig_list is None or fig_files is None or pdf_base is None:
+        return
+    for fig, fig_file in zip(fig_list, fig_files):
+        plt.figure(fig.number)
+        plt.savefig(fig_file, format="png")
+        print("saved", fig_file)
+    precleanup_fig_files(output_pdf_name=pdf_base, path_to_pdfs=pdf_path)
+    date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+    print('creating pdf...')
+    pngs_to_pdf(png_folder=pdf_path, output_pdf=pdf_base + '_' + date_time + '.pdf')
+    for fig_file in fig_files:
+        try:
+            os.remove(fig_file)
+        except OSError:
+            pass
+
+
 class PlotKiller(tk.Toplevel):
     # noinspection PyUnusedLocal
     def __init__(self, message, caller, fig_list_=None, fig_files_=None, pdf_path_='.', pdf_base_=None):
@@ -69,24 +91,7 @@ class PlotKiller(tk.Toplevel):
             rescale_time_axes(self.fig_list, t_min=t_min, t_max=t_max)
 
     def hardcopy(self):
-        import os
-        from datetime import datetime
-        from unite_pictures import precleanup_fig_files, pngs_to_pdf
-        if self.fig_list is None or self.fig_files is None or self.pdf_base is None:
-            return
-        for fig, fig_file in zip(self.fig_list, self.fig_files):
-            plt.figure(fig.number)   # make this the current figure so plt.gcf() works in the patch
-            plt.savefig(fig_file, format="png")
-            print("saved", fig_file)
-        precleanup_fig_files(output_pdf_name=self.pdf_base, path_to_pdfs=self.pdf_path)
-        date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-        print('creating pdf...')
-        pngs_to_pdf(png_folder=self.pdf_path, output_pdf=self.pdf_base + '_' + date_time + '.pdf')
-        for fig_file in self.fig_files:
-            try:
-                os.remove(fig_file)
-            except OSError:
-                pass
+        do_hardcopy(self.fig_list, self.fig_files, self.pdf_path, self.pdf_base)
 
     def close_figs(self):
         if self.fig_list is None:
@@ -98,14 +103,32 @@ class PlotKiller(tk.Toplevel):
         self.destroy()
 
 
-def show_and_kill(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None):
+def show_and_kill(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None, auto=False):
     plt.show()
     time.sleep(1)
-    PlotKiller(string, caller, fig_list, fig_files, pdf_path, pdf_base)
+    if auto:
+        print("AUTO mode: calling hardcopy and closing plots.")
+        do_hardcopy(fig_list, fig_files, pdf_path, pdf_base)
+        if fig_list is None:
+            plt.close('all')
+        else:
+            for fig in fig_list:
+                plt.close(fig)
+    else:
+        PlotKiller(string, caller, fig_list, fig_files, pdf_path, pdf_base)
 
 
-def show_killer(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None):
-    PlotKiller(string, caller, fig_list, fig_files, pdf_path, pdf_base)
+def show_killer(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None, auto=False):
+    if auto:
+        print("AUTO mode: calling hardcopy and closing plots.")
+        do_hardcopy(fig_list, fig_files, pdf_path, pdf_base)
+        if fig_list is None:
+            plt.close('all')
+        else:
+            for fig in fig_list:
+                plt.close(fig)
+    else:
+        PlotKiller(string, caller, fig_list, fig_files, pdf_path, pdf_base)
 
 
 def simple_plot1():

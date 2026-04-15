@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 # noinspection PyPep8Naming
 def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=None, sync_to_ctime=False,
-                    terse=True):
+                    terse=True, auto=False):
 
     print(f"\ncompare_run_run:\n{keys=}\n{data_file_folder_run=}\n{data_file_folder_test=}\n{sync_to_ctime=}\n{terse=}\n")
 
@@ -131,7 +131,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     plt.show(block=False)
 
     string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
-    show_killer(string, 'CompareRunRun', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename)
+    show_killer(string, 'CompareRunRun', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, auto=auto)
     cleanup_fig_files(fig_files)
     print('DONE')
 

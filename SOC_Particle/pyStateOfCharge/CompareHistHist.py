@@ -38,7 +38,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 # noinspection PyPep8Naming
 def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None, unit_key_tst=None,
-                      dt_resample=10, plots=True, terse=False):
+                      dt_resample=10, plots=True, terse=False, auto=False):
 
     print(f"\ncompare_hist_hist:\n{data_file_run=}\n{unit_key_run=}\n{data_file_tst=}\n{unit_key_tst=}\n{dt_resample=}\n{terse=}\n")
 
@@ -107,7 +107,7 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
         print('showing plots...')
         plt.show(block=False)
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
-        show_killer(string, 'CompareFault', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename)
+        show_killer(string, 'CompareFault', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, auto=auto)
         cleanup_fig_files(fig_files)
         print('DONE')
 
