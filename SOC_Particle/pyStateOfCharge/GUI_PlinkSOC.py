@@ -890,7 +890,7 @@ def grab_macro():
     get_time_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
 
 
-def grab_init(command_to_append='', force_if_ready=False):
+def grab_init(command_to_append='', force_if_ready=False, force_kill=False):
     register_last_task(grab_init)
     # Grab command to update time in EEPROM
     try:
@@ -914,7 +914,7 @@ def grab_init(command_to_append='', force_if_ready=False):
         print('skipping clear_data because force_if_ready is True')
     Test.create_file_path_and_key()
     Test.update_key_label()
-    return start_plink(command_to_paste=init_command, force_if_ready=force_if_ready)
+    return start_plink(command_to_paste=init_command, force_if_ready=force_if_ready, force_kill=force_kill)
 
 
 def monitor_plink_done():
@@ -1434,6 +1434,7 @@ def grab_auto():
                 sel1.config(fg='black', activeforeground='black')
                 modeling_button.config(fg='black', activeforeground='black')
                 auto_overwrite_button.config(fg='black', activeforeground='black')
+                hardcopy_button.config(fg='black', activeforeground='black')
 
                 lookup_start()
                 tkinter.messagebox.showinfo("Restore", "Restored previous configuration. AUTO complete.")
@@ -1480,10 +1481,11 @@ def grab_auto():
 
             if 'hardcopy' in config:
                 hardcopy.set(config['hardcopy'] == 'True')
+                set_red(hardcopy_button)
 
             # Trigger START HERE button
             print(f"Triggering START HERE for config {index+1}")
-            grab_init(force_if_ready=True)
+            grab_init(force_if_ready=True, force_kill=True)
 
             # Wait for READY, then click START BUTTON, then wait for DONE
             def check_ready_and_start():
@@ -1712,11 +1714,16 @@ def is_plink_ready():
     return False
 
 
-def start_plink(command_to_paste=None, force_if_ready=False):
+def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False):
     global plink_pid
     lookup_test()
     if look_plink(platform.system()):
-        if force_if_ready:
+        if force_kill:
+            print("AUTO: force-killing plink regardless of state.")
+            kill_plink(platform.system())
+            tksleep(0.5)
+            # Proceed to restart logic below
+        elif force_if_ready:
             if is_plink_ready():
                 print("Plink is READY. Restarting to automate command.")
                 kill_plink(platform.system())
