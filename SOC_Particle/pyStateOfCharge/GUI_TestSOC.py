@@ -142,6 +142,7 @@ def_dict = {
         'modeling': True,
         'strict_overplot':True,
         'terse': True,
+        'auto_overwrite': False,
     },
     }
 
@@ -167,6 +168,7 @@ macro_sel_list = [
     'noisePackage', 'silentPackage', 'quiet', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
     'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50', 'c00',
     'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50', 'zeroPrepHdweNoVb', 'zero_set_hdwe_no_Vb',
+    'noaHiFail', 'noaHiFailNoise',
     ]
 
 # Macro
@@ -309,6 +311,8 @@ macro_lookup = {
         'c00': (5, c00, ('', '', '', '')),
         'dv0': (5, dv0, ('', '', '', '')),
         'twitch': (5, twitch, ('', '', '', '')),
+        'noaHiFail': (5, d50, ('', '', '', '')),
+        'noaHiFailNoise': (5, d50, ('', '', '', '')),
         }
 
 putty_connection = {'': 'test',
@@ -1047,6 +1051,11 @@ def handle_terse(*_args):
     cf.save_to_file()
 
 
+def handle_auto_overwrite(*_args):
+    cf['others']['auto_overwrite'] = str(auto_overwrite.get())
+    cf.save_to_file()
+
+
 def handle_test_battery(*_args):
     Test.battery = test_battery.get()
     Test.update_battery_stuff()
@@ -1201,11 +1210,14 @@ def save_data():
                 Test.label.config(text=Test.file_txt)
                 print('Test.file_path', Test.file_path)
         if Path(Test.file_path).is_file() and Path(Test.file_path).stat().st_size > 0:  # bytes
-            confirmation = tk.messagebox.askyesno('query overwrite', 'File exists:  overwrite?')
-            if not confirmation:
-                print('skipped overwrite')
-                tkinter.messagebox.showwarning(message='retained ' + Test.file_path)
-                return
+            if auto_overwrite.get():
+                print('auto over-write enabled')
+            else:
+                confirmation = tk.messagebox.askyesno('query overwrite', 'File exists:  overwrite?')
+                if not confirmation:
+                    print('skipped overwrite')
+                    tkinter.messagebox.showwarning(message='retained ' + Test.file_path)
+                    return
         save_data_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black',
                                 text='data saving')
         tksleep(0.1)
@@ -1219,6 +1231,9 @@ def save_data():
         empty_file(putty_test_csv_path.get())
         print('updating Test file label')
         Test.create_file_path_and_key(name_override=new_file_txt)
+        if auto_overwrite.get():
+            print('auto over-write triggering comparison')
+            compare_run()
     else:
         print('putty test file non-existent or too small (<64 bytes) probably already done')
         tkinter.messagebox.showwarning(message="Nothing to save")
@@ -1458,6 +1473,16 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     Test.folder_button = myButton(top_panel_left_ctr, text=Test.dataReduction_folder[-folder_reveal:],
                                   command=Test.enter_data_reduction_folder,
                                   fg="blue", bg=bg_color)
+    auto_overwrite_str = cf['others'].get('auto_overwrite', 'False')
+    if auto_overwrite_str == 'True':
+        auto_overwrite = tk.BooleanVar(master, True)
+    else:
+        auto_overwrite = tk.BooleanVar(master, False)
+    auto_overwrite_button = tk.Checkbutton(top_panel_right_ctr, text='auto over-write', bg=bg_color,
+                                           variable=auto_overwrite, onvalue=True, offvalue=False)
+    auto_overwrite_button.pack(pady=2, fill='x')
+    auto_overwrite.trace_add('write', handle_auto_overwrite)
+
     Ref.folder_button = myButton(top_panel_right, text=Ref.dataReduction_folder[-folder_reveal:],
                                  command=Ref.enter_data_reduction_folder,
                                  fg="blue", bg=bg_color)

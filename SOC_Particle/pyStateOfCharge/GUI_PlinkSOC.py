@@ -170,6 +170,7 @@ macro_sel_list = [
     'noisePackage', 'silentPackage', 'quiet', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
     'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50', 'c00',
     'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50', 'zeroPrepHdweNoVb', 'zero_set_hdwe_no_Vb',
+    'noaHiFail', 'noaHiFailNoise',
     ]
 
 # Macro
@@ -312,6 +313,8 @@ macro_lookup = {
         'c00': (5, c00, ('', '', '', '')),
         'dv0': (5, dv0, ('', '', '', '')),
         'twitch': (5, twitch, ('', '', '', '')),
+        'noaHiFail': (5, d50, ('', '', '', '')),
+        'noaHiFailNoise': (5, d50, ('', '', '', '')),
         }
 
 plink_connection = {'': 'test',
@@ -1186,7 +1189,13 @@ def look_plink(sys_=None, silent=True):
 
 
 def lookup_macro():
-    dum_, macro_val, ev_val = macro_lookup.get(macro_option.get())
+    macro_name = macro_option.get()
+    macro_data = macro_lookup.get(macro_name)
+    if macro_data is None:
+        print(f"Error: Macro '{macro_name}' not found in macro_lookup.")
+        return
+
+    dum_, macro_val, ev_val = macro_data
     macro.set(macro_val)
     macro_button.config(text=macro.get())
     while len(ev_val) < 4:
@@ -1210,7 +1219,13 @@ def lookup_macro():
 
 
 def lookup_start():
-    dawdle_val_, start_val, ev_val = lookup.get(option.get())
+    option_name = option.get()
+    option_data = lookup.get(option_name)
+    if option_data is None:
+        print(f"Error: Option '{option_name}' not found in lookup.")
+        return
+
+    dawdle_val_, start_val, ev_val = option_data
     start.set(start_val)
     start_button.config(text=start.get())
     while len(ev_val) < 4:
@@ -1271,40 +1286,55 @@ def grab_auto():
         with open(auto_plink_path, 'r') as f:
             lines = f.readlines()
         
-        header = None
-        data_lines = []
+        header_line = None
+        header_fields = []
+        data_rows = []
+        
         for line in lines:
             line = line.strip()
             if not line:
                 continue
             if line.startswith('#'):
-                header = [f.strip() for f in line.lstrip('#').split(',')]
-                print(f"Fields: {header}")
+                header_line = line
+                header_fields = [f.strip() for f in line.lstrip('#').split(',')]
+                # Filter out empty fields that might occur if there's a trailing comma
+                header_fields = [f for f in header_fields if f]
+                print(f"Fields: {header_fields}")
                 continue
             
-            if header:
+            if header_line is not None:
+                # Validation: number of fields separated by commas
+                # header line example: "#folder, version, unit, battery, macro,"
+                # We expect the same number of comma-separated fields in each data line.
+                header_field_count = len(header_line.split(','))
+                line_field_count = len(line.split(','))
+                
+                if line_field_count != header_field_count:
+                    print(f"Skipping line due to field count mismatch ({line_field_count} vs {header_field_count}): {line}")
+                    continue
+                
                 values = [v.strip() for v in line.split(',')]
-                # Map values to header fields for display
-                display_parts = []
-                for i in range(min(len(header), len(values))):
-                    if header[i]:
-                        display_parts.append(f"{header[i]}: {values[i]}")
-                display_line = " | ".join(display_parts)
-                data_lines.append(display_line)
-            else:
-                data_lines.append(line)
+                data_rows.append(values)
 
-        if not data_lines:
-            print("No data lines found in auto_plink.csv")
+        if not data_rows:
+            print("No valid data lines found in auto_plink.csv")
             return
 
-        all_lines_text = "\n".join(data_lines)
+        # Prepare display for the confirmation dialog
+        display_lines = []
+        for values in data_rows:
+            display_parts = []
+            for i in range(min(len(header_fields), len(values))):
+                display_parts.append(f"{header_fields[i]}: {values[i]}")
+            display_lines.append(" | ".join(display_parts))
+        
+        all_lines_text = "\n".join(display_lines)
         print(f"All configurations:\n{all_lines_text}")
 
         # Custom wide dialog
         dialog = tk.Toplevel(master)
         dialog.title("Automate Configurations?")
-        dialog.geometry("1200x400") # 2x wider than previous 600
+        dialog.geometry("1200x400") 
         dialog.grab_set()
         dialog.transient(master)
 
@@ -1331,8 +1361,54 @@ def grab_auto():
 
         master.wait_window(dialog)
         
-        answer = result.get()
-        print(f"User response for automatic run: {'Yes' if answer else 'No'}")
+        if not result.get():
+            print("User response for automatic run: No")
+            return
+        
+        print("User response for automatic run: Yes")
+
+        # Process each line
+        for values in data_rows:
+            # Map values to fields
+            config = {}
+            for i in range(min(len(header_fields), len(values))):
+                config[header_fields[i]] = values[i]
+
+            print(f"Processing configuration: {config}")
+
+            # Mapping of header fields to GUI actions
+            # Expected headers: folder, version, unit, battery, macro
+            
+            if 'folder' in config:
+                Test.dataReduction_folder = config['folder']
+                Test.update_folder_button()
+                tkinter.messagebox.showinfo("Update", f"Changed folder to: {config['folder']}")
+
+            if 'version' in config:
+                Test.version = config['version']
+                Test.update_version_button()
+                tkinter.messagebox.showinfo("Update", f"Changed version to: {config['version']}")
+
+            if 'unit' in config:
+                test_unit.set(config['unit'])
+                tkinter.messagebox.showinfo("Update", f"Changed unit to: {config['unit']}")
+
+            if 'battery' in config:
+                test_battery.set(config['battery'])
+                tkinter.messagebox.showinfo("Update", f"Changed battery to: {config['battery']}")
+
+            if 'macro' in config:
+                if config['macro'] in macro_lookup:
+                    macro_option.set(config['macro'])
+                    tkinter.messagebox.showinfo("Update", f"Changed macro to: {config['macro']}")
+                elif config['macro'] in lookup:
+                    # If it's in 'lookup' but not 'macro_lookup', it's likely intended as an 'option'
+                    option.set(config['macro'])
+                    lookup_start()
+                    tkinter.messagebox.showinfo("Update", f"Changed option to: {config['macro']}")
+                else:
+                    print(f"Error: Macro '{config['macro']}' not found in macro_lookup or lookup. Skipping.")
+                    tkinter.messagebox.showerror("Error", f"Macro '{config['macro']}' is invalid and will be skipped.")
 
     except Exception as e:
         print(f"Error reading auto_plink.csv: {e}")
