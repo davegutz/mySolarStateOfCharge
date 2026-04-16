@@ -87,6 +87,8 @@ class Battery(BatteryConstants, Coulombs):
                           Dw=Battery.sp_Dw)
 
         # Defaults
+        self.time = -999.
+        self.mod_data = 0.
         self.chem = mod_code
         self.nz = None
         self.q = 0  # Charge, C
@@ -218,6 +220,16 @@ class Battery(BatteryConstants, Coulombs):
             print("soc=", soc, "tb_f=", tb_f, "dvoc=", self.dvoc, "voc=", voc)
         return voc, dv_dsoc
 
+    def append_to(self, sv):
+        """Append all scalar members of self to corresponding list members of sv (a Saved instance).
+        If the attribute does not yet exist in sv, create it as a new list with the first value."""
+        for key, val in vars(self).items():
+            if isinstance(val, (bool, int, float, np.generic)) or val is None:
+                if hasattr(sv, key):
+                    getattr(sv, key).append(val)
+                else:
+                    setattr(sv, key, [val])
+
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
                   q_capacity=None, rp=None, reset_ekf=None, soc=None, saturated_init=None):
         # Battery
@@ -250,6 +262,8 @@ class BatteryMonitor(Battery, EKF1x1):
         # Parents
         self.soc_ekf = 0.  # Filtered state of charge from ekf (0-1)
         EKF1x1.__init__(self)
+        self.time_min = self.time / 60.
+        self.time_day = self.time_min / 60. / 24.
         self.tcharge_ekf = 0.  # Charging time to 100% from ekf, hr
         self.voc = 0.  # Charging voltage, V
         self.q_ekf = 0  # Filtered charge calculated by ekf, C
@@ -703,123 +717,34 @@ class BatteryMonitor(Battery, EKF1x1):
             print("confirmed ", self.soc)
 
     def save(self, time, dt, soc_run, voc_run, iscn_f):  # BatteryMonitor
-        self.saved.time.append(time)
-        self.saved.time_min.append(time / 60.)
-        self.saved.time_day.append(time / 3600. / 24.)
-        self.saved.dt_temp.append(self.dt_temp)
-        self.saved.reset_temp.append(self.reset_temp)
-        self.saved.chm.append(self.chm)
-        self.saved.qcrs.append(self.q_cap_rated_scaled)
-        self.saved.delta_q.append(self.delta_q)
-        self.saved.d_delta_q.append(self.delta_q)
-        self.saved.dt.append(dt)
-        self.saved.ib.append(self.ib)
-        self.saved.ib_in.append(self.ib_in)
-        self.saved.ib_charge.append(self.ib_charge)
-        self.saved.ioc.append(self.ioc)
-        self.saved.vb.append(self.vb)
-        self.saved.dv_hys.append(self.dv_hys)
-        self.saved.tau_hys.append(self.tau_hys)
-        self.saved.dv_dyn.append(self.dv_dyn)
-        self.saved.ib_dyn.append(self.ib_dyn)
-        self.saved.ib_dyn_T.append(self.ib_dyn_T)
-        self.saved.ib_dyn_rstate.append(self.ib_dyn_rstate)
-        self.saved.ib_dyn_lstate.append(self.ib_dyn_lstate)
-        self.saved.voc_stat_f_rstate.append(self.voc_stat_f_rstate)
-        self.saved.voc_stat_f_lstate.append(self.voc_stat_f_lstate)
-        self.saved.voc_stat_f_tau.append(self.voc_stat_f_tau)
-        self.saved.voc_stat_f_T.append(self.voc_stat_f_T)
-        self.saved.voc.append(self.voc)
-        self.saved.voc_soc.append(self.voc_soc)
-        self.saved.voc_stat.append(self.voc_stat)
-        self.saved.voc_stat_f.append(self.voc_stat_f)
-        self.saved.soc.append(self.soc)
-        self.saved.soc_ekf.append(self.soc_ekf)
-        self.saved.Fx.append(self.Fx)
-        self.saved.Bu.append(self.Bu)
-        self.saved.P.append(self.P)
-        self.saved.Q.append(self.Q)
-        self.saved.dt_eframe.append(self.dt_eframe)
-        self.saved.voc_stat_ekf.append(self.voc_stat_ekf)
-        self.saved.R.append(self.R)
-        self.saved.H.append(self.H)
-        self.saved.S.append(self.S)
-        self.saved.K.append(self.K)
-        self.saved.hx.append(self.hx)
-        self.saved.u_ekf.append(self.u_ekf)
-        self.saved.x_ekf.append(self.x)
-        self.saved.y.append(self.y)
-        self.saved.y_filt.append(self.y_filt)
-        self.saved.y_filt2.append(self.y_filt2)
-        self.saved.z.append(self.z)
-        self.saved.x_prior.append(self.x_prior)
-        self.saved.P_prior.append(self.P_prior)
-        self.saved.x_post.append(self.x_post)
-        self.saved.P_post.append(self.P_post)
+        self.time = time
+        self.dt = dt
+        self.time_min = self.time / 60.
+        self.time_day = self.time_min / 60. / 24.
         if abs(soc_run) < 1e-6:
             soc_run = 1e-6
         self.e_soc_ekf = (self.soc_ekf - soc_run) / soc_run
         self.e_voc_ekf = (self.voc - voc_run) / voc_run
-        self.saved.e_soc_ekf.append(self.e_soc_ekf)
-        self.saved.e_voc_ekf.append(self.e_voc_ekf)
-        self.saved.tb_f_for_hx.append(self.tb_f_for_hx)
-        self.saved.x_for_hx.append(self.x_for_hx)
-        self.saved.Tb.append(self.Tb)
-        self.saved.Tb_f.append(self.Tb_f)
-        self.saved.Tb_model.append(self.Tb_model)
-        self.saved.Tb_f_rate.append(self.Tb_f_rate)
-        self.saved.Tb_rap.append(self.Tb_rap)
-        self.saved.Tb_f_rap.append(self.Tb_f_rap)
-        self.saved.Tb_f_rate_rap.append(self.Tb_f_rate_rap)
-        self.saved.vsat.append(self.vsat)
-        self.saved.voc_ekf.append(self.voc_ekf)
-        self.saved.sat.append(int(self.sat))
-        self.saved.saturated.append(int(self.saturated))
-        self.saved.sel.append(self.sel)
-        self.saved.mod_data.append(self.mod)
-        self.saved.soc_s.append(self.soc_s)
-        self.saved.bms_off.append(self.bms_off)
-        self.saved.reset.append(self.reset)
-        self.saved.reset_ekf.append(self.reset_ekf)
-        self.saved.e_wrap.append(self.e_wrap)
-        self.saved.e_wrap_filt.append(self.e_wrap_filt)
-        self.saved.ib_dyn_m.append(self.LoopIbAmp.ib_dyn)
-        self.saved.dv_dyn_m.append(self.LoopIbAmp.dv_dyn)
-        self.saved.e_wrap_m.append(self.e_wrap_m)
-        self.saved.e_wrap_m_filt.append(self.e_wrap_m_filt)
-        self.saved.e_wrap_m_trim.append(self.e_wrap_m_trim)
-        self.saved.e_wrap_n_trim.append(self.e_wrap_n_trim)
-        self.saved.ib_dyn_n.append(self.LoopIbNoa.ib_dyn)
-        self.saved.dv_dyn_n.append(self.LoopIbNoa.dv_dyn)
-        self.saved.e_wrap_n.append(self.e_wrap_n)
-        self.saved.e_wrap_n_filt.append(self.e_wrap_n_filt)
-        self.saved.e_wrap_n_trim.append(self.e_wrap_n_trim)
-        self.saved.e_wrap_rate.append(self.e_wrap_rate)
-        self.saved.ib_amp.append(self.ib_amp)
-        self.saved.ib_amp_model.append(self.ib_amp_model)
-        self.saved.ib_amp_hdwe.append(self.ib_amp_hdwe)
-        self.saved.ib_noa.append(self.ib_noa)
-        self.saved.ib_noa_model.append(self.ib_noa_model)
-        self.saved.ib_noa_hdwe.append(self.ib_noa_hdwe)
-        self.saved.ib_lag.append(self.ib_lag)
-        self.saved.voc_soc_new.append(self.voc_soc_new)
-        self.saved.ewmhi_thr.append(self.ewmhi_thr)
-        self.saved.e_wrap_m_reset.append(self.e_wrap_m_reset)
-        self.saved.ewmlo_thr.append(self.ewmlo_thr)
-        self.saved.ewnhi_thr.append(self.ewnhi_thr)
-        self.saved.ewnlo_thr.append(self.ewnlo_thr)
-        self.saved.q.append(self.q)
-        self.saved.q_capacity.append(self.q_capacity)
-        self.saved.Tb_rstate.append(self.Tb_rstate)
-        self.saved.Tb_lstate.append(self.Tb_state)
-        self.saved.Tb_hdwe.append(self.Tb_hdwe)
-        self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
-        self.saved.Tb_model_filt.append(self.Tb_model_filt)
-        self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
-        self.saved.reset_kf.append(self.reset_kf)
-        self.saved.iscn_f.append(iscn_f)
-        self.saved.vb_hdwe.append(self.vb_hdwe)
-        self.saved.vb_hdwe_f.append(self.vb_hdwe_f)
+        self.iscn_f = iscn_f
+        self.mod_data = self.mod
+
+        """There are 123 parameters in mon_run that have no counterpart in mon_ver:
+
+              ib_amp_hdwe_kf, ib_choice, ib_dec, ib_diff, ib_diff_f, ib_dyn_T_m, ib_dyn_T_n, ib_dyn_lstate_m, ib_dyn_lstate_n,
+              ib_dyn_m, ib_dyn_n, ib_dyn_rstate_m, ib_dyn_rstate_n, ib_dyn_tau_m, ib_dyn_tau_n, ib_h, ib_is_functional, ib_model,
+              ib_noa_hdwe_kf, ib_noa_kf, ib_quiet, ib_rate, ib_really_quiet, ib_s, ib_sel, ib_sel_stat, ib_wrp_T_m, ib_wrp_T_n,
+              ib_wrp_rate_m, ib_wrp_rate_n, ib_wrp_reset_m, ib_wrp_state_m, ib_wrp_state_n, ib_wrp_tau_m, ib_wrp_tau_n, ibd_thr,
+              ibq_thr, mib, dv_dyn_m, dv_dyn_n, vb_h_f, vb_s, vb_sel, vc_h, vc_sum, voc_m, voc_soc_m, vovcm, vovcn, x1m, x1n, y_ekf,
+              e_wrap_m_trim_1, e_wrap_m_trimmed, e_wrap_n_trimmed, accy, bmso, cTime, c_time_sel, cc_dif, ccd_thr, conn,
+              diff_ib, dispw, ff, hm, init_mon, init_sim, kfres, kfres_1, mtb, mvb, off, preserving, qcap, qcrs, red_loss,
+              resaf, skip_mon, skip_sel, soft_reset, soft_reset_sim, tb_sel, time_long, unit_rap, unit_s, user_sel,
+              SAT, Tb_fa, ccd_fa, ekf_reset, fail_ib, fail_ibm, fail_vb, falw, flt_ekf, flt_tb, fltw, ib_amp_bare_flt, ib_amp_fa,
+              ib_amp_flt, ib_diff_fa, ib_diff_flt, ib_dscn_fa, ib_dscn_flt, ib_noa_bare_flt, ib_noa_fa, ib_noa_flt, kf_reset,
+              reset_all_faults, tb_fa, tb_flt, vb_fa_lt, vb_flt, vc_fa, vc_flt, wrap_hi_fa, wrap_hi_flt, wrap_lo_fa, wrap_lo_flt,
+              wrap_m_and_n_fa, wrap_m_and_n_flt, wv_fa,
+            
+        """
+        self.append_to(self.saved)
 
     def wrap(self, reset=True, modeling_ib=None, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
              ib_amp_pst=None, ib_noa_pst=None, rp=None):
@@ -1133,33 +1058,10 @@ class BatterySim(Battery):
         return self.soc
 
     def save(self, time, dt):  # BatterySim
-        self.saved.time.append(time)
-        self.saved.dt.append(dt)
-        self.saved.ib.append(self.ib)
-        self.saved.ib_in.append(self.ib_in)
-        self.saved.ib_charge.append(self.ib_charge)
-        self.saved.chm.append(self.chm)
-        self.saved.bmso.append(self.bms_off)
-        self.saved.ioc.append(self.ioc)
-        self.saved.vb.append(self.vb)
-        self.saved.dv_hys.append(self.dv_hys)
-        self.saved.tau_hys.append(self.tau_hys)
-        self.saved.dv_dyn.append(self.dv_dyn)
-        self.saved.ib_dyn.append(self.ib_dyn)
-        self.saved.ib_dyn_T.append(self.ib_dyn_T)
-        self.saved.ib_dyn_rstate.append(self.ib_dyn_rstate)
-        self.saved.ib_dyn_lstate.append(self.ib_dyn_lstate)
-        self.saved.voc.append(self.voc)
-        self.saved.voc_stat.append(self.voc_stat)
-        self.saved.soc.append(self.soc)
-        self.saved.d_delta_q.append(self.d_delta_q)
-        self.saved.Tb.append(self.Tb)
-        self.saved.vsat.append(self.vsat)
-        self.saved.sat.append(int(self.model_saturated))
-        self.saved.delta_q.append(self.delta_q)
-        self.saved.q.append(self.q)
-        self.saved.q_capacity.append(self.q_capacity)
-        self.saved.bms_off.append(self.bms_off)
+        self.time = time
+        self.dt = dt
+        # Append all parameters to
+        self.append_to(self.saved)
 
     def save_s(self, time):
         self.saved_s.time.append(time)
