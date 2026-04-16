@@ -731,7 +731,7 @@ def compare_hist_to_sim():
         print('not possible')
 
 
-def compare_run():
+def compare_run(show_killer_=True):
     register_last_task(compare_run)
     if not Test.key_exists_in_file:
         tkinter.messagebox.showwarning(message="Test Key '" + Test.key + "' does not exist in " + Test.file_txt)
@@ -740,7 +740,7 @@ def compare_run():
     if modeling.get():
         print('compare_run_sim.  save_pdf_path', str(PurePosixPath(Test.version_path) / 'figures'))
         return compare_run_sim(data_file=Test.file_path, unit_key=Test.key, strict_overplot=strict_overplot.get(),
-                               terse=terse.get(), hardcopy=hardcopy.get())
+                               terse=terse.get(), hardcopy=hardcopy.get(), show_killer_=show_killer_)
     else:
         if not Ref.key_exists_in_file:
             tkinter.messagebox.showwarning(message="Ref Key '" + Ref.key + "' does not exist in " + Ref.file_txt)
@@ -932,6 +932,9 @@ def monitor_plink_done():
                 last_data = f.read().decode('utf-8', errors='ignore')
                 if '***DONE***' in last_data:
                     print(f"***DONE*** detected in {plink_test_csv_path.get()}")
+                    if auto_running:
+                        master.after(1000, monitor_plink_done)
+                        return
                     save_data()
                     tk.messagebox.showinfo(title='Done ' + start_button.cget('text'), message='Run Complete')
                     return
@@ -1558,12 +1561,9 @@ def grab_auto():
                                 print(f"***DONE*** detected for config {index+1}")
                                 is_last = (index + 1 >= len(data_rows))
                                 close_auto_windows(close_figs=False)
-                                # Close all matplotlib figures for intermediate cases directly here,
-                                # before scheduling the next config, so the timing is unambiguous.
-                                if not is_last:
-                                    plt.close('all')
-                                    master.quit()  # exit PlotKiller's nested mainloop
-                                # Give a small delay before next config to ensure everything is settled
+                                # Save data and plot; for non-last cases skip PlotKiller so we don't block
+                                # auto_fig_list in save_data() closes the previous case's figures before creating new ones
+                                save_data(show_killer_=is_last)
                                 master.after(1000, lambda: process_next_config(index + 1))
                                 return
                     except Exception as e:
@@ -1601,7 +1601,7 @@ def ref_restore():
     Ref.label.pack(padx=5, pady=5)
 
 
-def save_data():
+def save_data(show_killer_=True):
     global timer, auto_fig_list
     print(f"save_data: {plink_test_csv_path.get()=}")
     if size_of(plink_test_csv_path.get()) > 64:  # bytes
@@ -1645,7 +1645,7 @@ def save_data():
                     except Exception:
                         pass
                 auto_fig_list = None
-            result = compare_run()
+            result = compare_run(show_killer_=show_killer_)
             if result is not None:
                 auto_fig_list = result[0]
     else:
