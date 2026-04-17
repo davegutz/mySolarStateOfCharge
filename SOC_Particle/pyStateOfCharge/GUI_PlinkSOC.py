@@ -1312,8 +1312,45 @@ def close_auto_windows(close_figs=False):
         auto_fig_list = None
 
 
+def _get_putty_serial_line(session_name):
+    """Return the SerialLine from the named putty session config, or None if not found."""
+    if platform.system() in ('Linux', 'Darwin'):
+        session_file = Path.home() / '.putty' / 'sessions' / session_name
+        if session_file.is_file():
+            for line in session_file.read_text(errors='replace').splitlines():
+                if line.startswith('SerialLine='):
+                    return line.split('=', 1)[1].strip()
+    elif platform.system() == 'Windows':
+        try:
+            import winreg
+            key_path = rf'Software\SimonTatham\PuTTY\Sessions\{session_name}'
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path) as key:
+                value, _ = winreg.QueryValueEx(key, 'SerialLine')
+                return value
+        except Exception:
+            pass
+    return None
+
+
 def grab_auto():
     global auto_running, auto_fig_list, auto_case_index, auto_case_total
+
+    # Pre-flight checks before starting AUTO
+    errors = []
+    serial_device = _get_putty_serial_line(test_filename.get())
+    if serial_device:
+        if not Path(serial_device).exists():
+            errors.append(f"USB serial device not connected: {serial_device}")
+    else:
+        errors.append(f"Could not read serial line from putty session '{test_filename.get()}'")
+    dr_folder = Test.dataReduction_folder
+    if not Path(dr_folder).exists():
+        errors.append(f"dataReduction folder not found:\n  {dr_folder}")
+    if errors:
+        tkinter.messagebox.showerror(title="AUTO Prerequisites Not Met",
+                                     message="\n\n".join(errors))
+        return
+
     plink_path = Path(plink_test_csv_path.get())
     auto_plink_path = plink_path.parent / 'auto_plink.csv'
     if not auto_plink_path.is_file():
