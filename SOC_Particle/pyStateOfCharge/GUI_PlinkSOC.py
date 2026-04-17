@@ -1484,9 +1484,10 @@ def grab_auto():
         def process_next_config(index):
             global auto_running, auto_fig_list, auto_case_index, auto_case_total
             if index >= len(data_rows):
-                # Restore configuration (last case's figures remain open)
-                print(f"Restoring configuration: {saved_config}")
+                n_cases = len(data_rows)
                 auto_running = False
+
+                # Restore runtime state
                 Test.dataReduction_folder = saved_config['folder']
                 Test.update_folder_button()
                 Test.version = saved_config['version']
@@ -1499,7 +1500,12 @@ def grab_auto():
                 auto_overwrite.set(saved_config['auto_overwrite'])
                 hardcopy.set(saved_config['hardcopy'])
 
-                # Restore colors
+                # Write folder and version back to .ini (traces handle the rest)
+                Test.cf[Test.ind]['dataReduction_folder'] = saved_config['folder']
+                Test.cf[Test.ind]['version'] = saved_config['version']
+                Test.cf.save_to_file()
+
+                # Restore colors to pre-AUTO state
                 Test.folder_button.config(fg='blue', activeforeground='blue')
                 Test.version_button.config(fg='blue', activeforeground='blue')
                 Test.unit_button.config(fg='black', activeforeground='black')
@@ -1512,7 +1518,9 @@ def grab_auto():
                 hardcopy_button.config(fg='black', activeforeground='black')
 
                 lookup_start()
-                tkinter.messagebox.showinfo("Restore", "Restored previous configuration. AUTO complete.")
+                print(f"AUTO complete: {n_cases} case(s) run. Original configuration restored.")
+                tkinter.messagebox.showinfo("AUTO Complete",
+                                            f"{n_cases} case(s) run.\nOriginal configuration restored.")
                 return
 
             values = data_rows[index]
@@ -1596,11 +1604,10 @@ def grab_auto():
                             last_data = f.read().decode('utf-8', errors='ignore')
                             if '***DONE***' in last_data:
                                 print(f"***DONE*** detected for config {index+1}")
-                                is_last = (index + 1 >= len(data_rows))
                                 close_auto_windows(close_figs=False)
-                                # Save data and plot; for non-last cases skip PlotKiller so we don't block
-                                # auto_fig_list in save_data() closes the previous case's figures before creating new ones
-                                save_data(show_killer_=is_last)
+                                # Never show PlotKiller in AUTO — its mainloop() blocks restoration.
+                                # Last case's figures stay open; user can close them manually.
+                                save_data(show_killer_=False)
                                 master.after(1000, lambda: process_next_config(index + 1))
                                 return
                     except Exception as e:
