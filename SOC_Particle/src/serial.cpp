@@ -289,7 +289,7 @@ void print_shunt_serial(const bool reset, Sensors *Sen)
 
     sprintf(pr.buff, "shunt_unit,%13.4f, %d, %d,  %11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,  ",
       cTime, reset, cp.kf_reset_print,
-      Sen->ib_amp_vo_vc(), Sen->ib_amp_vo_vc_f(), Sen->ib_noa_vo_vc(), Sen->ib_noa_vo_vc_f(),
+      Sen->ib_amp_vo_vc(), Sen->ib_amp_vo_vc_kf(), Sen->ib_noa_vo_vc(), Sen->ib_noa_vo_vc_kf(),
       Sen->ShuntAmp->ishunt_cal(), Sen->ib_amp_hdwe_kf(), Sen->ShuntNoAmp->ishunt_cal(), Sen->ib_noa_hdwe_kf());
     Serial.printf("%s", pr.buff);
 

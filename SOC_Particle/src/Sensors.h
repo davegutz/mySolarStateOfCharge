@@ -345,8 +345,8 @@ public:
   float ib_amp_hdwe_f() { return Ib_amp_hdwe_f_ / ap.nP(); };      // Battery amp 2-pole filtered unit current, A
   float ib_amp_hdwe_kf() { return Ib_amp_hdwe_kf_ / ap.nP(); };    // Battery amp kalman filtered unit current, A
   float ib_amp_model() { return Ib_amp_model_ / ap.nP(); };        // Battery amp model unit current, A
-  float ib_amp_vo_vc() { return ShuntAmp->Vo_Vc(); };             // Battery amp kalman filter input, V
-  float ib_amp_vo_vc_f() { return ShuntAmp->Vo_Vc_kf(); };        // Battery amp kalman filter output, V
+  float ib_amp_vo_vc() { return ShuntAmp->Vo_Vc(); };              // Battery amp kalman filter input, V
+  float ib_amp_vo_vc_kf() { return ShuntAmp->Vo_Vc_kf(); };        // Battery amp kalman filter output, V
   float ib_hdwe() { return Ib_hdwe_ / ap.nP(); };                  // Battery select hardware unit current, A
   float ib_hdwe_model() { return Ib_hdwe_model_ / ap.nP(); };      // Battery select hardware model unit current, A
   float ib_model() { return Ib_model_ / ap.nP(); };                // Battery select model unit current, A
@@ -355,8 +355,8 @@ public:
   float ib_noa_hdwe() { return Ib_noa_hdwe_ / ap.nP(); };          // Battery no amp unit current, A
   float ib_noa_hdwe_kf() { return Ib_noa_hdwe_kf_ / ap.nP(); };    // Battery no amp kalman filtered unit current, A
   float ib_noa_model() { return Ib_noa_model_ / ap.nP(); };        // Battery no amp model unit current, A
-  float ib_noa_vo_vc() { return ShuntNoAmp->Vo_Vc(); };           // Battery no amp kalman filter input, V
-  float ib_noa_vo_vc_f() { return ShuntNoAmp->Vo_Vc_kf(); };      // Battery no amp kalman filter output, V
+  float ib_noa_vo_vc() { return ShuntNoAmp->Vo_Vc(); };            // Battery no amp kalman filter input, V
+  float ib_noa_vo_vc_kf() { return ShuntNoAmp->Vo_Vc_kf(); };      // Battery no amp kalman filter output, V
   float Ib_amp_add();
   float Ib_amp_max();
   float Ib_amp_min();

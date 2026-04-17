@@ -170,8 +170,7 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
   vb_sel_stat_last_(VB_SEL_STAT_DEF), wrap_hi_amp_(WRAP_HI_AMP), wrap_hi_noa_(WRAP_HI_NOA),
    wrap_lo_amp_(WRAP_LO_AMP), wrap_lo_noa_(WRAP_LO_NOA)
 {
-  IbNoaRate = new RateLagExp(T, WRAP_ERR_FILT/4., -MAX_ERR_FILT, MAX_ERR_FILT);
-  IbErrFilt = new LagTustin(T, TAU_ERR_FILT, -IBATT_DISAGREE_THRESH*1.5, IBATT_DISAGREE_THRESH*1.5);  // actual update time provided run time
+  IbDiffFilt = new LagTustin(T, TAU_ERR_FILT, -IBATT_DISAGREE_THRESH*1.5, IBATT_DISAGREE_THRESH*1.5);  // actual update time provided run time
   IbdPosPer = new TFDelay(false, IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, T);
   IbdNegPer = new TFDelay(false, IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, T);
   IbdHiPer = new TFDelay(false, IBATT_DISAGREE_SET, IBATT_DISAGREE_RESET, T);
@@ -226,7 +225,7 @@ void Fault::ib_diff(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
   if ( disable_amp_fault_ ) ib_diff_ = 0.;
   else if ( ib_lo_limited_hi_ ) ib_diff_ = max(0., ib_diff_);  // limit error when low amp is pegged high
   else if ( ib_lo_limited_lo_ ) ib_diff_ = min(0., ib_diff_);  // limit error when low amp is pegged low
-  ib_diff_f_ = IbErrFilt->calculate(ib_diff_, reset_loc || disable_amp_fault_ || ib_lo_limited_hi_ || ib_lo_limited_lo_, min(Sen->T(), MAX_ERR_T));
+  ib_diff_f_ = IbDiffFilt->calculate(ib_diff_, reset_loc || disable_amp_fault_ || ib_lo_limited_hi_ || ib_lo_limited_lo_, min(Sen->T(), MAX_ERR_T));
   ib_diff_thr_ = IBATT_DISAGREE_THRESH*ap.ib_diff_slr();
   faultAssign( IbdPosPer->calculate((ib_diff_f_>=ib_diff_thr_), IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, Sen->T(), reset_loc),
     IB_DIFF_HI_FLT );

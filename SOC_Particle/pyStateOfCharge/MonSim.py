@@ -324,7 +324,7 @@ def replicate(OPT: UserOptions):
                 break
 
         # Save plot info
-        mon.save(t[G.i], T, mon.soc, sim.voc, SN.iscn_f)
+        mon.save(t[G.i], T, mon.soc, sim.voc, SN, rp)
         sim.save(t[G.i], T)
         sim.save_s(t[G.i])
 

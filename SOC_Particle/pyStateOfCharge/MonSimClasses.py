@@ -74,6 +74,7 @@ class SensorLooparound:
         self.ib_init = self.ib[max(i - 1, 0)]
 
 
+# noinspection PyPep8Naming
 class Sensors:
     """Collect various sense parameters to create proper delays in data feed and connections to model"""
 
@@ -128,7 +129,11 @@ class Sensors:
 
             self.ib_amp = 0.
             self.ib_noa = 0.
+            self.ib_amp_hdwe = self.mon_run.ib_amp_hdwe
+            self.ib_noa_hdwe = self.mon_run.ib_noa_hdwe
+            self.ib_diff = self.ib_amp_hdwe - self.ib_noa_hdwe
             self.ib_dyn = ProArray(self.mon_run.ib_dyn, mutable=True)
+            self.ib_diff_f = 0.
             self.z = self.mon_run.z
             self.ib_in_s = self.sim_run.ib_in_s
             self.ib_dyn_s = self.sim_run.ib_dyn_s
@@ -291,6 +296,8 @@ class Sensors:
         self.soc_ekf_init = self.soc_init
         self.z_init = self.mon_run.z[0]
 
+        self.reset_kf = True
+
         self.VoVcm = 0.
         self.VoVcm_f = 0.
 
@@ -305,6 +312,7 @@ class Sensors:
         s += "  Tb0_s =  {:9.7f}  // deg C\n".format(self.Tb0_s)
         return s
 
+    # noinspection PyPep8Naming
     def assign_tb(self, mon_Tb, mon_Tb_f, mon_Tb_f_rate):
         self.Tb = mon_Tb + self.dTb
         self.Tb_f = mon_Tb_f + self.dTb

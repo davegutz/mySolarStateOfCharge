@@ -34,7 +34,6 @@ if sys.platform == 'darwin':
 plt.rcParams.update({'figure.max_open_warning': 0})
 import Globals as G
 from battery_constants import BatteryConstants
-# from plot.plq import plq as plq
 
 
 class Retained:
@@ -370,6 +369,50 @@ class BatteryMonitor(Battery, EKF1x1):
         self.wrap_hi_n_fa = False
         self.wrap_lo_n_flt = False
         self.wrap_lo_n_fa = False
+
+        self.ib_model = 0.
+        self.ib_h  = 0.
+        self.ib_s  = 0.
+        self.mib  = False
+        self.mvb = False
+        self.mtb = False
+        self.ib_diff  = 0.
+        self.ib_diff_f = 0.
+        self.ib_quiet = 0.
+        self.ib_rate = 0.
+        self.ibd_thr  = 0.
+        self.ibq_thr  = 0.
+        self.ib_dyn_m  = 0.
+        self.ib_dyn_T_m  = 0.
+        self.ib_dyn_rstate_m  = 0.
+        self.ib_dyn_lstate_m  = 0.
+        self.ib_dyn_tau_m  = 0.
+        self.dv_dyn_m  = 0.
+        self.voc_m = 0.
+        self.voc_soc_m  = 0.
+        self.ib_wrp_T_m  = 0.
+        self.ib_wrp_tau_m  = 0.
+        self.ib_wrp_state_m  = 0.
+        self.ib_wrp_rate_m  = 0.
+        self.ib_wrp_reset_m  = 0.
+        self.e_wrap_m_trim_1  = 0.
+        self.e_wrap_m_trimmed = 0.
+        self.ib_dyn_n = 0.
+        self.ib_dyn_T_n = 0.
+        self.ib_dyn_rstate_n  = 0.
+        self.ib_dyn_lstate_n = 0.
+        self.ib_dyn_tau_n = 0.
+        self.dv_dyn_n  = 0.
+        self.ib_wrp_T_n  = 0.
+        self.ib_wrp_tau_n  = 0.
+        self.ib_wrp_state_n  = 0.
+        self.ib_wrp_rate_n  = 0.
+        self.e_wrap_n_trimmed  = 0.
+        self.vb_h_f  = 0.
+        self.y_ekf = 0.
+        self.qcap  = 0.
+        self.qcrs  = 0.
+        self.cc_dif  = 0.
 
         if SN is not None:
             self.Tb_hdwe = SN.Tb_hdwe_init
@@ -716,7 +759,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.apply_soc(self.soc_ekf, tb_f)
             print("confirmed ", self.soc)
 
-    def save(self, time, dt, soc_run, voc_run, iscn_f):  # BatteryMonitor
+    def save(self, time, dt, soc_run, voc_run, SN, rp):  # BatteryMonitor
         self.time = time
         self.dt = dt
         self.time_min = self.time / 60.
@@ -725,25 +768,52 @@ class BatteryMonitor(Battery, EKF1x1):
             soc_run = 1e-6
         self.e_soc_ekf = (self.soc_ekf - soc_run) / soc_run
         self.e_voc_ekf = (self.voc - voc_run) / voc_run
-        self.iscn_f = iscn_f
+        self.iscn_f = SN.iscn_f
         self.mod_data = self.mod
+        self.ib_model = SN.ib_in_s
+        self.ib_h = self.ib_hdwe
+        self.ib_s = SN.sim_run.ib_in_s
+        self.mib = rp.modeling_ib
+        self.mvb = rp.modeling_vb
+        self.mtb = rp.modeling_Tb
+        self.ib_diff = self.ib_amp_hdwe - self.ib_noa_hdwe
+        self.ib_diff_f = 0.
+        self.ib_quiet = 0.
+        self.ib_rate = 0.
+        self.ibd_thr = self.ewmhi_thr
+        self.ibq_thr = self.ewnhi_thr
+        self.ib_dyn_m = self.LoopIbAmp.ib_dyn
+        self.ib_dyn_T_m = self.LoopIbAmp.dt
+        self.ib_dyn_rstate_m = self.LoopIbAmp.ChargeTransfer.rstate
+        self.ib_dyn_lstate_m = self.LoopIbAmp.ChargeTransfer.state
+        self.ib_dyn_tau_m = self.LoopIbAmp.ChargeTransfer.tau
+        self.dv_dyn_m = self.LoopIbAmp.dv_dyn
+        self.voc_m = self.LoopIbAmp.voc
+        self.voc_soc_m = self.LoopIbAmp.voc_soc
+        self.ib_wrp_T_m = self.LoopIbAmp.WrapErrFilt.dt
+        self.ib_wrp_tau_m = self.LoopIbAmp.WrapErrFilt.tau
+        self.ib_wrp_state_m = self.LoopIbAmp.WrapErrFilt.state
+        self.ib_wrp_rate_m = self.LoopIbAmp.e_wrap_rate
+        self.ib_wrp_reset_m = self.LoopIbAmp.reset
+        self.e_wrap_m_trim_1 = self.LoopIbAmp.Trim.state
+        self.e_wrap_m_trimmed = self.LoopIbAmp.e_wrap_trimmed
+        self.ib_dyn_n = self.LoopIbNoa.ib_dyn
+        self.ib_dyn_T_n = self.LoopIbNoa.dt
+        self.ib_dyn_rstate_n = self.LoopIbNoa.ChargeTransfer.rstate
+        self.ib_dyn_lstate_n = self.LoopIbNoa.ChargeTransfer.state
+        self.ib_dyn_tau_n = self.LoopIbNoa.ChargeTransfer.tau
+        self.dv_dyn_n = self.LoopIbNoa.dv_dyn
+        self.ib_wrp_T_n = self.LoopIbNoa.WrapErrFilt.dt
+        self.ib_wrp_tau_n = self.LoopIbNoa.WrapErrFilt.tau
+        self.ib_wrp_state_n = self.LoopIbNoa.WrapErrFilt.state
+        self.ib_wrp_rate_n = self.LoopIbNoa.e_wrap_rate
+        self.e_wrap_n_trimmed = self.LoopIbNoa.e_wrap_trimmed
+        self.vb_h_f = self.vb_hdwe_f
+        self.y_ekf = self.y
+        self.qcap = self.q_capacity
+        self.qcrs = self.q_cap_rated_scaled
+        self.cc_dif = self.soc_ekf - self.soc
 
-        """There are 123 parameters in mon_run that have no counterpart in mon_ver:
-
-              ib_amp_hdwe_kf, ib_choice, ib_dec, ib_diff, ib_diff_f, ib_dyn_T_m, ib_dyn_T_n, ib_dyn_lstate_m, ib_dyn_lstate_n,
-              ib_dyn_m, ib_dyn_n, ib_dyn_rstate_m, ib_dyn_rstate_n, ib_dyn_tau_m, ib_dyn_tau_n, ib_h, ib_is_functional, ib_model,
-              ib_noa_hdwe_kf, ib_noa_kf, ib_quiet, ib_rate, ib_really_quiet, ib_s, ib_sel, ib_sel_stat, ib_wrp_T_m, ib_wrp_T_n,
-              ib_wrp_rate_m, ib_wrp_rate_n, ib_wrp_reset_m, ib_wrp_state_m, ib_wrp_state_n, ib_wrp_tau_m, ib_wrp_tau_n, ibd_thr,
-              ibq_thr, mib, dv_dyn_m, dv_dyn_n, vb_h_f, vb_s, vb_sel, vc_h, vc_sum, voc_m, voc_soc_m, vovcm, vovcn, x1m, x1n, y_ekf,
-              e_wrap_m_trim_1, e_wrap_m_trimmed, e_wrap_n_trimmed, accy, bmso, cTime, c_time_sel, cc_dif, ccd_thr, conn,
-              diff_ib, dispw, ff, hm, init_mon, init_sim, kfres, kfres_1, mtb, mvb, off, preserving, qcap, qcrs, red_loss,
-              resaf, skip_mon, skip_sel, soft_reset, soft_reset_sim, tb_sel, time_long, unit_rap, unit_s, user_sel,
-              SAT, Tb_fa, ccd_fa, ekf_reset, fail_ib, fail_ibm, fail_vb, falw, flt_ekf, flt_tb, fltw, ib_amp_bare_flt, ib_amp_fa,
-              ib_amp_flt, ib_diff_fa, ib_diff_flt, ib_dscn_fa, ib_dscn_flt, ib_noa_bare_flt, ib_noa_fa, ib_noa_flt, kf_reset,
-              reset_all_faults, tb_fa, tb_flt, vb_fa_lt, vb_flt, vc_fa, vc_flt, wrap_hi_fa, wrap_hi_flt, wrap_lo_fa, wrap_lo_flt,
-              wrap_m_and_n_fa, wrap_m_and_n_flt, wv_fa,
-            
-        """
         self.append_to(self.saved)
 
     def wrap(self, reset=True, modeling_ib=None, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
@@ -1060,6 +1130,13 @@ class BatterySim(Battery):
     def save(self, time, dt):  # BatterySim
         self.time = time
         self.dt = dt
+
+        """
+              Tb_f_s, bms_off_s, chm_s, d_delta_q_s, delta_q_s, dt_s, dv_dyn_s, dv_hys_s, ib_charge_s, ib_dyn_s, ib_in_s, ib_s,
+              ioc_s, qcrs_s, reset_s, sat_s, soc_s, vb_s, voc_s, voc_stat_s, voltage_low_s, vsat_s,
+              ib_dyn_s_T, ib_dyn_s_lstate, ib_dyn_s_rstate, ib_dyn_s_tau, qcap_s,
+              cTime, c_time_sim, time_day, time_min, unit_m, bms_off_s_1, f0, skip_sim,
+        """
         # Append all parameters to
         self.append_to(self.saved)
 
