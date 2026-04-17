@@ -32,6 +32,7 @@ if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
 plt.rcParams.update({'figure.max_open_warning': 0})
+# noinspection PyPep8Naming
 import Globals as G
 from battery_constants import BatteryConstants
 
@@ -61,6 +62,7 @@ def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=No
     return q_cap
 
 
+# noinspection PyPep8Naming
 class Battery(BatteryConstants, Coulombs):
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
@@ -74,7 +76,7 @@ class Battery(BatteryConstants, Coulombs):
                             or 20 - 40 A for a 100 Ah battery"""
 
     def __init__(self, OPT=None, q_cap_rated=BatteryConstants.NOM_UNIT_CAP*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
-                 dvoc=0., mod_code=0, vsat_add=0., scale_cap=1., mon=None, str=None):
+                 dvoc=0., mod_code=0, vsat_add=0., scale_cap=1., mon=None, str_=None):
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
         etal.pdf.'  SOC-OCV curve fit './Battery State/BattleBorn Rev1.xls:Model Fit' using solver with min slope
@@ -128,7 +130,7 @@ class Battery(BatteryConstants, Coulombs):
         self.Tb = tb_f
         self.Tb_f = tb_f
         self.Tb_f_rate = None
-        self.saved = Saved(str)  # for plots and prints
+        self.saved = Saved(str_)  # for plots and prints
         self.dv_hys = 0.  # Placeholder so BatterySim can be plotted
         self.tau_hys = 0.  # Placeholder so BatterySim can be plotted
         self.dv_dyn = 0.  # Placeholder so BatterySim can be plotted
@@ -238,6 +240,7 @@ class Battery(BatteryConstants, Coulombs):
         raise NotImplementedError
 
 
+# noinspection PyPep8Naming
 class BatteryMonitor(Battery, EKF1x1):
     """Extend Battery class to make a monitor"""
     def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600, t_rated=25., temp_rlim=0.017, scale=1.,
@@ -249,7 +252,7 @@ class BatteryMonitor(Battery, EKF1x1):
             pass
         q_cap_rated_scaled = q_cap_rated * scale
         Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
-                         tweak_test=tweak_test, dvoc=dvoc, mod_code=mod_code, scale_cap=scale, mon=True, str='ver',
+                         tweak_test=tweak_test, dvoc=dvoc, mod_code=mod_code, scale_cap=scale, mon=True, str_='ver',
                          vsat_add=vsat_add)
 
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
@@ -519,7 +522,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Wrap logic
-        self.wrap(reset=reset, modeling_ib=rp.modeling_ib, ib_noa_hdwe=self.ib_noa_hdwe, SN=SN, ib_amp=self.ib_amp,
+        self.wrap(reset=reset, ib_noa_hdwe=self.ib_noa_hdwe, SN=SN, ib_amp=self.ib_amp,
                   ib_noa=self.ib_noa, ib_amp_pst=self.ib_amp_pst, ib_noa_pst=self.ib_noa_pst, rp=rp)
 
         # Reversionary model
@@ -815,8 +818,9 @@ class BatteryMonitor(Battery, EKF1x1):
         self.cc_dif = self.soc_ekf - self.soc
 
         self.append_to(self.saved)
+        pass
 
-    def wrap(self, reset=True, modeling_ib=None, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
+    def wrap(self, reset=True, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
              ib_amp_pst=None, ib_noa_pst=None, rp=None):
         """Wrap logic"""
         dt_local = self.dt
@@ -852,7 +856,7 @@ class BatteryMonitor(Battery, EKF1x1):
                 ibnoa = self.ib_noa_pst
             self.LoopIbNoa.calculate(reset=reset, rp=rp, ib=ibnoa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
                                      dt=min(dt_local, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_init=SN.LoopNoa.ib_init, ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
+                                     ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
                                      e_wrap_filt_init=SN.mon_run.e_wrap_n_filt[G.i],
                                      e_wrap_trim_init=SN.mon_run.e_wrap_n_trim[G.i])
             self.e_wrap_n = self.LoopIbNoa.e_wrap
@@ -869,13 +873,11 @@ class BatteryMonitor(Battery, EKF1x1):
             if rp.modeling_ib or SN.run_type == 'HistSim':
                 self.ib_amp = ib_amp
                 self.ib_amp_pst = ib_amp_pst
-                ib_m_init = SN.LoopAmp.ib[max(G.i-2, 0)]
                 ib_dyn_m_init = SN.LoopAmp.ib_dyn[G.i]
                 ibamp = self.ib_amp
             else:
                 self.ib_amp = ib_amp
                 self.ib_amp_pst = ib_amp_pst
-                ib_m_init = SN.LoopAmp.ib[G.i]
                 ib_dyn_m_init = SN.LoopAmp.ib_dyn[G.i]
                 ibamp = self.ib_amp_pst
             self.ib_amp_hi = self.ib_amp >= Battery.HDWE_IB_HI_LO_AMP_HI
@@ -889,7 +891,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.e_wrap_m_reset = reset or self.disable_amp_fault
             self.LoopIbAmp.calculate(reset=self.e_wrap_m_reset, rp=rp, ib=ibamp, loop_gain=Battery.AMP_WRAP_TRIM_GAIN,
                                      dt=min(dt_local, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_init=ib_m_init, ib_dyn_init=ib_dyn_m_init,
+                                     ib_dyn_init=ib_dyn_m_init,
                                      e_wrap_filt_init=SN.mon_run.e_wrap_m_filt[G.i],
                                      e_wrap_trim_init=SN.mon_run.e_wrap_m_trim[G.i])
             self.ewmhi_thr = self.LoopIbAmp.ewhi_thr
@@ -908,6 +910,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap_filt = self.sel_brk_hdwe.scale_select(ib_noa_hdwe, self.e_wrap_m_filt, self.e_wrap_n_filt)
         self.e_wrap_rate = self.sel_brk_hdwe.scale_select(ib_noa_hdwe, self.e_wrap_m_rate, self.e_wrap_n_rate)
 
+
+# noinspection PyPep8Naming
 class BatterySim(Battery):
     """Extend Battery class to make a model"""
 
@@ -915,7 +919,7 @@ class BatterySim(Battery):
                  scale=1., tb_f=25., tweak_test=False, mod_code=0, vsat_add=0.):
         Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, dvoc=OPT.add_voc_sim, mod_code=mod_code, scale_cap=scale, mon=False,
-                         str='ver_s', vsat_add=vsat_add)
+                         str_='ver_s', vsat_add=vsat_add)
         self.chemistry = Chemistry(mod_code=mod_code, dvoc=OPT.add_voc_sim, unit=OPT.unit)
         self.chemistry.assign_all_mod(mod_code, unit=OPT.unit)
         self.lut_voc = None
@@ -944,7 +948,42 @@ class BatterySim(Battery):
         self.ib_fut = 0.  # Future value of limited current, A
         self.reset_temp_past = self.model_saturated
         self.dt_past = 0.
-        # self.q_eps = 0.  # tiny adjustment to charge to book-keep soc_s and delta_q_s to be the same as data stream
+        self.time_min = 0.
+        self.time_day = 0.
+        self.dt_s = 0.
+        self.chm_s = 0.
+        self.qcrs_s = 0.
+        self.qcap_s = 0.
+        self.bms_off_s = 0
+        self.Tb_s = 0.
+        self.Tb_f_s = 0.
+        self.vsat_s = 0.
+        self.voc_s = 0.
+        self.voc_stat_s = 0.
+        self.dv_dyn_s = 0.
+        self.d_delta_q_s = 0.
+        self.delta_q_s = 0.
+        self.ib_dyn_r = True
+        self.dv_hys_s = 0.
+        self.ib_charge_s = 0.
+        self.ib_dyn_s = 0.
+        self.ib_in_s = 0.
+        self.ib_s = 0.
+        self.ioc_s = 0.
+        self.sat_s = 0.
+        self.soc_s = 0.
+        self.vb_s = 0.
+        self.ib_dyn_T_s = 0.
+        self.ib_dyn_lstate_s = 0.
+        self.ib_dyn_rstate_s = 0.
+        self.ib_dyn_tau_s = 0.
+        self.tau_hys_s = 0.
+        self.vb_s = 0.
+        self.q_s = 0.
+        self.ib_fut_s = 0.
+        self.reset_s = 0.
+        self.tau_s = 0.
+        self.tau_hys_s = 0.
         if SN is not None:
             self.Tb = SN.mon_run.Tb_f[0]
             self.dv_dyn = SN.dv_dyn_s[0]
@@ -1025,7 +1064,6 @@ class BatterySim(Battery):
         # lots of chatter as it shuts off, restores vb due to loss of dynamic current, then repeats shutoff.
         # Using voc_ is not better because change in dv_hys_ causes the same effect.   So using nice quiet
         # voc_stat_ for ease of simulation, not accuracy.
-        voltage_low_past = self.voltage_low
         if not self.bms_off:
             self.voltage_low = self.voc_stat < self.chemistry.vb_down_sim
         else:
@@ -1130,47 +1168,47 @@ class BatterySim(Battery):
     def save(self, time, dt):  # BatterySim
         self.time = time
         self.dt = dt
-
-        """
-              Tb_f_s, bms_off_s, chm_s, d_delta_q_s, delta_q_s, dt_s, dv_dyn_s, dv_hys_s, ib_charge_s, ib_dyn_s, ib_in_s, ib_s,
-              ioc_s, qcrs_s, reset_s, sat_s, soc_s, vb_s, voc_s, voc_stat_s, voltage_low_s, vsat_s,
-              ib_dyn_s_T, ib_dyn_s_lstate, ib_dyn_s_rstate, ib_dyn_s_tau, qcap_s,
-              cTime, c_time_sim, time_day, time_min, unit_m, bms_off_s_1, f0, skip_sim,
-        """
         # Append all parameters to
         self.append_to(self.saved)
 
     def save_s(self, time):
-        self.saved_s.time.append(time)
-        self.saved_s.chm_s.append(self.chm)
-        self.saved_s.qcrs_s.append(self.q_cap_rated_scaled)
-        self.saved_s.qcap_s.append(self.q_capacity)
-        self.saved_s.bms_off_s.append(self.bms_off)
-        self.saved_s.Tb_s.append(self.Tb)
-        self.saved_s.Tb_f_s.append(self.Tb_f)
-        self.saved_s.vsat_s.append(self.vsat)
-        self.saved_s.voc_s.append(self.voc)
-        self.saved_s.voc_stat_s.append(self.voc_stat)
-        self.saved_s.dv_dyn_s.append(self.dv_dyn)
-        self.saved_s.dv_hys_s.append(self.dv_hys)
-        self.saved_s.ib_dyn_s.append(self.ib_dyn)
-        self.saved_s.ib_dyn_T_s.append(self.ib_dyn_T)
-        self.saved_s.ib_dyn_rstate_s.append(self.ib_dyn_rstate)
-        self.saved_s.ib_dyn_lstate_s.append(self.ib_dyn_lstate)
-        self.saved_s.tau_hys_s.append(self.tau_hys)
-        self.saved_s.vb_s.append(self.vb)
-        self.saved_s.ib_s.append(self.ib)
-        self.saved_s.ib_in_s.append(self.ib_in)
-        self.saved_s.d_delta_q_s.append(self.d_delta_q)
-        self.saved_s.ib_charge_s.append(self.ib_charge)
-        self.saved_s.ib_fut_s.append(self.ib_fut)
-        self.saved_s.sat_s.append(int(self.sat))
-        self.saved_s.delta_q_s.append(self.delta_q)
-        self.saved_s.q_s.append(self.q)
-        self.saved_s.soc_s.append(self.soc)
-        self.saved_s.reset_s.append(self.reset)
-        self.saved_s.tau_s.append(self.tau_hys)
-        self.saved_s.ioc_s.append(self.ioc)
+        self.time = time
+        self.time_min = self.time / 60.
+        self.time_day = self.time_min / 60. / 24.
+        self.dt_s = self.dt
+        self.chm_s = self.chm
+        self.qcrs_s = self.q_cap_rated_scaled
+        self.qcap_s = self.q_capacity
+        self.bms_off_s = self.bms_off
+        self.Tb_s = self.Tb
+        self.Tb_f_s = self.Tb_f
+        self.vsat_s = self.vsat
+        self.voc_s = self.voc
+        self.voc_stat_s = self.voc_stat
+        self.dv_dyn_s = self.dv_dyn_s
+        self.d_delta_q_s = self.d_delta_q
+        self.delta_q_s = self.delta_q
+        self.dv_hys_s = self.dv_hys
+        self.ib_charge_s = self.ib_charge
+        self.ib_dyn_s = self.ib_dyn
+        self.ib_in_s = self.ib_in
+        self.ib_s = self.ib
+        self.ioc_s = self.ioc
+        self.sat_s = self.sat
+        self.soc_s = self.soc
+        self.vb_s = self.vb
+        self.ib_dyn_T_s = self.ib_dyn_T
+        self.ib_dyn_lstate_s = self.ib_dyn_lstate
+        self.ib_dyn_rstate_s = self.ib_dyn_rstate
+        self.ib_dyn_tau_s = self.chemistry.tau_ct
+        self.tau_hys_s = self.tau_hys
+        self.vb_s = self.vb
+        self.q_s = self.q
+        self.ib_fut_s = self.ib_fut
+        self.reset_s = self.reset
+        self.tau_s = self.tau_hys
+        self.tau_hys_s = self.tau_hys
+        self.append_to(self.saved_s)
 
 
 # Other functions
@@ -1183,6 +1221,7 @@ def sat_voc(tb_f, rated_temp, vsat, dvoc_dt, vsat_add=0.):
     return vsat + (tb_f-rated_temp)*dvoc_dt + vsat_add
 
 
+# noinspection PyPep8Naming
 class Looparound:
     """Compare predicted voltage to actual and track toward zero to eliminate biases """
 
@@ -1226,7 +1265,7 @@ class Looparound:
     # Update the loop
     # needs to be called twice with reset=True to initialize properly
     def calculate(self, reset=True, rp=None, ib=0., loop_gain=0., dt=None, ewsat_slr=1., ewmin_slr=1.,
-                  ib_init=0., ib_dyn_init=0., e_wrap_filt_init=0., e_wrap_trim_init=0.):
+                  ib_dyn_init=0., e_wrap_filt_init=0., e_wrap_trim_init=0.):
         self.reset = reset
         self.dt = dt
         self.ib = ib
@@ -1287,8 +1326,8 @@ class Looparound:
 
 class Saved:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
-    def __init__(self, str=None):
-        self.str = str
+    def __init__(self, str_=None):
+        self.str = str_
         self.time_run_start = None
         self.time = []
         self.time_min = []
@@ -1431,8 +1470,8 @@ class Saved:
 
 class SavedS:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
-    def __init__(self, str=None):
-        self.str = str
+    def __init__(self, str_=None):
+        self.str_ = str_
         self.time_run_start = None
         self.time = []
         self.time_min = []
