@@ -33,10 +33,14 @@ def ini_path():
         return str(Path(local) / 'GUI_PlinkSOC.ini')
 
 
-def read_version(ini_file):
+def read_ini(ini_file):
+    """Return (version, option, macro) from the Plink .ini file."""
     cfg = ConfigParser()
     cfg.read(ini_file)
-    return cfg['test']['version']
+    version = cfg['test']['version']
+    option = cfg['others'].get('option', '')
+    macro = cfg['others'].get('macro', '')
+    return version, option, macro
 
 
 # ── locate the temp folder ────────────────────────────────────────────────────
@@ -54,10 +58,15 @@ def temp_folder(version):
 
 # ── find run/ver pairs ────────────────────────────────────────────────────────
 
-def find_pairs(temp_dir):
-    """Return list of (run_path, ver_path) tuples for every *_run.csv that has a matching *_ver.csv."""
+def find_pairs(temp_dir, option=''):
+    """Return (run_path, ver_path) tuples for every *_run.csv with a matching *_ver.csv.
+
+    If option is non-empty, only include pairs whose filename starts with that option string.
+    """
     pairs = []
     for p in sorted(Path(temp_dir).glob('*_run.csv')):
+        if option and not p.name.startswith(option):
+            continue
         ver = Path(str(p).replace('_run.csv', '_ver.csv'))
         if ver.is_file():
             pairs.append((p, ver))
@@ -133,10 +142,10 @@ def compare_pair(run_path, ver_path, tol):
 
 # ── report ────────────────────────────────────────────────────────────────────
 
-def report(results, tol):
+def report(results, tol, option='', macro=''):
     any_diff = any(r.get('diffs') for r in results)
     print(f"\n{'='*72}")
-    print(f"  compare_temp_run_ver  |  tolerance = {tol}  |  {len(results)} pair(s)")
+    print(f"  compare_temp_run_ver  |  tol={tol}  |  option={option}  |  macro={macro}  |  {len(results)} pair(s)")
     print(f"{'='*72}\n")
 
     for r in results:
@@ -187,7 +196,7 @@ def plot_diffs(results):
             n_rows = math.ceil(n_sub / COLS)
             fig, axes = plt.subplots(n_rows, COLS, figsize=(5 * COLS, 3 * n_rows), squeeze=False)
             fig_label = f"fig {fig_idx + 1}/{n_figs}" if n_figs > 1 else ""
-            fig.suptitle(f"{stem}  {fig_label}", fontsize=9, y=1.01)
+            fig.suptitle(f"{stem}  {fig_label}", fontsize=9)
 
             for sub_idx, d in enumerate(batch):
                 ax = axes[sub_idx // COLS][sub_idx % COLS]
@@ -204,7 +213,7 @@ def plot_diffs(results):
             for empty_idx in range(n_sub, n_rows * COLS):
                 axes[empty_idx // COLS][empty_idx % COLS].set_visible(False)
 
-            fig.tight_layout()
+            fig.tight_layout(rect=(0, 0, 1, 0.95))
 
     if any(r.get('diffs') for r in results):
         plt.show()
@@ -224,9 +233,13 @@ def main():
         print(f"ERROR: .ini file not found: {ini_file}", file=sys.stderr)
         sys.exit(1)
 
-    version = args.version or read_version(ini_file)
+    version, option, macro = read_ini(ini_file)
+    if args.version:
+        version = args.version
     print(f"ini:      {ini_file}")
     print(f"version:  {version}")
+    print(f"option:   {option}")
+    print(f"macro:    {macro}")
 
     temp_dir = temp_folder(version)
     print(f"temp:     {temp_dir}")
@@ -235,13 +248,13 @@ def main():
         print(f"ERROR: temp folder not found: {temp_dir}", file=sys.stderr)
         sys.exit(1)
 
-    pairs = find_pairs(temp_dir)
+    pairs = find_pairs(temp_dir, option=option)
     if not pairs:
         print(f"No run/ver pairs found in {temp_dir}")
         sys.exit(0)
 
     results = [compare_pair(run, ver, args.tol) for run, ver in pairs]
-    report(results, args.tol)
+    report(results, args.tol, option=option, macro=macro)
     plot_diffs(results)
 
 

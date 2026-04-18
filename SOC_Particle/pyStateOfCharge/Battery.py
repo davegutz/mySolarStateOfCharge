@@ -461,6 +461,39 @@ class BatteryMonitor(Battery, EKF1x1):
             self.x_prior = SN.x_prior_init
             self.soc_ekf = SN.soc_ekf_init
             self.z = SN.z_init
+        self.dt_s = 0.
+        self.chm_s = 0.
+        self.qcrs_s = 0.
+        self.qcap_s = 0.
+        self.bms_off_s = 0.
+        self.Tb_s = 0.
+        self.Tb_f_s = 0.
+        self.vsat_s = 0.
+        self.voc_s = 0.
+        self.voc_stat_s = 0.
+        self.dv_dyn_s = 0.
+        self.d_delta_q_s = 0.
+        self.delta_q_s = 0.
+        self.dv_hys_s = 0.
+        self.ib_charge_s = 0.
+        self.ib_dyn_s = 0.
+        self.ib_in_s = 0.
+        self.ib_s = 0.
+        self.ioc_s = 0.
+        self.sat_s = 0.
+        self.soc_s = 0.
+        self.vb_s = 0.
+        self.ib_dyn_T_s = 0.
+        self.ib_dyn_lstate_s = 0.
+        self.ib_dyn_rstate_s = 0.
+        self.ib_dyn_tau_s = 0.
+        self.tau_hys_s = 0.
+        self.vb_s = 0.
+        self.q_s = 0.
+        self.ib_fut_s = 0.
+        self.reset_s = 0.
+        self.tau_s = 0.
+        self.tau_hys_s = 0.
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -762,7 +795,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.apply_soc(self.soc_ekf, tb_f)
             print("confirmed ", self.soc)
 
-    def save(self, time, dt, soc_run, voc_run, SN, rp):  # BatteryMonitor
+    def save(self, time, dt, soc_run, voc_run, SN, rp, sim):  # BatteryMonitor
         self.time = time
         self.dt = dt
         self.time_min = self.time / 60.
@@ -816,6 +849,40 @@ class BatteryMonitor(Battery, EKF1x1):
         self.qcap = self.q_capacity
         self.qcrs = self.q_cap_rated_scaled
         self.cc_dif = self.soc_ekf - self.soc
+        self.dt_s = sim.dt
+        self.chm_s  = sim.chm
+        self.qcrs_s  = sim.q_cap_rated_scaled
+        self.qcap_s  = sim.q_capacity
+        self.bms_off_s  = sim.bms_off
+        self.Tb_s  = sim.Tb
+        self.Tb_f_s  = sim.Tb_f
+        self.vsat_s  = sim.vsat
+        self.voc_s  = sim.voc
+        self.voc_stat_s  = sim.voc_stat
+        self.dv_dyn_s  = sim.dv_dyn_s
+        self.d_delta_q_s  = sim.d_delta_q
+        self.delta_q_s  = sim.delta_q
+        self.dv_hys_s  = sim.dv_hys
+        self.ib_charge_s  = sim.ib_charge
+        self.ib_dyn_s  = sim.ib_dyn
+        self.ib_in_s  = sim.ib_in
+        self.ib_s  = sim.ib
+        self.ioc_s  = sim.ioc
+        self.sat_s  = sim.sat
+        self.soc_s  = sim.soc
+        self.vb_s  = sim.vb
+        self.ib_dyn_T_s  = sim.ib_dyn_T
+        self.ib_dyn_lstate_s  = sim.ib_dyn_lstate
+        self.ib_dyn_rstate_s  = sim.ib_dyn_rstate
+        self.ib_dyn_tau_s  = sim.chemistry.tau_ct
+        self.tau_hys_s  = sim.tau_hys
+        self.vb_s  = sim.vb
+        self.q_s  = sim.q
+        self.ib_fut_s  = sim.ib_fut
+        self.reset_s  = sim.reset
+        self.tau_s  = sim.tau_hys
+        self.tau_hys_s  = sim.tau_hys
+        # Append all parameters to
         self.append_to(self.saved)
         pass
 
@@ -1207,6 +1274,7 @@ class BatterySim(Battery):
         self.reset_s = self.reset
         self.tau_s = self.tau_hys
         self.tau_hys_s = self.tau_hys
+        # Append all parameters to
         self.append_to(self.saved_s)
 
 

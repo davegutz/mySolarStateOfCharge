@@ -119,7 +119,6 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
         mon_run = rename_all(mon_run)
 
         # New run
-        mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
         replicateOptions = UserOptions(mon_run=mon_run, sim_run=sim_run, run_type='RunSim', init_time=mon_run.init_time,
                                        use_ib_mon=use_ib_mon, use_mon_soc=use_mon_soc, use_vb_raw=use_vb_raw,
                                        add_voc_sim=dvoc_sim, add_voc_mon=dvoc_mon, use_vb_sim=use_vb_sim,
@@ -127,8 +126,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
                                        request_history=request_history)
         mon_ver, sim_ver, sim_s_ver, mon, sim, Battery = replicate(replicateOptions)
         pass
-        save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
-        
+
         # Check if replicate broke early due to skip
         if mon_ver is None:
             print("\nCompareRunSim: Replication broke early due to data skip. Aborting without plots.")
@@ -147,10 +145,6 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
                 (mon_ver,   'mon_ver'),
                 (sim_run,   'sim_run'),
                 (sim_ver,   'sim_ver'),
-                (sim_s_run, 'sim_s_run'),
-                (sim_s_ver, 'sim_s_ver'),
-                (mon,       'mon'),
-                (sim,       'sim'),
             ):
                 save_struct_to_csv(obj, filename_root + '_' + struct_name + '.csv')
 
