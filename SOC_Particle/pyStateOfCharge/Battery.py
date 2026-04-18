@@ -816,7 +816,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.qcap = self.q_capacity
         self.qcrs = self.q_cap_rated_scaled
         self.cc_dif = self.soc_ekf - self.soc
-
         self.append_to(self.saved)
         pass
 
