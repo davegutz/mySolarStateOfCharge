@@ -51,7 +51,6 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.mr, 'time', S.mr, 'ib_noa_model', add=1., color='blue', linestyle='-.')
         plq(plt, S.mv, 'time', S.mv, 'ib_noa_model', add=1., color='orange', linestyle=':', warn=False)
     plq(plt, S.mr, 'time', S.mr, 'ib_diff_f', color='cyan', linestyle='-', warn=not S.run_is_stdy)
-    plq(plt, S.mv, 'time', S.mv, 'ib_diff_f', color='red', linestyle='--', warn=False)
     plq(plt, S.mr, 'time', S.mr, 'ibd_thr', color='red', linestyle='--', warn=not S.run_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'ibd_thr', slr=-1, color='red', linestyle='--', warn=not S.run_is_stdy)
     plt.legend(loc=1)

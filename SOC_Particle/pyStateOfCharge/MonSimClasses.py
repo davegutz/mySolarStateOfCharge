@@ -133,7 +133,6 @@ class Sensors:
             self.ib_noa_hdwe = self.mon_run.ib_noa_hdwe
             self.ib_diff = self.ib_amp_hdwe - self.ib_noa_hdwe
             self.ib_dyn = ProArray(self.mon_run.ib_dyn, mutable=True)
-            self.ib_diff_f = 0.
             self.z = self.mon_run.z
             self.ib_in_s = self.sim_run.ib_in_s
             self.ib_dyn_s = self.sim_run.ib_dyn_s

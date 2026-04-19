@@ -278,12 +278,9 @@ class BatteryMonitor(Battery, EKF1x1):
         self.soc_s = 0.  # Model information
         self.EKF_converged = TFDelay(False, Battery.EKF_T_CONV, Battery.EKF_T_RESET, Battery.EKF_NOM_DT)
         self.voc_stat_filt = LagExp(self.EKF_NOM_DT, self.VOC_STAT_FILT, self.VB_MIN, self.VB_MAX)  # Lag to be run on saturation to produce ib_lag.  T and tau set at run time
-        self.y_filt_lag = LagTustin(0.1, Battery.TAU_Y_FILT, Battery.MIN_Y_FILT, Battery.MAX_Y_FILT)
+        self.y_ekf_filt_lag = LagTustin(0.1, Battery.TAU_Y_FILT, Battery.MIN_Y_FILT, Battery.MAX_Y_FILT)
         self.WrapErrFilt = LagTustin(0.1, Battery.WRAP_ERR_FILT, -Battery.MAX_WRAP_ERR_FILT, Battery.MAX_WRAP_ERR_FILT)
         self.y_filt = 0.
-        self.y_filt_2Ord = General2Pole(0.1, Battery.WN_Y_FILT, Battery.ZETA_Y_FILT, Battery.MIN_Y_FILT,
-                                        Battery.MAX_Y_FILT)
-        self.y_filt2 = 0.
         self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.NOM_UNIT_CAP*scale,
                                      min_=-Battery.NOM_UNIT_CAP*scale, tau=self.chemistry.tau_ct)
         self.ib = 0.
@@ -380,7 +377,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.mvb = False
         self.mtb = False
         self.ib_diff  = 0.
-        self.ib_diff_f = 0.
         self.ib_quiet = 0.
         self.ib_rate = 0.
         self.ibd_thr  = 0.
@@ -398,7 +394,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_wrp_state_m  = 0.
         self.ib_wrp_rate_m  = 0.
         self.ib_wrp_reset_m  = 0.
-        self.e_wrap_m_trim_1  = 0.
+        self.e_wrap_m_trim  = 0.
         self.e_wrap_m_trimmed = 0.
         self.ib_dyn_n = 0.
         self.ib_dyn_T_n = 0.
@@ -413,6 +409,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap_n_trimmed  = 0.
         self.vb_h_f  = 0.
         self.y_ekf = 0.
+        self.y_ekf_f = 0.
         self.qcap  = 0.
         self.qcrs  = 0.
         self.cc_dif  = 0.
@@ -554,6 +551,9 @@ class BatteryMonitor(Battery, EKF1x1):
         # Overflow protection since ib past value used
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
+        # Ib diff logic
+        self.ib_diff = self.ib_amp_hdwe - self.ib_noa_hdwe
+
         # Wrap logic
         self.wrap(reset=reset, ib_noa_hdwe=self.ib_noa_hdwe, SN=SN, ib_amp=self.ib_amp,
                   ib_noa=self.ib_noa, ib_amp_pst=self.ib_amp_pst, ib_noa_pst=self.ib_noa_pst, rp=rp)
@@ -641,11 +641,10 @@ class BatteryMonitor(Battery, EKF1x1):
             self.predict_ekf(u=ddq_dt, reset=self.reset_ekf, freeze=self.frz)  # u = d(q)/dt
             self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1.)  # z = voc, voc_filtered = hx
             self.soc_ekf = self.x  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
+            self.y_ekf = self.y
             self.q_ekf = self.soc_ekf * self.q_capacity
-            self.y_filt = self.y_filt_lag.calculate(in_=self.y, dt=min(self.dt_eframe, Battery.EKF_T_RESET),
+            self.y_ekf_f = self.y_ekf_filt_lag.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.EKF_T_RESET),
                                                     reset=self.reset_ekf)
-            self.y_filt2 = self.y_filt_2Ord.calculate(in_=self.y, dt=min(self.dt_eframe, Battery.TMAX_FILT),
-                                                      reset=self.reset_ekf)
             # EKF convergence
             conv = abs(self.y_filt) < Battery.EKF_CONV
             self.EKF_converged.calculate(conv, Battery.EKF_T_CONV, Battery.EKF_T_RESET,
@@ -727,7 +726,7 @@ class BatteryMonitor(Battery, EKF1x1):
         if mr is None:
             return
         self.soc_ekf = mr.soc_ekf[i]
-        self.y = mr.y[i_ekf]
+        self.y_ekf = mr.y_ekf[i_ekf]
         self.init_ekf(mr.soc_ekf[i], 0.0)
         self.q_ekf = self.soc * self.q_capacity
         self.P = mr.P[i_ekf]
@@ -813,7 +812,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.mvb = rp.modeling_vb
         self.mtb = rp.modeling_Tb
         self.ib_diff = self.ib_amp_hdwe - self.ib_noa_hdwe
-        self.ib_diff_f = 0.
         self.ib_quiet = 0.
         self.ib_rate = 0.
         self.ibd_thr = self.ewmhi_thr
@@ -831,7 +829,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_wrp_state_m = self.LoopIbAmp.WrapErrFilt.state
         self.ib_wrp_rate_m = self.LoopIbAmp.e_wrap_rate
         self.ib_wrp_reset_m = self.LoopIbAmp.reset
-        self.e_wrap_m_trim_1 = self.LoopIbAmp.Trim.state
+        self.e_wrap_m_trim = self.LoopIbAmp.Trim.state
         self.e_wrap_m_trimmed = self.LoopIbAmp.e_wrap_trimmed
         self.ib_dyn_n = self.LoopIbNoa.ib_dyn
         self.ib_dyn_T_n = self.LoopIbNoa.dt
@@ -1445,9 +1443,8 @@ class Saved:
         self.hx = []
         self.u_ekf = []
         self.x_ekf = []
-        self.y = []
-        self.y_filt = []
-        self.y_filt2 = []
+        self.y_ekf = []
+        self.y_ekf_f = []
         self.z = []
         self.x_prior = []
         self.P_prior = []
@@ -1478,9 +1475,8 @@ class Saved:
         self.voc_stat = []  # Monitor Static bank open circuit voltage, V
         self.voc = []  # Monitor Static bank open circuit voltage, V
         self.voc_ekf = []  # Monitor bank solved static open circuit voltage, V
-        self.y = []  # Monitor single battery solver error, V
-        self.y_filt = []  # Filtered EKF y residual value, V
-        self.y_filt2 = []  # Filtered EKF y residual value, V
+        self.y_ekf = []  # Monitor single battery solver error, V
+        self.y_ekf_f = []  # Filtered EKF y residual value, V
         self.soc_s = []  # Simulated state of charge, fraction
         self.soc_ekf = []  # Solved state of charge, fraction
         # self.soc = []  # Coulomb Counter fraction of saturation charge (q_capacity_) available (0-1)

@@ -203,8 +203,8 @@ public:
   float vocStatFilt_rstate() { return VocStatFilt->rstate(); };
   float vocStatFilt_T() { return VocStatFilt->T(); };
   float vocStatFilt_tau() { return VocStatFilt->tau(); };
-  double y() { return y_; };
-  double y_filt() { return y_filt_; };
+  double y_ekf() { return y_ekf_; };
+  double y_ekf_f() { return y_ekf_f_; };
 protected:
   LagTustin *Yfilt = new LagTustin(2., WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
   SlidingDeadband *SdVb_;  // Sliding deadband filter for Vb
@@ -224,7 +224,8 @@ protected:
   float vb_model_rev_; // Reversionary model of vb, V
   float voc_dead_;     // Deadband-filtered, static model open circuit voltage, V
   float voc_stat_f_;   // Filtered voc_stat for EKF use, V
-  float y_filt_;       // Filtered EKF y value, V
+  float y_ekf_;        // EKF y value, V
+  float y_ekf_f_;      // Filtered EKF y value, V
   void ekf_predict(double *Fx_, double *Bu_);
   void ekf_update(double *hx, double *H, double *x, double *tb_f);
 };

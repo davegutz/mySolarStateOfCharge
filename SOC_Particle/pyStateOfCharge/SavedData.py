@@ -18,7 +18,8 @@
 #
 # See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
 
-""" General data-over-model data structure classes
+""" General data-over-model data structure classes for importing data from Particle Photon runs and simulations,
+and for managing data for plotting.
 Dependencies:
     - SavedData  (structures)
 """
@@ -369,10 +370,10 @@ class SavedData:
             self.x_prior = np.copy(self.soc_ekf)
         if self.x_post is None:
             self.x_post = np.copy(self.soc_ekf)
-        if self.y is None:
-            self.y = np.copy(self.voc_stat) * 0.
-        if self.y_f is None:
-            self.y_f = np.copy(self.voc_stat) * 0.
+        if self.y_ekf is None:
+            self.y_ekf = np.copy(self.voc_stat) * 0.
+        if self.y_ekf_f is None:
+            self.y_ekf_f = np.copy(self.voc_stat) * 0.
         if self.z is None:
             self.z = np.copy(self.voc_stat)
         if self.H is None:

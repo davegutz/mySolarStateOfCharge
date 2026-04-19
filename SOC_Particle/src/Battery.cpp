@@ -153,7 +153,7 @@ BatteryMonitor::BatteryMonitor(const float dx_voc, const float dy_voc, const flo
     SdVb_(nullptr), EKF_converged(nullptr), ice_(nullptr),
     amp_hrs_remaining_ekf_(0.), amp_hrs_remaining_soc_(0.), eframe_(0), ekf_conv_(false), 
     ib_charge_(0.), ib_past_(0.), q_ekf_(NOM_UNIT_CAP*3600.), soc_ekf_(1.0), tcharge_(0.), 
-    tcharge_ekf_(0.), vb_model_rev_(NOMINAL_VB), voc_dead_(NOMINAL_VB), voc_stat_f_(NOMINAL_VB), y_filt_(0.)
+    tcharge_ekf_(0.), vb_model_rev_(NOMINAL_VB), voc_dead_(NOMINAL_VB), voc_stat_f_(NOMINAL_VB), y_ekf_f_(0.)
 {
     voc_dead_ = calc_vsat() - HDB_VB;
     // EKF
@@ -195,7 +195,7 @@ BatteryMonitor::~BatteryMonitor() {}
         q_ekf_          Filtered charge calculated by ekf, C
         soc_ekf_ (return)     Solved state of charge, fraction
         tcharge_ekf_    Solved charging time to full from ekf, hr
-        y_filt_         Filtered EKF y residual value, V
+        y_ekf_f_         Filtered EKF y residual value, V
 
                 <--- ib      ______________         <--- ib
                  voc          |             |
@@ -308,15 +308,15 @@ float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool 
         soc_ekf_ = x();  // x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
         q_ekf_ = soc_ekf_ * q_capacity_;
         delta_q_ekf_ = q_ekf_ - q_capacity_;
-        y_filt_ = Yfilt->calculate(y_, reset_temp, min(dt_ekf_, EKF_T_RESET));
+        y_ekf_f_ = Yfilt->calculate(y_ekf_, reset_temp, min(dt_ekf_, EKF_T_RESET));
         // EKF convergence.  Audio industry found that detection of quietness requires no more than
         // second order filter of the signal.   Anything more is 'gilding the lily'
-        bool conv = abs(y_filt_)<ap.ekf_conv() && !cp.soft_reset && !cp.ekf_reset;  // Initialize false
+        bool conv = abs(y_ekf_f_)<ap.ekf_conv() && !cp.soft_reset && !cp.ekf_reset;  // Initialize false
         ekf_conv_ = EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_ekf_, EKF_T_RESET), cp.soft_reset || cp.ekf_reset);
         
         if ( sp.debug()==37 )
-            sendTxBuf(String::format("r tbf ib vb voc_stat:%2d %8.4f%8.4f%8.4f%8.4f  H S K y:%11.6f%7.4f%7.4f%11.7f,   soc soc_ekf y_f:%11.8f%11.8f%11.7f, C:%2d,\n",
-                reset_ekf, Tb_f_for_hx_, ib_, vb_, voc_stat_,      H_, S_, K_, y_,     soc_, soc_ekf_, y_filt_,    converged_ekf()), true, true);
+            sendTxBuf(String::format("r tbf ib vb voc_stat:%2d %8.4f%8.4f%8.4f%8.4f  H S K y_ekf:%11.6f%7.4f%7.4f%11.7f,   soc soc_ekf y_ekf_f:%11.8f%11.8f%11.7f, C:%2d,\n",
+                reset_ekf, Tb_f_for_hx_, ib_, vb_, voc_stat_,      H_, S_, K_, y_ekf_,     soc_, soc_ekf_, y_ekf_f_,    converged_ekf()), true, true);
 
         if ( sp.debug()==3 || sp.debug()==4 ) EKF_1x1::print_ekf_serial(this);  // print EKF in Read frame
     }
@@ -327,8 +327,8 @@ float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool 
     voc_dead_ = SdVb_->update(voc_);   // used for saturation test
 
     if ( sp.debug()==34 )
-        Serial.printf("BatteryMonitor:dt,ib,voc_stat_tab,voc_stat_f,voc,voc_dead,dv_dyn,vb,   u,Fx,Bu,P,   z_,S_,K_,y_,soc_ekf, y_f, soc, conv,  %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,     %7.3f,%7.3f,%7.4f,%7.4f,       %7.3f,%7.4f,%10.7f,%7.4f,%7.4f,%7.4f, %7.4f,  %d,\n",
-            dt_, ib_, voc_soc_, voc_stat_f_, voc_, voc_dead_, dv_dyn_, vb_,     u_, Fx_, Bu_, P_,    z_, S_, K_, y_, soc_ekf_, y_filt_, soc_, converged_ekf());
+        Serial.printf("BatteryMonitor:dt,ib,voc_stat_tab,voc_stat_f,voc,voc_dead,dv_dyn,vb,   u,Fx,Bu,P,   z_,S_,K_,y_ekf,soc_ekf, y_ekf_f, soc, conv,  %7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,     %7.3f,%7.3f,%7.4f,%7.4f,       %7.3f,%7.4f,%10.7f,%7.4f,%7.4f,%7.4f, %7.4f,  %d,\n",
+            dt_, ib_, voc_soc_, voc_stat_f_, voc_, voc_dead_, dv_dyn_, vb_,     u_, Fx_, Bu_, P_,    z_, S_, K_, y_ekf_, soc_ekf_, y_ekf_f_, soc_, converged_ekf());
     if ( sp.debug()==-24 ) Serial.printf("Mon:  ib%7.3f soc%8.4f reset_temp%d tau_ct%9.5f r_ct%7.3f r_0%7.3f dv_dyn%7.3f dv_hys%7.3f voc_soc%7.3f  voc_stat_f%7.3f voc%7.3f vb%7.3f ib _charge%7.3f ",
         ib_, soc_, reset_temp, chem_.tau_ct, chem_.r_ct, chem_.r_0, dv_dyn_, dv_hys_, voc_soc_, voc_stat_f_, voc_, vb_, ib_charge_);
 
@@ -493,7 +493,7 @@ void BatteryMonitor::pretty_print(Sensors *Sen)
     Serial.printf("  voc_soc%7.3f V\n", voc_soc_);
     Serial.printf("  voc_stat%7.3f V\n", voc_stat_);
     Serial.printf("  voc_stat_f%7.3f V\n", voc_stat_f_);
-    Serial.printf("  y_filt%7.3f Res EKF, V\n", y_filt_);
+    Serial.printf("  y_ekf_f%7.3f Res EKF, V\n", y_ekf_f_);
     Serial.printf(" *ap_s_cap_mon%7.3f Slr\n", ap.s_cap_mon());
     Serial.printf("  vb_model_rev%7.3f V\n", vb_model_rev_);
     this->Battery::Coulombs::pretty_print();
