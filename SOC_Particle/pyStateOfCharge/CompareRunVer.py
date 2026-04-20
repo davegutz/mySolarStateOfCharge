@@ -5,7 +5,7 @@ numeric columns where |run - ver| > 1e-3 (disagreements visible at 3 decimal pla
 Produces a pyplot figure for each pair, with up to 9 subplots per figure.
 
 Usage:
-    python compare_temp_run_ver.py [--ini PATH] [--tol FLOAT] [--version VERSION]
+    python CompareRunVer.py [--ini PATH] [--tol FLOAT] [--version VERSION]
 """
 
 import argparse

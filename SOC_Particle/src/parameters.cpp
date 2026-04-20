@@ -126,13 +126,13 @@ void  VolatilePars::initialize()
     V_[n_++] =(hys_state_p      = new FloatV("  ", "SH", NULL,"Sim hys state",        "v",      -10,  10,   &hys_state_,        0));  // SH
     V_[n_++] =(Ib_amp_noise_amp_p= new FloatV("  ","DM", NULL,"Amp amp noise",        "A",      0,    1000, &Ib_amp_noise_amp_, IB_AMP_NOISE));  // DM
     V_[n_++] =(ib_amp_add_p     = new FloatV("  ", "Dm", NULL,"Amp signal add",       "A",      -1000,1000, &ib_amp_add_,       0));  // Dm
-    V_[n_++] =(ib_max_amp_p     = new FloatV("  ", "Mm", NULL,"Amp hdwe unit max",    "A",      0,    __FLT_MAX__, &ib_amp_max_, (IB_ABS_MAX_AMP/NP/0.95)));  // Mm
-    V_[n_++] =(ib_min_amp_p     = new FloatV("  ", "Mn", NULL,"Amp hdwe unit min",    "A",      -__FLT_MAX__,   0, &ib_amp_min_, (-IB_ABS_MAX_AMP/NP/0.95)));  // Mn
+    V_[n_++] =(ib_max_amp_p     = new FloatV("  ", "Mm", NULL,"Amp hdwe unit max",    "A",      0,    __FLT_MAX__, &ib_amp_max_, (IB_ABS_MAX_AMP/NP/SIZE_MARG)));  // Mm
+    V_[n_++] =(ib_min_amp_p     = new FloatV("  ", "Mn", NULL,"Amp hdwe unit min",    "A",      -__FLT_MAX__,   0, &ib_amp_min_, (-IB_ABS_MAX_AMP/NP/SIZE_MARG)));  // Mn
     V_[n_++] =(ib_diff_slr_p    = new FloatV("  ", "Fd", NULL,"Slr ib_diff thr",      "A",      0,    1000, &ib_diff_slr_,      1));  // Fd
     V_[n_++] =(Ib_noa_noise_amp_p= new FloatV("  ","DN", NULL,"Amp noa noise",        "A",      0,    1000, &Ib_noa_noise_amp_, IB_NOA_NOISE));  // DN
     V_[n_++] =(ib_noa_add_p     = new FloatV("  ", "Dn", NULL,"No amp signal add",    "A",      -1000,1000, &ib_noa_add_,       0));  // Dn
-    V_[n_++] =(ib_max_noa_p     = new FloatV("  ", "Nm", NULL,"Noa hdwe signal max",  "A",      0,    __FLT_MAX__, &ib_noa_max_, (IB_ABS_MAX_NOA/NP/0.95)));  // Nm
-    V_[n_++] =(ib_min_noa_p     = new FloatV("  ", "Nn", NULL,"Noa hdwe signal min",  "A",      -__FLT_MAX__,   0, &ib_noa_min_, (-IB_ABS_MAX_NOA/NP/0.95)));  // Nn
+    V_[n_++] =(ib_max_noa_p     = new FloatV("  ", "Nm", NULL,"Noa hdwe signal max",  "A",      0,    __FLT_MAX__, &ib_noa_max_, (IB_ABS_MAX_NOA/NP/SIZE_MARG)));  // Nm
+    V_[n_++] =(ib_min_noa_p     = new FloatV("  ", "Nn", NULL,"Noa hdwe signal min",  "A",      -__FLT_MAX__,   0, &ib_noa_min_, (-IB_ABS_MAX_NOA/NP/SIZE_MARG)));  // Nn
     V_[n_++] =(ib_quiet_slr_p   = new FloatV("  ", "Fq", NULL,"Ib quiet det slr",     "slr",    0,    1000, &ib_quiet_slr_,     1));  // Fq
     V_[n_++] =(init_all_soc_p   = new FloatV("  ", "Ca", NULL,"Init all to this",     "soc",    -0.5, 1.1,  &init_all_soc_,     1));  // Ca
     V_[n_++] =(init_sim_soc_p   = new FloatV("  ", "Cm", NULL,"Init sim to this",     "soc",    -0.5, 1.1,  &init_sim_soc_,     1));  // Cm

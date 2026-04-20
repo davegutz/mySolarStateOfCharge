@@ -552,7 +552,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
         # Ib diff logic
-        self.ib_diff = self.ib_amp_hdwe - self.ib_noa_hdwe
+        self.ib_diff = self.ib_amp - self.ib_noa
 
         # Wrap logic
         self.wrap(reset=reset, ib_noa_hdwe=self.ib_noa_hdwe, SN=SN, ib_amp=self.ib_amp,
@@ -811,7 +811,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.mib = rp.modeling_ib
         self.mvb = rp.modeling_vb
         self.mtb = rp.modeling_Tb
-        self.ib_diff = self.ib_amp_hdwe - self.ib_noa_hdwe
         self.ib_quiet = 0.
         self.ib_rate = 0.
         self.ibd_thr = self.ewmhi_thr

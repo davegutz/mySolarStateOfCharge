@@ -129,9 +129,17 @@ class Sensors:
 
             self.ib_amp = 0.
             self.ib_noa = 0.
+            self.ib_amp_model = self.mon_run.ib_amp_model
+            self.ib_noa_model = self.mon_run.ib_noa_model
             self.ib_amp_hdwe = self.mon_run.ib_amp_hdwe
             self.ib_noa_hdwe = self.mon_run.ib_noa_hdwe
-            self.ib_diff = self.ib_amp_hdwe - self.ib_noa_hdwe
+            if OPT.mon_run.mib[0]:
+                self.ib_amp = self.mon_run.ib_amp_model[0]
+                self.ib_noa = self.mon_run.ib_noa_model[0]
+            else:
+                self.ib_amp = self.mon_run.ib_amp_hdwe[0]
+                self.ib_noa = self.mon_run.ib_noa_hdwe[0]
+            self.ib_diff = self.ib_amp - self.ib_noa
             self.ib_dyn = ProArray(self.mon_run.ib_dyn, mutable=True)
             self.z = self.mon_run.z
             self.ib_in_s = self.sim_run.ib_in_s

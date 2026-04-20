@@ -215,7 +215,7 @@ def main():  # Example usage.  ok on 20260217
     time_shift = None
     strict_overplot = True
     terse = True
-    hardcopy = False
+    hardcopy = True
     mon_str = ''
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,
