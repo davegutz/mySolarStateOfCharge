@@ -1822,12 +1822,14 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
             print("AUTO: force-killing plink regardless of state.")
             kill_plink(platform.system())
             tksleep(0.5)
+            empty_file(plink_test_csv_path.get())
             # Proceed to restart logic below
         elif force_if_ready:
             if is_plink_ready():
                 print("Plink is READY. Restarting to automate command.")
                 kill_plink(platform.system())
                 tksleep(0.5)  # Give some time for the process to exit
+                empty_file(plink_test_csv_path.get())
                 # Proceed to restart logic below
             else:
                 print("Plink is already open but NOT READY.")
