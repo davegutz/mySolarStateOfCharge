@@ -130,10 +130,13 @@ def compare_pair(run_path, ver_path, tol):
             'first_time': float(df_run.loc[bad.index[0], 'time']),
         })
 
+    run_only_cols = [c for c in df_run.columns if c not in df_ver.columns]
+
     return {
         'file': run_path.name,
         'n_rows': n,
         'diffs': sorted(diffs, key=lambda d: d['max_diff'], reverse=True),
+        'run_only': run_only_cols,
         'df_run': df_run,
         'df_ver': df_ver,
     }
@@ -153,10 +156,16 @@ def report(results, tol, option='', macro=''):
             print(f"  {stem}")
             print(f"    ERROR: {r['error']}\n")
             continue
+        run_only = r.get('run_only', [])
         if not r['diffs']:
-            print(f"  {stem}  — no differences > {tol}  ({r['n_rows']} rows)\n")
+            print(f"  {stem}  — no differences > {tol}  ({r['n_rows']} rows)")
+            if run_only:
+                print(f"    run_only ({len(run_only)}): {', '.join(run_only)}")
+            print()
             continue
         print(f"  {stem}  ({r['n_rows']} rows, {len(r['diffs'])} differing param(s))")
+        if run_only:
+            print(f"    run_only ({len(run_only)}): {', '.join(run_only)}")
         print(f"    {'param':<30}  {'n_bad':>6}  {'max|Δ|':>12}  {'mean|Δ|':>12}  {'first_t':>10}")
         print(f"    {'-'*30}  {'-'*6}  {'-'*12}  {'-'*12}  {'-'*10}")
         for d in r['diffs']:

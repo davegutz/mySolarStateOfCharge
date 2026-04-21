@@ -722,7 +722,10 @@ class BatteryMonitor(Battery, EKF1x1):
         if mr is None:
             return
         self.soc_ekf = mr.soc_ekf[i]
-        self.y_ekf = mr.y_ekf[i_ekf]
+        if hasattr(mr, 'y'):
+            self.y_ekf = mr.y[i_ekf]
+        else:
+            self.y_ekf = mr.y_ekf[i_ekf]
         self.init_ekf(mr.soc_ekf[i], 0.0)
         self.q_ekf = self.soc * self.q_capacity
         self.P = mr.P[i_ekf]

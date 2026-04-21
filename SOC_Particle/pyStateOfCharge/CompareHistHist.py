@@ -109,7 +109,7 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         show_killer(string, 'CompareFault', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, hardcopy=hardcopy)
         cleanup_fig_files(fig_files)
-        print('DONE')
+    print('DONE')
 
     return mon_run, sim_run, mon_tst, sim_tst, sim_s_tst
 

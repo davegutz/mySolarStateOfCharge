@@ -618,9 +618,8 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
                                                     run_type='HistSim', save_plots=S.save_plots)
 
             fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_run, sim_s_ver, filename, fig_files,
-                                           plot_title=plot_title, fig_list=fig_list, run_str='',
-                                           ver_str='_ver', strict_overplot=strict_overplot, terse=S.terse,
-                                           run_type='HistSim', save_plots=S.save_plots)
+                                           plot_title=plot_title, fig_list=fig_list, strict_overplot=strict_overplot,
+                                           terse=S.terse, run_type='HistSim', save_plots=S.save_plots)
 
         if S.save_plots and not S.terse:
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
@@ -636,7 +635,7 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
         if show_killer_:
             show_killer(string, 'CompareFault', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, hardcopy=hardcopy)
         cleanup_fig_files(fig_files)
-        print('DONE')
+    print('DONE')
 
     return fig_list, fig_files
 
@@ -654,11 +653,11 @@ def main():  # Sample usage. OK on 20260217
     # Cut-pasted from GUI_TestSOC Run window
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/truckHist_20260302.csv'
 
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/fault soc4p2 20260410.csv'
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiFail_soc3p2_hi_lo_bb.csv'
     time_end = None
     plots = True
-    use_mon_csv = False
-    unit_key = 'g20250612a_soc4p2_hi_lo_bb'
+    use_mon_csv = True
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     sync_time = None
     dt_resample = 10
     Tb_force = None

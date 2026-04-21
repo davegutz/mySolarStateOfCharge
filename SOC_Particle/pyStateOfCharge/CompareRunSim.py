@@ -130,8 +130,9 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
         # Check if replicate broke early due to skip
         if mon_ver is None:
             print("\nCompareRunSim: Replication broke early due to data skip. Aborting without plots.")
-            tkinter.messagebox.showerror(title="Data Integrity Error",
-                                         message="CompareRunSim: Replication broke early due to data skip.\n\nAborting without plots.")
+            if show_killer_:
+                tkinter.messagebox.showerror(title="Data Integrity Error",
+                                             message="CompareRunSim: Replication broke early due to data skip.\n\nAborting without plots.")
             return fig_list, fig_files
 
     # Save all time-dependent struct data to CSV files in the temp folder
@@ -166,7 +167,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
             fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                              fig_list=fig_list, cc_dif_tol=cc_dif_tol, save_plots=S.save_plots)
 
-        if mon_run is None:
+        if mon_run is None and show_killer_:
             tkinter.messagebox.showwarning(message="CompareRunSim:  Data missing.  See monitor window for info.")
             # return None, None, None, None, None, None
 
@@ -210,12 +211,12 @@ def main():  # Example usage.  ok on 20260217
     verbose = True
     scale_batt = 1.0
     slr_hys_sim = 1.0
-    request_history = 5
+    request_history = None
     init_time = None
     time_shift = None
     strict_overplot = True
     terse = True
-    hardcopy = True
+    hardcopy = False
     mon_str = ''
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,

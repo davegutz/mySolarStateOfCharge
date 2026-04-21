@@ -104,6 +104,7 @@ _log_file = open(os.path.join(_log_dir, "GUI_TestSOC.log"), 'a', buffering=1)
 
 
 plink_pid = None
+run_start_time = None  # Set at grab_start, used to print elapsed time on DONE
 auto_running = False  # Track if AUTO process is active
 auto_fig_list = None  # Handles to figures from the most recently completed AUTO case
 auto_case_index = 0   # Current AUTO case index (0-based)
@@ -648,7 +649,8 @@ def monitor_plink_done():
                 f.seek(max(0, size - 1024))
                 last_data = f.read().decode('utf-8', errors='ignore')
                 if '***DONE***' in last_data:
-                    print(f"***DONE*** detected in {plink_test_csv_path.get()}")
+                    elapsed = time.time() - run_start_time if run_start_time is not None else float('nan')
+                    print(f"***DONE*** detected in {plink_test_csv_path.get()}  elapsed={elapsed:.1f}s")
                     if auto_running:
                         master.after(1000, monitor_plink_done)
                         return
@@ -661,6 +663,8 @@ def monitor_plink_done():
 
 
 def grab_start():
+    global run_start_time
+    run_start_time = time.time()
     register_last_task(grab_start)
     start_command = start.get()
     print(f"Start command to paste: {start_command}")
@@ -725,23 +729,24 @@ def handle_macro(*_args):
     lookup_macro()
     macro_option_ = macro_option.get()
 
-    # Check if this is what you want to do
-    if macro_option_.__contains__('CH'):
-        if Test.battery == 'bb' or Ref.battery == 'bb':
-            confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "bb." Continue?')
-            if not confirmation:
-                print('start over')
-                tkinter.messagebox.showwarning(message='try again')
-                option.set('try again')
-                return
-    elif macro_option_.__contains__('BB'):
-        if Test.battery == 'ch' or Ref.battery == 'ch' or Test.battery == 'chg' or Ref.battery == 'chg':
-            confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "ch." Continue?')
-            if not confirmation:
-                print('start over')
-                tkinter.messagebox.showwarning(message='try again')
-                option.set('try again')
-                return
+    # Check if this is what you want to do (skipped in AUTO)
+    if not auto_running:
+        if macro_option_.__contains__('CH'):
+            if Test.battery == 'bb' or Ref.battery == 'bb':
+                confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "bb." Continue?')
+                if not confirmation:
+                    print('start over')
+                    tkinter.messagebox.showwarning(message='try again')
+                    option.set('try again')
+                    return
+        elif macro_option_.__contains__('BB'):
+            if Test.battery == 'ch' or Ref.battery == 'ch' or Test.battery == 'chg' or Ref.battery == 'chg':
+                confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "ch." Continue?')
+                if not confirmation:
+                    print('start over')
+                    tkinter.messagebox.showwarning(message='try again')
+                    option.set('try again')
+                    return
 
     macro_option_show.set(macro_option_)
     cf['others']['macro'] = macro_option_
@@ -753,23 +758,24 @@ def handle_option(*_args):
     lookup_start()
     option_ = option.get()
 
-    # Check if this is what you want to do
-    if option_.__contains__('CH'):
-        if Test.battery == 'bb' or Ref.battery == 'bb':
-            confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "bb." Continue?')
-            if not confirmation:
-                print('start over')
-                tkinter.messagebox.showwarning(message='try again')
-                option.set('try again')
-                return
-    elif option_.__contains__('BB'):
-        if Test.battery == 'ch' or Ref.battery == 'ch' or Test.battery == 'chg' or Ref.battery == 'chg':
-            confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "cc." Continue?')
-            if not confirmation:
-                print('start over')
-                tkinter.messagebox.showwarning(message='try again')
-                option.set('try again')
-                return
+    # Check if this is what you want to do (skipped in AUTO)
+    if not auto_running:
+        if option_.__contains__('CH'):
+            if Test.battery == 'bb' or Ref.battery == 'bb':
+                confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "bb." Continue?')
+                if not confirmation:
+                    print('start over')
+                    tkinter.messagebox.showwarning(message='try again')
+                    option.set('try again')
+                    return
+        elif option_.__contains__('BB'):
+            if Test.battery == 'ch' or Ref.battery == 'ch' or Test.battery == 'chg' or Ref.battery == 'chg':
+                confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "cc." Continue?')
+                if not confirmation:
+                    print('start over')
+                    tkinter.messagebox.showwarning(message='try again')
+                    option.set('try again')
+                    return
 
     option_show.set(option_)
     cf['others']['option'] = option_
@@ -1386,6 +1392,11 @@ def save_data(show_killer_=True):
         save_data_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black',
                                 text='data saving')
         tksleep(0.1)
+        if run_start_time is not None:
+            elapsed = time.time() - run_start_time
+            print(f"Run elapsed: {elapsed:.1f}s")
+            with open(plink_test_csv_path.get(), 'a') as _ef:
+                _ef.write(f'#elapsed_s,{elapsed:.1f}\n')
         copy_clean(plink_test_csv_path.get(), Test.file_path)
         print('copied ', plink_test_csv_path.get(), '\nto\n', Test.file_path)
         if timer is not None:

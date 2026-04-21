@@ -586,6 +586,8 @@ def monitor_putty_done():
 
 
 def grab_start():
+    global grab_start_time
+    grab_start_time = time.time()
     register_last_task(grab_start)
     add_to_clip_board(start.get())
     grab_all_nominal()
@@ -856,7 +858,7 @@ def ref_restore():
 
 
 def save_data():
-    global timer
+    global timer, grab_start_time
     print(f"save_data: {putty_test_csv_path.get()=}")
     if size_of(putty_test_csv_path.get()) > 64:  # bytes
         # For custom option, redefine Test.file_path if requested
@@ -879,6 +881,12 @@ def save_data():
         save_data_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black',
                                 text='data saving')
         tksleep(0.1)
+        if grab_start_time is not None:
+            elapsed_s = time.time() - grab_start_time
+            print(f"Run elapsed time: {elapsed_s:.1f} s")
+            with open(putty_test_csv_path.get(), 'a') as _f:
+                _f.write(f"elapsed_s,{elapsed_s:.1f}\n")
+            grab_start_time = None
         copy_clean(putty_test_csv_path.get(), Test.file_path)
         print('copied ', putty_test_csv_path.get(), '\nto\n', Test.file_path)
         if timer is not None:
@@ -1072,6 +1080,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     master.title('State of Charge')
     master.wm_minsize(width=min_width, height=main_height)
     timer = None
+    grab_start_time = None
     print("creating Ref")
     Ref = Exec(cf, 'ref', path_disp_len_=folder_reveal)
     print("Ref created")
