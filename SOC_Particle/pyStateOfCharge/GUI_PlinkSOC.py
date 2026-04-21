@@ -1294,7 +1294,7 @@ def grab_auto():
             auto_case_total = len(data_rows)
 
             # Trigger START HERE button
-            print(f"Triggering START HERE for config {index+1}")
+            print(f"\n\nTriggering START HERE for config {index+1}")
             grab_init(force_if_ready=True, force_kill=True)
 
             # Wait for READY, then click START BUTTON, then wait for DONE
@@ -1601,15 +1601,6 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                     except subprocess.CalledProcessError:
                         print("No processes found with pgrep.")
 
-                    print(f"Debug: ps -ef | grep plink result:")
-                    try:
-                        ps_out = subprocess.check_output(['ps', '-ef']).decode()
-                        # Filter lines containing 'plink' excluding the grep/ps process if possible
-                        plink_lines = [line for line in ps_out.splitlines() if 'plink' in line and 'grep' not in line]
-                        print("\n".join(plink_lines))
-                    except Exception as e:
-                        print(f"Error running ps: {e}")
-
                     # Find the newest plink process matching our session
                     out = subprocess.check_output(['pgrep', '-n', '-f', pgrep_search]).decode().strip()
                     if out:
@@ -1644,14 +1635,6 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                     except subprocess.CalledProcessError:
                         print("No processes found with pgrep.")
 
-                    print(f"Debug: ps -ef | grep plink result:")
-                    try:
-                        ps_out = subprocess.check_output(['ps', '-ef']).decode()
-                        plink_lines = [line for line in ps_out.splitlines() if 'plink' in line and 'grep' not in line]
-                        print("\n".join(plink_lines))
-                    except Exception as e:
-                        print(f"Error running ps: {e}")
-
                     out = subprocess.check_output(['pgrep', '-n', '-f', pgrep_search]).decode().strip()
                     if out:
                         plink_pid = int(out)
@@ -1683,14 +1666,6 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                         print(pgrep_out)
                     except subprocess.CalledProcessError:
                         print("No processes found with pgrep.")
-
-                    print(f"Debug: ps -ef | grep plink result:")
-                    try:
-                        ps_out = subprocess.check_output(['ps', '-ef']).decode()
-                        plink_lines = [line for line in ps_out.splitlines() if 'plink' in line and 'grep' not in line]
-                        print("\n".join(plink_lines))
-                    except Exception as e:
-                        print(f"Error running ps: {e}")
 
                     out = subprocess.check_output(['pgrep', '-n', '-f', pgrep_search]).decode().strip()
                     if out:

@@ -133,7 +133,6 @@ class CountdownTimer(tk.Toplevel):
                     self.flasher_label['bg'] = 'white'
                     self.flasher_window.configure(bg='white')
                 else:
-                    print(f"{self.flashes} ", end='')
                     self.flashes += 1
                     self.flasher_label['text'] = str(self.flashes)
                     self.flasher_label['bg'] = 'red'

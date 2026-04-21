@@ -177,7 +177,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
                                            terse=S.terse, run_type='RunSim', save_plots=S.save_plots)
 
         # Copies
-        if S.save_plots and not S.terse:
+        if S.save_plots and S.terse:
             precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
             print('\ncreating pdf...')
             pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')

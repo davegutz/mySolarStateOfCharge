@@ -549,7 +549,6 @@ def grab_init():
     # Grab command to update time in EEPROM
     try:
         current_ut = 'UT' + str(int(time.time())) + ';'
-        print(f"current_ut {current_ut}")
     except AttributeError:
         current_ut = ''
         print(f"current_ut blank ***No Internet??")
