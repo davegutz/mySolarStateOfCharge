@@ -189,7 +189,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
         if show_killer_:
             show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, hardcopy=hardcopy)
         cleanup_fig_files(fig_files)
-        print('DONE')
+    print('DONE')
 
     return fig_list, fig_files
 

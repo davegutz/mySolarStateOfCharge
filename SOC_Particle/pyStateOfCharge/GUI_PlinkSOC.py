@@ -77,7 +77,9 @@ from GUI_common import (
     copy_clean,
     create_file_key,
     create_file_txt,
-    def_dict,
+    default_auto,
+    default_auto_header,
+    default_dict,
     empty_file,
     ExRoot,
     lookup,
@@ -86,7 +88,6 @@ from GUI_common import (
     plat,
     plink_connection,
     register_last_task,
-    run_previous_task,
     sel_list,
     sel_list1,
     size_of,
@@ -532,6 +533,64 @@ def compare_run_sim_choose():
         update_data_buttons()
 
 
+def compare_run_ver_batch():
+    from CompareRunVer import temp_folder, find_pairs, compare_pair, report, plot_diffs
+
+    plink_path = Path(plink_test_csv_path.get())
+    auto_plink_path = plink_path.parent / 'auto_plink.csv'
+    if not auto_plink_path.is_file():
+        tkinter.messagebox.showerror(title="File Not Found",
+                                     message=f"Could not find {auto_plink_path}")
+        return
+
+    try:
+        with open(auto_plink_path, 'r') as f:
+            lines = f.readlines()
+
+        header_fields = []
+        data_rows = []
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith('#'):
+                if not header_fields:
+                    header_fields = [f.strip() for f in line.lstrip('#').split(',') if f.strip()]
+                continue
+            if header_fields:
+                values = [v.strip() for v in line.split(',')]
+                if len(values) >= len(header_fields):
+                    data_rows.append(dict(zip(header_fields, values)))
+
+        if not data_rows:
+            tkinter.messagebox.showwarning(message="No valid data rows in auto_plink.csv")
+            return
+
+        tol = 1e-3
+        for config in data_rows:
+            version = config.get('version', Test.version)
+            macro_val = config.get('macro', '')
+            option_val = macro_val if macro_val in lookup else ''
+
+            temp_dir = temp_folder(version)
+            if not Path(temp_dir).is_dir():
+                print(f"compare_run_ver_batch: temp folder not found: {temp_dir}")
+                continue
+
+            pairs = find_pairs(temp_dir, option=option_val)
+            if not pairs:
+                print(f"compare_run_ver_batch: no pairs for version={version!r}, option={option_val!r}")
+                continue
+
+            results = [compare_pair(run, ver, tol) for run, ver in pairs]
+            report(results, tol, option=option_val, macro=macro_val)
+            plot_diffs(results)
+
+    except Exception as e:
+        print(f"compare_run_ver_batch: {e}")
+        tkinter.messagebox.showerror(title="Error", message=str(e))
+
+
 def enter_mod_in_app():
     answer = tk.simpledialog.askinteger(title=__file__, prompt="enter the value of Modeling in app to assume", initialvalue=mod_in_app.get())
     if answer is None:
@@ -931,10 +990,17 @@ def check_auto_plink():
     if auto_plink_path.is_file():
         print(f"Acknowledged: {auto_plink_path} exists.")
     else:
-        with open(auto_plink_path, 'w') as f:
-            f.write('#folder, version, unit, battery, macro,\n')
-        print(f"Prepopulated {auto_plink_path} with header.")
+        _write_default_auto_plink(auto_plink_path)
+        print(f"Prepopulated {auto_plink_path} with default_auto content.")
     print(f"Report: plink_test.csv location is {plink_path}")
+
+
+def _write_default_auto_plink(path):
+    fields = [f.strip() for f in default_auto_header.split(',')]
+    with open(path, 'w') as f:
+        f.write('#' + default_auto_header + ',\n')
+        for row in default_auto:
+            f.write(', '.join(str(row.get(field, '')) for field in fields) + ',\n')
 
 
 def plink_size():
@@ -1039,17 +1105,10 @@ def grab_auto():
                 continue
             
             if header_line is not None:
-                # Validation: number of fields separated by commas
-                # header line example: "#folder, version, unit, battery, macro,"
-                # We expect the same number of comma-separated fields in each data line.
-                header_field_count = len(header_line.split(','))
-                line_field_count = len(line.split(','))
-                
-                if line_field_count != header_field_count:
-                    print(f"Skipping line due to field count mismatch ({line_field_count} vs {header_field_count}): {line}")
+                values = [v.strip() for v in line.split(',')][:len(header_fields)]
+                if len(values) < len(header_fields):
+                    print(f"Skipping line (too few fields {len(values)} vs {len(header_fields)}): {line}")
                     continue
-                
-                values = [v.strip() for v in line.split(',')]
                 data_rows.append(values)
 
         if not data_rows:
@@ -1507,7 +1566,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
             term = shutil.which('gnome-terminal') or shutil.which('xterm') or 'x-terminal-emulator'
             # Use bash -c for an interactive window that pipes output to tee and stays open
             # User provided: gnome-terminal -- bash -c 'plink -load testsoc3p2 | tee ~/.local/plink_test.csv; exec bash'
-            plink_base_cmd = f"plink -load {test_filename.get()} | tee {plink_test_csv_path.get()}"
+            plink_base_cmd = f"plink -batch -T -load {test_filename.get()} | tee {plink_test_csv_path.get()}"
             if command_to_paste:
                 # (echo 'command'; cat) | plink ... ensures the command is sent and the session remains interactive
                 plink_cmd = f"(echo '{command_to_paste}'; cat) | {plink_base_cmd}; exec bash"
@@ -1523,7 +1582,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                 tksleep(1.0) # Wait for terminal to spawn plink
                 try:
                     # Debug: Print full result of pgrep and ps -ef | grep plink
-                    pgrep_search = f"plink -load {test_filename.get()}"
+                    pgrep_search = f"plink -batch -T -load {test_filename.get()}"
                     print(f"Debug: pgrep -a -f result for '{pgrep_search}':")
                     try:
                         pgrep_out = subprocess.check_output(['pgrep', '-a', '-f', pgrep_search]).decode()
@@ -1566,7 +1625,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                 tksleep(1.0) # Wait for terminal to spawn plink
                 try:
                     # Debug: Print full result of pgrep and ps -ef | grep plink
-                    pgrep_search = f"plink -load {test_filename.get()}"
+                    pgrep_search = f"plink -batch -T -load {test_filename.get()}"
                     print(f"Debug: pgrep -a -f result for '{pgrep_search}':")
                     try:
                         pgrep_out = subprocess.check_output(['pgrep', '-a', '-f', pgrep_search]).decode()
@@ -1606,7 +1665,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                 tksleep(1.0) # Wait for terminal to spawn plink
                 try:
                     # Debug: Print full result of pgrep and ps -ef | grep plink
-                    pgrep_search = f"plink -load {test_filename.get()}"
+                    pgrep_search = f"plink -batch -T -load {test_filename.get()}"
                     print(f"Debug: pgrep -a -f result for '{pgrep_search}':")
                     try:
                         pgrep_out = subprocess.check_output(['pgrep', '-a', '-f', pgrep_search]).decode()
@@ -1641,7 +1700,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                     print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
         elif platform.system() == 'Windows':
             # 'color 0A' sets black background (0) and light green foreground (A)
-            plink_base_cmd = f"plink -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
+            plink_base_cmd = f"plink -batch -T -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
             if command_to_paste:
                 # (echo command & type CON) | plink ... is the Windows equivalent for sending a command then remaining interactive
                 plink_cmd = f"(echo {command_to_paste} & type CON) | {plink_base_cmd}"
@@ -1682,9 +1741,9 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                 print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
         elif platform.system() == 'Darwin':
              if command_to_paste:
-                 plink_cmd = f"(echo '{command_to_paste}'; cat) | plink -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
+                 plink_cmd = f"(echo '{command_to_paste}'; cat) | plink -batch -T -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
              else:
-                 plink_cmd = f"plink -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
+                 plink_cmd = f"plink -batch -T -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
 
              script = (f'tell application "Terminal" to do script '
                        f'"printf \\"\\\\e]11;#000000\\\\a\\\\e]10;#00ff00\\\\a\\"; clear; '
@@ -1695,7 +1754,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
              proc = subprocess.Popen(cmd)
              tksleep(1.0)
              try:
-                 out = subprocess.check_output(['pgrep', '-n', '-f', f"plink -load {test_filename.get()}"]).decode().strip()
+                 out = subprocess.check_output(['pgrep', '-n', '-f', f"plink -batch -T -load {test_filename.get()}"]).decode().strip()
                  if out:
                      plink_pid = int(out)
              except Exception:
@@ -1756,7 +1815,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
 
     ex_root = ExRoot()
 
-    cf = Begini(__file__, def_dict)
+    cf = Begini(__file__, default_dict)
 
     # Define frames
     min_width = 800
@@ -1960,15 +2019,15 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     if platform.system() == 'Darwin':
         start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="purple", bg=bg_color,
                                 justify='left', font=butt_font)
-        prev_button = myButton(option_panel_right, text='Run Prev', command=run_previous_task, fg="blue", bg=bg_color,
-                                justify='left', font=butt_font)
+        run_ver_button = myButton(option_panel_right, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color,
+                                  justify='left', font=butt_font)
     else:
         start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="purple", bg=bg_color, wraplength=wrap_length,
                                 justify='left', font=butt_font)
-        prev_button = myButton(option_panel_right, text='Run Prev', command=run_previous_task, fg="blue", bg=bg_color, wraplength=wrap_length,
-                                justify='left', font=butt_font)
+        run_ver_button = myButton(option_panel_right, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color, wraplength=wrap_length,
+                                  justify='left', font=butt_font)
     start_button.pack(padx=5, pady=5, expand=True, fill='both')
-    prev_button.pack(side='left', padx=5, pady=5)
+    run_ver_button.pack(side='left', padx=5, pady=5)
     auto_button = myButton(option_panel_right, text='AUTO', command=grab_auto, fg="blue", bg=bg_color,
                            justify='left', font=butt_font)
     auto_button.pack(side='left', padx=5, pady=5)

@@ -30,7 +30,7 @@ else:
 
 
 # Configuration for entire folder selection read with filepaths
-def_dict = {
+default_dict = {
     'test': {
         "version": "g20240331",
         "unit": "pro2p2",
@@ -72,6 +72,18 @@ sel_list1 = [
     'noaHiFailSlow', 'noaHiFailSlower', 'noaHiFailSlowest', 'vHiFail', 'vHiFailNoise', 'vHiFailH', 'vHiFailFf',
     'pulseHard', 'tLoFailHdwe', 'DvMon', 'DvSim', 'faultParade', 'stepDown', 'stepUp', 'zero_with_pc',
     ]
+
+# Default content for auto_plink.csv (analogous to default_dict for the .ini file)
+default_auto_header = 'folder, version, battery, macro, hardfigure'
+_auto_row = {'folder': default_dr, 'version': 'g20250612a', 'battery': 'bb', 'hardfigure': 'True'}
+default_auto = (
+    [{**_auto_row, 'macro': 'ampHiEmptFail'},
+     {**_auto_row, 'macro': 'ampHiFail'},
+     {**_auto_row, 'macro': 'noaHiFail'}] +
+    [{**_auto_row, 'macro': m} for m in sel_list[sel_list.index('rapidTweakRegression'):]] +
+    [{**_auto_row, 'macro': m} for m in sel_list1[:sel_list1.index('zero_with_pc') + 1]]
+)
+
 macro_sel_list = [
     'end_early', 'hdwNoVbPcMidInit', 'modHalfInit', 'modEmptInitBB', 'modEmptInitCHG',
     'noisePackage', 'silentPackage', 'quiet', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
@@ -263,7 +275,7 @@ def add_to_clip_board(text):
 # Begini - configuration class using .ini files
 class Begini(ConfigParser):
 
-    def __init__(self, name, def_dict_):
+    def __init__(self, name, default_dict_):
         ConfigParser.__init__(self)
 
         config_path, config_basename = str(PurePosixPath(name).parent), PurePosixPath(name).name
@@ -282,7 +294,7 @@ class Begini(ConfigParser):
             self.read(self.config_file_path)
         else:
             with open(self.config_file_path, 'w') as cfg_file:
-                self.read_dict(def_dict_)
+                self.read_dict(default_dict_)
                 self.write(cfg_file)
             print('wrote', self.config_file_path)
 

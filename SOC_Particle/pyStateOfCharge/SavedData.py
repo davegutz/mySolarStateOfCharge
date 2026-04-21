@@ -498,8 +498,6 @@ class SavedDataSim:
                 i_end = len(self.time)
             else:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
-            self.time_min = self.time / 60.
-            self.time_day = self.time / 3600. / 24.
             self.i = 0
             self.assign_all_from(data, i_end)
 

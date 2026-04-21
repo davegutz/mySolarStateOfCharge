@@ -15,7 +15,6 @@ import platform
 import sys
 from configparser import ConfigParser
 from pathlib import Path, PurePosixPath
-
 import matplotlib.pyplot as plt
 import pandas as pd
 

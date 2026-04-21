@@ -75,13 +75,14 @@ from GUI_common import (
     copy_clean,
     create_file_key,
     create_file_txt,
-    def_dict,
+    default_dict,
     empty_file,
     ExRoot,
     lookup,
     macro_lookup,
     macro_sel_list,
     plat,
+    plink_connection,
     register_last_task,
     run_previous_task,
     sel_list,
@@ -311,7 +312,7 @@ class Exec:
             self.key_label.config(bg='lightgreen')
         else:
             self.key_label.config(bg='pink')
-        test_filename.set(putty_connection.get(Test.unit or '', ''))
+        test_filename.set(plink_connection.get(Test.unit or '', ''))
 
     def update_unit_button(self):
         self.unit_button.config(text=self.unit)
@@ -823,7 +824,7 @@ def lookup_start():
 
 
 def lookup_test():
-    test_filename.set(putty_connection.get(Test.unit or '', ''))
+    test_filename.set(plink_connection.get(Test.unit or '', ''))
 
 
 def putty_size():
@@ -1049,7 +1050,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
 
     ex_root = ExRoot()
 
-    cf = Begini(__file__, def_dict)
+    cf = Begini(__file__, default_dict)
 
     # Define frames
     min_width = 800
@@ -1158,7 +1159,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     ref_unit.trace_add('write', handle_run_unit)
     Ref.unit_button.pack(pady=2)
     
-    test_filename = tk.StringVar(master, putty_connection.get(Test.unit or '', ''))
+    test_filename = tk.StringVar(master, plink_connection.get(Test.unit or '', ''))
 
     # Battery row
     tk.Label(top_panel_left, text="Battery", font=label_font).pack(pady=2, expand=True, fill='both')

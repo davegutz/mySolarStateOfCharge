@@ -377,10 +377,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.mvb = False
         self.mtb = False
         self.ib_diff  = 0.
-        self.ib_quiet = 0.
-        self.ib_rate = 0.
-        self.ibd_thr  = 0.
-        self.ibq_thr  = 0.
         self.ib_dyn_m  = 0.
         self.ib_dyn_T_m  = 0.
         self.ib_dyn_rstate_m  = 0.
@@ -811,12 +807,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.mib = rp.modeling_ib
         self.mvb = rp.modeling_vb
         self.mtb = rp.modeling_Tb
-        self.ib_quiet = 0.
-        self.ib_rate = 0.
-        self.ibd_thr = self.ewmhi_thr
-        self.ibq_thr = self.ewnhi_thr
         self.ib_dyn_m = self.LoopIbAmp.ib_dyn
-        self.ib_dyn_T_m = self.LoopIbAmp.dt
         self.ib_dyn_rstate_m = self.LoopIbAmp.ChargeTransfer.rstate
         self.ib_dyn_lstate_m = self.LoopIbAmp.ChargeTransfer.state
         self.ib_dyn_tau_m = self.LoopIbAmp.ChargeTransfer.tau
@@ -828,10 +819,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_wrp_state_m = self.LoopIbAmp.WrapErrFilt.state
         self.ib_wrp_rate_m = self.LoopIbAmp.e_wrap_rate
         self.ib_wrp_reset_m = self.LoopIbAmp.reset
-        self.e_wrap_m_trim = self.LoopIbAmp.Trim.state
         self.e_wrap_m_trimmed = self.LoopIbAmp.e_wrap_trimmed
         self.ib_dyn_n = self.LoopIbNoa.ib_dyn
-        self.ib_dyn_T_n = self.LoopIbNoa.dt
         self.ib_dyn_rstate_n = self.LoopIbNoa.ChargeTransfer.rstate
         self.ib_dyn_lstate_n = self.LoopIbNoa.ChargeTransfer.state
         self.ib_dyn_tau_n = self.LoopIbNoa.ChargeTransfer.tau
@@ -841,7 +830,6 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_wrp_state_n = self.LoopIbNoa.WrapErrFilt.state
         self.ib_wrp_rate_n = self.LoopIbNoa.e_wrap_rate
         self.e_wrap_n_trimmed = self.LoopIbNoa.e_wrap_trimmed
-        self.vb_h_f = self.vb_hdwe_f
         self.y_ekf = self.y
         self.qcap = self.q_capacity
         self.qcrs = self.q_cap_rated_scaled
@@ -918,10 +906,11 @@ class BatteryMonitor(Battery, EKF1x1):
                 dt_local = self.dt_past
                 ibnoa = self.ib_noa_pst
             self.LoopIbNoa.calculate(reset=reset, rp=rp, ib=ibnoa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
-                                     dt=min(dt_local, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
+                                     dt=dt_local, ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
                                      ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
                                      e_wrap_filt_init=SN.mon_run.e_wrap_n_filt[G.i],
                                      e_wrap_trim_init=SN.mon_run.e_wrap_n_trim[G.i])
+            self.ib_dyn_T_n = self.LoopIbNoa.ChargeTransfer.dt
             self.e_wrap_n = self.LoopIbNoa.e_wrap
             self.e_wrap_n_filt = self.LoopIbNoa.e_wrap_filt
             self.e_wrap_n_rate = self.LoopIbNoa.e_wrap_rate
@@ -953,10 +942,11 @@ class BatteryMonitor(Battery, EKF1x1):
             # print(f"ib_amp_hi/lo, ib_noa_hi/lo = {self.ib_amp_hi} {self.ib_amp_lo} {self.ib_noa_hi} {self.ib_noa_lo}")
             self.e_wrap_m_reset = reset or self.disable_amp_fault
             self.LoopIbAmp.calculate(reset=self.e_wrap_m_reset, rp=rp, ib=ibamp, loop_gain=Battery.AMP_WRAP_TRIM_GAIN,
-                                     dt=min(dt_local, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
+                                     dt=dt_local, ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
                                      ib_dyn_init=ib_dyn_m_init,
                                      e_wrap_filt_init=SN.mon_run.e_wrap_m_filt[G.i],
                                      e_wrap_trim_init=SN.mon_run.e_wrap_m_trim[G.i])
+            self.ib_dyn_T_m = self.LoopIbAmp.ChargeTransfer.dt
             self.ewmhi_thr = self.LoopIbAmp.ewhi_thr
             self.ewmlo_thr = self.LoopIbAmp.ewlo_thr
             self.e_wrap_m = self.LoopIbAmp.e_wrap
@@ -1011,8 +1001,6 @@ class BatterySim(Battery):
         self.ib_fut = 0.  # Future value of limited current, A
         self.reset_temp_past = self.model_saturated
         self.dt_past = 0.
-        self.time_min = 0.
-        self.time_day = 0.
         self.dt_s = 0.
         self.chm_s = 0.
         self.qcrs_s = 0.
@@ -1236,8 +1224,6 @@ class BatterySim(Battery):
 
     def save_s(self, time):
         self.time = time
-        self.time_min = self.time / 60.
-        self.time_day = self.time_min / 60. / 24.
         self.dt_s = self.dt
         self.chm_s = self.chm
         self.qcrs_s = self.q_cap_rated_scaled
@@ -1490,7 +1476,6 @@ class Saved:
         self.reset_ekf = []  # Reset flag used for initialization
         self.e_wrap = []  # Verification of wrap calculation, V
         self.e_wrap_filt = []  # Verification of filtered wrap calculation, V
-        # self.e_wrap_trim = []  # Verification of filtered wrap calculation, V
         self.ib_dyn_m = []  # Verification of wrap calculation, A
         self.dv_dyn_m = []  # Verification of wrap calculation, V
         self.e_wrap_m = []  # Verification of wrap calculation, V
@@ -1536,8 +1521,6 @@ class SavedS:
         self.str_ = str_
         self.time_run_start = None
         self.time = []
-        self.time_min = []
-        self.time_day = []
         self.unit = []  # text title
         self.c_time = []  # Control time, s
         self.dt = []

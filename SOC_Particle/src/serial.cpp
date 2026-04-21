@@ -346,7 +346,7 @@ void print_signal_sel_header(void)
   Serial.printf("  ib_wrp_reset_m, ib_wrp_T_m, ib_wrp_tau_m, ib_wrp_rate_m, ib_wrp_state_m, ib_amp, ib_noa,");
   Serial.printf("  ib_amp_lo, ib_amp_hi, ib_noa_lo, ib_noa_hi, ib_noa_kf, kfres, x1m, x1n, e_wrap_m_trimmed, e_wrap_n_trimmed,");
   Serial.printf("  vb_model, voc_m, voc_soc_m, wrap_m_and_n_fa, ib_is_functional,voltage_low,");
-  Serial.printf("  vb_h_f,");
+  Serial.printf("  vb_hdwe_f,");
   Serial.printf("  fltw, falw, dispw,");
   Serial.printf("\n");
 }

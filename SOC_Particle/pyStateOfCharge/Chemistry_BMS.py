@@ -146,7 +146,7 @@ class Chemistry(BMS):
 
         # Min SOC table
         t_x_soc_min0 = [5., 11.1, 20., 30., 40.]
-        t_soc_min0 = [0.07, 0.05, -0.05, 0.00, 0.20]
+        t_soc_min0 = [0.10, 0.07, 0.25, 0.25, 0.25]
         self.lut_min_soc = myTables.TableInterp1D(np.array(t_x_soc_min0), np.array(t_soc_min0))
 
         # Hysteresis tables
