@@ -307,9 +307,10 @@ class Sensors:
 
         self.VoVcm = 0.
         self.VoVcm_f = 0.
-
+        self.kf_v_m = 0.
         self.VoVcn = 0.
         self.VoVcn_f = 0.
+        self.kf_v_n = 0.
         self.iscn = 0.
         self.iscn_f = 0.
 
@@ -430,12 +431,14 @@ class Sensors:
             if hasattr(self.mon_run, 'vovcm'):
                 self.VoVcm = self.mon_run.vovcm[i]
                 self.KfShuntAmp.calculate(reset=self.reset_kf, dt=self.mon_run.ib_dyn_T_m[i], in_=self.VoVcm)
-                self.VoVcm_f, _ = self.KfShuntAmp.get_state()
+                self.VoVcm_f, self.kf_v_m = self.KfShuntAmp.get_state()
                 self.VoVcm_f = float(self.VoVcm_f)
+                self.kf_v_m = float(self.kf_v_m)
             self.VoVcn = self.mon_run.vovcn[i]
             self.KfShuntNoa.calculate(reset=self.reset_kf, dt=self.mon_run.ib_dyn_T_n[i], in_=self.VoVcn)
-            self.VoVcn_f, _ = self.KfShuntNoa.get_state()
+            self.VoVcn_f, self.kf_v_n = self.KfShuntNoa.get_state()
             self.VoVcn_f = float(self.VoVcn_f)
+            self.kf_v_n = float(self.kf_v_n)
             self.iscn = float((self.VoVcn * Battery.SHUNT_NOA_GAIN) / Battery.NP)
             self.iscn_f = float((self.VoVcn_f * Battery.SHUNT_NOA_GAIN) / Battery.NP)
             # TODO:  implement iscn filter and scale with sp_ib_disch_slr (= 1. now everywhere so no worries at present)

@@ -139,13 +139,13 @@ public:
   void dscn_cmd(const bool cmd) { dscn_cmd_ = cmd; };
   uint64_t dt_ms() { return sample_time_ - sample_time_z_; }; // ms
   void convert(const bool disconnect, const bool reset, Sensors *Sen);
-  float get_v() { return KF_->get_v(); };
   float Ishunt_cal() { return Ishunt_cal_; };
   float ishunt_cal() { return Ishunt_cal_ / ap.nP(); };
   float Ishunt_cal_kf() { return Ishunt_cal_kf_; };
   float ishunt_cal_kf() { return Ishunt_cal_kf_ / ap.nP(); };
   void kf_q_std(const double q) {KF_->q_std(q);};
   void kf_r_std(const double r) {KF_->r_std(r);};
+  float kf_v() { return KF_->kf_v(); };
   void print_serial_header(const char suffix);
   void print_serial();
   void pretty_print();

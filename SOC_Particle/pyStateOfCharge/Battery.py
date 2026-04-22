@@ -487,6 +487,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.reset_s = 0.
         self.tau_s = 0.
         self.tau_hys_s = 0.
+        self.kf_v_m = 0.
+        self.kf_v_n = 0.
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -810,6 +812,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.mib = rp.modeling_ib
         self.mvb = rp.modeling_vb
         self.mtb = rp.modeling_Tb
+        self.kf_v_m = SN.kf_v_m
+        self.kf_v_n = SN.kf_v_n
         self.ib_dyn_m = self.LoopIbAmp.ib_dyn
         self.ib_dyn_rstate_m = self.LoopIbAmp.ChargeTransfer.rstate
         self.ib_dyn_lstate_m = self.LoopIbAmp.ChargeTransfer.state

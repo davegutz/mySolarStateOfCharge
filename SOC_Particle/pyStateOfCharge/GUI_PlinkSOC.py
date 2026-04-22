@@ -639,6 +639,14 @@ def grab_init(command_to_append='', force_if_ready=False, force_kill=False, fg_c
     return start_plink(command_to_paste=init_command, force_if_ready=force_if_ready, force_kill=force_kill, fg_color=fg_color)
 
 
+def open_plink_window():
+    register_last_task(open_plink_window)
+    grab_all_nominal()
+    Test.create_file_path_and_key()
+    Test.update_key_label()
+    start_plink(fg_color='#F5DEB3', bg_color='#2F4F4F')
+
+
 def monitor_plink_done():
     if Path(plink_test_csv_path.get()).is_file():
         try:
@@ -1535,7 +1543,7 @@ def is_plink_ready():
     return False
 
 
-def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, fg_color='#00ff00'):
+def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, fg_color='#00ff00', bg_color='#000000'):
     global plink_pid
     lookup_test()
     if look_plink(platform.system()):
@@ -1587,7 +1595,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
             if 'gnome-terminal' in term:
                 # zoom 0.8 is roughly "two sizes smaller" (standard is 1.0, 0.9 is one size, 0.8 is two)
                 cmd = [term, '--zoom=0.8', '--', 'bash', '-c',
-                       f"echo -e '\\e]11;#000000\\a\\e]10;{fg_color}\\a'; clear; {plink_cmd}"]
+                       f"echo -e '\\e]11;{bg_color}\\a\\e]10;{fg_color}\\a'; clear; {plink_cmd}"]
                 print(f"Running command: {shlex.join(cmd)}")
                 proc = subprocess.Popen(cmd)
                 tksleep(1.0) # Wait for terminal to spawn plink
@@ -1621,7 +1629,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                     print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
             elif 'xterm' in term:
                 # xterm -bg black -fg green -fs 10 (assuming default is ~12)
-                cmd = [term, '-bg', 'black', '-fg', 'green', '-fs', '10', '-e', f"bash -c '{plink_cmd}'"]
+                cmd = [term, '-bg', bg_color, '-fg', fg_color, '-fs', '10', '-e', f"bash -c '{plink_cmd}'"]
                 print(f"Running command: {shlex.join(cmd)}")
                 proc = subprocess.Popen(cmd)
                 tksleep(1.0) # Wait for terminal to spawn plink
@@ -1974,12 +1982,15 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     Ref.create_file_path_and_key(cf['others']['option'])
 
     _, init_val, _ = lookup.get('satInit')
+    init_row_frame = tk.Frame(option_panel_ctr)
     if platform.system() == 'Darwin':
-        init_button = myButton(option_panel_ctr, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg=bg_color,
+        init_button = myButton(init_row_frame, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg=bg_color,
                                justify='left', font=("Arial", 8))
     else:
-        init_button = myButton(option_panel_ctr, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg=bg_color,
+        init_button = myButton(init_row_frame, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg=bg_color,
                                wraplength=wrap_length, justify='left', font=("Arial", 8))
+    open_plink_button = myButton(init_row_frame, text='Open\nPlink', command=open_plink_window, fg='#F5DEB3', bg='#2F4F4F',
+                                 activeforeground='wheat', activebackground='#8BA88B', font=("Arial", 8))
     init = tk.StringVar(master, init_val)
     init_label = tk.Label(option_panel_ctr, text='init & clear:', font=label_font_gentle)
     if platform.system() == 'Linux':
@@ -1994,7 +2005,9 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
         paste_label = tk.Label(option_panel_right, text='right-click to paste', font=label_font_gentle)
         cmd_label = tk.Label(option_panel_ctr, text=init.get(), font=label_font_gentle)
         init_label.pack(padx=5, pady=5)
-    init_button.pack(padx=5, pady=5)
+    init_row_frame.pack(padx=5, pady=5)
+    init_button.pack(side='left', padx=2, pady=2)
+    open_plink_button.pack(side='left', padx=2, pady=2)
     paste_label.pack(padx=5, pady=5)
     cmd_label.pack(padx=5, pady=5)
 

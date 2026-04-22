@@ -64,7 +64,7 @@ def find_pairs(temp_dir, option=''):
     """
     pairs = []
     for p in sorted(Path(temp_dir).glob('*_run.csv')):
-        if option and not p.name.startswith(option):
+        if option and not p.name.startswith(option + '_'):
             continue
         ver = Path(str(p).replace('_run.csv', '_ver.csv'))
         if ver.is_file():
@@ -147,7 +147,7 @@ def compare_pair(run_path, ver_path, tol):
 def report(results, tol, option='', macro=''):
     any_diff = any(r.get('diffs') for r in results)
     print(f"\n{'='*72}")
-    print(f"  compare_temp_run_ver  |  tol={tol}  |  option={option}  |  macro={macro}  |  {len(results)} pair(s)")
+    print(f"  CompareRunVer  |  tol={tol}  |  option={option}  |  macro={macro}  |  {len(results)} pair(s)")
     print(f"{'='*72}\n")
 
     for r in results:
@@ -165,7 +165,7 @@ def report(results, tol, option='', macro=''):
             continue
         print(f"  {stem}  ({r['n_rows']} rows, {len(r['diffs'])} differing param(s))")
         if run_only:
-            print(f"    run_only ({len(run_only)}): {', '.join(run_only)}")
+            print(f"    Parameters in _run only ({len(run_only)}): {', '.join(run_only)}")
         print(f"    {'param':<30}  {'n_bad':>6}  {'max|Δ|':>12}  {'mean|Δ|':>12}  {'first_t':>10}")
         print(f"    {'-'*30}  {'-'*6}  {'-'*12}  {'-'*12}  {'-'*10}")
         for d in r['diffs']:
