@@ -17,7 +17,8 @@ from configparser import ConfigParser
 from pathlib import Path, PurePosixPath
 import matplotlib.pyplot as plt
 import pandas as pd
-
+from PlotKiller import show_killer
+from local_paths import version_from_data_file, local_paths
 
 # ── locate the .ini file ──────────────────────────────────────────────────────
 
@@ -183,8 +184,10 @@ ROWS = 3
 PER_FIG = COLS * ROWS
 
 
-def plot_diffs(results):
+def plot_diffs(results, data_file=None,  save_plots=True, terse=False, hardcopy=True):
     """For each pair with differences, produce figure(s) with ≤9 run-vs-ver subplots."""
+    fig_list = []
+    fig_files = []
     for r in results:
         if 'error' in r or not r.get('diffs'):
             continue
@@ -196,6 +199,8 @@ def plot_diffs(results):
         stem = r['file'].replace('_run.csv', '')
         diffs = r['diffs']
         n_figs = math.ceil(len(diffs) / PER_FIG)
+        version = version_from_data_file(data_file)
+        _, save_pdf_path, _ = local_paths(version)
 
         for fig_idx in range(n_figs):
             batch = diffs[fig_idx * PER_FIG:(fig_idx + 1) * PER_FIG]
@@ -203,6 +208,7 @@ def plot_diffs(results):
             # keep grid rectangular: fill rows top-to-bottom
             n_rows = math.ceil(n_sub / COLS)
             fig, axes = plt.subplots(n_rows, COLS, figsize=(5 * COLS, 3 * n_rows), squeeze=False)
+            fig_list.append(fig)
             fig_label = f"fig {fig_idx + 1}/{n_figs}" if n_figs > 1 else ""
             fig.suptitle(f"{stem}  {fig_label}", fontsize=9)
 
@@ -216,6 +222,10 @@ def plot_diffs(results):
                 ax.tick_params(labelsize=7)
                 ax.legend(fontsize=7, loc='best')
                 ax.grid(True, linewidth=0.4)
+            fig_file_name = 'CompareRunVer' + '_' + str(len(fig_list)) + ".png"
+            fig_files.append(fig_file_name)
+            if save_plots and not terse:
+                plt.savefig(fig_file_name, format="png")
 
             # hide unused axes in last row
             for empty_idx in range(n_sub, n_rows * COLS):
@@ -224,7 +234,11 @@ def plot_diffs(results):
             fig.tight_layout(rect=(0, 0, 1, 0.95))
 
     if any(r.get('diffs') for r in results):
-        plt.show()
+        plt.show(block=False)
+
+    string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
+    show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path,
+                pdf_base=data_file, hardcopy=hardcopy)
 
 
 # ── main ──────────────────────────────────────────────────────────────────────

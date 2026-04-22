@@ -419,7 +419,7 @@ void BatteryMonitor::ekf_update(double *hx, double *H, double *x, double *tb)
         Serial.printf("BatteryMonitor::ekf_update: x_ %15.12f tb_f_ %9.5g hx %19.15f********\n*******\n*******\n*****************\n", x_, tb_f_, *hx);
     // Jacodian of measurement function
     *H = dv_dsoc_;
-    *x = x_;
+    *x = x_lim;
     *tb = tb_f_;
 }
 

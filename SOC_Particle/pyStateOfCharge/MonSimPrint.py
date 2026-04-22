@@ -303,7 +303,7 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:18.7e}".format(SN.mon_run.K1n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.K[1,0]),
           "{:11.6f}".format(SN.mon_run.yn[G.i]), "{:10.6f}".format(SN.KfShuntNoa.y_kf),
           "{:11.6f}".format(SN.mon_run.x0n[G.i]), "{:10.6f}".format(SN.KfShuntNoa.x[0][0]),
-          "{:11.6f}".format(SN.mon_run.x1n[G.i]), "{:10.6f}".format(SN.KfShuntNoa.x[1][0]),
+          "{:11.6f}".format(SN.mon_run.kf_v_n[G.i]), "{:10.6f}".format(SN.KfShuntNoa.x[1][0]),
           "{:18.7e}".format(SN.mon_run.P00n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[0][0]),
           "{:14.7e}".format(SN.mon_run.P01n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[0][1]),
           "{:14.7e}".format(SN.mon_run.P10n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[1][0]),

@@ -1,6 +1,8 @@
 #! /bin/sh
 # noinspection PySingleQuotedDocstring
 "exec" "`dirname $0`/venv/bin/python3" "$0" "$@"
+from PlotKiller import show_killer
+
 #  #! /Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/py/venv/bin/python
 # The #! operates for macOS only. 'Python Launcher' (Python Script Preferences) option for 'Allow override with #! in script' is checked.
 #  Graphical interface to Test State of Charge application
@@ -101,7 +103,6 @@ sys.stdout.flush()
 _log_dir = os.path.expanduser("~/Library/Logs") if plat == 'darwin' else os.path.expanduser("~")
 os.makedirs(_log_dir, exist_ok=True)
 _log_file = open(os.path.join(_log_dir, "GUI_TestSOC.log"), 'a', buffering=1)
-
 
 plink_pid = None
 run_start_time = None  # Set at grab_start, used to print elapsed time on DONE
@@ -516,7 +517,7 @@ def compare_run_run_choose():
 
 
 # Choose file to perform compare_run_sim on
-def compare_run_sim_choose():
+def compare_run_sim_choose(show_killer_=True):
     # Select file
     print('compare_run_sim_choose')
     testpaths = filedialog.askopenfilenames(title='Please select files', filetypes=[('csv', '.csv')],
@@ -528,7 +529,7 @@ def compare_run_sim_choose():
             test_folder_path, test_parent, basename, test_txt, key = contain_all(testpath)
             if key != '':
                 compare_run_sim(data_file=testpath, unit_key=key, strict_overplot=strict_overplot.get(),
-                        terse=terse.get())
+                        terse=terse.get(), show_killer_=show_killer_)
             else:
                 tk.messagebox.showerror(message='key not found in' + testpath)
         update_data_buttons()
@@ -585,7 +586,7 @@ def compare_run_ver_batch():
 
             results = [compare_pair(run, ver, tol) for run, ver in pairs]
             report(results, tol, option=option_val, macro=macro_val)
-            plot_diffs(results)
+            plot_diffs(results, data_file=Test.file_path)
 
     except Exception as e:
         print(f"compare_run_ver_batch: {e}")
@@ -608,7 +609,7 @@ def grab_macro():
     add_to_clip_board(macro.get())
     macro_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black')
     init_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black')
-    start_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
+    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
     get_time_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
 
 
@@ -711,7 +712,7 @@ def grab_start():
 def grab_all_nominal():
     macro_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black')
     init_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
-    start_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
+    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
     get_time_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black')
 
 
@@ -794,7 +795,7 @@ def handle_option(*_args):
                             text='save data')
     save_data_as_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black',
                                text='save data as')
-    start_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
+    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
     update_data_buttons()
 
 
@@ -1431,7 +1432,7 @@ def save_data(show_killer_=True):
     else:
         print('plink test file non-existent or too small (<64 bytes) probably already done')
         tkinter.messagebox.showwarning(message="Nothing to save")
-    start_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
+    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
 
 
 def save_data_as():
@@ -1473,7 +1474,7 @@ def save_data_as():
     else:
         print('plink test file is too small (<512 bytes) probably already done')
         tkinter.messagebox.showwarning(message="Nothing to save")
-    start_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
+    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
 
 
 def save_progress():
@@ -1799,7 +1800,7 @@ def update_data_buttons():
                             text='save data')
     save_data_as_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black',
                                text='save data as')
-    start_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
+    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
 
 
 if __name__ == '__main__':  # Example usage.  Ran ok 20260217
@@ -1984,10 +1985,10 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     _, init_val, _ = lookup.get('satInit')
     init_row_frame = tk.Frame(option_panel_ctr)
     if platform.system() == 'Darwin':
-        init_button = myButton(init_row_frame, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg=bg_color,
+        init_button = myButton(init_row_frame, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="white", bg="black",
                                justify='left', font=("Arial", 8))
     else:
-        init_button = myButton(init_row_frame, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg=bg_color,
+        init_button = myButton(init_row_frame, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="white", bg="black",
                                wraplength=wrap_length, justify='left', font=("Arial", 8))
     open_plink_button = myButton(init_row_frame, text='Open\nPlink', command=open_plink_window, fg='#F5DEB3', bg='#2F4F4F',
                                  activeforeground='wheat', activebackground='#8BA88B', font=("Arial", 8))
@@ -2021,7 +2022,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
         run_ver_button = myButton(option_panel_right, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color,
                                   justify='left', font=butt_font)
     else:
-        start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="purple", bg=bg_color, wraplength=wrap_length,
+        start_button = myButton(option_panel_ctr, text='', command=grab_start, fg='#00ff00', bg='black', wraplength=wrap_length,
                                 justify='left', font=butt_font)
         run_ver_button = myButton(option_panel_right, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color, wraplength=wrap_length,
                                   justify='left', font=butt_font)
