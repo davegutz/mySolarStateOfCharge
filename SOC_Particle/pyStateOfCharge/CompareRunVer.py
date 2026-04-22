@@ -222,7 +222,7 @@ def plot_diffs(results, data_file=None,  save_plots=True, terse=False, hardcopy=
                 ax.tick_params(labelsize=7)
                 ax.legend(fontsize=7, loc='best')
                 ax.grid(True, linewidth=0.4)
-            fig_file_name = 'CompareRunVer' + '_' + str(len(fig_list)) + ".png"
+            fig_file_name = os.path.join(save_pdf_path, 'CompareRunVer_' + str(len(fig_list)) + ".png")
             fig_files.append(fig_file_name)
             if save_plots and not terse:
                 plt.savefig(fig_file_name, format="png")
@@ -238,7 +238,7 @@ def plot_diffs(results, data_file=None,  save_plots=True, terse=False, hardcopy=
 
     string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
     show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path,
-                pdf_base=save_pdf_path, hardcopy=hardcopy)
+                pdf_base=os.path.join(save_pdf_path, 'CompareRunVer'), hardcopy=hardcopy)
 
 
 # ── main ──────────────────────────────────────────────────────────────────────
