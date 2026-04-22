@@ -238,7 +238,7 @@ def plot_diffs(results, data_file=None,  save_plots=True, terse=False, hardcopy=
 
     string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
     show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path,
-                pdf_base=data_file, hardcopy=hardcopy)
+                pdf_base=save_pdf_path, hardcopy=hardcopy)
 
 
 # ── main ──────────────────────────────────────────────────────────────────────

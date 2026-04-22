@@ -325,8 +325,8 @@ def replicate(OPT: UserOptions):
 
         # Save plot info
         mon.save(t[G.i], T, mon.soc, sim.voc, SN, rp, sim)
-        sim.save(t[G.i], T)
-        sim.save_s(t[G.i])
+        sim.save(t[max(G.i-1,0)])  # for plotting and compares remove the delay that was added to make everything else ok in the sim.  This is not needed in the mon, which is not delayed.
+        sim.save_s(t[max(G.i-1,0)])  # for plotting and compares remove the delay that was added to make everything else ok in the sim.  This is not needed in the mon, which is not delayed.
 
         # Print initial
         if G.i == 0 and OPT.verbose:

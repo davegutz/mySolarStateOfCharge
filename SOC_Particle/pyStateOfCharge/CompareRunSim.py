@@ -204,7 +204,7 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     # Cut-pasted from GUI_TestSOC Run window
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/ampHiFail_soc3p2_hi_lo_bb.csv'
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/rapidTweakRegression_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = None
     plots = True
@@ -212,10 +212,10 @@ def main():  # Example usage.  ok on 20260217
     verbose = True
     scale_batt = 1.0
     slr_hys_sim = 1.0
-    request_history = None
+    request_history = 3
     init_time = None
     time_shift = None
-    strict_overplot = True
+    strict_overplot = False
     terse = True
     hardcopy = False
     mon_str = ''
