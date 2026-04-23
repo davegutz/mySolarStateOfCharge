@@ -106,6 +106,7 @@ public:
   float chargeTransfer_rstate() { return ChargeTransfer_->rstate(); };
   float chargeTransfer_T() { return ChargeTransfer_->T(); };
   float chargeTransfer_tau() { return ChargeTransfer_->tau(); };
+  double cTime() { return ctime_; };
   bool bms_off() { return bms_off_; };
   float C_rate() { return ib_ / NOM_UNIT_CAP; }
   String decode(const uint8_t mod);
@@ -136,6 +137,7 @@ public:
 protected:
   bool bms_charging_; // Indicator that battery is charging, T = charging, changing soc and voltage
   bool bms_off_;// Indicator that battery management system is off, T = off preventing current flow
+  double ctime_;   // Current time, s
   float dt_;       // Update time, s
   float dv_dsoc_;  // Derivative scaled, V/fraction
   float dv_dyn_;   // ib-induced back emf, V

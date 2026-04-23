@@ -40,6 +40,47 @@ plt.rcParams['legend.fontsize'] = 'small'
 # Suppress all UserWarning messages
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
+import numpy as np
+
+
+def shift_time(obj, n_steps):
+    """Shift the time column of a struct-like object by n_steps positions.
+
+    n_steps > 0: shift right (each position gets the value from n_steps earlier rows).
+    n_steps < 0: shift left (each position gets the value from n_steps later rows).
+    Gaps opened at the start are back-extrapolated using the local dt at time[0];
+    gaps at the end are forward-extrapolated using the local dt at time[-1].
+    All other columns are unmodified.  Returns obj for chaining.
+    """
+    if obj is None or n_steps == 0:
+        return obj
+
+    t_col = None
+    for candidate in ('time', 'cTime'):
+        if hasattr(obj, candidate):
+            raw = getattr(obj, candidate)
+            if raw is not None and hasattr(raw, '__len__') and len(raw) > 1:
+                t_col = candidate
+                break
+
+    if t_col is None:
+        return obj
+
+    time = np.asarray(getattr(obj, t_col), dtype=float)
+    n = len(time)
+    shifted = np.roll(time, n_steps)
+
+    if n_steps > 0:
+        # gap at start: extrapolate backward from time[0] using leading dt
+        dt = time[1] - time[0]
+        shifted[:n_steps] = time[0] - np.arange(n_steps, 0, -1) * dt
+    else:
+        # gap at end: extrapolate forward from time[-1] using trailing dt
+        dt = time[-1] - time[-2]
+        shifted[n + n_steps:] = time[-1] + np.arange(1, -n_steps + 1) * dt
+
+    setattr(obj, t_col, shifted)
+    return obj
 
 
 # noinspection PyPep8Naming
@@ -141,6 +182,8 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
         if filename_root is None:
             print("save_struct_to_csv: no filename available, skipping CSV export")
         else:
+            # Shift time in sim_ver
+            sim_ver = shift_time(sim_ver, 1)
             for obj, struct_name in (
                 (mon_run,   'mon_run'),
                 (mon_ver,   'mon_ver'),
@@ -217,7 +260,7 @@ def main():  # Example usage.  ok on 20260217
     time_shift = None
     strict_overplot = False
     terse = True
-    hardcopy = False
+    hardcopy = True
     mon_str = ''
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,

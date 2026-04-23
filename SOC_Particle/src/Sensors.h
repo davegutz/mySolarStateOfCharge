@@ -299,6 +299,7 @@ public:
   uint64_t now() { return now_; }
   void now_temp(const uint64_t input) { now_temp_ = input; }
   uint64_t now_temp() { return now_temp_; }
+  double cTime() { return ctime_; }
   void T(const double input) { T_ = input; }
   double T() { return T_; }
   void reset(const bool input) { reset_ = input; }
@@ -458,8 +459,9 @@ protected:
   float Wb_;                   // Sensed battery bank power, use to compare to other shunts, W
   uint64_t now_;     // Time at sample, ms
   uint64_t now_temp_;// Time at sample, ms
+  double ctime_;               // Decimal time, seconds since 1/1/2021
   double T_;                   // Update time, s
-  bool reset_;              // Reset flag, T = reset
+  bool reset_;                 // Reset flag, T = reset
   double T_filt_;              // Filter update time, s
   double T_temp_;              // Temperature update time, s
   uint64_t elapsed_inj_;  // Injection elapsed time, ms
