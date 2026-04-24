@@ -580,8 +580,9 @@ def compare_run_ver_batch():
                 continue
 
             pairs = find_pairs(temp_dir, option=option_val)
+            pairs = [(r, v) for r, v in pairs if '_mon_run' in r.name or '_sim_run' in r.name]
             if not pairs:
-                print(f"compare_run_ver_batch: no pairs for version={version!r}, option={option_val!r}")
+                print(f"compare_run_ver_batch: no mon/sim pairs for version={version!r}, option={option_val!r}")
                 continue
 
             results = [compare_pair(run, ver, tol) for run, ver in pairs]

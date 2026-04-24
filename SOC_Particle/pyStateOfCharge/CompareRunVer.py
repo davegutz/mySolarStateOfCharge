@@ -81,11 +81,11 @@ def compare_pair(run_path, ver_path, tol):
         df_run = pd.read_csv(run_path)
         df_ver = pd.read_csv(ver_path)
     except Exception as e:
-        return {'file': run_path.name, 'error': str(e), 'diffs': []}
+        return {'file': run_path.name, 'ver_file': ver_path.name, 'error': str(e), 'diffs': []}
 
     # filter time >= 0
     if 'time' not in df_run.columns or 'time' not in df_ver.columns:
-        return {'file': run_path.name, 'error': 'no "time" column', 'diffs': []}
+        return {'file': run_path.name, 'ver_file': ver_path.name, 'error': 'no "time" column', 'diffs': []}
 
     df_run = df_run[pd.to_numeric(df_run['time'], errors='coerce') > 0].copy()
     df_ver = df_ver[pd.to_numeric(df_ver['time'], errors='coerce') > 0].copy()
@@ -107,7 +107,8 @@ def compare_pair(run_path, ver_path, tol):
     # align on time via index reset (both should have identical row counts post-filter)
     n = min(len(df_run), len(df_ver))
     if n == 0:
-        return {'file': run_path.name, 'error': 'no rows with time > 0 before reset', 'diffs': []}
+        return {'file': run_path.name, 'ver_file': ver_path.name,
+                'error': 'no rows with time > 0 before reset', 'diffs': []}
     df_run = df_run.iloc[:n].reset_index(drop=True)
     df_ver = df_ver.iloc[:n].reset_index(drop=True)
 
@@ -135,6 +136,7 @@ def compare_pair(run_path, ver_path, tol):
 
     return {
         'file': run_path.name,
+        'ver_file': ver_path.name,
         'n_rows': n,
         'diffs': sorted(diffs, key=lambda d: d['max_diff'], reverse=True),
         'run_only': run_only_cols,
@@ -152,19 +154,21 @@ def report(results, tol, option='', macro=''):
     print(f"{'='*72}\n")
 
     for r in results:
-        stem = r['file'].replace('_run.csv', '')
+        run_file = r['file']
+        ver_file = r.get('ver_file', run_file.replace('_run.csv', '_ver.csv'))
+        pair_label = f"{run_file}  vs  {ver_file}"
         if 'error' in r:
-            print(f"  {stem}")
+            print(f"  {pair_label}")
             print(f"    ERROR: {r['error']}\n")
             continue
         run_only = r.get('run_only', [])
         if not r['diffs']:
-            print(f"  {stem}  — no differences > {tol}  ({r['n_rows']} rows)")
+            print(f"  {pair_label}  — no differences > {tol}  ({r['n_rows']} rows)")
             if run_only:
                 print(f"    run_only ({len(run_only)}): {', '.join(run_only)}")
             print()
             continue
-        print(f"  {stem}  ({r['n_rows']} rows, {len(r['diffs'])} differing param(s))")
+        print(f"  {pair_label}  ({r['n_rows']} rows, {len(r['diffs'])} differing param(s))")
         if run_only:
             print(f"    Parameters in _run only ({len(run_only)}): {', '.join(run_only)}")
         print(f"    {'param':<30}  {'n_bad':>6}  {'max|Δ|':>12}  {'mean|Δ|':>12}  {'first_t':>10}")
@@ -196,7 +200,8 @@ def plot_diffs(results, data_file=None,  save_plots=True, terse=False, hardcopy=
         df_ver = r['df_ver']
         t_run = df_run['time'].values
         t_ver = df_ver['time'].values
-        stem = r['file'].replace('_run.csv', '')
+        run_file = r['file']
+        ver_file = r.get('ver_file', run_file.replace('_run.csv', '_ver.csv'))
         diffs = r['diffs']
         n_figs = math.ceil(len(diffs) / PER_FIG)
         version = version_from_data_file(data_file)
@@ -209,8 +214,8 @@ def plot_diffs(results, data_file=None,  save_plots=True, terse=False, hardcopy=
             n_rows = math.ceil(n_sub / COLS)
             fig, axes = plt.subplots(n_rows, COLS, figsize=(5 * COLS, 3 * n_rows), squeeze=False)
             fig_list.append(fig)
-            fig_label = f"fig {fig_idx + 1}/{n_figs}" if n_figs > 1 else ""
-            fig.suptitle(f"{stem}  {fig_label}", fontsize=9)
+            fig_label = f"  [{fig_idx + 1}/{n_figs}]" if n_figs > 1 else ""
+            fig.suptitle(f"{run_file}  vs  {ver_file}{fig_label}", fontsize=9)
 
             for sub_idx, d in enumerate(batch):
                 ax = axes[sub_idx // COLS][sub_idx % COLS]

@@ -325,8 +325,8 @@ def replicate(OPT: UserOptions):
 
         # Save plot info
         mon.save(t[G.i], T, mon.soc, sim.voc, SN, rp, sim)
-        sim.save(t[G.i], T)
-        sim.save_s(t[G.i-1])
+        sim.save(t[max(G.i-1,0)], T)
+        sim.save_s(t[max(G.i-1,0)])
 
         # Print initial
         if G.i == 0 and OPT.verbose:
