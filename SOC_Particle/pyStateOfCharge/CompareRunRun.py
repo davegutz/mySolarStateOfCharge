@@ -121,13 +121,8 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
                                    plot_title=plot_title, fig_list=fig_list, run_type='RunRun', terse=S.terse,
                                    save_plots=S.save_plots)  # all over all
 
-    # Copies
-    if S.save_plots and not S.terse:
-        precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-        print('\ncreating pdf...')
-        pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
-
     print('showing plots...')
+    plt.ion()
     plt.show(block=False)
 
     string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)

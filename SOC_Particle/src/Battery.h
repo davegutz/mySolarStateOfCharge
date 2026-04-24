@@ -208,7 +208,7 @@ public:
   double y_ekf() { return y_ekf_; };
   double y_ekf_f() { return y_ekf_f_; };
 protected:
-  LagTustin *Yfilt = new LagTustin(2., WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
+  LagTustin *Yfilt = new LagTustin(TAU_Y_FILT, WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
   SlidingDeadband *SdVb_;  // Sliding deadband filter for Vb
   TFDelay *EKF_converged;  // Time persistence
   Iterator *ice_;      // Iteration control for EKF solver

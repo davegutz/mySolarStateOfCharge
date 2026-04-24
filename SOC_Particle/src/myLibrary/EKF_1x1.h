@@ -40,6 +40,7 @@ public:
   void update_ekf(const double z, double x_min, double x_max);
   double x() { return ( x_ ); };
   double x_f_for_hx() { return ( x_for_hx_); };
+  double y() { return ( y_ ); };
   double z() { return ( z_ ); };
   void init_ekf(double soc, double Pinit);
 protected:

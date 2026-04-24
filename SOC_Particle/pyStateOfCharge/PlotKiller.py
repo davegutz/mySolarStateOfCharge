@@ -37,9 +37,10 @@ from ComparePlotSettings import rescale_time_axes
 
 
 def do_hardcopy(fig_list, fig_files, pdf_path, pdf_base):
-    """Save figures to PNGs, assemble a timestamped PDF, then remove the PNGs."""
+    """Save figures to PNGs on the main thread, then assemble the PDF in a daemon thread."""
     from datetime import datetime
     from unite_pictures import precleanup_fig_files, pngs_to_pdf
+    import threading
     if not fig_list or not fig_files or not pdf_base:
         return
     try:
@@ -47,10 +48,15 @@ def do_hardcopy(fig_list, fig_files, pdf_path, pdf_base):
             plt.figure(fig.number)
             plt.savefig(fig_file, format="png")
             print("saved", fig_file)
-        precleanup_fig_files(output_pdf_name=pdf_base, path_to_pdfs=pdf_path)
         date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-        print('\ncreating pdf...')
-        pngs_to_pdf(png_folder=pdf_path, output_pdf=pdf_base + '_' + date_time + '.pdf')
+        def _assemble(base=pdf_base, path=pdf_path, dt=date_time):
+            try:
+                precleanup_fig_files(output_pdf_name=base, path_to_pdfs=path)
+                print('\ncreating pdf...')
+                pngs_to_pdf(png_folder=path, output_pdf=base + '_' + dt + '.pdf')
+            except Exception as e:
+                print(f"do_hardcopy pdf ERROR: {e}")
+        threading.Thread(target=_assemble, daemon=True).start()
     except Exception as e:
         print(f"do_hardcopy ERROR: {e}")
 

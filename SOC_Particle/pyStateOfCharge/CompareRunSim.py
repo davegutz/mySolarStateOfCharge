@@ -219,15 +219,21 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
                                            plot_title=plot_title, fig_list=fig_list, strict_overplot=strict_overplot,
                                            terse=S.terse, run_type='RunSim', save_plots=S.save_plots)
 
-        # Copies
-        if S.save_plots and S.terse:
-            precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-            print('\ncreating pdf...')
-            pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
-
         print('showing plots...')
         plt.ion()
         plt.show(block=False)
+
+        # Copies — batch/AUTO mode only (no show_killer); show_killer's do_hardcopy handles the interactive case
+        if S.save_plots and not show_killer_:
+            import threading
+            def _assemble(base=filename, path=save_pdf_path, dt=date_time):
+                try:
+                    precleanup_fig_files(output_pdf_name=base, path_to_pdfs=path)
+                    print('\ncreating pdf...')
+                    pngs_to_pdf(png_folder=path, output_pdf=base + '_' + dt + '.pdf')
+                except Exception as e:
+                    print(f"pdf assembly ERROR: {e}")
+            threading.Thread(target=_assemble, daemon=True).start()
 
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         if show_killer_:

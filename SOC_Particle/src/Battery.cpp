@@ -309,6 +309,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool 
         soc_ekf_ = x();  // x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
         q_ekf_ = soc_ekf_ * q_capacity_;
         delta_q_ekf_ = q_ekf_ - q_capacity_;
+        y_ekf_ = y();  // y = z - hx, residual between measurement and predicted measurement
         y_ekf_f_ = Yfilt->calculate(y_ekf_, reset_temp, min(dt_ekf_, EKF_T_RESET));
         // EKF convergence.  Audio industry found that detection of quietness requires no more than
         // second order filter of the signal.   Anything more is 'gilding the lily'

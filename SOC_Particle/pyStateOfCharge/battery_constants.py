@@ -69,7 +69,7 @@ class BatteryConstants:
     KF_Q_STD = 0.0003
     KF_R_STD = 0.1
     MAX_TRIM_RATE = 1.0
-    MAX_WRAP_ERR_FILT = 0.5
+    MAX_WRAP_ERR_FILT = 10.
     MAX_Y_FILT = 1.
     MIN_Y_FILT = 0.
     MXEPS = 1e-6

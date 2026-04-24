@@ -621,13 +621,22 @@ def compare_hist_sim(data_file=None, time_end=None, plots=True, use_mon_csv=Fals
                                            plot_title=plot_title, fig_list=fig_list, strict_overplot=strict_overplot,
                                            terse=S.terse, run_type='HistSim', save_plots=S.save_plots)
 
-        if S.save_plots and not S.terse:
-            precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-            print('\ncreating pdf...')
-            pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename+'_'+date_time+'.pdf')
-
         print('showing plots...')
+        plt.ion()
         plt.show(block=False)
+
+        # Copies — batch/AUTO mode only; show_killer's do_hardcopy handles the interactive case
+        if S.save_plots and not show_killer_:
+            import threading
+            def _assemble(base=filename, path=save_pdf_path, dt=date_time):
+                try:
+                    precleanup_fig_files(output_pdf_name=base, path_to_pdfs=path)
+                    print('\ncreating pdf...')
+                    pngs_to_pdf(png_folder=path, output_pdf=base + '_' + dt + '.pdf')
+                except Exception as e:
+                    print(f"pdf assembly ERROR: {e}")
+            threading.Thread(target=_assemble, daemon=True).start()
+
         if not fig_list:
             string = 'none plots kill'
         else:
