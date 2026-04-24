@@ -256,12 +256,12 @@ def main():  # Example usage.  ok on 20260217
     data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/rapidTweakRegression_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = None
-    plots = True
+    plots = False
     use_mon_soc_ = False
     verbose = True
     scale_batt = 1.0
     slr_hys_sim = 1.0
-    request_history = 3
+    request_history = 1
     init_time = None
     time_shift = None
     strict_overplot = False
