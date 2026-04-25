@@ -568,7 +568,7 @@ def compare_run_ver_batch():
             tkinter.messagebox.showwarning(message="No valid data rows in auto_plink.csv")
             return
 
-        tol = 1e-1
+        tol = 1e-2
         for config in data_rows:
             version = config.get('version', Test.version)
             macro_val = config.get('macro', '')
