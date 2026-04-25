@@ -250,7 +250,7 @@ def replicate(OPT: UserOptions):
         sim.count_coulombs(OPT, SN, chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, charge_curr=sim.ib_charge, sat=False,
                            saturated=False, mon_sat=mon.sat, rp=rp)
 
-        # EKF
+        # Charge init
         if reset:
             mon.apply_delta_q_t(SN.delta_q[G.i], SN.Tb_f_rap[G.i])
             prn_soc_debug(OPT, time=now, leader="after mon.apply_delta_q_t", i_temp=i_temp, mon=mon, sim=sim)
@@ -267,11 +267,7 @@ def replicate(OPT: UserOptions):
             ib_ = OPT.ib_fail
         else:
             if OPT.mon_run.ib_sel is not None:
-                if rp.modeling_ib:
-                    ib_ = OPT.mon_run.ib_sel[G.i]
-                else:
-                    # ib_ = OPT.mon_run.ib_sel[max(G.i-1, 0)]
-                    ib_ = OPT.mon_run.ib_sel[G.i]
+                ib_ = OPT.mon_run.ib_sel[G.i]
             else:
                 ib_ = OPT.mon_run.ib[G.i]
 
@@ -293,7 +289,7 @@ def replicate(OPT: UserOptions):
             calc_ekf = True
         else:
             calc_ekf = False
-        SN.update_ekf(max(i_ekf, 0))
+        SN.update_ekf(max(i_ekf, 0))  # z_init and voc_stat_f_lstate_init
 
         if reset_ekf and calc_ekf:
             mon.init_soc_ekf(OPT.mon_run, G.i, i_ekf)  # when modeling (assumed in python) ekf wants to equal model

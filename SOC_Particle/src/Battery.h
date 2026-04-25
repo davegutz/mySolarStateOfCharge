@@ -207,6 +207,9 @@ public:
   float vocStatFilt_tau() { return VocStatFilt->tau(); };
   double y_ekf() { return y_ekf_; };
   double y_ekf_f() { return y_ekf_f_; };
+  float y_ekf_f_T() { return y_ekf_f_T_; };
+  float y_ekf_f_tau() { return y_ekf_f_tau_; };
+  float y_ekf_f_state() { return y_ekf_f_state_; };
 protected:
   LagTustin *Yfilt = new LagTustin(TAU_Y_FILT, WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
   SlidingDeadband *SdVb_;  // Sliding deadband filter for Vb
@@ -230,6 +233,9 @@ protected:
   float y_ekf_f_;      // Filtered EKF y value, V
   void ekf_predict(double *Fx_, double *Bu_);
   void ekf_update(double *hx, double *H, double *x, double *tb_f);
+  float y_ekf_f_T_;        // EKF filter
+  float y_ekf_f_tau_;      // EKF filter
+  float y_ekf_f_state_;    // EKF filter
 };
 
 

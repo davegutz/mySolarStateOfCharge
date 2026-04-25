@@ -489,6 +489,9 @@ class BatteryMonitor(Battery, EKF1x1):
         self.tau_hys_s = 0.
         self.kf_v_m = 0.
         self.kf_v_n = 0.
+        self.y_ekf_f_T = 0.
+        self.y_ekf_f_tau = 0.
+        self.y_ekf_f_state = 0.
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -636,13 +639,17 @@ class BatteryMonitor(Battery, EKF1x1):
             self.voc_stat_f_tau = self.voc_stat_filt.tau
             self.voc_stat_f_T = self.voc_stat_filt.dt
             self.frz = self.bms_off
-            self.predict_ekf(u=ddq_dt, reset=self.reset_ekf, freeze=self.frz)  # u = d(q)/dt
-            self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1.)  # z = voc, voc_filtered = hx
+            mr = SN.mon_run
+            self.predict_ekf(u=ddq_dt, reset=self.reset_ekf, freeze=self.frz, OPT=OPT, i_ekf=i_ekf)  # u = d(q)/dt
+            self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=Battery.MXEPS, OPT=OPT, i_ekf=i_ekf)  # z = voc, voc_filtered = hx
             self.soc_ekf = self.x  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
             self.y_ekf = self.y
             self.q_ekf = self.soc_ekf * self.q_capacity
             self.y_ekf_f = self.y_ekf_filt_lag.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.EKF_T_RESET),
-                                                    reset=self.reset_ekf)
+                                                         reset=self.reset_ekf)
+            self.y_ekf_f_T = self.y_ekf_filt_lag.dt
+            self.y_ekf_f_tau = self.y_ekf_filt_lag.tau
+            self.y_ekf_f_state = self.y_ekf_filt_lag.state
             # EKF convergence
             conv = abs(self.y_filt) < Battery.EKF_CONV
             self.EKF_converged.calculate(conv, Battery.EKF_T_CONV, Battery.EKF_T_RESET,
@@ -712,7 +719,7 @@ class BatteryMonitor(Battery, EKF1x1):
 
     def ekf_update(self):
         # Measurement function hx(x), x = soc ideal capacitor
-        x_lim = max(min(self.x, 1.), 0.)
+        x_lim = max(min(self.x, Battery.MXEPS), 0.)
         self.x_for_hx = x_lim
         self.tb_f_for_hx = self.Tb_f_rap
         self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.tb_f_for_hx, printit=False)

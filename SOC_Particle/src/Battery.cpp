@@ -304,13 +304,16 @@ float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool 
         else
         {
             predict_ekf(ddq_dt, freeze);  // u = d(dq)/dt
-            update_ekf(voc_stat_f_, 0., 1.);  // z = _f, estimated = voc_filtered = hx, predicted = est past
+            update_ekf(voc_stat_f_, 0., MXEPS);  // z = _f, estimated = voc_filtered = hx, predicted = est past
         }
         soc_ekf_ = x();  // x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
         q_ekf_ = soc_ekf_ * q_capacity_;
         delta_q_ekf_ = q_ekf_ - q_capacity_;
         y_ekf_ = y();  // y = z - hx, residual between measurement and predicted measurement
         y_ekf_f_ = Yfilt->calculate(y_ekf_, reset_temp, min(dt_ekf_, EKF_T_RESET));
+        y_ekf_f_T_ = Yfilt->T();
+        y_ekf_f_tau_ = Yfilt->tau();
+        y_ekf_f_state_ = Yfilt->state();
         // EKF convergence.  Audio industry found that detection of quietness requires no more than
         // second order filter of the signal.   Anything more is 'gilding the lily'
         bool conv = abs(y_ekf_f_)<ap.ekf_conv() && !cp.soft_reset && !cp.ekf_reset;  // Initialize false
@@ -415,7 +418,7 @@ void BatteryMonitor::ekf_predict(double *Fx_, double *Bu_)
 void BatteryMonitor::ekf_update(double *hx, double *H, double *x, double *tb)
 {
     // Measurement function hx(x), x=soc ideal capacitor
-    float x_lim = max(min(x_, 1.0), 0.0);
+    float x_lim = max(min(x_, MXEPS), 0.0);
     *hx = Battery::calc_soc_voc(x_lim, tb_f_, &dv_dsoc_);
     if ( sp.debug()==93 )
         Serial.printf("BatteryMonitor::ekf_update: x_ %15.12f tb_f_ %9.5g hx %19.15f********\n*******\n*******\n*****************\n", x_, tb_f_, *hx);

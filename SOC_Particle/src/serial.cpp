@@ -249,9 +249,11 @@ void print_ekf_header(void)
   Serial.printf("unit_e,c_time_e,dt_ekf,Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_,");
   Serial.printf("x_prior_, P_prior_, x_post_, P_post_, hx_, H_, frz_, tb_f_hx_, x_for_hx_,");
   Serial.printf("  voc_stat_f_T, voc_stat_f_tau, voc_stat_f_rstate, voc_stat_f_lstate,");
+  Serial.printf("y_ekf_f_T, y_ekf_f_tau, y_ekf_f_state,");
   Serial.printf("\n");
 }
- void EKF_1x1::print_ekf_serial(BatteryMonitor *Mon)
+
+void EKF_1x1::print_ekf_serial(BatteryMonitor *Mon)
  {
   // if ( dt_ekf_ == 0. ) return;
   double eTime = double(now_ekf_)/1000.;
@@ -266,7 +268,10 @@ void print_ekf_header(void)
     Mon->vocStatFilt_T(), Mon->vocStatFilt_tau(), 
     Mon->vocStatFilt_rstate(), Mon->vocStatFilt_lstate());
 
-  Serial.printf("\n");
+  Serial.printf("%9.6f,%9.6f,%9.6f,",
+    Mon->y_ekf_f_T(), Mon->y_ekf_f_tau(), Mon->y_ekf_f_state());
+
+    Serial.printf("\n");
 }
 
 // Print shunt logic data
@@ -375,7 +380,7 @@ void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon
             sp.mod_tb(), Sen->Flt->tb_fa());
       Serial.printf("%s", pr.buff);
 
-      sprintf(pr.buff, "%7.3f, %7.3f, %d, %d, %9.6f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%7.3f,%d,%d,%7.3f,%7.3f,%d,",
+      sprintf(pr.buff, "%10.6f, %10.6f, %d, %d, %9.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%d,%d,%8.6f,%8.6f,%d,",
           Sen->Flt->ib_rate(), Sen->Flt->ib_quiet(),  Sen->Flt->ib_really_quiet(), Sen->Flt->tb_sel_status(),
           Sen->Flt->cc_diff_thr(), Sen->Flt->LoopIbAmp->ewhi_thr(),Sen->Flt->LoopIbAmp->ewlo_thr(), Sen->Flt->LoopIbNoa->ewhi_thr(),
           Sen->Flt->LoopIbNoa->ewlo_thr(), Sen->Flt->ib_diff_thr(), Sen->Flt->ib_quiet_thr(), Sen->Flt->preserving(),

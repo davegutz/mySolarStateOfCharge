@@ -304,23 +304,6 @@ double TableInterp2D::interp(double x, double y)
 {
   return (tab2(x + dx_, y + dy_, x_, y_, v_, n1_, n2_) + dz_);  // clips
 }
-//tab2(double x1, double x2, double *v1, double *v2, double *y, int n1, int n2);
-/*
-static double  xTbl[6]  =
-  {-4.7, -1.88, -1.41, -.94, -.47, 4.7};
-static double   yTbl[4]   =
-  {0., 10000., 20000., 30000.};
-static double  vTbl[24]  =
-  {5.5, 3.5, 3.0, 2.5,
-   5.5, 3.5, 3.0, 2.5,
-   5.5, 3.5, 3.0, 5.5,
-   5.5, 3.5, 5.5, 5.5,
-   5.5, 5.5, 5.5, 5.5,
-   5.5, 5.5, 5.5, 5.5};
-    val = tab2(xDR_ven, fxven, xTbl, yTbl, vTbl,
-    sizeof(xTbl)/sizeof(double),
-    sizeof(yTbl)/sizeof(double)) * 100. / 4.7;
-*/
 
 void TableInterp2D::pretty_print()
 {
