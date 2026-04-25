@@ -261,7 +261,7 @@ def main():  # Example usage.  ok on 20260217
     verbose = True
     scale_batt = 1.0
     slr_hys_sim = 1.0
-    request_history = 2
+    request_history = 5
     init_time = None
     time_shift = None
     strict_overplot = False

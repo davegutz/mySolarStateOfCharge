@@ -409,7 +409,7 @@ void Fault::ib_wrap(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
   // HI_LO-Only Logic
   #ifdef HDWE_IB_HI_LO
     LoopIbNoa->calculate(reset_loc, false, Sen->ib_noa(), Sen);
-    LoopIbAmp->calculate(reset_loc, disable_amp_fault_, Sen->ib_amp(), Sen);
+    LoopIbAmp->calculate(reset_loc || disable_amp_fault_, disable_amp_fault_, Sen->ib_amp(), Sen);
     faultAssign( LoopIbAmp->hi_fault(), WRAP_HI_M_FLT);
     failAssign( LoopIbAmp->hi_fail(), WRAP_HI_M_FA);  // WRAP_HI_M_FA not latched
     faultAssign( LoopIbAmp->lo_fault(), WRAP_LO_M_FLT);

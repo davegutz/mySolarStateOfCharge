@@ -238,9 +238,10 @@ def plot_diffs(results, data_file=None,  save_plots=True, terse=False, hardcopy=
 
             fig.tight_layout(rect=(0, 0, 1, 0.95))
 
-    if any(r.get('diffs') for r in results):
-        plt.show(block=False)
+    if not fig_list:
+        return
 
+    plt.show(block=False)
     string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
     show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path,
                 pdf_base=os.path.join(save_pdf_path, 'CompareRunVer'), hardcopy=hardcopy)
