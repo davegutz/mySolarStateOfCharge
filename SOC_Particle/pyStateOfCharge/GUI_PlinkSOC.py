@@ -110,6 +110,7 @@ auto_running = False  # Track if AUTO process is active
 auto_fig_list = None  # Handles to figures from the most recently completed AUTO case
 auto_case_index = 0   # Current AUTO case index (0-based)
 auto_case_total = 0   # Total number of AUTO cases
+_monitor_after_id = None  # Pending after() ID for monitor_plink_done; used to cancel stale loops
 
 
 
@@ -536,7 +537,7 @@ def compare_run_sim_choose(show_killer_=True):
 
 
 def compare_run_ver_batch():
-    from CompareRunVer import temp_folder, find_pairs, compare_pair, report, plot_diffs
+    from CompareRunVer import temp_folder, find_pairs, compare_pair, report, plot_diffs, show_batch_diffs
 
     plink_path = Path(plink_test_csv_path.get())
     auto_plink_path = plink_path.parent / 'auto_plink.csv'
@@ -569,6 +570,9 @@ def compare_run_ver_batch():
             return
 
         tol = 1e-2
+        all_fig_list = []
+        all_fig_files = []
+        last_pdf_path = None
         for config in data_rows:
             version = config.get('version', Test.version)
             macro_val = config.get('macro', '')
@@ -587,7 +591,15 @@ def compare_run_ver_batch():
 
             results = [compare_pair(run, ver, tol) for run, ver in pairs]
             report(results, tol, option=option_val, macro=macro_val)
-            plot_diffs(results, data_file=Test.file_path)
+            ret = plot_diffs(results, data_file=Test.file_path, show_killer_=False)
+            if ret is not None:
+                figs, files, pdf_path = ret
+                all_fig_list.extend(figs)
+                all_fig_files.extend(files)
+                if pdf_path:
+                    last_pdf_path = pdf_path
+
+        show_batch_diffs(all_fig_list, all_fig_files, last_pdf_path)
 
     except Exception as e:
         print(f"compare_run_ver_batch: {e}")
@@ -649,7 +661,19 @@ def open_plink_window():
     start_plink(fg_color='#F5DEB3', bg_color='#2F4F4F')
 
 
+def _cancel_monitor_plink():
+    global _monitor_after_id
+    if _monitor_after_id is not None:
+        try:
+            master.after_cancel(_monitor_after_id)
+        except Exception:
+            pass
+        _monitor_after_id = None
+
+
 def monitor_plink_done():
+    global _monitor_after_id
+    _monitor_after_id = None
     if Path(plink_test_csv_path.get()).is_file():
         try:
             with open(plink_test_csv_path.get(), 'rb') as f:
@@ -662,14 +686,13 @@ def monitor_plink_done():
                     elapsed = time.time() - run_start_time if run_start_time is not None else float('nan')
                     print(f"***DONE*** detected in {plink_test_csv_path.get()}  elapsed={elapsed:.1f}s")
                     if auto_running:
-                        master.after(1000, monitor_plink_done)
-                        return
+                        return  # AUTO's check_completion owns this path
                     save_data()
                     tk.messagebox.showinfo(title='Done ' + start_button.cget('text'), message='Run Complete')
                     return
         except Exception as e:
             print(f"Error monitoring plink file: {e}")
-    master.after(1000, monitor_plink_done)
+    _monitor_after_id = master.after(1000, monitor_plink_done)
 
 
 def grab_start():
@@ -707,6 +730,7 @@ def grab_start():
     grab_all_nominal()
     start_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black')
     start_timer()
+    _cancel_monitor_plink()
     monitor_plink_done()
 
 
@@ -1033,6 +1057,7 @@ def close_auto_windows(close_figs=False):
     close_figs=False: close previous case's figures by handle, leaving the new case's figures intact."""
     global timer, auto_fig_list
     kill_plink(platform.system())
+    _cancel_monitor_plink()
     if timer is not None:
         try:
             timer.close()
@@ -1393,6 +1418,11 @@ def save_data(show_killer_=True):
         if Path(Test.file_path).is_file() and Path(Test.file_path).stat().st_size > 0:  # bytes
             if auto_overwrite.get():
                 print('auto over-write enabled')
+                p = Path(Test.file_path)
+                ts = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+                renamed = p.with_name(p.stem + '_' + ts + p.suffix)
+                p.rename(renamed)
+                print(f"Renamed existing gdrive file to {renamed.name}")
             else:
                 confirmation = tk.messagebox.askyesno('query overwrite', 'File exists:  overwrite?')
                 if not confirmation:

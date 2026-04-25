@@ -188,10 +188,15 @@ ROWS = 3
 PER_FIG = COLS * ROWS
 
 
-def plot_diffs(results, data_file=None,  save_plots=True, terse=False, hardcopy=True):
-    """For each pair with differences, produce figure(s) with ≤9 run-vs-ver subplots."""
+def plot_diffs(results, data_file=None, save_plots=True, terse=False, hardcopy=True, show_killer_=True):
+    """For each pair with differences, produce figure(s) with ≤9 run-vs-ver subplots.
+
+    When show_killer_=False, returns (fig_list, fig_files, save_pdf_path) without blocking
+    so the caller can accumulate figures across multiple cases and call show_batch_diffs once.
+    """
     fig_list = []
     fig_files = []
+    save_pdf_path = None
     for r in results:
         if 'error' in r or not r.get('diffs'):
             continue
@@ -239,11 +244,25 @@ def plot_diffs(results, data_file=None,  save_plots=True, terse=False, hardcopy=
             fig.tight_layout(rect=(0, 0, 1, 0.95))
 
     if not fig_list:
-        return
+        return ([], [], None) if not show_killer_ else None
 
     plt.show(block=False)
+
+    if not show_killer_:
+        return fig_list, fig_files, save_pdf_path
+
     string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
     show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path,
+                pdf_base=os.path.join(save_pdf_path, 'CompareRunVer'), hardcopy=hardcopy)
+
+
+def show_batch_diffs(all_fig_list, all_fig_files, save_pdf_path, hardcopy=True):
+    """Open PlotKiller once with all figures accumulated across a batch of cases."""
+    if not all_fig_list:
+        return
+    string = 'plots ' + str(all_fig_list[0].number) + ' - ' + str(all_fig_list[-1].number)
+    show_killer(string, 'CompareRunSim', fig_list=all_fig_list, fig_files=all_fig_files,
+                pdf_path=save_pdf_path,
                 pdf_base=os.path.join(save_pdf_path, 'CompareRunVer'), hardcopy=hardcopy)
 
 
