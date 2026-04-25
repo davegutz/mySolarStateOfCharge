@@ -84,8 +84,8 @@ class Battery(BatteryConstants, Coulombs):
         so equation error when soc<=0 to match data.    See Battery.h
         """
         # Parents
-        Coulombs.__init__(self, OPT, q_cap_rated,  q_cap_rated, t_rated, temp_rlim, tweak_test, dvoc=dvoc,
-                          Dw=Battery.sp_Dw)
+        Coulombs.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated,  q_cap_rated_scaled=q_cap_rated, t_rated=t_rated,
+                          tweak_test=tweak_test, dvoc=dvoc, Dw=Battery.sp_Dw)
 
         # Defaults
         self.time = -999.

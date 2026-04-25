@@ -71,7 +71,7 @@ public:
   float q_cap_rated(){ return (q_cap_rated_); };
   float q_cap_rated_scaled(){ return (q_cap_rated_scaled_); };
   float q_capacity(){ return (q_capacity_); };
-  float q_inf(){ return (q_inf_); };
+  double q_inf(){ return (q_inf_); };
   bool sat() { return(sat_); };
   bool saturated() { return(saturated_); };
   float soc() { return(soc_); };
@@ -97,9 +97,9 @@ protected:
   float q_min_;       // Floor on charge available to use, C
   bool sat_;       // Indication that battery is potentially saturated, T=saturated
   bool saturated_; // Battery is confirmed saturated, T=saturated
-  float soc_;         // Fraction of saturation charge (q_capacity_) available (0-1)
+  double soc_;        // Fraction of saturation charge (q_capacity_) available (0-1)
   float soc_ekf_min_; // Minimum SOC for EKF operation
-  float soc_inf_;     // Fraction of saturation charge (q_capacity_) available (-inf - inf)
+  double soc_inf_;    // Fraction of saturation charge (q_capacity_) available (-inf - inf)
   float soc_min_;     // As battery cools, the voltage drops and there appears a minimum soc it can deliver
   double *sp_delta_q_;// Charge since saturated, C
   double tb_f_;        // Temperature, deg C

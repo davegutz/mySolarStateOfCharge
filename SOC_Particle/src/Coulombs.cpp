@@ -174,7 +174,7 @@ float Coulombs::count_coulombs(Sensors *Sen, const bool reset_temp, const float 
 
     // State change
     double d_delta_q_inf = d_delta_q_;
-    if ( charge_curr>0. ) d_delta_q_ *= coul_eff_;
+    if ( charge_curr>0. && !sp.tweak_test() ) d_delta_q_ *= coul_eff_;
     // Capacity changes withi temperature so this effect would be double if used
     // d_delta_q_ -= chem_.dqdt*q_capacity_*tb_f_rate_*dt_;
     d_delta_q_inf = d_delta_q_;

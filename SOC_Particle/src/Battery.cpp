@@ -67,7 +67,7 @@ float Battery::calculate(const double tb_f, const float soc_frac, float curr_in,
         dv_dsoc     Derivative scaled, V/fraction
         voc         Static model open circuit voltage from table (reference), V
 */
-float Battery::calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc)
+double Battery::calc_soc_voc(const double soc, const double tb_f, double *dv_dsoc)
 {
     float voc;  // return value
     *dv_dsoc = calc_soc_voc_slope(soc, tb_f);
@@ -82,7 +82,7 @@ float Battery::calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc)
     OUTPUTS:
         dv_dsoc     Derivative scaled, V/fraction
 */
-float Battery::calc_soc_voc_slope(const float soc, const double tb_f)
+double Battery::calc_soc_voc_slope(const float soc, const double tb_f)
 {
     float dv_dsoc;  // return value
     if ( soc > 0.5 )
@@ -138,10 +138,10 @@ void Battery::pretty_print(void)
 }
 
 // EKF model for update
-float Battery::voc_soc_tab(const float soc, const double tb_f)
+double Battery::voc_soc_tab(const double soc, const double tb_f)
 {
-    float voc;     // return value
-    float dv_dsoc;
+    double voc;     // return value
+    double dv_dsoc;
     voc = calc_soc_voc(soc, tb_f, &dv_dsoc);
     return ( voc );
 }
@@ -394,7 +394,7 @@ float BatteryMonitor::calc_charge_time(const double q, const float q_capacity, c
         dv_dsoc     Derivative scaled, V/fraction
         voc         Static model open circuit voltage from table (reference), V
 */
-float BatteryMonitor::calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc)
+double BatteryMonitor::calc_soc_voc(const double soc, const double tb_f, double *dv_dsoc)
 {
     float voc;  // return value
     *dv_dsoc = calc_soc_voc_slope(soc, tb_f);
@@ -564,9 +564,9 @@ bool BatteryMonitor::solve_ekf(const bool reset, const bool reset_temp, Sensors 
     }
 
     // Solver
-    static float soc_solved = 1.;
-    float dv_dsoc;
-    float voc_solved = calc_soc_voc(soc_solved, Tb_avg, &dv_dsoc);
+    static double soc_solved = 1.;
+    double dv_dsoc;
+    double voc_solved = calc_soc_voc(soc_solved, Tb_avg, &dv_dsoc);
     ice_->init(1., soc_ekf_min_, 2*SOLV_ERR);
     while ( abs(ice_->e())>SOLV_ERR && ice_->count()<SOLV_MAX_COUNTS && abs(ice_->dx())>0. )
     {
@@ -752,7 +752,7 @@ float BatterySim::calculate(Sensors *Sen, const bool dc_dc_on, const bool reset)
         dv_dsoc     Derivative scaled, V/fraction
         voc         Static model open circuit voltage from table (reference), V
 */
-float BatterySim::calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc)
+double BatterySim::calc_soc_voc(const double soc, const double tb_f, double *dv_dsoc)
 {
     float voc;  // return value
     *dv_dsoc = calc_soc_voc_slope(soc, tb_f);  // Ds embedded in voc call

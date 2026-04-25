@@ -194,6 +194,7 @@ def replicate(OPT: UserOptions):
 
         # Input
         rp.modeling = rp.add_modeling(modeling[G.i])
+        mon.tweak_test = rp.tweak_test
 
         # Basic reset model verification is to init to the input data
         # Tried hard not to re-implement solvers in the Python verification  tool
