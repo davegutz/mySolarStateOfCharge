@@ -372,7 +372,7 @@ class SavedData:
             self.x_post = np.copy(self.soc_ekf)
         if self.y_ekf is None:
             self.y_ekf = np.copy(self.voc_stat) * 0.
-        if self.y_ekf_f is None:
+        if hasattr(self, 'y_ekf_f') and self.y_ekf_f is None:
             self.y_ekf_f = np.copy(self.voc_stat) * 0.
         if self.z is None:
             self.z = np.copy(self.voc_stat)

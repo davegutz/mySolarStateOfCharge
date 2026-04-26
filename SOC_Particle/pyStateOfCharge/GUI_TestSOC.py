@@ -539,8 +539,8 @@ def grab_macro():
     register_last_task(grab_macro)
     add_to_clip_board(macro.get())
     macro_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black')
-    init_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black')
-    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
+    init_button.config(bg='darkslategray', activebackground='darkslategray', fg='wheat', activeforeground='wheat')
+    start_button.config(bg='darkslategray', activebackground='darkslategray', fg='wheat', activeforeground='wheat')
     get_time_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
 
 
@@ -602,8 +602,8 @@ def grab_start():
 
 def grab_all_nominal():
     macro_button.config(bg=bg_color, activebackground='black', fg='black', activeforeground='white')
-    init_button.config(bg=bg_color, activebackground='black', fg='black', activeforeground='purple')
-    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
+    init_button.config(bg='darkslategray', activebackground='black', fg='wheat', activeforeground='wheat')
+    start_button.config(bg='darkslategray', activebackground='darkslategray', fg='wheat', activeforeground='wheat')
     get_time_button.config(bg=bg_color, activebackground='black', fg='black', activeforeground='white')
 
 
@@ -684,7 +684,7 @@ def handle_option(*_args):
                             text='save data')
     save_data_as_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black',
                                text='save data as')
-    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
+    start_button.config(bg='darkslategray', activebackground='darkslategray', fg='wheat', activeforeground='wheat')
     update_data_buttons()
 
 
@@ -902,7 +902,7 @@ def save_data():
     else:
         print('putty test file non-existent or too small (<64 bytes) probably already done')
         tkinter.messagebox.showwarning(message="Nothing to save")
-    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
+    start_button.config(bg='darkslategray', activebackground='darkslategray', fg='wheat', activeforeground='wheat')
 
 
 def save_data_as():
@@ -944,7 +944,7 @@ def save_data_as():
     else:
         print('putty test file is too small (<512 bytes) probably already done')
         tkinter.messagebox.showwarning(message="Nothing to save")
-    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
+    start_button.config(bg='darkslategray', activebackground='darkslategray', fg='wheat', activeforeground='wheat')
 
 
 def save_progress():
@@ -1047,7 +1047,7 @@ def update_data_buttons():
                             text='save data')
     save_data_as_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black',
                                text='save data as')
-    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
+    start_button.config(bg='darkslategray', activebackground='darkslategray', fg='wheat', activeforeground='wheat')
 
 
 if __name__ == '__main__':  # Example usage.  Ran ok 20260217
@@ -1231,10 +1231,10 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
 
     _, init_val, _ = lookup.get('satInit')
     if platform.system() == 'Darwin':
-        init_button = myButton(option_panel_ctr, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg='black',
+        init_button = myButton(option_panel_ctr, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg='wheat', bg='darkslategray',
                                justify='left', font=("Arial", 8))
     else:
-        init_button = myButton(option_panel_ctr, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg='black',
+        init_button = myButton(option_panel_ctr, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg='wheat', bg='darkslategray',
                                wraplength=wrap_length, justify='left', font=("Arial", 8))
     init = tk.StringVar(master, init_val)
     init_label = tk.Label(option_panel_ctr, text='init & clear:', font=label_font_gentle)
@@ -1259,12 +1259,12 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     start_label = tk.Label(option_panel_left, text='copy start:', font=label_font_gentle)
     start_label.pack(padx=5, pady=5, expand=True, fill='x')
     if platform.system() == 'Darwin':
-        start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="#00ff00", bg='black',
+        start_button = myButton(option_panel_ctr, text='', command=grab_start, fg='wheat', bg='darkslategray',
                                 justify='left', font=butt_font)
         prev_button = myButton(option_panel_right, text='Run Prev', command=run_previous_task, fg="blue", bg=bg_color,
                                 justify='left', font=butt_font)
     else:
-        start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="#00ff00", bg='black', wraplength=wrap_length,
+        start_button = myButton(option_panel_ctr, text='', command=grab_start, fg='wheat', bg='darkslategray', wraplength=wrap_length,
                                 justify='left', font=butt_font)
         prev_button = myButton(option_panel_right, text='Run Prev', command=run_previous_task, fg="blue", bg=bg_color, wraplength=wrap_length,
                                 justify='left', font=butt_font)

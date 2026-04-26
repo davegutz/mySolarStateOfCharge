@@ -253,7 +253,7 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     # Cut-pasted from GUI_TestSOC Run window
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/triTweakDisch_soc3p2_hi_lo_bb.csv'
+    data_file='G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/triTweakDisch_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = 14
     plots = False
