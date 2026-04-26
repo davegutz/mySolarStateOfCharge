@@ -99,6 +99,8 @@ def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
                     hdr = print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
                 case 8:  # request_history for vb_wrap
                     hdr = print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
+                case 9:  # request_history for dyn_n
+                    hdr = print_dyn_n_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
         case 'HistSim':
             match OPT.request_history:
                 case 0:
@@ -182,6 +184,74 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:26.0f}".format(SN.mon_run.e_wrap_m_reset[G.i]), "{:2d}".format(mon.e_wrap_m_reset),
           "{:18d}".format(SN.mon_run.fltw[G.i]), "{:4d}".format(SN.mon_run.falw[G.i]),
           # "{:11.5f}".format(SN.mon_run.e_wrap_m_filt[G.i]), "{:8.5f}".format(mon.e_wrap_m_filt), "{:8.5f}".format(SN.e_wrap_m_filt_init),
+          )
+    print(Colors.reset, end='')
+    return hdr
+
+# 9
+# noinspection PyPep8Naming,PyUnusedLocal
+def print_dyn_n_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
+    global count_since_last_header, vv_warning_printed
+    if not hasattr(SN.mon_run, 'ib_noa_lo') or SN.mon_run.ib_noa_lo is None:
+        if not vv_warning_printed:
+            print(Colors.fg.red, end='')
+            print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_dyn_n_RunSim  (request_hist_in=7)\n*************\n")
+            vv_warning_printed = True
+            print(Colors.reset, end='')
+        return None
+    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                 vb                            ibmh                         ibmm                    ib_noa_lo    ib_noa_hi      dt                    ib_noa                    ib_dyn_T_n          ib_dyn_rstate_n                ib_dyn_lstate_n                      ib_dyn_n                 vb                      dv_dyn_n                vb_n                       voc_n                      voc_soc                   voc_soc_n                    e_wrap_n                  e_wrap_n_trim        e_wrap_trimmed_n         e_wrap_n_T           e_wrap_n_rate            e_wrap_n_reset       e_wrap_n_state          e_wrap_n_filt          ewmhi_thr              ewmlo_thr          e_wrap_n_flt   e_wrap_n_fa    ib_noa_lo   fltw   falw  e_wrap_n_filt"
+    if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
+        print(hdr)
+        count_since_last_header = 0
+    if G.i > 0:
+        count_since_last_header += 1
+    if mon.reset:
+        print(Colors.fg.red, end='')
+    elif mon.reset_temp:
+        print(Colors.fg.orange, end='')
+    print("{:4d}".format(G.i), "{:8.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
+          "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
+          "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
+          "{:7d}".format(bool(SN.mon_run.reset[G.i])),
+          "{:7d}".format(bool(SN.mon_run.reset_temp[G.i])),
+          "{:14d}".format(bool(SN.mon_run.reset_all_faults[G.i])),
+          "{:15d}".format(bool(SN.mon_run.soft_reset[G.i])),
+          "{:15d}".format(bool(SN.mon_run.soft_reset_sim[G.i])),
+          "{:15d}".format(bool(SN.mon_run.init_mon[G.i])),
+          "{:15d}".format(bool(SN.mon_run.init_sim[G.i])),
+          "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
+          "{:9.4f}".format(SN.mon_run.dt[G.i]), "{:7.4f}".format(mon.dt),
+          "{:14.7f}".format(SN.mon_run.vb[G.i]), "{:12.7f}".format(mon.vb),
+          "{:15.5f}".format(SN.mon_run.ib_noa_hdwe[G.i]), "{:13.5f}".format(mon.ib_noa_hdwe),
+          "{:15.5f}".format(SN.mon_run.ib_noa_model[G.i]), "{:13.5f}".format(mon.ib_noa_model),
+          "{:7d}".format(bool(SN.mon_run.ib_noa_lo[G.i])), "{:2d}".format(bool(mon.ib_noa_lo)),
+          "{:7d}".format(bool(SN.mon_run.ib_noa_hi[G.i])), "{:2d}".format(bool(mon.ib_noa_hi)),
+          "{:11.4f}".format(SN.mon_run.dt[G.i]), "{:7.4f}".format(mon.dt),
+          "{:15.6f}".format(SN.mon_run.ib_noa[G.i]), "{:13.6f}".format(mon.ib_noa),
+          "{:9.4f}".format(SN.mon_run.ib_dyn_T_n[G.i]), "{:5.4f}".format(mon.LoopIbNoa.ChargeTransfer.dt),
+          "{:15.6f}".format(SN.mon_run.ib_dyn_rstate_n[G.i]), "{:13.6f}".format(mon.LoopIbNoa.ChargeTransfer.rstate),
+          "{:15.6f}".format(SN.mon_run.ib_dyn_lstate_n[G.i]), "{:13.6f}".format(mon.LoopIbNoa.ChargeTransfer.state),
+          "{:21.5f}".format(SN.mon_run.ib_dyn_n[G.i]), "{:12.5f}".format(mon.LoopIbNoa.ib_dyn),
+          "{:12.5f}".format(SN.mon_run.vb[G.i]), "{:10.5f}".format(mon.vb),
+          "{:12.5f}".format(SN.mon_run.dv_dyn_n[G.i]), "{:10.5f}".format(mon.LoopIbNoa.dv_dyn),
+          "{:13.6f}".format(SN.mon_run.vb_model[G.i]), "{:12.6f}".format(mon.LoopIbNoa.vb),
+          "{:13.6f}".format(SN.mon_run.voc_n[G.i]), "{:12.6f}".format(mon.LoopIbNoa.voc),
+          "{:13.6f}".format(SN.mon_run.voc_soc[G.i]),  "{:12.6f}".format(mon.voc_soc),
+          "{:12.6f}".format(SN.mon_run.voc_soc_n[G.i]), "{:12.6f}".format(mon.LoopIbNoa.voc_soc),
+          "{:13.5f}".format(SN.mon_run.e_wrap_n[G.i]), "{:8.5f}".format(mon.e_wrap_n),
+          "{:16.5f}".format(SN.mon_run.e_wrap_n_trim[G.i]), "{:8.5f}".format(mon.e_wrap_n_trim),
+          "{:12.6f}".format(SN.mon_run.e_wrap_n_trimmed[G.i]), "{:9.6f}".format(mon.LoopIbNoa.e_wrap_trimmed),
+          "{:12.4f}".format(SN.mon_run.ib_wrp_T_n[G.i]), "{:9.4f}".format(mon.LoopIbNoa.WrapErrFilt.dt),
+          "{:12.6f}".format(SN.mon_run.ib_wrp_rate_n[G.i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.rate),
+          "{:12d}".format(bool(SN.mon_run.ib_wrp_reset_n[G.i])), "{:9d}".format(bool(mon.LoopIbNoa.WrapErrFilt.reset)),
+          "{:12.6f}".format(SN.mon_run.ib_wrp_state_n[G.i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.state),
+          "{:12.5f}".format(SN.mon_run.e_wrap_n_filt[G.i]), "{:9.5f}".format(mon.e_wrap_n_filt),
+          "{:12.5f}".format(SN.mon_run.ewmhi_thr[G.i]), "{:9.5f}".format(mon.ewmhi_thr),
+          "{:12.5f}".format(SN.mon_run.ewmlo_thr[G.i]), "{:9.5f}".format(mon.ewmlo_thr),
+          "{:8d}".format(SN.mon_run.wrap_hi_n_flt[G.i]), "{:4d}".format(mon.wrap_hi_n_flt),
+          "{:8d}".format(SN.mon_run.wrap_hi_n_fa[G.i]), "{:4d}".format(mon.wrap_hi_n_fa),
+          "{:18d}".format(SN.mon_run.fltw[G.i]), "{:4d}".format(SN.mon_run.falw[G.i]),
+          "{:11.5f}".format(SN.mon_run.e_wrap_n_filt[G.i]), "{:8.5f}".format(mon.e_wrap_n_filt),
           )
     print(Colors.reset, end='')
     return hdr

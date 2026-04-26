@@ -255,13 +255,13 @@ def main():  # Example usage.  ok on 20260217
     # Cut-pasted from GUI_TestSOC Run window
     data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/triTweakDisch_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
-    time_end = 37
+    time_end = 14
     plots = False
     use_mon_soc_ = False
     verbose = False
     scale_batt = 1.0
     slr_hys_sim = 1.0
-    request_history = 3
+    request_history = 9
     init_time = None
     time_shift = None
     strict_overplot = True
