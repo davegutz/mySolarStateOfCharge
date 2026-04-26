@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,14 +30,14 @@ class KalmanFilter {
 public:
   KalmanFilter(const double dt, const double init_pos, const double Q_std, const double R_std);
   ~KalmanFilter();
-  double calculate(const boolean reset, const double dt, const double in);
-  boolean get_reset() { return reset_; };
+  double calculate(const bool reset, const double dt, const double in);
+  bool get_reset() { return reset_; };
   double **Fx() { return Fx_; };
   double *x() { return x_; };
-  double get_u() { return u_; };
-  double get_v() { return x_[1]; };
-  double get_x() { return x_[0]; };
   void kf_init(const double in);
+  double kf_u() { return u_; };
+  double kf_v() { return x_[1]; };
+  double kf_x() { return x_[0]; };
   void predict();
   void pretty_print(void);
   void print_serial_header(const char suffix);
@@ -57,7 +57,7 @@ private:
   double **P_prior_;  // Intermediate Kalman probability matrix
   double **Q_;    
   double Q_stdsq_; // Standard deviation squared of the process noise
-  boolean reset_; // Reset command status
+  bool reset_; // Reset command status
   double R_stdsq_;    // Standard deviation squared of the measurement noise
   double S_;
   double u_;      // Measurement update for x

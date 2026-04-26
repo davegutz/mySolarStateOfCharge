@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -107,6 +107,8 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.s_cap_mon_p->print_help();  // SQ
   ap.s_cap_sim_p->print_help();  // Sq
   ap.Vb_scale_p->print_help();  // SV
+  ap.s_cap_mon_p->print_help();  // SQ
+  ap.snap_wait_p->print_help();  // SW
   ap.q_std_p->print_help();  // Kq
   ap.r_std_p->print_help();  // Kr
 
@@ -118,7 +120,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.ib_quiet_slr_p->print_help();  // Fq
   ap.disab_ib_fa_p->print_help();  // FI
   ap.disab_tb_fa_p->print_help();  // FT
-  ap.disab_vb_fa_p->print_help();  // FV
+  ap.dis_vb_fa_lt_p->print_help();  // FV
 
   sendTxBuf("\nH<?>   Manage history\n", true, true);
   sendTxBuf("  Hd= ", true, true); sendTxBuf("dump summ log\n", true, true);
@@ -168,7 +170,6 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sp.debug_p->print_help();  // vv
 
   sendTxBuf("  -<>: Negative - Arduino plot compatible\n", true, true);
-  sendTxBuf(" vv-2: ADS counts for throughput meas\n", true, true);
   #ifdef DEBUG_INIT
     sendTxBuf("  v-1: Debug\n", true, true);
   #endif
@@ -189,11 +190,6 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sendTxBuf(" vv35: ChargeTransfer balance\n", true, true);
   sendTxBuf(" vv36: EKF short in EKF\n", true, true);
   sendTxBuf(" vv37: EKF short\n", true, true);
-  sendTxBuf(" vv75: voc_low check mod\n", true, true);
-  sendTxBuf(" vv76: vb model\n", true, true);
-  sendTxBuf(" vv78: Batt model sat\n", true, true);
-  sendTxBuf(" vv79: sat_ib model\n", true, true);
-  sendTxBuf(" vv98: shunt filtering check\n", true, true);
   sendTxBuf(" vv99: calibration\n", true, true);
 
   sendTxBuf("\nW<?> - iters to wait\n", true, true);
@@ -225,16 +221,16 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sendTxBuf("  Xp20:collect fast\n", true, true);
   sendTxBuf("  Xp21:collect slow\n", true, true);
   ap.cycles_inj_p->print_help();  // XC
+  sendTxBuf(" XD  ", true, true); sendTxBuf("DONE message\n", true, true);
+  sendTxBuf(" XK  ", true, true); sendTxBuf("READY message\n", true, true);
   sendTxBuf(" XR  ", true, true); sendTxBuf("RUN inj\n", true, true);
   sendTxBuf(" XS  ", true, true); sendTxBuf("STOP inj\n", true, true);
+  sendTxBuf(" XY  ", true, true); sendTxBuf("SYNC message\n", true, true);
   ap.s_t_sat_p->print_help();  // Xs
   ap.tail_inj_p->print_help();  // XT
   ap.wait_inj_p->print_help();  // XW
   ap.fail_tb_p->print_help();  // Xu
   ap.tb_stale_time_slr_p->print_help();  // Xv
-  // sp.testB_p->print_help();  // XB
-  // sp.testD_p->print_help();  // XD
-  // sp.testY_p->print_help();  // XY
   sendTxBuf("\nurgency of cmds: -=ASAP,*=SOON, '' or +=QUEUE, <=LAST\n", true, true);
   #endif
 }

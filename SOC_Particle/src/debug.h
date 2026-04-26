@@ -1,7 +1,7 @@
 /*  Heart rate and pulseox calculation Constants
 
 18-Dec-2020 	DA Gutz 	Created from MAXIM code.
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,7 @@
 
 */
 
-#ifndef DEBUG_H_
-#define DEBUG_H_
+#pragma once
 #include "subs.h"
 
 void add_verify(String *src, const String addend);
@@ -50,4 +49,3 @@ void debug_qs(BatteryMonitor *Mon, Sensors *Sen);
     void debug_queue(const String who);
 #endif
 
-#endif  // DEBUG_H

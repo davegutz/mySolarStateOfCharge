@@ -1,6 +1,11 @@
 # SavedData - data structures
 # Copyright (C) 2026 Dave Gutz
 #
+# noinspection PyAttributeOutsideInit,PyUnresolvedReferences,PyPep8Naming
+# type: ignore
+#
+# pylint: disable=invalid-name, no-member, attribute-defined-outside-init
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
@@ -13,25 +18,29 @@
 #
 # See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
 
-""" General data-over-model data structure classes
+""" General data-over-model data structure classes for importing data from Particle Photon runs and simulations,
+and for managing data for plotting.
 Dependencies:
     - SavedData  (structures)
 """
-from Battery import load_off_nominal_battery, apply_off_nominal_battery
+from battery_constants import load_off_nominal_battery
 from filter.myFilters import LagExp
 from Colors import Colors
 import Chemistry_BMS
 import numpy as np
 
 
+# type: ignore
 class SavedData:
+    # noinspection PyPep8Naming
     def __init__(self, battery=None, rap=None, sel=None, ekf=None, temp=None, shunt=None,
                  time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None, init_time=None, time_shift=None,
                  str_=None):
         self.str = str_
         i_end = 0
-        n = None
-        ib_lag = None
+        n = 0
+        ib_lag = 0.
+        IbLag = None
         self.time_shift = time_shift
 
         # Load off-nominal Battery values
@@ -77,9 +86,6 @@ class SavedData:
             self.time -= self.time_run_start
 
             # Truncate
-            i_end = None
-            i_end_sel =  None
-            i_end_shunt = None
             if time_end is None:
                 if temp is None:
                     print(Colors.fg.red, end='')
@@ -108,7 +114,6 @@ class SavedData:
                     i_end = min(i_end, len(self.c_time_shunt))
             else:
                 if temp is not None:
-                    time_t = np.atleast_1d(np.array(np.array(temp.c_time_t) - self.time_run_start))
                     Tt = np.atleast_1d(np.array(temp.Tt))
                     if len(Tt) <= 1:
                         print(Colors.fg.red, end='')
@@ -188,6 +193,7 @@ class SavedData:
             self.wrap_m_and_n_flt = (self.wrap_lo_n_flt & self.wrap_lo_m_flt) | (self.wrap_hi_n_flt & self.wrap_hi_m_flt)
             self.fltw = np.array(fltw)
             self.falw = np.array(falw)
+            self.dispw = np.array(dispw)
             self.red_loss = np.bool_(np.array(fltw) & 2**7)
             self.wrap_hi_fa = np.bool_(np.array(falw) & 2**5)
             self.wrap_lo_fa = np.bool_(np.array(falw) & 2**6)
@@ -208,7 +214,7 @@ class SavedData:
             self.ib_amp_flt = np.bool_(fltw & 2 ** 2)
             self.ib_amp_fa = np.bool_(falw & 2 ** 2)
             self.vb_flt = np.bool_(np.array(fltw) & 2**1)
-            self.vb_fa = np.bool_(np.array(falw) & 2**1)
+            self.vb_fa_lt = np.bool_(np.array(falw) & 2**1)
             self.tb_flt = np.bool_(np.array(fltw) & 2**0)
             self.tb_fa = np.bool_(np.array(falw) & 2**0)
             self.time_long = np.bool_(np.array(dispw) & 2**11)
@@ -364,10 +370,10 @@ class SavedData:
             self.x_prior = np.copy(self.soc_ekf)
         if self.x_post is None:
             self.x_post = np.copy(self.soc_ekf)
-        if self.y is None:
-            self.y = np.copy(self.voc_stat) * 0.
-        if self.y_f is None:
-            self.y_f = np.copy(self.voc_stat) * 0.
+        if self.y_ekf is None:
+            self.y_ekf = np.copy(self.voc_stat) * 0.
+        if self.y_ekf_f is None:
+            self.y_ekf_f = np.copy(self.voc_stat) * 0.
         if self.z is None:
             self.z = np.copy(self.voc_stat)
         if self.H is None:
@@ -406,17 +412,18 @@ class SavedData:
             else:
                 self.init_time = -4.
 
-        for i in range(n):
-            if self.time[i] <= self.init_time:
-                lag_reset = True
-                if i < n-1:
-                    T_lag = self.cTime[i+1] - self.cTime[i]
+        if IbLag is not None:
+            for i in range(n):
+                if self.time[i] <= self.init_time:
+                    lag_reset = True
+                    if i < n-1:
+                        T_lag = self.cTime[i+1] - self.cTime[i]
+                    else:
+                        T_lag = self.cTime[i] - self.cTime[i-1]
                 else:
+                    lag_reset = False
                     T_lag = self.cTime[i] - self.cTime[i-1]
-            else:
-                lag_reset = False
-                T_lag = self.cTime[i] - self.cTime[i-1]
-            self.ib_lag[i] = IbLag.calculate_tau(float(self.ib[i]), lag_reset, T_lag, ib_lag)
+                self.ib_lag[i] = IbLag.calculate_tau(float(self.ib[i]), lag_reset, T_lag, ib_lag)
 
     def assign_all_from(self, x=None, i_end=None):
         """
@@ -478,6 +485,7 @@ class SavedData:
         return self.mod_data[self.zero_end]
 
 
+# type: ignore
 class SavedDataSim:
     def __init__(self, time_run_start, data=None, time_end=None, fake=False, mon_for_fake=None, str_=None):
         self.str = str_
@@ -490,8 +498,6 @@ class SavedDataSim:
                 i_end = len(self.time)
             else:
                 i_end = np.where(self.time <= time_end)[0][-1] + 1
-            self.time_min = self.time / 60.
-            self.time_day = self.time / 3600. / 24.
             self.i = 0
             self.assign_all_from(data, i_end)
 

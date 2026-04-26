@@ -1,6 +1,11 @@
 # MonSim:  Monitor and Simulator replication of Particle Photon Application
 # Copyright (C) 2026 Dave Gutz
 #
+# noinspection PyAttributeOutsideInit,PyUnresolvedReferences
+# type: ignore
+#
+# pylint: disable=invalid-name, no-member, attribute-defined-outside-init
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
@@ -17,18 +22,14 @@
 a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
-from SavedData import SavedData as SavedData
-from SavedData import SavedDataSim as SavedDataSim
 from MonSimNomConfig import *  # Global config parameters.   Overwrite in your own calls for studies
-from Battery import BatteryMonitor, BatterySim, is_sat, Retained, apply_off_nominal_battery
+from battery_constants import apply_off_nominal_battery
+from Battery import BatteryMonitor, BatterySim, is_sat, Retained
 from UserOptions import UserOptions
-from dataclasses import dataclass
-from Battery import overall_batt
-from Battery import Battery as Battery
-from typing import Optional
 from filter.TFDelay import TFDelay
 from MonSimClasses import *
 from MonSimPrint import *
+# noinspection PyPep8Naming
 import Globals as G
 
 def battery_size(mr, sr, scale_in_, unit_cap_rated_):
@@ -93,6 +94,7 @@ def vb_from_raw_or_selected(use_raw, mr):
 #  Replicate the application in its entirety here.
 #  There are no 'bank' parameters anywhere in this model.   It is assumed that all inputs from the application have
 #  been converted to the single battery unit 12v form, S1P1, lower-case nomenclature.
+# noinspection PyPep8Naming
 def replicate(OPT: UserOptions):
     """TODO:
     7. Fig. 9 EKF 2a: hx(soc) negative slope?  This needs to be run just below saturation
@@ -153,6 +155,7 @@ def replicate(OPT: UserOptions):
     i_ekf = -1
     i_temp = -1
     T = OPT.mon_run.dt[0]
+    Tpast = T
     hdr = None
     sat_s_init = None
 
@@ -171,6 +174,7 @@ def replicate(OPT: UserOptions):
         if G.i != 0:
             candidate_dt = t[G.i] - t[G.i-1]  # update
             if candidate_dt > 1e-6:
+                Tpast = T
                 T = dt[G.i]
 
         # Get temperature data
@@ -190,6 +194,7 @@ def replicate(OPT: UserOptions):
 
         # Input
         rp.modeling = rp.add_modeling(modeling[G.i])
+        mon.tweak_test = rp.tweak_test
 
         # Basic reset model verification is to init to the input data
         # Tried hard not to re-implement solvers in the Python verification  tool
@@ -246,7 +251,7 @@ def replicate(OPT: UserOptions):
         sim.count_coulombs(OPT, SN, chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, charge_curr=sim.ib_charge, sat=False,
                            saturated=False, mon_sat=mon.sat, rp=rp)
 
-        # EKF
+        # Charge init
         if reset:
             mon.apply_delta_q_t(SN.delta_q[G.i], SN.Tb_f_rap[G.i])
             prn_soc_debug(OPT, time=now, leader="after mon.apply_delta_q_t", i_temp=i_temp, mon=mon, sim=sim)
@@ -263,11 +268,7 @@ def replicate(OPT: UserOptions):
             ib_ = OPT.ib_fail
         else:
             if OPT.mon_run.ib_sel is not None:
-                if rp.modeling_ib:
-                    ib_ = OPT.mon_run.ib_sel[G.i]
-                else:
-                    # ib_ = OPT.mon_run.ib_sel[max(G.i-1, 0)]
-                    ib_ = OPT.mon_run.ib_sel[G.i]
+                ib_ = OPT.mon_run.ib_sel[G.i]
             else:
                 ib_ = OPT.mon_run.ib[G.i]
 
@@ -289,7 +290,7 @@ def replicate(OPT: UserOptions):
             calc_ekf = True
         else:
             calc_ekf = False
-        SN.update_ekf(max(i_ekf, 0))
+        SN.update_ekf(max(i_ekf, 0))  # z_init and voc_stat_f_lstate_init
 
         if reset_ekf and calc_ekf:
             mon.init_soc_ekf(OPT.mon_run, G.i, i_ekf)  # when modeling (assumed in python) ekf wants to equal model
@@ -322,9 +323,10 @@ def replicate(OPT: UserOptions):
                 break
 
         # Save plot info
-        mon.save(t[G.i], T, mon.soc, sim.voc, SN.iscn_f)
-        sim.save(t[G.i], T)
-        sim.save_s(t[G.i])
+        mon.save(t[G.i], T, mon.soc, sim.voc, SN, rp, sim)
+        sim.save(t[max(G.i-1,0)], Tpast)
+        sim.save_s(t[max(G.i-1,0)])
+        Tpast = T
 
         # Print initial
         if G.i == 0 and OPT.verbose:
@@ -350,6 +352,7 @@ def replicate(OPT: UserOptions):
         if SN.mon_run.skip_ekf[i_ekf] or SN.mon_run.skip_temp[i_temp] or SN.mon_run.skip_sel[G.i] or \
                 SN.mon_run.skip_mon[G.i] or SN.sim_run.skip_sim[G.i]:
             print(f"\n\n************** Data integrity degraded by skip.  A digit could have been inserted anywhere in data.  Break.")
+            print(f"\nCheck for W too short before vv4 or TEMP_INIT_DELAY or TEMP_DELAY too long in SOC_Particle.ino")
             print("   now {:5.3f}".format(now),
                   "   time_end {:5.3f}\n\n".format(t[-1]),
                   )

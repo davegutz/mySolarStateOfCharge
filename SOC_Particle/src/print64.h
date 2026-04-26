@@ -1,13 +1,4 @@
-#ifndef __PRINT64_H
-#define __PRINT64_H
-
-// Library for creating strings for 64-bit integers in binary, octal, decimal, or hex. 
-// Unsigned (uint64_t) can be converted to any case. 
-// Signed (int64_t) can be converted to decimal only.
-//
-// Github: https://github.com/rickkas7/Print64
-// License: MIT (can be used in #ifndef __PRINT64_H
-#define __PRINT64_H
+#pragma once
 
 // Library for creating strings for 64-bit integers in binary, octal, decimal, or hex. 
 // Unsigned (uint64_t) can be converted to any case. 
@@ -27,7 +18,7 @@
  * 
  * @return A String object containing an ASCII representation of the value.
  */
-String toString(uint64_t value, unsigned char base = 10);
+String toString(uint64_t value, uint8_t base = 10);
 
 /**
  * @brief Convert an signed 64-bit integer to a string (ASCII decimal signed integer)
@@ -37,6 +28,3 @@ String toString(uint64_t value, unsigned char base = 10);
  * @return A String object containing an ASCII representation of the value (decimal)
  */
 String toString(int64_t value);
-
-
-#endif /* __PRINT64_H */

@@ -24,22 +24,21 @@ from unite_pictures import cleanup_fig_files, precleanup_fig_files, pngs_to_pdf
 import matplotlib.pyplot as plt
 from datetime import datetime
 from PlotKiller import show_killer
-import os
 from pathlib import Path, PurePosixPath
 from load_data import load_data, calculate_master_sync
 from local_paths import version_from_data_path, local_paths
-import sys
-import ComparePlotSettings
 from plot.PlotOptions import  PlotOptions
 
 # Suppress all UserWarning messages
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
-def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=None, sync_to_ctime=False,
-                    terse=True):
 
-    print(f"\ncompare_run_run:\n{keys=}\n{data_file_folder_run=}\n{data_file_folder_test=}\n{sync_to_ctime=}\n{terse=}\n")
+# noinspection PyPep8Naming
+def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=None, sync_to_ctime=False,
+                    terse=True, hardcopy=False):
+
+    print(f"\ncompare_run_run:\n{keys=}\n{data_file_folder_run=}\n{data_file_folder_test=}\n{sync_to_ctime=}\n{terse=}\n{hardcopy=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     # date_ = datetime.now().strftime("%y%m%d")
@@ -63,22 +62,22 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     mon_run, sim_run, f_run, data_file_run_clean, temp_flt_file_run_clean, sync_info_run = \
         load_data(data_file_run, 1, unit_key_run, zero_zero, time_end)
     sim_s_run = None
-    mon_run.str = 'r1'
-    sim_run.str = 's1'
-    f_run.str = 'f1'
+    mon_run.str_ = 'r1'
+    sim_run.str_ = 's1'
+    f_run.str_ = 'f1'
 
     # Load new test data
     data_file_test = str(PurePosixPath(data_file_folder_test) / data_file_txt_test)
     mon_test, sim_test, f_test, data_file_ver_clean, temp_flt_file_ver_clean, sync_info_test = \
         load_data(data_file_test, 1, unit_key_test, zero_zero, time_end)
     sim_s_test = None
-    mon_test.str = 'r2'
-    sim_test.str = 's2'
-    f_test.str = 'f2'
+    mon_test.str_ = 'r2'
+    sim_test.str_ = 's2'
+    f_test.str_ = 'f2'
 
     # Synchronize
     # Time since beginning of data to sync pulses
-    if sync_info_run.is_empty is False and sync_info_test.is_empty is False and \
+    if not sync_info_run.is_empty and not sync_info_test.is_empty and \
             sync_info_run.length == sync_info_test.length and (sync_info_run.length > 0 or sync_to_ctime is True):
         # Make target sync vector
         master_sync_del = calculate_master_sync(sync_info_run.del_mon, sync_info_test.del_mon)
@@ -107,7 +106,7 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
     filename = str(PurePosixPath(save_pdf_path) / filename)
     plot_title = dir_root_run + '/' + data_root_run + '__' + dir_root_test + '/' + data_root_test + '   ' + date_time
 
-    S = PlotOptions(terse=terse)
+    S = PlotOptions(terse=terse, save_plots=hardcopy)
 
     if not S.terse:
         if temp_flt_file_run_clean and len(f_run.time_ux) > 1:
@@ -122,23 +121,19 @@ def compare_run_run(keys=None, data_file_folder_run=None, data_file_folder_test=
                                    plot_title=plot_title, fig_list=fig_list, run_type='RunRun', terse=S.terse,
                                    save_plots=S.save_plots)  # all over all
 
-    # Copies
-    if S.save_plots and not S.terse:
-        precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-        print('creating pdf...')
-        pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
-
     print('showing plots...')
+    plt.ion()
     plt.show(block=False)
 
     string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
-    show_killer(string, 'CompareRunRun', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename)
+    show_killer(string, 'CompareRunRun', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, hardcopy=hardcopy)
     cleanup_fig_files(fig_files)
     print('DONE')
 
-    return True
+    return fig_list, fig_files
 
 
+# noinspection PyUnusedLocal
 def main():
     import sys
     if sys.platform == 'linux':
@@ -153,9 +148,10 @@ def main():
     data_file_folder_test = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a'
     sync_to_ctime = False
     terse = True
+    hardcopy = False
 
     compare_run_run(keys=keys, data_file_folder_run=data_file_folder_run, data_file_folder_test=data_file_folder_test,
-                    sync_to_ctime=sync_to_ctime, terse=terse)
+                    sync_to_ctime=sync_to_ctime, terse=terse, hardcopy=hardcopy)
 
 
 if __name__ == '__main__':  # Example usage.  Ran ok 20260217

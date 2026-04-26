@@ -1,4 +1,5 @@
 #! /bin/sh
+# noinspection PySingleQuotedDocstring
 "exec" "`dirname $0`/venv/bin/python3" "$0" "$@"
 #  #! /Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/py/venv/bin/python
 # The #! operates for macOS only. 'Python Launcher' (Python Script Preferences) option for 'Allow override with #! in script' is checked.
@@ -9,6 +10,10 @@
 #
 #  2023-Jun-15  Dave Gutz   Create
 # Copyright (C) 2026 Dave Gutz
+#
+# noinspection PyTypeChecker,PyArgumentList,PyCallingNonCallable,PyUnfilledParameters,SpellCheckingInspection,PyPep8Naming,PyUnboundLocalVariable,PyShadowingNames,PyShadowingBuiltins
+# type: ignore
+# pylint: disable=all, invalid-name, used-before-assignment, redefined-outer-name, redefined-builtin
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,6 +29,8 @@
 
 """Define a class to manage configuration using files for memory (poor man's database)"""
 import sys
+import os
+from pathlib import Path, PurePosixPath
 import time
 from configparser import ConfigParser
 import re
@@ -50,6 +57,7 @@ else:
     from tkinter import Button as myButton
 bg_color = 'lightgray'
 if sys.version_info.major == 3 and sys.version_info.minor < 12:
+    # noinspection PyUnusedImports
     import pyautogui
 else:
     try:
@@ -58,294 +66,49 @@ else:
     except ImportError:
         from pynput.keyboard import Key, Controller
         _kb_backend = 'pynput'
+from GUI_common import (
+    _Tee,
+    add_to_clip_board,
+    battery_list,
+    Begini,
+    contain_all,
+    copy_clean,
+    create_file_key,
+    create_file_txt,
+    default_dict,
+    empty_file,
+    ExRoot,
+    lookup,
+    macro_lookup,
+    macro_sel_list,
+    plat,
+    plink_connection,
+    register_last_task,
+    run_previous_task,
+    sel_list,
+    sel_list1,
+    size_of,
+    unit_list,
+)
 
-plat = sys.platform
-if plat == 'linux':
-    default_dr = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction'
-elif plat == 'darwin':
-    default_dr = '/Users/daveg/Library/CloudStorage/GoogleDrive-davegutz2006@gmail.com/My Drive/GitHubArchive/SOC_Particle/dataReduction'
-else:
-    default_dr = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction'
+sys.stdout.write("\033]0;SOC\007")
+sys.stdout.flush()
 
-# Configuration for entire folder selection read with filepaths
-def_dict = {
-    'test': {
-        "version": "g20240331",
-        "unit": "pro2p2",
-        "battery": "bb",
-        'dataReduction_folder': default_dr,
-    },
-    'ref': {
-        "version": "g20240331",
-        "unit": "pro0p",
-        "battery": "bb",
-        'dataReduction_folder': default_dr,
-    },
-    'others': {
-        "option": "custom",
-        'macro': 'end_early',
-        'mod_in_app': "247",
-        'modeling': True,
-        'strict_overplot':True,
-        'terse': True,
-    },
-    }
-
-# Transient string
-unit_list = [
-    'pro0p', 'pro1a', 'pro2p2', 'pro2p2_hi_lo', 'pro3p2', 'pro3p2_hi_lo', 'pro4p2', 'soc0p', 'soc1a', 'soc2p2_hi_lo',
-    'soc3p2_hi_lo', 'soc4p2_hi_lo',
-    ]
-battery_list = ['bb', 'chg']
-sel_list = [
-    'custom', 'init1', 'saveAdjusts', 'ampHiEmptFail', 'ampHiFail', 'noaHiFail', 'rapidTweakRegression', 'allInBB',
-    'allProto', 'pulseSoft', 'pulseHard', 'rapidTweakRegressionH0', 'offLowSoc', 'offSitHysBmsBB',
-    'offSitHysBmsCHG', 'triTweakDisch', 'ampHiFailFf', 'ampLoFail', 'ampLoFullFail', 'noaLoFail', 'noaLoFullFail', 'ampHiFailNoise', 'noaHiFailNoise',
-    'rapidTweakRegression40C', 'slowTweakRegression', 'satSitBB', 'satSitCHG',
-    ]
-sel_list1 = [
-    'flatSitHys', 'offSitHysBmsNoiseBB', 'offSitHysBmsNoiseCHG', 'ampHiFailSlow',
-    'noaHiFailSlow', 'noaHiFailSlower', 'noaHiFailSlowest', 'vHiFail', 'vHiFailNoise', 'vHiFailH', 'vHiFailFf',
-    'pulseHard', 'tbFailMod1W', 'tbFailHdwe1W', 'tLoFailHdwe', 'DvMon', 'DvSim', 'faultParade', 'stepDown', 'stepUp', 'zero_with_pc',
-    ]
-macro_sel_list = [
-    'end_early', 'hdwNoVbPcMidInit', 'modHalfInit', 'modEmptInitBB', 'modEmptInitCHG',
-    'noisePackage', 'silentPackage', 'quiet', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
-    'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50', 'c00',
-    'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50', 'zeroPrepHdweNoVb', 'zero_set_hdwe_no_Vb',
-    ]
-
-# Macro
-satInit = 'Dh;*W;*vv0;*XS;*Ca1;BZ;Ff0;DP1;HR;Rf;XD;'
-hdwNoVbPcMidInit = 'vv0;Xm2;Ca0.50;BZ;Ff0;W20;DP1;HR;Rf;XD;'
-modFullInit = 'vv0;Xm247;Ca0.93;BZ;Ff0;DP1;HR;Rf;XD;'  # kickers off 0.94
-modLoInit = 'vv0;Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;XD;'
-modHalfInit = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
-modHalfInitNoCc = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;XD;'
-modEmptInitBB = 'vv0;Xm247;Ca0.090;BZ;Ff0;DP1;HR;Rf;XD;'
-modEmptInitCHG = 'vv0;Xm247;Ca-0.004;BZ;Ff0;DP1;HR;Rf;XD;'
-modEmptInitGen = 'vv0;Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;XD;'
-noisePackage = 'DT.05;DV0.3;DM.75;DN6;'
-silentPackage = 'DT0;DV0;DM0;DN0;'
-synced_slow = 'Dr400;D>400;Dq400;ED1;DP1;'
-synced_slow_pulse = 'Dr800;D>800;Dq800;ED1;DP1;'
-slow = synced_slow
-quiet = 'vv0;Dr;Dq;DP;D>;Dh;'
-quietwait = '<vv0;Dr;DP;D>;Dh;'
-cleanup = 'Hd;Pf;<HR;<Rf;<XD;'
-tempCleanup = 'Rf;XD; '
-time_stamp = 'XY;'
-zeroPrepHdweNoVb = 'HR;Dh1000;W34;Fi2;Fo2;Rs;W34;'
-zero_set_hdwe_no_Vb = 'vv0;Xm2;Ca0.50;W20;BZ;Ff1;DP1;HR;Fi2;Fo2;Rf;vv99;W1;<Xm2;<XD;'
-tranPrep = 'HR;Dh1000;W2;Rs;W38;vv4;W17;'
-slowTranPrep = 'HR;vv4;W2;Rs;' + slow + 'W5;'
-slowTwitchDef = 'Rb;Rf;Sh0;Xts;Xf0.004;Mm1000;Mn-1000;Nm1000;Nn-1000;XW10000;XT10;XC2;'
-fastTwitchDef = 'Rb;Rf;Xts;Xf0.002;XW10000;XT10;XC1;'
-c18 = time_stamp + 'Dm18;Dn0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
-d18 = time_stamp + 'Dn18;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
-c06 = time_stamp + 'Dm6;Dn0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
-d06 = time_stamp + 'Dn6;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
-c08 = time_stamp + 'Dm8;Dn0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
-d05 = time_stamp + 'Dn5;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
-d08 = time_stamp + 'Dn8;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
-c10 = time_stamp + 'Dm10;Dn0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
-d10 = time_stamp + 'Dn10;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
-d20 = time_stamp + 'Dn20;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
-c50 = time_stamp + 'Dm50;Dn0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
-d50 = time_stamp + 'Dn50;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
-cm50 = time_stamp + 'Dm-50;Dn0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
-dm50 = time_stamp + 'Dn-50;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation50
-sc50 = time_stamp + 'DI50;'  # 50 amp discharge
-sd50 = time_stamp + 'DI-50;'  # 50 amp discharge
-c00 = 'Pf;W2;Dm0;Dn0;Rf;W50;'
-dv0 = 'Pf;W2;Dv0;Rf;W50;'
-s00 = 'Pf;W2;DI0;Rf;W100;'
-twitch = time_stamp + 'XR;'
-vm12 = 'Dv-12;'
-
-# Note:  Photon 2 is throughput limited on the Serial buses.  The *tweak* transients are sensitive to differences
-# caused by over-runs and slip and set Dr400 before Xp* then resets to Dr100 (nominal).
-lookup = {
-        'satInit': (22, 'Y;' + quiet + 'cc;Dh;Dr;*W;*vv0;*XS;*Ca1;BZ;Ff0;DP1;<HR;<Rf;<XD;', ('',)),
-        'initMid': (22, 'Y;' + quiet + 'cc;Dh1800000;*W;*vv0;*XS;*Ca.5;BZ;Ff0;<HR;<Rf;<XD;', ('',)),
-        'saveAdjusts': (60, 'vv4;Dh1000;PR;PV;Pr;Pr;BP2;Pr;BP1;Pr;BS2;Pr;BS1;Pr;Pr;Pr;DA5;Pr;DB-5;Pr;RS;Pr;Dc0.2;Pr;Dc0;DI-10;Pr;DI0;Pr;Dt5;Pr;Dt0;Pr;SA2;Pr;SA1;Pr;SB2;Pr;SB1;Pr;si-1;Pr;RS;Pr;Sk2;Pr;Sk1;Pr;SQ2;Pr;SQ1;Pr;Sq3;Pr;Sq1;Pr;SV1.1;Pr;SV1;Pr;Xb10;Pr;Xb0;Pr;Xa1000;Pr;Xa0;Pr;Xf1;Pr;RS;Pr;Xm10;Pr;RS;Pr;W3;vv0;XQ3;PR;PV;XQ60000;Dh;', ("For testing out the adjustments and memory", "Read through output and witness set and reset of all", "The DS2482 moderate headroom should not exceed limit printed.  EG 11 of 12 is ok.")),
-        'custom': (72, 'XQ60000;', ("For general purpose data collection", "'save data' will present a choice of file name", "")),
-        'allInBB': (1200,
-                    slow + 'Dh4000;' +
-                    modEmptInitBB + slowTwitchDef + 'Xa-162;' + slowTranPrep + twitch + 'XQ568000;' + 'Xa0;' + tempCleanup +  # offSitHysBmsBB
-                    'Xm247;Ca0.9962;' + fastTwitchDef + 'Xa17;' + slowTranPrep + 'XR;XQ600000;' + 'Xa0;' +  # satSitBB
-                    quiet + cleanup,
-                    ('All the best transients BB', "Must have same 'vv*' throughout", "")),
-        'ampHiEmptFail': (118, modLoInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
-        'ampHiFail': (118, modHalfInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
-        'noaHiFail': (118, modHalfInit + tranPrep + d50 + 'XQ25000;' + c00 + quiet + cleanup, ("Inject 50A into amp. With ib_diff only nothing changes then should isolate to the noa by wrap and choose amp.", "'diff' will be displayed then ib_fail due to wrap of noa", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen).", "Loss of ib set 'accy' because loss of current sensing at high currents.")),
-        'rapidTweakRegression': (205, slow + 'Rs;W4;Xp10;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without latched fail', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A.  And Noa will fault and fail temprorarily')),
-        'allProto': (552, modHalfInit + tranPrep + c50 + 'XQ25000;' + c00 + tempCleanup + '  Rs;W4;Xp10;  Rs;W4;Xp13;  ' + modHalfInitNoCc + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ('Proto multi', "Must have same 'vv*' throughout", "No 'HR' either")),
-        'pulseSoft': (75, synced_slow_pulse + 'XS;Dm0;Dn0;vv0;Xm255;Ca.5;Pm;W2;Rs;W20;vv4;W10;' + 'Xp7;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a current sensor pulse.  Look at plots for good overlay. e_wrap should be nearly flat after a pulse response.", "This is the shortest of all tests.  Also useful for quick check tests.", "")),
-        'pulseHard': (75, synced_slow_pulse + 'XS;Dm0;Dn0;vv0;Xm255;Ca.5;Pm;W2;Rs;W20;vv4;W10;' + 'Xp8;W10;Pc;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hardware current pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Also useful for quick check tests.", "")),
-        'rapidTweakRegressionH0': (205, 'Sh0;' + slow + 'Rs;W4;Xp10;Pf;W2;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'No hysteresis. Best test for seeing time skews and checking fault logic for false trips', 'Tease out cause of e_wrap faults.  e_wrap MUST be flat!', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
-        'offLowSoc': (130, modEmptInitGen + tranPrep  + vm12 + 'XQ55000;' + dv0 + quiet + cleanup, ('Test for clean faults on shutoff.',)),
-        'offSitHysBmsBB': (800, modEmptInitBB + slowTwitchDef + 'Xa-162;' + tranPrep + twitch + 'XQ568000;' + 'Pf;W2;Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
-        'offSitHysBmsCHG': (800, modEmptInitCHG + slowTwitchDef + 'Xa-324;' + tranPrep + twitch + 'XQ568000;' + 'Pf;W2;Xa0;' + quiet + cleanup, ('for CompareRunRun.py Argon vs Photon builds. This is the only test for that.',)),
-        'triTweakDisch': (205, slow + 'Rs;W4;Xp13;' + quiet + cleanup, ('Should run three very large current discharge/recharge cycles without fault', 'Best test for seeing time skews and checking fault logic for false trips', 'Occasional jumps in ib_sel_stat are normal when pass through 0 A.  Also hyst evident in one _s model')),
-        'ampHiFailFf': (138, modHalfInit + tranPrep + 'Ff1;' + c50 + 'XQ40000;' + c00 + quiet + cleanup, ("Should detect but not switch amp current failure. (See 'diff' and current!=0 on display).", "Run about 60s. Start by looking at 'Ult 1'. No fault record (keeps recording).  Verify that on Fig 3 the e_wrap goes through a threshold ~0.4 without change of 'ib_sel_stat'", "This show when deploy with Fake Faults (Ff) don't throw false trips (it happened)", "ib_amp limited by max range e.g. 12.6.  ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
-        'ampLoFail': (150, modHalfInit + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
-        'ampLoFullFail': (150, modFullInit + tranPrep + cm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Should detect and switch amp current failure before saturation tripped (would only be a problem for noa).", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
-        'noaLoFail': (144, modHalfInit + tranPrep + dm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
-        'noaLoFullFail': (144, modFullInit + 'DS-0.30' + tranPrep + dm50 + 'XQ50000;' + c00 + quiet + cleanup, ("Race with artificially low SAT logic to detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display.", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
-        'ampHiFailNoise': (107, modHalfInit + tranPrep + noisePackage + c50 + 'XQ25000;' + c00 + silentPackage + quiet + cleanup, ("Noisy ampHiFail.  Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
-        'noaHiFailNoise': (107, modHalfInit + tranPrep + noisePackage + d50 + 'XQ25000;' + c00 + silentPackage + quiet + cleanup, ("Noisy ampHiFail.  Should detect and switch amp current failure.", "Start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display even after fault cleared automatically (lost redundancy).", "ib_diff_fa will set red_loss but wait for wrap_fa to isolate and make selection change")),
-        'rapidTweakRegression40C': (200, 'D^15;' + slow + 'Rs;W4;Xp10;' + quiet + cleanup, ("Should run three very large current discharge/recharge cycles without fault", "Self-terminates", 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
-        'slowTweakRegression': (682, slow + 'Rs;W4;Xp11' + quiet + cleanup, ("Should run one very large slow (~15 min) current discharge/recharge cycle without fault.   It will take 60 seconds to start changing current.", 'Occasional jumps in ib_sel_stat are normal when pass through 0 A')),
-        'satSitBB': (656, 'Xm247;Ca0.9962;' + fastTwitchDef + 'Xa17;' + tranPrep + 'XR;XQ600000;' + 'Xa0;' + quiet + cleanup, ("Should run one saturation and de-saturation event without fault.   Takes about 15 minutes.", "operate around saturation, starting below, go above, come back down. Tune Ca to start just below vsat",)),
-        'satSitCHG': (656, 'Xm247;Ca0.986;' + fastTwitchDef + 'Xa17;' + tranPrep + 'XR;XQ600000;' + 'Xa0;' + quiet + cleanup, ("Should run one saturation and de-saturation event without fault.   Takes about 15 minutes.", "operate around saturation, starting below, go above, come back down. Tune Ca to start just below vsat",)),
-        'flatSitHys': (680, 'Xm247;Ca0.9;Rb;Rf;Xts;Xa-81;Xf0.004;XW10000;XT10;XC2;W1;' + tranPrep + 'XR;XQ580000;Xa0;Xb0;' + quiet + cleanup, ("Operate around 0.9.  For CHINS, will check EKF with flat voc(soc).   Takes about 10 minutes.", "Make sure EKF soc (soc_ekf) tracks actual soc without wandering.")),
-        'offSitHysBmsNoiseBB': (667, modEmptInitBB + slowTwitchDef + 'Xa-162;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage + quiet + cleanup, ("Stress test with 2x normal Vb noise DV0.10.  Takes about 10 minutes.", "operate around saturation, starting above, go below, come back up. Tune Ca to start just above vsat. Go low enough to exercise hys reset ", "Make sure comes back on.", "It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shutoff.")),
-        'offSitHysBmsNoiseCHG': (667, modEmptInitCHG + slowTwitchDef + 'Xa-324;' + noisePackage + tranPrep + 'XR;XQ568000;' + 'Xa0;' + silentPackage + quiet + cleanup, ("Stress test with 2x normal Vb noise DV0.10.  Takes about 10 minutes.", "operate around saturation, starting above, go below, come back up. Tune Ca to start just above vsat. Go low enough to exercise hys reset ", "Make sure comes back on.", "It will show one shutoff only since becomes biased with pure sine input with half of down current ignored on first cycle during the shutoff.")),
-        # TODO for all volatile and saved parameters in Battery.csv:  'tranPrep' no 'vv' statment.  'stream' starts data incl 'vv'.  All adjusts before 'stream'
-        'ampHiFailSlow': (515, modHalfInit + 'Fi3;Fc0.0006;Fd0.5;' + tranPrep + c10 + 'XQ400000;' + c00 + quiet + cleanup, ("10A bias on amp, disable wrap, noa in range at 0A and reflects battery state. Artificially tight cc_diff threshold.  Will detect diff but no wrap. Will be slow (~6 min) cc_diff detection as it waits for the EKF to wind up to produce a cc_diff fault and complete isolation and switch to noa.", "EKF should tend to follow voltage while soc wanders away.", "Run for 6  minutes to see that cc_diff_fa does set")),
-        'noaHiFailSlow': (515, modHalfInit+ 'Fc0.0006;' + tranPrep + d20 + 'XQ400000;' + c00 + quiet + cleanup, ("20A bias on noa, amp in range at 0A and reflects battery state. Artificially tight cc_diff threshold. Will detect and switch noa current failure due to wrap+diff. Once wrap trips diff won't be displayed. Cannnot ever produce a cc_diff fault because amp still used.", "Will display “diff” due to 20A difference.", "EKF won't move because fed by amp.", "Run for 6  minutes to verify not cc_diff_fa")),
-        'noaHiFailSlower': (515, modHalfInit+ 'Fc0.0006;' + tranPrep + d08 + 'XQ400000;' + c00 + quiet + cleanup, ("8A bias on noa, amp in range at 0A and reflects battery state.  Artificially tight cc_diff threshold. Will detect and switch noa current failure due to wrap+diff. Once wrap trips diff won't be displayed. Cannnot ever produce a cc_diff fault.", "Will display “diff” due to 6 A difference..", "EKF won't move because fed by amp.", "Run for 6  minutes to see potential cc_diff_fa")),
-        'noaHiFailSlowest': (515, modHalfInit+ 'Fc0.0006;' + tranPrep + d05 + 'XQ400000;' + c00 + quiet + cleanup, ("5A bias on noa, amp in range at 0A and reflects battery state. Artificially tight cc_diff threshold. Not enough current to trip the noa wrap.  Cannnot ever produce a cc_diff fault because amp still used.", "Will display “diff” due to 5 A difference..", "EKF won't move because fed by amp.", "Run for 6  minutes to see potential cc_diff_fa")),
-        'vHiFail': (138, modHalfInit + tranPrep + 'XY;Dv0.82;XQ60000;' + dv0 + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
-        'vHiFailNoise': (138, modHalfInit + noisePackage + tranPrep + 'XY;Dv0.82;XQ60000;' + dv0 + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
-        'vHiFailH': (84, modHalfInit + tranPrep + 'SH.3;W10;' + 'XY;Dv0.82;XQ30000;' + dv0 + quiet + cleanup, ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION.  Initial BB shift will be limited by hys table")),
-        'vHiFailFf': (138, modHalfInit + tranPrep + 'Ff1;XY;Dv0.8;XQ60000;' + dv0 + quiet + cleanup, ("Run for about 1 minute.", "Should detect voltage failure (see DOM1) but not display anything on display.", "Usually shows SAT.")),
-        'pulseSSH': (25, synced_slow + 'Xp8;' + quiet + cleanup, ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
-        'tbFailMod1W': (136, modHalfInit + tranPrep + 'Xv.002;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + quiet + cleanup, ("Run for 80 sec.   Plot Ult 1 Fig 4 should show Tb was detected as fault but not failed.",)),
-        'tbFailHdwe1W': (136, modHalfInit + 'Xm246;' + tranPrep + 'Xv.002;W10;XY;Xu1;XQ80000;Xu0;Xv1;W50;' + quiet + cleanup, ("Run for 80 sec.   Plot Ult 1 Fig 4 should show Tb was detected as failed.", "")),
-        'tLoFailHdwe': (185, modHalfInit + 'Xm230;' + tranPrep + 'XY;Dt-113;XQ120000;' + 'Dt0;Rf;W50;' + cleanup + '<W50;' + quietwait + '<Pf;', ("Simulates open thermistor.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
-        'DvMon': (152, modHalfInit + tranPrep + 'XY;Dw-0.8;Dn0.0001;XQ120000;Dw0;Rf;W50;' + quiet + cleanup, ("Should detect and switch voltage failure and use vb_model", "'*fail' will be displayed.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'redl' flashing on display even after fault cleared automatically (lost redundancy).", "Run for 2 min to confirm no cc_diff_fa")),
-        'DvSim': (152, modHalfInit + tranPrep + 'XY;Dy-0.8;Dn0.0001;XQ120000;Dy0;Rf;W50;' + quiet + cleanup, ("Should detect and switch voltage failure and use vb_model", "'*fail' will be displayed.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'redl' flashing on display even after fault cleared automatically (lost redundancy).", "Run for 2 min to confirm no cc_diff_fa")),
-        'faultParade': (320, modHalfInit + 'Dh1000;vv4;W4;XY;Dm50;Dn0.0001;W200;Dm0;Dn0;W20;Rf;XQ240000;' + quiet + cleanup, ("Check fault, history, and summary logging", "Should flag faults but take no action", "", "", "")),
-        'stepDown': (103, modHalfInit + tranPrep + sd50 + 'XQ25000;' + s00 + quiet + cleanup, ("Should be normal hard discharge step", "", "", "")),
-        'stepUp': (103, modHalfInit + tranPrep + sc50 + 'XQ25000;' + s00 + quiet + cleanup, ("Should be normal hard charge step", "", "", "")),
-        'zero_with_pc': (113, hdwNoVbPcMidInit + zeroPrepHdweNoVb + 'vv4;W17;' + 'XQ25000;' + 'vv99;Xm2;XQ15000;' + quiet  + cleanup, ("Hardware zero_with_pc run", "", "", "")),
-        }
-
-macro_lookup = {
-        'end_early': (22, 'Y;cc;Dh1800000;*W;*vv0;*XS;*Ca1;<Hd;<Pf;', ('', '', '', '')),
-        'hdwNoVbPcMidInit': (5, hdwNoVbPcMidInit, ('', '', '', '')),
-        'modFullInit': (5, modFullInit, ('', '', '', '')),
-        'modLoInit': (5, modLoInit, ('', '', '', '')),
-        'modHalfInit': (5, modHalfInit, ('', '', '', '')),
-        'modEmptInitBB': (5, modEmptInitBB, ('', '', '', '')),
-        'noisePackage': (5, noisePackage, ('', '', '', '')),
-        'silentPackage': (5, silentPackage, ('', '', '', '')),
-        'quiet': (5, quiet, ('', '', '', '')),
-        'cleanup': (5, cleanup, ('', '', '', '')),
-        'tempCleanup': (5, tempCleanup, ('', '', '', '')),
-        'tranPrep': (5, tranPrep, ('', '', '', '')),
-        'zeroPrepHdweNoVb': (5, zeroPrepHdweNoVb, ('', '', '', '')),
-        'zero_set_hdwe_no_Vb': (5, zero_set_hdwe_no_Vb, ('', '', '', '')),
-        'time_stamp': (5, time_stamp, ('', '', '', '')),
-        'synced_slow': (5, synced_slow, ('', '', '', '')),
-        'slowTwitchDef': (5, slowTwitchDef, ('', '', '', '')),
-        'fastTwitchDef': (5, fastTwitchDef, ('', '', '', '')),
-        'c06': (5, c06, ('', '', '', '')),
-        'd06': (5, d06, ('', '', '', '')),
-        'c08': (5, c08, ('', '', '', '')),
-        'd05': (5, d05, ('', '', '', '')),
-        'd08': (5, d08, ('', '', '', '')),
-        'c10': (5, c10, ('', '', '', '')),
-        'd10': (5, d10, ('', '', '', '')),
-        'c18': (5, c18, ('', '', '', '')),
-        'd18': (5, d18, ('', '', '', '')),
-        'c50': (5, c50, ('', '', '', '')),
-        'd50': (5, d50, ('', '', '', '')),
-        'cm50': (5, cm50, ('', '', '', '')),
-        'c00': (5, c00, ('', '', '', '')),
-        'dv0': (5, dv0, ('', '', '', '')),
-        'twitch': (5, twitch, ('', '', '', '')),
-        }
-
-putty_connection = {'': 'test',
-                    'soc0p': 'testsoc0p',
-                    'soc1a': 'testsoc1a',
-                    'pro0p': 'testpro0p',
-                    'pro1a': 'testpro1a',
-                    'pro2p2': 'testpro2p2',
-                    'pro2p2_hi_lo': 'testpro2p2',
-                    'pro3p2': 'testpro3p2',
-                    'pro3p2_hi_lo': 'testpro3p2',
-                    'pro4p2': 'testpro4p2',
-                    'soc2p2': 'testsoc2p2',
-                    'soc2p2_hi_lo': 'testsoc2p2',
-                    'soc3p2': 'testsoc3p2',
-                    'soc3p2_hi_lo': 'testsoc3p2',
-                    'soc4p2': 'testsoc4p2',
-                    'soc4p2_hi_lo': 'testsoc4p2',
-                    }
+# Tee stdout/stderr to a log file so Console.app shows output when launched as a .app bundle
+_log_dir = os.path.expanduser("~/Library/Logs") if plat == 'darwin' else os.path.expanduser("~")
+os.makedirs(_log_dir, exist_ok=True)
+_log_file = open(os.path.join(_log_dir, "GUI_TestSOC.log"), 'a', buffering=1)
 
 
-# Begini - configuration class using .ini files
-class Begini(ConfigParser):
+sys.stdout = _Tee(sys.__stdout__, _log_file)
+sys.stderr = _Tee(sys.__stderr__, _log_file)
 
-    def __init__(self, name, def_dict_):
-        ConfigParser.__init__(self)
-
-        config_path, config_basename = str(PurePosixPath(name).parent), PurePosixPath(name).name
-        if platform.system() == 'Linux':
-            config_txt = PurePosixPath(config_basename).stem + '_linux.ini'
-            self.config_file_path = str(PurePosixPath('/home/daveg/.local') / config_txt)
-        elif platform.system() == 'Darwin':
-            config_txt = PurePosixPath(config_basename).stem + '_macos.ini'
-            self.config_file_path = str(PurePosixPath('/Users/daveg/.local') / config_txt)
-        else:
-            config_txt = PurePosixPath(config_basename).stem + '.ini'
-            self.config_file_path = str(Path(os.getenv('LOCALAPPDATA')) / config_txt)
-        print('config file', self.config_file_path)
-        if Path(self.config_file_path).is_file():
-            self.read(self.config_file_path)
-        else:
-            with open(self.config_file_path, 'w') as cfg_file:
-                self.read_dict(def_dict_)
-                self.write(cfg_file)
-            print('wrote', self.config_file_path)
-
-    # Get an item
-    def get_item(self, ind, item):
-        return self[ind][item]
-
-    # Put an item
-    def put_item(self, ind, item, value):
-        self[ind][item] = value
-        self.save_to_file()
-
-    # Save again
-    def save_to_file(self):
-        with open(self.config_file_path, 'w') as cfg_file:
-            self.write(cfg_file)
-        print('wrote', self.config_file_path)
-
-
-# Executive class to control the global variables
-class ExRoot:
-    def __init__(self):
-        self.script_loc = Path(__file__).resolve().parent.as_posix()
-        self.config_path = str(PurePosixPath(self.script_loc) / 'root_config.ini')
-        self.version = None
-        self.root_config = None
-        self.load_root_config(self.config_path)
-
-    def load_root_config(self, config_file_path):
-        self.root_config = ConfigParser()
-        if Path(config_file_path).is_file():
-            self.root_config.read(config_file_path)
-        else:
-            with open(config_file_path, 'w') as cfg_file:
-                self.root_config.add_section('Root Preferences')
-                rec_folder_path = str(Path.home() / 'Documents' / 'Recordings')
-                if not Path(rec_folder_path).exists():
-                    os.makedirs(rec_folder_path)
-                self.root_config.set('Root Preferences', 'recordings path', rec_folder_path)
-                self.root_config.write(cfg_file)
-        return self.root_config
 
 
 # Executive class to control the global variables
 class Exec:
     def __init__(self, cf_=None, ind=None, level=None, path_disp_len_=25):
+        self.root_config = None
         self.cf = cf_
         self.ind = ind
         self.level = level
@@ -360,7 +123,7 @@ class Exec:
         self.unit = self.cf[self.ind]['unit']
         if self.version is None:
             self.version = 'undefined'
-        self.version_path = str(PurePosixPath(self.dataReduction_folder) / self.version)
+        self.version_path = str(PurePosixPath(self.dataReduction_folder or '.') / (self.version or 'undefined'))
         if not Path(self.version_path).is_dir():
             tk.messagebox.showerror(title="Error",
                                     message=self.version_path + " unavailable. Abort opening\nTurn on Drive & refresh" +
@@ -399,7 +162,7 @@ class Exec:
         else:
             self.file_txt = create_file_txt(name_override, self.unit, self.battery)
             self.key = create_file_key(self.version, self.unit, self.battery)
-        self.file_path = str(PurePosixPath(self.version_path) / self.file_txt)
+        self.file_path = str(PurePosixPath(self.version_path or '.') / (self.file_txt or 'undefined'))
         self.update_file_label()
         self.file_exists = Path(self.file_path).is_file()
         self.update_file_label()
@@ -457,7 +220,7 @@ class Exec:
         self.cf[self.ind]['version'] = self.version
         self.cf.save_to_file()
         self.version_button.config(text=self.version)
-        self.version_path = str(PurePosixPath(self.dataReduction_folder) / self.version)
+        self.version_path = str(PurePosixPath(self.dataReduction_folder or '.') / (self.version or 'undefined'))
         os.makedirs(self.version_path, exist_ok=True)
         self.create_file_path_and_key()
         self.update_key_label()
@@ -549,18 +312,13 @@ class Exec:
             self.key_label.config(bg='lightgreen')
         else:
             self.key_label.config(bg='pink')
-        test_filename.set(putty_connection.get(Test.unit))
+        test_filename.set(plink_connection.get(Test.unit or '', ''))
 
     def update_unit_button(self):
         self.unit_button.config(text=self.unit)
 
     def update_version_button(self):
         self.version_button.config(text=self.version)
-
-
-# Global methods
-def add_to_clip_board(text):
-    pyperclip.copy(text)
 
 
 # Compare run driver
@@ -582,18 +340,18 @@ def clear_data(silent=False, nowait=False):
         wait_size = 0
     if enter_size > 64:  # bytes
         if wait_size > enter_size and not nowait:
-            if silent is False:
+            if not silent:
                 print('stop data first')
             tkinter.messagebox.showwarning(message="stop data first")
         else:
             # create empty file
             if not save_putty():
-                if silent is False:
+                if not silent:
                     tkinter.messagebox.showwarning(message="putty may be open already")
                 else:
                     update_data_buttons()
     else:
-        if silent is False:
+        if not silent:
             print('putty test file non-existent or too small (<64 bytes) probably already done')
             tkinter.messagebox.showwarning(message="Nothing to clear")
 
@@ -617,7 +375,7 @@ def compare_hist_hist_choose():
                 print('GUI_TestSOC compare_hist_hist_choose:  Test', test_basename, test_key)
                 compare_hist_hist(data_file_run=run_path, unit_key_run=ref_key,
                                   data_file_tst=testpath, unit_key_tst=test_key,
-                                  dt_resample=30., strict_overplot=strict_overplot.get(),
+                                  dt_resample=30.,
                                   terse=terse.get())
             else:
                 tk.messagebox.showerror(message='key not found in' + testpath)
@@ -650,6 +408,7 @@ def compare_hist_sim_choose():
 
 
 def compare_hist_to_sim():
+    register_last_task(compare_hist_to_sim)
     if modeling.get():
         update_data_buttons()
         print('compare_hist_to_sim.  save_pdf_path', str(PurePosixPath(Test.version_path) / 'figures'))
@@ -665,6 +424,7 @@ def compare_hist_to_sim():
 
 
 def compare_run():
+    register_last_task(compare_run)
     if not Test.key_exists_in_file:
         tkinter.messagebox.showwarning(message="Test Key '" + Test.key + "' does not exist in " + Test.file_txt)
         return
@@ -686,6 +446,7 @@ def compare_run():
 
 
 def compare_run_to_hist():
+    register_last_task(compare_run_to_hist)
     if not Test.key_exists_in_file:
         tkinter.messagebox.showwarning(message="Test Key '" + Test.key + "' does not exist in " + Test.file_txt)
         return
@@ -699,6 +460,7 @@ def compare_run_to_hist():
 
 
 def compare_hist_hist_run():
+    register_last_task(compare_hist_hist_run)
     if not Test.key_exists_in_file:
         tkinter.messagebox.showwarning(message="Test Key '" + Test.key + "' does not exist in " + Test.file_txt)
         return
@@ -762,52 +524,6 @@ def compare_run_sim_choose():
         update_data_buttons()
 
 
-# Split all information contained in file path
-def contain_all(testpath):
-    folder_path, basename = str(PurePosixPath(testpath).parent), PurePosixPath(testpath).name
-    parent, txt = str(PurePosixPath(folder_path).parent), PurePosixPath(folder_path).name
-    # get key
-    key = ''
-    with open(testpath, 'r') as file:
-        for line in file:
-            if line.__contains__(txt):
-                shorter = line[line.find(txt):]
-                end_key = shorter.find(',')
-                key = shorter[:end_key].strip()
-                break
-    return folder_path, parent, basename, txt, key
-
-
-# puTTY generates '\0' characters
-def copy_clean(src, dst):
-    with open(src, 'r') as file_in:
-        data = file_in.read()
-    with open(dst, 'w') as file_out:
-        file_out.write(data.replace('\0', ''))
-
-
-def create_file_key(version_, unit_, battery_):
-    return version_ + '_' + unit_ + '_' + battery_
-
-
-def create_file_txt(option_, unit_, battery_):
-    return option_ + '_' + unit_ + '_' + battery_ + '.csv'
-
-
-def empty_file(target):
-    # create empty file
-    try:
-        open(empty_csv_path.get(), 'x')
-    except FileExistsError:
-        pass
-    shutil.copyfile(empty_csv_path.get(), target)
-    print('emptied', putty_test_csv_path.get())
-    try:
-        os.remove(empty_csv_path.get())
-    except OSError:
-        pass
-
-
 def enter_mod_in_app():
     answer = tk.simpledialog.askinteger(title=__file__, prompt="enter the value of Modeling in app to assume", initialvalue=mod_in_app.get())
     if answer is None:
@@ -820,22 +536,25 @@ def enter_mod_in_app():
 
 
 def grab_macro():
+    register_last_task(grab_macro)
     add_to_clip_board(macro.get())
     macro_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black')
     init_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black')
-    start_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
+    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
     get_time_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
 
 
 def grab_init():
+    register_last_task(grab_init)
     # Grab command to update time in EEPROM
     try:
         current_ut = 'UT' + str(int(time.time())) + ';'
-        print(f"current_ut {current_ut}")
-    except:
+    except AttributeError:
         current_ut = ''
         print(f"current_ut blank ***No Internet??")
-    add_to_clip_board(init.get() + current_ut)
+    init_command = init.get() + current_ut
+    print(f"Init command to paste: {init_command}")
+    add_to_clip_board(init_command)
     # Grab the rest
     grab_all_nominal()
     init_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black')
@@ -846,7 +565,29 @@ def grab_init():
     start_putty()
 
 
+def monitor_putty_done():
+    if Path(putty_test_csv_path.get()).is_file():
+        try:
+            with open(putty_test_csv_path.get(), 'rb') as f:
+                f.seek(0, 2)
+                size = f.tell()
+                # Read last 1024 bytes to check for ***DONE***
+                f.seek(max(0, size - 1024))
+                last_data = f.read().decode('utf-8', errors='ignore')
+                if '***DONE***' in last_data:
+                    print(f"***DONE*** detected in {putty_test_csv_path.get()}")
+                    save_data()
+                    tk.messagebox.showinfo(title='Done ' + start_button.cget('text'), message='Run Complete')
+                    return
+        except Exception as e:
+            print(f"Error monitoring putty file: {e}")
+    master.after(1000, monitor_putty_done)
+
+
 def grab_start():
+    global grab_start_time
+    grab_start_time = time.time()
+    register_last_task(grab_start)
     add_to_clip_board(start.get())
     grab_all_nominal()
     save_data_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black',
@@ -856,13 +597,14 @@ def grab_start():
     grab_all_nominal()
     start_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black')
     start_timer()
+    monitor_putty_done()
 
 
 def grab_all_nominal():
-    macro_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black')
-    init_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
-    start_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
-    get_time_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black')
+    macro_button.config(bg=bg_color, activebackground='black', fg='black', activeforeground='white')
+    init_button.config(bg=bg_color, activebackground='black', fg='black', activeforeground='purple')
+    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
+    get_time_button.config(bg=bg_color, activebackground='black', fg='black', activeforeground='white')
 
 
 def grab_time():
@@ -877,7 +619,7 @@ def grab_time():
 def handle_modeling(*_args):
     cf['others']['modeling'] = str(modeling.get())
     cf.save_to_file()
-    if modeling.get() is True:
+    if modeling.get():
         ref_remove()
     else:
         ref_restore()
@@ -891,7 +633,7 @@ def handle_macro(*_args):
     if macro_option_.__contains__('CH'):
         if Test.battery == 'bb' or Ref.battery == 'bb':
             confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "bb." Continue?')
-            if confirmation is False:
+            if not confirmation:
                 print('start over')
                 tkinter.messagebox.showwarning(message='try again')
                 option.set('try again')
@@ -899,7 +641,7 @@ def handle_macro(*_args):
     elif macro_option_.__contains__('BB'):
         if Test.battery == 'ch' or Ref.battery == 'ch' or Test.battery == 'chg' or Ref.battery == 'chg':
             confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "ch." Continue?')
-            if confirmation is False:
+            if not confirmation:
                 print('start over')
                 tkinter.messagebox.showwarning(message='try again')
                 option.set('try again')
@@ -919,7 +661,7 @@ def handle_option(*_args):
     if option_.__contains__('CH'):
         if Test.battery == 'bb' or Ref.battery == 'bb':
             confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "bb." Continue?')
-            if confirmation is False:
+            if not confirmation:
                 print('start over')
                 tkinter.messagebox.showwarning(message='try again')
                 option.set('try again')
@@ -927,7 +669,7 @@ def handle_option(*_args):
     elif option_.__contains__('BB'):
         if Test.battery == 'ch' or Ref.battery == 'ch' or Test.battery == 'chg' or Ref.battery == 'chg':
             confirmation = tk.messagebox.askyesno('query sensical', 'Test/Ref are "cc." Continue?')
-            if confirmation is False:
+            if not confirmation:
                 print('start over')
                 tkinter.messagebox.showwarning(message='try again')
                 option.set('try again')
@@ -942,7 +684,7 @@ def handle_option(*_args):
                             text='save data')
     save_data_as_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black',
                                text='save data as')
-    start_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
+    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
     update_data_buttons()
 
 
@@ -968,6 +710,11 @@ def handle_terse(*_args):
     cf.save_to_file()
 
 
+def handle_auto_overwrite(*_args):
+    cf['others']['auto_overwrite'] = str(auto_overwrite.get())
+    cf.save_to_file()
+
+
 def handle_test_battery(*_args):
     Test.battery = test_battery.get()
     Test.update_battery_stuff()
@@ -990,7 +737,7 @@ def kill_putty(sys_=None, silent=True):
         command = 'pkill putty'
     else:
         print(f"kill_putty: SYS = {sys_} unknown")
-    if silent is False:
+    if not silent:
         print(command + '\n')
         print(Colors.bg.brightblack, Colors.fg.wheat)
         result = run_shell_cmd(command, silent=silent)
@@ -1005,28 +752,27 @@ def kill_putty(sys_=None, silent=True):
 
 
 def look_putty(sys_=None, silent=True):
-    command = ''
     if sys_ == 'Linux':
-        return subprocess.check_output(['ps']).decode('ascii').__contains__('putty')
+        try:
+            output = subprocess.check_output(['pgrep', '-f', 'putty']).decode('ascii')
+            return len(output.strip()) > 0
+        except subprocess.CalledProcessError:
+            return False
     elif sys_ == 'Windows':
-        return subprocess.check_output(['tasklist']).decode('ascii').__contains__('putty.exe')
+        try:
+            output = subprocess.check_output(['tasklist', '/FI', 'IMAGENAME eq putty.exe', '/NH']).decode('ascii')
+            return 'putty.exe' in output.lower()
+        except subprocess.CalledProcessError:
+            return False
     elif sys_ == 'Darwin':
-        command = 'tbd'
+        try:
+            output = subprocess.check_output(['pgrep', '-f', 'putty']).decode('ascii')
+            return len(output.strip()) > 0
+        except subprocess.CalledProcessError:
+            return False
     else:
-        print(f"kill_putty: SYS = {sys_} unknown")
-    if silent is False:
-        print(command + '\n')
-        print(Colors.bg.brightblack, Colors.fg.wheat)
-        result = run_shell_cmd(command, silent=silent)
-        print(Colors.reset)
-        print(command + '\n')
-        if result == -1:
-            print(Colors.fg.blue, 'failed.', Colors.reset)
-            return None, False
-    else:
-        result = run_shell_cmd(command, silent=False, save_stdout=True)
-        print(f"run_shell_cmd {result=}")
-    return result
+        print(f"look_putty: SYS = {sys_} unknown")
+        return False
 
 
 def lookup_macro():
@@ -1079,7 +825,7 @@ def lookup_start():
 
 
 def lookup_test():
-    test_filename.set(putty_connection.get(Test.unit))
+    test_filename.set(plink_connection.get(Test.unit or '', ''))
 
 
 def putty_size():
@@ -1096,8 +842,8 @@ def ref_remove():
     run_sim_hist_button.config(text='Run Both of These')
     hist_sim_button.config(text='Compare Hist Sim')
     hist_hist_button.forget()
-    hist_sim_button.pack(side=tk.LEFT, padx=5, pady=5)
-    run_sim_hist_button.pack(side=tk.RIGHT, padx=5, pady=5)
+    hist_sim_button.pack(side='left', padx=5, pady=5)
+    run_sim_hist_button.pack(side='right', padx=5, pady=5)
     Ref.label.forget()
 
 
@@ -1106,11 +852,12 @@ def ref_restore():
     run_x_button.config(text='Compare Run Run')
     run_sim_hist_button.forget()
     hist_sim_button.forget()
-    hist_hist_button.pack(side=tk.LEFT, padx=5, pady=5)
+    hist_hist_button.pack(side='left', padx=5, pady=5)
     Ref.label.pack(padx=5, pady=5)
 
 
 def save_data():
+    global timer, grab_start_time
     print(f"save_data: {putty_test_csv_path.get()=}")
     if size_of(putty_test_csv_path.get()) > 64:  # bytes
         # For custom option, redefine Test.file_path if requested
@@ -1122,28 +869,44 @@ def save_data():
                 Test.label.config(text=Test.file_txt)
                 print('Test.file_path', Test.file_path)
         if Path(Test.file_path).is_file() and Path(Test.file_path).stat().st_size > 0:  # bytes
-            confirmation = tk.messagebox.askyesno('query overwrite', 'File exists:  overwrite?')
-            if confirmation is False:
-                print('skipped overwrite')
-                tkinter.messagebox.showwarning(message='retained ' + Test.file_path)
-                return
+            if auto_overwrite.get():
+                print('auto over-write enabled')
+            else:
+                confirmation = tk.messagebox.askyesno('query overwrite', 'File exists:  overwrite?')
+                if not confirmation:
+                    print('skipped overwrite')
+                    tkinter.messagebox.showwarning(message='retained ' + Test.file_path)
+                    return
         save_data_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black',
                                 text='data saving')
         tksleep(0.1)
+        if grab_start_time is not None:
+            elapsed_s = time.time() - grab_start_time
+            print(f"Run elapsed time: {elapsed_s:.1f} s")
+            with open(putty_test_csv_path.get(), 'a') as _f:
+                _f.write(f"elapsed_s,{elapsed_s:.1f}\n")
+            grab_start_time = None
         copy_clean(putty_test_csv_path.get(), Test.file_path)
         print('copied ', putty_test_csv_path.get(), '\nto\n', Test.file_path)
+        if timer is not None:
+            timer.close()
+            timer = None
         save_data_button.config(bg='green', activebackground='green', fg='red', activeforeground='red',
                                 text='data saved')
         empty_file(putty_test_csv_path.get())
         print('updating Test file label')
         Test.create_file_path_and_key(name_override=new_file_txt)
+        if auto_overwrite.get():
+            print('auto over-write triggering comparison')
+            compare_run()
     else:
         print('putty test file non-existent or too small (<64 bytes) probably already done')
         tkinter.messagebox.showwarning(message="Nothing to save")
-    start_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
+    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
 
 
 def save_data_as():
+    global timer
     if size_of(putty_test_csv_path.get()) > 512:  # bytes
         # For custom option, redefine Test.file_path if requested
         if option.get() == 'custom':
@@ -1161,7 +924,7 @@ def save_data_as():
                 print('Test.file_path', Test.file_path)
         if Path(Test.file_path).is_file() and Path(Test.file_path).stat().st_size > 0:  # bytes
             confirmation = tk.messagebox.askyesno('query overwrite', 'File exists:  overwrite?')
-            if confirmation is False:
+            if not confirmation:
                 print('reset and use clear')
                 tkinter.messagebox.showwarning(message='reset and use clear')
                 return
@@ -1170,6 +933,9 @@ def save_data_as():
         tksleep(0.1)
         copy_clean(putty_test_csv_path.get(), Test.file_path)
         print('copied ', putty_test_csv_path.get(), '\nto\n', Test.file_path)
+        if timer is not None:
+            timer.close()
+            timer = None
         save_data_as_button.config(bg='green', activebackground='green', fg='red', activeforeground='red',
                                    text='data saved as')
         empty_file(putty_test_csv_path.get())
@@ -1178,10 +944,11 @@ def save_data_as():
     else:
         print('putty test file is too small (<512 bytes) probably already done')
         tkinter.messagebox.showwarning(message="Nothing to save")
-    start_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
+    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
 
 
 def save_progress():
+    global timer
     if size_of(putty_test_csv_path.get()) > 64:  # bytes
         # For custom option, redefine Test.file_path if requested
         new_file_txt = None
@@ -1193,7 +960,7 @@ def save_progress():
                 print('Test.file_path', Test.file_path)
         if Path(Test.file_path).is_file() and Path(Test.file_path).stat().st_size > 0:  # bytes
             confirmation = tk.messagebox.askyesno('query overwrite', 'File exists:  overwrite?')
-            if confirmation is False:
+            if not confirmation:
                 print('skipped overwrite')
                 tkinter.messagebox.showwarning(message='Nothing changed')
                 return
@@ -1201,6 +968,9 @@ def save_progress():
                                     text='data saving')
         tksleep(0.1)
         copy_clean(putty_test_csv_path.get(), Test.file_path)
+        if timer is not None:
+            timer.close()
+            timer = None
         save_progress_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black',
                                     text='save_progress')
         print('copied ', putty_test_csv_path.get(), '\nto\n', Test.file_path)
@@ -1227,28 +997,28 @@ def save_putty():
         return False
 
 
-def size_of(path):
-    if Path(path).is_file() and (size := Path(path).stat().st_size) > 0:  # bytes
-        return size
-    else:
-        return 0
-
-
 def start_putty():
     lookup_test()
+    if look_putty(platform.system()):
+        print("PuTTY already open.  Skipping restart.")
+        return
+
     enter_size = putty_size()
     if enter_size >= 64:
         if not save_putty():
             tkinter.messagebox.showwarning(message="putty may be open already")
         enter_size = putty_size()
+
     if enter_size < 64:
         kill_putty(platform.system())
         print(f'restarting putty   putty -load {test_filename.get()}')
-        subprocess.Popen(['putty', '-load', test_filename.get()], stdin=subprocess.PIPE, bufsize=1, universal_newlines=True)
+        subprocess.Popen(['putty', '-load', test_filename.get()], 
+                         stdin=subprocess.PIPE, bufsize=1, universal_newlines=True)
 
 
 def start_timer():
-    CountdownTimer(master, timer_val.get(), max_flash=60, exit_function=None, trigger=True)
+    global timer
+    timer = CountdownTimer(master, timer_val.get(), max_flash=60, exit_function=None, trigger=True)
 
 
 def swap_run_test():
@@ -1266,10 +1036,10 @@ def swap_run_test():
 def tksleep(t):
     """emulating time.sleep(seconds)"""
     ms = int(t*1000)
-    root = tk._get_default_root()
-    var = tk.IntVar(root)
-    root.after(ms, lambda: var.set(1))
-    root.wait_variable(var)
+    var = tk.IntVar(master)
+    var.set(0)
+    master.after(ms, var.set, 1)
+    master.wait_variable(var)
 
 
 def update_data_buttons():
@@ -1277,18 +1047,17 @@ def update_data_buttons():
                             text='save data')
     save_data_as_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='black',
                                text='save data as')
-    start_button.config(bg=bg_color, activebackground=bg_color, fg='black', activeforeground='purple')
+    start_button.config(bg='black', activebackground='black', fg='#00ff00', activeforeground='#00ff00')
 
 
 if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     import os
-    from pathlib import Path, PurePosixPath
     import tkinter as tk
     from tkinter import ttk
 
     ex_root = ExRoot()
 
-    cf = Begini(__file__, def_dict)
+    cf = Begini(__file__, default_dict)
 
     # Define frames
     min_width = 800
@@ -1304,11 +1073,19 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     bg_color = "lightgray"
 
     # Master and header
+    print("creating master")
     master = tk.Tk(className='GUI_TestSOC')
+    print("master created")
     master.title('State of Charge')
     master.wm_minsize(width=min_width, height=main_height)
+    timer = None
+    grab_start_time = None
+    print("creating Ref")
     Ref = Exec(cf, 'ref', path_disp_len_=folder_reveal)
+    print("Ref created")
+    print("creating Test")
     Test = Exec(cf, 'test', path_disp_len_=folder_reveal)
+    print("Test created")
     if platform.system() == 'Linux':
         putty_test_csv_path = tk.StringVar(master, '/home/daveg/.local/putty_test.csv')
         path_to_temp = tk.StringVar(master, '/home/daveg/.local')
@@ -1316,11 +1093,14 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
         putty_test_csv_path = tk.StringVar(master, '/Users/daveg/.local/putty_test.csv')
         path_to_temp = tk.StringVar(master, '/Users/daveg/.local')
     else:
-        putty_test_csv_path = tk.StringVar(master, str(Path(os.getenv('LOCALAPPDATA')) / 'Temp' / 'putty_test.csv'))
-        path_to_temp = tk.StringVar(master, str(Path(os.getenv('LOCALAPPDATA')) / 'Temp'))
+        local_app_data_ = os.getenv('LOCALAPPDATA') or str(Path.home() / 'AppData' / 'Local')
+        putty_test_csv_path = tk.StringVar(master, str(Path(local_app_data_) / 'Temp' / 'putty_test.csv'))
+        path_to_temp = tk.StringVar(master, str(Path(local_app_data_) / 'Temp'))
     print(f"{putty_test_csv_path.get()=}")
+    print("loading icon")
     icon_path = str(PurePosixPath(ex_root.script_loc) / 'GUI_TestSOC.png')
     master.iconphoto(False, tk.PhotoImage(file=icon_path))
+    print("icon loaded")
     top_panel = tk.Frame(master)
     top_panel.pack(expand=True, fill='both')
     top_panel_left = tk.Frame(top_panel)
@@ -1352,12 +1132,22 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     Test.folder_button = myButton(top_panel_left_ctr, text=Test.dataReduction_folder[-folder_reveal:],
                                   command=Test.enter_data_reduction_folder,
                                   fg="blue", bg=bg_color)
+    auto_overwrite_str = cf['others'].get('auto_overwrite', 'False')
+    if auto_overwrite_str == 'True':
+        auto_overwrite = tk.BooleanVar(master, True)
+    else:
+        auto_overwrite = tk.BooleanVar(master, False)
+    auto_overwrite_button = tk.Checkbutton(top_panel_right_ctr, text='auto over-write', bg=bg_color,
+                                           variable=auto_overwrite, onvalue=True, offvalue=False)
+    auto_overwrite_button.pack(pady=2, fill='x')
+    auto_overwrite.trace_add('write', handle_auto_overwrite)
+
     Ref.folder_button = myButton(top_panel_right, text=Ref.dataReduction_folder[-folder_reveal:],
                                  command=Ref.enter_data_reduction_folder,
                                  fg="blue", bg=bg_color)
     working_label.pack(padx=5, pady=5)
-    Test.folder_button.pack(padx=5, pady=5, anchor=tk.W)
-    Ref.folder_button.pack(padx=5, pady=5, anchor=tk.E)
+    Test.folder_button.pack(padx=5, pady=5, anchor='w')
+    Ref.folder_button.pack(padx=5, pady=5, anchor='e')
 
     # Version row
     tk.Label(top_panel_left, text="Version", font=label_font).pack(pady=2)
@@ -1377,7 +1167,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     ref_unit.trace_add('write', handle_run_unit)
     Ref.unit_button.pack(pady=2)
     
-    test_filename = tk.StringVar(master, putty_connection.get(Test.unit))
+    test_filename = tk.StringVar(master, plink_connection.get(Test.unit or '', ''))
 
     # Battery row
     tk.Label(top_panel_left, text="Battery", font=label_font).pack(pady=2, expand=True, fill='both')
@@ -1401,7 +1191,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     tk.Label(top_panel_left, text="", font=label_font).pack(pady=2, expand=True, fill='both')
     tk.Label(top_panel_left_ctr, text="", font=label_font).pack(pady=2, expand=True, fill='both')
     swap_button = myButton(top_panel_right, text="swap Ref<-->Test", command=swap_run_test, bg=bg_color)
-    swap_button.pack(side=tk.RIGHT, padx=5, pady=5)
+    swap_button.pack(side='right', padx=5, pady=5)
 
     # Image
     pic_path = str(PurePosixPath(ex_root.script_loc) / 'GUI_TestSOC.png')
@@ -1433,44 +1223,53 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     sel1.pack(padx=5, pady=5)
     option.trace_add('write', handle_option)
     Test.label = tk.Label(option_panel_ctr, text=Test.file_txt)
-    Test.label.pack(padx=5, pady=5, anchor=tk.W)
+    Test.label.pack(padx=5, pady=5, anchor='w')
     Ref.label = tk.Label(option_panel_right, text=Ref.file_txt)
-    Ref.label.pack(padx=5, pady=5, anchor=tk.E)
+    Ref.label.pack(padx=5, pady=5, anchor='e')
     Test.create_file_path_and_key(cf['others']['option'])
     Ref.create_file_path_and_key(cf['others']['option'])
 
-    # init row
-    empty_csv_path = tk.StringVar(master, str(PurePosixPath(Test.dataReduction_folder) / 'empty.csv'))
     _, init_val, _ = lookup.get('satInit')
-    init = tk.StringVar(master, init_val)
-    init_label = tk.Label(option_panel_left, text='init & clear:', font=label_font_gentle)
-    init_label.pack(padx=5, pady=5)
     if platform.system() == 'Darwin':
-        init_button = myButton(option_panel_ctr, text=init.get(), command=grab_init, fg="purple", bg=bg_color,
-                               justify=tk.LEFT, font=("Arial", 8))
+        init_button = myButton(option_panel_ctr, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg='black',
+                               justify='left', font=("Arial", 8))
     else:
-        init_button = myButton(option_panel_ctr, text=init.get(), command=grab_init, fg="purple", bg=bg_color,
-                               wraplength=wrap_length, justify=tk.LEFT, font=("Arial", 8))
+        init_button = myButton(option_panel_ctr, text='START HERE and PASTE then\n wait for temp init complete', command=grab_init, fg="purple", bg='black',
+                               wraplength=wrap_length, justify='left', font=("Arial", 8))
+    init = tk.StringVar(master, init_val)
+    init_label = tk.Label(option_panel_ctr, text='init & clear:', font=label_font_gentle)
     if platform.system() == 'Linux':
         paste_label = tk.Label(option_panel_right, text='ctrl-shift-ins to paste', font=label_font_gentle)
+        cmd_label = tk.Label(option_panel_ctr, text=init.get(), font=label_font_gentle)
+        init_label.pack(padx=5, pady=5)
     elif platform.system() == 'Darwin':
         paste_label = tk.Label(option_panel_right, text='ctrl-shift-V to paste', font=label_font_gentle)
+        cmd_label = tk.Label(option_panel_ctr, text=init.get(), font=label_font_gentle)
+        init_label.pack(padx=5, pady=5)
     else:
         paste_label = tk.Label(option_panel_right, text='right-click to paste', font=label_font_gentle)
+        cmd_label = tk.Label(option_panel_ctr, text=init.get(), font=label_font_gentle)
+        init_label.pack(padx=5, pady=5)
     init_button.pack(padx=5, pady=5)
     paste_label.pack(padx=5, pady=5)
+    cmd_label.pack(padx=5, pady=5)
 
     # start row
     start = tk.StringVar(master, '')
     start_label = tk.Label(option_panel_left, text='copy start:', font=label_font_gentle)
     start_label.pack(padx=5, pady=5, expand=True, fill='x')
     if platform.system() == 'Darwin':
-        start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="purple", bg=bg_color,
-                                justify=tk.LEFT, font=butt_font)
+        start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="#00ff00", bg='black',
+                                justify='left', font=butt_font)
+        prev_button = myButton(option_panel_right, text='Run Prev', command=run_previous_task, fg="blue", bg=bg_color,
+                                justify='left', font=butt_font)
     else:
-        start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="purple", bg=bg_color, wraplength=wrap_length,
-                                justify=tk.LEFT, font=butt_font)
+        start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="#00ff00", bg='black', wraplength=wrap_length,
+                                justify='left', font=butt_font)
+        prev_button = myButton(option_panel_right, text='Run Prev', command=run_previous_task, fg="blue", bg=bg_color, wraplength=wrap_length,
+                                justify='left', font=butt_font)
     start_button.pack(padx=5, pady=5, expand=True, fill='both')
+    prev_button.pack(padx=5, pady=5)
     timer_val = tk.IntVar(master, 0)
 
     # macro panel
@@ -1496,10 +1295,10 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     macro = tk.StringVar(master, '')
     if platform.system() == 'Darwin':
         macro_button = myButton(macro_panel_ctr, text=macro.get(), command=grab_macro, fg="purple", bg=bg_color,
-                                justify=tk.LEFT, font=butt_font)
+                                justify='left', font=butt_font)
     else:
         macro_button = myButton(macro_panel_ctr, text=macro.get(), command=grab_macro, fg="purple", bg=bg_color, wraplength=wrap_length,
-                                justify=tk.LEFT, font=butt_font)
+                                justify='left', font=butt_font)
     macro_button.pack(padx=5, pady=5)
     get_time_button = myButton(macro_panel_right, text='grab time copy/paste buffer', command=grab_time,
                                fg="blue", bg=bg_color)
@@ -1517,30 +1316,30 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     note_panel_ctr.pack(side='left', expand=True, fill='both')
     note_panel_right = tk.Frame(note_panel)
     note_panel_right.pack(side='left', expand=True, fill='both')
-    ev1_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify=tk.LEFT, font=note_font)
-    ev1_label.pack(padx=5, pady=5, anchor=tk.W)
-    ev2_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify=tk.LEFT, font=note_font)
-    ev2_label.pack(padx=5, pady=5, anchor=tk.W)
-    ev3_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify=tk.LEFT, font=note_font)
-    ev3_label.pack(padx=5, pady=5, anchor=tk.W)
-    ev4_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify=tk.LEFT, font=note_font)
-    ev4_label.pack(padx=5, pady=5, anchor=tk.W)
+    ev1_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify='left', font=note_font)
+    ev1_label.pack(padx=5, pady=5, anchor='w')
+    ev2_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify='left', font=note_font)
+    ev2_label.pack(padx=5, pady=5, anchor='w')
+    ev3_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify='left', font=note_font)
+    ev3_label.pack(padx=5, pady=5, anchor='w')
+    ev4_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify='left', font=note_font)
+    ev4_label.pack(padx=5, pady=5, anchor='w')
 
     # Save row
     sav_panel = tk.Frame(master)
     sav_panel.pack(expand=True, fill='both')
     save_data_label = tk.Label(sav_panel, text='save data:', font=label_font_gentle)
-    save_data_label.pack(side=tk.LEFT, padx=5, pady=5)
+    save_data_label.pack(side='left', padx=5, pady=5)
     save_data_button = myButton(sav_panel, text='save data', command=save_data, fg="red", bg=bg_color,
-                                wraplength=wrap_length, justify=tk.LEFT, font=butt_font_large)
-    save_data_button.pack(side=tk.LEFT, padx=5, pady=5)
+                                wraplength=wrap_length, justify='left', font=butt_font_large)
+    save_data_button.pack(side='left', padx=5, pady=5)
 
 
     save_progress_label = tk.Label(sav_panel, text='          ', font=label_font_gentle)
-    save_progress_label.pack(side=tk.LEFT, padx=5, pady=5)
+    save_progress_label.pack(side='left', padx=5, pady=5)
     save_progress_button = myButton(sav_panel, text='save progress', command=save_progress, fg="black", bg=bg_color,
-                                    wraplength=wrap_length, justify=tk.LEFT)
-    save_progress_button.pack(side=tk.LEFT, padx=5, pady=5)
+                                    wraplength=wrap_length, justify='left')
+    save_progress_button.pack(side='left', padx=5, pady=5)
 
 
     terse_str = cf['others']['terse']
@@ -1549,7 +1348,7 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     else:
         terse = tk.BooleanVar(master, False)
     terse_button = tk.Checkbutton(sav_panel, text='terse plots', variable=terse, onvalue=True, offvalue=False)
-    terse_button.pack(side=tk.LEFT, pady=2, fill='x')
+    terse_button.pack(side='left', pady=2, fill='x')
     terse.trace_add('write', handle_terse)
 
 
@@ -1559,16 +1358,16 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     else:
         strict_overplot = tk.BooleanVar(master, False)
     strict_overplot_button = tk.Checkbutton(sav_panel, text='strict_overplot plots', variable=strict_overplot, onvalue=True, offvalue=False)
-    strict_overplot_button.pack(side=tk.LEFT, pady=2, fill='x')
+    strict_overplot_button.pack(side='left', pady=2, fill='x')
     strict_overplot.trace_add('write', handle_strict_overplot)
 
 
     clear_data_button = myButton(sav_panel, text='clear', command=clear_data_verbose, fg="red", bg=bg_color,
-                                 wraplength=wrap_length, justify=tk.RIGHT)
-    clear_data_button.pack(side=tk.RIGHT, padx=5, pady=5)
+                                 wraplength=wrap_length, justify='right')
+    clear_data_button.pack(side='right', padx=5, pady=5)
     save_data_as_button = myButton(sav_panel, text='save as', command=save_data_as, fg="red", bg=bg_color,
-                                   wraplength=wrap_length, justify=tk.LEFT)
-    save_data_as_button.pack(side=tk.RIGHT, padx=5, pady=5)
+                                   wraplength=wrap_length, justify='left')
+    save_data_as_button.pack(side='right', padx=5, pady=5)
 
 
     # Run panel
@@ -1578,53 +1377,53 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     tk.Label(run_sep_panel, text=' ', font=("Courier", 2), bg='darkgray').pack(expand=True, fill='x')
     run_panel = tk.Frame(master)
     run_panel.pack(expand=True, fill='x')
-    tk.Label(run_panel, text='------->', font=("Courier", 8), bg='lightgreen').pack(side=tk.LEFT)
+    tk.Label(run_panel, text='------->', font=("Courier", 8), bg='lightgreen').pack(side='left')
     if platform.system() == 'Darwin':
         run_x_button = myButton(run_panel, text=' Compare ', command=compare_run, fg="green", bg=bg_color,
-                                  justify=tk.LEFT, font=butt_font_large)
+                                  justify='left', font=butt_font_large)
         hist_hist_button = myButton(run_panel, text='Compare Hist Hist', command=compare_hist_hist_run, fg="green",
-                                    bg=bg_color, justify=tk.LEFT, font=butt_font_large)
+                                    bg=bg_color, justify='left', font=butt_font_large)
         hist_sim_button = myButton(run_panel, text=' Compare ', command=compare_hist_to_sim, fg="green", bg=bg_color,
-                                   justify=tk.LEFT, font=butt_font_large)
+                                   justify='left', font=butt_font_large)
         run_sim_hist_button = myButton(run_panel, text=' Compare ', command=compare_run_to_hist, fg="green", bg=bg_color,
-                                       justify=tk.LEFT, font=butt_font_large)
+                                       justify='left', font=butt_font_large)
     else:
         run_x_button = myButton(run_panel, text=' Compare ', command=compare_run, fg="green", bg=bg_color,
-                              wraplength=wrap_length, justify=tk.LEFT, font=butt_font_large)
+                              wraplength=wrap_length, justify='left', font=butt_font_large)
         hist_hist_button = myButton(run_panel, text='Compare Hist Hist', command=compare_hist_hist_run, fg="green",
-                                    bg=bg_color, justify=tk.LEFT, font=butt_font_large)
+                                    bg=bg_color, justify='left', font=butt_font_large)
         hist_sim_button = myButton(run_panel, text=' Compare ', command=compare_hist_to_sim, fg="green", bg=bg_color,
-                                   justify=tk.LEFT, font=butt_font_large)
+                                   justify='left', font=butt_font_large)
         run_sim_hist_button = myButton(run_panel, text=' Compare ', command=compare_run_to_hist, fg="green", bg=bg_color,
-                                   justify=tk.LEFT, font=butt_font_large)
+                                   justify='left', font=butt_font_large)
     mod_in_app_button = myButton(run_panel, text=mod_in_app.get(), command=enter_mod_in_app, fg="green", bg=bg_color)
-    run_x_button.pack(side=tk.LEFT, padx=5, pady=5)
-    hist_hist_button.pack(side=tk.LEFT, padx=5, pady=5)
-    mod_in_app_button.pack(side=tk.RIGHT, padx=5, pady=5)
-    hist_sim_button.pack(side=tk.RIGHT, padx=5, pady=5)
-    run_sim_hist_button.pack(side=tk.RIGHT, padx=5, pady=5)
+    run_x_button.pack(side='left', padx=5, pady=5)
+    hist_hist_button.pack(side='left', padx=5, pady=5)
+    mod_in_app_button.pack(side='right', padx=5, pady=5)
+    hist_sim_button.pack(side='right', padx=5, pady=5)
+    run_sim_hist_button.pack(side='right', padx=5, pady=5)
 
     # Compare panel
     compare_sep_panel = tk.Frame(master)
     compare_sep_panel.pack(expand=True, fill='x')
     tk.Label(compare_sep_panel, text=' ', font=("Courier", 2), bg='darkgray').pack(expand=True, fill='x')
-    tk.ttk.Separator(compare_sep_panel, orient='horizontal').pack(pady=5, side=tk.TOP)
+    tk.ttk.Separator(compare_sep_panel, orient='horizontal').pack(pady=5, side='top')
     compare_panel = tk.Frame(master)
     compare_panel.pack(expand=True, fill='x')
     choose_label = tk.Label(compare_panel, text='choose existing files:')
-    choose_label.pack(side=tk.LEFT, padx=5, pady=5)
+    choose_label.pack(side='left', padx=5, pady=5)
     run_sim_choose_button = myButton(compare_panel, text='Compare Run Sim Choose', command=compare_run_sim_choose,
-                                     fg="blue", bg=bg_color, wraplength=wrap_length, justify=tk.LEFT, font=butt_font)
-    run_sim_choose_button.pack(side=tk.LEFT, padx=5, pady=5)
+                                     fg="blue", bg=bg_color, wraplength=wrap_length, justify='left', font=butt_font)
+    run_sim_choose_button.pack(side='left', padx=5, pady=5)
     run_run_choose_button = myButton(compare_panel, text='Compare Run Run Choose', command=compare_run_run_choose,
-                                     fg="blue", bg=bg_color, wraplength=wrap_length, justify=tk.LEFT, font=butt_font)
-    run_run_choose_button.pack(side=tk.LEFT, padx=5, pady=5)
+                                     fg="blue", bg=bg_color, wraplength=wrap_length, justify='left', font=butt_font)
+    run_run_choose_button.pack(side='left', padx=5, pady=5)
     run_sim_choose_button = myButton(compare_panel, text='Compare Hist Sim Choose', command=compare_hist_sim_choose,
-                                     fg="blue", bg=bg_color, wraplength=wrap_length, justify=tk.LEFT, font=butt_font)
-    run_sim_choose_button.pack(side=tk.LEFT, padx=5, pady=5)
+                                     fg="blue", bg=bg_color, wraplength=wrap_length, justify='left', font=butt_font)
+    run_sim_choose_button.pack(side='left', padx=5, pady=5)
     hist_hist_choose_button = myButton(compare_panel, text='Compare Hist Hist Choose', command=compare_hist_hist_choose,
-                                       fg="blue", bg=bg_color, wraplength=wrap_length, justify=tk.LEFT, font=butt_font)
-    hist_hist_choose_button.pack(side=tk.LEFT, padx=5, pady=5)
+                                       fg="blue", bg=bg_color, wraplength=wrap_length, justify='left', font=butt_font)
+    hist_hist_choose_button.pack(side='left', padx=5, pady=5)
 
     # Begin
     handle_test_unit()

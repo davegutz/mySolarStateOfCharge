@@ -24,9 +24,6 @@ from Colors import Colors
 from plot.plq import plq as plq
 from Chemistry_BMS import ib_lag
 from filter.myFilters import LagExp
-from plot.PlotOptions import PlotOptions
-import sys
-import ComparePlotSettings
 
 # Suppress all UserWarning messages
 import warnings
@@ -38,7 +35,7 @@ TB_BAND = 25.  # Band around temperature to group data and correct
 
 
 # Add ib_lag = ib lagged by time constant
-def add_ib(data, mon):
+def add_ib(data):
     if hasattr(data, 'ib_amp_hdwe_f'):
         data = rf.rec_append_fields(data, 'ib_amp_hdwe', np.array(data.ib_amp_hdwe_f, dtype=float))
     if hasattr(data, 'ib_noa_hdwe_f'):
@@ -47,6 +44,7 @@ def add_ib(data, mon):
 
 
 # Add ib_lag = ib lagged by time constant
+# noinspection PyPep8Naming
 def add_ib_lag(data, mon):
     lag_tau = ib_lag(mon.chemistry.mod_code)
     IbLag = LagExp(1., lag_tau, -100., 100.)
@@ -60,12 +58,14 @@ def add_ib_lag(data, mon):
     for i in range(n):
         if i > 0:
             dt = data.time[i] - data.time[i-1]
+        # noinspection PyUnresolvedReferences
         data.ib_lag[i] = IbLag.calculate_tau(float(data.ib_f[i]), i == 0, dt, lag_tau)
     return data
 
 
 # Add schedule lookups and do some rack and stack
-def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=None, unit=None, ap_ib_diff_slr=1.,
+# noinspection PyPep8Naming,PyTypeChecker
+def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=None, ap_ib_diff_slr=1.,
                 ap_ib_quiet_slr=1.):
     voc_soc = []
     soc_min = []
@@ -161,8 +161,8 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     d_mod = rf.rec_append_fields(d_mod, 'ib_charge_f', np.array(ib_charge_f, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'dv_dyn_f', np.array(dv_dyn_f, dtype=float))
     d_mod = add_ib_lag(d_mod, mon)
-    d_mod = add_ib(d_mod, mon)
-    d_mod = calc_fault(d_ra, d_mod, Battery)
+    d_mod = add_ib(d_mod)
+    d_mod = calc_fault(d_ra, d_mod)
     voc_stat_chg = np.copy(d_mod.voc_stat_f)
     voc_stat_dis = np.copy(d_mod.voc_stat_f)
     for i in range(len(voc_stat_chg)):
@@ -213,8 +213,9 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
 
 
 # Calculate thresholds from global input values listed above (review these)
+# noinspection PyPep8Naming
 def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb, ap_ib_diff_slr=1., ap_ib_quiet_slr=1.):
-    # There is no fault logic in the python code, so hard code it here
+    # There is no fault logic in the Python code, so hard code it here
     WRAP_HI_A = 32.  # Wrap high voltage threshold, A (32 after testing; 16=0.2v)
     WRAP_LO_A = -32.  # Wrap high voltage threshold, A (-32, -20 too small on truck -16=-0.2v)
     WRAP_HI_SAT_MARG = 0.2  # Wrap voltage margin to saturation, V (0.2)
@@ -383,7 +384,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plq(plt, hi, timestr, hi, 'ccd_fa', add=8, color='blue', linestyle='-', marker='H', markersize='3')
         plq(plt, hi, timestr, hi, 'ib_noa_fa', add=6, color='red', linestyle='-', marker='+', markersize='3')
         plq(plt, hi, timestr, hi, 'ib_amp_fa', add=4, color='magenta', linestyle='-', marker='_', markersize='3')
-        plq(plt, hi, timestr, hi, 'vb_fa', add=2, color='cyan', linestyle='-', marker='1', markersize='3')
+        plq(plt, hi, timestr, hi, 'vb_fa_lt', add=2, color='cyan', linestyle='-', marker='1', markersize='3')
         plq(plt, hi, timestr, hi, 'tb_fa', color='orange', linestyle='-', marker='2', markersize='3')
         plt.ylim(-1, 24)
         plt.xlabel(time_units)
@@ -484,7 +485,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plq(plt, hi, timestr, hi, 'ib_diff_flt', add=2, color='cyan', linestyle='-')
     plq(plt, hi, timestr, hi, 'ib_diff_fa', add=2, color='magenta', linestyle='--')
     plq(plt, hi, timestr, hi, 'vb_flt', color='blue', linestyle='-.')
-    plq(plt, hi, timestr, hi, 'vb_fa', color='black', linestyle=':')
+    plq(plt, hi, timestr, hi, 'vb_fa_lt', color='black', linestyle=':')
     plq(plt, hi, timestr, hi, 'tb_flt', color='red', linestyle='-')
     plq(plt, hi, timestr, hi, 'tb_fa', color='cyan', linestyle='--')
     plt.legend(loc=1)
@@ -496,6 +497,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     return fig_list, fig_files
 
 
+# noinspection PyUnusedLocal
 def overall_fault(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title=None, fig_list=None, run_type=None,
                   save_plots=False):
     print('overall_fault', end=':  ')
@@ -692,7 +694,8 @@ def overall_fault(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title
     return fig_list, fig_files
 
 
-def calc_fault(d_ra, d_mod, Battery=None):
+# noinspection PyShadowingNames
+def calc_fault(d_ra, d_mod):
     falw = d_ra.falw.astype(int)
     fltw = d_ra.fltw.astype(int)
     ib_noa_bare_flt =np.bool_(falw & 2 ** 12)
@@ -713,9 +716,11 @@ def calc_fault(d_ra, d_mod, Battery=None):
     wrap_hi_n_fa = np.bool_(np.array(falw) & 2 ** 16)
     wrap_lo_n_fa = np.bool_(np.array(falw) & 2 ** 17)
     ccd_fa = np.bool_(falw & 2 ** 4)
+    ib_noa_flt = np.bool_(fltw & 2 ** 3)
     ib_noa_fa = np.bool_(falw & 2 ** 3)
+    ib_amp_flt = np.bool_(fltw & 2 ** 2)
     ib_amp_fa = np.bool_(falw & 2 ** 2)
-    vb_fa = np.bool_(falw & 2 ** 1)
+    vb_fa_lt = np.bool_(falw & 2 ** 1)
     tb_fa = np.bool_(falw & 2 ** 0)
     d_mod = rf.rec_append_fields(d_mod, 'ib_noa_bare_flt', np.array(ib_noa_bare_flt, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_amp_bare_flt', np.array(ib_amp_bare_flt, dtype=float))
@@ -735,9 +740,11 @@ def calc_fault(d_ra, d_mod, Battery=None):
     d_mod = rf.rec_append_fields(d_mod, 'vc_fa', np.array(vc_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'vc_flt', np.array(vc_flt, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ccd_fa', np.array(ccd_fa, dtype=float))
+    d_mod = rf.rec_append_fields(d_mod, 'ib_noa_flt', np.array(ib_noa_flt, dtype=float))
+    d_mod = rf.rec_append_fields(d_mod, 'ib_amp_flt', np.array(ib_amp_flt, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_noa_fa', np.array(ib_noa_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_amp_fa', np.array(ib_amp_fa, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'vb_fa', np.array(vb_fa, dtype=float))
+    d_mod = rf.rec_append_fields(d_mod, 'vb_fa_lt', np.array(vb_fa_lt, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'tb_fa', np.array(tb_fa, dtype=float))
 
     try:
@@ -745,13 +752,9 @@ def calc_fault(d_ra, d_mod, Battery=None):
         wrap_hi_flt = np.bool_(fltw & 2 ** 5)
         wrap_lo_flt = np.bool_(fltw & 2 ** 6)
         red_loss = np.bool_(fltw & 2 ** 7)
-        ib_noa_bare_flt = np.bool_(np.array(fltw) & 2 ** 12)
-        ib_amp_bare_flt = np.bool_(np.array(fltw) & 2 ** 11)
         ib_dscn_flt = np.bool_(fltw & 2 ** 10)
         vb_flt = np.bool_(fltw & 2 ** 1)
         tb_flt = np.bool_(fltw & 2 ** 0)
-        # d_mod = rf.rec_append_fields(d_mod, 'ib_amp_bare_flt', np.array(ib_amp_bare_flt, dtype=float))
-        # d_mod = rf.rec_append_fields(d_mod, 'ib_noa_bare_flt', np.array(ib_noa_bare_flt, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'ib_diff_flt', np.array(ib_diff_flt, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_flt', np.array(wrap_hi_flt, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_flt', np.array(wrap_lo_flt, dtype=float))
@@ -854,8 +857,6 @@ def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
             print("HUGE time range.  Something is wrong with time")
             print(Colors.reset)
             return None
-        for i in range(len(hys_time_min)):
-            t_sec = hys_time_min[i] * 60.
         h = rf.rec_append_fields(h, 'sat', saturated_)
         h = rf.rec_append_fields(h, 'saturated', saturated_)
         h = rf.rec_append_fields(h, 'bms_off', bms_off_)

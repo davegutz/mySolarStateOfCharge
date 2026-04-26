@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,10 +31,10 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 extern CommandPars cp;  // Various parameters shared at system level
 extern Flt_st mySum[NSUM];  // Summaries for saving charge history
 
-boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sensors *Sen, uint16_t modeling_past)
+bool followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sensors *Sen, uint16_t modeling_past)
 {
-    boolean reset = false;
-    boolean found = true;
+    bool reset = false;
+    bool found = true;
     char buffer[32];
     switch ( letter_0 )
     {
@@ -68,7 +68,7 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
                 case ( 'm' ):  // Cm<>:  assign curve charge state in fraction to model only (ekf if modeling)
                     if ( ap.init_sim_soc_p->success() )  // Apply crude limit to prevent user error
                     {
-                        Sen->Sim->apply_soc(ap.init_sim_soc(), Sen->Tb_f);
+                        Sen->Sim->apply_soc(ap.init_sim_soc(), Sen->Tb_f());
                         Serial.printf("soc%8.4f, dq%7.3f, soc_mod%8.4f, dq mod%7.3f,\n",
                             Mon->soc(), Mon->delta_q(), Sen->Sim->soc(), Sen->Sim->delta_q());
                         if ( sp.modeling() ) cp.cmd_reset_sim(); // Does not block.  Commands a reset
@@ -82,14 +82,14 @@ boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, 
         case ( 'D' ):
             switch ( letter_1 )
             {
-                case ( 'h' ):  //   Dh<>:  Summary sample time input  TODO:  not sure this section needed since nominalizing capability added 11/2025
+                case ( 'h' ):  //   Dh<>:  Summary sample time input  Not sure this section needed since nominalizing capability added 11/2025
                     if ( ap.sum_delay_p->success() )
-                        Sen->Summarize->delay(max(ap.read_delay(), ap.sum_delay()), Sen->now);  // validated
+                        Sen->Summarize->delay(max(ap.read_delay(), ap.sum_delay()), Sen->now());  // validated
                     else if (ap.value_str()=="0" || ap.value_str()=="")
                     {
                         Serial.printf("setting NOMINAL instead\n");
                         ap.sum_delay_p->set_nominal();
-                        Sen->Summarize->delay(max(ap.read_delay(), ap.sum_delay()), Sen->now);
+                        Sen->Summarize->delay(max(ap.read_delay(), ap.sum_delay()), Sen->now());
                     }
                     break;
 

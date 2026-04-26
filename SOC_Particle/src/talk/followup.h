@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,4 +24,4 @@
 #pragma once
 #include "../Battery.h"
 
-boolean followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sensors *Sen, uint16_t modeling_past);
+bool followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sensors *Sen, uint16_t modeling_past);

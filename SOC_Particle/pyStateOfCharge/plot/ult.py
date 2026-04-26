@@ -1,5 +1,10 @@
 # Copyright (C) 2026 Dave Gutz
 #
+# noinspection PyAttributeOutsideInit,PyUnresolvedReferences
+# type: ignore
+#
+# pylint: disable=invalid-name, no-member, attribute-defined-outside-init
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
@@ -23,6 +28,7 @@ from plot.plq import plq as plq
 from plot.PlotOptions import PlotOptions
 
 
+# noinspection PyPep8Naming
 def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     if fig_files is None:
         fig_files = []
@@ -32,19 +38,21 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     plt.suptitle(S.plot_title + ' Ult 1')
     plt.rcParams['legend.fontsize'] = 6
     print('Ult 1', end=':  ')
+    # noinspection PyRedundantParentheses
     if (hasattr(S.mr, 'mib') and all(S.mr.mib == 0)) or (hasattr(S.mr, 'mod_data') and all(S.mr.mod_data < 64)):
         plq(plt, S.mr, 'time', S.mr, 'ib_amp_hdwe', color='green', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'ib_amp_hdwe', color='red', linestyle='--', warn=False)
         plq(plt, S.mr, 'time', S.mr, 'ib_noa_hdwe', color='blue', linestyle='-.')
         plq(plt, S.mv, 'time', S.mv, 'ib_noa_hdwe', color='orange', linestyle=':', warn=False)
-    elif (hasattr(S.mr, 'mod') and all(S.mr.mod >= 255.)) or (not (S.strict_overplot) \
+    elif (hasattr(S.mr, 'mod') and all(S.mr.mod >= 255.)) or (not (S.strict_overplot)
                                                               and not(S.run_type=='HistSim' or S.run_type=='HistHist')):
         plq(plt, S.mr, 'time', S.mr, 'ib_amp_model', add=1., color='green', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'ib_amp_model', add=1., color='red', linestyle='--', warn=False)
         plq(plt, S.mr, 'time', S.mr, 'ib_noa_model', add=1., color='blue', linestyle='-.')
         plq(plt, S.mv, 'time', S.mv, 'ib_noa_model', add=1., color='orange', linestyle=':', warn=False)
+    plq(plt, S.mr, 'time', S.mr, 'ib_diff', color='green', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'ib_diff', color='red', linestyle='--', warn=not S.run_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'ib_diff_f', color='cyan', linestyle='-', warn=not S.run_is_stdy)
-    plq(plt, S.mv, 'time', S.mv, 'ib_diff_f', color='red', linestyle='--', warn=False)
     plq(plt, S.mr, 'time', S.mr, 'ibd_thr', color='red', linestyle='--', warn=not S.run_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'ibd_thr', slr=-1, color='red', linestyle='--', warn=not S.run_is_stdy)
     plt.legend(loc=1)
@@ -83,14 +91,23 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mv, 'time', S.mv, 'reset', add=-4, color='cyan', linestyle='--')
     plt.legend(loc=1)
     plt.subplot(337)
-    plq(plt, S.mr, 'time', S.mr, 'e_wrap_m_filt', color='green', linestyle='-', warn=False)
-    plq(plt, S.mv, 'time', S.mv, 'e_wrap_m_filt', color='red', linestyle='--')
-    plq(plt, S.mr, 'time', S.mr, 'e_wrap_m_trim', color='magenta', linestyle='-.')
-    plq(plt, S.mv, 'time', S.mv, 'e_wrap_m_trim', color='cyan', linestyle=':', warn=False)
-    plq(plt, S.mr, 'time', S.mr, 'ewmhi_thr', color='red', linestyle='--', warn=not S.run_is_stdy)
-    plq(plt, S.mv, 'time', S.mv, 'ewmhi_thr', color='orange', linestyle='-.', warn=not S.ver_is_stdy)
-    plq(plt, S.mr, 'time', S.mr, 'ewmlo_thr', color='red', linestyle='--', warn=not S.run_is_stdy)
-    plq(plt, S.mv, 'time', S.mv, 'ewmlo_thr', color='orange', linestyle='-.', warn=not S.ver_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'e_wrap_n_filt', add=1, color='green', linestyle='-', warn=False)
+    plq(plt, S.mv, 'time', S.mv, 'e_wrap_n_filt', add=1, color='red', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'e_wrap_n_trim', add=1, color='magenta', linestyle='-.')
+    plq(plt, S.mv, 'time', S.mv, 'e_wrap_n_trim', add=1, color='cyan', linestyle=':', warn=False)
+    plq(plt, S.mr, 'time', S.mr, 'ewnhi_thr', add=1, color='red', linestyle='--', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'ewnhi_thr', add=1, color='orange', linestyle='-.', warn=not S.ver_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'ewnlo_thr', add=1, color='red', linestyle='--', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'ewnlo_thr', add=1, color='orange', linestyle='-.', warn=not S.ver_is_stdy)
+
+    plq(plt, S.mr, 'time', S.mr, 'e_wrap_m_filt', add=-1, color='green', linestyle='-', warn=False)
+    plq(plt, S.mv, 'time', S.mv, 'e_wrap_m_filt', add=-1, color='red', linestyle='--')
+    plq(plt, S.mr, 'time', S.mr, 'e_wrap_m_trim', add=-1, color='magenta', linestyle='-.')
+    plq(plt, S.mv, 'time', S.mv, 'e_wrap_m_trim', add=-1, color='cyan', linestyle=':', warn=False)
+    plq(plt, S.mr, 'time', S.mr, 'ewmhi_thr', add=-1, color='red', linestyle='--', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'ewmhi_thr', add=-1, color='orange', linestyle='-.', warn=not S.ver_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'ewmlo_thr', add=-1, color='red', linestyle='--', warn=not S.run_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'ewmlo_thr', add=-1, color='orange', linestyle='-.', warn=not S.ver_is_stdy)
     plt.ylim(-4, 4)
     plt.legend(loc=1)
     plt.subplot(338)
@@ -154,8 +171,8 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mv, 'time', S.mv, 'ib_noa_fa', add=+8, color='red', linestyle='--', warn=False)
     plq(plt, S.mr, 'time', S.mr, 'ib_amp_fa', add=+6, color='green', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'ib_amp_fa', add=+6, color='red', linestyle='--', warn=False)
-    plq(plt, S.mr, 'time', S.mr, 'vb_fa', add=+4, color='green', linestyle='-')
-    plq(plt, S.mv, 'time', S.mv, 'vb_fa', add=+4, color='red', linestyle='--', warn=False)
+    plq(plt, S.mr, 'time', S.mr, 'vb_fa_lt', add=+4, color='green', linestyle='-')
+    plq(plt, S.mv, 'time', S.mv, 'vb_fa_lt', add=+4, color='red', linestyle='--', warn=False)
     plq(plt, S.mr, 'time', S.mr, 'Tb_fa', add=+2, color='green', linestyle='-')
     plq(plt, S.mv, 'time', S.mv, 'Tb_fa', add=+2, color='red', linestyle='--', warn=False)
     plq(plt, S.mr, 'time', S.mr, 'ib_dec', color='blue', linestyle='-.', warn=not S.run_is_stdy and not S.run_is_run)

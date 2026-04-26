@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,7 @@
 // SOFTWARE.
 
 
-#ifndef HYSTERESIS_H
-#define HYSTERESIS_H
+#pragma once
 
 #include "Chemistry_BMS.h"
 
@@ -35,22 +34,20 @@ public:
   Hysteresis();
   Hysteresis(Chemistry *chem);
   ~Hysteresis();
-  // operators
-  // functions
   float calculate(const float ib, const float soc, const float hys_scale);
+  float dv_hys() { return dv_hys_; };
+  void dv_hys(const float st) { dv_hys_ = max(min(st, dv_max(soc_)), dv_min(soc_)); };
   float dv_max(const float soc) { return chem_->hys_Tx_->interp(soc); };
   float dv_min(const float soc) { return chem_->hys_Tn_->interp(soc); };
+  float ibs() { return ibs_; };
   void init(const float dv_init);
+  float ioc() { return ioc_; };
   float look_hys(const float dv, const float soc);
   float look_slr(const float dv, const float soc);
   void pretty_print(const float dx, const float dy, const float dz);
-  float update(const double dt, const boolean init_high, const boolean init_low, const float e_wrap, const float hys_scale, const boolean reset);
-  float ibs() { return ibs_; };
-  float ioc() { return ioc_; };
-  float dv_hys() { return dv_hys_; };
-  void dv_hys(const float st) { dv_hys_ = max(min(st, dv_max(soc_)), dv_min(soc_)); };
+  float update(const double dt, const bool init_high, const bool init_low, const float e_wrap, const float hys_scale, const bool reset);
 protected:
-  boolean disabled_;    // Hysteresis disabled by low scale input < 1e-5, T=disabled
+  bool disabled_;    // Hysteresis disabled by low scale input < 1e-5, T=disabled
   float res_;          // Variable resistance value, ohms
   float slr_;          // Variable scalar
   float soc_;          // State of charge input, dimensionless
@@ -64,5 +61,3 @@ protected:
 
 
 // Methods
-
-#endif

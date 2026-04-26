@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2021 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ public:
   ~Tweak();
   // operators
   // functions
-  void adjust(unsigned long now, const double q_capacity);
+  void adjust(uint32_t now, const double q_capacity);
   double coul_eff() { return ( coul_eff_ ); };
   void coul_eff(const double coul_eff) { coul_eff_ = coul_eff; };
   void delta_q_cinf(const double delta_q_cinf) { *rp_delta_q_cinf_ = delta_q_cinf; };
@@ -46,14 +46,14 @@ public:
   void max_change(const double new_max) { max_change_ = abs(new_max); };
   double max_tweak() { return( max_tweak_ ); };
   void max_tweak(const double new_max_tweak) { max_tweak_ = max(new_max_tweak, 0.); };
-  boolean new_desat(const double curr_in, const double T,  const boolean is_sat, unsigned long int now);
+  boolean new_desat(const double curr_in, const double T,  const boolean is_sat, uint32_t int now);
   void pretty_print();
   void reset();
   double time_sat_past() { return( double(millis()-time_sat_past_)/3600000. ); };
-  void time_sat_past(const double new_time) { time_sat_past_ = millis()-(unsigned long int)(new_time*3600000.); };
+  void time_sat_past(const double new_time) { time_sat_past_ = millis()-(uint32_t int)(new_time*3600000.); };
   double time_to_wait() { return( time_to_wait_); };
   void time_to_wait(const double new_time) { time_to_wait_ = new_time; };
-  void save_new_sat(unsigned long int now);
+  void save_new_sat(uint32_t int now);
   double tweak_sclr() { return ( *rp_tweak_sclr_ ); };
   void tweak_sclr(const double sclr) { *rp_tweak_sclr_ = sclr; };
 protected:
@@ -61,7 +61,7 @@ protected:
   double max_change_;           // Maximum allowed change to calibration scalar   'XN/MC'
   double max_tweak_;            // Maximum allowed calibration scalar   'XN/Mx'
   boolean sat_;                 // Indication that battery is saturated, T=saturated
-  unsigned long int time_sat_past_; // Time at last declared saturation, ms
+  uint32_t int time_sat_past_; // Time at last declared saturation, ms
   double time_to_wait_;         // Time specified to wait before engaging delta_q_max declaration, ms
   float *rp_delta_q_cinf_;      // Charge infinity at past update   'XN/Mi', Coulombs
   float *rp_delta_q_dinf_;      // Discharge infinity at past update   'XN/Mi', Coulombs

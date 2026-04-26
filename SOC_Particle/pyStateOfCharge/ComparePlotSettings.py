@@ -1,7 +1,22 @@
+# ComparePlotSettings.py:  used to rescale
+# Copyright (C) 2026 Dave Gutz
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation;
+# version 2.1 of the License.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# Lesser General Public License for more details.
+#
+
 import matplotlib.pyplot as plt
 import textwrap
 import sys
 import os
+
 if sys.platform == 'linux':
     import matplotlib
     is_wayland = os.environ.get('XDG_SESSION_TYPE') == 'wayland' or bool(os.environ.get('WAYLAND_DISPLAY'))
@@ -90,6 +105,7 @@ def rescale_time_axes(fig_list, t_min=None, t_max=None):
       - time_t axes (stair-step temperature subplots) share the same seconds-relative scale as time, so the same t_min/t_max applies to both correctly.
 
       """
+      # noinspection PyPep8Naming
       UNIX_EPOCH_THRESHOLD = 1e9  # values this large are time_ux (Unix epoch), not relative time
 
       for fig in fig_list:
@@ -105,7 +121,3 @@ def rescale_time_axes(fig_list, t_min=None, t_max=None):
                   changed = True
           if changed:
               fig.canvas.draw_idle()  # redraw without replotting
-
-"""
-
-"""

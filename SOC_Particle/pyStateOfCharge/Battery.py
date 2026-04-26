@@ -12,6 +12,9 @@
 # Lesser General Public License for more details.
 #
 # See http://www.fsf.org/licensing/licenses/lgpl.txt for full license text.
+# type: ignore
+# noinspection PyAttributeOutsideInit,PyUnresolvedReferences,PyPep8Naming,PyShadowingNames,PyShadowingBuiltins,PyUnboundLocalVariable,PyUnfilledParameters
+# pylint: disable=invalid-name, no-member, attribute-defined-outside-init, redefined-outer-name, redefined-builtin, used-before-assignment
 
 """Define a general purpose battery model including Randles' model and SoC-VOV model."""
 
@@ -29,8 +32,9 @@ if sys.platform == 'darwin':
     import matplotlib
     matplotlib.use('tkagg')
 plt.rcParams.update({'figure.max_open_warning': 0})
+# noinspection PyPep8Naming
 import Globals as G
-# from plot.plq import plq as plq
+from battery_constants import BatteryConstants
 
 
 class Retained:
@@ -58,163 +62,21 @@ def calculate_capacity(q_cap_rated_scaled=None, dqdt=None, tb_f=None, t_rated=No
     return q_cap
 
 
-# Load Battery
-def load_off_nominal_battery(Battery_to_add=None):
-    # Load off-nominal Battery values.  Load Battery
-    if Battery_to_add is not None:
-        # Scroll through all off-nominals make dictionary
-        Battery_off_dict = {}
-        for field_name in Battery_to_add.dtype.names:
-            print(f"field_name {field_name}  ", end='')
-            try:
-                Battery_off_dict[field_name] = Battery_to_add[field_name][0]  # Use first entry only.  Discard the rest
-            except IndexError:
-                Battery_off_dict[field_name] = Battery_to_add[field_name]
-                print(f"Battery_off field_name {field_name}   value {Battery_to_add[field_name]}")
-        # print(self.Battery_off_dict)
-        # Print affected values
-        print(f"dictionary to apply to Battery class")
-        if Battery_off_dict:
-            for key in dir(Battery_to_add):
-                if key in Battery_off_dict and not key.startswith('__'):
-                    print(f"Battery.{key} {getattr(Battery_to_add, key)} --> ", end='')
-                    print("Battery.{:s} = {:8.6g}".format(key, Battery_off_dict[key]))
-        return Battery_off_dict
-    else:
-        return None
-
-def apply_off_nominal_battery(Battery_, Battery_off_dict):
-    print(f"dictionary to apply to immutable Battery class")
-    if Battery_off_dict:
-        # Check exist
-        for key in Battery_off_dict:
-            if not np.isnan(Battery_off_dict[key]):
-                if not key.startswith('__')  and  key in dir(Battery_):
-                    print(f"Battery.{key} = {getattr(Battery_, key)} to be replaced")
-                else:
-                    print(f"{key} MISSING  *****************")
-                    exit(1)
-        # Make translation
-        for key in dir(Battery_):
-            if key in Battery_off_dict and not key.startswith('__'):
-                print(f"Battery.{key} {getattr(Battery_, key)} --> ", end='')
-                setattr(Battery_, key, Battery_off_dict[key])
-                print("Battery.{:s} = {:8.6g}".format(key, Battery_off_dict[key]))
-
-
-class Battery(Coulombs):
-    # Battery constants
-    NOM_SYS_VOLT = 12.  # Nominal system output, V, at which the reported amps are used (12)
-    mxeps_bb = 1.05  # Numerical maximum of coefficient model with scaled soc
-    TCHARGE_DISPLAY_DEADBAND = 0.1  # Inside this +/- deadband, charge time is displayed '---', A
-    DF2 = 0.70  # Threshold to reset Coulomb Counter if different from ekf, fraction (0.05)
-    EKF_CONV = 2e-3  # EKF tracking error indicating convergence, V (1e-3)
-    EKF_T_CONV = 30.  # EKF set convergence test time, sec (30.)
-    EKF_T_RESET = (EKF_T_CONV / 2.)  # EKF reset test time, sec ('up 1, down 2')
-    EKF_NOM_DT = 0.1  # EKF nominal update time, s (initialization; actual value varies)
-    TAU_Y_FILT = 5.  # EKF y-filter time constant, sec (5.)
-    MIN_Y_FILT = -0.5  # EKF y-filter minimum, V (-0.5)
-    MAX_Y_FILT = 0.5  # EKF y-filter maximum, V (0.5)
-    WN_Y_FILT = 0.1  # EKF y-filter-2 natural frequency, r/s (0.1)
-    ZETA_Y_FILT = 0.9  # EKF y-filter-2 damping factor (0.9)
-    TMAX_FILT = 3.  # Maximum y-filter-2 sample time, s (3.)
-    EKF_Q_SD_NORM = 0.0015  # Standard deviation of normal EKF process uncertainty, V (0.0015)
-    EKF_R_SD_NORM = 0.5  # Standard deviation of normal EKF state uncertainty, fraction (0-1) (0.5)
-    IMAX_NUM = 100000.  # Overflow protection since ib past value used
-    HYS_SOC_MIN_MARG = 0.15  # Add to soc_min to set thr for detecting low endpoint condition for reset of hysteresis
-    HYS_IB_THR = 1.  # Ignore reset if opposite situation exists
-    ap_hys_scale = 1.  # Used to disable hysteresis from sim on the app
-    IB_MIN_UP = 0.2  # Min up charge current for come alive, BMS logic, and fault
-    cp_eframe_mult = 20  # Run EKF 20 times slower than Coulomb Counter
-    VB_DC_DC = 13.5  # Estimated dc-dc charger, V
-    HDB_VBATT = 0.05  # Half deadband to filter vb, V (0.05)
-    WRAP_ERR_FILT = 4.  # Wrap error filter time constant, s (4)
-    MAX_WRAP_ERR_FILT = 10.  # Anti-windup wrap error filter, V (10)
-    IB_ABS_MAX_AMP = 12.  # Hard range limit of bank sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_AMP_R1 / SHUNT_AMP_R2 *1.05) but saw -11.48 A (12)
-    IB_ABS_MAX_NOA = 78.5  # Hard range limit of sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_NOA_R1 / SHUNT_NOA_R2 *1.05) A (78.5)
-    MAX_TRIM_RATE = 0.005  # Max allowable amp e_wraptrim rate, V/s (0.005)
-    F_MAX_T_WRAP = 2.8  # Maximum update time of Wrap filter for stability at WRAP_ERR_FILT, s (2.8)
-    D_SOC_S = 0.  # Bias on soc to voc-soc lookup to simulate error in estimation, esp cold battery near 0 C
-    VB_OFF_BB = 10.  # BMS shutoff level, Battleborn, v (10)
-    VB_OFF_CH = 11.  # BMS shutoff level, CHINS, v (11)
-    AMP_WRAP_TRIM_GAIN = 0.015  # Amp looparound trim gain r/s (0.015)
-    NOA_WRAP_TRIM_GAIN = 0.0  # Noa looparound trim gain r/s (0.0)
-    WRAP_LO_S = 9.  # Wrap low failure set time, sec (9) // 9 is legacy must be quicker than SAT test
-    WRAP_LO_R = (WRAP_LO_S/2.)  # Wrap low failure reset time, sec ('up 1, down 2')
-    WRAP_HI_S = WRAP_LO_S  # Wrap high failure set time, sec (WRAP_LO_S)
-    WRAP_HI_R = (WRAP_HI_S/2.)  # Wrap high failure reset time, sec ('up 1, down 2')
-    WRAP_HI_AMP = 3.2  # Wrap high voltage threshold amplified, A(3.2)
-    WRAP_LO_AMP = -4.  # Wrap high voltage threshold amplified, A (-4)
-    WRAP_HI_NOA = 6.4  # Wrap high voltage threshold non-amplified, A(32)
-    WRAP_LO_NOA = -8.  # Wrap high voltage threshold non-amplified, A (-40)
-    hdwe_ib_hi_lo = 1.  # Type of selection logic philosophy. Only True is implemented and debugged now
-    HDWE_IB_HI_LO_NOA_LO = -11. # Fully NOA unit discharge transition, A (-11, soc4p2)
-    HDWE_IB_HI_LO_AMP_LO = -10. # Fully NOA unit discharge transition, A (-10, soc4p2)
-    HDWE_IB_HI_LO_AMP_HI = 10.  # Fully NOA unit charge transition, A (10, soc4p2)
-    HDWE_IB_HI_LO_NOA_HI = 11.  # Fully NOA unit charge transition, A (11, soc4p2)
-    WRAP_SOC_HI_OFF = 0.97  # Disable e_wrap_hi when saturated (0.97)
-    WRAP_SOC_LO_OFF_REL = 0.2  # Disable e_wrap when near empty (soc lo for high Tb where soc_min=.2, voltage cutback, 0.2)
-    WRAP_SOC_LO_OFF_ABS = 0.35  # Disable e_wrap when near empty (soc lo any Tb, 0.35)
-    WRAP_HI_SAT_MARG = 0.2  # Wrap voltage margin to saturation, V (0.2)
-    WRAP_MOD_C_RATE = 0.02  # Moderate charge rate threshold to engage wrap threshold (0.02 to prevent trip near saturation .05 too large)
-    WRAP_SOC_MOD_OFF = 0.85  # Disable e_wrap_lo when nearing saturated and moderate C_rate(0.85)
-    WRAP_SOC_HI_SLR = 1000.  # Huge to disable e_wrap (1000)
-    WRAP_SOC_LO_SLR = 60.  # Large to disable e_wrap (60. for startup)
-    VOC_STAT_FILT = 120.  # Clean up noise (120)
-    VB_MIN = 2.  # Signal selection hard fault threshold, V (0.  < 2. < 10 bms shutoff, reads ~3 without power when off)
-    VB_MAX = 17.  # Signal selection hard fault threshold, V (17. < VB_CONV_GAIN*4095)
-    TB_MAX = 60.  # Signal selection hard fault threshold 2wire only, C (60.)
-    TB_MIN = -40.  # Signal selection hard fault threshold 2wire only, C (-40.)
-    TB_FILT = 120.  # Temperature filter lag, s (120)
-    T_RLIM = 0.00085  # Temperature sensor rate limit to minimize jumps in Coulomb counting, deg C/s (0.00085 allows 0.05 deg for 1 minute)
-    DISAB_LO_SET = 0.4  # Disable lo=amp wrap fault set persistence, s (0.4)
-    DISAB_LO_RESET = 0.8  # Disable lo=amp wrap fault reset persistence, s (0.8)
-    SHUNT_AMP_GAIN = 1.  # hdwe gain, A/V
-    SHUNT_NOA_GAIN = 1.  # hdwe gain, A/V
-    NS = 1  # Number serial batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
-    NP = 1  # Number parallel batteries in bank, for converting raw Ib,Vb to ib, vb per battery unit
-    KF_Q_STD = 0.0003  # Shunt KF process uncertainty
-    KF_R_STD = 0.1000  # Shunt KF state uncertainty
-    ap_dc_dc_on = None  # Truck charging
-    EWLO_TRM_SLR = None
-    EWHI_TRM_SLR = None
-    EWHI_SLR = 1.
-    EWLO_SLR = 1.
-    IBATT_DISAGREE_THRESH = None
-    IB_DIFF_SLR = None
-    NOM_UNIT_CAP = 108.4  # Nominal battery unit capacity.  (* 'Sc' or '*BS'/'*BP'), Ah
-    sp_s_cap_mon = None
-    sp_s_cap_sim = None
-    RATED_TEMP = None
-    CHEM = None
-    skip_battery = None
-    sp_ib_disch_slr = None
-    ap_ewhi_slr = None
-    ap_ewlo_slr = None
-    ap_cc_diff_slr = None
-    ap_ib_diff_slr = None
-    ap_ib_quiet_slr = None
-    ap_disab_ib_fa = None
-    ap_disab_tb_fa = None
-    ap_disab_vb_fa = None
-    sp_cutback_gain_slr = None
-    ap_dv_voc_soc = None
-    ap_ds_voc_soc = None
-    sp_Dw = None
-    sp_vsat_add = None
+# noinspection PyPep8Naming
+class Battery(BatteryConstants, Coulombs):
 
     # """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
-    #                         what gets delivered, e.g. Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
+    #                         what gets delivered, e.g. Wshunt / NOMINAL_VB.  Also varies 0.2 - 0.4 C currents
     #                         or 20 - 40 A for a 100 Ah battery"""
 
     # Battery model:  Randles' dynamics, SOC-VOC model
 
     """Nominal battery bank capacity, Ah(100).Accounts for internal losses.This is
-                            what gets delivered, e.g.Wshunt / NOM_SYS_VOLT.  Also varies 0.2 - 0.4 C currents
+                            what gets delivered, e.g.Wshunt / NOMINAL_VB.  Also varies 0.2 - 0.4 C currents
                             or 20 - 40 A for a 100 Ah battery"""
 
-    def __init__(self, OPT=None, q_cap_rated=NOM_UNIT_CAP*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
-                 dvoc=0., mod_code=0, vsat_add=0., scale_cap=1., mon=None, str=None):
+    def __init__(self, OPT=None, q_cap_rated=BatteryConstants.NOM_UNIT_CAP*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
+                 dvoc=0., mod_code=0, vsat_add=0., scale_cap=1., mon=None, str_=None):
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
         etal.pdf.'  SOC-OCV curve fit './Battery State/BattleBorn Rev1.xls:Model Fit' using solver with min slope
@@ -222,14 +84,16 @@ class Battery(Coulombs):
         so equation error when soc<=0 to match data.    See Battery.h
         """
         # Parents
-        Coulombs.__init__(self, OPT, q_cap_rated,  q_cap_rated, t_rated, temp_rlim, tweak_test, dvoc=dvoc,
-                          Dw=Battery.sp_Dw)
+        Coulombs.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated,  q_cap_rated_scaled=q_cap_rated, t_rated=t_rated,
+                          tweak_test=tweak_test, dvoc=dvoc, Dw=Battery.sp_Dw)
 
         # Defaults
+        self.time = -999.
+        self.mod_data = 0.
         self.chem = mod_code
         self.nz = None
         self.q = 0  # Charge, C
-        self.voc = Battery.NOM_SYS_VOLT  # Model open circuit voltage, V
+        self.voc = Battery.NOMINAL_VB  # Model open circuit voltage, V
         self.voc_stat = self.voc  # Static model open circuit voltage from charge process, V
         self.voc_stat_past = self.voc_stat
         self.voc_stat_f = self.voc_stat
@@ -238,7 +102,7 @@ class Battery(Coulombs):
         self.ib_dyn_T = 0.  # Randles update time, s
         self.ib_dyn_rstate = 0.  # Randles rstate, A
         self.ib_dyn_lstate = 0.  # Randles lstate, A
-        self.vb = Battery.NOM_SYS_VOLT  # Battery voltage at post, V
+        self.vb = Battery.NOMINAL_VB  # Battery voltage at post, V
         self.ib = 0.  # Current into battery post, A
         self.ib_in = 0.  # Current into calculate, A
         self.ib_charge = 0.  # Current into count_coulombs, A
@@ -266,7 +130,7 @@ class Battery(Coulombs):
         self.Tb = tb_f
         self.Tb_f = tb_f
         self.Tb_f_rate = None
-        self.saved = Saved(str)  # for plots and prints
+        self.saved = Saved(str_)  # for plots and prints
         self.dv_hys = 0.  # Placeholder so BatterySim can be plotted
         self.tau_hys = 0.  # Placeholder so BatterySim can be plotted
         self.dv_dyn = 0.  # Placeholder so BatterySim can be plotted
@@ -357,6 +221,16 @@ class Battery(Coulombs):
             print("soc=", soc, "tb_f=", tb_f, "dvoc=", self.dvoc, "voc=", voc)
         return voc, dv_dsoc
 
+    def append_to(self, sv):
+        """Append all scalar members of self to corresponding list members of sv (a Saved instance).
+        If the attribute does not yet exist in sv, create it as a new list with the first value."""
+        for key, val in vars(self).items():
+            if isinstance(val, (bool, int, float, np.generic)) or val is None:
+                if hasattr(sv, key):
+                    getattr(sv, key).append(val)
+                else:
+                    setattr(sv, key, [val])
+
     def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
                   q_capacity=None, rp=None, reset_ekf=None, soc=None, saturated_init=None):
         # Battery
@@ -366,17 +240,19 @@ class Battery(Coulombs):
         raise NotImplementedError
 
 
+# noinspection PyPep8Naming
 class BatteryMonitor(Battery, EKF1x1):
     """Extend Battery class to make a monitor"""
     def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600, t_rated=25., temp_rlim=0.017, scale=1.,
                  tb_f=25., tweak_test=False, dvoc=0., mod_code=0, vsat_add=0.):
+        ref = None
         if hasattr(OPT, 'slr_res_0'):
             ref = OPT.mon_run
         else:
             pass
         q_cap_rated_scaled = q_cap_rated * scale
         Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
-                         tweak_test=tweak_test, dvoc=dvoc, mod_code=mod_code, scale_cap=scale, mon=True, str='ver',
+                         tweak_test=tweak_test, dvoc=dvoc, mod_code=mod_code, scale_cap=scale, mon=True, str_='ver',
                          vsat_add=vsat_add)
 
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
@@ -388,6 +264,8 @@ class BatteryMonitor(Battery, EKF1x1):
         # Parents
         self.soc_ekf = 0.  # Filtered state of charge from ekf (0-1)
         EKF1x1.__init__(self)
+        self.time_min = self.time / 60.
+        self.time_day = self.time_min / 60. / 24.
         self.tcharge_ekf = 0.  # Charging time to 100% from ekf, hr
         self.voc = 0.  # Charging voltage, V
         self.q_ekf = 0  # Filtered charge calculated by ekf, C
@@ -400,12 +278,9 @@ class BatteryMonitor(Battery, EKF1x1):
         self.soc_s = 0.  # Model information
         self.EKF_converged = TFDelay(False, Battery.EKF_T_CONV, Battery.EKF_T_RESET, Battery.EKF_NOM_DT)
         self.voc_stat_filt = LagExp(self.EKF_NOM_DT, self.VOC_STAT_FILT, self.VB_MIN, self.VB_MAX)  # Lag to be run on saturation to produce ib_lag.  T and tau set at run time
-        self.y_filt_lag = LagTustin(0.1, Battery.TAU_Y_FILT, Battery.MIN_Y_FILT, Battery.MAX_Y_FILT)
+        self.y_ekf_filt_lag = LagTustin(0.1, Battery.TAU_Y_FILT, Battery.MIN_Y_FILT, Battery.MAX_Y_FILT)
         self.WrapErrFilt = LagTustin(0.1, Battery.WRAP_ERR_FILT, -Battery.MAX_WRAP_ERR_FILT, Battery.MAX_WRAP_ERR_FILT)
         self.y_filt = 0.
-        self.y_filt_2Ord = General2Pole(0.1, Battery.WN_Y_FILT, Battery.ZETA_Y_FILT, Battery.MIN_Y_FILT,
-                                        Battery.MAX_Y_FILT)
-        self.y_filt2 = 0.
         self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.NOM_UNIT_CAP*scale,
                                      min_=-Battery.NOM_UNIT_CAP*scale, tau=self.chemistry.tau_ct)
         self.ib = 0.
@@ -439,8 +314,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.eframe = 0
         if OPT is not None:
             self.eframe_mult = OPT.eframe_mult
-            self.dt_eframe = self.dt*self.eframe_mult
-        self.sdb_voc = SlidingDeadband(Battery.HDB_VBATT)
+            self.dt_eframe = self.dt*self.ap_eframe_mult
+        self.sdb_voc = SlidingDeadband(Battery.HDB_VB)
         self.e_wrap = 0.
         self.e_wrap_filt = 0.
         self.e_wrap_rate = 0.
@@ -495,6 +370,46 @@ class BatteryMonitor(Battery, EKF1x1):
         self.wrap_lo_n_flt = False
         self.wrap_lo_n_fa = False
 
+        self.ib_model = 0.
+        self.ib_h  = 0.
+        self.ib_s  = 0.
+        self.mib  = False
+        self.mvb = False
+        self.mtb = False
+        self.ib_diff  = 0.
+        self.ib_dyn_m  = 0.
+        self.ib_dyn_T_m  = 0.
+        self.ib_dyn_rstate_m  = 0.
+        self.ib_dyn_lstate_m  = 0.
+        self.ib_dyn_tau_m  = 0.
+        self.dv_dyn_m  = 0.
+        self.voc_m = 0.
+        self.voc_soc_m  = 0.
+        self.ib_wrp_T_m  = 0.
+        self.ib_wrp_tau_m  = 0.
+        self.ib_wrp_state_m  = 0.
+        self.ib_wrp_rate_m  = 0.
+        self.ib_wrp_reset_m  = 0.
+        self.e_wrap_m_trim  = 0.
+        self.e_wrap_m_trimmed = 0.
+        self.ib_dyn_n = 0.
+        self.ib_dyn_T_n = 0.
+        self.ib_dyn_rstate_n  = 0.
+        self.ib_dyn_lstate_n = 0.
+        self.ib_dyn_tau_n = 0.
+        self.dv_dyn_n  = 0.
+        self.ib_wrp_T_n  = 0.
+        self.ib_wrp_tau_n  = 0.
+        self.ib_wrp_state_n  = 0.
+        self.ib_wrp_rate_n  = 0.
+        self.e_wrap_n_trimmed  = 0.
+        self.vb_h_f  = 0.
+        self.y_ekf = 0.
+        self.y_ekf_f = 0.
+        self.qcap  = 0.
+        self.qcrs  = 0.
+        self.cc_dif  = 0.
+
         if SN is not None:
             self.Tb_hdwe = SN.Tb_hdwe_init
             self.Tb_hdwe_filt =SN.Tb_hdwe_filt_init
@@ -539,6 +454,44 @@ class BatteryMonitor(Battery, EKF1x1):
             self.x_prior = SN.x_prior_init
             self.soc_ekf = SN.soc_ekf_init
             self.z = SN.z_init
+        self.dt_s = 0.
+        self.chm_s = 0.
+        self.qcrs_s = 0.
+        self.qcap_s = 0.
+        self.bms_off_s = 0.
+        self.Tb_s = 0.
+        self.Tb_f_s = 0.
+        self.vsat_s = 0.
+        self.voc_s = 0.
+        self.voc_stat_s = 0.
+        self.dv_dyn_s = 0.
+        self.d_delta_q_s = 0.
+        self.delta_q_s = 0.
+        self.dv_hys_s = 0.
+        self.ib_charge_s = 0.
+        self.ib_dyn_s = 0.
+        self.ib_in_s = 0.
+        self.ib_s = 0.
+        self.ioc_s = 0.
+        self.sat_s = 0.
+        self.soc_s = 0.
+        self.vb_s = 0.
+        self.ib_dyn_T_s = 0.
+        self.ib_dyn_lstate_s = 0.
+        self.ib_dyn_rstate_s = 0.
+        self.ib_dyn_tau_s = 0.
+        self.tau_hys_s = 0.
+        self.vb_s = 0.
+        self.q_s = 0.
+        self.ib_fut_s = 0.
+        self.reset_s = 0.
+        self.tau_s = 0.
+        self.tau_hys_s = 0.
+        self.kf_v_m = 0.
+        self.kf_v_n = 0.
+        self.y_ekf_f_T = 0.
+        self.y_ekf_f_tau = 0.
+        self.y_ekf_f_state = 0.
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -599,8 +552,11 @@ class BatteryMonitor(Battery, EKF1x1):
         # Overflow protection since ib past value used
         self.ib = max(min(self.ib_in, Battery.IMAX_NUM), -Battery.IMAX_NUM)
 
+        # Ib diff logic
+        self.ib_diff = self.ib_amp - self.ib_noa
+
         # Wrap logic
-        self.wrap(reset=reset, modeling_ib=rp.modeling_ib, ib_noa_hdwe=self.ib_noa_hdwe, SN=SN, ib_amp=self.ib_amp,
+        self.wrap(reset=reset, ib_noa_hdwe=self.ib_noa_hdwe, SN=SN, ib_amp=self.ib_amp,
                   ib_noa=self.ib_noa, ib_amp_pst=self.ib_amp_pst, ib_noa_pst=self.ib_noa_pst, rp=rp)
 
         # Reversionary model
@@ -683,21 +639,24 @@ class BatteryMonitor(Battery, EKF1x1):
             self.voc_stat_f_tau = self.voc_stat_filt.tau
             self.voc_stat_f_T = self.voc_stat_filt.dt
             self.frz = self.bms_off
-            self.predict_ekf(u=ddq_dt, reset=self.reset_ekf, freeze=self.frz)  # u = d(q)/dt
-            self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=1.)  # z = voc, voc_filtered = hx
+            mr = SN.mon_run
+            self.predict_ekf(u=ddq_dt, reset=self.reset_ekf, freeze=self.frz, OPT=OPT, i_ekf=i_ekf)  # u = d(q)/dt
+            self.update_ekf(z=self.voc_stat_f, x_min=0., x_max=Battery.MXEPS, OPT=OPT, i_ekf=i_ekf)  # z = voc, voc_filtered = hx
             self.soc_ekf = self.x  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
+            self.y_ekf = self.y
             self.q_ekf = self.soc_ekf * self.q_capacity
-            self.y_filt = self.y_filt_lag.calculate(in_=self.y, dt=min(self.dt_eframe, Battery.EKF_T_RESET),
-                                                    reset=self.reset_ekf)
-            self.y_filt2 = self.y_filt_2Ord.calculate(in_=self.y, dt=min(self.dt_eframe, Battery.TMAX_FILT),
-                                                      reset=self.reset_ekf)
+            self.y_ekf_f = self.y_ekf_filt_lag.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.EKF_T_RESET),
+                                                         reset=self.reset_ekf)
+            self.y_ekf_f_T = self.y_ekf_filt_lag.dt
+            self.y_ekf_f_tau = self.y_ekf_filt_lag.tau
+            self.y_ekf_f_state = self.y_ekf_filt_lag.state
             # EKF convergence
             conv = abs(self.y_filt) < Battery.EKF_CONV
             self.EKF_converged.calculate(conv, Battery.EKF_T_CONV, Battery.EKF_T_RESET,
                                          min(self.dt_eframe, Battery.EKF_T_RESET), self.reset_ekf)
             # print(f"{reset_ekf=} {self.soc_ekf} {self.x=} {self.voc_stat_ekf=}")
         self.eframe += 1
-        if self.reset_ekf or self.eframe >= self.eframe_mult:  # '>=' ensures reset with changes on the fly
+        if self.reset_ekf or self.eframe >= self.ap_eframe_mult:  # '>=' ensures reset with changes on the fly
             self.eframe = 0
 
         # Filtered voc
@@ -760,7 +719,7 @@ class BatteryMonitor(Battery, EKF1x1):
 
     def ekf_update(self):
         # Measurement function hx(x), x = soc ideal capacitor
-        x_lim = max(min(self.x, 1.), 0.)
+        x_lim = max(min(self.x, Battery.MXEPS), 0.)
         self.x_for_hx = x_lim
         self.tb_f_for_hx = self.Tb_f_rap
         self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.tb_f_for_hx, printit=False)
@@ -769,8 +728,13 @@ class BatteryMonitor(Battery, EKF1x1):
         return self.hx, self.H, self.tb_f_for_hx, self.x_for_hx
 
     def init_soc_ekf(self, mr, i, i_ekf):
+        if mr is None:
+            return
         self.soc_ekf = mr.soc_ekf[i]
-        self.y = mr.y[i_ekf]
+        if hasattr(mr, 'y'):
+            self.y_ekf = mr.y[i_ekf]
+        else:
+            self.y_ekf = mr.y_ekf[i_ekf]
         self.init_ekf(mr.soc_ekf[i], 0.0)
         self.q_ekf = self.soc * self.q_capacity
         self.P = mr.P[i_ekf]
@@ -838,127 +802,93 @@ class BatteryMonitor(Battery, EKF1x1):
             self.apply_soc(self.soc_ekf, tb_f)
             print("confirmed ", self.soc)
 
-    def save(self, time, dt, soc_run, voc_run, iscn_f):  # BatteryMonitor
-        self.saved.time.append(time)
-        self.saved.time_min.append(time / 60.)
-        self.saved.time_day.append(time / 3600. / 24.)
-        self.saved.dt_temp.append(self.dt_temp)
-        self.saved.reset_temp.append(self.reset_temp)
-        self.saved.chm.append(self.chm)
-        self.saved.qcrs.append(self.q_cap_rated_scaled)
-        self.saved.delta_q.append(self.delta_q)
-        self.saved.d_delta_q.append(self.delta_q)
-        self.saved.dt.append(dt)
-        self.saved.ib.append(self.ib)
-        self.saved.ib_in.append(self.ib_in)
-        self.saved.ib_charge.append(self.ib_charge)
-        self.saved.ioc.append(self.ioc)
-        self.saved.vb.append(self.vb)
-        self.saved.dv_hys.append(self.dv_hys)
-        self.saved.tau_hys.append(self.tau_hys)
-        self.saved.dv_dyn.append(self.dv_dyn)
-        self.saved.ib_dyn.append(self.ib_dyn)
-        self.saved.ib_dyn_T.append(self.ib_dyn_T)
-        self.saved.ib_dyn_rstate.append(self.ib_dyn_rstate)
-        self.saved.ib_dyn_lstate.append(self.ib_dyn_lstate)
-        self.saved.voc_stat_f_rstate.append(self.voc_stat_f_rstate)
-        self.saved.voc_stat_f_lstate.append(self.voc_stat_f_lstate)
-        self.saved.voc_stat_f_tau.append(self.voc_stat_f_tau)
-        self.saved.voc_stat_f_T.append(self.voc_stat_f_T)
-        self.saved.voc.append(self.voc)
-        self.saved.voc_soc.append(self.voc_soc)
-        self.saved.voc_stat.append(self.voc_stat)
-        self.saved.voc_stat_f.append(self.voc_stat_f)
-        self.saved.soc.append(self.soc)
-        self.saved.soc_ekf.append(self.soc_ekf)
-        self.saved.Fx.append(self.Fx)
-        self.saved.Bu.append(self.Bu)
-        self.saved.P.append(self.P)
-        self.saved.Q.append(self.Q)
-        self.saved.dt_eframe.append(self.dt_eframe)
-        self.saved.voc_stat_ekf.append(self.voc_stat_ekf)
-        self.saved.R.append(self.R)
-        self.saved.H.append(self.H)
-        self.saved.S.append(self.S)
-        self.saved.K.append(self.K)
-        self.saved.hx.append(self.hx)
-        self.saved.u_ekf.append(self.u_ekf)
-        self.saved.x_ekf.append(self.x)
-        self.saved.y.append(self.y)
-        self.saved.y_filt.append(self.y_filt)
-        self.saved.y_filt2.append(self.y_filt2)
-        self.saved.z.append(self.z)
-        self.saved.x_prior.append(self.x_prior)
-        self.saved.P_prior.append(self.P_prior)
-        self.saved.x_post.append(self.x_post)
-        self.saved.P_post.append(self.P_post)
+    def save(self, time, dt, soc_run, voc_run, SN, rp, sim):  # BatteryMonitor
+        self.time = time
+        self.dt = dt
+        self.time_min = self.time / 60.
+        self.time_day = self.time_min / 60. / 24.
         if abs(soc_run) < 1e-6:
             soc_run = 1e-6
         self.e_soc_ekf = (self.soc_ekf - soc_run) / soc_run
         self.e_voc_ekf = (self.voc - voc_run) / voc_run
-        self.saved.e_soc_ekf.append(self.e_soc_ekf)
-        self.saved.e_voc_ekf.append(self.e_voc_ekf)
-        self.saved.tb_f_for_hx.append(self.tb_f_for_hx)
-        self.saved.x_for_hx.append(self.x_for_hx)
-        self.saved.Tb.append(self.Tb)
-        self.saved.Tb_f.append(self.Tb_f)
-        self.saved.Tb_model.append(self.Tb_model)
-        self.saved.Tb_f_rate.append(self.Tb_f_rate)
-        self.saved.Tb_rap.append(self.Tb_rap)
-        self.saved.Tb_f_rap.append(self.Tb_f_rap)
-        self.saved.Tb_f_rate_rap.append(self.Tb_f_rate_rap)
-        self.saved.vsat.append(self.vsat)
-        self.saved.voc_ekf.append(self.voc_ekf)
-        self.saved.sat.append(int(self.sat))
-        self.saved.saturated.append(int(self.saturated))
-        self.saved.sel.append(self.sel)
-        self.saved.mod_data.append(self.mod)
-        self.saved.soc_s.append(self.soc_s)
-        self.saved.bms_off.append(self.bms_off)
-        self.saved.reset.append(self.reset)
-        self.saved.reset_ekf.append(self.reset_ekf)
-        self.saved.e_wrap.append(self.e_wrap)
-        self.saved.e_wrap_filt.append(self.e_wrap_filt)
-        self.saved.ib_dyn_m.append(self.LoopIbAmp.ib_dyn)
-        self.saved.dv_dyn_m.append(self.LoopIbAmp.dv_dyn)
-        self.saved.e_wrap_m.append(self.e_wrap_m)
-        self.saved.e_wrap_m_filt.append(self.e_wrap_m_filt)
-        self.saved.e_wrap_m_trim.append(self.e_wrap_m_trim)
-        self.saved.ib_dyn_n.append(self.LoopIbNoa.ib_dyn)
-        self.saved.dv_dyn_n.append(self.LoopIbNoa.dv_dyn)
-        self.saved.e_wrap_n.append(self.e_wrap_n)
-        self.saved.e_wrap_n_filt.append(self.e_wrap_n_filt)
-        self.saved.e_wrap_n_trim.append(self.e_wrap_n_trim)
-        self.saved.e_wrap_rate.append(self.e_wrap_rate)
-        self.saved.ib_amp.append(self.ib_amp)
-        self.saved.ib_amp_model.append(self.ib_amp_model)
-        self.saved.ib_amp_hdwe.append(self.ib_amp_hdwe)
-        self.saved.ib_noa.append(self.ib_noa)
-        self.saved.ib_noa_model.append(self.ib_noa_model)
-        self.saved.ib_noa_hdwe.append(self.ib_noa_hdwe)
-        self.saved.ib_lag.append(self.ib_lag)
-        self.saved.voc_soc_new.append(self.voc_soc_new)
-        self.saved.ewmhi_thr.append(self.ewmhi_thr)
-        self.saved.e_wrap_m_reset.append(self.e_wrap_m_reset)
-        self.saved.ewmlo_thr.append(self.ewmlo_thr)
-        self.saved.ewnhi_thr.append(self.ewnhi_thr)
-        self.saved.ewnlo_thr.append(self.ewnlo_thr)
-        self.saved.q.append(self.q)
-        self.saved.q_capacity.append(self.q_capacity)
-        self.saved.Tb_rstate.append(self.Tb_rstate)
-        self.saved.Tb_lstate.append(self.Tb_state)
-        self.saved.Tb_hdwe.append(self.Tb_hdwe)
-        self.saved.Tb_hdwe_filt.append(self.Tb_hdwe_filt)
-        self.saved.Tb_model_filt.append(self.Tb_model_filt)
-        self.saved.Tb_hdwe_filt_rate.append(self.Tb_hdwe_filt_rate)
-        self.saved.reset_kf.append(self.reset_kf)
-        self.saved.iscn_f.append(iscn_f)
-        self.saved.vb_hdwe.append(self.vb_hdwe)
-        self.saved.vb_hdwe_f.append(self.vb_hdwe_f)
+        self.iscn_f = SN.iscn_f
+        self.mod_data = self.mod
+        self.ib_model = SN.ib_in_s
+        self.ib_h = self.ib_hdwe
+        self.ib_s = SN.sim_run.ib_in_s
+        self.mib = rp.modeling_ib
+        self.mvb = rp.modeling_vb
+        self.mtb = rp.modeling_Tb
+        self.kf_v_m = SN.kf_v_m
+        self.kf_v_n = SN.kf_v_n
+        self.ib_dyn_m = self.LoopIbAmp.ib_dyn
+        self.ib_dyn_rstate_m = self.LoopIbAmp.ChargeTransfer.rstate
+        self.ib_dyn_lstate_m = self.LoopIbAmp.ChargeTransfer.state
+        self.ib_dyn_tau_m = self.LoopIbAmp.ChargeTransfer.tau
+        self.dv_dyn_m = self.LoopIbAmp.dv_dyn
+        self.voc_m = self.LoopIbAmp.voc
+        self.voc_soc_m = self.LoopIbAmp.voc_soc
+        self.ib_wrp_T_m = self.LoopIbAmp.WrapErrFilt.dt
+        self.ib_wrp_tau_m = self.LoopIbAmp.WrapErrFilt.tau
+        self.ib_wrp_state_m = self.LoopIbAmp.WrapErrFilt.state
+        self.ib_wrp_rate_m = self.LoopIbAmp.e_wrap_rate
+        self.ib_wrp_reset_m = self.LoopIbAmp.reset
+        self.e_wrap_m_trimmed = self.LoopIbAmp.e_wrap_trimmed
+        self.ib_dyn_n = self.LoopIbNoa.ib_dyn
+        self.ib_dyn_rstate_n = self.LoopIbNoa.ChargeTransfer.rstate
+        self.ib_dyn_lstate_n = self.LoopIbNoa.ChargeTransfer.state
+        self.ib_dyn_tau_n = self.LoopIbNoa.ChargeTransfer.tau
+        self.dv_dyn_n = self.LoopIbNoa.dv_dyn
+        self.ib_wrp_T_n = self.LoopIbNoa.WrapErrFilt.dt
+        self.ib_wrp_tau_n = self.LoopIbNoa.WrapErrFilt.tau
+        self.ib_wrp_state_n = self.LoopIbNoa.WrapErrFilt.state
+        self.ib_wrp_rate_n = self.LoopIbNoa.e_wrap_rate
+        self.e_wrap_n_trimmed = self.LoopIbNoa.e_wrap_trimmed
+        self.y_ekf = self.y
+        self.qcap = self.q_capacity
+        self.qcrs = self.q_cap_rated_scaled
+        self.cc_dif = self.soc_ekf - self.soc
+        self.dt_s = sim.dt
+        self.chm_s  = sim.chm
+        self.qcrs_s  = sim.q_cap_rated_scaled
+        self.qcap_s  = sim.q_capacity
+        self.bms_off_s  = sim.bms_off
+        self.Tb_s  = sim.Tb
+        self.Tb_f_s  = sim.Tb_f
+        self.vsat_s  = sim.vsat
+        self.voc_s  = sim.voc
+        self.voc_stat_s  = sim.voc_stat
+        self.dv_dyn_s  = sim.dv_dyn_s
+        self.d_delta_q_s  = sim.d_delta_q
+        self.delta_q_s  = sim.delta_q
+        self.dv_hys_s  = sim.dv_hys
+        self.ib_charge_s  = sim.ib_charge
+        self.ib_dyn_s  = sim.ib_dyn
+        self.ib_in_s  = sim.ib_in
+        self.ib_s  = sim.ib
+        self.ioc_s  = sim.ioc
+        self.sat_s  = sim.sat
+        self.soc_s  = sim.soc
+        self.vb_s  = sim.vb
+        self.ib_dyn_T_s  = sim.ib_dyn_T
+        self.ib_dyn_lstate_s  = sim.ib_dyn_lstate
+        self.ib_dyn_rstate_s  = sim.ib_dyn_rstate
+        self.ib_dyn_tau_s  = sim.chemistry.tau_ct
+        self.tau_hys_s  = sim.tau_hys
+        self.vb_s  = sim.vb
+        self.q_s  = sim.q
+        self.ib_fut_s  = sim.ib_fut
+        self.reset_s  = sim.reset
+        self.tau_s  = sim.tau_hys
+        self.tau_hys_s  = sim.tau_hys
+        # Append all parameters to
+        self.append_to(self.saved)
+        pass
 
-    def wrap(self, reset=True, modeling_ib=None, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
+    def wrap(self, reset=True, ib_noa_hdwe=0., SN=None, ib_amp=0., ib_noa=0.,
              ib_amp_pst=None, ib_noa_pst=None, rp=None):
         """Wrap logic"""
+        dt_local = self.dt
 
         # e_wrap scalars normally calculated in Sensors
         if self.soc >= Battery.WRAP_SOC_HI_OFF:
@@ -990,10 +920,11 @@ class BatteryMonitor(Battery, EKF1x1):
                 dt_local = self.dt_past
                 ibnoa = self.ib_noa_pst
             self.LoopIbNoa.calculate(reset=reset, rp=rp, ib=ibnoa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
-                                     dt=min(dt_local, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_init=SN.LoopNoa.ib_init, ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
+                                     dt=dt_local, ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
+                                     ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
                                      e_wrap_filt_init=SN.mon_run.e_wrap_n_filt[G.i],
                                      e_wrap_trim_init=SN.mon_run.e_wrap_n_trim[G.i])
+            self.ib_dyn_T_n = self.LoopIbNoa.ChargeTransfer.dt
             self.e_wrap_n = self.LoopIbNoa.e_wrap
             self.e_wrap_n_filt = self.LoopIbNoa.e_wrap_filt
             self.e_wrap_n_rate = self.LoopIbNoa.e_wrap_rate
@@ -1008,13 +939,11 @@ class BatteryMonitor(Battery, EKF1x1):
             if rp.modeling_ib or SN.run_type == 'HistSim':
                 self.ib_amp = ib_amp
                 self.ib_amp_pst = ib_amp_pst
-                ib_m_init = SN.LoopAmp.ib[max(G.i-2, 0)]
                 ib_dyn_m_init = SN.LoopAmp.ib_dyn[G.i]
                 ibamp = self.ib_amp
             else:
                 self.ib_amp = ib_amp
                 self.ib_amp_pst = ib_amp_pst
-                ib_m_init = SN.LoopAmp.ib[G.i]
                 ib_dyn_m_init = SN.LoopAmp.ib_dyn[G.i]
                 ibamp = self.ib_amp_pst
             self.ib_amp_hi = self.ib_amp >= Battery.HDWE_IB_HI_LO_AMP_HI
@@ -1027,10 +956,11 @@ class BatteryMonitor(Battery, EKF1x1):
             # print(f"ib_amp_hi/lo, ib_noa_hi/lo = {self.ib_amp_hi} {self.ib_amp_lo} {self.ib_noa_hi} {self.ib_noa_lo}")
             self.e_wrap_m_reset = reset or self.disable_amp_fault
             self.LoopIbAmp.calculate(reset=self.e_wrap_m_reset, rp=rp, ib=ibamp, loop_gain=Battery.AMP_WRAP_TRIM_GAIN,
-                                     dt=min(dt_local, Battery.F_MAX_T_WRAP), ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_init=ib_m_init, ib_dyn_init=ib_dyn_m_init,
+                                     dt=dt_local, ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
+                                     ib_dyn_init=ib_dyn_m_init,
                                      e_wrap_filt_init=SN.mon_run.e_wrap_m_filt[G.i],
                                      e_wrap_trim_init=SN.mon_run.e_wrap_m_trim[G.i])
+            self.ib_dyn_T_m = self.LoopIbAmp.ChargeTransfer.dt
             self.ewmhi_thr = self.LoopIbAmp.ewhi_thr
             self.ewmlo_thr = self.LoopIbAmp.ewlo_thr
             self.e_wrap_m = self.LoopIbAmp.e_wrap
@@ -1047,6 +977,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap_filt = self.sel_brk_hdwe.scale_select(ib_noa_hdwe, self.e_wrap_m_filt, self.e_wrap_n_filt)
         self.e_wrap_rate = self.sel_brk_hdwe.scale_select(ib_noa_hdwe, self.e_wrap_m_rate, self.e_wrap_n_rate)
 
+
+# noinspection PyPep8Naming
 class BatterySim(Battery):
     """Extend Battery class to make a model"""
 
@@ -1054,7 +986,7 @@ class BatterySim(Battery):
                  scale=1., tb_f=25., tweak_test=False, mod_code=0, vsat_add=0.):
         Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
                          tweak_test=tweak_test, dvoc=OPT.add_voc_sim, mod_code=mod_code, scale_cap=scale, mon=False,
-                         str='ver_s', vsat_add=vsat_add)
+                         str_='ver_s', vsat_add=vsat_add)
         self.chemistry = Chemistry(mod_code=mod_code, dvoc=OPT.add_voc_sim, unit=OPT.unit)
         self.chemistry.assign_all_mod(mod_code, unit=OPT.unit)
         self.lut_voc = None
@@ -1083,7 +1015,40 @@ class BatterySim(Battery):
         self.ib_fut = 0.  # Future value of limited current, A
         self.reset_temp_past = self.model_saturated
         self.dt_past = 0.
-        # self.q_eps = 0.  # tiny adjustment to charge to book-keep soc_s and delta_q_s to be the same as data stream
+        self.dt_s = 0.
+        self.chm_s = 0.
+        self.qcrs_s = 0.
+        self.qcap_s = 0.
+        self.bms_off_s = 0
+        self.Tb_s = 0.
+        self.Tb_f_s = 0.
+        self.vsat_s = 0.
+        self.voc_s = 0.
+        self.voc_stat_s = 0.
+        self.dv_dyn_s = 0.
+        self.d_delta_q_s = 0.
+        self.delta_q_s = 0.
+        self.ib_dyn_r = True
+        self.dv_hys_s = 0.
+        self.ib_charge_s = 0.
+        self.ib_dyn_s = 0.
+        self.ib_in_s = 0.
+        self.ib_s = 0.
+        self.ioc_s = 0.
+        self.sat_s = 0.
+        self.soc_s = 0.
+        self.vb_s = 0.
+        self.ib_dyn_T_s = 0.
+        self.ib_dyn_lstate_s = 0.
+        self.ib_dyn_rstate_s = 0.
+        self.ib_dyn_tau_s = 0.
+        self.tau_hys_s = 0.
+        self.vb_s = 0.
+        self.q_s = 0.
+        self.ib_fut_s = 0.
+        self.reset_s = 0.
+        self.tau_s = 0.
+        self.tau_hys_s = 0.
         if SN is not None:
             self.Tb = SN.mon_run.Tb_f[0]
             self.dv_dyn = SN.dv_dyn_s[0]
@@ -1164,7 +1129,6 @@ class BatterySim(Battery):
         # lots of chatter as it shuts off, restores vb due to loss of dynamic current, then repeats shutoff.
         # Using voc_ is not better because change in dv_hys_ causes the same effect.   So using nice quiet
         # voc_stat_ for ease of simulation, not accuracy.
-        voltage_low_past = self.voltage_low
         if not self.bms_off:
             self.voltage_low = self.voc_stat < self.chemistry.vb_down_sim
         else:
@@ -1202,10 +1166,11 @@ class BatterySim(Battery):
         self.ib_fut = min(ib_charge_fut, self.sat_ib_max)  # the feedback of self.ib
         # self.ib_charge = ib_charge_fut# same time plane as volt calcs.  (This prevents sat logic from working)
         self.ib_charge = self.ib_fut  # same time plane as volt calcs
-        if self.mod > 0.:
-            if (self.q <= 0.) & (self.ib_charge < 0.):
-                # print("q", self.q, "empty")
-                self.ib_charge = 0.  # empty
+        # empty  **** don't know why this was here.  cannot bms_off_ empty because that causes weird interaction with bms logic and also doesn't make sense to have a different empty cutoff when modeling.  If there is a need for an empty cutoff, should be based on voltage not current.  So removing for now.  Can revisit if needed.
+        # if self.mod > 0.:
+        #     if (self.q <= 0.) & (self.ib_charge < 0.):
+        #         # print("q", self.q, "empty")
+        #         self.ib_charge = 0.  # empty
         self.model_cutback = (self.voc_stat > self.vsat) & (self.ib_fut == self.sat_ib_max)
         self.model_saturated = self.model_cutback & (self.ib_fut < self.ib_sat)
         if self.reset and saturated_init is not None:
@@ -1267,77 +1232,61 @@ class BatterySim(Battery):
         return self.soc
 
     def save(self, time, dt):  # BatterySim
-        self.saved.time.append(time)
-        self.saved.dt.append(dt)
-        self.saved.ib.append(self.ib)
-        self.saved.ib_in.append(self.ib_in)
-        self.saved.ib_charge.append(self.ib_charge)
-        self.saved.chm.append(self.chm)
-        self.saved.bmso.append(self.bms_off)
-        self.saved.ioc.append(self.ioc)
-        self.saved.vb.append(self.vb)
-        self.saved.dv_hys.append(self.dv_hys)
-        self.saved.tau_hys.append(self.tau_hys)
-        self.saved.dv_dyn.append(self.dv_dyn)
-        self.saved.ib_dyn.append(self.ib_dyn)
-        self.saved.ib_dyn_T.append(self.ib_dyn_T)
-        self.saved.ib_dyn_rstate.append(self.ib_dyn_rstate)
-        self.saved.ib_dyn_lstate.append(self.ib_dyn_lstate)
-        self.saved.voc.append(self.voc)
-        self.saved.voc_stat.append(self.voc_stat)
-        self.saved.soc.append(self.soc)
-        self.saved.d_delta_q.append(self.d_delta_q)
-        self.saved.Tb.append(self.Tb)
-        self.saved.vsat.append(self.vsat)
-        self.saved.sat.append(int(self.model_saturated))
-        self.saved.delta_q.append(self.delta_q)
-        self.saved.q.append(self.q)
-        self.saved.q_capacity.append(self.q_capacity)
-        self.saved.bms_off.append(self.bms_off)
+        self.time = time
+        self.dt = dt
+        # Append all parameters to
+        self.append_to(self.saved)
 
     def save_s(self, time):
-        self.saved_s.time.append(time)
-        self.saved_s.chm_s.append(self.chm)
-        self.saved_s.qcrs_s.append(self.q_cap_rated_scaled)
-        self.saved_s.qcap_s.append(self.q_capacity)
-        self.saved_s.bms_off_s.append(self.bms_off)
-        self.saved_s.Tb_s.append(self.Tb)
-        self.saved_s.Tb_f_s.append(self.Tb_f)
-        self.saved_s.vsat_s.append(self.vsat)
-        self.saved_s.voc_s.append(self.voc)
-        self.saved_s.voc_stat_s.append(self.voc_stat)
-        self.saved_s.dv_dyn_s.append(self.dv_dyn)
-        self.saved_s.dv_hys_s.append(self.dv_hys)
-        self.saved_s.ib_dyn_s.append(self.ib_dyn)
-        self.saved_s.ib_dyn_T_s.append(self.ib_dyn_T)
-        self.saved_s.ib_dyn_rstate_s.append(self.ib_dyn_rstate)
-        self.saved_s.ib_dyn_lstate_s.append(self.ib_dyn_lstate)
-        self.saved_s.tau_hys_s.append(self.tau_hys)
-        self.saved_s.vb_s.append(self.vb)
-        self.saved_s.ib_s.append(self.ib)
-        self.saved_s.ib_in_s.append(self.ib_in)
-        self.saved_s.d_delta_q_s.append(self.d_delta_q)
-        self.saved_s.ib_charge_s.append(self.ib_charge)
-        self.saved_s.ib_fut_s.append(self.ib_fut)
-        self.saved_s.sat_s.append(int(self.sat))
-        self.saved_s.delta_q_s.append(self.delta_q)
-        self.saved_s.q_s.append(self.q)
-        self.saved_s.soc_s.append(self.soc)
-        self.saved_s.reset_s.append(self.reset)
-        self.saved_s.tau_s.append(self.tau_hys)
-        self.saved_s.ioc_s.append(self.ioc)
+        self.time = time
+        self.dt_s = self.dt
+        self.chm_s = self.chm
+        self.qcrs_s = self.q_cap_rated_scaled
+        self.qcap_s = self.q_capacity
+        self.bms_off_s = self.bms_off
+        self.Tb_s = self.Tb
+        self.Tb_f_s = self.Tb_f
+        self.vsat_s = self.vsat
+        self.voc_s = self.voc
+        self.voc_stat_s = self.voc_stat
+        self.dv_dyn_s = self.dv_dyn
+        self.d_delta_q_s = self.d_delta_q
+        self.delta_q_s = self.delta_q
+        self.dv_hys_s = self.dv_hys
+        self.ib_charge_s = self.ib_charge
+        self.ib_dyn_s = self.ib_dyn
+        self.ib_in_s = self.ib_in
+        self.ib_s = self.ib
+        self.ioc_s = self.ioc
+        self.sat_s = self.sat
+        self.soc_s = self.soc
+        self.vb_s = self.vb
+        self.ib_dyn_T_s = self.ib_dyn_T
+        self.ib_dyn_lstate_s = self.ib_dyn_lstate
+        self.ib_dyn_rstate_s = self.ib_dyn_rstate
+        self.ib_dyn_tau_s = self.chemistry.tau_ct
+        self.tau_hys_s = self.tau_hys
+        self.vb_s = self.vb
+        self.q_s = self.q
+        self.ib_fut_s = self.ib_fut
+        self.reset_s = self.reset
+        self.tau_s = self.tau_hys
+        self.tau_hys_s = self.tau_hys
+        # Append all parameters to
+        self.append_to(self.saved_s)
 
 
 # Other functions
 def is_sat(tb_f, rated_temp, voc, soc, nom_vsat, dvoc_dt, low_t, vsat_add=0.):
     vsat = sat_voc(tb_f, rated_temp, nom_vsat, dvoc_dt, vsat_add=vsat_add)
-    return tb_f > low_t and (voc >= vsat or soc >= Battery.mxeps_bb)
+    return tb_f > low_t and (voc >= vsat or soc >= Battery.MXEPS)
 
 
 def sat_voc(tb_f, rated_temp, vsat, dvoc_dt, vsat_add=0.):
     return vsat + (tb_f-rated_temp)*dvoc_dt + vsat_add
 
 
+# noinspection PyPep8Naming
 class Looparound:
     """Compare predicted voltage to actual and track toward zero to eliminate biases """
 
@@ -1381,7 +1330,7 @@ class Looparound:
     # Update the loop
     # needs to be called twice with reset=True to initialize properly
     def calculate(self, reset=True, rp=None, ib=0., loop_gain=0., dt=None, ewsat_slr=1., ewmin_slr=1.,
-                  ib_init=0., ib_dyn_init=0., e_wrap_filt_init=0., e_wrap_trim_init=0.):
+                  ib_dyn_init=0., e_wrap_filt_init=0., e_wrap_trim_init=0.):
         self.reset = reset
         self.dt = dt
         self.ib = ib
@@ -1442,8 +1391,8 @@ class Looparound:
 
 class Saved:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
-    def __init__(self, str=None):
-        self.str = str
+    def __init__(self, str_=None):
+        self.str = str_
         self.time_run_start = None
         self.time = []
         self.time_min = []
@@ -1494,9 +1443,8 @@ class Saved:
         self.hx = []
         self.u_ekf = []
         self.x_ekf = []
-        self.y = []
-        self.y_filt = []
-        self.y_filt2 = []
+        self.y_ekf = []
+        self.y_ekf_f = []
         self.z = []
         self.x_prior = []
         self.P_prior = []
@@ -1527,9 +1475,8 @@ class Saved:
         self.voc_stat = []  # Monitor Static bank open circuit voltage, V
         self.voc = []  # Monitor Static bank open circuit voltage, V
         self.voc_ekf = []  # Monitor bank solved static open circuit voltage, V
-        self.y = []  # Monitor single battery solver error, V
-        self.y_filt = []  # Filtered EKF y residual value, V
-        self.y_filt2 = []  # Filtered EKF y residual value, V
+        self.y_ekf = []  # Monitor single battery solver error, V
+        self.y_ekf_f = []  # Filtered EKF y residual value, V
         self.soc_s = []  # Simulated state of charge, fraction
         self.soc_ekf = []  # Solved state of charge, fraction
         # self.soc = []  # Coulomb Counter fraction of saturation charge (q_capacity_) available (0-1)
@@ -1544,7 +1491,6 @@ class Saved:
         self.reset_ekf = []  # Reset flag used for initialization
         self.e_wrap = []  # Verification of wrap calculation, V
         self.e_wrap_filt = []  # Verification of filtered wrap calculation, V
-        # self.e_wrap_trim = []  # Verification of filtered wrap calculation, V
         self.ib_dyn_m = []  # Verification of wrap calculation, A
         self.dv_dyn_m = []  # Verification of wrap calculation, V
         self.e_wrap_m = []  # Verification of wrap calculation, V
@@ -1584,418 +1530,12 @@ class Saved:
         self.vsat = []
 
 
-def overall_batt(mv, sv, filename,
-                 mv1=None, sv1=None, suffix1=None, fig_files=None, plot_title=None, fig_list=None, suffix='',
-                 use_time_day=False, terse=True):
-    if fig_files is None:
-        fig_files = []
-
-    if mv1 is None:
-        if use_time_day:
-            mv.time = mv.time_day - mv.time_day[0]
-            sv.time = sv.time_day - sv.time_day[0]
-
-        plt.figure()  # Batt 1
-        fig_list += 1
-        plt.subplot(321)
-        plt.title(plot_title + ' B 1')
-        print('B 1', end=':  ')
-        plq(plt, mv, 'time', mv, 'ib', color='green', linestyle='-')
-        plq(plt, mv, 'time', mv, 'ioc', color='magenta', linestyle='--')
-        plt.legend(loc=1)
-        plt.subplot(323)
-        plq(plt, mv, 'time', mv, 'vb', color='green', linestyle='-')
-        plq(plt, sv, 'time', sv, 'vb', color='black', linestyle='--')
-        plq(plt, mv, 'time', mv, 'voc_stat', color='orange', linestyle='-.')
-        plq(plt, sv, 'time', sv, 'voc_stat', color='cyan', linestyle=':')
-        plq(plt, mv, 'time', mv, 'voc', color='magenta')
-        plq(plt, sv, 'time', sv, 'voc', color='black', linestyle='--')
-        plt.legend(loc=1)
-        plt.subplot(324)
-        # plt.legend(loc=1)
-        plt.subplot(322)
-        plq(plt, mv, 'time', mv, 'soc', color='red', linestyle='-')
-        plq(plt, sv, 'time', sv, 'soc', color='black', linestyle='dotted')
-        plt.legend(loc=1)
-        plt.subplot(325)
-        plq(plt, mv, 'time', mv, 'chm', color='cyan', linestyle='--')
-        plq(plt, sv, 'time', sv, 'chm', color='black', linestyle=':')
-        plt.legend(loc=1)
-        plt.subplot(326)
-        plq(plt, sv, 'soc', sv, 'voc', color='red', linestyle='-')
-        plq(plt, mv, 'soc', mv, 'voc_soc', color='black', linestyle='--')
-        plt.legend(loc=1)
-        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
-
-            plt.savefig(fig_file_name, format="png")
-
-        plt.figure()  # Batt 2
-        fig_list += 1
-        plt.subplot(111)
-        plt.title(plot_title + ' B 2')
-        print('B 2', end=':  ')
-        plq(plt, mv, 'time', mv, 'vb', color='green', linestyle='-')
-        plq(plt, sv, 'time', sv, 'vb', color='black', linestyle='--')
-        plq(plt, mv, 'time', mv, 'voc_stat', color='orange', linestyle='-.')
-        plq(plt, sv, 'time', sv, 'voc_stat', color='cyan', linestyle=':')
-        plq(plt, mv, 'time', mv, 'voc', color='magenta', linestyle='-')
-        plq(plt, sv, 'time', sv, 'voc', color='black', linestyle='--')
-        plt.legend(loc=1)
-        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
-
-            plt.savefig(fig_file_name, format="png")
-
-        plt.figure()  # Batt 4
-        fig_list += 1
-        plt.subplot(321)
-        plt.title(plot_title+' B 4 MON vs SIM')
-        print('B 4 MON vs SIM', end=':  ')
-        plq(plt, mv, 'time', mv, 'ib', color='green', linestyle='-')
-        plq(plt, sv, 'time', sv, 'ib', color='black', linestyle='--')
-        plq(plt, sv, 'time', sv, 'ib_in', color='red', linestyle='-.')
-        plt.legend(loc=1)
-        plt.subplot(322)
-        plq(plt, mv, 'time', mv, 'vb', color='green', linestyle='-')
-        plq(plt, sv, 'time', sv, 'vb', color='black', linestyle='--')
-        plq(plt, mv, 'time', mv, 'voc', color='cyan', linestyle='-')
-        plq(plt, sv, 'time', sv, 'voc', color='red', linestyle='--')
-        plt.legend(loc=1)
-        plt.subplot(323)
-        plq(plt, mv, 'time', mv, 'vb', color='green', linestyle='-')
-        plq(plt, sv, 'time', sv, 'vb', color='orange', linestyle='--')
-        plq(plt, mv, 'time', mv, 'voc', color='cyan', linestyle='-.')
-        plq(plt, sv, 'time', sv, 'voc', color='red', linestyle=':')
-        plq(plt, mv, 'time', mv, 'voc_stat', color='magenta', linestyle='--')
-        plq(plt, sv, 'time', sv, 'voc_stat', color='black', linestyle=':')
-        plt.legend(loc=1)
-        plt.subplot(324)
-        plq(plt, mv, 'time', mv, 'dv_dyn', color='green', linestyle='-')
-        plq(plt, sv, 'time', sv, 'dv_dyn', color='black', linestyle='--')
-        plt.legend(loc=1)
-        plt.subplot(325)
-        plq(plt, mv, 'time', mv, 'dv_hys', color='green', linestyle='-')
-        plq(plt, sv, 'time', sv, 'dv_hys', color='black', linestyle='--')
-        plq(plt, mv, 'time', mv, 'tau_hys', color='cyan', linestyle='-')
-        plq(plt, sv, 'time', sv, 'tau_hys', color='red', linestyle='--')
-        plt.legend(loc=1)
-        plt.subplot(326)
-        plq(plt, mv, 'time', mv, 'vb', color='green', linestyle='-')
-        plq(plt, sv, 'time', sv, 'vb', color='black', linestyle='--')
-        plt.legend(loc=1)
-        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
-
-            plt.savefig(fig_file_name, format="png")
-
-        plt.figure()  # Batt 5
-        fig_list += 1
-        plt.subplot(331)
-        plt.title(plot_title+' B 5 **EKF')
-        print('B 5 **EKF', end=':  ')
-        plq(plt, mv, 'time', mv, 'x_ekf', color='red', linestyle='-')
-        plt.legend(loc=4)
-        plt.subplot(332)
-        plq(plt, mv, 'time', mv, 'hx', color='cyan', linestyle='-')
-        plq(plt, mv, 'time', mv, 'z', color='black', linestyle='--')
-        plt.legend(loc=4)
-        plt.subplot(333)
-        plq(plt, mv, 'time', mv, 'y', color='green', linestyle='-')
-        plq(plt, mv, 'time', mv, 'y_filt', color='black', linestyle='--')
-        plq(plt, mv, 'time', mv, 'y_filt2', color='cyan', linestyle='-.')
-        plt.legend(loc=4)
-        plt.subplot(334)
-        plq(plt, mv, 'time', mv, 'H', color='magenta', linestyle='-')
-        plt.ylim(0, 150)
-        plt.legend(loc=3)
-        plt.subplot(335)
-        plq(plt, mv, 'time', mv, 'P', color='orange', linestyle='-')
-        plt.legend(loc=3)
-        plt.subplot(336)
-        plq(plt, mv, 'time', mv, 'Fx', color='red', linestyle='-')
-        plt.legend(loc=2)
-        plt.subplot(337)
-        plq(plt, mv, 'time', mv, 'Bu', color='blue', linestyle='-')
-        plt.legend(loc=2)
-        plt.subplot(338)
-        plq(plt, mv, 'time', mv, 'K', color='red', linestyle='-')
-        plt.legend(loc=4)
-        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
-
-            plt.savefig(fig_file_name, format="png")
-
-        plt.figure()  # Batt 6
-        fig_list += 1
-        plt.title(plot_title + ' B 6')
-        print('B 6', end=':  ')
-        plq(plt, mv, 'time', mv, 'Nonee_voc_ekf', color='blue', linestyle='-.')
-        plq(plt, mv, 'time', mv, 'Nonee_soc_ekf', color='red', linestyle='dotted')
-        plt.ylim(-0.01, 0.01)
-        plt.legend(loc=2)
-        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
-
-            plt.savefig(fig_file_name, format="png")
-
-        plt.figure()  # Batt 7
-        fig_list += 1
-        plt.title(plot_title + ' B 7')
-        print('B 7', end=':  ')
-        plq(plt, mv, 'time', mv, 'Nonevoc', color='red', linestyle='-')
-        plq(plt, mv, 'time', mv, 'Nonevoc_ekf', color='blue', linestyle='-.')
-        plq(plt, sv, 'time', sv, 'voc', color='green', linestyle=':')
-        plt.legend(loc=4)
-        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
-
-            plt.savefig(fig_file_name, format="png")
-
-        plt.figure()  # Batt 8
-        fig_list += 1
-        plt.title(plot_title + ' B 8')
-        print('B 8', end=':  ')
-        plq(plt, mv, 'time', mv, 'Nonesoc_ekf', color='blue', linestyle='-')
-        plq(plt, sv, 'time', sv, 'soc', color='green', linestyle='-.')
-        plq(plt, mv, 'time', mv, 'Nonesoc', color='red', linestyle=':')
-        plt.legend(loc=4)
-        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
-
-            plt.savefig(fig_file_name, format="png")
-
-        plt.figure()  # Batt 9
-        fig_list += 1
-        plt.title(plot_title + ' B 9')
-        print('B 9', end=':  ')
-        plq(plt, mv, 'time', mv, 'Nonee_voc_ekf', color='blue', linestyle='-.')
-        plq(plt, mv, 'time', mv, 'Nonee_soc_ekf', color='red', linestyle='dotted')
-        plt.legend(loc=2)
-        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
-
-            plt.savefig(fig_file_name, format="png")
-
-        plt.figure()  # Batt 10
-        fig_list += 1
-        plt.subplot(221)
-        plt.title(plot_title + ' B 10')
-        print('B 10', end=':  ')
-        plq(plt, sv, 'time', sv, 'soc', color='red', linestyle='-')
-        plt.legend(loc=1)
-        plt.subplot(223)
-        plq(plt, sv, 'time', sv, 'ib', color='blue', linestyle='-')
-        plq(plt, sv, 'time', sv, 'ioc', color='green', linestyle='-')
-        plt.legend(loc=1)
-        plt.subplot(224)
-        plq(plt, sv, 'time', sv, 'dv_hys', color='red', linestyle='-')
-        plq(plt, sv, 'time', sv, 'tau_hys', color='blue', linestyle='--')
-        plt.legend(loc=2)
-        fig_file_name = filename + "_" + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
-
-            plt.savefig(fig_file_name, format="png")
-
-        plt.figure()  # Batt 11
-        fig_list += 1
-        plt.subplot(111)
-        plt.title(plot_title + ' B 11')
-        print('B 11', end=':  ')
-        plq(plt, sv, 'soc', sv, 'voc_stat', color='black', linestyle='dotted')
-        plt.legend(loc=2)
-        fig_file_name = filename + "_" + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
-
-            plt.savefig(fig_file_name, format="png")
-
-    else:
-        if use_time_day:
-            mv.time = mv.time_day - mv.time_day[0]
-            try:
-                sv.time = sv.time_day - sv.time_day[0]
-            except IOError:
-                pass
-            mv1.time = mv1.time_day - mv1.time_day[0]
-            try:
-                sv1.time = sv1.time_day - sv1.time_day[0]
-            except IOError:
-                pass
-        reset_max = max(abs(min(mv.vbc_dot)), max(mv.vbc_dot), abs(min(mv1.vbc_dot)), max(mv1.vbc_dot))
-        # noinspection PyTypeChecker
-        reset_index_max = max(np.where(np.array(mv1.reset) > 0))
-        t_init = mv1.time[reset_index_max[-1]]
-        mv.time -= t_init
-        mv1.time -= t_init
-        sv.time -= t_init
-        sv1.time -= t_init
-
-        plt.figure()
-        fig_list += 1
-        plt.subplot(331)
-        plt.title(plot_title + ' Battover 1')
-        print('Battover 1', end=':  ')
-        plq(plt, mv, 'time', mv, 'Noneib', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'ib', color='black', linestyle='--')
-        plq(plt, mv, 'time', mv, 'Noneioc', color='magenta', linestyle='-.')
-        plq(plt, mv1, 'time', mv1, 'ioc', color='blue', linestyle=':')
-        plt.legend(loc=1)
-        plt.subplot(332)
-        # plt.legend(loc=1)
-        plt.subplot(333)
-        # plt.legend(loc=1)
-        plt.subplot(334)
-        plq(plt, mv, 'time', mv, 'Nonevb', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'vb', color='black', linestyle='--')
-        plt.legend(loc=1)
-        plt.subplot(335)
-        plq(plt, mv, 'time', mv, 'Nonevoc_stat', color='magenta', linestyle='-.')
-        plq(plt, mv1, 'time', mv1, 'voc_stat', color='blue', linestyle=':')
-        plt.legend(loc=1)
-        plt.subplot(336)
-        plq(plt, mv, 'time', mv, 'Nonevoc', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'voc', color='black', linestyle='--')
-        plt.legend(loc=1)
-        plt.subplot(337)
-        plq(plt, mv, 'time', mv, 'Nonevbc_dot', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'vbc_dot', color='black', linestyle='--')
-        mv.reset = np.array(mv.reset)*reset_max
-        mv1.reset = np.array(mv1.reset)*reset_max
-        plq(plt, mv, 'time', mv, 'Nonereset', color='orange', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'reset', color='cyan', linestyle='--')
-        plt.legend(loc=1)
-        plt.subplot(338)
-        plq(plt, mv, 'time', mv, 'Nonevcd_dot', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'vcd_dot', color='black', linestyle='--')
-        plt.legend(loc=1)
-        plt.subplot(339)
-        plq(plt, mv, 'time', mv, 'Nonesoc', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'soc', color='black', linestyle='--')
-        plq(plt, mv, 'time', mv, 'Nonesoc_ekf', color='magenta', linestyle='-.')
-        plq(plt, mv1, 'time', mv1, 'soc_ekf', color='blue', linestyle=':')
-        plt.legend(loc=1)
-        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
-
-            plt.savefig(fig_file_name, format="png")
-
-        plt.figure()
-        fig_list += 1
-        plt.subplot(321)
-        plt.title(plot_title + ' Battover 2')
-        print('Battover 2', end=':  ')
-        plq(plt, mv, 'time', mv, 'Noneib', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'ib', color='black', linestyle='--')
-        plq(plt, mv, 'time', mv, 'Noneioc', color='magenta', linestyle='-.')
-        plq(plt, mv1, 'time', mv1, 'ioc', color='blue', linestyle=':')
-        plt.legend(loc=1)
-        plt.subplot(322)
-        plq(plt, mv, 'time', mv, 'Nonedv_dyn', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'dv_dyn', color='black', linestyle='--')
-        plt.legend(loc=1)
-        plt.subplot(323)
-        plq(plt, mv, 'time', mv, 'Nonedv_hys', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'dv_hys', color='black', linestyle='--')
-        plt.legend(loc=1)
-        plt.subplot(324)
-        plq(plt, mv, 'time', mv, 'Nonetau_hys', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'tau_hys', color='black', linestyle='--')
-        plt.legend(loc=1)
-        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
-
-            plt.savefig(fig_file_name, format="png")
-
-        plt.figure()
-        fig_list += 1
-        plt.subplot(331)
-        plt.title(plot_title + ' **EKF' + 'Battover 3')
-        print('Battover 3', end=':  ')
-        plq(plt, mv, 'time', mv, 'Nonex_ekf', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'x_ekf', color='black', linestyle='--')
-        plt.legend(loc=4)
-        plt.subplot(332)
-        plq(plt, mv, 'time', mv, 'Nonehx', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'hx', color='black', linestyle='--')
-        plq(plt, mv, 'time', mv, 'Nonez', color='magenta', linestyle='-.')
-        plq(plt, mv1, 'time', mv1, 'z', color='blue', linestyle=':')
-        plt.legend(loc=4)
-        plt.subplot(333)
-        plq(plt, mv, 'time', mv, 'Noney', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'y', color='black', linestyle='--')
-        plq(plt, mv, 'time', mv, 'Noney_filt2', color='magenta', linestyle='-.')
-        plq(plt, mv1, 'time', mv1, 'y_filt2', color='blue', linestyle=':')
-        plt.legend(loc=4)
-        plt.subplot(334)
-        plq(plt, mv, 'time', mv, 'NoneH', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'H', color='black', linestyle='--')
-        plt.ylim(0, 150)
-        plt.legend(loc=3)
-        plt.subplot(335)
-        plq(plt, mv, 'time', mv, 'NoneP', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'P', color='black', linestyle='--')
-        plt.legend(loc=3)
-        plt.subplot(336)
-        plq(plt, mv, 'time', mv, 'NoneFx', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'Fx', color='black', linestyle='--')
-        plt.legend(loc=2)
-        plt.subplot(337)
-        plq(plt, mv, 'time', mv, 'NoneBu', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'Bu', color='black', linestyle='--')
-        plt.legend(loc=2)
-        plt.subplot(338)
-        plq(plt, mv, 'time', mv, 'NoneK', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'K', color='black', linestyle='--')
-        plt.legend(loc=4)
-        plt.subplot(339)
-        plq(plt, mv, 'time', mv, 'Nonee_voc_ekf', color='green', linestyle='-')
-        plq(plt, mv1, 'time', mv1, 'e_voc_ekf', color='black', linestyle='--')
-        plq(plt, mv, 'time', mv, 'Nonee_soc_ekf', color='magenta', linestyle='-.')
-        plq(plt, mv1, 'time', mv1, 'e_soc_ekf', color='blue', linestyle=':')
-        # plt.ylim(-0.01, 0.01)
-        plt.legend(loc=2)
-        fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
-        fig_files.append(fig_file_name)
-        if S.save_plots and not S.terse:
-
-
-            plt.savefig(fig_file_name, format="png")
-
-    return fig_list, fig_files
-
-
 class SavedS:
     # For plot savings.   A better way is 'Saver' class in pyfilter helpers and requires making a __dict__
-    def __init__(self, str=None):
-        self.str = str
+    def __init__(self, str_=None):
+        self.str_ = str_
         self.time_run_start = None
         self.time = []
-        self.time_min = []
-        self.time_day = []
         self.unit = []  # text title
         self.c_time = []  # Control time, s
         self.dt = []

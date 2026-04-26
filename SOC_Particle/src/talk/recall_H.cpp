@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,9 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 extern CommandPars cp;  // Various parameters shared at system level
 extern Flt_st mySum[NSUM];  // Summaries for saving charge history
 
-boolean recall_H(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
+bool recall_H(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
 {
-    boolean found = true;
+    bool found = true;
     switch ( letter_1 )
     {
     case ( 'd' ):  // Hd: History dump

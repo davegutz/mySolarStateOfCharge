@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,15 +40,16 @@ extern PublishPars pp;    // For publishing
 Coulombs::Coulombs() {}
 Coulombs::Coulombs(double *sp_delta_q, const float q_cap_rated,
   const double s_coul_eff, const float dx_voc, const float dy_voc, const float dz_voc)
-  : q_(q_cap_rated), q_capacity_(q_cap_rated), q_cap_rated_(q_cap_rated),
-    q_cap_rated_scaled_(q_cap_rated), q_min_(0.), sat_(true), soc_(1.), soc_min_(0.), sp_delta_q_(sp_delta_q),
-    chem_()
+  : resetting_(false), d_delta_q_(0.), delta_q_abs_(0.), delta_q_inf_(0.), delta_q_neg_(0.), delta_q_pos_(0.), dt_(0.),
+    q_(q_cap_rated), q_capacity_(q_cap_rated), q_cap_rated_(q_cap_rated), q_cap_rated_scaled_(q_cap_rated), q_inf_(0.), q_min_(0.),
+    sat_(true), saturated_(false), soc_(1.), soc_ekf_min_(0.), soc_inf_(0.), soc_min_(0.), sp_delta_q_(sp_delta_q),
+    tb_f_(0.), tb_f_rate_(0.), time_neg_(0.), time_pos_(0.), chem_()
     {
+      coul_eff_ = chem_.coul_eff*s_coul_eff;
+      soc_ekf_min_ = chem_.soc_ekf_min;
       put_dx_voc(dx_voc);
       put_dy_voc(dy_voc);
       put_dz_voc(dz_voc);
-      coul_eff_ = (chem_.coul_eff*s_coul_eff);
-      soc_ekf_min_ = chem_.soc_ekf_min;
     }
 Coulombs::~Coulombs() {}
 
@@ -114,7 +115,7 @@ void Coulombs::apply_delta_q(const double delta_q)
 }
 
 // Memory set, adjust book-keeping as needed.  q_cap_ etc presesrved
-void Coulombs::apply_delta_q_t(const boolean reset)
+void Coulombs::apply_delta_q_t(const bool reset)
 {
   if ( !reset ) return;
   q_capacity_ = calculate_capacity(tb_f_);
@@ -162,18 +163,18 @@ Outputs:
   soc_min_        Estimated soc where battery BMS will shutoff current, fraction
   q_min_          Estimated charge at low voltage shutdown, C\
 */
-float Coulombs::count_coulombs(Sensors *Sen, const boolean reset_temp, const float charge_curr, const boolean sat,
-  const boolean saturated)
+float Coulombs::count_coulombs(Sensors *Sen, const bool reset_temp, const float charge_curr, const bool sat,
+  const bool saturated)
 {
     // Inputs
-    dt_ = Sen->T;
-    tb_f_ = Sen->Tb_f;
-    tb_f_rate_ = Sen->Tb_f_rate;
+    dt_ = Sen->T();
+    tb_f_ = Sen->Tb_f();
+    tb_f_rate_ = Sen->Tb_f_rate();
     d_delta_q_ = charge_curr * dt_;
 
     // State change
     double d_delta_q_inf = d_delta_q_;
-    if ( charge_curr>0. ) d_delta_q_ *= coul_eff_;
+    if ( charge_curr>0. && !sp.tweak_test() ) d_delta_q_ *= coul_eff_;
     // Capacity changes withi temperature so this effect would be double if used
     // d_delta_q_ -= chem_.dqdt*q_capacity_*tb_f_rate_*dt_;
     d_delta_q_inf = d_delta_q_;
@@ -228,7 +229,6 @@ float Coulombs::count_coulombs(Sensors *Sen, const boolean reset_temp, const flo
       time_neg_ = 0.;
       time_pos_ = 0.;
     }
-    // if ( sp.debug()==-24 )Serial.printf("Mon:  charge_curr%7.3f d_delta_q%10.6f delta_q%10.1f\n", charge_curr, d_delta_q);
     q_ = q_capacity_ + *sp_delta_q_;
     q_inf_ = q_capacity_ + delta_q_inf_;
 

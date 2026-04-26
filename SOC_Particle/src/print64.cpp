@@ -2,7 +2,7 @@
 
 static const char *_toAscii = "0123456789abcdef";
 
-String toString(uint64_t value, unsigned char base) {
+String toString(uint64_t value, uint8_t base) {
     if (base > 16) {
         base = 16;
     }

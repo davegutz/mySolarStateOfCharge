@@ -21,7 +21,6 @@ __date__ = '$Date: 2022/10/23 03:44:00 $'
 
 import numpy as np
 import numpy.lib.recfunctions as rf
-from Util import cat
 
 
 def remove_nan(d_ra):

@@ -104,13 +104,13 @@ public:
   ~TFDelay();
   // operators
   // functions
-  boolean calculate(const boolean in);
-  boolean calculate(const boolean in, const int RESET);
-  boolean calculate(const boolean in, const double Tt, const double Tf);
-  boolean calculate(const boolean in, const double Tt, const double Tf, const double T);
-  boolean calculate(const boolean in, const double Tt, const double Tf, const int RESET);
-  boolean calculate(const boolean in, const double Tt, const double Tf, const double T, const int RESET);
-  boolean state() { return ( timer_> 0 ); };
+  bool calculate(const bool in);
+  bool calculate(const bool in, const int RESET);
+  bool calculate(const bool in, const double Tt, const double Tf);
+  bool calculate(const bool in, const double Tt, const double Tf, const double T);
+  bool calculate(const bool in, const double Tt, const double Tf, const int RESET);
+  bool calculate(const bool in, const double Tt, const double Tf, const double T, const int RESET);
+  bool state() { return ( timer_> 0 ); };
   int timer() { return timer_; };
   int nt() { return nt_; };
   int nf() { return nf_; };
@@ -177,13 +177,13 @@ public:
   virtual void rateState(double in);
   virtual double rateStateCalc(double in, const double max_rate, const double min_rate);
   virtual double rateStateCalc(double in);
-  virtual boolean reset() { return reset_; };
+  virtual bool reset() { return reset_; };
   virtual double state(void);
   double T() { return T_; };
   double tau() { return tau_; };
   double rate() { return rate_; };
 protected:
-  boolean reset_;
+  bool reset_;
   double max_;
   double min_;
   double rate_;
@@ -362,9 +362,9 @@ public:
   virtual ~DiscreteIntegrator();
   // operators
   // functions
-  virtual double calculate(double in, boolean RESET, double init_value);
-  virtual double calculate(double in, double T, boolean RESET, double init_value);
-  virtual double calculate(double in, double T, boolean RESET, double init_value, double max, double min);
+  virtual double calculate(double in, bool RESET, double init_value);
+  virtual double calculate(double in, double T, bool RESET, double init_value);
+  virtual double calculate(double in, double T, bool RESET, double init_value, double max, double min);
   virtual void newState(double newState);
   virtual double state() { return lstate_; };
   virtual bool lim() { return lim_; };
@@ -376,7 +376,7 @@ protected:
   double max_;
   double min_;
   double lstate_;
-  boolean reset_;
+  bool reset_;
   double rstate_;
   double T_;
 };

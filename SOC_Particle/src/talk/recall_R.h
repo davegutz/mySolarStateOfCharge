@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _RECALL_R
-#define _RECALL_R
+#pragma once
 #include "../Battery.h"
 
-boolean recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen);
-
-#endif
+bool recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen);

@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@ extern CommandPars cp;            // Various parameters to be common at system l
 extern PublishPars pp;            // For publishing
 
 // Assignments
-void assign_publist(Publish* pubList, const unsigned long long now, const String unit, const String hm_string,
+void assign_publist(Publish* pubList, const uint64_t now, const String unit, const String hm_string,
   Sensors* Sen, const int num_timeouts, BatteryMonitor* Mon)
 {
   String batt;
@@ -45,12 +45,12 @@ void assign_publist(Publish* pubList, const unsigned long long now, const String
   pubList->now = now;
   pubList->unit = unit + batt.c_str();
   pubList->hm_string =hm_string;
-  pubList->Tb = Sen->Tb;
+  pubList->Tb = Sen->Tb();
   // Log.info("    assign_publist pubList->Tb=%9.5f", pubList->Tb);
   if ( sp.ib_force()>-1 )
-    pubList->Ib = Sen->Ib;
+    pubList->Ib = Sen->Ib();
   else
-    pubList->Ib = Sen->Ib_hdwe_f;
+    pubList->Ib = Sen->Ib_hdwe_f();
   pubList->tcharge = Mon->tcharge();
   pubList->Voc = Mon->voc()*ap.nS();
   pubList->sat = Mon->sat();

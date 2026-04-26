@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,7 @@
 // SOFTWARE.
 
 
-#ifndef BATTERY_H_
-#define BATTERY_H_
+#pragma once
 
 #include "myLibrary/myTables.h"
 #include "myLibrary/EKF_1x1.h"
@@ -96,67 +95,67 @@ public:
   Battery(double *sp_delta_q, const float d_voc_soc, const float dx_voc, const float dy_voc,
                 const float dz_voc);
   ~Battery();
-  // operators
-  // functions
-  boolean bms_off() { return bms_off_; };
-  virtual float calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc);
-  float calc_soc_voc_slope(float soc, double tb_f);
+  virtual double calc_soc_voc(const double soc, const double tb_f, double *dv_dsoc);
+  double calc_soc_voc_slope(float soc, double tb_f);
   float calc_vsat(void);
-  virtual float calculate(const double tb_f, const float soc_frac, float curr_in, const double dt, const boolean dc_dc_on);
-  float chargeTransfer_rstate() { return ChargeTransfer_->rstate(); };
-  float chargeTransfer_lstate() { return ChargeTransfer_->lstate(); };
+  virtual float calculate(const double tb_f, const float soc_frac, float curr_in, const double dt, const bool dc_dc_on);
   float chargeTransfer_a() { return ChargeTransfer_->a(); };
   float chargeTransfer_b() { return ChargeTransfer_->b(); };
   float chargeTransfer_c() { return ChargeTransfer_->c(); };
+  float chargeTransfer_lstate() { return ChargeTransfer_->lstate(); };
+  float chargeTransfer_rstate() { return ChargeTransfer_->rstate(); };
   float chargeTransfer_T() { return ChargeTransfer_->T(); };
   float chargeTransfer_tau() { return ChargeTransfer_->tau(); };
+  double cTime() { return ctime_; };
+  bool bms_off() { return bms_off_; };
   float C_rate() { return ib_ / NOM_UNIT_CAP; }
   String decode(const uint8_t mod);
   float dqdt() { return chem_.dqdt; };
-  float dt() { return dt_; };  // s
-  float dv_dsoc() { return dv_dsoc_; };
+  float dt() { return dt_; };
+  double dv_dsoc() { return dv_dsoc_; };
   float dv_dyn() { return dv_dyn_; };
   float dv_hys() { return dv_hys_; };
-  float ib() { return ib_; };            // Battery terminal current, A
-  float ibs() { return ibs_; };          // Hysteresis input current, A
-  float ib_dyn() { return ib_dyn_; };    // Battery terminal current lagged by charge transfer, A
-  float ib_dyn_r() { return ChargeTransfer_->reset(); };
-  float ib_dyn_T() { return ChargeTransfer_->T(); };
+  float ib() { return ib_; };
+  float ib_dyn() { return ib_dyn_; };
   float ib_dyn_lstate() { return ChargeTransfer_->lstate(); };
+  float ib_dyn_r() { return ChargeTransfer_->reset(); };
   float ib_dyn_rstate() { return ChargeTransfer_->rstate(); };
-  boolean initializing() { return initializing_; };
-  float ioc() { return ioc_; };          // Hysteresis output current, A
+  float ib_dyn_T() { return ChargeTransfer_->T(); };
+  bool initializing() { return initializing_; };
+  float ibs() { return ibs_; };
+  float ioc() { return ioc_; };
   virtual void pretty_print();
-  void print_signal(const boolean print) { print_now_ = print; };
-  double tb_f() { return tb_f_; };            // Battery temp, C
-  float vb() { return vb_; };            // Battery terminal voltage, V
-  float voc() { return voc_; };
-  float voc_soc() { return voc_soc_; };
-  float voc_stat() { return voc_stat_; };
-  float voc_soc_tab(const float soc, const double tb_f);
-  boolean voltage_low() { return voltage_low_; };
+  void print_signal(const bool print) { print_now_ = print; };
+  double tb_f() { return tb_f_; };
+  float vb() { return vb_; };
+  double voc() { return voc_; };
+  double voc_soc() { return voc_soc_; };
+  double voc_soc_tab(const double soc, const double tb_f);
+  double voc_stat() { return voc_stat_; };
+  bool voltage_low() { return voltage_low_; };
   float vsat() { return vsat_; };
 protected:
-  boolean bms_charging_; // Indicator that battery is charging, T = charging, changing soc and voltage
-  boolean bms_off_;// Indicator that battery management system is off, T = off preventing current flow
+  bool bms_charging_; // Indicator that battery is charging, T = charging, changing soc and voltage
+  bool bms_off_;// Indicator that battery management system is off, T = off preventing current flow
+  double ctime_;   // Current time, s
   float dt_;       // Update time, s
-  float dv_dsoc_;  // Derivative scaled, V/fraction
+  double dv_dsoc_; // Derivative scaled, V/fraction
   float dv_dyn_;   // ib-induced back emf, V
   float dv_hys_;   // Hysteresis state, voc-voc_out, V
   float ib_;       // Battery terminal current, A
   float ibs_;      // Hysteresis input current, A
   float ib_dyn_;   // ib lagged by charge transfer, A
-  boolean initializing_;  // Flag to indicate initializingn
+  bool initializing_;  // Flag to indicate initializingn
   float ioc_;      // Hysteresis output current, A
   float nom_vsat_; // Nominal saturation threshold at 25C, V
-  boolean print_now_; // Print command
-  boolean soft_reset_print_;  // Soft reset flag
+  bool print_now_; // Print command
+  bool soft_reset_print_;  // Soft reset flag
   double tb_f_;    // Battery temperature, deg C
   float vb_;       // Battery terminal voltage, V
-  float voc_;      // Static model open circuit voltage, V
-  float voc_soc_;      // Raw table lookup of voc, V
-  float voc_stat_; // Static, table lookup value of voc before applying hysteresis, V
-  boolean voltage_low_; // Battery below BMS, T = BMS will turn off
+  double voc_;      // Static model open circuit voltage, V
+  double voc_soc_;      // Raw table lookup of voc, V
+  double voc_stat_; // Static, table lookup value of voc before applying hysteresis, V
+  bool voltage_low_; // Battery below BMS, T = BMS will turn off
   float vsat_;     // Saturation threshold at temperature, V
   // EKF declarations
   LagExp *ChargeTransfer_; // ChargeTransfer model {ib, vb} --> {voc}, ioc=ib for Battery version
@@ -174,44 +173,45 @@ class BatteryMonitor: public Battery, public EKF_1x1
 public:
   BatteryMonitor(const float dx_voc, const float dy_voc, const float dz_voc);
   ~BatteryMonitor();
-  // operators
-  // functions
   float amp_hrs_remaining_ekf() { return amp_hrs_remaining_ekf_; };
   float amp_hrs_remaining_soc() { return amp_hrs_remaining_soc_; };
   float calc_charge_time(const double q, const float q_capacity, const float charge_curr, const float soc);
-  virtual float calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc);
-  float calculate(Sensors *Sen, const boolean reset,  const boolean reset_ekf);
-  boolean converged_ekf() { return ekf_conv_; };
+  virtual double calc_soc_voc(const double soc, const double tb_f, double *dv_dsoc);
+  float calculate(Sensors *Sen, const bool reset,  const bool reset_ekf);
+  bool converged_ekf() { return ekf_conv_; };
   double delta_q_ekf() { return delta_q_ekf_; };
-  float hx() { return hx_; };
+  double delta_q_ekf_;         // Charge deficit represented by charge calculated by ekf, C
+  float dv_dyn() { return dv_dyn_; };
+  double hx() { return hx_; };
   float ib_charge() { return ib_charge_; };
-  void init_battery_mon(const boolean reset, Sensors *Sen);
+  void init_battery_mon(const bool reset, Sensors *Sen);
   void init_soc_ekf(const float soc);
-  boolean is_sat(const boolean reset);
-  float K_ekf() { return K_; };
+  bool is_sat(const bool reset);
+  double K_ekf() { return K_; };
   void pretty_print(Sensors *Sen);
   void regauge(const double tb_f);
   float r_sd ();
   float r_ss ();
-  float soc_ekf() { return soc_ekf_; };
-  boolean solve_ekf(const boolean reset, const boolean reset_temp, Sensors *Sen);
+  double soc_ekf() { return soc_ekf_; };
+  bool solve_ekf(const bool reset, const bool reset_temp, Sensors *Sen);
   float tcharge() { return tcharge_; };
-  float dv_dyn() { return dv_dyn_; };
   float vb_model_rev() { return vb_model_rev_; };
   float voc_dead() { return voc_dead_; };
   float voc_stat_f() { return voc_stat_f_; };
-  double y() { return y_; };
-  double y_filt() { return y_filt_; };
-  double delta_q_ekf_;         // Charge deficit represented by charge calculated by ekf, C
-  float vocStatFilt_rstate() { return VocStatFilt->rstate(); };
-  float vocStatFilt_lstate() { return VocStatFilt->lstate(); };
   float vocStatFilt_a() { return VocStatFilt->a(); };
   float vocStatFilt_b() { return VocStatFilt->b(); };
   float vocStatFilt_c() { return VocStatFilt->c(); };
+  float vocStatFilt_lstate() { return VocStatFilt->lstate(); };
+  float vocStatFilt_rstate() { return VocStatFilt->rstate(); };
   float vocStatFilt_T() { return VocStatFilt->T(); };
   float vocStatFilt_tau() { return VocStatFilt->tau(); };
+  double y_ekf() { return y_ekf_; };
+  float y_ekf_f() { return y_ekf_f_; };
+  float y_ekf_f_T() { return y_ekf_f_T_; };
+  float y_ekf_f_tau() { return y_ekf_f_tau_; };
+  float y_ekf_f_state() { return y_ekf_f_state_; };
 protected:
-  LagTustin *Yfilt = new LagTustin(2., WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
+  LagTustin *Yfilt = new LagTustin(EKF_NOM_DT, TAU_Y_FILT, MIN_Y_FILT, MAX_Y_FILT);  // actual update time provided run time
   SlidingDeadband *SdVb_;  // Sliding deadband filter for Vb
   TFDelay *EKF_converged;  // Time persistence
   Iterator *ice_;      // Iteration control for EKF solver
@@ -219,19 +219,23 @@ protected:
   float amp_hrs_remaining_ekf_;  // Discharge amp*time left if drain to q_ekf=0, A-h
   float amp_hrs_remaining_soc_;  // Discharge amp*time left if drain soc_ to 0, A-h
   uint8_t eframe_;     // Counter to run EKF slower than Coulomb Counter and ChargeTransfer models
-  boolean ekf_conv_;   // Check that EKF error is within tolerance (T=converged)
+  bool ekf_conv_;   // Check that EKF error is within tolerance (T=converged)
   float ib_charge_;    // Current input avaiable for charging, A
   float ib_past_;      // Past value of current to synchronize e_wrap dynamics with model, A
   double q_ekf_;       // Filtered charge calculated by ekf, C
-  float soc_ekf_;      // Filtered state of charge from ekf (0-1)
+  double soc_ekf_;     // Filtered state of charge from ekf (0-1)
   float tcharge_;      // Counted charging time to 100%, hr
   float tcharge_ekf_;  // Solved charging time to 100% from ekf, hr
   float vb_model_rev_; // Reversionary model of vb, V
   float voc_dead_;     // Deadband-filtered, static model open circuit voltage, V
   float voc_stat_f_;   // Filtered voc_stat for EKF use, V
-  float y_filt_;       // Filtered EKF y value, V
+  double y_ekf_;       // EKF y value, V
+  float y_ekf_f_;      // Filtered EKF y value, V
   void ekf_predict(double *Fx_, double *Bu_);
   void ekf_update(double *hx, double *H, double *x, double *tb_f);
+  float y_ekf_f_T_;        // EKF filter
+  float y_ekf_f_tau_;      // EKF filter
+  float y_ekf_f_state_;    // EKF filter
 };
 
 
@@ -241,46 +245,44 @@ class BatterySim: public Battery
 public:
   BatterySim(const float dx_voc, const float dy_voc, const float dz_voc);
   ~BatterySim();
-  // operators
-  // functions
-  float calculate(Sensors *Sen, const boolean dc_dc_on, const boolean reset);
-  float calc_inj(const unsigned long long now, const uint8_t type, const float amp, const double freq);
-  virtual float calc_soc_voc(const float soc, const double tb_f, float *dv_dsoc);
-  float count_coulombs(Sensors *Sen, const boolean reset, BatteryMonitor *Mon, const boolean initializing_all);
-  boolean cutback() { return model_cutback_; };
+  float calc_inj(const uint64_t now, const uint8_t type, const float amp, const double freq);
+  virtual double calc_soc_voc(const double soc, const double tb_f, double *dv_dsoc);
+  float calculate(Sensors *Sen, const bool dc_dc_on, const bool reset);
+  float count_coulombs(Sensors *Sen, const bool reset, BatteryMonitor *Mon, const bool initializing_all);
+  bool cutback() { return model_cutback_; };
   double delta_q() { return *sp_delta_q_; };
-  float d_delta_q_s() { return d_delta_q_s_; };
-  unsigned long int dt_long(void) { return sample_time_ - sample_time_z_; };
-  void hys_pretty_print () { hys_->pretty_print(0., 0., 0.); };
+  double d_delta_q_s() { return d_delta_q_s_; };
+  uint32_t dt_long(void) { return sample_time_ - sample_time_z_; };
   float hys_state() { return hys_->dv_hys(); };
   void hys_state(const float st) { hys_->dv_hys(st); };
-  void init_hys(const float hys) { hys_->init(hys); };
+  void hys_pretty_print () { hys_->pretty_print(0., 0., 0.); };
   float ib_charge() { return ib_charge_; };
   float ib_fut() { return ib_fut_; };
   float ib_in() { return ib_in_; };
   float ib_s() { return ib_; };
-  void init_battery_sim(const boolean reset, Sensors *Sen);
+  void init_battery_sim(const bool reset, Sensors *Sen);
+  void init_hys(const float hys) { hys_->init(hys); };
   void pretty_print(void);
-  unsigned long int sample_time(void) { return sample_time_; };
-  boolean saturated() { return model_saturated_; };
-  float voc() { return voc_; };
-  float voc_stat() { return voc_stat_; };
+  bool saturated() { return model_saturated_; };
+  uint32_t sample_time(void) { return sample_time_; };
+  double voc() { return voc_; };
+  double voc_stat() { return voc_stat_; };
 protected:
   SinInj *Sin_inj_;         // Class to create sine waves
   SqInj *Sq_inj_;           // Class to create square waves
   TriInj *Tri_inj_;         // Class to create triangle waves
   CosInj *Cos_inj_;         // Class to create cosine waves
   uint32_t duty_;           // Used in Test Mode to inject Fake shunt current (0 - uint32_t(255))
-  float d_delta_q_s_;       // Charge rate, C/s
+  double d_delta_q_s_;       // Charge rate, C/s
   float ib_charge_;         // Current input avaiable for charging, A
   float ib_fut_;            // Future value of limited current, A
   float ib_in_;             // Saved value of current input, A
   float ib_sat_;            // Threshold to declare saturation.  This regeneratively slows down charging so if too small takes too long, A
-  boolean model_cutback_;   // Indicate that modeled current being limited on saturation cutback, T = cutback limited
-  boolean model_saturated_; // Indicator of maximal cutback, T = cutback saturated
+  bool model_cutback_;   // Indicate that modeled current being limited on saturation cutback, T = cutback limited
+  bool model_saturated_; // Indicator of maximal cutback, T = cutback saturated
   double q_;                // Charge, C
-  unsigned long int sample_time_;       // Exact moment of hardware signal generation, ms
-  unsigned long int sample_time_z_;     // Exact moment of past hardware signal generation, ms
+  uint32_t sample_time_;       // Exact moment of hardware signal generation, ms
+  uint32_t sample_time_z_;     // Exact moment of past hardware signal generation, ms
   float sat_cutback_gain_; // Gain to retard ib when voc exceeds vsat, dimensionless
   float sat_ib_max_;       // Current cutback to be applied to modeled ib output, A
   float sat_ib_null_;      // Current cutback value for voc=vsat, A
@@ -289,5 +291,3 @@ protected:
 
 
 // Methods
-
-#endif

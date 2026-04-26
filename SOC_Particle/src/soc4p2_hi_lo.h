@@ -9,13 +9,12 @@
 #define HDWE_UNIT               "soc4p2_hi_lo"  // https://console.particle.io/soc-particle-28171/devices/0a10aced202194944a04c094
 #define SOFT_SBAUD              460800      // Default Serial baud when able (don't think this does anything)
 #define HDWE_IB_HI_LO
-#define HDWE_2WIRE
 // #define SOFT_DEBUG_QUEUE
 // #define DEBUG_INIT                    // Use this to debug initialization using 'vv-1;'
 // #define LOGHANDLE
 
 // Miscellaneous
-#define ASK_DURING_BOOT       1   // Flag to ask for application of this file to * retained adjustements
+#define ASK_DURING_BOOT       0   // Flag to ask for application of this file to * retained adjustments 0=renom on dirty boot keep otherwise,1=ask
 #define MODELING              0   // Nominal modeling bitmap (* 'Xm'), 0=all hdwe, 1+=Tb, 2+=Vb, 4+=Ib, 7=all model.  +240 for discn
 
 // Sensor biases
@@ -26,8 +25,8 @@
 #define VTAB_BIAS               0.0 // Bias on voc_soc table (* 'Dw'), V  (0.0)
 
 // Ib hardware
-#define IB_ABS_MAX_AMP        12.0  // Hard range limit of sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_AMP_R1 / SHUNT_AMP_R2 *1.05) but saw -11.48 A (12)
-#define IB_ABS_MAX_NOA        78.5  // Hard range limit of sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_NOA_R1 / SHUNT_NOA_R2 *1.05) A (78.5)
+#define IB_ABS_MAX_AMP        14.0  // Hard range limit of sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_AMP_R1 / SHUNT_AMP_R2 *1.05) but saw -11.48 A (12)
+#define IB_ABS_MAX_NOA       100.0  // Hard range limit of sensor electrically impossible (=1.65 * SHUNT_GAIN * SHUNT_NOA_R1 / SHUNT_NOA_R2 *1.05) A (78.5)
 #define HDWE_IB_HI_LO_NOA_LO   -11. // Fully NOA bank discharge transition, A (-11)
 #define HDWE_IB_HI_LO_AMP_LO   -10. // Fully AMP bank discharge transition, A (-10)  
 #define HDWE_IB_HI_LO_AMP_HI    10. // Fully AMP bank charge transition, A (10)
@@ -54,7 +53,7 @@
 #define CC_DIFF_SOC_DIS_THRESH  0.5   // Signal selection threshold for Coulomb counter EKF disagree test (0.2, 0.1 too small on truck)
 #define FI_NOM 200. // Hi wrap threshold nominal scalar (1.0)  // Fi
 #define FO_NOM 200. // Lo wrap threshold nominal scalar (1.0)  // Fo
-#define DISAB_VB_FA true
+#define DISAB_VB_FA_LT true
 #define DISAB_TB_FA true          // Had high out of range failure.  Want to keep running without latch on the truck
 
 // ekf tune

@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,11 +37,11 @@ Parameters::Parameters():n_(0) {};
 
 Parameters::~Parameters(){};
 
-boolean Parameters::find_adjust(const String &str)
+bool Parameters::find_adjust(const String &str)
 {
     uint8_t count = 0;
-    boolean found = false;
-    boolean success = false;
+    bool found = false;
+    bool success = false;
     String substr = str.substring(0, 2);
     value_str_ = str.substring(2);
     if ( substr.length()<2 )
@@ -75,13 +75,17 @@ boolean Parameters::find_adjust(const String &str)
 
 }
 
-boolean Parameters::is_corrupt()
+bool Parameters::is_corrupt()
 {
-    boolean corruption = false;
-    for ( int i=0; i<n_; i++ ) corruption |= V_[i]->is_corrupt();
+    bool corruption = false;
+    for ( int i=0; i<n_; i++ )
+    {
+        if ( V_[i]->is_corrupt() ) sendTxBuf(String::format("\n%s %s corrupt", V_[i]->code().c_str(), V_[i]->description()), true, true);
+        corruption |= V_[i]->is_corrupt();
+    }
     if ( corruption )
     {
-        Serial.printf("\ncorrupt****\n");
+        sendTxBuf(String::format("\ncorrupt****\n"), true, true);
         pretty_print(false);
     }
     return corruption;
@@ -104,14 +108,14 @@ VolatilePars::~VolatilePars(){}
 
 void  VolatilePars::initialize()
 {
-    #define NVOL 60
+    #define NVOL 61
     V_ = new Variable*[NVOL];
     V_[n_++] =(cc_diff_slr_p    = new FloatV("  ", "Fc", NULL,"Slr cc_diff thr",      "slr",    0,    1000, &cc_diff_slr_,      1));  // Fc
     V_[n_++] =(cycles_inj_p     = new FloatV("  ", "XC", NULL,"Number prog cycle",    "float",  0,    1000, &cycles_inj_,       0));  // XC
     V_[n_++] =(dc_dc_on_p     = new BooleanV("  ", "Xd", NULL,"DC-DC charger on",     "T=on",   0,    1,    &dc_dc_on_,         false));  // Xd
     V_[n_++] =(disab_ib_fa_p  = new BooleanV("  ", "FI", NULL,"Disab hard range ib",  "T=disab",0,    1,    &disab_ib_fa_,      false));  // FI
     V_[n_++] =(disab_tb_fa_p  = new BooleanV("  ", "FT", NULL,"Disab hard range tb",  "T=disab",0,    1,    &disab_tb_fa_,      DISAB_TB_FA));  // FT
-    V_[n_++] =(disab_vb_fa_p  = new BooleanV("  ", "FV", NULL,"Disab hard range vb",  "T=disab",0,    1,    &disab_vb_fa_,      DISAB_VB_FA));  // FV
+    V_[n_++] =(dis_vb_fa_lt_p  = new BooleanV("  ", "FV", NULL,"Disab hard range vb",  "T=disab",0,    1,   &dis_vb_fa_lt_,     DISAB_VB_FA_LT));  // FV
     V_[n_++] =(ds_voc_soc_p     = new FloatV("  ", "Ds", NULL,"VOC(SOC) del soc",     "slr",    -0.5, 0.5,  &ds_voc_soc_,       NOM_DS));  // Ds
     V_[n_++] =(dv_voc_soc_p     = new FloatV("  ", "Dy", NULL,"VOC(SOC) del v",       "v",      -50,  50,   &dv_voc_soc_,       NOM_DY));  // Dy
     V_[n_++] =(ewhi_slr_p       = new FloatV("  ", "Fi", NULL,"Slr wrap hi thr",      "slr",    0,    1000, &ewhi_slr_,         FI_NOM));  // Fi
@@ -122,13 +126,13 @@ void  VolatilePars::initialize()
     V_[n_++] =(hys_state_p      = new FloatV("  ", "SH", NULL,"Sim hys state",        "v",      -10,  10,   &hys_state_,        0));  // SH
     V_[n_++] =(Ib_amp_noise_amp_p= new FloatV("  ","DM", NULL,"Amp amp noise",        "A",      0,    1000, &Ib_amp_noise_amp_, IB_AMP_NOISE));  // DM
     V_[n_++] =(ib_amp_add_p     = new FloatV("  ", "Dm", NULL,"Amp signal add",       "A",      -1000,1000, &ib_amp_add_,       0));  // Dm
-    V_[n_++] =(ib_max_amp_p     = new FloatV("  ", "Mm", NULL,"Amp hdwe unit max",    "A",      0,    __FLT_MAX__, &ib_amp_max_, (IB_ABS_MAX_AMP/NP/0.95)));  // Mm
-    V_[n_++] =(ib_min_amp_p     = new FloatV("  ", "Mn", NULL,"Amp hdwe unit min",    "A",      -__FLT_MAX__,   0, &ib_amp_min_, (-IB_ABS_MAX_AMP/NP/0.95)));  // Mn
+    V_[n_++] =(ib_max_amp_p     = new FloatV("  ", "Mm", NULL,"Amp hdwe unit max",    "A",      0,    __FLT_MAX__, &ib_amp_max_, (IB_ABS_MAX_AMP/NP/SIZE_MARG)));  // Mm
+    V_[n_++] =(ib_min_amp_p     = new FloatV("  ", "Mn", NULL,"Amp hdwe unit min",    "A",      -__FLT_MAX__,   0, &ib_amp_min_, (-IB_ABS_MAX_AMP/NP/SIZE_MARG)));  // Mn
     V_[n_++] =(ib_diff_slr_p    = new FloatV("  ", "Fd", NULL,"Slr ib_diff thr",      "A",      0,    1000, &ib_diff_slr_,      1));  // Fd
     V_[n_++] =(Ib_noa_noise_amp_p= new FloatV("  ","DN", NULL,"Amp noa noise",        "A",      0,    1000, &Ib_noa_noise_amp_, IB_NOA_NOISE));  // DN
     V_[n_++] =(ib_noa_add_p     = new FloatV("  ", "Dn", NULL,"No amp signal add",    "A",      -1000,1000, &ib_noa_add_,       0));  // Dn
-    V_[n_++] =(ib_max_noa_p     = new FloatV("  ", "Nm", NULL,"Noa hdwe signal max",  "A",      0,    __FLT_MAX__, &ib_noa_max_, (IB_ABS_MAX_NOA/NP/0.95)));  // Nm
-    V_[n_++] =(ib_min_noa_p     = new FloatV("  ", "Nn", NULL,"Noa hdwe signal min",  "A",      -__FLT_MAX__,   0, &ib_noa_min_, (-IB_ABS_MAX_NOA/NP/0.95)));  // Nn
+    V_[n_++] =(ib_max_noa_p     = new FloatV("  ", "Nm", NULL,"Noa hdwe signal max",  "A",      0,    __FLT_MAX__, &ib_noa_max_, (IB_ABS_MAX_NOA/NP/SIZE_MARG)));  // Nm
+    V_[n_++] =(ib_min_noa_p     = new FloatV("  ", "Nn", NULL,"Noa hdwe signal min",  "A",      -__FLT_MAX__,   0, &ib_noa_min_, (-IB_ABS_MAX_NOA/NP/SIZE_MARG)));  // Nn
     V_[n_++] =(ib_quiet_slr_p   = new FloatV("  ", "Fq", NULL,"Ib quiet det slr",     "slr",    0,    1000, &ib_quiet_slr_,     1));  // Fq
     V_[n_++] =(init_all_soc_p   = new FloatV("  ", "Ca", NULL,"Init all to this",     "soc",    -0.5, 1.1,  &init_all_soc_,     1));  // Ca
     V_[n_++] =(init_sim_soc_p   = new FloatV("  ", "Cm", NULL,"Init sim to this",     "soc",    -0.5, 1.1,  &init_sim_soc_,     1));  // Cm
@@ -166,10 +170,11 @@ void  VolatilePars::initialize()
     V_[n_++] =(s_cap_mon_p      = new FloatV("  ", "SQ", NULL,"Scalar cap Mon",       "slr",    0,    1000, &s_cap_mon_,   1.));  // SQ
     V_[n_++] =(s_cap_sim_p      = new FloatV("  ", "Sq", NULL,"Scalar cap Sim",       "slr",    0,    1000, &s_cap_sim_,   1.));  // Sq
     V_[n_++] =(Vb_scale_p       = new FloatV("  ", "SV", NULL,"Scale Vb sensor",      "v",      -1e5, 1e5,  &Vb_scale_,    VB_SCALE));  // SV
+    V_[n_++] =(snap_wait_p      = new ULongV("  ", "SW", NULL,"Snap wait",            "ms",     0UL,  10000UL,  &snap_wait_,   SNAP_WAIT));  // SW
 }
 
-// Print only the volatile paramters (non-eeram)
-void VolatilePars::pretty_print(const boolean all)
+
+void VolatilePars::pretty_print(const bool all)
 {
     #ifndef SOFT_DEPLOY_PHOTON
         if ( all )
@@ -243,9 +248,10 @@ SavedPars::~SavedPars() {}
 
 void SavedPars::initialize()
 {
-    #define NSAV 23
+    #define NSAV 24
     V_ = new Variable*[NSAV];
     V_[n_++] =(amp_p            = new FloatV("* ", "Xa", rP_, "Inj amp",              "Amps pk",-1e6, 1e6,  &amp_,              0));  // Xa
+    V_[n_++] =(booted_p       = new BooleanV("  ", "Bb", rP_, "Clean boot",       "T=clean",     0,    1,   &booted_,           false));  // Bb
     V_[n_++] =(cutback_gain_slr_p=new FloatV("* ", "Sk", rP_, "Cutback gain scalar",  "slr",    -1e6, 1e6,  &cutback_gain_slr_, 1));  // Sk
     V_[n_++] =(debug_p            = new IntV("* ", "vv", rP_, "Verbosity",            "int",    -128, 128,  &debug_,            VV));  // vv
     V_[n_++] =(delta_q_model_p = new DoubleV("* ", "qs", rP_, "Charge chg Sim",       "C",      -1e8, 1e5,  &delta_q_model_,    0, false));   // qs
@@ -268,11 +274,10 @@ void SavedPars::initialize()
     V_[n_++] =(modeling_p      = new Uint8tV("* ", "Xm", rP_, "Modeling bitmap",      "[0x]",   0,    255,  &modeling_,         MODELING));         // Xm
     V_[n_++] =(preserving_p    = new Uint8tV("* ", "X?", rP_, "Preserving fault",     "T=Preserve",0,   1,  &preserving_,       0,          false));  // X?
     V_[n_++] =(Tb_bias_hdwe_p   = new FloatV("* ", "Dt", rP_, "Bias Tb sensor",       "dg C",   -500, 500,  &Tb_bias_hdwe_,     TEMP_BIAS));        // Dt
-    V_[n_++] =(Time_now_p       = new ULongV("* ", "UT", rP_, "UNIX time epoch",      "sec",    1669801880UL,  2100000000UL, &Time_now_, 1669801880UL,  false));  // UT
+    V_[n_++] =(Time_now_p       = new ULongV("* ", "UT", rP_, "UNIX time epoch",      "sec",    0UL,  2100000000UL, &Time_now_, 1669801880UL,  false));  // UT
     V_[n_++] =(Type_p          = new Uint8tV("* ", "Xt", rP_, "Inj type",             "1sn 2sq 3tr 4 1C, 5 -1C, 8cs",  0,   10,  &type_,    0));  // Xt
     V_[n_++] =(Vb_bias_hdwe_p   = new FloatV("* ", "Dc", rP_, "Bias Vb sensor",       "v",      -10,  70,   &Vb_bias_hdwe_,     VOLT_BIAS));  // Dc
-    
-    V_[n_++] =(vsat_add_p       = new FloatV("  ", "DS", NULL,"Bias on nominal vsat", "v",      -2.,  2.,   &vsat_add_,         VSAT_ADD));  // DS
+    V_[n_++] =(vsat_add_p       = new FloatV("* ", "DS", rP_, "Bias on nominal vsat", "v",      -2.,  2.,   &vsat_add_,         VSAT_ADD));  // DS
 }
 
 // Number of differences between nominal EERAM and actual (don't count integator memories because they always change)
@@ -291,7 +296,7 @@ void SavedPars::mem_print()
 }
 
 // Print
-void SavedPars::pretty_print(const boolean all)
+void SavedPars::pretty_print(const bool all)
 {
     if ( all )
     {
@@ -383,7 +388,7 @@ void SavedPars::put_all_dynamic()
             break;
 
         case ( 2 ):
-            put_Time_now(max( Time_now_, (unsigned long)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
+            put_Time_now(max( Time_now_, (uint32_t)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
             blink = 0;
             break;
 

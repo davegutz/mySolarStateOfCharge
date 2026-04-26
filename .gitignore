@@ -30,3 +30,4 @@ SOC_Particle/pyStateOfCharge/PlotGP - Copy.py
 SOC_Particle/pyStateOfCharge/PlotHist - Copy.py
 SOC_Particle/pyStateOfCharge/PlotOffOn - Copy.py
 SOC_Particle/pyStateOfCharge/PlotSimS - Copy.py
+*.bin

@@ -1,7 +1,7 @@
 /*  Heart rate and pulseox calculation Constants
 
 18-Dec-2020 	DA Gutz 	Created from MAXIM code.
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,6 +58,7 @@
 #undef SOFT_DEPLOY_PHOTON
 #undef SOFT_DEBUG_QUEUE
 #undef IB_FORCE
+// #undef PLATFORM_ID
 
 // Setup
 #include "local_config.h"
@@ -67,9 +68,13 @@
 #ifndef DISAB_TB_FA
     #define DISAB_TB_FA false
 #endif
-#ifndef DISAB_VB_FA
-    #define DISAB_VB_FA false
+#ifndef DISAB_VB_FA_LT
+    #define DISAB_V false
 #endif
+// #ifndef PLATFORM_ID
+//     #define PLATFORM_ID  32
+// #endif
+
 const char unit[] = version_str "_" HDWE_UNIT;
 
 // Constants always defined
@@ -77,12 +82,11 @@ const char unit[] = version_str "_" HDWE_UNIT;
 #define ONE_DAY_MILLIS        86400000UL// Number of milliseconds in one day (24*60*60*1000)
 #define TALK_DELAY            313UL      // Talk wait, ms (313UL = 0.313 sec)
 #define READ_DELAY            100UL     // Sensor read wait, ms (100UL = 0.1 sec) Dr
-#define TEMP_DELAY            6000UL    // Sensor read wait, ms (6011UL = 6.011 sec) Dq
+#define TEMP_DELAY            6000UL    // Sensor read wait, ms (6000UL = 6.0 sec) Dq
 #define SUMMARY_DELAY         1800000UL // Battery state tracking and reporting, ms (1800000UL = 30 min) Dh
 #define SUMMARY_WAIT          60000UL   // Summarize alive time before first save, ms (60000UL = 1 min) Dh
 #define PUBLISH_SERIAL_DELAY  400UL     // Serial print interval (400UL = 0.4 sec)
 #define DISPLAY_USER_DELAY    1200UL    // User display update (1200UL = 1.2 sec)
-#define SNAP_WAIT             10000ULL  // Interval between fault snapshots (10000ULL = 10 sec)
 #define DP_MULT               4         // Multiples of read to capture data DP
 #define TBATT_TEMPCAL         0.56      // Maxim 1-wire plenum temp sense calibrate (0.56), C
 #define MAX_TEMP_READS        10        // Number of consequetive temp queries allowed (10)
@@ -106,6 +110,8 @@ const char unit[] = version_str "_" HDWE_UNIT;
 #define SCL_600               600.      // Data storage integer scaling
 #define SCL_1200              1200.     // Data storage integer scaling
 #define SCL_1500              1500.     // Data storage integer scaling
+#define SCL_3000              3000.f    // Data storage integer scaling
+#define SCL_6000              6000.     // Data storage integer scaling
 #define SCL_16000             16000.    // Data storage integer scaling
 #define SCL_30000             30000.    // Data storage integer scaling
 
@@ -116,8 +122,8 @@ const char unit[] = version_str "_" HDWE_UNIT;
 // 292998  119852   10306  423168   67500 c:/Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/target/6.2.1/p2/SOC_Particle.elf
 
 #define NFLT    7  // Number of saved SRAM fault data slices 10 s intervals (7)
-#define NHIS   50  // Number of saved SRAM history data slices. If NFLT + NHIS too large will get compile error BACKUPSRAM (55)
-#define NSUM 2400  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error BACKUPSRAM, or GUI FRAG msg (2845) or SOS 4 Bus Fault (2500)
+#define NHIS   43  // Number of saved SRAM history data slices. If NFLT + NHIS too large will get compile error BACKUPSRAM, BACKUPSRAM_USER  (45)
+#define NSUM 2000  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error SRAM, or GUI FRAG msg (2845) or SOS 4 Bus Fault (2500)
 
 #define HDB_TBATT             0.06      // Half deadband to filter Tb, F (0.06)
 #define HDB_VB                0.05      // Half deadband to filter Vb, V (0.05)
@@ -127,34 +133,29 @@ const char unit[] = version_str "_" HDWE_UNIT;
     #define T_SAT                 24        // Saturation time, sec (>21 for no SAT with Dv0.82)
 #endif
 const float T_DESAT =         20;       // De-saturation time, sec
-#define TEMP_PARASITIC        true      // DS18 sensor power. true means leave it on all the time (true)
-#define TEMP_DELAY_DS18       1         // Time to block temperature sensor read in DS18 routine, ms (1)
+#define TEMP_PARASITIC        true      // Temperature sensor power. true means leave it on all the time (true)
 #ifndef TEMP_INIT_DELAY
-    #define TEMP_INIT_DELAY       10000     // It takes 10 seconds first read of DS18 (10000)
+    #define TEMP_INIT_DELAY       7000     // It takes 10 seconds first read of DS18 (10000)
 #endif
 #define CC_DIFF_LO_SOC_SLR    4.        // Large to disable cc_diff
 #define TAU_ERR_FILT          5.        // Current sensor difference filter time constant, s (5.)
 #define MAX_ERR_FILT          10.       // Current sensor difference Filter maximum windup, A (10.)
 #define MAX_ERR_T             10.       // Maximum update time allowed to avoid instability, s (10.)
-#define IB_HARD_SET           1.        // Signal selection volt range fail persistence, s (1.)
-#define IB_HARD_RESET         1.        // Signal selection volt range fail reset persistence, s (1.)
 #define IB_LO_ACTIVE_SET      0.2       // Ib low range sensor is in-range persistence, s (0.2)
 #define IB_LO_ACTIVE_RESET    0.4       // Ib low range sensor is in-range reset persistence, s (0.4)
 #define VB_MAX                17.       // Signal selection hard fault threshold, V (17. < VB_CONV_GAIN*4095)
 #define VB_MIN                2.        // Signal selection hard fault threshold, V (0.  < 2. < 10 bms shutoff, reads ~3 without power when off)
-#define VC_MAX                1.85      // Signal selection hard fault threshold, V (3.9/2 +20%)
-#define VC_MIN                1.4       // Signal selection hard fault threshold, V (2.8/2 -20%)
+#define VC_MAX                2.15      // Signal selection hard fault threshold, V (2.15, 1.85 too low)  // 1.65*1.3 is max ADC reading with 1.65v ref, but see 1.9v on truck with no power, so set at 2.15v to avoid false fault on truck when off
+#define VC_MIN                1.1       // Signal selection hard fault threshold, V (1.1, 1.4 too high)
 #define IB_MIN_UP             0.2       // Min up charge current for come alive, BMS logic, and fault
-#ifdef HDWE_2WIRE
-    #define TB_MAX                60.       // Signal selection hard fault threshold 2wire only, C (60.)
-    #define TB_MIN               -40.       // Signal selection hard fault threshold 2wire only, C (-40.)
-#endif
+#define TB_MAX                60.       // Signal selection hard fault threshold 2wire only, C (60.)
+#define TB_MIN               -40.       // Signal selection hard fault threshold 2wire only, C (-40.)
 #define TB_HARD_SET           1.        // Signal selection Tb 2-wire range fail persistence, s (1.)
-#define TB_HARD_RESET         1.        // Signal selection Tb 2-wire range fail reset persistence, s (1.)
+#define TB_HARD_RESET         2.        // Signal selection Tb 2-wire range fail reset persistence, s (2.)
 #define VB_HARD_SET           1.        // Signal selection volt range fail persistence, s (1.)
-#define VB_HARD_RESET         1.        // Signal selection volt range fail reset persistence, s (1.)
+#define VB_HARD_RESET         2.        // Signal selection volt range fail reset persistence, s (2.)
 #define VC_HARD_SET           1.        // Signal selection volt range fail persistence, s (1.)
-#define VC_HARD_RESET         1.        // Signal selection volt range fail reset persistence, s (1.)
+#define VC_HARD_RESET         2.        // Signal selection volt range fail reset persistence, s (2.)
 #define TB_NOISE              0.        // Tb added noise amplitude, deg C pk-pk
 #define TB_NOISE_SEED         0xe2      // Tb added noise seed 0-255 = 0x00-0xFF (0xe2) 
 #define VB_NOISE              0.        // Vb added noise amplitude, V pk-pk
@@ -185,7 +186,7 @@ const float WRAP_HI_R = (WRAP_HI_S/2.); // Wrap high failure reset time, sec ('u
 const float IBATT_DISAGREE_SET = (WRAP_LO_S-1.); // Signal selection current disagree fail persistence, s (WRAP_LO_S-1) // must be quicker than wrap lo
 #define IBATT_INST_DIFF_SET   0.2       // Persistence on instantaneous current difference, s (0.2)
 #define IBATT_INST_DIFF_RESET 0.0       // Persistence reset on instantaneous current difference, s (0.0)
-#define IBATT_DISAGREE_RESET  1.0       // Signal selection current disagree reset persistence, s (1.)
+#define IBATT_DISAGREE_RESET  2.0       // Signal selection current disagree reset persistence, s (2.)
 #define TAU_Q_FILT      0.5             // Quiet rate time constant, sec (0.5)
 #define MIN_Q_FILT      -5.0            // Quiet filter minimum, V (-0.5)
 #define MAX_Q_FILT      5.0             // Quiet filter maximum, V (0.5)
@@ -216,7 +217,6 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #define VO_S                1.0         // Vo sense scalar (1.0)
 #define VTB_S               1.0         // VTb sense scalar (1.0)
 #define AMP_FILT_TAU        4.0         // Ib filters time constant for calibration only, s (4.0)
-#define VC_BARE_DETECTED    0.16        // Level of common voltage to declare circuit unconnected, V (0.16)
 #define V3V3                3.3         // Theoretical nominal V3v3, V (3.3)
 #define HALF_V3V3         (V3V3/2.)     // Theoretical center of differential TSC2010
 #define USE_SH_2WIRE                    // Use Steinhart-Hart 2-wire temperature characteristic when defined
@@ -228,13 +228,19 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #define HDWE_SHC_2WIRE  1.0265e-7       // 2-wire thermistor characteristic, Steinhart-Hart (1.0265e-7; see '2-wireRTD.ods')
 #define SIZE_MARG         1.05          // Threshold margin, scalar (1.05)
 #define MAX_NOA_RATE        1.0         // Max reasonable noa rate used to disable amp e_wrap logic, A/s (1.0)
-#define CC_DIFF_RESET       1.0         // Signal selection cc_diff ekf test reset persistence, s (1.)
+#define CC_DIFF_RESET       2.0         // Signal selection cc_diff ekf test reset persistence, s (2.)
 #define CC_DIFF_SET         5.0         // Signal selection cc_diff ekf test set persistence, s (5. to handle sawtooth action on cc_diff)
 #define DISAB_LO_SET       0.4          // Disable lo=amp wrap fault set persistence, s (0.4)
 #define DISAB_LO_RESET     0.8          // Disable lo=amp wrap fault reset persistence, s (0.8)
 #define MAX_TRIM_RATE    0.005          // Max allowable amp e_wraptrim rate, V/s (0.005)
 
 // Default values for constants that can be overridden
+#if !defined(IB_HARD_SET)
+    #define IB_HARD_SET        1.0          // Signal selection volt range fail persistence, s (1.)
+#endif
+#if !defined(IB_HARD_RESET)
+    #define IB_HARD_RESET      2.0          // Signal selection volt range fail reset persistence, s (2.)
+#endif
 #if !defined(NOM_DS)
     #define NOM_DS             0.0          // Nominal VOC(SOC) del soc (Ds) 0.0)
 #endif
@@ -301,6 +307,9 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #if !defined(KF_USE_AMP)
     #define KF_USE_AMP        false
 #endif
+#if !defined(HDWE_2WIRE)
+    #define HDWE_2WIRE        true
+#endif
 #if !defined(KF_USE_NOA)
     #define KF_USE_NOA        true
 #endif
@@ -323,7 +332,7 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
     #define FO_NOM    1.0 // Lo wrap threshold nominal scalar (1.0)  // Fo
 #endif
 #if !defined(VSAT_ADD)
-    #define VSAT_ADD    0.0 // Bias on nominal vsat (0.0)
+    #define VSAT_ADD    0.0f // Bias on nominal vsat (0.0f)
 #endif
 #if !defined(VTAB_BIAS)
     #define VTAB_BIAS   0.0 // Bias on voc_soc table (* 'Dw'), V (0.0)
@@ -341,6 +350,9 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #endif
 #if !defined(SHUNT_NOA_R2)
     #define SHUNT_NOA_R2    33200. // Internal amp resistance 29.4x, ohms (33200)
+#endif
+#if !defined(VRAW_BARE_DETECTED)
+  #define VRAW_BARE_DETECTED 500 // Level of common voltage to declare circuit unconnected, V (50UL)
 #endif
 
 // Vb Hardware
@@ -398,7 +410,18 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #if !defined(EKF_CONV)
     #define EKF_CONV    0.025 // EKF tracking error indicating convergence, V (0.025)
 #endif
-
+#if !defined(ASK_DURING_BOOT)
+    #define ASK_DURING_BOOT       0   // Flag to ask for application of this file to * retained adjustements 0=retain,1=ask,2=force default
+#endif
+#if !defined(SNAP_WAIT)
+    #define SNAP_WAIT             10000ULL  // Interval between fault snapshots (10000ULL = 10 sec)
+#endif
+#if !defined(RAW_BARE_S)
+    #define RAW_BARE_S   1. // Raw bare set persistence, s (1)
+#endif
+#if !defined(RAW_BARE_R)
+    #define RAW_BARE_R   2. // Raw bare reset persistence, s (2)
+#endif
 
 // Conversion gains
 // Voltage measurement gains
@@ -409,10 +432,7 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #endif
 const float VC_CONV_GAIN = float(PHOTON_ADC_VOLT) / float(PHOTON_ADC_COUNT) * float(VC_S);
 const float VO_CONV_GAIN = float(PHOTON_ADC_VOLT) / float(PHOTON_ADC_COUNT) * float(VO_S);
-#if defined(HDWE_ADS1013_AMP_NOA)
-    const float SHUNT_AMP_GAIN = SHUNT_GAIN * SHUNT_AMP_R1 / SHUNT_AMP_R2;
-    const float SHUNT_NOA_GAIN = SHUNT_GAIN;
-#elif defined(HDWE_IB_HI_LO) & !defined(HDWE_BARE)
+#if defined(HDWE_IB_HI_LO) & !defined(HDWE_BARE)
     const float SHUNT_AMP_GAIN = SHUNT_GAIN * SHUNT_AMP_R1 / SHUNT_AMP_R2;
     const float SHUNT_NOA_GAIN = SHUNT_GAIN * SHUNT_NOA_R1 / SHUNT_NOA_R2;
 #elif !defined(HDWE_BARE)

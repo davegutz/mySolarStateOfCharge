@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,14 +31,14 @@ extern SavedPars sp;  // Various parameters to be static at system level and sav
 Sync::Sync()
   : delay_(0), last_(0ULL), now_(0ULL), stat_(false), updateDiff_(0), updateTime_(0)
 {}
-Sync::Sync(unsigned long long delay)
+Sync::Sync(uint64_t delay)
     : delay_(delay), last_(0ULL), now_(0ULL), stat_(false), updateDiff_(0), updateTime_(0)
 {
   updateTimeInput_ = float(delay_)/1000.f;
 }
 
 // Check and count 
-boolean Sync::update(boolean reset, unsigned long long now, boolean andCheck)
+bool Sync::update(bool reset, uint64_t now, bool andCheck)
 {
   now_ = now;
   updateDiff_ = now_ - last_;
@@ -50,7 +50,7 @@ boolean Sync::update(boolean reset, unsigned long long now, boolean andCheck)
   }
   return( stat_ );
 }
-boolean Sync::update(unsigned long long now, boolean reset, boolean andCheck)
+bool Sync::update(uint64_t now, bool reset, bool andCheck)
 {
   now_ = now;
   updateDiff_ = now_ - last_;
@@ -62,7 +62,7 @@ boolean Sync::update(unsigned long long now, boolean reset, boolean andCheck)
   }
   return( stat_ );
 }
-boolean Sync::update(unsigned long long now, boolean reset)
+bool Sync::update(uint64_t now, bool reset)
 {
   now_ = now;
   updateDiff_ = now_ - last_;
@@ -74,7 +74,7 @@ boolean Sync::update(unsigned long long now, boolean reset)
   }
   return( stat_ );
 }
-boolean Sync::updateN(unsigned long long now, boolean reset, boolean orCheck)
+bool Sync::updateN(uint64_t now, bool reset, bool orCheck)
 {
   now_ = now;
   updateDiff_ = now_ - last_;

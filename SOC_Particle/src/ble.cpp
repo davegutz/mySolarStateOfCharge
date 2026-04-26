@@ -1,7 +1,7 @@
 /*  Low-energy Bluetooth low-level utilities
 
 27-Dec-2025 	DA Gutz 	Created
-// Copyright (C) 2025 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 */
 
 #include "ble.h"
+#include "serial.h"
 #include "command.h"
 #include "debug.h"
 
@@ -66,7 +67,7 @@ void onBLE_DataReceived(const uint8_t* data, size_t len, const BlePeerDevice& pe
 
   // Parse input
   static String serial_str = "";
-  static boolean serial_ready = false;
+  static bool serial_ready = false;
   // Each pass try to complete input from avaiable
   ii = 0;
   while ( !serial_ready && ( ii < len ) )

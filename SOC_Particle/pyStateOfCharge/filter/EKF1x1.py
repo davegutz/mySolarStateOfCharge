@@ -36,7 +36,6 @@ class EKF1x1:
         self.u_ekf = 0.  # Control input
         self.x = 1.  # Kalman state variable
         self.y = 0.  # Residual z-hx
-        self.y_f = 0.  # Residual filtered z-hx
         self.z = 0.  # Observation of state x
         self.x_prior = self.x
         self.P_prior = self.P
@@ -82,7 +81,7 @@ class EKF1x1:
         self.x = soc
         self.P = p_init
 
-    def predict_ekf(self, u, reset=False, freeze=False):
+    def predict_ekf(self, u, reset=False, freeze=False, OPT=None, i_ekf=None):
         """1x1 Extended Kalman Filter predict
         Inputs:
             u   1x1 input, =ib, A
@@ -105,7 +104,7 @@ class EKF1x1:
             self.x_prior = self.x
             self.P_prior = self.P
 
-    def update_ekf(self, z, x_min, x_max):
+    def update_ekf(self, z, x_min, x_max, OPT=None, i_ekf=None):
         """ 1x1 Extended Kalman Filter update
             Inputs:
                 z   1x1 input, =voc, dynamic predicted by other model, V
@@ -122,7 +121,12 @@ class EKF1x1:
                 SI  1x1 system uncertainty inverse
         """
         if not self.reset:
+            # self.x = OPT.mon_run.x[i_ekf]
             self.hx, self.H, self.tb_f_for_hx, self.x_for_hx = self.ekf_update()
+            # self.hx = OPT.mon_run.hx[i_ekf]
+            # self.H = OPT.mon_run.H[i_ekf]
+            # self.tb_f_for_hx = OPT.mon_run.tb_f_for_hx[i_ekf]
+            # z = OPT.mon_run.z[i_ekf]
         self.z = z
         if not self.reset:
             pht = self.P * self.H
@@ -132,10 +136,11 @@ class EKF1x1:
             self.y = self.z - self.hx
         if not self.reset and not self.freeze:
             self.x = max(min(self.x + self.K*self.y, x_max), x_min)
-        i_kh = 1 - self.K*self.H
+        i_kh = 1. - self.K*self.H
         if self.freeze:
             i_kh = 1.
-        self.P *= i_kh
+        if not self.reset and not self.freeze:  # THIS LINE WAS MISSING!
+            self.P *= i_kh
         self.x_post = self.x
         # print(f"update_ekf x_post {self.x_post}")
         self.P_post = self.P

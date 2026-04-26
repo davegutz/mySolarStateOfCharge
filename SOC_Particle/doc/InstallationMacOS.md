@@ -58,7 +58,7 @@ Then use 'Option key - click' to paste from mouse buffer.
 
 ## Installing GUI
 
-The 'install.py' script run from py creates an .app in myStateOfCharge/SOC_Particle/py/dist.  The python scripts have embedded print statments to stdout that won't be visible unless you start the .app with a terminal.  TODO:  use python logger instead so the Console.app utility will show stdout.
+The 'install.py' script run from py creates an .app in myStateOfCharge/SOC_Particle/py/dist.  stdout and stderr are tee'd to `~/Library/Logs/GUI_TestSOC.log`, which is visible in Console.app when the .app is launched without a terminal.
 
 ```
     # Run from terminal command line:

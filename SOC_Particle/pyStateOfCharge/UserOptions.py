@@ -66,7 +66,7 @@ class UserOptions:
     vb_fail: Optional[float] = 13.2  # The fixed Vb value to fail to, V
 
     # Configuration changes
-    eframe_mult: Optional[int] = Battery.cp_eframe_mult
+    eframe_mult: Optional[int] = Battery.ap_eframe_mult
 
     stauct_mon: Optional[float] = 1.
     use_vb_sim: Optional[bool] = False

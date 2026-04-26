@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,9 @@ extern SavedPars sp;    // Various parameters to be static at system level and s
 
 
 Hysteresis::Hysteresis()
-: disabled_(false), res_(0), soc_(0), ib_(0), ibs_(0), ioc_(0), dv_hys_(0), dv_dot_(0){};
+: disabled_(false), res_(0), slr_(1.), soc_(0), ib_(0), ibs_(0), ioc_(0), dv_hys_(0), dv_dot_(0){};
 Hysteresis::Hysteresis(Chemistry *chem)
-: disabled_(false), res_(0), soc_(0), ib_(0), ibs_(0), ioc_(0), dv_hys_(0), dv_dot_(0), chem_(chem){}
+: disabled_(false), res_(0), slr_(1.), soc_(0), ib_(0), ibs_(0), ioc_(0), dv_hys_(0), dv_dot_(0), chem_(chem){}
 
 // Calculate
 float Hysteresis::calculate(const float ib, const float soc, const float hys_scale)
@@ -113,8 +113,8 @@ void Hysteresis::pretty_print(const float dx, const float dy, const float dz)
 }
 
 // Dynamic update
-float Hysteresis::update(const double dt, const boolean init_high, const boolean init_low, const float e_wrap, const float hys_scale,
-    const boolean reset_temp)
+float Hysteresis::update(const double dt, const bool init_high, const bool init_low, const float e_wrap, const float hys_scale,
+    const bool reset_temp)
 {
     float dv_max = chem_->hys_Tx_->interp(soc_);
     float dv_min = chem_->hys_Tn_->interp(soc_);

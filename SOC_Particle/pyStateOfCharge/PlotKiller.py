@@ -36,7 +36,33 @@ bg_color = "lightgray"
 from ComparePlotSettings import rescale_time_axes
 
 
+def do_hardcopy(fig_list, fig_files, pdf_path, pdf_base):
+    """Save figures to PNGs on the main thread, then assemble the PDF in a daemon thread."""
+    from datetime import datetime
+    from unite_pictures import precleanup_fig_files, pngs_to_pdf
+    import threading
+    if not fig_list or not fig_files or not pdf_base:
+        return
+    try:
+        for fig, fig_file in zip(fig_list, fig_files):
+            plt.figure(fig.number)
+            plt.savefig(fig_file, format="png")
+            print("saved", fig_file)
+        date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        def _assemble(base=pdf_base, path=pdf_path, dt=date_time):
+            try:
+                precleanup_fig_files(output_pdf_name=base, path_to_pdfs=path)
+                print('\ncreating pdf...')
+                pngs_to_pdf(png_folder=path, output_pdf=base + '_' + dt + '.pdf')
+            except Exception as e:
+                print(f"do_hardcopy pdf ERROR: {e}")
+        threading.Thread(target=_assemble, daemon=True).start()
+    except Exception as e:
+        print(f"do_hardcopy ERROR: {e}")
+
+
 class PlotKiller(tk.Toplevel):
+    # noinspection PyUnusedLocal
     def __init__(self, message, caller, fig_list_=None, fig_files_=None, pdf_path_='.', pdf_base_=None):
         """Block caller task asking to close all plots then doing so"""
         self.fig_list = fig_list_
@@ -44,7 +70,7 @@ class PlotKiller(tk.Toplevel):
         self.pdf_path = pdf_path_
         self.pdf_base = pdf_base_
         tk.Toplevel.__init__(self)
-        self.title(caller)
+        self.title("SOC-close")
         tk.Button(self, command=self.close_figs, text="close " + message, font=("Courier", 12)).grid(row=0, column=0, columnspan=4, padx=15, pady=15)
         tk.Label(self, text="t_min:", font=("Courier", 10)).grid(row=1, column=0, padx=5, pady=5, sticky='e')
         self.t_min_var = tk.StringVar()
@@ -68,24 +94,7 @@ class PlotKiller(tk.Toplevel):
             rescale_time_axes(self.fig_list, t_min=t_min, t_max=t_max)
 
     def hardcopy(self):
-        import os
-        from datetime import datetime
-        from unite_pictures import precleanup_fig_files, pngs_to_pdf
-        if self.fig_list is None or self.fig_files is None or self.pdf_base is None:
-            return
-        for fig, fig_file in zip(self.fig_list, self.fig_files):
-            plt.figure(fig.number)   # make this the current figure so plt.gcf() works in the patch
-            plt.savefig(fig_file, format="png")
-            print("saved", fig_file)
-        precleanup_fig_files(output_pdf_name=self.pdf_base, path_to_pdfs=self.pdf_path)
-        date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-        print('creating pdf...')
-        pngs_to_pdf(png_folder=self.pdf_path, output_pdf=self.pdf_base + '_' + date_time + '.pdf')
-        for fig_file in self.fig_files:
-            try:
-                os.remove(fig_file)
-            except OSError:
-                pass
+        do_hardcopy(self.fig_list, self.fig_files, self.pdf_path, self.pdf_base)
 
     def close_figs(self):
         if self.fig_list is None:
@@ -97,13 +106,17 @@ class PlotKiller(tk.Toplevel):
         self.destroy()
 
 
-def show_and_kill(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None):
+def show_and_kill(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None, hardcopy=False):
     plt.show()
     time.sleep(1)
+    if hardcopy:
+        do_hardcopy(fig_list, fig_files, pdf_path, pdf_base)
     PlotKiller(string, caller, fig_list, fig_files, pdf_path, pdf_base)
 
 
-def show_killer(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None):
+def show_killer(string, caller, fig_list=None, fig_files=None, pdf_path='.', pdf_base=None, hardcopy=False):
+    if hardcopy:
+        do_hardcopy(fig_list, fig_files, pdf_path, pdf_base)
     PlotKiller(string, caller, fig_list, fig_files, pdf_path, pdf_base)
 
 

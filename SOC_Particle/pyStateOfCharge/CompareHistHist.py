@@ -21,12 +21,10 @@ from DataOverModel import dom_plot
 from unite_pictures import cleanup_fig_files, precleanup_fig_files, pngs_to_pdf
 from datetime import datetime
 from local_paths import version_from_data_file, local_paths
-import os
 from pathlib import Path, PurePosixPath
 from CompareHistSim import load_hist_and_prep
 from CompareFault import overall_fault, over_fault
 from plot.PlotOptions import PlotOptions
-import sys
 
 plt.rcParams['axes.grid'] = True
 plt.rcParams['legend.fontsize'] = 'small'
@@ -37,10 +35,12 @@ plt.rcParams['figure.dpi'] = 100  # Also increase display DPI for consistency
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
-def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None, unit_key_tst=None,
-                      dt_resample=10, plots=True, terse=False):
 
-    print(f"\ncompare_hist_hist:\n{data_file_run=}\n{unit_key_run=}\n{data_file_tst=}\n{unit_key_tst=}\n{dt_resample=}\n{terse=}\n")
+# noinspection PyPep8Naming
+def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None, unit_key_tst=None,
+                      dt_resample=10, plots=True, terse=False, hardcopy=False):
+
+    print(f"\ncompare_hist_hist:\n{data_file_run=}\n{unit_key_run=}\n{data_file_tst=}\n{unit_key_tst=}\n{dt_resample=}\n{terse=}\n{hardcopy=}\n")
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
@@ -65,7 +65,6 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
         mon_run.time -= d_time
 
     # File path operations
-    data_file_txt = PurePosixPath(data_file_run).name
     version = version_from_data_file(data_file_run)
     path_to_temp, save_pdf_path, _ = local_paths(version)
 
@@ -79,7 +78,7 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
         fig_files = []
         plot_title = filename_run + filename_tst + '   ' + date_time
 
-        S = PlotOptions(terse=terse)
+        S = PlotOptions(terse=terse, save_plots=hardcopy)
 
         if fault_run is not None and len(fault_run.time) > 1:
             fig_list, fig_files = over_fault(fault_run, filename, fig_files=fig_files, plot_title=plot_title,
@@ -94,23 +93,19 @@ def compare_hist_hist(data_file_run=None, unit_key_run=None, data_file_tst=None,
         if hist_20C_run is not None and len(hist_20C_run.time) > 1:
             sim_run = None
             fig_list, fig_files = dom_plot(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename_run, fig_files,
-                                           plot_title=plot_title, fig_list=fig_list, run_str='_'+unit_run,
-                                           ver_str='_'+unit_tst, run_type='HistHist', terse=S.terse, save_plots=S.save_plots)
+                                           plot_title=plot_title, fig_list=fig_list, run_type='HistHist', terse=S.terse,
+                                           save_plots=S.save_plots)
             fig_list, fig_files = overall_fault(mon_run, mon_tst, sim_run, sim_tst, sim_s_run, sim_s_tst, filename_run,
                                                 fig_files, plot_title=plot_title, fig_list=fig_list,
                                                 run_type='HistHist', save_plots=S.save_plots)
 
-        if S.save_plots and not S.terse:
-            precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-            print('creating pdf...')
-            pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename+'_'+date_time+'.pdf')
-
         print('showing plots...')
+        plt.ion()
         plt.show(block=False)
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
-        show_killer(string, 'CompareFault', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename)
+        show_killer(string, 'CompareFault', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename, hardcopy=hardcopy)
         cleanup_fig_files(fig_files)
-        print('DONE')
+    print('DONE')
 
     return mon_run, sim_run, mon_tst, sim_tst, sim_s_tst
 
@@ -126,10 +121,11 @@ def main():
     unit_key_tst = 'g20250612a_soc3p2_hi_lo_bb'
     dt_resample = 1
     terse = True
+    hardcopy = False
 
     compare_hist_hist(data_file_run=data_file_run, unit_key_run=unit_key_run,
                       data_file_tst=data_file_tst, unit_key_tst=unit_key_tst,
-                      dt_resample=dt_resample, terse=terse)
+                      dt_resample=dt_resample, terse=terse, hardcopy=hardcopy)
 
 
 if __name__ == '__main__':  # Example usage.  Ran ok 20260217

@@ -33,7 +33,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2024 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -55,14 +55,6 @@
 //
 // See README.md
 */
-// This works when I'm using three platforms:   PHOTON = 6 and ARGON = 12 and PHOTON2 = (>=20)
-#ifndef PLATFORM_ID
-  #define PLATFORM_ID 6
-#endif
-#ifndef PLATFORM_PHOTON
-  #define PLATFORM_PHOTON 6
-#endif
-
 #include "constants.h"
 // Prevent mixing up local_config files (still could sneak soc0p through as pro0p)
 #undef ARDUINO
@@ -108,8 +100,8 @@ CommandPars cp = CommandPars();       // Various control parameters commanding a
 PublishPars pp = PublishPars();       // Common parameters for publishing.  Future-proof cloud monitoring
 BleCharacteristic rxCharacteristic("rx", BleCharacteristicProperty::WRITE_WO_RSP, rxUuid, serviceUuid, onBLE_DataReceived, NULL);
 BleCharacteristic txCharacteristic("tx", BleCharacteristicProperty::NOTIFY, txUuid, serviceUuid);
-unsigned long long millis_flip = System.millis(); // Timekeeping
-unsigned long long last_sync = System.millis();   // Timekeeping
+uint64_t millis_flip = millis(); // Timekeeping
+uint64_t last_sync = millis();   // Timekeeping
 
 int num_timeouts = 0;           // Number of Particle.connect() needed to unfreeze
 String hm_string = "00:00";     // time, hh:mm
@@ -135,7 +127,7 @@ void setup()
   BLE.advertise(&data);
 
   // Time
-  sp.put_Time_now(max(sp.Time_now(), (unsigned long)Time.now()));  // Synch with web when possible
+  sp.put_Time_now(max(sp.Time_now(), (uint32_t)Time.now()));  // Synch with web when possible
   Time.setTime( (time_t) (sp.Time_now()) );
 
   // Peripherals (non-Photon2)
@@ -161,24 +153,6 @@ void setup()
   pinMode(myPins->status_led, OUTPUT);
   digitalWrite(myPins->status_led, LOW);
 
-
-  // I2C for OLED, ADS, backup EERAM, DS2482
-  // Photon2 only accepts 100 and 400 khz
-  #if !defined(HDWE_BARE) && !defined(HDWE_2WIRE)
-    // Log.info("setup I2C Wire");
-    #ifdef HDWE_ADS1013_AMP_NOA
-      Wire.setSpeed(CLOCK_SPEED_100KHZ);
-      sendTxBuf("Nominal Wire setup for ADS1013\n", true, true);
-    #else
-      Wire.setSpeed(CLOCK_SPEED_100KHZ);
-      sendTxBuf("Wire started\n", true, true);
-    #endif
-    Wire.begin();
-    delay(1000);
-  #endif
-
-  // Display (after start Wire)
-
   // 1-Wire chip card for I2C (after start Wire)
   #if defined(HDWE_2WIRE)
     sendTxBuf("Using 2Wire Temperature sensor\n", true, true);
@@ -201,7 +175,8 @@ void setup()
   // the SRAM is not explicitly initialized.   This is by design, as SRAM must be remembered between boots
   // Time is never changed by this operation.  It could be corrupt.  Change using "UT" talk feature.
   sendTxBuf("Check corruption......", true, true);
-  if ( sp.is_corrupt() )
+  bool corrupt = sp.is_corrupt();
+  if ( corrupt )
   {
     sendTxBuf("\n\n", true, true);
     sp.pretty_print( false );
@@ -210,15 +185,15 @@ void setup()
     sendTxBuf("Fixed corruption\n", true, true);
     sp.pretty_print(true);
   }
-  else sendTxBuf("clean\n", true, true);
+  else sendTxBuf("\nclean\n", true, true);
 
-  // Determine System.millis() at turn of Time.now   Used to improve accuracy of timing.
+  // Determine millis() at turn of Time.now   Used to improve accuracy of timing.
   long time_begin = Time.now();
   uint16_t count = 0;
   while ( Time.now()==time_begin && count++<1000 )
   {
     delay(1);
-    millis_flip = System.millis()%1000;
+    millis_flip = millis()%1000;
   }
 
   // Enable and print stored history
@@ -230,8 +205,24 @@ void setup()
   }
   sp.nsum(NSUM);  // Store
 
-  // Ask to renominalize
-  if ( ASK_DURING_BOOT )
+  // Ask to renominalize or force nominal.  Set in config file (see local_config.h for presesntly used config file)
+  sp.get_booted();  // get the stored booted state.  This is a hack to ensure that we don't have to wait for the normal backup on reset to occur.
+  sendTxBuf(String::format("booted = %d\n", sp.booted()), true, true);
+  if ( ASK_DURING_BOOT == 0 && !sp.booted() )  // automatically renominalize and reboot after a dirty boot.
+  {
+    sp.set_nominal();  // sets booted to false by the way
+    sp.put_booted(true);  // sets booted to true so on next startups we don't have to renominalize to clean a dirty boot.
+    sendTxBuf("\n\nSet booted true and stored...", true, true);
+    System.backupRamSync();  // Force backup of RAM to ensure booted = true is saved.  This is important because the system reset below is a no-wait reset that doesn't wait for the normal backup on reset to occur.
+    delay(1000);
+    sendTxBuf("backup Ram synced *\n", true, true);
+    sp.get_booted();  // get the stored booted state.  This is a hack to ensure that we don't have to wait for the normal backup on reset to occur.
+    sendTxBuf(String::format("booted = %d\n", sp.booted()), true, true);
+    sendTxBuf("booted should be true\n\n", true, true);
+    delay(1000);          // Ensures true saves before rebooting
+  }
+  
+  if ( ASK_DURING_BOOT == 1 )
   {
     // Log.info("setup renominalize");
     if ( sp.num_diffs() )
@@ -249,34 +240,34 @@ void setup()
 void loop()
 {
   // Synchronization
-  static unsigned long long now = (unsigned long long) System.millis();
-  now = (unsigned long long) System.millis();
-  boolean chitchat = false;
+  static uint64_t now = (uint64_t) millis();
+  now = (uint64_t) millis();
+  bool chitchat = false;
   static Sync *Talk = new Sync(TALK_DELAY);
-  boolean read = false;
+  bool read = false;
   static Sync *ReadSensors = new Sync(READ_DELAY);
-  boolean read_temp = false;
+  bool read_temp = false;
   static Sync *ReadTemp = new Sync(TEMP_DELAY);
-  boolean display_and_remember;
+  bool display_and_remember;
   static Sync *DisplayUserSync = new Sync(DISPLAY_USER_DELAY);
-  boolean summarizing;
-  static boolean boot_wait = true;  // waiting for a while before summarizing
+  bool summarizing;
+  static bool boot_wait = true;  // waiting for a while before summarizing
   static Sync *Summarize = new Sync(SUMMARY_DELAY);
-  unsigned long long elapsed = 0;
-  unsigned long long elapsed_reset = 0;
-  static boolean reset = true;
-  static boolean reset_ekf = true;
-  static boolean reset_kf = true;
-  static boolean reset_temp = true;
-  static boolean reset_publish = true;
-  static unsigned long long start = System.millis();
-  static unsigned long long start_reset = System.millis();
+  uint64_t elapsed = 0;
+  uint64_t elapsed_reset = 0;
+  static bool reset = true;
+  static bool reset_ekf = true;
+  static bool reset_kf = true;
+  static bool reset_temp = true;
+  static bool reset_publish = true;
+  static uint64_t start = millis();
+  static uint64_t start_reset = millis();
 
    // Monitor to count Coulombs and run EKF
   static BatteryMonitor *Mon = new BatteryMonitor(0., 0., sp.Dw());
 
   // Sensor conversions.  The embedded model 'Sim' is contained in Sensors
-  unsigned long long time_now = (unsigned long long) Time.now();
+  uint64_t time_now = (uint64_t) Time.now();
   static Sensors *Sen = new Sensors(EKF_NOM_DT, 0, myPins, ReadSensors, ReadTemp, Talk, Summarize, time_now, start, Mon);
 
   // Battery saturation debounce
@@ -290,7 +281,7 @@ void loop()
     Ds2482.loop();
   #endif
   if ( now - last_sync > ONE_DAY_MILLIS || reset )  sync_time(now, &last_sync, &millis_flip);
-  Sen->control_time = double(Sen->now)/1000.;
+  Sen->control_time(double(Sen->now())/1000.);
   char buffer[32];
   time_long_2_str(time_now, buffer);
   hm_string = String(buffer);
@@ -300,7 +291,7 @@ void loop()
   elapsed = ReadSensors->now() - start;
   elapsed_reset = ReadSensors->now() - start_reset;
   display_and_remember = DisplayUserSync->update(now, reset);
-  boolean boot_summ = boot_wait && ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay()) ) && !sp.modeling();
+  bool boot_summ = boot_wait && ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay()) ) && !sp.modeling();
   if ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay()) ) boot_wait = false;
   summarizing = Summarize->update(now, false) || boot_summ;
 
@@ -313,42 +304,41 @@ void loop()
         cp.tb_info.t_c = Ds2482.tempC(0);
         cp.tb_info.ready = Ds2482.ready();
     #endif
-    Sen->T_temp = ReadTemp->updateTime();
+    Sen->T_temp(ReadTemp->updateTime());
     if ( reset_temp )
     {
-      Sen->Tb_model = Sen->Tb_model_filt = NOMINAL_TB + ap.Tb_bias_model();
-    
-      if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 396 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt, %11.8f %11.8f\n",
-        Sen->Tb_model, Sen->Tb_model_filt), true, true);
+      Sen->Tb_model(NOMINAL_TB + ap.Tb_bias_model());
+      Sen->Tb_model_filt(NOMINAL_TB + ap.Tb_bias_model());
+
+      if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 336 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt, %11.8f %11.8f\n",
+        Sen->Tb_model(), Sen->Tb_model_filt()), true, true);
     }
     // Log.info("ino:  temp_load_and_filter");
     
     Sen->temp_load_and_filter(Sen, reset_temp);
     Sen->select_temp(Mon);
 
-    if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 403 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
-        reset_temp, Sen->Sim->tb_f(), Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate), true, true);
+    if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 340 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
+        reset_temp, Sen->Sim->tb_f(), Sen->Tb_model(), Sen->Tb_model_filt(), Sen->Tb_hdwe_filt_rate()), true, true);
     // Log.info("ino:  print_temp_serial");
     print_temp_serial(reset_temp, Sen);
   }
 
   // Sample Ib
-  #ifndef HDWE_ADS1013_AMP_NOA
-    if ( read )
-    {
-      // Log.info("Read shunt");
-      if ( reset_kf )sendTxBuf(" SOC_Particle:  reseting kfs\n", true, true);
-      Sen->ShuntAmp->sample(reset_kf);
-      // Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.f);
-      Sen->ShuntNoAmp->sample(reset_kf);
-    }
-  #endif
+  if ( read )
+  {
+    // Log.info("Read shunt");
+    if ( reset_kf )sendTxBuf(" SOC_Particle:  reseting kfs\n", true, true);
+    Sen->ShuntAmp->sample(reset_kf);
+    // Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.f);
+    Sen->ShuntNoAmp->sample(reset_kf);
+  }
 
   // Input all other sensors and do high rate calculations
   if ( read )
   {
     // Log.info("ino:  read");
-    Sen->reset = reset;
+    Sen->reset(reset);
 
     // Check for really slow data capture and run EKF each read frame
     // ap.eframe_mult() = max(int(float(READ_DELAY)*float(EKF_EFRAME_MULT)/float(ReadSensors->delay())+0.9999), 1);
@@ -379,10 +369,10 @@ void loop()
     monitor(reset, reset_temp, reset_ekf, now, Is_sat_delay, Mon, Sen);
 
     // Re-init Coulomb Counter to EKF if it is different than EKF or if never saturated
-    Mon->regauge(Sen->Tb_f);
+    Mon->regauge(Sen->Tb_f());
 
     // Empty battery
-    if ( sp.modeling() && reset && Sen->Sim->q()<=0. ) Sen->Ib = 0.;
+    if ( sp.modeling() && reset && Sen->Sim->q()<=0. ) Sen->Ib(0.);
 
     // Debug for read
     if ( sp.debug()==12 ) debug_12(Mon, Sen);
@@ -392,7 +382,7 @@ void loop()
     {
       // Log.info("ino:  assign_publist ReadSensors->now()=%lld", ReadSensors->now());
       assign_publist(&pp.pubList, ReadSensors->now(), unit, hm_string, Sen, num_timeouts, Mon);
-      static boolean wrote_last_time = false;
+      static bool wrote_last_time = false;
       if ( wrote_last_time )
         digitalWrite(myPins->status_led, LOW);
       else
@@ -414,7 +404,7 @@ void loop()
   {
     // Log.info("display and remember");
     serial_display(Sen, Mon);
-    sp.put_Time_now(max( sp.Time_now(), (unsigned long)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
+    sp.put_Time_now(max( sp.Time_now(), (uint32_t)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
   }
 
   // Discuss things with the user
@@ -426,7 +416,7 @@ void loop()
   // Chit-chat requires 'read' timing so 'DP' and 'Dr' can manage sequencing
   // Running chitter unframed allows queues of different priorities to be built from long
   // runs of Serial inputs
-  if ( chitter(chitchat, Mon, Sen) )  // Parse inputs to queues; returns true if any queue has work
+  if ( chitter(chitchat && !reset_temp, Mon, Sen) )  // Parse inputs to queues; returns true if any queue has work
   {
     chatter();  // Prioritize commands to describe.  ctl_str and asap_str queues always run.  Others only with chitchat
     describe(Mon, Sen);  // Run the commands
@@ -439,7 +429,7 @@ void loop()
     sp.put_Ihis(sp.ihis() + 1);
     if ( sp.ihis() > (sp.nhis() - 1) ) sp.put_Ihis(0);  // wrap buffer
     Flt_st hist_snap, hist_bounced;
-    hist_snap.assign(Time.now(), Mon, Sen);
+    hist_snap.assign(Sen->now(), Mon, Sen);
     hist_bounced = sp.put_history(hist_snap, sp.ihis());
 
     sp.put_Isum(sp.isum() + 1);
@@ -472,7 +462,7 @@ void loop()
   if ( cp.soft_reset || cp.soft_reset_sim )
   {
     reset = reset_temp = reset_kf = reset_publish = true;
-    start_reset = System.millis();
+    start_reset = millis();
     if ( cp.soft_reset_sim ) cp.cmd_soft_sim_hold();
   }
   if ( cp.ekf_reset ) cp.ekf_reset_print = reset_ekf = true;

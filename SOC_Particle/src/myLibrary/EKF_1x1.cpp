@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ EKF_1x1::~EKF_1x1() {}
 
 // functions
 //1x1 Extended Kalman Filter predict
-void EKF_1x1::predict_ekf(double u, const boolean freeze)
+void EKF_1x1::predict_ekf(double u, const bool freeze)
 {
   /*
   1x1 Extended Kalman Filter predict

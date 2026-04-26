@@ -74,6 +74,7 @@ class SensorLooparound:
         self.ib_init = self.ib[max(i - 1, 0)]
 
 
+# noinspection PyPep8Naming
 class Sensors:
     """Collect various sense parameters to create proper delays in data feed and connections to model"""
 
@@ -116,18 +117,29 @@ class Sensors:
                                             self.mon_run.e_wrap_n_filt)
             self.Battery = Battery
             if hasattr(self.mon_run, 'vovcm'):
-                self.KfShuntAmp = KF1x1VarDtxx(initial_position=self.mon_run.vovcm[0], initial_velocity=self.mon_run.x1m[0],
+                self.KfShuntAmp = KF1x1VarDtxx(initial_position=self.mon_run.vovcm[0], initial_velocity=self.mon_run.kf_v_m[0],
                                              dt=0.1, proc_noise_std=Battery.KF_Q_STD, meas_noise_std=Battery.KF_R_STD)
             if hasattr(self.mon_run, 'vovcn') and self.mon_run.vovcn is not None:
                 print(f"input:   KF_Q_STD {self.Battery.KF_Q_STD}  KF_R_STD {self.Battery.KF_R_STD}")
                 self.Battery.KF_Q_STD /= 1.
                 self.Battery.KF_R_STD /= 1.
                 print(f"using:   KF_Q_STD {self.Battery.KF_Q_STD}  KF_R_STD {self.Battery.KF_R_STD}")
-                self.KfShuntNoa = KF1x1VarDtxx(initial_position=self.mon_run.vovcn[0], initial_velocity=self.mon_run.x1n[0],
+                self.KfShuntNoa = KF1x1VarDtxx(initial_position=self.mon_run.vovcn[0], initial_velocity=self.mon_run.kf_v_n[0],
                                              dt=0.1, proc_noise_std=self.Battery.KF_Q_STD, meas_noise_std=self.Battery.KF_R_STD)
 
             self.ib_amp = 0.
             self.ib_noa = 0.
+            self.ib_amp_model = self.mon_run.ib_amp_model
+            self.ib_noa_model = self.mon_run.ib_noa_model
+            self.ib_amp_hdwe = self.mon_run.ib_amp_hdwe
+            self.ib_noa_hdwe = self.mon_run.ib_noa_hdwe
+            if OPT.mon_run.mib[0]:
+                self.ib_amp = self.mon_run.ib_amp_model[0]
+                self.ib_noa = self.mon_run.ib_noa_model[0]
+            else:
+                self.ib_amp = self.mon_run.ib_amp_hdwe[0]
+                self.ib_noa = self.mon_run.ib_noa_hdwe[0]
+            self.ib_diff = self.ib_amp - self.ib_noa
             self.ib_dyn = ProArray(self.mon_run.ib_dyn, mutable=True)
             self.z = self.mon_run.z
             self.ib_in_s = self.sim_run.ib_in_s
@@ -291,11 +303,14 @@ class Sensors:
         self.soc_ekf_init = self.soc_init
         self.z_init = self.mon_run.z[0]
 
+        self.reset_kf = True
+
         self.VoVcm = 0.
         self.VoVcm_f = 0.
-
+        self.kf_v_m = 0.
         self.VoVcn = 0.
         self.VoVcn_f = 0.
+        self.kf_v_n = 0.
         self.iscn = 0.
         self.iscn_f = 0.
 
@@ -305,6 +320,7 @@ class Sensors:
         s += "  Tb0_s =  {:9.7f}  // deg C\n".format(self.Tb0_s)
         return s
 
+    # noinspection PyPep8Naming
     def assign_tb(self, mon_Tb, mon_Tb_f, mon_Tb_f_rate):
         self.Tb = mon_Tb + self.dTb
         self.Tb_f = mon_Tb_f + self.dTb
@@ -415,12 +431,14 @@ class Sensors:
             if hasattr(self.mon_run, 'vovcm'):
                 self.VoVcm = self.mon_run.vovcm[i]
                 self.KfShuntAmp.calculate(reset=self.reset_kf, dt=self.mon_run.ib_dyn_T_m[i], in_=self.VoVcm)
-                self.VoVcm_f, _ = self.KfShuntAmp.get_state()
+                self.VoVcm_f, self.kf_v_m = self.KfShuntAmp.get_state()
                 self.VoVcm_f = float(self.VoVcm_f)
+                self.kf_v_m = float(self.kf_v_m)
             self.VoVcn = self.mon_run.vovcn[i]
             self.KfShuntNoa.calculate(reset=self.reset_kf, dt=self.mon_run.ib_dyn_T_n[i], in_=self.VoVcn)
-            self.VoVcn_f, _ = self.KfShuntNoa.get_state()
+            self.VoVcn_f, self.kf_v_n = self.KfShuntNoa.get_state()
             self.VoVcn_f = float(self.VoVcn_f)
+            self.kf_v_n = float(self.kf_v_n)
             self.iscn = float((self.VoVcn * Battery.SHUNT_NOA_GAIN) / Battery.NP)
             self.iscn_f = float((self.VoVcn_f * Battery.SHUNT_NOA_GAIN) / Battery.NP)
             # TODO:  implement iscn filter and scale with sp_ib_disch_slr (= 1. now everywhere so no worries at present)

@@ -18,12 +18,10 @@ a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 
-import ComparePlotSettings
-from ComparePlotSettings import rescale_time_axes
 from MonSim import replicate, save_clean_file, UserOptions
 from unite_pictures import cleanup_fig_files, precleanup_fig_files, pngs_to_pdf
 from CompareFault import over_fault
-from Util import rename_all
+from Util import rename_all, save_struct_to_csv
 import matplotlib.pyplot as plt
 from datetime import datetime
 from load_data import load_data
@@ -35,7 +33,6 @@ import tkinter.messagebox
 from local_paths import version_from_data_file, local_paths
 import os
 from pathlib import Path, PurePosixPath
-import plot.gp as gp
 from plot.PlotOptions import PlotOptions
 plt.rcParams['axes.grid'] = True
 plt.rcParams['legend.fontsize'] = 'small'
@@ -43,11 +40,54 @@ plt.rcParams['legend.fontsize'] = 'small'
 # Suppress all UserWarning messages
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
+import numpy as np
 
+
+def shift_time(obj, n_steps):
+    """Shift the time column of a struct-like object by n_steps positions.
+
+    n_steps > 0: shift right (each position gets the value from n_steps earlier rows).
+    n_steps < 0: shift left (each position gets the value from n_steps later rows).
+    Gaps opened at the start are back-extrapolated using the local dt at time[0];
+    gaps at the end are forward-extrapolated using the local dt at time[-1].
+    All other columns are unmodified.  Returns obj for chaining.
+    """
+    if obj is None or n_steps == 0:
+        return obj
+
+    t_col = None
+    for candidate in ('time', 'cTime'):
+        if hasattr(obj, candidate):
+            raw = getattr(obj, candidate)
+            if raw is not None and hasattr(raw, '__len__') and len(raw) > 1:
+                t_col = candidate
+                break
+
+    if t_col is None:
+        return obj
+
+    time = np.asarray(getattr(obj, t_col), dtype=float)
+    n = len(time)
+    shifted = np.roll(time, n_steps)
+
+    if n_steps > 0:
+        # gap at start: extrapolate backward from time[0] using leading dt
+        dt = time[1] - time[0]
+        shifted[:n_steps] = time[0] - np.arange(n_steps, 0, -1) * dt
+    else:
+        # gap at end: extrapolate forward from time[-1] using trailing dt
+        dt = time[-1] - time[-2]
+        shifted[n + n_steps:] = time[-1] + np.arange(1, -n_steps + 1) * dt
+
+    setattr(obj, t_col, shifted)
+    return obj
+
+
+# noinspection PyPep8Naming
 def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw=0.,  use_mon_soc_=False,
-                    verbose=True, scale_batt=1., slr_hys_sim=1., request_history=5, Battery=None, init_time=None,
+                    verbose=False, scale_batt=1., slr_hys_sim=1., request_history=5, init_time=None,
                     time_shift=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
-                    fig_list=None, show_killer_=True):
+                    fig_list=None, show_killer_=True, hardcopy=False):
 
     print(f"\n compare_run_sim: \
     \n{data_file=} \
@@ -63,6 +103,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
     \n{time_shift=} \
     \n{strict_overplot=} \
     \n{terse=} \
+    \n{hardcopy=} \
     \n{mon_str=} \
     \n")
 
@@ -70,6 +111,13 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
         fig_files = []
     if fig_list is None:
         fig_list = []
+
+    mon_ver = None
+    sim_ver = None
+    sim_s_ver = None
+    mon = None
+    sim = None
+    filename = None
 
 
     date_time = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
@@ -112,7 +160,6 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
         mon_run = rename_all(mon_run)
 
         # New run
-        mon_file_save = data_file_clean.replace(".csv", "_rep.csv")
         replicateOptions = UserOptions(mon_run=mon_run, sim_run=sim_run, run_type='RunSim', init_time=mon_run.init_time,
                                        use_ib_mon=use_ib_mon, use_mon_soc=use_mon_soc, use_vb_raw=use_vb_raw,
                                        add_voc_sim=dvoc_sim, add_voc_mon=dvoc_mon, use_vb_sim=use_vb_sim,
@@ -120,7 +167,30 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
                                        request_history=request_history)
         mon_ver, sim_ver, sim_s_ver, mon, sim, Battery = replicate(replicateOptions)
         pass
-        save_clean_file(mon_ver, mon_file_save, 'mon_rep' + date_)
+
+        # Check if replicate broke early due to skip
+        if mon_ver is None:
+            print("\nCompareRunSim: Replication broke early due to data skip. Aborting without plots.")
+            if show_killer_:
+                tkinter.messagebox.showerror(title="Data Integrity Error",
+                                             message="CompareRunSim: Replication broke early due to data skip.\n\nAborting without plots.")
+            return fig_list, fig_files
+
+    # Save all time-dependent struct data to CSV files in the temp folder
+    if hardcopy and plots:
+        filename_root = data_file_clean.replace('.csv', '')
+        if filename_root is None:
+            print("save_struct_to_csv: no filename available, skipping CSV export")
+        else:
+            # Shift time in sim_ver
+            sim_ver = shift_time(sim_ver, 1)
+            for obj, struct_name in (
+                (mon_run,   'mon_run'),
+                (mon_ver,   'mon_ver'),
+                (sim_run,   'sim_run'),
+                (sim_ver,   'sim_ver'),
+            ):
+                save_struct_to_csv(obj, filename_root + '_' + struct_name + '.csv')
 
     # Plots
     if plots:
@@ -135,40 +205,47 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
         filename = str(PurePosixPath(save_pdf_path) / aug_file)
         plot_title = dir_root_test + '/' + data_root_test + '   ' + date_time
 
-        S = PlotOptions(terse=terse)
+        S = PlotOptions(terse=terse, save_plots=hardcopy)
         if not S.terse and f is not None and temp_flt_file_clean and len(f.time_ux) > 1 and not strict_overplot:
             fig_list, fig_files = over_fault(f, filename, fig_files=fig_files, plot_title=plot_title, subtitle='faults',
                                              fig_list=fig_list, cc_dif_tol=cc_dif_tol, save_plots=S.save_plots)
 
-        if mon_run is None:
+        if mon_run is None and show_killer_:
             tkinter.messagebox.showwarning(message="CompareRunSim:  Data missing.  See monitor window for info.")
             # return None, None, None, None, None, None
 
         else:
             fig_list, fig_files = dom_plot(mon_run, mon_ver, sim_run, sim_ver, sim_s_run, sim_s_ver, filename, fig_files,
-                                           plot_title=plot_title, fig_list=fig_list, run_str='',
-                                           ver_str='_ver', strict_overplot=strict_overplot, terse=S.terse,
-                                           run_type='RunSim', save_plots=S.save_plots)
-
-        # Copies
-        if S.save_plots and not S.terse:
-            precleanup_fig_files(output_pdf_name=filename, path_to_pdfs=save_pdf_path)
-            print('creating pdf...')
-            pngs_to_pdf(png_folder=save_pdf_path, output_pdf=filename + '_' + date_time + '.pdf')
+                                           plot_title=plot_title, fig_list=fig_list, strict_overplot=strict_overplot,
+                                           terse=S.terse, run_type='RunSim', save_plots=S.save_plots)
 
         print('showing plots...')
         plt.ion()
         plt.show(block=False)
 
+        # Copies — batch/AUTO mode only (no show_killer); show_killer's do_hardcopy handles the interactive case
+        if S.save_plots and not show_killer_:
+            import threading
+            def _assemble(base=filename, path=save_pdf_path, dt=date_time):
+                try:
+                    precleanup_fig_files(output_pdf_name=base, path_to_pdfs=path)
+                    print('\ncreating pdf...')
+                    pngs_to_pdf(png_folder=path, output_pdf=base + '_' + dt + '.pdf')
+                except Exception as e:
+                    print(f"pdf assembly ERROR: {e}")
+            threading.Thread(target=_assemble, daemon=True).start()
+
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         if show_killer_:
-            show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path, pdf_base=filename)
+            show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path,
+                        pdf_base=filename, hardcopy=hardcopy)
         cleanup_fig_files(fig_files)
-        print('DONE')
+    print('DONE')
 
     return fig_list, fig_files
 
 
+# noinspection PyUnusedLocal
 def main():  # Example usage.  ok on 20260217
     if sys.platform == 'linux':
         gdrive = '/home/daveg/gdrive/'
@@ -176,26 +253,26 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     # Cut-pasted from GUI_TestSOC Run window
-    # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/truckTurnOnFault_soc4p2_hi_lo_bb.csv'
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/turnaround 20260506_soc4p2_hi_lo_bb.csv'
-    unit_key = 'g20250612a_soc4p2_hi_lo_bb'
-    time_end = None
-    plots = True
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/triTweakDisch_soc3p2_hi_lo_bb.csv'
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
+    time_end = 14
+    plots = False
     use_mon_soc_ = False
-    verbose = True
+    verbose = False
     scale_batt = 1.0
     slr_hys_sim = 1.0
-    request_history = 5
+    request_history = 9
     init_time = None
     time_shift = None
     strict_overplot = True
     terse = True
+    hardcopy = False
     mon_str = ''
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,
                     use_mon_soc_=use_mon_soc_, verbose=verbose, scale_batt=scale_batt, slr_hys_sim=slr_hys_sim,
                     request_history=request_history, init_time=init_time, time_shift=time_shift,
-                    strict_overplot=strict_overplot, terse=terse)
+                    strict_overplot=strict_overplot, terse=terse, hardcopy=hardcopy)
 
 
 # import cProfile

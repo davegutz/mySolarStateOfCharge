@@ -36,7 +36,7 @@ void Iterator::init(const double xmax, const double xmin, const double eInit)
 // success_count then Newton-Rapheson as needed - works with iterateInit.
 // Inputs:  e_
 // Outputs:  x_
-double Iterator::iterate(const boolean verbose, const uint16_t success_count, const boolean en_no_soln)
+double Iterator::iterate(const bool verbose, const uint16_t success_count, const bool en_no_soln)
 {
     de_ = e_ - ep_;
     des_  = sgn(de_)*max(abs(de_), 1e-16);
@@ -47,7 +47,7 @@ double Iterator::iterate(const boolean verbose, const uint16_t success_count, co
     }
 
     // Check min max sign change
-    boolean no_soln = false;
+    bool no_soln = false;
     if ( count_ == 2 )
     {
         if ( e_*ep_ >= 0  && en_no_soln ) // No solution possible

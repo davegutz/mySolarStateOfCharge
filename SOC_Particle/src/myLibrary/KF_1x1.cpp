@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -101,7 +101,7 @@ KalmanFilter::~KalmanFilter()
     x_ = nullptr;
 }
 
-double KalmanFilter::calculate(const boolean reset, const double dt, const double in)
+double KalmanFilter::calculate(const bool reset, const double dt, const double in)
 {
     double out = 0.;
     reset_ = reset;

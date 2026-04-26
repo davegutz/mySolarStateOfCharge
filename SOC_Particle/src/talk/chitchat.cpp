@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -68,10 +68,10 @@ void benign_zero(BatteryMonitor *Mon, Sensors *Sen) // BZ
   ap.vc_add(NOM_VC_ADD);   // D3
   ap.tb_stale_time_slr(1); // Xv 1
   ap.fail_tb(false);       // Xu 0
-  ap.ib_amp_max( (IB_ABS_MAX_AMP/NP/0.95) );   // Mm 0
-  ap.ib_amp_min(-(IB_ABS_MAX_AMP/NP/0.95) );  // Mn 0
-  ap.ib_noa_max( (IB_ABS_MAX_NOA/NP/0.95) );   // Nm 0
-  ap.ib_noa_min(-(IB_ABS_MAX_NOA/NP/0.95) );  // Nn 0
+  ap.ib_amp_max( (IB_ABS_MAX_AMP/NP/SIZE_MARG) );   // Mm 0
+  ap.ib_amp_min(-(IB_ABS_MAX_AMP/NP/SIZE_MARG) );  // Mn 0
+  ap.ib_noa_max( (IB_ABS_MAX_NOA/NP/SIZE_MARG) );   // Nm 0
+  ap.ib_noa_min(-(IB_ABS_MAX_NOA/NP/SIZE_MARG) );  // Nn 0
   
   // Noise
   ap.Tb_noise_amp(TB_NOISE);         // DT 0
@@ -92,7 +92,7 @@ void benign_zero(BatteryMonitor *Mon, Sensors *Sen) // BZ
   ap.ib_quiet_slr(1); // Fq 1
   ap.disab_ib_fa(0);  // FI 0
   ap.disab_tb_fa(0);  // FT 0
-  ap.disab_vb_fa(0);  // FV 0
+  ap.disab_vb_fa_lt(0);  // FV 0
 }
 
 
@@ -100,22 +100,74 @@ void benign_zero(BatteryMonitor *Mon, Sensors *Sen) // BZ
 // Freezing with ctl_str bypasses the rest queues are allowed to keep building
 void chatter()
 {
+  static int ctl_str_len_max = 0;
+  static int asap_str_len_max = 0;
+  static int soon_str_len_max = 0;
+  static int queue_str_len_max = 0;
+  static int last_str_len_max = 0;
   if ( !cp.cmd_str.length() && !cp.freeze )
   {
     // Always pull from control and asap if available and run them
-    if ( cp.ctl_str.length() ) cp.cmd_str = chat_cmd_from(&cp.ctl_str);
-    else if ( cp.asap_str.length() ) cp.cmd_str = chat_cmd_from(&cp.asap_str);
+    if ( cp.ctl_str.length() )
+    {
+      int cmd_len = cp.ctl_str.length();
+      if (cmd_len > ctl_str_len_max)
+      {
+        ctl_str_len_max = cmd_len;
+        Serial.printf("New max ctl_str length: %d\n", ctl_str_len_max);
+      }
+      cp.cmd_str = chat_cmd_from(&cp.ctl_str);
+    }
+
+    else if ( cp.asap_str.length() )
+    {
+      int cmd_len = cp.asap_str.length();
+      if (cmd_len > asap_str_len_max)
+      {
+        asap_str_len_max = cmd_len;
+        Serial.printf("New max asap_str length: %d\n", asap_str_len_max);
+      }
+      cp.cmd_str = chat_cmd_from(&cp.asap_str);
+    }
 
     // Otherwise run the other queues when chitchat frame is running
     else if ( cp.chitchat )
     {
-      if ( cp.soon_str.length() ) cp.cmd_str = chat_cmd_from(&cp.soon_str);
+      if ( cp.soon_str.length() )
+      {
+        int cmd_len = cp.soon_str.length();
+        if (cmd_len > soon_str_len_max)
+        {
+          soon_str_len_max = cmd_len;
+          Serial.printf("New max soon_str length: %d\n", soon_str_len_max);
+        }
+        cp.cmd_str = chat_cmd_from(&cp.soon_str);
+      } 
 
-      else if ( cp.queue_str.length() ) cp.cmd_str = chat_cmd_from(&cp.queue_str);
+      else if ( cp.queue_str.length() )
+      {
+        int cmd_len = cp.queue_str.length();
+        if (cmd_len > queue_str_len_max)
+        {
+          queue_str_len_max = cmd_len;
+          Serial.printf("New max queue_str length: %d\n", queue_str_len_max);
+        }
+        cp.cmd_str = chat_cmd_from(&cp.queue_str);
+      }
 
-      else if ( cp.last_str.length() ) cp.cmd_str = chat_cmd_from(&cp.last_str);
+      else if ( cp.last_str.length() )
+      {
+        int cmd_len = cp.last_str.length();
+        if (cmd_len > last_str_len_max)
+        {
+          last_str_len_max = cmd_len;
+          Serial.printf("New max last_str length: %d\n", last_str_len_max);
+        }
+        cp.cmd_str = chat_cmd_from(&cp.last_str);
+      } 
     }
   }
+
   #ifdef SOFT_DEBUG_QUEUE
     if ( cp.chitchat || ( cp.freeze && cp.chitchat && cp.asap_str.length() ) || ( !cp.freeze && cp.asap_str.length() ) ) debug_queue("chatter exit");
   #endif
@@ -174,7 +226,7 @@ void chit(const String from, const urgency when)
 
 
 // Parse inputs to queues
-bool chitter(const boolean chitchat, BatteryMonitor *Mon, Sensors *Sen)
+bool chitter(const bool chitchat, BatteryMonitor *Mon, Sensors *Sen)
 {
   urgency request;
   String nibble;
@@ -377,7 +429,7 @@ void cmd_echo(urgency request)
 void describe(BatteryMonitor *Mon, Sensors *Sen)
 {
   int INT_in = -1;
-  boolean found = false;
+  bool found = false;
   uint16_t modeling_past = sp.modeling();
   char letter_0 = '\0';
   char letter_1 = '\0';

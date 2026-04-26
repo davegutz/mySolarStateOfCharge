@@ -35,7 +35,7 @@ def parse_tuple(input_):
 
 class Begini(ConfigParser):
 
-    def __init__(self, name, def_dict_):
+    def __init__(self, name, default_dict_):
         ConfigParser.__init__(self, converters={'tuple': parse_tuple})
 
         config_path, config_basename = str(PurePosixPath(name).parent), PurePosixPath(name).name
@@ -46,7 +46,7 @@ class Begini(ConfigParser):
             self.read(self.config_file_path)
         else:
             with open(self.config_file_path, 'w') as cfg_file:
-                self.read_dict(def_dict_)
+                self.read_dict(default_dict_)
                 self.write(cfg_file)
             print('updated', self.config_file_path)
 
@@ -86,11 +86,11 @@ class Begini(ConfigParser):
 def wcp(filepaths=None, silent=False, supported='*'):
 
     # Configuration for entire folder selection read with filepaths
-    def_dict = {'wcp':  {'source': 'source',
+    default_dict = {'wcp':  {'source': 'source',
                          'target': 'target',
                          'filepaths': ['file1', 'file2', 'file3']},
                 }
-    cf = Begini(__file__, def_dict)
+    cf = Begini(__file__, default_dict)
     # print(list(cf))
 
     # Make filetypes compatible with askopenfilenames tuple format
@@ -106,7 +106,7 @@ def wcp(filepaths=None, silent=False, supported='*'):
                                                 initialfile=cf.get_tuple_item_as_strlist('wcp', 'filepaths'))
         cf.put_tuple_item('wcp', 'filepaths', filepaths)
         if filepaths is None or filepaths == '':
-            if silent is False:
+            if not silent:
                 input('\nNo files chosen')
             else:
                 messagebox.showinfo(title='Message:', message='No files chosen')

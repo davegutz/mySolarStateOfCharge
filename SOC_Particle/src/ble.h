@@ -1,7 +1,7 @@
 /*  Low-energy Bluetooth low-level utilities
 
 27-Dec-2025 	DA Gutz 	Created
-// Copyright (C) 2025 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,5 +39,4 @@ constexpr size_t BLE_CHUNK_SIZE = 20;  // safe default
 
 // Prototype functions
 void bleSendChunked(BleCharacteristic& chr, const uint8_t* data, size_t length);
-boolean is_finished(const char in_char);
 void onBLE_DataReceived(const uint8_t* data, size_t len, const BlePeerDevice& peer, void* context);

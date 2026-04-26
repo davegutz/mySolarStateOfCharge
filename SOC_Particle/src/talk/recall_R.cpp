@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,9 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 extern CommandPars cp;  // Various parameters shared at system level
 extern Flt_st mySum[NSUM];  // Summaries for saving charge history
 
-boolean recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
+bool recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
 {
-    boolean found = true;
+    bool found = true;
     switch ( letter_1 )
     {
         case ( 'b' ):  // Rb:  Reset battery states (also hys)
@@ -67,15 +67,15 @@ boolean recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
 
         case ( 'r' ):  // Rr:  small reset counters
             Serial.printf("CC reset\n");
-            Sen->Sim->apply_soc(1.0, Sen->Tb_f);
-            Mon->apply_soc(1.0, Sen->Tb_f);
+            Sen->Sim->apply_soc(1.0, Sen->Tb_f());
+            Mon->apply_soc(1.0, Sen->Tb_f());
             cp.cmd_reset();
             break;
 
         case ( 'R' ):  // RR:  large reset
             sendTxBuf("RESET\n", true, true);
-            Sen->Sim->apply_soc(1.0, Sen->Tb_f);
-            Mon->apply_soc(1.0, Sen->Tb_f);
+            Sen->Sim->apply_soc(1.0, Sen->Tb_f());
+            Mon->apply_soc(1.0, Sen->Tb_f());
             cp.cmd_reset();
             Sen->ReadSensors->delay(READ_DELAY);
             Sen->ReadTemp->delay(TEMP_DELAY);
@@ -84,6 +84,8 @@ boolean recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             sp.large_reset();
             cp.large_reset();
             cp.cmd_reset();
+            chit("RV;", SOON);
+            chit("RS;", SOON);
             chit("Hd;", SOON);
             chit("HR;", SOON);
             chit("Pf;", SOON);

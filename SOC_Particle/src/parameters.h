@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _PARAMETERS_H
-#define _PARAMETERS_H
+#pragma once
 
 #include "constants.h"
 #include "Battery.h"
@@ -38,10 +37,10 @@ public:
     Parameters();
     ~Parameters();
     // Do everything
-    boolean find_adjust(const String &str);
+    bool find_adjust(const String &str);
     virtual void initialize() {}
-    boolean is_corrupt();
-    virtual void pretty_print(const boolean all){}
+    bool is_corrupt();
+    virtual void pretty_print(const bool all){}
     void set_nominal();
     String value_str() { return value_str_; }
 protected:
@@ -58,14 +57,14 @@ public:
     VolatilePars();
     ~VolatilePars();
     virtual void initialize();
-    virtual void pretty_print(const boolean all);
+    virtual void pretty_print(const bool all);
 
     FloatV *cc_diff_slr_p;
     FloatV *cycles_inj_p;
     BooleanV *dc_dc_on_p;
     BooleanV *disab_ib_fa_p;
     BooleanV *disab_tb_fa_p;
-    BooleanV *disab_vb_fa_p;
+    BooleanV *dis_vb_fa_lt_p;
     FloatV *ds_voc_soc_p;
     FloatV *dv_voc_soc_p;
     Uint8tV *eframe_mult_p;
@@ -119,6 +118,7 @@ public:
     FloatV *nS_p;
     FloatV *s_cap_mon_p;
     FloatV *s_cap_sim_p;
+    ULongV *snap_wait_p;
     FloatV *Vb_scale_p;
 
     // accessors
@@ -126,14 +126,14 @@ public:
     void cc_diff_slr(const float input) { cc_diff_slr_ = input; }
     float cycles_inj() { return cycles_inj_; }
     void cycles_inj(const float input) { cycles_inj_ = input; }
-    boolean dc_dc_on() { return dc_dc_on_; }
-    void dc_dc_on(const boolean input) { dc_dc_on_ = input; }
-    boolean disab_ib_fa() { return disab_ib_fa_; }
-    void disab_ib_fa(const boolean input) { disab_ib_fa_ = input; }
-    boolean disab_tb_fa() { return disab_tb_fa_; }
-    void disab_tb_fa(const boolean input) { disab_tb_fa_ = input; }
-    boolean disab_vb_fa() { return disab_vb_fa_; }
-    void disab_vb_fa(const boolean input) { disab_vb_fa_ = input; }
+    bool dc_dc_on() { return dc_dc_on_; }
+    void dc_dc_on(const bool input) { dc_dc_on_ = input; }
+    bool disab_ib_fa() { return disab_ib_fa_; }
+    void disab_ib_fa(const bool input) { disab_ib_fa_ = input; }
+    bool disab_tb_fa() { return disab_tb_fa_; }
+    void disab_tb_fa(const bool input) { disab_tb_fa_ = input; }
+    bool disab_vb_fa_lt() { return dis_vb_fa_lt_; }
+    void disab_vb_fa_lt(const bool input) { dis_vb_fa_lt_ = input; }
     float ds_voc_soc() { return ds_voc_soc_; }
     void ds_voc_soc(const float input) { ds_voc_soc_ = input; }
     float dv_voc_soc() { return dv_voc_soc_; }
@@ -154,10 +154,10 @@ public:
     void ewhi_slr(const float input) { ewhi_slr_ = input; }
     float ewlo_slr() { return ewlo_slr_; }
     void ewlo_slr(const float input) { ewlo_slr_ = input; }
-    boolean fail_tb() { return fail_tb_; }
-    void fail_tb(const boolean input) { fail_tb_ = input; }
-    boolean fake_faults() { return fake_faults_; }
-    void fake_faults(const boolean input) { fake_faults_ = input; }
+    bool fail_tb() { return fail_tb_; }
+    void fail_tb(const bool input) { fail_tb_ = input; }
+    bool fake_faults() { return fake_faults_; }
+    void fake_faults(const bool input) { fake_faults_ = input; }
     float hys_scale() { return hys_scale_; }
     void hys_scale(const float input) { hys_scale_ = input; }
     float hys_state() { return hys_state_; }
@@ -202,24 +202,24 @@ public:
     void q_std(const float input) { q_std_ = input; }
     float r_std() { return r_std_; }
     void r_std(const float input) { r_std_ = input; }
-    unsigned long int read_delay() { return read_delay_; }
-    void read_delay(const unsigned long int input) { read_delay_ = input; }
+    uint32_t read_delay() { return read_delay_; }
+    void read_delay(const uint32_t input) { read_delay_ = input; }
     float s_cap_mon() { return s_cap_mon_; }
     void s_cap_mon(const float input) { s_cap_mon_ = input; }
     float s_cap_sim() { return s_cap_sim_; }
     void s_cap_sim(const float input) { s_cap_sim_ = input; }
     float s_t_sat() { return s_t_sat_; }
     void s_t_sat(const float input) { s_t_sat_ = input; }
-    unsigned long int samp_points() { return samp_points_; }
-    void samp_points(const unsigned long int input) { samp_points_ = input; }
+    uint32_t samp_points() { return samp_points_; }
+    void samp_points(const uint32_t input) { samp_points_ = input; }
     float slr_res() { return slr_res_; }
     void slr_res(const float input) { slr_res_ = input; }
-    unsigned long int sum_delay() { return sum_delay_; }
-    void sum_delay(const unsigned long int input) { sum_delay_ = input; }
-    unsigned long int tail_inj() { return tail_inj_; }
-    void tail_inj(const unsigned long int input) { tail_inj_ = input; }
-    unsigned long int talk_delay() { return talk_delay_; }
-    void talk_delay(const unsigned long int input) { talk_delay_ = input; }
+    uint32_t sum_delay() { return sum_delay_; }
+    void sum_delay(const uint32_t input) { sum_delay_ = input; }
+    uint32_t tail_inj() { return tail_inj_; }
+    void tail_inj(const uint32_t input) { tail_inj_ = input; }
+    uint32_t talk_delay() { return talk_delay_; }
+    void talk_delay(const uint32_t input) { talk_delay_ = input; }
     float Tb_bias_model() { return Tb_bias_model_; }
     void Tb_bias_model(const float input) { Tb_bias_model_ = input; }
     float tb_filt() { return tb_filt_; }
@@ -228,10 +228,10 @@ public:
     void Tb_noise_amp(const float input) { Tb_noise_amp_ = input; }
     float tb_stale_time_slr() { return tb_stale_time_slr_; }
     void tb_stale_time_slr(const float input) { tb_stale_time_slr_ = input; }
-    unsigned long int temp_delay() { return temp_delay_; }
-    void temp_delay(const unsigned long int input) { temp_delay_ = input; }
-    unsigned long int until_q() { return until_q_; }
-    void until_q(const unsigned long int input) { until_q_ = input; }
+    uint32_t temp_delay() { return temp_delay_; }
+    void temp_delay(const uint32_t input) { temp_delay_ = input; }
+    uint32_t until_q() { return until_q_; }
+    void until_q(const uint32_t input) { until_q_ = input; }
     float vb_add() { return vb_add_; }
     void vb_add(const float input) { vb_add_ = input; }
     float Vb_noise_amp() { return Vb_noise_amp_; }
@@ -242,8 +242,8 @@ public:
     void vc_add(const float input) { vc_add_ = input; }
     float voc_stat_filt() { return voc_stat_filt_; }
     void voc_stat_filt(const float input) { voc_stat_filt_ = input; }
-    unsigned long int wait_inj() { return wait_inj_; }
-    void wait_inj(const unsigned long int input) { wait_inj_ = input; }
+    uint32_t wait_inj() { return wait_inj_; }
+    void wait_inj(const uint32_t input) { wait_inj_ = input; }
 
     // Put into RAM and check for validity
     void put_ib_scale_amp(const float input) { ib_scale_amp_p->check_set_put(input); }
@@ -256,66 +256,67 @@ public:
 
 protected:
 
-    float ib_scale_amp_;         // Slr amp
-    float ib_scale_noa_;         // Slr noa
-    float nP_;                   // number parallel
-    float nS_;                   // number series
-    float s_cap_mon_;            // Scalar cap Mon
-    float s_cap_sim_;            // Scalar cap Sim
-    float Vb_scale_;             // Scale Vb sensor
     float cc_diff_slr_;          // Scale cc_diff detection thresh, scalar
     float cycles_inj_;           // Number of injection cycles
-    boolean dc_dc_on_;           // DC-DC charger is on
-    boolean disab_ib_fa_;        // Disable hard fault range failures for ib
-    boolean disab_tb_fa_;        // Disable hard fault range failures for tb
-    boolean disab_vb_fa_;        // Disable hard fault range failures for vb
+    bool dc_dc_on_;           // DC-DC charger is on
+    bool dis_vb_fa_lt_;        // Disable hard fault range failures for vb
+    bool disab_ib_fa_;        // Disable hard fault range failures for ib
+    bool disab_tb_fa_;        // Disable hard fault range failures for tb
     float ds_voc_soc_;           // VOC(SOC) delta soc on input, frac
     float dv_voc_soc_;           // VOC(SOC) del v, V
     uint8_t eframe_mult_;        // Frame multiplier for EKF execution.  Number of READ executes for each EKF execution
+    float ekf_conv_;             // ekf abs conv, v
+    float ekf_p_;                // ekf temporary set P, soc
+    float ekf_q_;                // ekf_q scalar, slr
+    float ekf_r_;                // ekf_r scalar, slr
+    float ekf_x_;                // ekf temporary set x, soc
     float ewhi_slr_;             // Scale wrap hi detection thresh, scalar
     float ewlo_slr_;             // Scale wrap lo detection thresh, scalar
-    boolean fail_tb_;            // Make hardware bus read ignore Tb and fail it
-    boolean fake_faults_;        // Faults faked (ignored).  Used to evaluate a configuration, deploy it without disrupting use
+    bool fail_tb_;            // Make hardware bus read ignore Tb and fail it
+    bool fake_faults_;        // Faults faked (ignored).  Used to evaluate a configuration, deploy it without disrupting use
     float hys_scale_;            // Sim hysteresis scalar
     float hys_state_;            // Sim hysteresis state
     float ib_amp_add_;           // Fault injection bias on amp, A
     float ib_amp_max_;           // ib amp unit hardware model max, A
     float ib_amp_min_;           // ib amp unit hardware model min, A
+    float Ib_amp_noise_amp_;     // Ib bank noise on amplified sensor, amplitude model only, A pk-pk
     float ib_diff_slr_;          // Scale ib_diff detection thresh, scalar
     float ib_noa_add_;           // Fault injection bias on non amp, A
     float ib_noa_max_;           // ib noa unit hardware model max, A
     float ib_noa_min_;           // ib noa unit hardware model min, A
-    float Ib_amp_noise_amp_;     // Ib bank noise on amplified sensor, amplitude model only, A pk-pk
     float Ib_noa_noise_amp_;     // Ib bank noise on non-amplified sensor, amplitude model only, A pk-pk
     float ib_quiet_slr_;         // Scale ib_quiet detection thresh, scalar
+    float ib_scale_amp_;         // Slr amp
+    float ib_scale_noa_;         // Slr noa
     float init_all_soc_;         // Reinitialize all models to this soc
     float init_sim_soc_;         // Reinitialize sim model only to this soc
+    float nP_;                   // number parallel
+    float nS_;                   // number series
     uint8_t print_mult_;         // Print multiplier for objects
-    unsigned long int read_delay_; // Minor frame, ms
-    unsigned long int samp_points_; // Number of sample readings to take, !=0 initiates sampling
-    float slr_res_;              // Scalar Randles R0, slr
-    float s_t_sat_;              // Scalar on saturation test time set and reset
-    unsigned long int sum_delay_; // Minor frame divisor, div
-    unsigned long int tail_inj_; // Tail after end injection, ms
-    unsigned long int talk_delay_; // Talk frame, ms
-    float Tb_bias_model_;        // Bias on Tb for model
-    float Tb_noise_amp_;         // Tb noise amplitude model only, deg C pk-pk
-    float tb_stale_time_slr_;    // Scalar on persistences of Tb hardware stale check
-    unsigned long int temp_delay_; // Temp frame, ms
-    unsigned long int until_q_;  // Time until set vv0, ms
-    float vb_add_;               // Fault injection bias, V
-    float Vb_noise_amp_;         // Vb bank noise amplitude model only, V pk-pk
-    float vc_add_;               // Shunt Vc/Vr Fault injection bias, V
-    float voc_stat_filt_;        // VocStatFilt time constant, s
-    float tb_filt_;              // TbFilt time constant, s
-    float ekf_q_;                // ekf_q scalar, slr
-    float ekf_r_;                // ekf_r scalar, slr
-    float ekf_conv_;             // ekf abs conv, v
-    float ekf_x_;                // ekf temporary set x, soc
-    float ekf_p_;                // ekf temporary set P, soc
     float q_std_;                // kf q_std set, v
     float r_std_;                // kf q_std set, v
-    unsigned long int wait_inj_; // Wait before start injection, ms
+    uint32_t read_delay_; // Minor frame, ms
+    float s_cap_mon_;            // Scalar cap Mon
+    float s_cap_sim_;            // Scalar cap Sim
+    float s_t_sat_;              // Scalar on saturation test time set and reset
+    uint32_t samp_points_; // Number of sample readings to take, !=0 initiates sampling
+    float slr_res_;              // Scalar Randles R0, slr
+    uint32_t sum_delay_; // Minor frame divisor, div
+    uint32_t snap_wait_; // Wait after snap before print, ms
+    uint32_t tail_inj_; // Tail after end injection, ms
+    uint32_t talk_delay_; // Talk frame, ms
+    float Tb_bias_model_;        // Bias on Tb for model
+    float tb_filt_;              // TbFilt time constant, s
+    float Tb_noise_amp_;         // Tb noise amplitude model only, deg C pk-pk
+    float tb_stale_time_slr_;    // Scalar on persistences of Tb hardware stale check
+    uint32_t temp_delay_; // Temp frame, ms
+    uint32_t until_q_;  // Time until set vv0, ms
+    float vb_add_;               // Fault injection bias, V
+    float Vb_noise_amp_;         // Vb bank noise amplitude model only, V pk-pk
+    float Vb_scale_;             // Scale Vb sensor
+    float vc_add_;               // Shunt Vc/Vr Fault injection bias, V
+    float voc_stat_filt_;        // VocStatFilt time constant, s
+    uint32_t wait_inj_; // Wait before start injection, ms
 
 };
 
@@ -336,6 +337,8 @@ public:
  
     // parameter list
     float Amp(const float nP) { return amp_ * nP; }
+    bool booted() { return booted_; }
+    void booted(const bool input) { booted_ = input; }
     float cutback_gain_slr() { return cutback_gain_slr_; }
     int debug() { return debug_;}
     double delta_q() { return delta_q_;}
@@ -362,7 +365,7 @@ public:
     uint8_t preserving() { return preserving_; }
     uint8_t *preserving_ptr() { return &preserving_; }
     float Tb_bias_hdwe() { return Tb_bias_hdwe_; }
-    unsigned long Time_now() { return Time_now_; }
+    uint32_t Time_now() { return Time_now_; }
     uint8_t type() { return type_; }
     float Vb_bias_hdwe() { return Vb_bias_hdwe_; }
     float Vsat_add() { return vsat_add_; }
@@ -378,7 +381,7 @@ public:
     void nominalize_fault_array();
     void nominalize_history_array();
     int num_diffs();
-    virtual void pretty_print(const boolean all);
+    virtual void pretty_print(const bool all);
     void pretty_print_modeling();
     void print_fault_array();
     void print_fault_header(Publish *pubList);
@@ -389,24 +392,26 @@ public:
     float ib_hist_m_slr() { if ( abs(amp_) > SCL_40 ) return SCL_30000/abs(amp_); else return SCL_600; }
     float ib_hist_n_slr() { if ( abs(amp_) > SCL_40 ) return SCL_30000/abs(amp_); else return SCL_60; }
     float vb_hist_slr() { if ( abs(amp_) > SCL_40 ) return SCL_1500/abs(amp_); else return SCL_1200; }
-    boolean mod_all_dscn() { return ( 111<modeling() ); }                // Bare all
-    boolean mod_any() { return ( mod_ib() || mod_tb() || mod_vb() ); }  // Modeling any
-    boolean mod_none_dscn() { return ( 16>modeling() ); }                // Bare nothing
-    boolean mod_any_dscn() { return ( 15<modeling() ); }                 // Bare any
-    boolean mod_ib_all_dscn() { return ( 191<modeling() ); }             // Nothing connected to ib sensors in I2C on SDA/SCL
-    boolean mod_ib_any_dscn() { return ( mod_ib_amp_dscn() || mod_ib_noa_dscn() ); }  // Nothing connected to ib sensors in I2C on SDA/SCL
-    boolean mod_ib_noa_dscn() { return ( 1<<7 & modeling() ); }          // Nothing connected to noa ib sensors in I2C on SDA/SCL
-    boolean mod_ib_amp_dscn() { return ( 1<<6 & modeling() ); }          // Nothing connected to amp ib sensors in I2C on SDA/SCL
-    boolean mod_vb_dscn() { return ( 1<<5 & modeling() ); }              // Nothing connected to vb on A1
-    boolean mod_tb_dscn() { return ( 1<<4 & modeling() ); }              // Nothing connected to one-wire Tb sensor on D6
-    boolean mod_ib() { return ( 1<<2 & modeling() || mod_ib_all_dscn() ); }  // Using Sim as source of ib
-    boolean mod_vb() { return ( 1<<1 & modeling() || mod_vb_dscn() ); }  // Using Sim as source of vb
-    boolean mod_tb() { return ( 1<<0 & modeling() || mod_tb_dscn() ); }  // Using Sim as source of tb
-    boolean mod_none() { return ( 0==modeling() ); }                     // Using all
+    bool mod_all_dscn() { return ( 111<modeling() ); }                // Bare all
+    bool mod_any() { return ( mod_ib() || mod_tb() || mod_vb() ); }  // Modeling any
+    bool mod_none_dscn() { return ( 16>modeling() ); }                // Bare nothing
+    bool mod_any_dscn() { return ( 15<modeling() ); }                 // Bare any
+    bool mod_ib_all_dscn() { return ( 191<modeling() ); }             // Nothing connected to ib sensors in I2C on SDA/SCL
+    bool mod_ib_any_dscn() { return ( mod_ib_amp_dscn() || mod_ib_noa_dscn() ); }  // Nothing connected to ib sensors in I2C on SDA/SCL
+    bool mod_ib_noa_dscn() { return ( 1<<7 & modeling() ); }          // Nothing connected to noa ib sensors in I2C on SDA/SCL
+    bool mod_ib_amp_dscn() { return ( 1<<6 & modeling() ); }          // Nothing connected to amp ib sensors in I2C on SDA/SCL
+    bool mod_vb_dscn() { return ( 1<<5 & modeling() ); }              // Nothing connected to vb on A1
+    bool mod_tb_dscn() { return ( 1<<4 & modeling() ); }              // Nothing connected to one-wire Tb sensor on D6
+    bool mod_ib() { return ( 1<<2 & modeling() || mod_ib_all_dscn() ); }  // Using Sim as source of ib
+    bool mod_vb() { return ( 1<<1 & modeling() || mod_vb_dscn() ); }  // Using Sim as source of vb
+    bool mod_tb() { return ( 1<<0 & modeling() || mod_tb_dscn() ); }  // Using Sim as source of tb
+    bool mod_none() { return ( 0==modeling() ); }                     // Using all
 
     // put
     void put_all_dynamic();
     void put_amp(const float input) { amp_p->check_set_put(input); }
+    void put_booted(const bool input) { booted_p->check_set_put(input); }
+    void get_booted() { booted_p->get(); }
     void put_cutback_gain_slr(const float input) { cutback_gain_slr_p->check_set_put(input); }
     void put_Debug(const int input) { debug_p->check_set_put(input); }
     void put_Delta_q(const double input) { delta_q_p->check_set_put(input); }
@@ -426,7 +431,7 @@ public:
     void put_Inj_bias(const float input) { inj_bias_p->check_set_put(input); }
     void put_Preserving(const uint8_t input) { preserving_p->check_set_put(input); }
     void put_Tb_bias_hdwe(const float input) { Tb_bias_hdwe_p->check_set_put(input); }
-    void put_Time_now(const unsigned long input) { Time_now_p->check_set_put(input); }
+    void put_Time_now(const uint32_t input) { Time_now_p->check_set_put(input); }
     void put_Type(const uint8_t input) { Type_p->check_set_put(input); }
     void put_Vb_bias_hdwe(const float input) { Vb_bias_hdwe_p->check_set_put(input); }
     
@@ -434,8 +439,9 @@ public:
     void put_fault(const Flt_st input, const uint8_t i) { fault_[i].copy_to_Flt_ram_from(input); }
     //
     Flt_st put_history(const Flt_st input, const uint8_t i);
-    boolean tweak_test() { return ( 1<<3 & modeling() ); } // Driving signal injection completely using software inj_bias 
+    bool tweak_test() { return ( 1<<3 & modeling() ); } // Driving signal injection completely using software inj_bias 
     FloatV *amp_p;
+    BooleanV *booted_p;
     FloatV *cutback_gain_slr_p;
     IntV *debug_p;
     DoubleV *delta_q_p;
@@ -470,6 +476,7 @@ protected:
     uint16_t nsum_;         // Length of Sum array for history
 
     float amp_;
+    bool booted_;                // True if device has been bootstrapped (i.e. initialized)
     float cutback_gain_slr_;
     float Dw_;
     int debug_;
@@ -488,12 +495,9 @@ protected:
     uint8_t modeling_;
     uint8_t preserving_;
     float Tb_bias_hdwe_;
-    unsigned long Time_now_;
+    uint32_t Time_now_;
     uint8_t type_;
     float Vb_bias_hdwe_;
     float vsat_add_;             // Saturation voltage bias, V
 
 };
-
-
-#endif

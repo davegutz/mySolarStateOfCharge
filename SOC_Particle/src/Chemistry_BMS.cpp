@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -351,4 +351,3 @@ void Chemistry::pretty_print()
 #endif
 }
 
-// TODO:  dx, dy, dz should be properties of Tables

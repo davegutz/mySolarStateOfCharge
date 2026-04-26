@@ -49,6 +49,8 @@ class BMS:
 
 class Chemistry(BMS):
     """Properties of battery"""
+
+    # noinspection PyPep8Naming
     def __init__(self, mod_code=0, dvoc=0., unit=None, Dw=0.):
         BMS.__init__(self)
         self.rated_temp = 0.  # Temperature at NOM_UNIT_CAP, deg C
@@ -126,9 +128,8 @@ class Chemistry(BMS):
 
         # Tables Battleborn Bmon=0, Bsim=0
         # VOC_SOC table
-        t_x_soc0 = [-0.15, 0.00, 0.05, 0.10, 0.14, 0.17, 0.20, 0.25, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.99,
-                    0.995, 1.00]
         t_y_t0 = [5., 11.1, 20., 30., 40.]
+        t_x_soc0 = [-0.15, 0.00, 0.05, 0.10, 0.14, 0.17, 0.20, 0.25, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.99, 0.995, 1.00]
         t_voc0 = [
             4.,   4.,	 4.,	4.,	   8.90,  10.40, 11.15,	11.40, 11.47, 11.6,	 11.61,	11.68, 11.75, 11.81, 11.87,	11.92, 13.49, 14.45,
             4.,   4.,	 4.,	4.,	   8.90,  10.40, 11.15,	11.40, 11.47, 11.6,	 11.61,	11.68, 11.75, 11.81, 11.87,	11.92, 13.49, 14.45,
@@ -144,7 +145,7 @@ class Chemistry(BMS):
 
         # Min SOC table
         t_x_soc_min0 = [5., 11.1, 20., 30., 40.]
-        t_soc_min0 = [0.07, 0.05, -0.05, 0.00, 0.20]
+        t_soc_min0 = [0.10, 0.07, 0.25, 0.25, 0.25]
         self.lut_min_soc = myTables.TableInterp1D(np.array(t_x_soc_min0), np.array(t_soc_min0))
 
         # Hysteresis tables
@@ -165,6 +166,7 @@ class Chemistry(BMS):
         self.lu_n_hys = myTables.TableInterp1D(t_soc0, t_dv_min0)
 
     # Assign CHINS chemistry
+    # noinspection PyPep8Naming
     def assign_CH(self):
         # Constants
         # self.cap = see below
@@ -236,6 +238,7 @@ class Chemistry(BMS):
         self.lu_n_hys = myTables.TableInterp1D(t_soc1, t_dv_min1)
 
     # Assign CHINS chemistry
+    # noinspection PyPep8Naming
     def assign_CHG(self):
         # Constants
         # self.cap = see below

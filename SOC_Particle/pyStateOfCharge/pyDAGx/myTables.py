@@ -239,9 +239,9 @@ class TableInterp2D:
         temp2 = high2 * self.n + low1
         r0 = self.v[temp1] + dx1 * (self.v[low2*self.n + high1] - self.v[temp1])
         r1 = self.v[temp2] + dx1 * (self.v[high2*self.n + high1] - self.v[temp2])
-        result = float(r0 + dx2 * (r1 - r0)) + self.Dw
+        result = r0 + dx2 * (r1 - r0) + self.Dw
         if printit:
-            print(f"x {x_} y {y_} high1 {high1} high2 {high2} low1 {low1} low2 {low2} temp1 {temp1} temp2 {temp2} dx1 {dx1} dx2 {dx2} r0 {r0} t1 {r1} result {result}")
+            print(f"x {x_} y {y_} high1 {high1} high2 {high2} low1 {low1} low2 {low2} temp1 {temp1} temp2 {temp2} dx1 {dx1} dx2 {dx2} r0 {r0} t1 {r1} dw {self.Dw} result {result}")
         return result
 
     # Reverse interpolation

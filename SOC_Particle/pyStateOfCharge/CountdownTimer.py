@@ -16,7 +16,6 @@
 """Raise a window visible at task bar to close all plots"""
 
 import tkinter as tk
-from threading import Thread
 import sys
 import time
 import platform
@@ -30,15 +29,17 @@ bg_color = "lightgray"
 
 
 class CountdownTimer(tk.Toplevel):
-    def __init__(self,  root_, time_, max_flash=30, exit_function=None, trigger=False):
+    def __init__(self,  root_, time_, max_flash=30, exit_function=None, trigger=False, title="SOC-countdown"):
         """Block caller task asking to close all plots then doing so"""
         tk.Toplevel.__init__(self)
+        self.title(title)
         self.root = root_
         self.flasher_window = None
         self.flasher_label = None
         self.max_flashes = int(max_flash)
         self.flashes = 0
         self.attributes('-topmost', True)
+        self.attributes('-topmost', False)
         self.initial_time = time_
         self.time = tk.IntVar(self, time_ + 1)
         self.lift()
@@ -47,9 +48,11 @@ class CountdownTimer(tk.Toplevel):
         # self.center()
         self.exit_function = exit_function
         self.trigger = trigger
+        self._flasher_after_id = None
+        self._countdown_after_id = None
         if self.trigger:
             self.begin()
-        self.mainloop()
+        # self.mainloop()  # Removed blocking mainloop
         # self.grab_set()  # Prevents other Tkinter windows from being used
 
     def center(self, width=200, height=150):
@@ -62,16 +65,28 @@ class CountdownTimer(tk.Toplevel):
         self.geometry('%dx%d+%d+%d' % (width, height, x, y))
 
     def close(self):
+        if self._flasher_after_id is not None:
+            self.after_cancel(self._flasher_after_id)
+            self._flasher_after_id = None
+        if self._countdown_after_id is not None:
+            self.after_cancel(self._countdown_after_id)
+            self._countdown_after_id = None
+        if self.flasher_window is not None:
+            try:
+                self.flasher_window.destroy()
+            except Exception:
+                pass
         self.destroy()
 
     def begin(self):
         """Countdown in seconds then exit"""
+        self.bell()
         if self.trigger:
             self.trigger = False
-            self.after(1000, self.begin)
+            self._countdown_after_id = self.after(1000, self.begin)
             self.button.config(text='wait')
             return
-        # Use caffein instead
+        # Use caffiene instead
         # thread = Thread(target=stay_awake, kwargs={'up_set_min': float(self.time.get()) / 60.})
         # thread.start()
         self.lift()
@@ -85,7 +100,7 @@ class CountdownTimer(tk.Toplevel):
         if self.time.get() > 0:
             self.lift()
             # self.center()
-            self.after(1000, self.countdown)
+            self._countdown_after_id = self.after(1000, self.countdown)
         else:
             self.time.set(self.initial_time)
             self.button.config(text=str(self.initial_time), fg='white', bg=bg_color, font=("Courier", 96))
@@ -102,10 +117,13 @@ class CountdownTimer(tk.Toplevel):
         self.flasher_label = tk.Label(self.flasher_window, text=text, bg='red', fg='black', font=("Courier", 96))
         self.flasher_label.pack(side='bottom')
         self.flasher_window.configure(bg='red')
+        self.flasher_window.attributes('-topmost', True)
+        self.flasher_window.attributes('-topmost', False)
+        self.flasher_window.lift()
         self.bell()
 
         # update window after 500ms
-        self.after(500, self.flasher_update)
+        self._flasher_after_id = self.after(500, self.flasher_update)
 
     def flasher_update(self):
         """function which changes background in displayed window"""
@@ -121,14 +139,18 @@ class CountdownTimer(tk.Toplevel):
                     self.flasher_window.configure(bg='red')
 
                 # update window
-                self.after(500, self.flasher_update)
+                self._flasher_after_id = self.after(500, self.flasher_update)
             else:
                 self.flasher_window.destroy()
                 self.destroy()
         except Exception as e:
             print('e=', e)
             print('killing flasher window')
-            self.flasher_window.destroy()
+            if self.flasher_window is not None:
+                try:
+                    self.flasher_window.destroy()
+                except Exception:
+                    pass
             self.destroy()
 
 
@@ -146,6 +168,7 @@ def stay_awake(up_set_min=3.):
     # your pyautogui program by manually moving the mouse to the upper left corner of the screen.
     # Once the mouse is in this location, pyautogui will throw an exception and exit.
     if sys.version_info.minor < 12:
+        # noinspection PyUnresolvedReferences
         pyautogui.FAILSAFE = False
     while True and (up_time_min < up_set_min):
         time.sleep(30.)

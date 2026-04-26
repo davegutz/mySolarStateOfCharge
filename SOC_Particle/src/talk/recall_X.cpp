@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,14 +36,18 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 extern CommandPars cp;  // Various parameters shared at system level
 extern Flt_st mySum[NSUM];  // Summaries for saving charge history
 
-boolean recall_X(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
+bool recall_X(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
 {
-    boolean found = true;
+    bool found = true;
     int INT_in;
     switch ( letter_1 )
     {
         case ( 'D' ): // XD  display a message
-            Serial.printf("\n\n*** DONE***\n\n");
+            Serial.printf("\n\n***DONE***\n\n");
+            break;
+
+        case ( 'K' ): // XK  display a message
+            Serial.printf("\n\n***READY***\n\n");
             break;
 
         case ( 'p' ): // Xp<>:  injection program
@@ -130,23 +134,23 @@ boolean recall_X(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             break;
 
         case ( 'R' ): // XR:  Start injection now
-            if ( Sen->now>TEMP_INIT_DELAY )
+            if ( Sen->now()>TEMP_INIT_DELAY )
             {
-                Sen->start_inj = ap.wait_inj() + Sen->now;
-                Sen->stop_inj = ap.wait_inj() + (Sen->now + min((unsigned long long)(ap.cycles_inj() / max(sp.freq()/(2.*PI), 1e-6) *1000.), ULLONG_MAX));
-                Sen->end_inj = Sen->stop_inj + ap.tail_inj();
+                Sen->start_inj(ap.wait_inj() + Sen->now());
+                Sen->stop_inj(ap.wait_inj() + (Sen->now() + min((uint64_t)(ap.cycles_inj() / max(sp.freq()/(2.*PI), 1e-6) *1000.), ULLONG_MAX)));
+                Sen->end_inj(Sen->stop_inj() + ap.tail_inj());
                 Serial.printf("**\n*** RUN: at %s, %7.3f cycles %s to %s with %ld wait and %ld tail\n\n",
-                    toString(Sen->now).c_str(), ap.cycles_inj(), toString(Sen->start_inj).c_str(), toString(Sen->stop_inj).c_str(), ap.wait_inj(), ap.tail_inj());
+                    toString(Sen->now()).c_str(), ap.cycles_inj(), toString(Sen->start_inj()).c_str(), toString(Sen->stop_inj()).c_str(), ap.wait_inj(), ap.tail_inj());
             }
-            else Serial.printf("Wait%5.1fs for init\n", float(TEMP_INIT_DELAY-Sen->now)/1000.f);
+            else Serial.printf("Wait%5.1fs for init\n", float(TEMP_INIT_DELAY-Sen->now())/1000.f);
             break;
 
         case ( 'S' ): // XS:  Stop injection now
             Serial.printf("STOP\n");
-            Sen->start_inj = 0ULL;
-            Sen->stop_inj = 0ULL;
-            Sen->end_inj = 0ULL;
-            Sen->elapsed_inj = 0ULL;
+            Sen->start_inj(0ULL);
+            Sen->stop_inj(0ULL);
+            Sen->end_inj(0ULL);
+            Sen->elapsed_inj(0ULL);
             chit("vv0;", ASAP);     // Turn off echo
             chit("Xp0;", SOON);    // Reset
             break;
@@ -195,7 +199,7 @@ boolean recall_X(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             break;
 
         case ( 'Y' ): // XY  display a time sYnch message
-            Serial.printf("SYNC,%7.3f\n", double(Sen->now)/1000.f);
+            Serial.printf("SYNC,%7.3f\n", double(Sen->now())/1000.f);
             break;
 
         default:

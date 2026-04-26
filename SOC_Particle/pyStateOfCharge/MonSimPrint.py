@@ -19,12 +19,15 @@ the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 
 from datetime import datetime, timedelta
+# noinspection PyPep8Naming
 import Globals as G
 from Colors import Colors
 count_since_last_header = 0
 vv_warning_printed = False
 HDR_SPREAD = 10
 
+
+# noinspection PyPep8Naming
 def prn_soc_debug(OPT, leader="", time=None, i_temp=None, mon=None, sim=None):
     execute = False
     # execute = True
@@ -71,6 +74,8 @@ def prn_soc_debug(OPT, leader="", time=None, i_temp=None, mon=None, sim=None):
         "{:14.7f}".format(OPT.mon_run.Tb_f_rate_rap[G.i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
             )
 
+
+# noinspection PyPep8Naming
 def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
     hdr = None
     match OPT.run_type:
@@ -78,22 +83,24 @@ def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
             match OPT.request_history:
                 case 0:
                     hdr = ''
-                case 1:
+                case 1:  # request_history for ekf
                     hdr = print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp)
-                case 2:
+                case 2:  # request_history for soc
                     hdr = print_soc_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf)
-                case 3:
+                case 3:  # request_history for soc_s
                     hdr = print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf)
-                case 4:
+                case 4:  # request_history for temp
                     hdr = print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf)
-                case 5:
+                case 5:  # request_history for volt all
                     hdr = print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
-                case 6:
+                case 6:  # request_history for kf
                     hdr = print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
-                case 7:
+                case 7:  # request_history for dyn_m
                     hdr = print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
-                case 8:
+                case 8:  # request_history for vb_wrap
                     hdr = print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
+                case 9:  # request_history for dyn_n
+                    hdr = print_dyn_n_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf)
         case 'HistSim':
             match OPT.request_history:
                 case 0:
@@ -111,6 +118,7 @@ def print_hist(OPT, SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf, sim):
     return hdr
 
 # 7
+# noinspection PyPep8Naming,PyUnusedLocal
 def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header, vv_warning_printed
     if not hasattr(SN.mon_run, 'ib_amp_lo') or SN.mon_run.ib_amp_lo is None:
@@ -119,7 +127,7 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
             print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_dyn_m_RunSim  (request_hist_in=7)\n*************\n")
             vv_warning_printed = True
             print(Colors.reset, end='')
-        return
+        return None
     hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                           ibmh                        ibmm                  ib_amp_lo    ib_amp_hi   dis_amp_flt   dt                    ib_amp                    ib_dyn_T_m          ib_dyn_rstate_m                ib_dyn_lstate_m                      ib_dyn_m                vb                     dv_dyn_m             vb_m                      voc_m                     voc_soc               voc_soc_m                   e_wrap_m                  e_wrap_m_trim        e_wrap_trimmed_m         e_wrap_m_T           e_wrap_m_rate            e_wrap_m_reset       e_wrap_m_state         e_wrap_m_filt        ewmhi_thr            ewmlo_thr           e_wrap_m_flt   e_wrap_m_fa    disable_amp_fault      ib_amp_lo     e_wrap_m_reset  fltw   falw"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
@@ -180,7 +188,76 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     print(Colors.reset, end='')
     return hdr
 
+# 9
+# noinspection PyPep8Naming,PyUnusedLocal
+def print_dyn_n_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
+    global count_since_last_header, vv_warning_printed
+    if not hasattr(SN.mon_run, 'ib_noa_lo') or SN.mon_run.ib_noa_lo is None:
+        if not vv_warning_printed:
+            print(Colors.fg.red, end='')
+            print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_dyn_n_RunSim  (request_hist_in=7)\n*************\n")
+            vv_warning_printed = True
+            print(Colors.reset, end='')
+        return None
+    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                 vb                            ibmh                         ibmm                    ib_noa_lo    ib_noa_hi      dt                    ib_noa                    ib_dyn_T_n          ib_dyn_rstate_n                ib_dyn_lstate_n                      ib_dyn_n                 vb                      dv_dyn_n                vb_n                       voc_n                      voc_soc                   voc_soc_n                    e_wrap_n                  e_wrap_n_trim        e_wrap_trimmed_n         e_wrap_n_T           e_wrap_n_rate            e_wrap_n_reset       e_wrap_n_state          e_wrap_n_filt          ewmhi_thr              ewmlo_thr          e_wrap_n_flt   e_wrap_n_fa    ib_noa_lo   fltw   falw  e_wrap_n_filt"
+    if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
+        print(hdr)
+        count_since_last_header = 0
+    if G.i > 0:
+        count_since_last_header += 1
+    if mon.reset:
+        print(Colors.fg.red, end='')
+    elif mon.reset_temp:
+        print(Colors.fg.orange, end='')
+    print("{:4d}".format(G.i), "{:8.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
+          "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
+          "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
+          "{:7d}".format(bool(SN.mon_run.reset[G.i])),
+          "{:7d}".format(bool(SN.mon_run.reset_temp[G.i])),
+          "{:14d}".format(bool(SN.mon_run.reset_all_faults[G.i])),
+          "{:15d}".format(bool(SN.mon_run.soft_reset[G.i])),
+          "{:15d}".format(bool(SN.mon_run.soft_reset_sim[G.i])),
+          "{:15d}".format(bool(SN.mon_run.init_mon[G.i])),
+          "{:15d}".format(bool(SN.mon_run.init_sim[G.i])),
+          "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
+          "{:9.4f}".format(SN.mon_run.dt[G.i]), "{:7.4f}".format(mon.dt),
+          "{:14.7f}".format(SN.mon_run.vb[G.i]), "{:12.7f}".format(mon.vb),
+          "{:15.5f}".format(SN.mon_run.ib_noa_hdwe[G.i]), "{:13.5f}".format(mon.ib_noa_hdwe),
+          "{:15.5f}".format(SN.mon_run.ib_noa_model[G.i]), "{:13.5f}".format(mon.ib_noa_model),
+          "{:7d}".format(bool(SN.mon_run.ib_noa_lo[G.i])), "{:2d}".format(bool(mon.ib_noa_lo)),
+          "{:7d}".format(bool(SN.mon_run.ib_noa_hi[G.i])), "{:2d}".format(bool(mon.ib_noa_hi)),
+          "{:11.4f}".format(SN.mon_run.dt[G.i]), "{:7.4f}".format(mon.dt),
+          "{:15.6f}".format(SN.mon_run.ib_noa[G.i]), "{:13.6f}".format(mon.ib_noa),
+          "{:9.4f}".format(SN.mon_run.ib_dyn_T_n[G.i]), "{:5.4f}".format(mon.LoopIbNoa.ChargeTransfer.dt),
+          "{:15.6f}".format(SN.mon_run.ib_dyn_rstate_n[G.i]), "{:13.6f}".format(mon.LoopIbNoa.ChargeTransfer.rstate),
+          "{:15.6f}".format(SN.mon_run.ib_dyn_lstate_n[G.i]), "{:13.6f}".format(mon.LoopIbNoa.ChargeTransfer.state),
+          "{:21.5f}".format(SN.mon_run.ib_dyn_n[G.i]), "{:12.5f}".format(mon.LoopIbNoa.ib_dyn),
+          "{:12.5f}".format(SN.mon_run.vb[G.i]), "{:10.5f}".format(mon.vb),
+          "{:12.5f}".format(SN.mon_run.dv_dyn_n[G.i]), "{:10.5f}".format(mon.LoopIbNoa.dv_dyn),
+          "{:13.6f}".format(SN.mon_run.vb_model[G.i]), "{:12.6f}".format(mon.LoopIbNoa.vb),
+          "{:13.6f}".format(SN.mon_run.voc_n[G.i]), "{:12.6f}".format(mon.LoopIbNoa.voc),
+          "{:13.6f}".format(SN.mon_run.voc_soc[G.i]),  "{:12.6f}".format(mon.voc_soc),
+          "{:12.6f}".format(SN.mon_run.voc_soc_n[G.i]), "{:12.6f}".format(mon.LoopIbNoa.voc_soc),
+          "{:13.5f}".format(SN.mon_run.e_wrap_n[G.i]), "{:8.5f}".format(mon.e_wrap_n),
+          "{:16.5f}".format(SN.mon_run.e_wrap_n_trim[G.i]), "{:8.5f}".format(mon.e_wrap_n_trim),
+          "{:12.6f}".format(SN.mon_run.e_wrap_n_trimmed[G.i]), "{:9.6f}".format(mon.LoopIbNoa.e_wrap_trimmed),
+          "{:12.4f}".format(SN.mon_run.ib_wrp_T_n[G.i]), "{:9.4f}".format(mon.LoopIbNoa.WrapErrFilt.dt),
+          "{:12.6f}".format(SN.mon_run.ib_wrp_rate_n[G.i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.rate),
+          "{:12d}".format(bool(SN.mon_run.ib_wrp_reset_n[G.i])), "{:9d}".format(bool(mon.LoopIbNoa.WrapErrFilt.reset)),
+          "{:12.6f}".format(SN.mon_run.ib_wrp_state_n[G.i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.state),
+          "{:12.5f}".format(SN.mon_run.e_wrap_n_filt[G.i]), "{:9.5f}".format(mon.e_wrap_n_filt),
+          "{:12.5f}".format(SN.mon_run.ewmhi_thr[G.i]), "{:9.5f}".format(mon.ewmhi_thr),
+          "{:12.5f}".format(SN.mon_run.ewmlo_thr[G.i]), "{:9.5f}".format(mon.ewmlo_thr),
+          "{:8d}".format(SN.mon_run.wrap_hi_n_flt[G.i]), "{:4d}".format(mon.wrap_hi_n_flt),
+          "{:8d}".format(SN.mon_run.wrap_hi_n_fa[G.i]), "{:4d}".format(mon.wrap_hi_n_fa),
+          "{:18d}".format(SN.mon_run.fltw[G.i]), "{:4d}".format(SN.mon_run.falw[G.i]),
+          "{:11.5f}".format(SN.mon_run.e_wrap_n_filt[G.i]), "{:8.5f}".format(mon.e_wrap_n_filt),
+          )
+    print(Colors.reset, end='')
+    return hdr
+
 # 1
+# noinspection PyPep8Naming,PyUnusedLocal
 def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
     global count_since_last_header, vv_warning_printed
     if (not hasattr(SN.mon_run, 'voltage_low') or SN.mon_run.voltage_low is None) \
@@ -190,15 +267,19 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
             print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_ekf_RunSim  (request_hist_in=1)\n*************\n")
             vv_warning_printed = True
             print(Colors.reset, end='')
-        return
-    hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa        voc_stat              voc_stat_past       bms_off_past  volt_low       bms_off     frz     ib_charge                soc                    soc_ekf                x_ekf                   y                       voc_ekf                Tb_f                     x_prior                  x                        x_for_hx                 x_post                    Tb_f_rap                  tb_f_for_hx                hx                        u_ekf                    voc_stat_f             voc_soc                z                          P                              P_post                       P_prior                       Fx                        Bu                        H                      R                     S                    K                         voc_stat_f_rstate     voc_stat_f_lstate      voc_stat_f_T"
+        return None
+    hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa        voc_stat              voc_stat_past       bms_off_past  volt_low       bms_off     frz     ib_charge                   soc                    soc_ekf                 x_ekf                    y                          y_ekf_f                    y_ekf_f_T                  y_ekf_f_tau                y_ekf_f_state              z                            hx                     voc_ekf                Tb_f                     x_prior                  x                        x_for_hx                     x_post                    Tb_f_rap                  tb_f_for_hx                hx                        u_ekf                      voc_stat_f              voc_soc                z                          P                              P_post                       P_prior                       Fx                        Bu                        H                          R                     S                    K                         Q                         R                         voc_stat_f_rstate     voc_stat_f_lstate       voc_stat_f_T"
     i_ekf = max(i_ekf, 0)
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
     if G.i > 0:
         count_since_last_header += 1
-    if calc_ekf:
+    if mon.reset_ekf:
+        print(Colors.fg.red, end='')
+    elif mon.u_ekf == 0.:
+        print(Colors.fg.yellow, end='')
+    elif calc_ekf:
         print(Colors.fg.green, end='')
     elif mon.reset_ekf:
         print(Colors.fg.lightblue, end='')
@@ -215,21 +296,27 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
           "{:7d}".format(bool(SN.mon_run.voltage_low[G.i])), "{:3d}".format(bool(mon.voltage_low)),
           "{:7d}".format(bool(SN.mon_run.bms_off[G.i])), "{:3d}".format(bool(mon.bms_off)),
           "{:7.0f}".format(SN.mon_run.frz[i_ekf]), "{:3.0f}".format(mon.frz),
-          "{:11.6f}".format(SN.mon_run.ib_charge[G.i]), "{:10.6f}".format(mon.ib_charge),
-          "{:13.7f}".format(SN.mon_run.soc[G.i]), "{:10.7f}".format(mon.soc),
-          "{:11.7f}".format(SN.mon_run.soc_ekf[G.i]), "{:9.7f}".format(mon.soc_ekf),
-          "{:12.7f}".format(SN.mon_run.soc_ekf[G.i]), "{:10.7f}".format(mon.x),
-          "{:12.7f}".format(SN.mon_run.y_ekf[G.i]), "{:10.7f}".format(mon.y),
+          "{:13.6f}".format(SN.mon_run.ib_charge[G.i]), "{:12.6f}".format(mon.ib_charge),
+          "{:13.8f}".format(SN.mon_run.soc[G.i]), "{:10.8f}".format(mon.soc),
+          "{:11.8f}".format(SN.mon_run.soc_ekf[G.i]), "{:9.8f}".format(mon.soc_ekf),
+          "{:12.8f}".format(SN.mon_run.soc_ekf[G.i]), "{:10.8f}".format(mon.x),
+          "{:13.8f}".format(SN.mon_run.y_ekf[G.i]), "{:12.8f}".format(mon.y_ekf),
+          "{:13.8f}".format(SN.mon_run.y_ekf_f[G.i]), "{:12.8f}".format(mon.y_ekf_f),
+          "{:13.8f}".format(SN.mon_run.y_ekf_f_T[G.i]), "{:12.8f}".format(mon.y_ekf_f_T),
+          "{:13.8f}".format(SN.mon_run.y_ekf_f_tau[G.i]), "{:12.8f}".format(mon.y_ekf_f_tau),
+          "{:13.8f}".format(SN.mon_run.y_ekf_f_state[G.i]), "{:12.8f}".format(mon.y_ekf_f_state),
+          "{:12.6f}".format(SN.mon_run.z[i_ekf]), "{:13.6f}".format(mon.z),
+          "{:14.6f}".format(SN.mon_run.hx[i_ekf]), "{:9.6f}".format(mon.hx),
           "{:11.5f}".format(SN.mon_run.voc_ekf[G.i]), "{:9.5f}".format(mon.voc_ekf),
           "{:14.7f}".format(SN.mon_run.Tb_f[i_temp]), "{:10.7f}".format(mon.Tb_f),
           "{:13.8f}".format(SN.mon_run.x_prior[i_ekf]), "{:10.8f}".format(mon.x_prior),
           "{:13.8f}".format(SN.mon_run.x[i_ekf]), "{:10.8f}".format(mon.x),
-          "{:13.8f}".format(SN.mon_run.x_for_hx[i_ekf]), "{:10.8f}".format(mon.x_for_hx),
+          "{:15.10f}".format(SN.mon_run.x_for_hx[i_ekf]), "{:12.10f}".format(mon.x_for_hx),
           "{:13.8f}".format(SN.mon_run.x_post[i_ekf]), "{:10.8f}".format(mon.x_post),
           "{:14.7f}".format(SN.mon_run.Tb_f_rap[G.i]), "{:10.7f}".format(mon.Tb_f_rap),
           "{:14.7f}".format(SN.mon_run.tb_f_for_hx[i_ekf]), "{:10.7f}".format(mon.tb_f_for_hx),
           "{:14.6f}".format(SN.mon_run.hx[i_ekf]), "{:9.6f}".format(mon.hx),
-          "{:14.6f}".format(SN.mon_run.u[i_ekf]), "{:9.6f}".format(mon.u_ekf),
+          "{:14.6f}".format(SN.mon_run.u[i_ekf]), "{:12.6f}".format(mon.u_ekf),
           "{:14.6f}".format(SN.mon_run.z[i_ekf]), "{:9.6f}".format(mon.voc_stat_f),
           "{:13.6f}".format(SN.mon_run.voc_soc[G.i]),  "{:9.6f}".format(mon.voc_soc),
           "{:12.6f}".format(SN.mon_run.z[i_ekf]), "{:13.6f}".format(mon.z),
@@ -238,10 +325,12 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
           "{:14.11f}".format(SN.mon_run.P_prior[i_ekf]), "{:12.11f}".format(mon.P_prior),
           "{:13.9f}".format(SN.mon_run.Fx[i_ekf]), "{:11.9f}".format(mon.Fx),
           "{:13.9f}".format(SN.mon_run.Bu[i_ekf]), "{:11.9f}".format(mon.Bu),
-          "{:11.7f}".format(SN.mon_run.H[i_ekf]), "{:9.7f}".format(mon.H),
+          "{:13.7f}".format(SN.mon_run.H[i_ekf]), "{:10.7f}".format(mon.H),
           "{:11.6f}".format(SN.mon_run.R[i_ekf]), "{:9.6f}".format(mon.R),
           "{:11.6f}".format(SN.mon_run.S[i_ekf]), "{:9.6f}".format(mon.S),
           "{:13.9f}".format(SN.mon_run.K[i_ekf]), "{:10.9f}".format(mon.K),
+          "{:13.9f}".format(SN.mon_run.Q[i_ekf]), "{:10.9f}".format(mon.Q),
+          "{:13.9f}".format(SN.mon_run.R[i_ekf]), "{:10.9f}".format(mon.R),
           "{:11.6f}".format(SN.mon_run.voc_stat_f_rstate[i_ekf]), "{:9.6f}".format(mon.voc_stat_f_rstate),
           "{:11.6f}".format(SN.mon_run.voc_stat_f_lstate[i_ekf]), "{:9.6f}".format(mon.voc_stat_f_lstate),
           "{:12.6f}".format(SN.mon_run.voc_stat_f_T[i_ekf]), "{:9.6f}".format(mon.voc_stat_f_T),
@@ -250,6 +339,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
     return hdr
 
 # 6
+# noinspection PyPep8Naming,PyUnusedLocal
 def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header, vv_warning_printed
     if not hasattr(SN.mon_run, 'dtm'):
@@ -258,7 +348,7 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
             print(f"\n**********\nLikely a vv1 or vv3-vv4 run.  Not printing print_kf_RunSim  (request_hist_in=6)\n*************\n")
             vv_warning_printed = True
             print(Colors.reset, end='')
-        return
+        return None
     hdr = "  i   time     r       rt   rk   dt               dtm              dtn              VoVcn                    VoVcnf                 x0                     ib_shunt_noa            [Fxn                                      ]    [Qn                                                                                                                ]  [Xpn                                      ]     [Ppn                                                                                                               ]   S                         [K                                                           ]   y                     [x                                         ]    [Pn                                                                                                                ]"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
@@ -295,7 +385,7 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:18.7e}".format(SN.mon_run.K1n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.K[1,0]),
           "{:11.6f}".format(SN.mon_run.yn[G.i]), "{:10.6f}".format(SN.KfShuntNoa.y_kf),
           "{:11.6f}".format(SN.mon_run.x0n[G.i]), "{:10.6f}".format(SN.KfShuntNoa.x[0][0]),
-          "{:11.6f}".format(SN.mon_run.x1n[G.i]), "{:10.6f}".format(SN.KfShuntNoa.x[1][0]),
+          "{:11.6f}".format(SN.mon_run.kf_v_n[G.i]), "{:10.6f}".format(SN.KfShuntNoa.x[1][0]),
           "{:18.7e}".format(SN.mon_run.P00n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[0][0]),
           "{:14.7e}".format(SN.mon_run.P01n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[0][1]),
           "{:14.7e}".format(SN.mon_run.P10n[G.i]), "{:12.7e}".format(SN.KfShuntNoa.P[1][0]),
@@ -304,6 +394,8 @@ def print_kf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     print(Colors.reset, end='')
     return hdr
 
+
+# noinspection PyPep8Naming,PyUnusedLocal
 def print_soc_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header
     hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce    sa     ib_charge            soc                     dt                  i * dt * coul_eff    d_delq                           delq                       Tb_f                      Tb_f_rap                    ddq                  delq                       qcrs                   q_cap                  Tb                       Tb_f_rate"
@@ -345,6 +437,7 @@ def print_soc_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     return hdr
 
 # 3
+# noinspection PyPep8Naming
 def print_soc_s_HistSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header
     hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce    sa       sa_s       dt                    dt_s                  ib_in_s                     ib_dyn                     dv_hys_s            soc                    delq                            soc_s                delta_q_s                       qcrs                    Tb_f                     vb                    voc_stat               voc_stat_s            dv_hys_s              dv_dyn_s             vsat                   bms_off_s"
@@ -387,6 +480,7 @@ def print_soc_s_HistSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     return hdr
 
 # 3
+# noinspection PyPep8Naming
 def print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header, vv_warning_printed
     if not hasattr(SN.sim_run, 'ib_charge_s') or SN.sim_run.ib_charge_s is None:
@@ -395,8 +489,8 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
             print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_soc_s_RunSim (request_hist_in=3)\n*************\n")
             vv_warning_printed = True
             print(Colors.reset, end='')
-        return
-    hdr = "  i  time     r       rt   rtps rk   it   ct      re   ie  ce    sa       sa_s       dt                    dt_s                  ib                         ib_in_s                       ib_s                          ib_charge_s                ib_dyn_s_rstate                ib_dyn_s_lstate              ib_dyn_s_T             ib_dyn_s                    ib_dyn                      dv_hys_s                 ib_charge_s                 ioc_s                  soc                     d_delq                     delq                            i * dt_s * coul_eff       soc_s                 Tb_model_filt  Tb_hdwe_filt   Tb_f_s                         d_delta_q_s              delta_q_s                       qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                bms_off_s    voltage_low_s"
+        return None
+    hdr = "  i  time     r       rt   rtps rk   it   ct      re   ie  ce    sa       sa_s       dt                    dt_s                  ib                         ib_in_s                       ib_s                          ib_charge_s                ib_dyn_rstate_s                ib_dyn_lstate_s              ib_dyn_T_s             ib_dyn_s                    ib_dyn                      dv_hys_s                 ib_charge_s                 ioc_s                  soc                     d_delq                     delq                            i * dt_s * coul_eff       soc_s                 Tb_model_filt  Tb_hdwe_filt   Tb_f_s                         d_delta_q_s              delta_q_s                       qcrs                   q_cap                  q_cap_s                 Tb_f_s                    Tb_f                      Tb_f_rap                 Tb_f_rate               vb                    vb_s                  voc_stat              voc_stat_s            voc_s                  dv_hys_s              dv_dyn_s             vsat                bms_off_s    voltage_low_s"
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -422,9 +516,9 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
           "{:14.5f}".format(SN.sim_run.ib_in_s[G.i]), "{:12.5f}".format(sim.ib_in),
           "{:15.6f}".format(SN.sim_run.ib_s[G.i]), "{:13.6f}".format(sim.ib),
           "{:15.6f}".format(SN.sim_run.ib_charge_s[G.i]), "{:13.6f}".format(sim.ib_charge),
-          "{:15.6f}".format(SN.sim_run.ib_dyn_s_rstate[G.i]), "{:13.6f}".format(sim.ChargeTransfer.rstate),
-          "{:15.6f}".format(SN.sim_run.ib_dyn_s_lstate[G.i]), "{:13.6f}".format(sim.ChargeTransfer.state),
-          "{:12.4f}".format(SN.sim_run.ib_dyn_s_T[G.i]), "{:8.4f}".format(sim.ChargeTransfer.dt),
+          "{:15.6f}".format(SN.sim_run.ib_dyn_rstate_s[G.i]), "{:13.6f}".format(sim.ChargeTransfer.rstate),
+          "{:15.6f}".format(SN.sim_run.ib_dyn_lstate_s[G.i]), "{:13.6f}".format(sim.ChargeTransfer.state),
+          "{:12.4f}".format(SN.sim_run.ib_dyn_T_s[G.i]), "{:8.4f}".format(sim.ChargeTransfer.dt),
           "{:14.5f}".format(SN.sim_run.ib_dyn_s[G.i]), "{:12.5f}".format(sim.ib_dyn),
           "{:14.5f}".format(SN.mon_run.ib_dyn[G.i]), "{:12.5f}".format(mon.ib_dyn),
           "{:12.5f}".format(SN.sim_run.dv_hys_s[G.i]), "{:9.5f}".format(sim.dv_hys),
@@ -463,6 +557,7 @@ def print_soc_s_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     return hdr
 
 #4
+# noinspection PyPep8Naming
 def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     global count_since_last_header, vv_warning_printed
     if not hasattr(SN.sim_run, 'Tb_f_s') or SN.sim_run.Tb_f_s is None:
@@ -471,7 +566,7 @@ def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
             print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_temp_RunSim  (request_hist_in=4)\n*************\n")
             vv_warning_printed = True
             print(Colors.reset, end='')
-        return
+        return None
     hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce     Tt               Tb_hdwe                    Tb                         Tb_hdwe_filt               Tb_rap                     Tb_f_rap                   Tb_model                   Tb_model_filt              Tb_f                       Tb_f_s                      Tb_model_filt_rate         Tb_hdwe_filt_rate          Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
@@ -505,6 +600,7 @@ def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
     return hdr
 
 # 5
+# noinspection PyPep8Naming
 def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
     global count_since_last_header
     hdr = "  i   time r    rt it     ct   rk   re ie     ce   sa       Tb_f                      vb_f                   ib_f                  ib_nh_f               ib_mh_f               ib_dyn_m              e_wrap_n_filt        e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n               e_wrap_n_filt        e_wrap_filt          soc                        dt                 Tb_f                     vb_f                  ib_dyn                voc_f     voc         voc_stat_f             soc_ekf"
@@ -545,6 +641,7 @@ def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
     return hdr
 
 #5
+# noinspection PyPep8Naming
 def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header, vv_warning_printed
     if not hasattr(SN.mon_run, 'ib_amp_lo') or SN.mon_run.ib_amp_lo is None:
@@ -553,8 +650,8 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
             print(f"\n**********\nLikely a vv1 run.  Not printing print_volt_RunSim  (request_hist_in=5)\n*************\n")
             vv_warning_printed = True
             print(Colors.reset, end='')
-        return
-    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                          ib_charge                   ib_sel         ib                          ibmh                        ibmm                        ibnh                        ibnm                        ibh                         ib_s                 ib_amp_lo    ib_amp_hi   ib_noa_lo   ib_noa_hi dis_amp_flt    dt                  ib_amp                    ib_dyn_T_m          ib_dyn_rstate_m                ib_dyn_lstate_m                     ib_dyn_m                 vb                    vb_model               vb_hdwe               vb_hdwe_f             dv_dyn_m               e_wrap_m_T           e_wrap_m_rate          e_wrap_m_reset         e_wrap_m_state        voc                   voc_soc                e_wrap_m             e_wrap_m_filt   disable_amp_fault ib_amp_lo  ib_noa_lo  e_wrap_m_reset  e_wrap_m_trim        ib_dyn_n                 ib_dyn_T_n        dv_dyn_n               e_wrap_n             e_wrap_n_filt         ib_dyn_n                    ib_dyn                   ib_dyn_T_n           ib_dyn_rstate_n               ib_dyn_lstate_n             dv_dyn_n                e_wrap_n_T           e_wrap_n_rate          e_wrap_n_state         e_wrap_n             e_wrap_n_filt         ib                         e_wrap               e_wrap_filt          ib_dyn_r     ib_dyn_in                     ib_dyn_T                     ib_dyn_rstate                 ib_dyn_lstate                 ib_dyn                       dv_dyn                  dv_hys                  soc                     dt                Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_s            voc_stat_f             soc_ekf               y               fltw     falw"
+        return None
+    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                          ib_charge                   ib_sel         ib                          ib_amp_hdwe                 ib_amp_model                ib_amp                      ib_noa_hdwe                 ib_noa_model               ib_noa                      ib_diff                     ibh                         ib_s                 ib_amp_lo    ib_amp_hi   ib_noa_lo   ib_noa_hi dis_amp_flt    dt                  ib_amp                    ib_dyn_T_m          ib_dyn_rstate_m                ib_dyn_lstate_m                     ib_dyn_m                 vb                    vb_model               vb_hdwe               vb_hdwe_f             dv_dyn_m               e_wrap_m_T           e_wrap_m_tau         e_wrap_m_rate          e_wrap_m_reset         e_wrap_m_state        voc                   voc_soc                e_wrap_m             e_wrap_m_filt   disable_amp_fault ib_amp_lo  ib_noa_lo  e_wrap_m_reset  e_wrap_m_trim         ib_dyn_n                 ib_dyn_T_n        dv_dyn_n               e_wrap_n             e_wrap_n_filt         ib_dyn_n                    ib_dyn                   ib_dyn_T_n           ib_dyn_rstate_n               ib_dyn_lstate_n             dv_dyn_n                e_wrap_n_T             e_wrap_n_tau         e_wrap_n_rate          e_wrap_n_state              e_wrap_n_trim        e_wrap_n_trimmed       e_wrap_n             e_wrap_n_filt         ib                         e_wrap               e_wrap_filt          ib_dyn_r     ib_dyn_in                     ib_dyn_T                     ib_dyn_rstate                 ib_dyn_lstate                 ib_dyn                       dv_dyn                  dv_hys                  soc                     dt                Tb_f                      Tb_f_rap                 voc_soc               voc                   voc_stat              voc_stat_s            voc_stat_f             soc_ekf               y_ekf                 y_ekf_f                fltw falw    soc_min"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -581,9 +678,12 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:14.6f}".format(SN.mon_run.ib_sel[G.i]),
           "{:14.6f}".format(SN.mon_run.ib[G.i]), "{:12.6f}".format(mon.ib),
           "{:14.6f}".format(SN.mon_run.ib_amp_hdwe[G.i]), "{:12.6f}".format(mon.ib_amp_hdwe),
-          "{:14.6f}".format(SN.mon_run.ib_noa_model[G.i]), "{:12.6f}".format(mon.ib_amp_model),
+          "{:14.6f}".format(SN.mon_run.ib_amp_model[G.i]), "{:12.6f}".format(mon.ib_amp_model),
+          "{:14.6f}".format(SN.mon_run.ib_amp[G.i]), "{:12.6f}".format(mon.ib_amp),
           "{:14.6f}".format(SN.mon_run.ib_noa_hdwe[G.i]), "{:12.6f}".format(mon.ib_noa_hdwe),
           "{:14.6f}".format(SN.mon_run.ib_noa_model[G.i]), "{:12.6f}".format(mon.ib_noa_model),
+          "{:14.6f}".format(SN.mon_run.ib_noa[G.i]), "{:12.6f}".format(mon.ib_noa),
+          "{:14.6f}".format(SN.mon_run.ib_diff[G.i]), "{:12.6f}".format(mon.ib_diff),
           "{:14.6f}".format(SN.mon_run.ib_h[G.i]), "{:12.6f}".format(mon.ib_hdwe),
           "{:14.6f}".format(SN.mon_run.ib_s[G.i]), "{:12.6f}".format(sim.ib),
           "{:7d}".format(bool(SN.mon_run.ib_amp_lo[G.i])), "{:2d}".format(bool(mon.ib_amp_lo)),
@@ -603,6 +703,7 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:11.5f}".format(SN.mon_run.vb_hdwe_f[G.i]), "{:9.5f}".format(mon.vb_hdwe_f),
           "{:11.5f}".format(SN.mon_run.dv_dyn_m[G.i]), "{:8.5f}".format(mon.LoopIbAmp.dv_dyn),
           "{:12.4f}".format(SN.mon_run.ib_wrp_T_m[G.i]), "{:9.4f}".format(mon.LoopIbAmp.WrapErrFilt.dt),
+          "{:12.4f}".format(SN.mon_run.ib_wrp_tau_m[G.i]), "{:9.4f}".format(mon.LoopIbAmp.WrapErrFilt.tau),
           "{:12.6f}".format(SN.mon_run.ib_wrp_rate_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.rate),
           "{:12d}".format(bool(SN.mon_run.ib_wrp_reset_m[G.i])), "{:9d}".format(bool(mon.LoopIbAmp.WrapErrFilt.reset)),
           "{:12.6f}".format(SN.mon_run.ib_wrp_state_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.state),
@@ -626,8 +727,11 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:15.6f}".format(SN.mon_run.ib_dyn_lstate_n[G.i]), "{:13.6f}".format(mon.LoopIbNoa.ChargeTransfer.state),
           "{:11.5f}".format(SN.mon_run.dv_dyn_n[G.i]), "{:9.5f}".format(mon.LoopIbNoa.dv_dyn),
           "{:12.4f}".format(SN.mon_run.ib_wrp_T_n[G.i]), "{:9.4f}".format(mon.LoopIbNoa.WrapErrFilt.dt),
+          "{:12.4f}".format(SN.mon_run.ib_wrp_tau_n[G.i]), "{:9.4f}".format(mon.LoopIbNoa.WrapErrFilt.tau),
           "{:12.6f}".format(SN.mon_run.ib_wrp_rate_n[G.i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.rate),
           "{:12.6f}".format(SN.mon_run.ib_wrp_state_n[G.i]), "{:9.6f}".format(mon.LoopIbNoa.WrapErrFilt.state),
+          "{:16.5f}".format(SN.mon_run.e_wrap_n_trim[G.i]), "{:8.5f}".format(mon.e_wrap_n_trim),
+          "{:12.6f}".format(SN.mon_run.e_wrap_n_trimmed[G.i]), "{:9.6f}".format(mon.LoopIbNoa.e_wrap_trimmed),
           "{:11.5f}".format(SN.mon_run.e_wrap_n[G.i]), "{:8.5f}".format(mon.e_wrap_n),
           "{:11.5f}".format(SN.mon_run.e_wrap_n_filt[G.i]), "{:8.5f}".format(mon.e_wrap_n_filt),
           "{:14.6f}".format(SN.mon_run.ib[G.i]), "{:12.6f}".format(mon.ib),
@@ -651,13 +755,16 @@ def print_volt_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:11.5f}".format(SN.sim_run.voc_stat_s[G.i]), "{:9.5f}".format(sim.voc_stat),
           "{:11.5f}".format(SN.mon_run.z[i_ekf]), "{:9.5f}".format(mon.voc_stat_f),
           "{:11.5f}".format(SN.mon_run.soc_ekf[G.i]), "{:9.5f}".format(mon.soc_ekf),
-          "{:11.5f}".format(SN.mon_run.y_ekf[G.i]), "{:9.5f}".format(mon.y),
+          "{:11.5f}".format(SN.mon_run.y_ekf[G.i]), "{:9.5f}".format(mon.y_ekf),
+          "{:11.5f}".format(SN.mon_run.y_ekf_f[G.i]), "{:9.5f}".format(mon.y_ekf_f),
           "{:8d}".format(SN.mon_run.fltw[G.i]), "{:4d}".format(SN.mon_run.falw[G.i]),
+          "{:11.5f}".format(SN.mon_run.soc_min[G.i]), "{:9.5f}".format(mon.soc_min),
           )
     print(Colors.reset, end='')
     return hdr
 
 # 8
+# noinspection PyPep8Naming
 def print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
     global count_since_last_header, vv_warning_printed
     if not hasattr(SN.mon_run, 'voltage_low') or SN.mon_run.voltage_low is None:
@@ -666,7 +773,7 @@ def print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
             print(f"\n**********\nLikely a vv1-vv3 run.  Not printing print_vb_wrap_RunSim  (request_hist_in=8)\n*************\n")
             vv_warning_printed = True
             print(Colors.reset, end='')
-        return
+        return None
     hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      bms_off     voltage_low   bms_off_s   voltage_low_s  dt                vb                           ib_amp                      vb_m                      voc_m                   voc_soc_m                 voc_soc                   e_wrap_m                  e_wrap_trim          e_wrap_trimmed         e_wrap_m_filt      ib_diff    wrap_m_and_n_fa    wrap_lo_m_fa       wrap_lo_n_fa       wrap_lo_fa         wrap_hi_m_fa       wrap_hi_n_fa       wrap_hi_fa         ib_is_functional   wrap_vb_faj        ib_quiet          ib_really_quiet"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
@@ -722,6 +829,9 @@ def print_vb_wrap_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
 
 
 def save_clean_file(mon_ver, csv_file, unit_key):
+    if mon_ver is None:
+        print("save_clean_file: mon_ver is None (broke early due to skip), skipping save.")
+        return
     default_header_str = "unit,               hm,                  cTime,        dt,       sat,sel,mod,\
       Tb,Tb_rap,Tb_f,Tb_f_rap,Tb_f_rate,Tb_f_rate_rap, vb,  ib,  ib_dyn, ioc,  voc_soc,    vsat,dv_dyn,voc_stat,voc_stat_f,voc_ekf,     y,    soc_s,soc_ekf,soc,ib_lag,voc_soc_new,"
     n = len(mon_ver.time)
@@ -786,4 +896,47 @@ def save_clean_file_sim(sim_ver, csv_file, unit_key):
             output.write(s)
         print("Wrote(save_clean_file_sim):", csv_file)
 
+def save_fault_coverage(mon_run, csv_file, unit_key):
+    hdr_list = ['unit_fault', 'hm']
+    flt_list = ['fltw', 'falw', 'ccd_fa', 'ib_diff_flt', 'ib_diff_fa',
+                'wrap_hi_flt', 'wrap_lo_flt', 'vc_flt', 'wrap_hi_m_flt', 'wrap_lo_m_flt', 'wrap_hi_n_flt',
+                'wrap_lo_n_flt', 'wrap_m_and_n_flt', 'red_loss', 'wrap_hi_fa', 'wrap_lo_fa', 'wv_fa', 'vc_fa',
+                'wrap_hi_m_fa', 'wrap_lo_m_fa', 'wrap_hi_n_fa', 'wrap_lo_n_fa', 'wrap_m_and_n_fa', 'ib_sel',
+                'ib_noa_bare_flt', 'ib_amp_bare_flt', 'ib_dscn_flt', 'ib_dscn_fa', 'ib_noa_flt', 'ib_noa_fa',
+                'ib_amp_flt', 'ib_amp_fa', 'vb_flt', 'vb_fa_lt', 'tb_flt', 'tb_fa', 'bms_off', 'sat', 'red_loss']
+    default_header_str = ''
+    import numpy as np
+    m = 0
+    flt_data = []
+    mon_run.wrap_m_and_n_flt = ( (np.bool(mon_run.wrap_lo_n_flt) & np.bool(mon_run.wrap_lo_m_flt)) |
+                                 (np.bool(mon_run.wrap_hi_n_flt) & np.bool(mon_run.wrap_hi_m_flt)) )
+    mon_run.wrap_m_and_n_fa = ( (np.bool(mon_run.wrap_lo_n_fa) & np.bool(mon_run.wrap_lo_m_fa)) |
+                                 (np.bool(mon_run.wrap_hi_n_fa) & np.bool(mon_run.wrap_hi_m_fa)) )
+    for flt in hdr_list:
+        default_header_str += flt + ','
+    for flt in flt_list:
+        default_header_str += flt + ','
+        flt_data.append(getattr(mon_run, flt))
+        m += 1
+    n = len(mon_run.time)
+    date_time_start = datetime.now()
+    with open(csv_file, "w") as output:
+        output.write(default_header_str + "\n")
+        for i in range(n):
+            s = unit_key + ','
+            dt_dt = timedelta(seconds=mon_run.time[i] - mon_run.time[0])
+            time_stamp = date_time_start + dt_dt
+            s += time_stamp.strftime("%Y-%m-%dT%H:%M:%S,")
+            for j in range(m):
+                s += "{:2d},".format(np.bool(flt_data[j][i]))
+            s += "\n"
+            output.write(s)
+        s = 'covered: '
+        for j in range(m):
+            if any(flt_data[j][:] == 1):
+                s += flt_list[j] + ','
+        s += "\n"
+        output.write(s)
+
+    print("Wrote(save_fault_coverage):", csv_file)
 

@@ -18,21 +18,18 @@ a monitor object (MON) and a simulation object (SIM).   The monitor is
 the EKF and Coulomb Counter.   The SIM is a battery model, that also has a
 Coulomb Counter built in."""
 
-import matplotlib.pyplot as plt
 from CompareRunSim import compare_run_sim
 from CompareHistSim import compare_hist_sim
-import sys
-import ComparePlotSettings
 
 # Suppress all UserWarning messages
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-# noinspection PyUnusedLocal
+# noinspection PyUnusedLocal,PyPep8Naming
 def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=True,
                      strict_overplot=False, terse=False, use_mon_csv=False, dt_resample=10, Tb_force=None,
-                     use_mon_soc=False, verbose=True, scale=1., slr_hys_sim=1., Battery=None,
+                     use_mon_soc=False, verbose=False, scale=1., slr_hys_sim=1., Battery=None,
                      init_time=None, time_shift=None, mon_str='', sync_time=None,
                      request_history_run_sim=None, request_history_hist_sim=None):
     print(f"\n compare_run_hist: \
@@ -71,6 +68,7 @@ def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=True,
     pass
 
 
+# noinspection PyPep8Naming
 def main():  # Example usage:  ok 20260217
 
     # Cut-pasted from GUI_TestSOC Run window
@@ -80,17 +78,10 @@ def main():  # Example usage:  ok 20260217
     plots = True
     strict_overplot = True
     terse = True
-    use_mon_csv = False
     dt_resample = 10
     Tb_force = None
     use_mon_soc = False
     verbose = True
-    scale = 1.0
-    slr_hys_sim = 1.0
-    init_time = None
-    time_shift = None
-    mon_str = ''
-    sync_time = None
     request_history_run_sim = None
     request_history_hist_sim = None
 

@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (C) 2023 - Dave Gutz
+// Copyright (C) 2026 - Dave Gutz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,45 +34,36 @@ extern PrinterPars pr;  // Print buffer
 extern PublishPars pp;  // For publishing
 extern SavedPars sp;    // Various parameters to be static at system level and saved through power cycle
 
-// Print bitmap utility
-String bitMapPrint(char *buf, const int16_t fw, const uint8_t num)
-{
-  for ( int i=0; i<num; i++ )
-  {
-    if ( bitRead(fw, i) ) buf[num-i-1] = '1';
-    else  buf[num-i-1] = '0';
-  }
-  buf[num] = '\0';
-  return ( String(buf) );
-}
-
 
 // class TempSensor
 // constructors
 TempSensor::TempSensor(const uint16_t pin, const bool parasitic, const uint16_t conversion_delay)
 : tb_stale_flt_(true)
 {
-   SdTb = new SlidingDeadband(HDB_TBATT);
-   Serial.printf("Tb started\n");
+  SdTb = new SlidingDeadband(HDB_TBATT);
+  Serial.printf("Tb started\n");
 }
 TempSensor::TempSensor(const uint16_t pin, const bool parasitic, const uint16_t conversion_delay, const uint16_t VTb_pin)
 : tb_stale_flt_(true), VTb_pin_(VTb_pin)
 {
-   SdTb = new SlidingDeadband(HDB_TBATT);
-   Serial.printf("Tb started\n");
+  Tb_read_ = new AnalogReadP2(VTb_pin_);
+  SdTb = new SlidingDeadband(HDB_TBATT);
+  Serial.printf("Tb started\n");
 }
 TempSensor::~TempSensor() {}
 // operators
 // functions
-float TempSensor::sample(Sensors *Sen)
+float TempSensor::sample(Sensors *Sen, const bool reset)
 {
   // Log.info("  TempSensor::sample");
   // Read Sensor
   // MAXIM conversion 1-wire Tp plenum temperature
   static double Tb_hdwe = 0.;
 
-  Tb_volt_ = float(analogRead(VTb_pin_))*VTB_CONV_GAIN;
-  sample_time_ = System.millis();
+  int Tb_raw_ = 0;
+  Tb_raw_ = Tb_read_->analogReadDebounced(VRAW_BARE_DETECTED, reset, "Tb");
+  Tb_volt_ = float(Tb_raw_)*VTB_CONV_GAIN;
+  sample_time_ = millis();
 
   float res = Tb_volt_ * float(HDWE_RS_2WIRE) / (V3V3 - Tb_volt_);
   #ifdef USE_SH_2WIRE
@@ -99,7 +90,7 @@ float TempSensor::sample(Sensors *Sen)
 Shunt::Shunt()
 : name_("None"), port_(0x00), bare_shunt_(false){}
 Shunt::Shunt(const String name, const uint8_t port, float *sp_ib_scale,  float *sp_Ib_bias, const float v2a_s,
-  const uint8_t vc_pin, const uint8_t vo_pin, const uint8_t vh3v3_pin, const boolean using_opAmp, const boolean using_kf)
+  const uint8_t vc_pin, const uint8_t vo_pin, const uint8_t vh3v3_pin, const bool using_opAmp, const bool using_kf)
 : name_(name), port_(port), bare_shunt_(false), v2a_s_(v2a_s),
   vshunt_int_(0), vshunt_int_0_(0), vshunt_int_1_(0), vshunt_(0), Ishunt_cal_(0),
   sp_ib_bias_(sp_Ib_bias), sp_ib_scale_(sp_ib_scale), sample_time_(0UL), sample_time_z_(0UL), dscn_cmd_(false),
@@ -109,6 +100,10 @@ Shunt::Shunt(const String name, const uint8_t port, float *sp_ib_scale,  float *
   if ( using_opamp_ ) Serial.printf("Ib %s sense ADC pin %d started using OpAmp and 3V3 pin %d\n", name_.c_str(), vo_pin_, vr_pin_);
   else Serial.printf("Ib %s sense ADC pins %d and %d started\n", name_.c_str(), vo_pin_, vc_pin_);
   KF_ = new KalmanFilter(0.1, 0., KF_Q_STD, KF_R_STD);
+  Vc_read_ = new AnalogReadP2(using_opamp_ ? vr_pin_ : vc_pin_);
+  Vc_read_ = new AnalogReadP2(using_opamp_ ? vr_pin_ : vc_pin_);
+  Vo_read_ = new AnalogReadP2(vo_pin_);
+  Bare_delay_ = new TFDelay(false, RAW_BARE_S, RAW_BARE_R, sample_time_);
 }
 Shunt::~Shunt() {}
 // operators
@@ -147,42 +142,25 @@ void Shunt::pretty_print()
 }
 
 // Convert sampled shunt data to Ib engineering units
-void Shunt::convert(const boolean disconnect, const boolean reset, Sensors *Sen)
+void Shunt::convert(const bool disconnect, const bool reset, Sensors *Sen)
 {
-  #ifdef HDWE_ADS1013_AMP_NOA
-    if ( !bare_shunt_ && !dscn_cmd_ )
-    {
-      #ifndef HDWE_BARE
-        vshunt_int_ = readADC_Differential_0_1(name_);
-      #else
-        vshunt_int_ = 0;
-      #endif
-      sample_time_z_ = sample_time_;
-      sample_time_ = System.millis();
-    }
-    else
-    {
-      vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0;
-    }
-    vshunt_ = computeVolts(vshunt_int_);
+  reset_ = reset;
+  #ifndef HDWE_BARE
+    bare_shunt_ = Bare_delay_->calculate(Vc_read_->dead(), RAW_BARE_S, RAW_BARE_R, Sen->T(),reset_);
   #else
-    #ifndef HDWE_BARE
-      bare_shunt_ = Vc_ < VC_BARE_DETECTED;
-    #else
-      bare_shunt_ = false;
-    #endif
-    if ( !bare_shunt_ && !dscn_cmd_ )
-    {
-      vshunt_ = Vo_Vc_;
-      vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0;
-    }
-    else
-    {
-      vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0; vshunt_ = 0.; vshunt_kf_ = 0.;
-      Vc_raw_ = 0; Vc_ = 0.; Vo_raw_ = 0; Vo_ = 0.;
-      Ishunt_cal_ = 0.;
-    }
+    bare_shunt_ = false;
   #endif
+  if ( !bare_shunt_ && !dscn_cmd_ )
+  {
+    vshunt_ = Vo_Vc_;
+    vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0;
+  }
+  else
+  {
+    vshunt_int_0_ = 0; vshunt_int_1_ = 0; vshunt_int_ = 0; vshunt_ = 0.; vshunt_kf_ = 0.;
+    Vc_raw_ = 0; Vc_ = 0.; Vo_raw_ = 0; Vo_ = 0.;
+    Ishunt_cal_ = 0.;
+  }
   if ( disconnect )
   {
     Ishunt_cal_ = 0.;
@@ -200,7 +178,7 @@ void Shunt::convert(const boolean disconnect, const boolean reset, Sensors *Sen)
 }
 
 // Sample and filter amplifier Vo-Vc
-void Shunt::sample(const boolean reset_kf)
+void Shunt::sample(const bool reset_kf)
 {
   sample_Vo();
   sample_Vc();
@@ -216,7 +194,7 @@ void Shunt::sample_combine()
 }
 
 // Apply Kalman filter to Vo-Vc
-void Shunt::sample_filter_kf(const boolean reset_kf)
+void Shunt::sample_filter_kf(const bool reset_kf)
 {
   if ( using_kf_ )
     vshunt_kf_ = KF_->calculate(reset_kf, dt_ms()/1000., Vo_Vc_);
@@ -228,14 +206,13 @@ void Shunt::sample_filter_kf(const boolean reset_kf)
 // Sample Vc = Vr centering signal for amplifier
 void Shunt::sample_Vc()
 {
+  Vc_raw_ = Vc_read_->analogReadDebounced(VRAW_BARE_DETECTED, reset_, name_);
   if ( using_opamp_ )
   {
-    Vc_raw_ = analogRead(vr_pin_);
     Vc_ =  float(Vc_raw_)*VH3V3_CONV_GAIN + ap.vc_add();
   }
   else
   {
-    Vc_raw_ = analogRead(vc_pin_);
     Vc_ =  float(Vc_raw_)*VC_CONV_GAIN + ap.vc_add();
   }
 }
@@ -244,1012 +221,31 @@ void Shunt::sample_Vc()
 void Shunt::sample_Vo()
 {
   sample_time_z_ = sample_time_;
-  sample_time_ = System.millis();
-  Vo_raw_ = analogRead(vo_pin_);
+  sample_time_ = millis();
+  Vo_raw_ = Vo_read_->analogReadDebounced(VRAW_BARE_DETECTED, reset_, name_);
   Vo_ =  float(Vo_raw_)*VO_CONV_GAIN;
-}
-
-
-// Class Looparound
-Looparound::Looparound(BatteryMonitor *Mon, Sensors *Sen, const float wrap_hi_amp, const float wrap_lo_amp, const double wrap_trim_gain,
-    const float imax, const float imin, const float err_max):
-  chem_(Mon->chem()), e_wrap_(0.), e_wrap_filt_(0.), e_wrap_rate_(0.), e_wrap_trim_(0.), e_wrap_trimmed_(0.), hi_fail_(false), hi_fault_(false), ib_(0.),
-  ib_past_(0), imax_(imax), imin_(imin), lo_fail_(false), lo_fault_(false), Mon_(Mon), reset_(false), Sen_(Sen), voc_(0.), wrap_hi_amp_(wrap_hi_amp), wrap_lo_amp_(wrap_lo_amp),
-  wrap_trim_gain_(wrap_trim_gain)
-{
-  ChargeTransfer_ = new LagExp(EKF_NOM_DT, chem_->tau_ct, -NOM_UNIT_CAP, NOM_UNIT_CAP);     // actual update time provided run time
-  Trim_ = new TustinIntegrator(EKF_NOM_DT, -err_max*10., err_max*10.);          // actual update time provided run time
-  WrapErrFilt_ = new LagTustin(2., WRAP_ERR_FILT, -err_max, err_max);   // actual update time provided run time
-  WrapHi_ = new TFDelay(false, WRAP_HI_S, WRAP_HI_R, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
-  WrapLo_ = new TFDelay(false, WRAP_LO_S, WRAP_LO_R, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
-}
-
-// Update the loop
-void Looparound::calculate(const boolean reset, const boolean disable_fault, const float ib, Sensors *Sen)
-{
-  reset_ = reset || Sen_->Flt->reset_all_faults();
-  ib_ = ib;
-  vb_ = Mon_->vb();
-  voc_soc_ = Mon_->voc_soc();
-  
-  // Dynamic emf. vb_ is stale when running with model
-  float ib_into_ct = ib_;
-  if (sp.mod_vb()) 
-  {
-    ib_into_ct = ib_past_;
-  }
-  ib_dyn_ = ChargeTransfer_->calculate(ib_into_ct, reset_, chem_->tau_ct, Sen_->T);
-  dv_dyn_ = ib_dyn_*chem_->r_ct*ap.slr_res() + ib_into_ct*chem_->r_0*ap.slr_res();
-  voc_ = vb_ - dv_dyn_;
-  e_wrap_ = voc_soc_ - voc_;
-
-  // Trimmer using past values
-  float trim_init = 0.;
-  float trim_rate_lim = 0.;
-  if ( wrap_trim_gain_ > 0. )
-  {
-    trim_init = -(Mon_->vb() - Mon_->voc_soc() - dv_dyn_);
-    trim_rate_lim = max(min(e_wrap_filt_*wrap_trim_gain_, MAX_TRIM_RATE), -MAX_TRIM_RATE);
-    e_wrap_trim_ = -Trim_->calculate(trim_rate_lim, min(Sen_->T, F_MAX_T_WRAP), reset_, trim_init,
-                                      -ewlo_thr_base_*EWLO_TRM_SLR, -ewhi_thr_base_*EWHI_TRM_SLR);
-  }
-  else
-  {
-    trim_init = 0.;
-    trim_rate_lim = 0.;
-    e_wrap_trim_ = 0.;
-  }
-
-  // e_wrap using present values
-  e_wrap_trimmed_ = e_wrap_ + e_wrap_trim_;
-  e_wrap_filt_ = WrapErrFilt_->calculate(e_wrap_trimmed_, reset_, min(Sen_->T, F_MAX_T_WRAP));
-  e_wrap_rate_ = WrapErrFilt_->rate();  // TODO:  wrap rates not needed?
-
-  // Thresholds. Scalars are calculated by Flt->wrap_scalars()
-  ewhi_thr_base_ = Mon_->r_ss() * wrap_hi_amp_ * ap.ewhi_slr();
-  ewhi_thr_ = ewhi_thr_base_ * Sen_->Flt->ewsat_slr() * Sen_->Flt->ewmin_slr();
-  ewlo_thr_base_ = Mon_->r_ss() * wrap_lo_amp_ * ap.ewlo_slr();
-  ewlo_thr_ = ewlo_thr_base_ * Sen_->Flt->ewsat_slr() * Sen_->Flt->ewmin_slr();
-
-  // sat logic screens out voc jumps when ib>0 when saturated
-  // wrap_hi and wrap_lo don't latch because need them available to check next ib sensor selection for dual ib sensor
-  // wrap_vb latches because vb is single sensor  faultAssign( (e_wrap_filt_ >= ewhi_thr_ && !Mon->sat()), WRAP_HI_FLT);
-
-  hi_fault_ = (e_wrap_filt_ >= ewhi_thr_) && !disable_fault;
-  if ( !disable_fault )  // freeze fail
-    hi_fail_ = WrapHi_->calculate(hi_fault_, WRAP_HI_S, WRAP_HI_R, Sen_->T, reset_) && !Sen_->Flt->vb_fa();  // not latched
-
-  lo_fault_ = (e_wrap_filt_ <= ewlo_thr_) && !disable_fault;
-  if ( !disable_fault )  // freeze fail
-    lo_fail_ = WrapLo_->calculate(lo_fault_, WRAP_LO_S, WRAP_LO_R, Sen_->T, reset_) && !Sen_->Flt->vb_fa();  // not latched
-
-  if ( sp.debug()==71 ) Serial.printf("ib%7.3f reset%d ewlo_thr/e_wrap_filt/ewhi_thr  %7.3f/%7.3f/%7.3f trim%7.3f vb_fa %d lo_fault/fail %d/%d hi_fault/fail %d/%d\n",
-   ib_, reset_, ewlo_thr_, e_wrap_filt_, ewhi_thr_, e_wrap_trim_, Sen_->Flt->vb_fa(), lo_fault_, lo_fail_, hi_fault_, hi_fail_);
-  ib_past_ = ib_;
-}
-
-String Looparound::pretty_print(Sensors *Sen)
-{
-  String txBuf;
-  txBuf = String::format(" reset %d\n", reset_) + 
-    String::format(" ib%7.3f A\n", ib_) +
-    String::format(" ib_dyn%7.3f A\n", ib_dyn_) +
-    String::format(" dv_dyn%7.3f V\n", dv_dyn_) +
-    String::format(" voc_soc%7.3f V\n", voc_soc_) +
-    String::format(" voc%7.3f V\n", voc_) +
-    String::format(" e_wrap (= voc_soc-voc) %7.3f V\n", e_wrap_) +
-    String::format(" e_wrap_filt%7.3f V\n", e_wrap_filt_) +
-    String::format(" ewhi_slr%7.3f\n",  ap.ewhi_slr()) +
-    String::format(" ewlo_slr%7.3f\n",  ap.ewlo_slr()) +
-    String::format(" ewmin_slr%7.3f\n",  Sen_->Flt->ewmin_slr()) +
-    String::format(" ewsat_slr%7.3f\n", Sen_->Flt->ewsat_slr()) +
-    String::format(" ewhi_thr_base%7.3f V\n", ewhi_thr_base_) +
-    String::format(" ewlo_thr_base%7.3f V\n", ewlo_thr_base_) +
-    String::format(" ewhi_thr (kicked)%7.3f V\n", ewhi_thr_) +
-    String::format(" ewlo_thr (kicked)%7.3f V\n", ewlo_thr_) +
-    String::format(" e_wrap_trim%7.3f V\n", e_wrap_trim_) +
-    String::format(" e_wrap_trimmed%7.3f V\n", e_wrap_trimmed_) +
-    String::format(" wrap_trim_gain%7.3f r/s\n", wrap_trim_gain_) +
-    String::format(" hi_fault/fail %d/%d\n", hi_fault_, hi_fail_) +
-    String::format(" lo_fault/fail %d/%d\n", lo_fault_, lo_fail_) +
-    String::format(" ewlo_thr/ewhi_thr%7.3f/%7.3f V\n", ewlo_thr_, ewhi_thr_);
-    return ( txBuf );
-}
-
-
-// Class Fault
-Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *Sen):
-  cc_diff_(0.), cc_diff_empty_slr_(1), disable_amp_fault_(false), ewsat_slr_(1),
-  e_wrap_(0), e_wrap_filt_(0), fltw_(0UL), falw_(0UL),
-  ib_amp_hi_(false), ib_amp_invalid_(false), ib_amp_lo_(false), ib_choice_(KeepTrying),
-  ib_choice_last_(KeepTrying), ib_decision_(0), ib_diff_(0), ib_diff_f_(0), ib_lo_active_(true),
-  ib_lo_limited_hi_(false), ib_lo_limited_lo_(false),
-  ib_noa_hi_(false), ib_noa_invalid_(false), ib_noa_lo_(false), ib_quiet_(0), ib_rate_(0),
-  ib_sel_stat_(IB_SEL_STAT_DEF), ib_sel_stat_last_(IB_SEL_STAT_DEF), latch_(false),
-  latch_fake_(false), reset_all_faults_(false), sp_preserving_(preserving), tb_sel_stat_(TB_SEL_STAT_DEF),
-  tb_sel_stat_last_(TB_SEL_STAT_DEF), vb_sel_stat_(VB_SEL_STAT_DEF),
-  vb_sel_stat_last_(VB_SEL_STAT_DEF), wrap_hi_amp_(WRAP_HI_AMP), wrap_hi_noa_(WRAP_HI_NOA),
-   wrap_lo_amp_(WRAP_LO_AMP), wrap_lo_noa_(WRAP_LO_NOA)
-{
-  IbNoaRate = new RateLagExp(T, WRAP_ERR_FILT/4., -MAX_ERR_FILT, MAX_ERR_FILT);
-  IbErrFilt = new LagTustin(T, TAU_ERR_FILT, -IBATT_DISAGREE_THRESH*1.5, IBATT_DISAGREE_THRESH*1.5);  // actual update time provided run time
-  IbdPosPer = new TFDelay(false, IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, T);
-  IbdNegPer = new TFDelay(false, IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, T);
-  IbdHiPer = new TFDelay(false, IBATT_DISAGREE_SET, IBATT_DISAGREE_RESET, T);
-  IbdLoPer = new TFDelay(false, IBATT_DISAGREE_SET, IBATT_DISAGREE_RESET, T);
-  CcdiffPer  = new TFDelay(false, CC_DIFF_SET, CC_DIFF_RESET, T);
-  IbAmpHardFail  = new TFDelay(false, IB_HARD_SET, IB_HARD_RESET, T);
-  IbLoLimitedHi  = new TFDelay(true, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET, T);
-  IbLoLimitedLo  = new TFDelay(true, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET, T);
-  IbNoAmpHardFail  = new TFDelay(false, IB_HARD_SET, IB_HARD_RESET, T);
-  TbHardFail  = new TFDelay(false, TB_HARD_SET, TB_HARD_RESET, T);
-  TbStaleFail  = new TFDelay(false, TB_STALE_SET, TB_STALE_RESET, T);
-  VbHardFail  = new TFDelay(false, VB_HARD_SET, VB_HARD_RESET, T);
-  VcHardFail  = new TFDelay(false, VC_HARD_SET, VC_HARD_RESET, T);
-  QuietPer  = new TFDelay(false, QUIET_S, QUIET_R, T);
-  if ( !sp.mod_ib() )
-    QuietPerFunc  = new TFDelay(false, QUIET_S, QUIET_R, T);
-  else
-    QuietPerFunc  = new TFDelay(true, QUIET_S, QUIET_R, T);
-  WrapErrFilt = new LagTustin(T, WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
-  WrapHi = new TFDelay(false, WRAP_HI_S, WRAP_HI_R, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
-  WrapLo = new TFDelay(false, WRAP_LO_S, WRAP_LO_R, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
-  QuietFilt = new General2_Pole(T, WN_Q_FILT, ZETA_Q_FILT, MIN_Q_FILT, MAX_Q_FILT);  // actual update time provided run time
-  QuietRate = new RateLagExp(T, TAU_Q_FILT, MIN_Q_FILT, MAX_Q_FILT);
-  LoopIbAmp = new Looparound(Mon, Sen, WRAP_HI_AMP, WRAP_LO_AMP, AMP_WRAP_TRIM_GAIN, IB_ABS_MAX_AMP, -IB_ABS_MAX_AMP,
-                              MAX_WRAP_ERR_FILT/(IB_ABS_MAX_NOA/IB_ABS_MAX_AMP));
-  LoopIbNoa = new Looparound(Mon, Sen, WRAP_HI_NOA, WRAP_LO_NOA, NOA_WRAP_TRIM_GAIN, IB_ABS_MAX_NOA, -IB_ABS_MAX_NOA,
-                              MAX_WRAP_ERR_FILT);
-}
-
-// Coulomb Counter difference test - failure conditions track poorly
-void Fault::cc_diff(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
-{
-  cc_diff_ = Mon->soc_ekf() - Mon->soc(); // These are filtered in their construction (EKF is a dynamic filter and 
-                                          // Coulomb counter is wrapa big integrator)
-  if ( Mon->soc() <= max(Mon->soc_min()+WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_OFF_ABS) )
-  {
-    cc_diff_empty_slr_ = CC_DIFF_LO_SOC_SLR;
-  }
-  else
-  {
-    cc_diff_empty_slr_ = 1.;
-  }
-  // ewsat_slr_ used here because voc_soc map inaccurate on cold days
-  cc_diff_thr_ = CC_DIFF_SOC_DIS_THRESH*ap.cc_diff_slr()*cc_diff_empty_slr_*ewsat_slr_;
-  failAssign( CcdiffPer->calculate(abs(cc_diff_)>=cc_diff_thr_, CC_DIFF_SET, CC_DIFF_RESET, Sen->T, reset), CC_DIFF_FA ); // CC_DIFF_FA not latched
-}
-
-// Compare current sensors - failure conditions large difference
-void Fault::ib_diff(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
-{
-  boolean reset_loc = reset || reset_all_faults_;
-  if ( disable_amp_fault_ ) ib_diff_ = 0.;
-  else if ( ib_lo_limited_hi_ ) ib_diff_ = max(0., ib_diff_);  // limit error when low amp is pegged high
-  else if ( ib_lo_limited_lo_ ) ib_diff_ = min(0., ib_diff_);  // limit error when low amp is pegged low
-  ib_diff_f_ = IbErrFilt->calculate(ib_diff_, reset_loc || disable_amp_fault_ || ib_lo_limited_hi_ || ib_lo_limited_lo_, min(Sen->T, MAX_ERR_T));
-  ib_diff_thr_ = IBATT_DISAGREE_THRESH*ap.ib_diff_slr();
-  faultAssign( IbdPosPer->calculate((ib_diff_f_>=ib_diff_thr_), IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, Sen->T, reset_loc),
-    IB_DIFF_HI_FLT );
-  faultAssign( IbdNegPer->calculate((ib_diff_f_<=-ib_diff_thr_), IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, Sen->T, reset_loc),
-    IB_DIFF_LO_FLT );
-  failAssign( IbdHiPer->calculate(ib_diff_hi_flt(), IBATT_DISAGREE_SET, IBATT_DISAGREE_RESET, Sen->T, reset_loc),
-    IB_DIFF_HI_FA ); // IB_DIFF_FA not latched
-  failAssign( IbdLoPer->calculate(ib_diff_lo_flt(), IBATT_DISAGREE_SET, IBATT_DISAGREE_RESET, Sen->T, reset_loc),
-    IB_DIFF_LO_FA ); // IB_DIFF_FA not latched
-
-  // if ( sp.debug()==2 || sp.debug()==4 ) Serial.printf("ib_diff_%7.3f reset_loc %d disable_amp_fault_ %d ib_diff_f_ %7.3f ib_diff_thr_ %7.3f ib_lo_active_ %d\n",
-  //    ib_diff_, reset_loc, disable_amp_fault_, ib_diff_f_, ib_diff_thr_, ib_lo_active_);
-}
-
-// Compare current sensors - failure conditions large difference
-void Fault::ib_logic(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
-{
-  boolean reset_loc = reset || reset_all_faults_;
-
-  // Difference error, filter, check, persist, doesn't latch
-  if ( sp.mod_ib() )
-  {
-    ib_diff_ = Sen->ib_amp_model() - Sen->ib_noa_model();
-    #ifdef HDWE_IB_HI_LO
-      ib_amp_hi_ = Sen->ib_amp_model() >= HDWE_IB_HI_LO_AMP_HI / ap.nP();
-      ib_amp_lo_ = Sen->ib_amp_model() <= HDWE_IB_HI_LO_AMP_LO / ap.nP();
-      ib_noa_hi_ = Sen->ib_noa_model() >= HDWE_IB_HI_LO_NOA_HI / ap.nP();
-      ib_noa_lo_ = Sen->ib_noa_model() <= HDWE_IB_HI_LO_NOA_LO / ap.nP();
-      ib_lo_limited_hi_ = IbLoLimitedHi->calculate(ib_amp_hi_, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET,
-                                                   Sen->T , reset_loc);
-      ib_lo_limited_lo_ = IbLoLimitedLo->calculate(ib_amp_lo_, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET,
-                                                   Sen->T , reset_loc);
-      ib_lo_active_ = !ib_lo_limited_hi_ && !ib_lo_limited_lo_;
-    #else
-      ib_amp_hi_ = false;
-      ib_amp_lo_ = false;
-      ib_noa_hi_ = false;
-      ib_noa_lo_ = false;
-      ib_lo_limited_hi_ = false;
-      ib_lo_limited_lo_ = false;
-      ib_lo_active_ = false;
-    #endif
-  }
-  else
-  {
-    ib_diff_ = Sen->ib_amp_hdwe() - Sen->ib_noa_hdwe();
-    #ifdef HDWE_IB_HI_LO
-      ib_amp_hi_ = Sen->ib_amp_hdwe() >= HDWE_IB_HI_LO_AMP_HI / ap.nP();
-      ib_amp_lo_ = Sen->ib_amp_hdwe() <= HDWE_IB_HI_LO_AMP_LO / ap.nP();
-      ib_noa_hi_ = Sen->ib_noa_hdwe() >= HDWE_IB_HI_LO_NOA_HI / ap.nP();
-      ib_noa_lo_ = Sen->ib_noa_hdwe() <= HDWE_IB_HI_LO_NOA_LO / ap.nP();
-      ib_lo_limited_hi_ = IbLoLimitedHi->calculate(ib_amp_hi_, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET,
-                                                   Sen->T , reset_loc);
-      ib_lo_limited_lo_ = IbLoLimitedLo->calculate(ib_amp_lo_, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET,
-                                                   Sen->T , reset_loc);
-      ib_lo_active_ =    !ib_lo_limited_hi_ && !ib_lo_limited_lo_;
-    #else
-      ib_amp_hi_ = false;
-      ib_amp_lo_ = false;
-      ib_noa_hi_ = false;
-      ib_noa_lo_ = false;
-      ib_lo_active_ = false;
-    #endif
-  }
-  disable_amp_fault_ = (ib_amp_hi_ && ib_noa_hi_) || (ib_amp_lo_ && ib_noa_lo_);
-
-}
-
-// Detect no signal present based on detection of quiet signal.
-// Research by sound industry found that 2-pole filtering is the sweet spot between seeing noise
-// and actual motion without 'guilding the lily'
-void Fault::ib_quiet(const boolean reset, Sensors *Sen)
-{
-  boolean reset_loc = reset | reset_all_faults_;
-
-  // Rate (has some filtering)
-  if ( !sp.mod_ib() )
-  {
-    ib_rate_ = QuietRate->calculate(Sen->Ib_amp_hdwe + Sen->Ib_noa_hdwe, reset, min(Sen->T, MAX_T_Q_FILT));
-    // 2-pole filter
-    ib_quiet_ = QuietFilt->calculate(ib_rate_, reset_loc, min(Sen->T, MAX_T_Q_FILT));
-    ib_quiet_thr_ = QUIET_A * ap.ib_quiet_slr();
-    ib_is_quiet_ = abs(ib_quiet_)<=ib_quiet_thr_ && !reset_loc;
-    ib_is_functional_ = QuietPerFunc->calculate(!ib_is_quiet_, QUIET_S, QUIET_R, Sen->T, reset_loc);
-    // Really Quiet logic added for robust (no faults) during BMS shutoff
-    ib_really_quiet_ = ib_is_quiet_ && ( abs(Sen->Ib_amp_hdwe+Sen->Ib_noa_hdwe) < LOW_A );
-  }
-  else
-  {
-    ib_rate_ = QuietRate->calculate(Sen->Ib_amp_model + Sen->Ib_noa_model, reset, min(Sen->T, MAX_T_Q_FILT));
-    // 2-pole filter
-    ib_quiet_ = QuietFilt->calculate(ib_rate_, reset_loc, min(Sen->T, MAX_T_Q_FILT));
-    ib_quiet_thr_ = QUIET_A * ap.ib_quiet_slr();
-    ib_is_quiet_ = abs(ib_quiet_)<=ib_quiet_thr_ && !reset_loc;
-    ib_is_functional_ = QuietPerFunc->calculate(!ib_is_quiet_, QUIET_S, QUIET_R, Sen->T, reset_loc);
-    // Really Quiet logic added for robust (no faults) during BMS shutoff
-    ib_really_quiet_ = ib_is_quiet_ && ( abs(Sen->Ib_amp_model+Sen->Ib_noa_model) < LOW_A );
-  }
-
-  if ( sp.debug()==21 )
-    sendTxBuf(String::format("Isum %8.3f ib_quiet %8.3f ib_quiet_thr %8.3f ib_is_quiet %d ib_is_func %d ib_really_quiet %d\n",
-      Sen->Ib_amp_hdwe + Sen->Ib_noa_hdwe, ib_quiet_, ib_quiet_thr_, ib_is_quiet_, ib_is_functional_, ib_really_quiet_), true, true);
-
-      // Fault
-  faultAssign( ib_is_quiet_, IB_DSCN_FLT );   // initializes false
-  failAssign( QuietPer->calculate(dscn_flt(), QUIET_S, QUIET_R, Sen->T, reset_loc), IB_DSCN_FA);
-  debug_check_m13(Sen);
-  debug_check_m23(Sen);
-  debug_check_m24(Sen);
-}
-
-// Range checks latch
-void Fault::ib_range(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
-{
-  boolean reset_loc = reset | reset_all_faults_;
-  if ( reset_loc )
-  {
-    failAssign(false, IB_AMP_FA);
-    failAssign(false, IB_NOA_FA);
-  }
-  faultAssign( Sen->ShuntAmp->bare_shunt(), IB_AMP_BARE);
-  faultAssign( Sen->ShuntNoAmp->bare_shunt(), IB_NOA_BARE);
-
-  // Range checks latch
-  if ( sp.mod_ib() )
-  {
-    faultAssign( ( abs(Sen->ib_amp_model()) >= ap.ib_amp_max() ) && !ap.disab_ib_fa() && !sp.tweak_test(), IB_AMP_FLT );
-    faultAssign( ( abs(Sen->ib_noa_model()) >= ap.ib_noa_max() ) && !ap.disab_ib_fa() && !sp.tweak_test(), IB_NOA_FLT );
-  }
-  else
-  {
-    #ifndef HDWE_BARE
-      faultAssign( ( ib_amp_bare() || abs(Sen->ib_amp_hdwe()) >= ap.ib_amp_max() ) && !ap.disab_ib_fa() && !sp.tweak_test(), IB_AMP_FLT );
-      faultAssign( ( ib_noa_bare() || abs(Sen->ib_noa_hdwe()) >= ap.ib_noa_max() ) && !ap.disab_ib_fa() && !sp.tweak_test(), IB_NOA_FLT );
-    #else
-      float current_max = NOM_UNIT_CAP * ap.nP();
-      faultAssign( abs(Sen->ShuntAmp->Ishunt_cal()) >= current_max && !ap.disab_ib_fa() && !sp.tweak_test(), IB_AMP_FLT );
-      faultAssign( abs(Sen->ShuntNoAmp->Ishunt_cal()) >= current_max && !ap.disab_ib_fa() && !sp.tweak_test(), IB_NOA_FLT );
-    #endif
-  }
-
-  // Fail persistence
-  if ( ap.disab_ib_fa() )
-  {
-    failAssign( false, IB_AMP_FA );
-    failAssign( false, IB_NOA_FA);
-  }
-  else
-  {
-    failAssign( vc_fa() || ib_amp_bare() || ib_amp_fa() || IbAmpHardFail->calculate(ib_amp_flt(), IB_HARD_SET, IB_HARD_RESET, Sen->T, reset_loc), IB_AMP_FA );
-    failAssign( vc_fa() || ib_noa_bare() || ib_noa_fa() || IbNoAmpHardFail->calculate(ib_noa_flt(), IB_HARD_SET, IB_HARD_RESET, Sen->T, reset_loc), IB_NOA_FA);
-  }
-  #ifdef DEBUG_INIT
-    if ( sp.mod_ib() )
-    {
-      if ( sp.debug()==62 ) Serial.printf("ibnoamod%7.3f ibampmod%7.3f ib_lo_active %d\n", Sen->Ib_noa_model, Sen->Ib_amp_model, ib_lo_active_);
-      if ( sp.debug()==62 ) Serial.printf("ib_amp_model %7.3f mx %7.3f ib_noa_model %7.3f nx %7.3f IB_AMP_FLT %d IB_NOA_FLT %d\n", Sen->ib_amp_model(), ap.ib_amp_max(), Sen->ib_noa_model(), ap.ib_noa_max(), ib_amp_flt(), ib_noa_flt());
-    }
-    else
-    {
-      if ( sp.debug()==62 ) Serial.printf("ibnoahdwe%7.3f ibamphdwe%7.3f ib_lo_active %d\n", Sen->Ib_noa_hdwe, Sen->Ib_amp_hdwe, ib_lo_active_);
-      if ( sp.debug()==62 ) Serial.printf("ib_amp_bare=%d ib_noa_bare=%d ib_model%7.3f mx%7.3f ibn%7.3f nx%7.3f IB_AMP_FLT=%d IB_NOA_FLT%d ib_lo_active%d\n", ib_amp_bare(), ib_noa_bare(), Sen->ib_amp_hdwe(), ap.ib_amp_max(), Sen->ib_noa_hdwe(), ap.ib_noa_max(), ib_amp_flt(), ib_noa_flt(), ib_lo_active_);
-    }
-  #endif
-}
-
-// Voltage wraparound logic for current selection
-// Avoid using hysteresis data for this test and accept more generous thresholds
-void Fault::ib_wrap(const boolean reset, Sensors *Sen, BatteryMonitor *Mon)
-{
-  boolean reset_loc = reset | reset_all_faults_;
-  if ( reset_loc )
-  {
-    failAssign(false, WRAP_VB_FA);
-  }
-
-  // Thresholds
-  wrap_scalars(Mon);
-
-  // ib section of wrap logic - separate because has multiple sensors and complex selection logic
-  // HI_LO-Only Logic
-  #ifdef HDWE_IB_HI_LO
-    LoopIbNoa->calculate(reset_loc, false, Sen->ib_noa(), Sen);
-    LoopIbAmp->calculate(reset_loc, disable_amp_fault_, Sen->ib_amp(), Sen);
-    faultAssign( LoopIbAmp->hi_fault(), WRAP_HI_M_FLT);
-    failAssign( LoopIbAmp->hi_fail(), WRAP_HI_M_FA);  // WRAP_HI_M_FA not latched
-    faultAssign( LoopIbAmp->lo_fault(), WRAP_LO_M_FLT);
-    failAssign( LoopIbAmp->lo_fail(), WRAP_LO_M_FA);  // WRAP_LO_M_FA not latched
-    faultAssign( LoopIbNoa->hi_fault(), WRAP_HI_N_FLT);
-    failAssign( LoopIbNoa->hi_fail(), WRAP_HI_N_FA);  // WRAP_HI_N_FA not latched
-    faultAssign( LoopIbNoa->lo_fault(), WRAP_LO_N_FLT);
-    failAssign( LoopIbNoa->lo_fail(), WRAP_LO_N_FA);  // WRAP_LO_N_FA not latched
-  #endif
-
-  // Overall wrap logic (separates amp/noa and hi/lo)
-  #ifdef HDWE_IB_HI_LO
-    e_wrap_ = scale_select(Sen->Ib_noa_hdwe, Sen->sel_brk_hdwe, LoopIbAmp->e_wrap(), LoopIbNoa->e_wrap());
-    e_wrap_filt_ = scale_select(Sen->Ib_noa_hdwe, Sen->sel_brk_hdwe, LoopIbAmp->e_wrap_filt(), LoopIbNoa->e_wrap_filt());
-    e_wrap_rate_ = scale_select(Sen->Ib_noa_hdwe, Sen->sel_brk_hdwe, LoopIbAmp->e_wrap_rate(), LoopIbNoa->e_wrap_rate());
-    faultAssign( ( wrap_hi_m_flt() && wrap_hi_n_flt() && !Mon->sat() ), WRAP_HI_FLT);
-    faultAssign( ( wrap_lo_m_flt() && wrap_lo_n_flt() ), WRAP_LO_FLT);
-    failAssign( ( wrap_hi_m_fa() && wrap_hi_n_fa() && !Mon->sat() ), WRAP_HI_FA);
-    failAssign( ( wrap_lo_m_fa() && wrap_lo_n_fa() ), WRAP_LO_FA);
-  #else
-    e_wrap_ = Mon->voc_soc() - Mon->voc_stat();
-    e_wrap_filt_ = WrapErrFilt->calculate(e_wrap_, reset_loc, min(Sen->T, F_MAX_T_WRAP));
-    e_wrap_rate_ = WrapErrFilt->rate();
-    // sat logic screens out voc jumps when ib>0 when saturated
-    // wrap_hi and wrap_lo don't latch because need them available to check next ib sensor selection for dual ib sensor
-    // wrap_vb latches because vb is single sensor
-    // Thresholds calculated by wrap_scalars()
-    faultAssign( (e_wrap_filt_ >= ewhi_thr_ && !Mon->sat()), WRAP_HI_FLT);
-    faultAssign( (e_wrap_filt_ <= ewlo_thr_), WRAP_LO_FLT);
-    failAssign( (WrapHi->calculate(wrap_hi_flt(), WRAP_HI_S, WRAP_HI_R, Sen->T, reset_loc) && !vb_fa()), WRAP_HI_FA );  // not latched
-    failAssign( (WrapLo->calculate(wrap_lo_flt(), WRAP_LO_S, WRAP_LO_R, Sen->T, reset_loc) && !vb_fa()), WRAP_LO_FA );  // not latched
-  #endif
-
-  // vb section of wrap logic - separate because vb is single sensor and can latch
-  failAssign( ( wrap_vb_fa() && !reset_loc ) ||
-              ( !ib_diff_fa() && wrap_m_and_n_fa() && ib_really_quiet() ),
-               WRAP_VB_FA);    // WRAP_VB_FA latches latches because vb is single sensor
-}
-
-void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
-{
-  String txBuf;
-
-  txBuf = String::format("\nLooparound Amp:\n");
-  sendTxBuf(txBuf, true, true);
-  txBuf = LoopIbAmp->pretty_print(Sen);
-  sendTxBuf(txBuf, true, true);
-
-  txBuf = String::format("\nLooparound Noa:\n");
-  sendTxBuf(txBuf, true, true);
-  txBuf = LoopIbNoa->pretty_print(Sen);
-  sendTxBuf(txBuf, true, true);
-
-  txBuf = String::format("\nFault:\n") +
-    String::format(" cc_diff%9.6f  thr%9.6f Fc^\n", cc_diff_, cc_diff_thr_) +
-    String::format(" ib_lo_limited_hi %d\n", ib_lo_limited_hi_) +
-    String::format(" ib_lo_active     %d\n", ib_lo_active_) +
-    String::format(" ib_lo_limited_lo %d\n", ib_lo_limited_lo_) +
-    String::format(" ib_diff%7.3f thr%7.3f Fd^\n", ib_diff_f_, ib_diff_thr_) +
-    String::format(" e_wrap_filt%7.3f\n", e_wrap_filt_) +
-    String::format(" ib_quiet%7.3f thr%7.3f Fq v\n", ib_quiet_, ib_quiet_thr_) +
-    String::format(" sel_brk_hdwe:     ");
-  sendTxBuf(txBuf, true, true);
-
-  txBuf = Sen->sel_brk_hdwe->pretty_print() +
-    String::format("\n");
-  sendTxBuf(txBuf, true, true);
-
-  txBuf = String::format(" soc%7.3f soc_inf%7.3f voc%7.3f  voc_soc%7.3f\n", Mon->soc(), Mon->soc_inf(), Mon->voc(), Mon->voc_soc()) +
-    String::format(" dis_tb_fa %d  dis_vb_fa %d  dis_ib_fa %d\n", ap.disab_tb_fa(), ap.disab_vb_fa(), ap.disab_ib_fa()) +
-    String::format(" ib_is_quiet %d ib_really_quiet %d\n", ib_is_quiet_, ib_really_quiet_) +
-    String::format(" bms_off  %d\n\n", Mon->bms_off()) +
-    String::format(" wrap_m_and_n_fa %d\n", Sen->Flt->wrap_m_and_n_fa()) +
-    String::format(" Tbh%9.5f Tbm=%9.5f sel%9.5f\n", Sen->Tb_hdwe, Sen->Tb_model, Sen->Tb) +
-    String::format(" Vbh%7.3f Vbm %7.3f sel%7.3f\n", Sen->Vb_hdwe, Sen->Vb_model, Sen->Vb) +
-    String::format(" V3v3%7.3f\n", Sen->ShuntAmp->Vc()*2.) +
-    String::format(" Imh%7.3f Imm %7.3f Ib%7.3f\n", Sen->Ib_amp_hdwe, Sen->Ib_amp_model, Sen->Ib) +
-    String::format(" Inh%7.3f Inm %7.3f Ib%7.3f\n", Sen->Ib_noa_hdwe, Sen->Ib_noa_model, Sen->Ib) +
-    String::format(" Ibh%7.3f Ibh %7.3f Ib%7.3f\n\n", Sen->Ib_hdwe, Sen->Ib_hdwe_model, Sen->Ib);
-  sendTxBuf(txBuf, true, true);
-
-  // if ( ib_choice_ != ib_choice_last_ || vb_sel_stat_ != vb_sel_stat_last_ || tb_sel_stat_ != tb_sel_stat_last_ )
-  debug_qs(Mon, Sen);
-  
-txBuf = String::format("") +
-  #ifdef HDWE_IB_HI_LO
-    String::format("HDWE_IB_HI_LO Decisions\n") +
-  #else
-    String::format(("Active/Standby Decisions\n") +
-  #endif
-    String::format("       Fault  Fail'\n") +
-    String::format("1 wnl     %d  %d 'Fo ^'\n", wrap_lo_n_flt(), wrap_lo_n_fa()) +
-    String::format("0 wnh     %d  %d 'Fi ^'\n", wrap_hi_n_flt(), wrap_hi_n_fa()) +
-    String::format("F wml     %d  %d 'Fo ^'\n", wrap_lo_m_flt(), wrap_lo_m_fa()) +
-    String::format("E wmh     %d  %d 'Fi ^'\n", wrap_hi_m_flt(), wrap_hi_m_fa()) +
-    String::format("D vc      %d  %d 'FI 1'\n", vc_flt(), vc_fa()) +
-    String::format("C bare n  %d  x \n", ib_noa_bare()) +
-    String::format("B bare m  %d  x \n", ib_amp_bare()) +
-    String::format("A ib_dsc  %d  %d 'Fq v'\n", ib_dscn_flt(), ib_dscn_fa()) +
-    String::format("9 ibd_lo  %d  %d 'Fd ^ SA/SB'\n", ib_diff_lo_flt(), ib_diff_lo_fa()) +
-    String::format("8 ibd_hi  %d  %d 'Fd ^ SA/SB'\n", ib_diff_hi_flt(), ib_diff_hi_fa()) +
-    String::format("7 red wv  %d  %d   'Fd, Fi/Fo ^'\n",  red_loss(), wrap_vb_fa()) +
-    String::format("6 wl      %d  %d 'Fo ^'\n", wrap_lo_flt(), wrap_lo_fa()) +
-    String::format("5 wh      %d  %d 'Fi ^'\n", wrap_hi_flt(), wrap_hi_fa()) +
-    String::format("4 xx | cc_dif x  %d 'x Fc ^'\n", cc_diff_fa()) +
-    String::format("3 ib n    %d  %d 'FI 1'\n", ib_noa_flt(), ib_noa_fa()) +
-    String::format("2 ib m    %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa()) +
-    String::format("1 vb      %d  %d 'Fv 1  SV, *Dc/*Dv'.", vb_flt(), vb_fa()) +
-    String::format("  bms_off %d\n", Mon->bms_off()) +
-    String::format("0 tb      %d  %d 'Ft 1'\n\n", tb_flt(), tb_fa()) +
-    String::format("B-time_long%2d\n", dispRead(time_long)) +
-    String::format("A-accy     %2d\n", dispRead(accy)) +
-    String::format("9-off      %2d\n", dispRead(off)) +
-    String::format("8-SAT      %2d\n", dispRead(SAT)) +
-    String::format("7-flt_ekf  %2d\n", dispRead(flt_ekf)) +
-    String::format("6-flt_tb   %2d\n", dispRead(flt_tb)) +
-    String::format("*5-fail_vb %2d\n", dispRead(fail_vb)) +
-    String::format("*4-fail_ibm%2d\n", dispRead(fail_ibm)) +
-    String::format("*3-fail_ib %2d\n", dispRead(fail_ib)) +
-    String::format("2-red_loss %2d\n", dispRead(dispw::red_loss)) +
-    String::format("1-diff_ib  %2d\n", dispRead(diff_ib)) +
-    String::format("0-conn     %2d\n\n", dispRead(conn)); 
-  sendTxBuf(txBuf, true, true);
-  // enum dispw {conn=0, diff_ib=1, red_loss=2, fail_ib=3, fail_ibm=4, fail_vb=5, flt_tb=6, flt_ekf=7, SAT=8, off=9, accy=10, time_long=11, Count};
-
-  txBuf = bitMapPrint(pr.buff, fltw_, NUM_FLT) +
-    String::format("   ") +
-    bitMapPrint(pr.buff, falw_, NUM_FA) +
-    String::format("   ") +
-    bitMapPrint(pr.buff, cp.disp_word, static_cast<int>(dispw::Count)) +
-    String::format("\n") +
-    String::format("10FEDCBA9876543210   10FExxBA9876543210   BA9876543210\n\n") +
-    String::format("  fltw=%8ld       falw=%8ld         dispw=%8ld\n",
-      fltw_, falw_, cp.disp_word);
-  sendTxBuf(txBuf, true, true);
-
-  if ( ap.fake_faults() )
-  {
-    txBuf = String::format("fake_faults=>redl\n");
-    sendTxBuf(txBuf, true, true);
-  }
-
-  if ( sp.Time_now() < 1746684000UL )
-  {
-    txBuf = String::format("\n\n////////////////// WARN set UT (h;) %lu < %lu\n\n", sp.Time_now(), 1746684000UL);
-    sendTxBuf(txBuf, true, true);
-  }
-}
-
-// Calculate selection for ib_decision_
-// Use model instead of sensors when running tests as user
-// Equivalent to using voc(soc) as voter between two hardware currrents
-// Over-ride sensed Ib, Vb and Tb with model when running tests
-// Inputs:  Sen->Ib_model, Sen->Ib_hdwe,
-//          Sen->Vb_model, Sen->Vb_hdwe,
-//          ----------------, Sen->Tb_hdwe, Sen->Tb_hdwe_filt
-// Outputs: Ib,
-//          Vb,
-
-//          Tb, Tb_f
-//          latch_
-void Fault::select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const boolean reset)
-{
-  // Reset
-  if ( reset_all_faults_ )
-  {
-    reset_all_faults_select();
-    Serial.printf("reset ib flt\n");
-    Serial.printf("reset vb flt\n");
-  }
-
-  // Ib decision tables
-  #ifdef HDWE_IB_HI_LO
-    ib_decision_hi_lo(Sen);
-    if ( ap.fake_faults() )
-    {
-      latch_fake_ = latch_;
-      latch_ = false;
-      ib_choice_ = ibSel(sp.ib_force());
-    }
-  #else
-    ib_decision_active_standby(Sen);
-    if ( ap.fake_faults() )
-    {
-      latch_fake_ = latch_;
-      latch_ = false;
-      ib_sel_stat_ = sp.ib_force();
-    }
-  #endif
-
-  // vb failure from wrap result
-  if ( !ap.fake_faults() )
-  {
-    if ( !vb_sel_stat_last_ && !sp.mod_vb() )
-    {
-      vb_sel_stat_ = 0;   // Latches
-      latch_ = true;
-    }
-    if (  wrap_vb_fa() || vb_fa() )
-    {
-      vb_sel_stat_ = 0; // Latches
-      latch_ = true;
-    }
-  }
-  else  // fake_faults
-  {
-    if ( !vb_sel_stat_last_ )
-    {
-      latch_fake_ = true;
-    }
-    if (  wrap_vb_fa() || vb_fa() )
-    {
-      latch_fake_ = true;
-    }
-  }
-
-  // tb failure from inactivity. Does not latch because can heal and failure not critical
-  if ( reset_all_faults_ )
-  {
-    tb_sel_stat_last_ = 1;
-    tb_sel_stat_ = 1;
-    Serial.printf("reset tb flts\n");
-    failAssign(false, TB_FA);
-  }
-  if ( tb_fa() )  // Latches
-  {
-    tb_sel_stat_ = 0;
-    latch_ = true;
-  }
-  else
-    tb_sel_stat_ = 1;
-
-  // Print
-   if ( ib_choice_ != ib_choice_last_ || vb_sel_stat_ != vb_sel_stat_last_ || tb_sel_stat_ != tb_sel_stat_last_ )
-    debug_qs(Mon, Sen);
-  #ifndef HDWE_IB_HI_LO
-    if ( ib_sel_stat_ != ib_sel_stat_last_ || vb_sel_stat_ != vb_sel_stat_last_ || tb_sel_stat_ != tb_sel_stat_last_ )
-    {
-      Serial.printf("Small reset\n");
-      cp.cmd_reset();   
-    }
-  #endif
-
-  // Latch memory
-  ib_choice_last_ = ib_choice_;
-  ib_sel_stat_last_ = ib_sel_stat_;
-  vb_sel_stat_last_ = vb_sel_stat_;
-  tb_sel_stat_last_ = tb_sel_stat_;
-
-  // Make sure Rf command gets executed at least once all fault logic.  Asynchronous hence counter
-  static uint8_t count = 0;
-  reset_all_faults_print_ = reset_all_faults_;
-  if ( reset_all_faults_ )
-  {
-    if ( ( falw_==0 && fltw_==0 ) || count>1 )
-    {
-      reset_all_faults_ = false;
-      latch_ = false;
-      latch_fake_ = false;
-      preserving(false);
-      count = 0;
-    }
-    else
-    {
-      count++;
-      Serial.printf("Rf%d\n", count);
-    }
-  }
-}
-
-// Select ib decision table active-standby
-void Fault::ib_decision_active_standby(Sensors *Sen)
-{
-  if ( ap.fake_faults() )
-  {
-    ib_sel_stat_ = IB_SEL_STAT_DEF;
-    latch_ = false;
-    ib_decision_ = 10;
-  }
-  else if ( latch_ )
-    // ib_decision_ = 0;
-    {}
-  else if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() )  // these separate inputs don't latch
-  {
-    ib_decision_ = 1;
-    ib_sel_stat_ = 0;    // takes two not latched inputs to set and latch
-    latch_ = true;
-  }
-  else if ( sp.ib_force()>0 && !Sen->Flt->ib_amp_fa() )
-  {
-    ib_decision_ = 2;
-    ib_sel_stat_ = 1;
-    latch_ = true;
-  }
-  else if ( ib_sel_stat_last_==-1 && !Sen->Flt->ib_noa_fa() && !reset_all_faults_ )  // latches
-  {
-    ib_decision_ = 3;
-    ib_sel_stat_ = -1;
-    latch_ = true;
-  }
-  else if ( sp.ib_force()<0 && !Sen->Flt->ib_noa_fa() && !reset_all_faults_)  // latches
-  {
-    ib_decision_ = 4;
-    ib_sel_stat_ = -1;
-    latch_ = true;
-  }
-  else if ( sp.ib_force()==0 )  // auto
-  {
-    if ( Sen->Flt->ib_amp_fa() && !Sen->Flt->ib_noa_fa() )  // these inputs don't latch
-    {
-      ib_decision_ = 5;
-      ib_sel_stat_ = -1;
-      latch_ = true;
-    }
-    else if ( ib_diff_fa() )  // this input doesn't latch
-    {
-      if ( vb_sel_stat_ && wrap_hi_or_lo_fa() )    // wrap_hi_or_lo_fa is not latched
-      {
-        ib_decision_ = 6;
-        ib_sel_stat_ = -1;      // two not latched fails but result of 'and' with ib_diff_fa latches latched_fail
-        latch_ = true;
-      }
-      else if ( cc_diff_fa() )  // this input doesn't latch but result of 'and' with ib_diff_fa latches latched_fail
-      {
-        ib_decision_ = 7;
-        ib_sel_stat_ = -1;      // takes two not latched inputs to isolate ib failure and to set and latch ib_sel
-        latch_ = true;
-      }
-    }
-  }
-  else if ( ( (sp.ib_force() <  0) && ib_sel_stat_last_>-1 ) ||
-            ( (sp.ib_force() >= 0) && ib_sel_stat_last_< 1 )   )  // Latches.  Must reset to move out of no amp selection.  ==0 not reachable
-  {
-    ib_decision_ = 8;
-    latch_ = true;
-  }
-  else
-  {
-    latch_ = false;
-  }
-  faultAssign(ib_sel_stat_!=1 || sp.ib_force()!=0  || ib_diff_fa() || ib_amp_fa() || ib_noa_fa() || vb_fail(), RED_LOSS); // for active-standby, redundancy loss anytime ib_sel_stat<0
-
-  #ifdef DEBUG_INIT
-    if ( sp.debug()==62 ) Serial.printf("fake_faults %d ib_force %d reset %d ib_sel_stat_last %d ib_amp_fa %d ib_noa_fa %d ib_diff_fa %d vb_sel_stat_last %d wrap_m_fa %d wrap_n_fa %d  cc_diff_fa %d latch_ %d ib_sel_stat %d ib_decision_ %d\n", ap.fake_faults(), sp.ib_force(), reset_all_faults_, ib_sel_stat_last_, ib_amp_fa(), ib_noa_fa(), ib_diff_fa(), vb_sel_stat_last_, wrap_m_fa(), wrap_n_fa(), cc_diff_fa(), latch_, ib_sel_stat_, ib_decision_);
-  #endif
-}
-
-// Select ib decision table hi-lo
-// Inputs:  ib_amp_fa, ib_noa_fa, ib_force, ib_diff_fa, vb_sel_stat_last_, wrap_m_fa, wrap_n_fa, cc_diff_fa, wrap_hi_or_lo_fa
-// Outputs:  ib_decision_, ib_choice_, latch_
-void Fault::ib_decision_hi_lo(Sensors *Sen)
-{
-  boolean latch_last = latch_;
-  if ( latch_ )
-    // ib_decision_ = xx;   lgv
-    {}
-  else if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() )  // these separate inputs don't latch
-  {
-    ib_choice_ = UsingNone;
-    latch_ = true;
-    ib_decision_ = 1;
-  }
-  else if ( sp.ib_force()>0 && !Sen->Flt->ib_noa_fa() )
-  {
-    ib_choice_ = UsingAmp;
-    latch_ = true;
-    ib_decision_ = 2;
-  }
-  else if ( sp.ib_force()<0 && !Sen->Flt->ib_noa_fa() && !reset_all_faults_)  // latches
-  {
-    ib_choice_ = UsingNoa;
-    latch_ = true;
-    ib_decision_ = 3;
-  }
-  else if ( sp.ib_force()==0 )  // auto section
-  {
-    if ( Sen->Flt->ib_amp_fa() && !Sen->Flt->ib_noa_fa() )  // these inputs don't latch
-    {
-      ib_choice_ = UsingNoa;
-      latch_ = true;
-      ib_decision_ = 4;
-    }
-    else if ( !Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() )  // these inputs don't latch
-    {
-      ib_choice_ = UsingAmp;
-      latch_ = true;
-      ib_decision_ = 5;
-    }
-    else if ( ib_diff_fa() )  // this input doesn't latch
-    {
-      if ( vb_sel_stat_last_ )
-      {
-        if ( Sen->Flt->wrap_m_fa() && !Sen->Flt->wrap_n_fa() )
-        {
-          ib_choice_ = UsingNoa;
-          latch_ = true;
-          ib_decision_ = 6;
-        }
-        else if ( !Sen->Flt->wrap_m_fa() && Sen->Flt->wrap_n_fa() )
-        {
-          ib_choice_ = UsingAmp;
-          latch_ = true;
-          ib_decision_ = 7;
-        }
-        else if ( Sen->Flt->wrap_m_fa() && Sen->Flt->wrap_n_fa() )
-        {
-          ib_choice_ = KeepTrying;  // ambiguous; keep trying
-          latch_ = false;
-          ib_decision_ = 8;
-        }
-        else if ( cc_diff_fa() ) // isolated
-        {
-          ib_choice_ = UsingNoa; 
-          latch_ = true;
-          ib_decision_ = 10;
-        }
-        else  // all's well
-        {
-          ib_choice_ = ib_choice_last_;
-          latch_ = latch_last;
-          ib_decision_ = 0;
-        }
-      }
-      else if ( cc_diff_fa() )  // don't know how to isolate due to weighting of amp and noa
-      {
-        ib_choice_ = KeepTrying;  // ambiguous; keep trying
-        latch_ = false;
-        ib_decision_ = 10;
-      }
-      else  // all's well
-      {
-        ib_choice_ = ib_choice_last_;
-        latch_ = latch_last;
-        ib_decision_ = 0;
-      }
-    }
-    else if ( cc_diff_fa() )  // don't know how to isolate due to weighting of amp and noa
-    {
-        ib_choice_ = KeepTrying;  // ambiguous; keep trying
-        latch_ = false;
-        ib_decision_ = 12;
-    }
-    else  // all's well
-    {
-      ib_choice_ = ib_choice_last_;
-      latch_ = latch_last;
-      ib_decision_ = 0;
-    }
-  }
-  else if ( ( (sp.ib_force() <  0) && ib_choice_last_!=UsingNoa ) ||
-            ( (sp.ib_force() >= 0) && ib_choice_last_!=UsingAmp )   )  // Latches.  Must reset to move out of no amp selection.  ==0 not reachable
-  {
-    latch_ = true;
-    ib_decision_ = 14;
-  }
-  else
-  {
-    latch_ = false;
-    ib_decision_ = 15;
-  }
-  faultAssign( (ib_choice_!=0 || vb_sel_stat_!=1) && !(sp.mod_ib() || sp.mod_vb()), RED_LOSS);  // hi_lo
-
-  #ifdef DEBUG_INIT
-    if ( sp.debug()==62 ) Serial.printf("latch_last %d fake_faults %d ib_force %d reset %d ib_choice_last %d ib_amp_fa %d ib_noa_fa %d ib_diff_fa %d vb_sel_stat_last %d wrap_m_fa %d wrap_n_fa %d  cc_diff_fa %d latch_ %d ib_choice_ %d ib_decision_ %d\n", latch_last, ap.fake_faults(), sp.ib_force(), reset_all_faults_, ib_choice_last_, ib_amp_fa(), ib_noa_fa(), ib_diff_fa(), vb_sel_stat_last_, wrap_m_fa(), wrap_n_fa(), cc_diff_fa(), latch_, ib_choice_, ib_decision_);
-  #endif
-}
-
-// Select reset
-void Fault::reset_all_faults_select()
-{
-  // ib
-  #ifdef HDWE_IB_HI_LO
-    ib_choice_ = ibSel(sp.ib_force());
-    ib_choice_last_ = ib_choice_;
-  #else
-    if ( sp.ib_force() >= 0 )
-      ib_sel_stat_ = 1;
-    else
-      ib_sel_stat_ = -1;
-    ib_sel_stat_last_ =  ib_sel_stat_;
-  #endif
-
-  // Reset latch memory
-  vb_sel_stat_last_ = 1;
-  vb_sel_stat_ = 1;
-}
-
-// Checks analog current.  Latches
-void Fault::shunt_check(Sensors *Sen, BatteryMonitor *Mon, const boolean reset)
-{
-  boolean reset_loc = reset | reset_all_faults_;
-  if ( reset_loc )
-  {
-    failAssign(false, IB_AMP_FA);
-    failAssign(false, IB_NOA_FA);
-  }
-  faultAssign( Sen->ShuntAmp->bare_shunt(), IB_AMP_BARE);
-  faultAssign( Sen->ShuntNoAmp->bare_shunt(), IB_NOA_BARE);
-  #ifndef HDWE_BARE
-    faultAssign( ( ib_amp_bare() || abs(Sen->ShuntAmp->Ishunt_cal()) >= Sen->Ib_amp_max() ) && !ap.disab_ib_fa(), IB_AMP_FLT );
-    faultAssign( ( ib_noa_bare() || abs(Sen->ShuntNoAmp->Ishunt_cal()) >= Sen->Ib_noa_max() ) && !ap.disab_ib_fa(), IB_NOA_FLT );
-    #ifdef DEBUG_INIT
-      if ( sp.debug()==62 ) Serial.printf("ib_amp_bare=%d ib_noa_bare=%d ib_model%7.3f mX%7.3f Ibn%7.3f nX%7.3f IB_AMP_FLT=%d IB_NOA_FLT=%d\n", ib_amp_bare(), ib_noa_bare(), Sen->ShuntAmp->Ishunt_cal(), Sen->Ib_amp_max(), Sen->ShuntNoAmp->Ishunt_cal(), Sen->Ib_noa_max(), IB_AMP_FLT, IB_NOA_FLT);
-    #endif
-  #else
-    float current_max = NOM_UNIT_CAP * ap.nP();
-    faultAssign( abs(Sen->ShuntAmp->Ishunt_cal()) >= current_max && !ap.disab_ib_fa(), IB_AMP_FLT );
-    faultAssign( abs(Sen->ShuntNoAmp->Ishunt_cal()) >= current_max && !ap.disab_ib_fa(), IB_NOA_FLT );
-  #endif
-  if ( ap.disab_ib_fa() )
-  {
-    failAssign( false, IB_AMP_FA );
-    failAssign( false, IB_NOA_FA);
-  }
-  else
-  {
-    failAssign( vc_fa() || ib_amp_bare() || ib_amp_fa() || IbAmpHardFail->calculate(ib_amp_flt(), IB_HARD_SET, IB_HARD_RESET, Sen->T, reset_loc), IB_AMP_FA );
-    failAssign( vc_fa() || ib_noa_bare() || ib_noa_fa() || IbNoAmpHardFail->calculate(ib_noa_flt(), IB_HARD_SET, IB_HARD_RESET, Sen->T, reset_loc), IB_NOA_FA);
-  }
-}
-
-// Check Tb 2-wire analog voltage.  Latches
-void Fault::tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, const boolean reset)
-{
-  boolean reset_loc = reset | reset_all_faults_;
-  if ( reset_loc )
-  {
-    failAssign(false, TB_FA);
-  }
-  if ( sp.mod_tb() )
-  {
-    faultAssign( ((Sen->Tb_model_filt<=_tb_min) || (Sen->Tb_model_filt>=_tb_max)) &&
-                 !ap.disab_tb_fa(), TB_FLT);
-    failAssign( tb_fa() || TbHardFail->calculate(tb_flt(), TB_HARD_SET, TB_HARD_RESET, Sen->T_temp, reset_loc), TB_FA);
-  }
-  else if ( ap.disab_tb_fa() )
-  {
-    faultAssign( false, TB_FLT);
-    failAssign( false, TB_FA); }
-  else
-  {
-    faultAssign( (Sen->Tb_hdwe<=_tb_min) || (Sen->Tb_hdwe>=_tb_max), TB_FLT);
-    failAssign( tb_fa() || TbHardFail->calculate(tb_flt(), TB_HARD_SET, TB_HARD_RESET, Sen->T_temp, reset_loc), TB_FA);
-  }
-}
-
-// Temp stale check
-void Fault::tb_stale(const boolean reset, Sensors *Sen)
-{
-  boolean reset_loc = reset | reset_all_faults_;
-
-  if ( ap.disab_tb_fa() || reset_loc || (sp.mod_tb() && !ap.fail_tb()) )
-  {
-    faultAssign( false, TB_FLT );
-    failAssign( false, TB_FA );
-  }
-  else
-  {
-    faultAssign( Sen->SensorTb->tb_stale_flt(), TB_FLT );
-    failAssign( TbStaleFail->calculate(tb_flt(), TB_STALE_SET*ap.tb_stale_time_slr(), TB_STALE_RESET*ap.tb_stale_time_slr(),
-      Sen->T_temp, reset_loc), TB_FA );
-  }
-}
-
-// Check analog voltage.  Latches
-void Fault::vb_check(Sensors *Sen, BatteryMonitor *Mon, const float _vb_min, const float _vb_max, const boolean reset)
-{
-  boolean reset_loc = reset | reset_all_faults_;
-  if ( reset_loc )
-  {
-    failAssign(false, VB_FA);
-  }
-  if ( ap.disab_vb_fa() || sp.mod_vb() )
-  {
-    faultAssign(false, VB_FLT);
-    failAssign( false, VB_FA);
-  }
-  else
-  {
-    faultAssign( (Sen->vb_hdwe()<=_vb_min && Sen->ib_hdwe()*ap.nP()>IB_MIN_UP) || (Sen->vb_hdwe()>=_vb_max), VB_FLT);
-    failAssign( vb_fa() || VbHardFail->calculate(vb_flt(), VB_HARD_SET, VB_HARD_RESET, Sen->T, reset_loc), VB_FA);
-  }
-}
-void Fault::vc_check(Sensors *Sen, BatteryMonitor *Mon, const float _vc_min, const float _vc_max, const boolean reset)
-{
-  boolean reset_loc = reset | reset_all_faults_;
-  if ( reset_loc )
-  {
-    failAssign(false, VC_FA);
-  }
-  if ( sp.mod_ib() || ap.disab_ib_fa() )
-  {
-    faultAssign(false, VC_FLT);
-    failAssign( false, VC_FA);
-  }
-  else
-  {
-    faultAssign( ( ((Sen->Vc<=_vc_min) || (Sen->Vc>=_vc_max)) && !reset_loc ), VC_FLT);
-    failAssign( vc_fa() || VcHardFail->calculate(vc_flt(), VC_HARD_SET, VC_HARD_RESET, Sen->T, reset_loc), VC_FA);
-  }
-}
-
-// Wrap scalars
-void Fault::wrap_scalars(BatteryMonitor *Mon)
-{
-  if ( Mon->soc()>=WRAP_SOC_HI_OFF )
-  {
-    ewsat_slr_ = WRAP_SOC_HI_SLR;
-    ewmin_slr_ = 1.;
-  }
-  else if ( Mon->soc() <= max(Mon->soc_min()+WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_OFF_ABS)  )
-  {
-    ewsat_slr_ = 1.;
-    ewmin_slr_ = WRAP_SOC_LO_SLR;
-  }
-  else if ( Mon->voc_soc()>(Mon->vsat()-WRAP_HI_SAT_MARG) ||
-          ( Mon->voc_stat()>(Mon->vsat()-WRAP_HI_SAT_MARG) && Mon->C_rate()>WRAP_MOD_C_RATE && Mon->soc()>WRAP_SOC_MOD_OFF) ) // Use voc_stat to get some anticipation
-  {
-    ewsat_slr_ = WRAP_HI_SAT_SLR;
-    ewmin_slr_ = 1.;
-  }
-  else
-  {
-    ewsat_slr_ = 1.;
-    ewmin_slr_ = 1.;
-  }
 }
 
 
 // Class Sensors
 Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *ReadTemp, Sync *Talk, Sync *Summarize,
-  unsigned long long time_now, unsigned long long millis, BatteryMonitor *Mon): Tb(NOMINAL_TB), Tb_f(NOMINAL_TB), Tb_hdwe(NOMINAL_TB),
-  Tb_hdwe_filt(NOMINAL_TB), Tb_model(NOMINAL_TB), Tb_model_filt(NOMINAL_TB),  inst_millis_(millis), inst_time_(time_now),
-  reset_temp_(false),  sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_vb_(0UL), sample_time_vb_hdwe_(0UL)
+  uint64_t time_now, uint64_t millis, BatteryMonitor *Mon):
+  AmpFilt(nullptr), dt_ib_(0ULL), dt_ib_hdwe_(0ULL), IbAmpRMS(nullptr), IbNoaRMS(nullptr),
+  inst_millis_(millis), inst_time_(time_now), NoaFilt(nullptr), Prbn_Tb_(nullptr), Prbn_Vb_(nullptr), Prbn_Ib_amp_(nullptr), Prbn_Ib_noa_(nullptr),
+  reset_temp_(false), sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_tb_(0UL), sample_time_vb_(0UL), sample_time_vb_hdwe_(0UL),
+  SelFiltCal(nullptr), VbFilt(nullptr), VbRMS(nullptr), VcRMS(nullptr), Vb_raw_(0), Vb_(NOMINAL_VB), Vb_f_(NOMINAL_VB), Vb_hdwe_(NOMINAL_VB),
+  Vb_hdwe_f_(NOMINAL_VB), Vb_model_(NOMINAL_VB), Vb_volt_(NOMINAL_VB), Vc_(0.), Vc_hdwe_(0.), Vc_hdwe_sum_(0.),
+  Tb_(NOMINAL_TB), Tb_f_(NOMINAL_TB), Tb_f_rate_(0.), Tb_hdwe_(NOMINAL_TB), Tb_hdwe_filt_(NOMINAL_TB), Tb_hdwe_filt_rate_(0.),
+  Tb_model_(NOMINAL_TB), Tb_model_filt_(NOMINAL_TB), Tb_model_filt_rate_(0.),
+  Ib_(0.), Ib_f_(0.), Ib_amp_(0.), Ib_amp_hdwe_(0.), Ib_amp_hdwe_f_(0.), Ib_amp_hdwe_kf_(0.), Ib_amp_model_(0.), Ib_amp_rms_(0.),
+  Ib_hdwe_f_(0.), Ib_hdwe_kf_(0.), Ib_hdwe_f_cal_(0.), Ib_noa_(0.), Ib_noa_hdwe_(0.), Ib_noa_hdwe_f_(0.), Ib_noa_hdwe_kf_(0.), Ib_noa_rms_(0.),
+  Ib_noa_model_(0.), Ib_hdwe_(0.), Ib_hdwe_model_(0.), Ib_model_(0.), Ib_model_in_(0.),
+  Vb_rms_(0.), Vc_rms_(0.), Wb_(0.), now_(0ULL), now_temp_(0ULL), T_(0.), reset_(false), T_filt_(0.), T_temp_(0.),
+  elapsed_inj_(0ULL), start_inj_(0ULL), stop_inj_(0ULL), end_inj_(0ULL), control_time_(0.), display_(true), bms_off_(false), sat_(false), saturated_(false)
 {
-  this->T = T;
-  this->T_filt = T;
-  this->T_temp = T_temp;
+  T_ = T;
+  T_filt_ = T;
+  T_temp_ = T_temp;
   #if defined(HDWE_IB_HI_LO) || defined(HDWE_BARE)
     this->ShuntAmp = new Shunt("Amp", 0x49, ap.ib_scale_amp_ptr(), sp.ib_bias_amp_ptr(), SHUNT_AMP_GAIN, pins->Vcm_pin, pins->Vom_pin, pins->Vh3v3_pin, true, KF_USE_AMP);
     this->ShuntNoAmp = new Shunt("No Amp", 0x48, ap.ib_scale_noa_ptr(), sp.ib_bias_noa_ptr(), SHUNT_NOA_GAIN, pins->Vcn_pin, pins->Von_pin, pins->Vh3v3_pin, true, KF_USE_NOA);
@@ -1257,24 +253,22 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
     this->ShuntAmp = new Shunt("Amp", 0x49, ap.ib_scale_amp_ptr(), sp.ib_bias_amp_ptr(), SHUNT_AMP_GAIN, pins->Vcm_pin, pins->Vom_pin, pins->Vh3v3_pin, false, KF_USE_AMP);
     this->ShuntNoAmp = new Shunt("No Amp", 0x48, ap.ib_scale_noa_ptr(), sp.ib_bias_noa_ptr(), SHUNT_NOA_GAIN, pins->Vcn_pin, pins->Von_pin, pins->Vh3v3_pin, false, KF_USE_NOA);
   #endif
-  #if !defined(HDWE_2WIRE) & !defined(HDWE_BARE)
-    this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY_DS18);
-  #elif !defined(HDWE_BARE)
-    this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY_DS18, pins->VTb_pin);
+  #if !defined(HDWE_BARE)
+    this->SensorTb = new TempSensor(pins->pin_1_wire, TEMP_PARASITIC, TEMP_DELAY, pins->VTb_pin);
   #endif
   this->TbModelFilt = new LagExp(double(READ_DELAY)/1000., TB_FILT, -20.0, 150.);
   this->TbSenseFilt = new LagExp(double(READ_DELAY)/1000., TB_FILT, -20.0, 150.);
   this->Sim = new BatterySim(ap.ds_voc_soc(), 0., 0.);
-  this->elapsed_inj = 0ULL;
-  this->start_inj = 0ULL;
-  this->stop_inj = 0ULL;
-  this->end_inj = 0ULL;
+  elapsed_inj_ = 0ULL;
+  start_inj_ = 0ULL;
+  stop_inj_ = 0ULL;
+  end_inj_ = 0ULL;
   this->ReadSensors = ReadSensors;
   this->ReadTemp = ReadTemp;
   this->Summarize = Summarize;
   this->Talk = Talk;
-  this->display = true;
-  this->Ib_hdwe_model = 0.;
+  display_ = true;
+  Ib_hdwe_model_ = 0.;
   Prbn_Tb_ = new PRBS_7(TB_NOISE_SEED);
   Prbn_Vb_ = new PRBS_7(VB_NOISE_SEED);
   Prbn_Ib_amp_ = new PRBS_7(IB_AMP_NOISE_SEED);
@@ -1285,6 +279,7 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   NoaFilt = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*ap.nS()*ap.nP(), NOM_UNIT_CAP*ap.nS()*ap.nP());
   SelFiltCal = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*ap.nS()*ap.nP(), NOM_UNIT_CAP*ap.nS()*ap.nP());
   VbFilt = new LagExp(T, AMP_FILT_TAU, 0., NOMINAL_VB*2.5);
+  Vb_read_ = new AnalogReadP2(pins->Vb_pin);
   IbAmpRMS = new RecursiveRMSMonitorFP();
   IbNoaRMS = new RecursiveRMSMonitorFP();
   VbRMS = new RecursiveRMSMonitorFP();
@@ -1297,80 +292,80 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
 }
 
 // Deliberate choice based on results and inputs
-// Inputs:  ib_sel_stat_, Ib_amp_hdwe, Ib_noa_hdwe, Ib_amp_model, Ib_noa_model
-// Outputs:  Ib_hdwe_model, Ib_hdwe
+// Inputs:  ib_sel_stat_, Ib_amp_hdwe_, Ib_noa_hdwe_, Ib_amp_model_, Ib_noa_model_
+// Outputs:  Ib_hdwe_model_, Ib_hdwe_
 void Sensors::ib_choose_active_standby()
 {
   if ( Flt->ib_sel_stat()==1 )
   {
-    Ib_hdwe = Ib_amp_hdwe;
-    Ib_hdwe_f = Ib_amp_hdwe_f;
-    Ib_hdwe_kf = Ib_amp_hdwe_kf;
-    Ib_hdwe_model = Ib_amp_model;
+    Ib_hdwe_ = Ib_amp_hdwe_;
+    Ib_hdwe_f_ = Ib_amp_hdwe_f_;
+    Ib_hdwe_kf_ = Ib_amp_hdwe_kf_;
+    Ib_hdwe_model_ = Ib_amp_model_;
     sample_time_ib_hdwe_ = ShuntAmp->sample_time();
     dt_ib_hdwe_ = ShuntAmp->dt_ms();
   }
   else if ( Flt->ib_sel_stat()==-1 )
   {
-    Ib_hdwe = Ib_noa_hdwe;
-    Ib_hdwe_f = Ib_noa_hdwe_f;
-    Ib_hdwe_kf = Ib_noa_hdwe_kf;
-    Ib_hdwe_model = Ib_noa_model;
+    Ib_hdwe_ = Ib_noa_hdwe_;
+    Ib_hdwe_f_ = Ib_noa_hdwe_f_;
+    Ib_hdwe_kf_ = Ib_noa_hdwe_kf_;
+    Ib_hdwe_model_ = Ib_noa_model_;
     sample_time_ib_hdwe_ = ShuntNoAmp->sample_time();
     dt_ib_hdwe_ = ShuntNoAmp->dt_ms();
   }
   else
   {
-    Ib_hdwe = 0.;
-    Ib_hdwe_f = 0.;
-    Ib_hdwe_model = 0.;
+    Ib_hdwe_ = 0.;
+    Ib_hdwe_f_ = 0.;
+    Ib_hdwe_model_ = 0.;
     sample_time_ib_hdwe_ = 0ULL;
     dt_ib_hdwe_ = 0ULL;
   }
 }
 
 // Deliberate choice based on results and inputs
-// Inputs:  ib_choice_, Ib_noa_hdwe, Ib_amp_hdwe, Ib_noa_hdwe, Ib_amp_model, Ib_noa_model
-// Outputs:  Ib_hdwe_model, Ib_hdwe
+// Inputs:  ib_choice_, Ib_noa_hdwe_, Ib_amp_hdwe_, Ib_noa_hdwe_, Ib_amp_model_, Ib_noa_model_
+// Outputs:  Ib_hdwe_model_, Ib_hdwe_
 void Sensors::ib_choose_hi_lo()
 {
   int8_t sel_stat = 0;
   if ( Flt->ib_choice()==KeepTrying )
   {
-    Ib_hdwe = scale_select(Ib_noa_hdwe, sel_brk_hdwe, Ib_amp_hdwe, Ib_noa_hdwe, &sel_stat);
-    Ib_hdwe_f = scale_select(Ib_noa_hdwe, sel_brk_hdwe, Ib_amp_hdwe_f, Ib_noa_hdwe_f, &sel_stat);
-    Ib_hdwe_kf = scale_select(Ib_noa_hdwe, sel_brk_hdwe, Ib_amp_hdwe_kf, Ib_noa_hdwe_kf, &sel_stat);
-    Ib_hdwe_model = scale_select(Ib_noa_model, sel_brk_hdwe, Ib_amp_model, Ib_noa_model, &sel_stat);
+    Ib_hdwe_ = scale_select(Ib_noa_hdwe_, sel_brk_hdwe, Ib_amp_hdwe_, Ib_noa_hdwe_, &sel_stat);
+    Ib_hdwe_f_ = scale_select(Ib_noa_hdwe_, sel_brk_hdwe, Ib_amp_hdwe_f_, Ib_noa_hdwe_f_, &sel_stat);
+    Ib_hdwe_kf_ = scale_select(Ib_noa_hdwe_, sel_brk_hdwe, Ib_amp_hdwe_kf_, Ib_noa_hdwe_kf_, &sel_stat);
+    Ib_hdwe_model_ = scale_select(Ib_noa_model_, sel_brk_hdwe, Ib_amp_model_, Ib_noa_model_, &sel_stat);
     sample_time_ib_hdwe_ = ShuntNoAmp->sample_time();
     dt_ib_hdwe_ = ShuntNoAmp->dt_ms();
     Flt->ib_sel_stat(sel_stat);
   }
   else if ( Flt->ib_choice()==UsingNoa )
   {
-    Ib_hdwe = Ib_noa_hdwe;
-    Ib_hdwe_f = Ib_noa_hdwe_f;
-    Ib_hdwe_kf = Ib_noa_hdwe_kf;
-    Ib_hdwe_model = Ib_noa_model;
+    Ib_hdwe_ = Ib_noa_hdwe_;
+    Ib_hdwe_f_ = Ib_noa_hdwe_f_;
+    Ib_hdwe_kf_ = Ib_noa_hdwe_kf_;
+    Ib_hdwe_model_ = Ib_noa_model_;
     sample_time_ib_hdwe_ = ShuntNoAmp->sample_time();
     dt_ib_hdwe_ = ShuntNoAmp->dt_ms();
     Flt->ib_sel_stat(-1);
   }
   else if ( Flt->ib_choice()==UsingAmp )
   {
-    Ib_hdwe = Ib_amp_hdwe;
-    Ib_hdwe_f = Ib_amp_hdwe_f;
-    Ib_hdwe_kf = Ib_amp_hdwe_kf;
-    Ib_hdwe_model = Ib_amp_model;
+    Ib_hdwe_ = Ib_amp_hdwe_;
+    Ib_hdwe_f_ = Ib_amp_hdwe_f_;
+    Ib_hdwe_kf_ = Ib_amp_hdwe_kf_;
+    Ib_hdwe_model_ = Ib_amp_model_;
     sample_time_ib_hdwe_ = ShuntAmp->sample_time();
     dt_ib_hdwe_ = ShuntAmp->dt_ms();
     Flt->ib_sel_stat(1);
   }
   else
   {
-    Ib_hdwe = 0.;
-    Ib_hdwe_f = 0.;
-    Ib_hdwe_kf = 0.;
-    Ib_hdwe_model = 0.;
+    Ib_hdwe_ = 0.;
+    Ib_hdwe_f_ = 0.;
+    Ib_hdwe_kf_ = 0.;
+    Ib_hdwe_model_ = 0.;
     sample_time_ib_hdwe_ = 0ULL;
     dt_ib_hdwe_ = 0ULL;
     Flt->ib_sel_stat(0);
@@ -1380,21 +375,22 @@ void Sensors::ib_choose_hi_lo()
 // Pretty print
 void Sensors::pretty_print()
 {
-  Serial.printf(" Vb_raw%d; cnt\n", Vb_raw);
-  Serial.printf(" Vb%8.4f; V\n", Vb);
-  Serial.printf(" Vb_hdwe%8.4f; V\n", Vb_hdwe);
-  Serial.printf(" Vb_hdwe_f%8.4f; V\n", Vb_hdwe_f);
-  Serial.printf(" Vb_model%8.4f; V\n", Vb_model);
-  Serial.printf(" Vc%8.4f; V\n", Vc);
-  Serial.printf(" Vc_hdwe%8.4f; V\n", Vc_hdwe);
-  Serial.printf(" Tb%9.5f; C\n", Tb);
-  Serial.printf(" Tb_f%9.5f; C\n", Tb_f);
-  Serial.printf(" Tb_f_rate%11.8f; C/s\n", Tb_f_rate);
-  Serial.printf(" Tb_hdwe%9.5f; C\n", Tb_hdwe);
-  Serial.printf(" Tb_hdwe_filt%9.5f; C\n", Tb_hdwe_filt);
-  Serial.printf(" Tb_hdwe_filt_rate%11.8f; C\n", Tb_hdwe_filt_rate);
-  Serial.printf(" Tb_model%9.5f; C\n", Tb_model);
-  Serial.printf(" Tb_model_filt%9.5f; C\n", Tb_model_filt);
+  Serial.printf(" Vb_raw%d; cnt\n", Vb_raw_);
+  Serial.printf(" Vb%8.4f; V\n", Vb_);
+  Serial.printf(" Vb_hdwe%8.4f; V\n", Vb_hdwe_);
+  Serial.printf(" Vb_hdwe_f%8.4f; V\n", Vb_hdwe_f_);
+  Serial.printf(" Vb_model%8.4f; V\n", Vb_model_);
+  Serial.printf(" Vc%8.4f; V\n", Vc_);
+  Serial.printf(" Vc_hdwe%8.4f; V\n", Vc_hdwe_);
+  Serial.printf(" Vc_hdwe_sum%8.4f; V\n", Vc_hdwe_sum_);
+  Serial.printf(" Tb%9.5f; C\n", Tb_);
+  Serial.printf(" Tb_f%9.5f; C\n", Tb_f_);
+  Serial.printf(" Tb_f_rate%11.8f; C/s\n", Tb_f_rate_);
+  Serial.printf(" Tb_hdwe%9.5f; C\n", Tb_hdwe_);
+  Serial.printf(" Tb_hdwe_filt%9.5f; C\n", Tb_hdwe_filt_);
+  Serial.printf(" Tb_hdwe_filt_rate%11.8f; C\n", Tb_hdwe_filt_rate_);
+  Serial.printf(" Tb_model%9.5f; C\n", Tb_model_);
+  Serial.printf(" Tb_model_filt%9.5f; C\n", Tb_model_filt_);
 }
 
 // Make final assignemnts
@@ -1406,33 +402,33 @@ void Sensors::select_temp(BatteryMonitor *Mon)
   {
     if ( Flt->tb_fa() )
     {
-      Tb = NOMINAL_TB;
-      Tb_f = NOMINAL_TB;
-      Tb_f_rate = 0.;
+      Tb_ = NOMINAL_TB;
+      Tb_f_ = NOMINAL_TB;
+      Tb_f_rate_ = 0.;
     }
     else
     {
-      Tb = NOMINAL_TB + Tb_noise() + ap.Tb_bias_model();
-      Tb_model = Tb;
-      Tb_f = Tb_model_filt;
-      Tb_f_rate = Tb_model_filt_rate;
+      Tb_ = NOMINAL_TB + Tb_noise() + ap.Tb_bias_model();
+      Tb_model_ = Tb_;
+      Tb_f_ = Tb_model_filt_;
+      Tb_f_rate_ = Tb_model_filt_rate_;
     }
-    if ( sp.debug()==16) Serial.printf("Tb_noise %9.5f Tb%9.5f Tb_f%9.5f Tb_f%9.5f tb_fa %d\n", Tb_noise(), Tb, Tb_f, Tb_f, Flt->tb_fa());
+    if ( sp.debug()==16) Serial.printf("Tb_noise %9.5f Tb%9.5f Tb_f%9.5f Tb_f%9.5f tb_fa %d\n", Tb_noise(), Tb_, Tb_f_, Tb_f_, Flt->tb_fa());
   }
   else
   {
     if ( Flt->tb_fa() )
     {
-      Tb = NOMINAL_TB;
-      Tb_f = NOMINAL_TB;
-      Tb_f_rate = 0.;
+      Tb_ = NOMINAL_TB;
+      Tb_f_ = NOMINAL_TB;
+      Tb_f_rate_ = 0.;
     }
     else
     {
-      Tb = Tb_hdwe;
-      Tb_f = Tb_hdwe_filt;
-      Tb_f_rate = Tb_hdwe_filt_rate;
-      // Log.info("    select_volt_and_current:  Tb=Tb_hdwe=%9.5f Tb_f%9.5f Tb_f_rate%11.8f", Tb_hdwe, Tb_f, Tb_f_rate);
+      Tb_ = Tb_hdwe_;
+      Tb_f_ = Tb_hdwe_filt_;
+      Tb_f_rate_ = Tb_hdwe_filt_rate_;
+      // Log.info("    select_volt_and_current:  Tb=Tb_hdwe=%9.5f Tb_f%9.5f Tb_f_rate%11.8f", Tb_hdwe_, Tb_f_, Tb_f_rate_);
     }
   }
   sample_time_tb_ = SensorTb->sample_time();
@@ -1444,13 +440,13 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
 
   #ifdef HDWE_IB_HI_LO
     // Reselect ib since may be changed
-    // Inputs:  ib_choice_, Ib_amp_hdwe, Ib_noa_hdwe, Ib_amp_model(past), Ib_noa_model(past)
-    // Outputs:  Ib_hdwe_model, Ib_hdwe
+    // Inputs:  ib_choice_, Ib_amp_hdwe_, Ib_noa_hdwe_, Ib_amp_model_(past), Ib_noa_model_(past)
+    // Outputs:  Ib_hdwe_model_, Ib_hdwe_
     ib_choose_hi_lo();
   #else
     // Reselect ib since may be changed
-    // Inputs:  ib_sel_stat_, Ib_amp_hdwe, Ib_noa_hdwe, Ib_amp_model(past), Ib_noa_model(past)
-    // Outputs:  Ib_hdwe_model, Ib_hdwe
+    // Inputs:  ib_sel_stat_, Ib_amp_hdwe_, Ib_noa_hdwe_, Ib_amp_model_(past), Ib_noa_model_(past)
+    // Outputs:  Ib_hdwe_model_, Ib_hdwe_
     ib_choose_active_standby();
   #endif
 
@@ -1458,65 +454,66 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
   // vb
   if ( sp.mod_vb() )
   {
-    Vb_f = Vb;
-    if ( (Flt->wrap_vb_fa() || Flt->vb_fa()) && !ap.fake_faults() )
+    Vb_f_ = Vb_;
+    if ( (Flt->wrap_vb_fa() || Flt->vb_fa_lt()) && !ap.fake_faults() )
     {
-      Vb = Mon->vb_model_rev() * ap.nS();
+      Vb_ = Mon->vb_model_rev() * ap.nS();
       sample_time_vb_ = Sim->sample_time();
     }
     else
     {
-      Vb = Vb_model + Vb_noise();
+      Vb_ = Vb_model_ + Vb_noise();
       sample_time_vb_ = Sim->sample_time();
     }
   }
   else
   {
-    Vb_f = Vb_hdwe_f;
-    if ( (Flt->wrap_vb_fa() || Flt->vb_fa()) && !ap.fake_faults() )
+    Vb_f_ = Vb_hdwe_f_;
+    if ( (Flt->wrap_vb_fa() || Flt->vb_fa_lt()) && !ap.fake_faults() )
     {
-      Vb = Mon->vb_model_rev() * ap.nS();
+      Vb_ = Mon->vb_model_rev() * ap.nS();
       sample_time_vb_ = Sim->sample_time();
     }
     else
     {
-      Vb = Vb_hdwe;
+      Vb_ = Vb_hdwe_;
       sample_time_vb_ = sample_time_vb_hdwe_;
     }
   }
-  Vb_rms = VbRMS->update(Vb);
-  Vc_rms = VcRMS->update(Vc);
-  
-  
+  Vb_rms_ = VbRMS->update(Vb_);
+  Vc_rms_ = VcRMS->update(Vc_);
+
+
   // ib
   if ( sp.mod_ib() )
   {
-    Ib = Ib_hdwe_model;
-    Ib_f = Ib;
-    Ib_amp = Ib_amp_model;
-    Ib_noa = Ib_noa_model;
-    Vc = HALF_V3V3;
+    Ib_ = Ib_hdwe_model_;
+    Ib_f_ = Ib_;
+    Ib_amp_ = Ib_amp_model_;
+    Ib_noa_ = Ib_noa_model_;
+    Vc_ = HALF_V3V3;
     sample_time_ib_ = Sim->sample_time();
     dt_ib_ = Sim->dt_long();
   }
   else
   {
-    Ib = Ib_hdwe;
-    Ib_f = Ib_hdwe_f;
-    Ib_amp = Ib_amp_hdwe;
-    Ib_noa = Ib_noa_hdwe;
-    Vc = Vc_hdwe;
+    Ib_ = Ib_hdwe_;
+    Ib_f_ = Ib_hdwe_f_;
+    Ib_amp_ = Ib_amp_hdwe_;
+    Ib_noa_ = Ib_noa_hdwe_;
+    Vc_ = Vc_hdwe_;
     sample_time_ib_ = sample_time_ib_hdwe_;
     dt_ib_ = dt_ib_hdwe_;
   }
-  Ib_amp_rms = IbAmpRMS->update(Ib_amp);
-  Ib_noa_rms = IbNoaRMS->update(Ib_noa);
-  T =  double(dt_ib_)/1000.;  // s
-  now = sample_time_ib_ - inst_millis_ + inst_time_*1000;
-  // Log.info("    select_volt_and_current now:  now,%lld, cTime,%7.3f,", now, double(now)/1000.);
+  Ib_amp_rms_ = IbAmpRMS->update(Ib_amp_);
+  Ib_noa_rms_ = IbNoaRMS->update(Ib_noa_);
+  T_ =  double(dt_ib_)/1000.;  // s
+  now_ = sample_time_ib_ - inst_millis_ + inst_time_*1000;
+  ctime_ = double(now_)/1000.;
+  // Log.info("    select_volt_and_current now:  now_,%lld, cTime,%7.3f,", now_, double(now_)/1000.);
 
-  if ( sp.debug()==62 ) Serial.printf(" Ib%7.3f Ib_hdwe%7.3f Ib_hdwe_model%7.3f Ib_amp%7.3f Ib_amp_model%7.3f Ib_amp_hdwe%7.3f Ib_noa%7.3f Ib_noa_model%7.3f Ib_noa_hdwe%7.3f\n",
-   Ib, Ib_hdwe, Ib_hdwe_model, Ib_amp, Ib_amp_model, Ib_amp_hdwe, Ib_noa, Ib_noa_model, Ib_noa_hdwe);
+  if ( sp.debug()==62 ) Serial.printf(" ctime%12.3fIb%7.3f Ib_hdwe%7.3f Ib_hdwe_model%7.3f Ib_amp%7.3f Ib_amp_model%7.3f Ib_amp_hdwe%7.3f Ib_noa%7.3f Ib_noa_model%7.3f Ib_noa_hdwe%7.3f\n",
+   ctime_, Ib_, Ib_hdwe_, Ib_hdwe_model_, Ib_amp_, Ib_amp_model_, Ib_amp_hdwe_, Ib_noa_, Ib_noa_model_, Ib_noa_hdwe_);
 
 }
 
@@ -1524,7 +521,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
 #ifdef DEBUG_INIT
   void Sensors::select_print(Sensors *Sen, BatteryMonitor *Mon)  // vv==62
   {
-    Serial.printf("ib_ %7.3f                     vb_hdwe %7.3f                      Tb_hdwe %7.3f\n", ib_hdwe(), vb_hdwe(), Tb_hdwe);
+    Serial.printf("ib_ %7.3f                     vb_hdwe %7.3f                      Tb_hdwe %7.3f\n", ib_hdwe(), vb_hdwe(), Tb_hdwe_);
     Serial.printf("ib limits amp%7.3f noa %7.3f  diff %7.3f\n", ap.ib_amp_max(), ap.ib_noa_max(), Flt->ib_diff_thr());
     Serial.printf("ib_hdwe_?: %7.3f %7.3f ib_model_?: %7.3f %7.3f", ib_amp_hdwe(), ib_noa_hdwe(), ib_amp_model(), ib_noa_model());
     #ifdef HDWE_IB_HI_LO
@@ -1535,7 +532,7 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
     Serial.printf("ib_hdwe:     %7.3f     ib_hdwe_model: %7.3f  modeling=%d\n", ib_hdwe(), ib_hdwe_model(), sp.mod_ib());
     Serial.printf("               ib:  %7.3f\n", ib());
     Serial.printf("     ");
-    Serial.printf("ib_ %7.3f                     vb_hdwe %7.3f                      Tb_hdwe %7.3f\n", ib_hdwe(), vb_hdwe(), Tb_hdwe);
+    Serial.printf("ib_ %7.3f                     vb_hdwe %7.3f                      Tb_hdwe %7.3f\n", ib_hdwe(), vb_hdwe(), Tb_hdwe_);
     Serial.printf("ib limits amp%7.3f noa %7.3f  diff %7.3f\n", ap.ib_amp_max(), ap.ib_noa_max(), Flt->ib_diff_thr());
     Serial.printf("ib_hdwe_?: %7.3f %7.3f ib_model_?: %7.3f %7.3f", ib_amp_hdwe(), ib_noa_hdwe(), ib_amp_model(), ib_noa_model());
     Serial.printf("ib_hdwe:     %7.3f     ib_hdwe_model: %7.3f  modeling=%d\n", ib_hdwe(), ib_hdwe_model(), sp.mod_ib());
@@ -1591,10 +588,10 @@ float Sensors::Ib_noa_noise()
 void Sensors::shunt_print()
 {
     Serial.printf("reset,T,select,inj_bias,  vim,Vsm,Vcm,Vom,Ibhm,  vin,Vsn,Vcn,Von,Ibhn,  vi3,vh3, Ib_hdwe,T,Ib_amp_fault,Ib_amp_fail,Ib_noa_fault,Ib_noa_fail,=,    %d,%7.3f,%d,%7.3f,    %d,%7.3f,%7.3f,%7.3f,%7.3f,    %d,%7.3f,%7.3f,%7.3f,%7.3f,    %7.3f,%7.3f, %d,%d,  %d,%d,\n",
-        reset, T, sp.ib_force(), sp.inj_bias(),
+        reset_, T_, sp.ib_force(), sp.inj_bias(),
         ShuntAmp->vshunt_int(), ShuntAmp->vshunt(), ShuntAmp->Vc(), ShuntAmp->Vo(), ShuntAmp->Ishunt_cal(),
         ShuntNoAmp->vshunt_int(), ShuntNoAmp->vshunt(), ShuntNoAmp->Vc(), ShuntNoAmp->Vo(), ShuntNoAmp->Ishunt_cal(),
-        Ib_hdwe, T,
+        Ib_hdwe_, T_,
         Flt->ib_amp_flt(), Flt->ib_amp_fa(), Flt->ib_noa_flt(), Flt->ib_noa_fa());
 }
 
@@ -1602,8 +599,8 @@ void Sensors::shunt_print()
 // Initial selection to charge the Sim for modeling currents on BMS cutback
 // Inputs: sp.ib_force (user override), Mon (EKF status)
 // States:  Ib_fail_noa_
-// Outputs:  Ib_hdwe, Ib_model_in, Vb_sel_status_
-void Sensors::shunt_select_initial(const boolean reset)
+// Outputs:  Ib_hdwe_, Ib_model_in_, Vb_sel_status_
+void Sensors::shunt_select_initial(const bool reset)
 {
     // Current signal selection, based on if there or not.
     // Over-ride 'permanent' with Talk(sp.ib_force) = Talk('s')
@@ -1623,20 +620,21 @@ void Sensors::shunt_select_initial(const boolean reset)
       else
         hdwe_add = 0.;
     }
-    Ib_amp_model = max(min(Ib_amp_add() + mod_add, Ib_amp_max()/SIZE_MARG), Ib_amp_min()/SIZE_MARG); // uses past Ib.  Synthesized signal to use as substitute for sensor, Dm/Mm/Nm
-    Ib_noa_model = max(min(Ib_noa_add() + mod_add, Ib_noa_max()/SIZE_MARG), Ib_noa_min()/SIZE_MARG); // uses past Ib.  Synthesized signal to use as substitute for sensor, Dn/Nx/Nm
-    Ib_amp_hdwe = ShuntAmp->Ishunt_cal() + hdwe_add;    // Sense fault injection feeds logic, not model
-    Ib_amp_hdwe_kf = ShuntAmp->Ishunt_cal_kf() + hdwe_add;    // Sense fault injection feeds logic, not model
-    Ib_amp_hdwe_f = AmpFilt->calculate(Ib_amp_hdwe, reset, AMP_FILT_TAU, T);
-    Vc_hdwe = max(ShuntAmp->Vc(), ShuntNoAmp->Vc());
-    Ib_noa_hdwe = ShuntNoAmp->Ishunt_cal() + hdwe_add;  // Sense fault injection feeds logic, not model
-    Ib_noa_hdwe_kf = ShuntNoAmp->Ishunt_cal_kf() + hdwe_add;  // Sense fault injection feeds logic, not model
-    Ib_noa_hdwe_f = NoaFilt->calculate(Ib_noa_hdwe, reset, AMP_FILT_TAU, T);
-    Ib_hdwe_f_cal = SelFiltCal->calculate(Ib_hdwe, reset, AMP_FILT_TAU, T);
-    
+    Ib_amp_model_ = max(min(Ib_amp_add() + mod_add, Ib_amp_max()), Ib_amp_min()); // uses past Ib.  Synthesized signal to use as substitute for sensor, Dm/Mm/Nm
+    Ib_noa_model_ = max(min(Ib_noa_add() + mod_add, Ib_noa_max()), Ib_noa_min()); // uses past Ib.  Synthesized signal to use as substitute for sensor, Dn/Nx/Nm
+    Ib_amp_hdwe_ = ShuntAmp->Ishunt_cal() + hdwe_add;    // Sense fault injection feeds logic, not model
+    Ib_amp_hdwe_kf_ = ShuntAmp->Ishunt_cal_kf() + hdwe_add;    // Sense fault injection feeds logic, not model
+    Ib_amp_hdwe_f_ = AmpFilt->calculate(Ib_amp_hdwe_, reset, AMP_FILT_TAU, T_);
+    Vc_hdwe_ = max(ShuntAmp->Vc(), ShuntNoAmp->Vc());
+    Vc_hdwe_sum_ = ShuntAmp->Vc() + ShuntNoAmp->Vc();
+    Ib_noa_hdwe_ = ShuntNoAmp->Ishunt_cal() + hdwe_add;  // Sense fault injection feeds logic, not model
+    Ib_noa_hdwe_kf_ = ShuntNoAmp->Ishunt_cal_kf() + hdwe_add;  // Sense fault injection feeds logic, not model
+    Ib_noa_hdwe_f_ = NoaFilt->calculate(Ib_noa_hdwe_, reset, AMP_FILT_TAU, T_);
+    Ib_hdwe_f_cal_ = SelFiltCal->calculate(Ib_hdwe_, reset, AMP_FILT_TAU, T_);
+
     // Initial choice
-    // Inputs:  ib_choice/ib_sel_stat_, Ib_amp_hdwe, Ib_noa_hdwe, Ib_amp_model(past), Ib_noa_model(past)
-    // Outputs:  Ib_hdwe_model, Ib_hdwe
+    // Inputs:  ib_choice/ib_sel_stat_, Ib_amp_hdwe_, Ib_noa_hdwe_, Ib_amp_model_(past), Ib_noa_model_(past)
+    // Outputs:  Ib_hdwe_model_, Ib_hdwe_
     #ifdef HDWE_IB_HI_LO
       ib_choose_hi_lo();
     #else
@@ -1646,51 +644,51 @@ void Sensors::shunt_select_initial(const boolean reset)
     // When running normally the model tracks hdwe to synthesize reference information
     if ( !sp.mod_ib() )
     {
-      Ib_model_in = Ib_hdwe;
+      Ib_model_in_ = Ib_hdwe_;
     }
     // Otherwise it generates signals for feedback into monitor
     else
     {
-      Ib_model_in = mod_add;
+      Ib_model_in_ = mod_add;
     }
 }
 
 // Load and filter Tb
-void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
+void Sensors::temp_load_and_filter(Sensors *Sen, const bool reset_temp)
 {
   // Log.info("  temp_load_and_filter:  calling sample");
   reset_temp_ = reset_temp;
   #ifndef HDWE_BARE
-    Tb_hdwe = SensorTb->sample(Sen);  // Must sample even if using model
+    Tb_hdwe_ = SensorTb->sample(Sen, reset_temp_);  // Must sample even if using model
 
-    Tb_model_filt = TbModelFilt->calculate(Tb_model, reset_temp_, ap.tb_filt(), min(T_temp, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
-    Tb_model_filt_rate = TbModelFilt->rate();
+    Tb_model_filt_ = TbModelFilt->calculate(Tb_model_, reset_temp_, ap.tb_filt(), min(T_temp_, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
+    Tb_model_filt_rate_ = TbModelFilt->rate();
 
     if ( sp.mod_tb() )
     {
-      Tb_hdwe = Tb_model;
+      Tb_hdwe_ = Tb_model_;
     }
-    now_temp = sample_time_tb_ - inst_millis_ + inst_time_*1000;
-    // Log.info("    temp_load_and_filter:  now_temp,%lld, cTime,%7.3f,", now_temp, double(now_temp)/1000.);
+    now_temp_ = sample_time_tb_ - inst_millis_ + inst_time_*1000;
+    // Log.info("    temp_load_and_filter:  now_temp_,%lld, cTime,%7.3f,", now_temp_, double(now_temp_)/1000.);
   #else
-    Tb_hdwe = RATED_TEMP;
+    Tb_hdwe_ = RATED_TEMP;
   #endif
 
   // Filter and add rate limited bias
-  if ( reset_temp_ && Tb_hdwe>TEMP_RANGE_CHECK_MAX )  // Bootup T=85.5 C
+  if ( reset_temp_ && Tb_hdwe_>TEMP_RANGE_CHECK_MAX )  // Bootup T=85.5 C
   {
-      Tb_hdwe = RATED_TEMP;
+      Tb_hdwe_ = RATED_TEMP;
   }
-  Tb_hdwe += sp.Tb_bias_hdwe();  // Fault injection
+  Tb_hdwe_ += sp.Tb_bias_hdwe();  // Fault injection
 
-  Tb_hdwe_filt = TbSenseFilt->calculate(Tb_hdwe, reset_temp_, ap.tb_filt(), min(T_temp, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
-  Tb_hdwe_filt_rate = TbSenseFilt->rate();
+  Tb_hdwe_filt_ = TbSenseFilt->calculate(Tb_hdwe_, reset_temp_, ap.tb_filt(), min(T_temp_, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
+  Tb_hdwe_filt_rate_ = TbSenseFilt->rate();
 
   if ( sp.debug()==16 ) Serial.printf("temp_load_and_filter: T_temp, Tb_hdwe, Tb_hdwe_filt, rstate, lstate %11.8f %11.8f %11.8f %11.8f %11.8f\n",
-        T_temp, Tb_hdwe, Tb_hdwe_filt, TbSenseFilt->rstate(), TbSenseFilt->lstate());
+        T_temp_, Tb_hdwe_, Tb_hdwe_filt_, TbSenseFilt->rstate(), TbSenseFilt->lstate());
 
   if ( sp.debug()==16 || (sp.debug()==-1 && reset_temp_) ) Serial.printf("reset_temp_ T_temp Tb_bias_hdwe_loc, RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, Tb_hdwe_filt_rate, ready, rstate, lstate %d %8.6f %11.8f %11.8f %11.8f %11.8f %11.8f %d %11.8f  %11.8f\n",
-    reset_temp_, T_temp, sp.Tb_bias_hdwe(), RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, Tb_hdwe_filt_rate, cp.tb_info.ready, TbSenseFilt->rstate(),  TbSenseFilt->lstate());
+    reset_temp_, T_temp_, sp.Tb_bias_hdwe(), RATED_TEMP, Tb_hdwe_, Tb_hdwe_filt_, Tb_hdwe_filt_rate_, cp.tb_info.ready, TbSenseFilt->rstate(),  TbSenseFilt->lstate());
 
   #ifdef HDWE_2WIRE
     Flt->tb_check(Sen, TB_MIN, TB_MAX,  reset_temp_);
@@ -1700,98 +698,28 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const boolean reset_temp)
 }
 
 // Load analog voltage
-void Sensors::vb_load(const uint16_t vb_pin, const boolean reset)
+void Sensors::vb_load(const uint16_t vb_pin, const bool reset)
 {
   if ( !sp.mod_vb_dscn() )
   {
     #if !defined(HDWE_BARE)
-      Vb_raw = analogRead(vb_pin);
-      Vb_volt = Vb_raw * VB_RAW_CONV_GAIN;
-      Vb_hdwe =  float(Vb_raw)*VB_CONV_GAIN*ap.Vb_scale() + float(VB_A) + sp.Vb_bias_hdwe();
+      Vb_raw_ = Vb_read_-> analogReadDebounced(VRAW_BARE_DETECTED, reset, "Vb");
+      Vb_volt_ = Vb_raw_ * VB_RAW_CONV_GAIN;
+      Vb_hdwe_ =  float(Vb_raw_)*VB_CONV_GAIN*ap.Vb_scale() + float(VB_A) + sp.Vb_bias_hdwe();
     #endif
-    Vb_hdwe_f = VbFilt->calculate(Vb_hdwe, reset, AMP_FILT_TAU, T);
+    Vb_hdwe_f_ = VbFilt->calculate(Vb_hdwe_, reset, AMP_FILT_TAU, T_);
   }
   else
   {
-    Vb_raw = 0;
-    Vb_hdwe = 0.;
+    Vb_raw_ = 0;
+    Vb_hdwe_ = 0.;
   }
-  sample_time_vb_hdwe_ = System.millis();
+  sample_time_vb_hdwe_ = millis();
 }
 
 // Print analog voltage
 void Sensors::vb_print()
 {
-  Serial.printf("reset, T, vb_dscn, Vb_raw, sp.Vb_bias_hdwe(), Vb_hdwe, vb_flt(), vb_fa(), wv_fa=, %d, %7.3f, %d, %d, %7.3f,  %7.3f, %d, %d, %d,\n",
-    reset, T, sp.mod_vb_dscn(), Vb_raw, sp.Vb_bias_hdwe(), Vb_hdwe, Flt->vb_flt(), Flt->vb_fa(), Flt->wrap_vb_fa());
-}
-
-
-/*
-                  ^ scale
-                  |
-------            |          ------- 1.0 ==> all lg
-       -          |        -
-         -        |      -
-      |    -------------             0.0 ==> all sm
-      |    |      |     |    |
-   n_lo   n_hi    |   p_lo   p_hi
-                  |
-                  |
-                  v
-n_d = n_hi - n_lo
-p_d = p_hi - p_lo
-*/
-// Scale select between a large and small set of inputs.  Small might be a precise, amplified sensor and large might be the high range equivalent
-float scale_select(const float in, const ScaleBrk *brk, const float sm, const float lg)
-{
-  
-  if ( brk->n_hi <= in && in <= brk->p_lo )
-  {
-    return ( sm );
-  }
-
-  else if ( in <= brk->n_lo || in >= brk->p_hi )
-  {
-    return ( lg );
-  }
-
-  else if ( in < brk->n_hi )
-  {
-    return ( (in - brk->n_lo) / brk->n_d * (sm - lg) + lg );
-  }
-
-  else
-  {
-    return ( (in - brk->p_lo) / brk->p_d * (lg - sm) + sm );
-  }
-
-}
-float scale_select(const float in, const ScaleBrk *brk, const float sm, const float lg, int8_t *sel_stat)
-{
-  
-  if ( brk->n_hi <= in && in <= brk->p_lo )
-  {
-    *sel_stat = 1;
-    return ( sm );
-  }
-
-  else if ( in <= brk->n_lo || in >= brk->p_hi )
-  {
-    *sel_stat = -1;
-    return ( lg );
-  }
-
-  else if ( in < brk->n_hi )
-  {
-    *sel_stat = 0;
-    return ( (in - brk->n_lo) / brk->n_d * (sm - lg) + lg );
-  }
-
-  else
-  {
-    *sel_stat = 0;
-    return ( (in - brk->p_lo) / brk->p_d * (lg - sm) + sm );
-  }
-
+  Serial.printf("reset, T, vb_dscn, Vb_raw, sp.Vb_bias_hdwe(), Vb_hdwe, vb_flt(), vb_fa_lt(), wv_fa=, %d, %7.3f, %d, %d, %7.3f,  %7.3f, %d, %d, %d,\n",
+    reset_, T_, sp.mod_vb_dscn(), Vb_raw_, sp.Vb_bias_hdwe(), Vb_hdwe_, Flt->vb_flt(), Flt->vb_fa_lt(), Flt->wrap_vb_fa());
 }
