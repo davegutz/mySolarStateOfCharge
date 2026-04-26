@@ -606,6 +606,72 @@ def compare_run_ver_batch():
         tkinter.messagebox.showerror(title="Error", message=str(e))
 
 
+def run_sim_all_batch():
+    plink_path = Path(plink_test_csv_path.get())
+    auto_plink_path = plink_path.parent / 'auto_plink.csv'
+    if not auto_plink_path.is_file():
+        tkinter.messagebox.showerror(title="File Not Found",
+                                     message=f"Could not find {auto_plink_path}")
+        return
+
+    try:
+        with open(auto_plink_path, 'r') as f:
+            lines = f.readlines()
+
+        header_fields = []
+        data_rows = []
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith('#'):
+                if not header_fields:
+                    header_fields = [f.strip() for f in line.lstrip('#').split(',') if f.strip()]
+                continue
+            if header_fields:
+                values = [v.strip() for v in line.split(',')]
+                if len(values) >= len(header_fields):
+                    data_rows.append(dict(zip(header_fields, values)))
+
+        if not data_rows:
+            tkinter.messagebox.showwarning(message="No valid data rows in auto_plink.csv")
+            return
+
+        all_fig_list = []
+        for config in data_rows:
+            folder = config.get('folder', Test.dataReduction_folder)
+            version = config.get('version', Test.version)
+            battery = config.get('battery', Test.battery)
+            macro = config.get('macro', '')
+
+            version_path = str(PurePosixPath(folder) / version)
+            file_txt = create_file_txt(macro, Test.unit, battery)
+            file_path = str(PurePosixPath(version_path) / file_txt)
+            key = create_file_key(version, Test.unit, battery)
+
+            if not Path(file_path).is_file():
+                print(f"run_sim_all_batch: file not found, skipping: {file_path}")
+                continue
+
+            print(f"run_sim_all_batch: {file_path}")
+            result = compare_run_sim(data_file=file_path, unit_key=key,
+                                     strict_overplot=strict_overplot.get(),
+                                     terse=terse.get(), hardcopy=hardcopy.get(),
+                                     show_killer_=False, fig_list=all_fig_list)
+            if result is not None:
+                all_fig_list = result[0]
+
+        if all_fig_list:
+            string = 'plots ' + str(all_fig_list[0].number) + ' - ' + str(all_fig_list[-1].number)
+            show_killer(string, 'RunSimAll', fig_list=all_fig_list, hardcopy=False)
+        else:
+            print("run_sim_all_batch: no figures produced")
+
+    except Exception as e:
+        print(f"run_sim_all_batch: {e}")
+        tkinter.messagebox.showerror(title="Error", message=str(e))
+
+
 def enter_mod_in_app():
     answer = tk.simpledialog.askinteger(title=__file__, prompt="enter the value of Modeling in app to assume", initialvalue=mod_in_app.get())
     if answer is None:
@@ -2050,14 +2116,19 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     if platform.system() == 'Darwin':
         start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="purple", bg=bg_color,
                                 justify='left', font=butt_font)
+        run_sim_all_button = myButton(option_panel_right, text='RunSimAll', command=run_sim_all_batch, fg="blue", bg=bg_color,
+                                      justify='left', font=butt_font)
         run_ver_button = myButton(option_panel_right, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color,
                                   justify='left', font=butt_font)
     else:
         start_button = myButton(option_panel_ctr, text='', command=grab_start, fg='#00ff00', bg='black', wraplength=wrap_length,
                                 justify='left', font=butt_font)
+        run_sim_all_button = myButton(option_panel_right, text='RunSimAll', command=run_sim_all_batch, fg="blue", bg=bg_color, wraplength=wrap_length,
+                                      justify='left', font=butt_font)
         run_ver_button = myButton(option_panel_right, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color, wraplength=wrap_length,
                                   justify='left', font=butt_font)
     start_button.pack(padx=5, pady=5, expand=True, fill='both')
+    run_sim_all_button.pack(side='left', padx=5, pady=5)
     run_ver_button.pack(side='left', padx=5, pady=5)
     auto_button = myButton(option_panel_right, text='AUTO', command=grab_auto, fg="blue", bg=bg_color,
                            justify='left', font=butt_font)
