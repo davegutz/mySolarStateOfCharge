@@ -655,8 +655,7 @@ def run_sim_all_batch():
 
             print(f"run_sim_all_batch: {file_path}")
             result = compare_run_sim(data_file=file_path, unit_key=key,
-                                     strict_overplot=strict_overplot.get(),
-                                     terse=terse.get(), hardcopy=hardcopy.get(),
+                                     strict_overplot=True, terse=True, hardcopy=True,
                                      show_killer_=False, fig_list=all_fig_list)
             if result is not None:
                 all_fig_list = result[0]
@@ -1280,9 +1279,6 @@ def grab_auto():
             'battery': test_battery.get(),
             'macro': macro_option.get(),
             'option': option.get(),
-            'modeling': modeling.get(),
-            'auto_overwrite': auto_overwrite.get(),
-            'hardcopy': hardcopy.get(),
         }
         print(f"Saved configuration: {saved_config}")
 
@@ -1295,13 +1291,6 @@ def grab_auto():
                 except Exception:
                     pass
 
-        # Set modeling, auto over-write, and hardcopy to True for AUTO
-        modeling.set(True)
-        set_red(modeling_button)
-        auto_overwrite.set(True)
-        set_red(auto_overwrite_button)
-        hardcopy.set(True)
-        set_red(hardcopy_button)
         auto_running = True
 
         # Process each line
@@ -1320,9 +1309,6 @@ def grab_auto():
                 test_battery.set(saved_config['battery'])
                 macro_option.set(saved_config['macro'])
                 option.set(saved_config['option'])
-                modeling.set(saved_config['modeling'])
-                auto_overwrite.set(saved_config['auto_overwrite'])
-                hardcopy.set(saved_config['hardcopy'])
 
                 # Write folder and version back to .ini (traces handle the rest)
                 Test.cf[Test.ind]['dataReduction_folder'] = saved_config['folder']
@@ -1337,9 +1323,6 @@ def grab_auto():
                 macro_sel.config(fg='black', activeforeground='black')
                 sel.config(fg='black', activeforeground='black')
                 sel1.config(fg='black', activeforeground='black')
-                modeling_button.config(fg='black', activeforeground='black')
-                auto_overwrite_button.config(fg='black', activeforeground='black')
-                hardcopy_button.config(fg='black', activeforeground='black')
 
                 lookup_start()
                 print(f"AUTO complete: {n_cases} case(s) run. Original configuration restored.")
@@ -1385,10 +1368,6 @@ def grab_auto():
                     lookup_start()
                 else:
                     print(f"Error: Macro '{config['macro']}' not found in macro_lookup or lookup. Skipping.")
-
-            if 'hardcopy' in config:
-                hardcopy.set(config['hardcopy'] == 'True')
-                set_red(hardcopy_button)
 
             # Track AUTO case progress (used by start_plink for status print)
             auto_case_index = index
@@ -2113,26 +2092,29 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     start = tk.StringVar(master, '')
     start_label = tk.Label(option_panel_left, text='copy start:', font=label_font_gentle)
     start_label.pack(padx=5, pady=5, expand=True, fill='x')
+    auto_group = tk.Frame(option_panel_right, relief='groove', bd=2, bg=bg_color)
+    auto_group.pack(padx=2, pady=2)
     if platform.system() == 'Darwin':
         start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="purple", bg=bg_color,
                                 justify='left', font=butt_font)
-        run_sim_all_button = myButton(option_panel_right, text='RunSimAll', command=run_sim_all_batch, fg="blue", bg=bg_color,
+        run_sim_all_button = myButton(auto_group, text='RunSimAll', command=run_sim_all_batch, fg="blue", bg=bg_color,
                                       justify='left', font=butt_font)
-        run_ver_button = myButton(option_panel_right, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color,
+        run_ver_button = myButton(auto_group, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color,
                                   justify='left', font=butt_font)
     else:
         start_button = myButton(option_panel_ctr, text='', command=grab_start, fg='#00ff00', bg='black', wraplength=wrap_length,
                                 justify='left', font=butt_font)
-        run_sim_all_button = myButton(option_panel_right, text='RunSimAll', command=run_sim_all_batch, fg="blue", bg=bg_color, wraplength=wrap_length,
+        run_sim_all_button = myButton(auto_group, text='RunSimAll', command=run_sim_all_batch, fg="blue", bg=bg_color, wraplength=wrap_length,
                                       justify='left', font=butt_font)
-        run_ver_button = myButton(option_panel_right, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color, wraplength=wrap_length,
+        run_ver_button = myButton(auto_group, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color, wraplength=wrap_length,
                                   justify='left', font=butt_font)
     start_button.pack(padx=5, pady=5, expand=True, fill='both')
-    run_sim_all_button.pack(side='left', padx=5, pady=5)
-    run_ver_button.pack(side='left', padx=5, pady=5)
-    auto_button = myButton(option_panel_right, text='AUTO', command=grab_auto, fg="blue", bg=bg_color,
+    auto_button = myButton(auto_group, text='AUTO', command=grab_auto, fg="blue", bg=bg_color,
                            justify='left', font=butt_font)
     auto_button.pack(side='left', padx=5, pady=5)
+    run_sim_all_button.pack(side='left', padx=5, pady=5)
+    run_ver_button.pack(side='left', padx=5, pady=5)
+    tk.Label(auto_group, text='Checkboxes don\'t matter', font=label_font_gentle, bg=bg_color).pack(pady=(0, 2))
     timer_val = tk.IntVar(master, 0)
 
     # macro panel
