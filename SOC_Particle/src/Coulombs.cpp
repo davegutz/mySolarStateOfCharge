@@ -229,7 +229,6 @@ float Coulombs::count_coulombs(Sensors *Sen, const bool reset_temp, const float 
       time_neg_ = 0.;
       time_pos_ = 0.;
     }
-    // if ( sp.debug()==-24 )Serial.printf("Mon:  charge_curr%7.3f d_delta_q%10.6f delta_q%10.1f\n", charge_curr, d_delta_q);
     q_ = q_capacity_ + *sp_delta_q_;
     q_inf_ = q_capacity_ + delta_q_inf_;
 

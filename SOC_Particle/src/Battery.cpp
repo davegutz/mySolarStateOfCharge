@@ -724,23 +724,12 @@ float BatterySim::calculate(Sensors *Sen, const bool dc_dc_on, const bool reset)
     // ib_charge_ = ib_charge_fut;  // Same time plane as volt calcs, added past value.  (This prevents sat logic from working)
     ib_charge_ = ib_fut_;  // Same time plane as volt calcs, added past value
 
-    // if ( (q_ <= 0.) && (ib_charge_ < 0.) && sp.mod_ib() ) ib_charge_ = 0.;   //  empty  **** don't know why this was hear.  cannot bms_off_ with it
+    // if ( (q_ <= 0.) && (ib_charge_ < 0.) && sp.mod_ib() ) ib_charge_ = 0.;   //  empty  **** don't know why this was here.  cannot bms_off_ with it
 
     model_cutback_ = (voc_stat_ > vsat_) && (ib_charge_ == sat_ib_max_);
     model_saturated_ = model_cutback_ && (ib_charge_ < ib_sat_);
     Coulombs::sat_ = model_saturated_;
     
-    if ( sp.debug()==75 ) Serial.printf("BatterySim::calculate: tb_f_ soc_ voc_stat_ low_voc =  %7.3f %10.6f %9.5f %7.3f\n",
-        tb_f_, soc_, voc_stat_, chem_.low_voc);
-
-    if ( sp.debug()==76 || (sp.debug()==-1 && initializing_) ) Serial.printf("BatterySim::calculate:,  soc=%8.4f, tb_f_=%7.3f, ib_in%7.3f ib%7.3f voc_stat%7.3f voc%7.3f vsat%7.3f model_saturated%d bms_off%d dc_dc_on%d VB_DC_DC%7.3f vb%7.3f\n",
-        soc_, tb_f_, ib_in_, ib_, voc_stat_, voc_, vsat_, model_saturated_, bms_off_, dc_dc_on, VB_DC_DC, vb_);
-
-    if ( sp.debug()==78 ) Serial.printf("BatterySim::calculate:,  ctime,_dt_,tb_f,curr,soc_,voc,dv_dyn,vb,%12.3f,%7.3f,%7.3f,%7.3f,%8.4f,%7.3f,%7.3f,%7.3f,\n",
-    ctime_,dt_,tb_f_, ib_, soc_, voc_, dv_dyn_, vb_);
-
-    if ( sp.debug()==79 ) Serial.printf("reset, mod_ib, tb_f_, dvoc_dt, dqdt, vsat_, voc, qcrs, q_capacity, sat_ib_max, ib_fut, ib,=%d,%d,%9.8f,%7.4f,%7.4f,%7.3f,%7.3f, %12.3f,%12.3f, %7.3f, %7.3f, %7.3f,\n",
-        reset, sp.mod_ib(), tb_f_, chem_.dvoc_dt, chem_.dqdt, vsat_, voc_, q_cap_rated_scaled_, q_capacity_, sat_ib_max_, ib_fut_, ib_);
     return ( vb_ );
 }
 
@@ -865,7 +854,6 @@ float BatterySim::count_coulombs(Sensors *Sen, const bool reset_temp, BatteryMon
         *sp_delta_q_ += d_delta_q_s_;
         *sp_delta_q_ = max(min(*sp_delta_q_, 0.), -q_capacity_*1.2);
     }
-    // if ( sp.debug()==-24 )Serial.printf("Sim:  charge_curr%7.3f d_delta_q%10.6f delta_q%10.1f\n", charge_curr, d_delta_q, *sp_delta_q_);
     q_ = q_capacity_ + *sp_delta_q_;
 
     // Normalize

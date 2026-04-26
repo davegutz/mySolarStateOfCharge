@@ -29,7 +29,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 # noinspection PyUnusedLocal,PyPep8Naming
 def compare_run_hist(data_file=None, unit_key=None, time_end=None, plots=True,
                      strict_overplot=False, terse=False, use_mon_csv=False, dt_resample=10, Tb_force=None,
-                     use_mon_soc=False, verbose=True, scale=1., slr_hys_sim=1., Battery=None,
+                     use_mon_soc=False, verbose=False, scale=1., slr_hys_sim=1., Battery=None,
                      init_time=None, time_shift=None, mon_str='', sync_time=None,
                      request_history_run_sim=None, request_history_hist_sim=None):
     print(f"\n compare_run_hist: \

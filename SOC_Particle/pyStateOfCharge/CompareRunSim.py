@@ -85,7 +85,7 @@ def shift_time(obj, n_steps):
 
 # noinspection PyPep8Naming
 def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw=0.,  use_mon_soc_=False,
-                    verbose=True, scale_batt=1., slr_hys_sim=1., request_history=5, init_time=None,
+                    verbose=False, scale_batt=1., slr_hys_sim=1., request_history=5, init_time=None,
                     time_shift=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
                     fig_list=None, show_killer_=True, hardcopy=False):
 
@@ -253,20 +253,20 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     # Cut-pasted from GUI_TestSOC Run window
-    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/noaHiFail_soc3p2_hi_lo_bb.csv'
+    data_file = '/home/daveg/gdrive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/triTweakDisch_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
-    time_end = None
-    plots = True
+    time_end = 37
+    plots = False
     use_mon_soc_ = False
-    verbose = True
+    verbose = False
     scale_batt = 1.0
     slr_hys_sim = 1.0
-    request_history = 5
+    request_history = 3
     init_time = None
     time_shift = None
     strict_overplot = True
     terse = True
-    hardcopy = True
+    hardcopy = False
     mon_str = ''
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,

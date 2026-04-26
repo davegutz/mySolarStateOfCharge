@@ -170,7 +170,6 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sp.debug_p->print_help();  // vv
 
   sendTxBuf("  -<>: Negative - Arduino plot compatible\n", true, true);
-  sendTxBuf(" vv-2: ADS counts for throughput meas\n", true, true);
   #ifdef DEBUG_INIT
     sendTxBuf("  v-1: Debug\n", true, true);
   #endif
@@ -191,11 +190,6 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sendTxBuf(" vv35: ChargeTransfer balance\n", true, true);
   sendTxBuf(" vv36: EKF short in EKF\n", true, true);
   sendTxBuf(" vv37: EKF short\n", true, true);
-  sendTxBuf(" vv75: voc_low check mod\n", true, true);
-  sendTxBuf(" vv76: vb model\n", true, true);
-  sendTxBuf(" vv78: Batt model sat\n", true, true);
-  sendTxBuf(" vv79: sat_ib model\n", true, true);
-  sendTxBuf(" vv98: shunt filtering check\n", true, true);
   sendTxBuf(" vv99: calibration\n", true, true);
 
   sendTxBuf("\nW<?> - iters to wait\n", true, true);

@@ -93,7 +93,6 @@ void debug_check_m23(Sensors *Sen)
       Serial.printf("%7.3f\n", Sen->Vb_hdwe() - Sen->Vb_hdwe_f());
 }
 
-// sp.debug()==-24 Vb, Ib for Arduino.
 // Start Arduino serial plotter.  Toggle v like 'vv0;vv-23;' to produce legend
 void debug_check_m24(Sensors *Sen)
 {

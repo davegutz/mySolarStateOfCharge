@@ -86,7 +86,7 @@ class CountdownTimer(tk.Toplevel):
             self._countdown_after_id = self.after(1000, self.begin)
             self.button.config(text='wait')
             return
-        # Use caffein instead
+        # Use caffiene instead
         # thread = Thread(target=stay_awake, kwargs={'up_set_min': float(self.time.get()) / 60.})
         # thread.start()
         self.lift()
