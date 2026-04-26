@@ -171,7 +171,7 @@ def report(results, tol, option='', macro=''):
         print(f"  {pair_label}  ({r['n_rows']} rows, {len(r['diffs'])} differing param(s))")
         if run_only:
             print(f"    Parameters in _run only ({len(run_only)}): {', '.join(run_only)}")
-        print(f"    {'param':<30}  {'n_bad':>6}  {'max|Δ|':>12}  {'mean|Δ|':>12}  {'first_t':>10}")
+        print(f"    {'param':<30}  {'n_bad':>6}  {'max|d|':>12}  {'mean|d|':>12}  {'first_t':>10}")
         print(f"    {'-'*30}  {'-'*6}  {'-'*12}  {'-'*12}  {'-'*10}")
         for d in r['diffs']:
             print(f"    {d['param']:<30}  {d['n_bad']:>6}  {d['max_diff']:>12.6f}  {d['mean_diff']:>12.6f}  {d['first_time']:>10.3f}")
@@ -227,7 +227,7 @@ def plot_diffs(results, data_file=None, save_plots=True, terse=False, hardcopy=T
                 param = d['param']
                 ax.plot(t_run, df_run[param].values, label='run', linewidth=1)
                 ax.plot(t_ver, df_ver[param].values, label='ver', linewidth=1, linestyle='--')
-                ax.set_title(f"{param}\nmax|Δ|={d['max_diff']:.4g}", fontsize=8)
+                ax.set_title(f"{param}\nmax|d|={d['max_diff']:.4g}", fontsize=8)
                 ax.set_xlabel('time (s)', fontsize=7)
                 ax.tick_params(labelsize=7)
                 ax.legend(fontsize=7, loc='best')
