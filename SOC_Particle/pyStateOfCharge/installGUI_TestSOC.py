@@ -1,5 +1,6 @@
-#  install.py
-#  2024-Apr-13  Dave Gutz   Create
+#  installGUI_TestSOC runs interactive redesign loop
+#  .py
+#  2026-Apr-26  Dave Gutz   Create
 # Copyright (C) 2026 Dave Gutz
 #
 # This library is free software; you can redistribute it and/or
