@@ -210,7 +210,6 @@ def ult_1(S:PlotOptions, fig_files=None, fig_list=None):
     plq(plt, S.mr, 'time', S.mr, 'saturated', add=+2, color='black', linestyle='-.')
     plq(plt, S.mv, 'time', S.mv, 'saturated', add=+2, color='orange', linestyle=':')
     plq(plt, S.mr, 'time', S.mr, 'sel', color='black', linestyle='-.')
-    plq(plt, S.mv, 'time', S.mv, 'sel', color='blue', linestyle=':')
     plq(plt, S.mr, 'time', S.mr, 'ib_choice', add=-2, color='green', linestyle='-', warn=not S.run_is_stdy)
     plq(plt, S.mv, 'time', S.mv, 'ib_choice', add=-2, color='red', linestyle=':', warn=not S.ver_is_stdy and not S.ver_is_sim)
     plq(plt, S.mr, 'time', S.mr, 'vb_sel', add=-2, color='black', linestyle='--')

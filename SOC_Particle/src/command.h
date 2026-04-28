@@ -73,6 +73,7 @@ public:
   bool soft_reset_sim_print;   // Use talk to reset sim only
   bool soft_sim_hold;    // Use talk to reset sim only
   Tb_union tb_info;         // Use cp to pass DS2482 I2C information
+  double time_scale;     // Used to scale time delays in fault logic when running very slow verification testing, slr
   bool write_summary;    // Use talk to issue a write command to summary
   bool ekf_reset;        // Reset Extended Kalman Filter
   bool ekf_reset_print;  // Reset Extended Kalman Filter status saved for printing
@@ -96,6 +97,7 @@ public:
     write_summary = false;
     tb_info.t_c = 0.;
     tb_info.ready = false;
+    time_scale = 1.;
     chitchat = false;
     inp_token = false;
     freeze = false;
@@ -136,6 +138,7 @@ public:
     ekf_reset = true;
     kf_reset = true;
     num_v_print = 0UL;
+    time_scale = 1.;
   }
 
   void pretty_print(void)
@@ -153,6 +156,7 @@ public:
       sendTxBuf(String::format(" soft_reset_sim %d\n", soft_reset_sim), true, true);
       sendTxBuf(String::format(" tb_info.t_c %7.3f\n", tb_info.t_c), true, true);
       sendTxBuf(String::format(" tb_info.ready %d\n", tb_info.ready), true, true);
+      sendTxBuf(String::format(" time_scale %7.3f\n", time_scale), true, true);
       sendTxBuf(String::format(" write_summary %d\n", write_summary), true, true);
       sendTxBuf(String::format(" kf_reset %d\n", kf_reset), true, true);
       sendTxBuf(String::format(" ekf_reset %d\n", ekf_reset), true, true);

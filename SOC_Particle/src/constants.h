@@ -445,3 +445,6 @@ const float VO_CONV_GAIN = float(PHOTON_ADC_VOLT) / float(PHOTON_ADC_COUNT) * fl
 
 const float VH3V3_CONV_GAIN = float(PHOTON_ADC_VOLT) / float(PHOTON_ADC_COUNT);
 const float VTB_CONV_GAIN = float(PHOTON_ADC_VOLT) / float(PHOTON_ADC_COUNT) * float(VTB_S);
+
+// Time scalar for modifying fault logic time delays when deliberately running slowly for regression testing
+const double NOM_READ_DELAY_S = double(READ_DELAY) / 1000.;

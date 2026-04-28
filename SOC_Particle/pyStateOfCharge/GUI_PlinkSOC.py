@@ -573,31 +573,57 @@ def compare_run_ver_batch():
         all_fig_list = []
         all_fig_files = []
         last_pdf_path = None
+        problem_cases = []  # list of (desc, reason)
+
         for config in data_rows:
             version = config.get('version', Test.version)
             macro_val = config.get('macro', '')
             option_val = macro_val if macro_val in lookup else ''
+            case_desc = f"version={version!r}, macro={macro_val!r}"
 
             temp_dir = temp_folder(version)
             if not Path(temp_dir).is_dir():
-                print(f"compare_run_ver_batch: temp folder not found: {temp_dir}")
+                reason = f"temp folder not found: {temp_dir}"
+                print(f"\033[91mRunVer SKIP  {case_desc}: {reason}\033[0m")
+                problem_cases.append((case_desc, reason))
                 continue
 
             pairs = find_pairs(temp_dir, option=option_val)
             pairs = [(r, v) for r, v in pairs if '_mon_run' in r.name or '_sim_run' in r.name]
             if not pairs:
-                print(f"compare_run_ver_batch: no mon/sim pairs for version={version!r}, option={option_val!r}")
+                reason = f"no mon/sim pairs (option={option_val!r})"
+                print(f"\033[91mRunVer SKIP  {case_desc}: {reason}\033[0m")
+                problem_cases.append((case_desc, reason))
                 continue
 
-            results = [compare_pair(run, ver, tol) for run, ver in pairs]
-            report(results, tol, option=option_val, macro=macro_val)
-            ret = plot_diffs(results, data_file=Test.file_path, show_killer_=False)
-            if ret is not None:
-                figs, files, pdf_path = ret
-                all_fig_list.extend(figs)
-                all_fig_files.extend(files)
-                if pdf_path:
-                    last_pdf_path = pdf_path
+            try:
+                results = [compare_pair(run, ver, tol) for run, ver in pairs]
+                report(results, tol, option=option_val, macro=macro_val)
+                ret = plot_diffs(results, data_file=Test.file_path, show_killer_=False)
+                if ret is not None:
+                    figs, files, pdf_path = ret
+                    all_fig_list.extend(figs)
+                    all_fig_files.extend(files)
+                    if pdf_path:
+                        last_pdf_path = pdf_path
+            except Exception as case_e:
+                reason = str(case_e)
+                print(f"\033[91mRunVer FAIL  {case_desc}: {reason}\033[0m")
+                problem_cases.append((case_desc, reason))
+
+        n_total = len(data_rows)
+        n_problems = len(problem_cases)
+        if not problem_cases:
+            tkinter.messagebox.showinfo(title="RunVer Complete",
+                                        message=f"All {n_total} case(s) executed successfully.")
+        else:
+            print("\033[91m--- RunVer problem summary ---\033[0m")
+            for desc, reason in problem_cases:
+                print(f"\033[91m  {desc}: {reason}\033[0m")
+            tkinter.messagebox.showwarning(
+                title="RunVer Complete",
+                message=f"{n_total - n_problems} of {n_total} case(s) ran.\n"
+                        f"{n_problems} case(s) had problems — check the status output for details.")
 
         show_batch_diffs(all_fig_list, all_fig_files, last_pdf_path)
 
@@ -638,11 +664,14 @@ def run_sim_all_batch():
             return
 
         all_fig_list = []
+        problem_cases = []  # list of (desc, reason)
+
         for config in data_rows:
             folder = config.get('folder', Test.dataReduction_folder)
             version = config.get('version', Test.version)
             battery = config.get('battery', Test.battery)
             macro = config.get('macro', '')
+            case_desc = f"version={version!r}, macro={macro!r}"
 
             version_path = str(PurePosixPath(folder) / version)
             file_txt = create_file_txt(macro, Test.unit, battery)
@@ -650,15 +679,36 @@ def run_sim_all_batch():
             key = create_file_key(version, Test.unit, battery)
 
             if not Path(file_path).is_file():
-                print(f"run_sim_all_batch: file not found, skipping: {file_path}")
+                reason = f"file not found: {file_path}"
+                print(f"\033[91mRunSimAll SKIP  {case_desc}: {reason}\033[0m")
+                problem_cases.append((case_desc, reason))
                 continue
 
-            print(f"run_sim_all_batch: {file_path}")
-            result = compare_run_sim(data_file=file_path, unit_key=key,
-                                     strict_overplot=True, terse=True, hardcopy=True,
-                                     show_killer_=False, fig_list=all_fig_list)
-            if result is not None:
-                all_fig_list = result[0]
+            try:
+                print(f"run_sim_all_batch: {file_path}")
+                result = compare_run_sim(data_file=file_path, unit_key=key,
+                                         strict_overplot=True, terse=True, hardcopy=True,
+                                         show_killer_=False, fig_list=all_fig_list)
+                if result is not None:
+                    all_fig_list = result[0]
+            except Exception as case_e:
+                reason = str(case_e)
+                print(f"\033[91mRunSimAll FAIL  {case_desc}: {reason}\033[0m")
+                problem_cases.append((case_desc, reason))
+
+        n_total = len(data_rows)
+        n_problems = len(problem_cases)
+        if not problem_cases:
+            tkinter.messagebox.showinfo(title="RunSimAll Complete",
+                                        message=f"All {n_total} case(s) executed successfully.")
+        else:
+            print("\033[91m--- RunSimAll problem summary ---\033[0m")
+            for desc, reason in problem_cases:
+                print(f"\033[91m  {desc}: {reason}\033[0m")
+            tkinter.messagebox.showwarning(
+                title="RunSimAll Complete",
+                message=f"{n_total - n_problems} of {n_total} case(s) ran.\n"
+                        f"{n_problems} case(s) had problems — check the status output for details.")
 
         if all_fig_list:
             string = 'plots ' + str(all_fig_list[0].number) + ' - ' + str(all_fig_list[-1].number)
@@ -1770,16 +1820,44 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                 if auto_running:
                     print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
         elif platform.system() == 'Windows':
-            # 'color 0A' sets black background (0) and light green foreground (A)
-            plink_base_cmd = f"plink -batch -T -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
-            if command_to_paste:
-                # (echo command & type CON) | plink ... is the Windows equivalent for sending a command then remaining interactive
-                plink_cmd = f"(echo {command_to_paste} & type CON) | {plink_base_cmd}"
+            # plink has no -tee flag; use Git's tee.exe piped in cmd.exe
+            csv_path = plink_test_csv_path.get()
+            win_color = '8E'  # dark gray background, light yellow (wheat) foreground
+            # Use Windows 'where' — same PATH lookup as cmd.exe, unlike shutil.which (Python PATH)
+            tee_exe = None
+            try:
+                _where_out = subprocess.check_output(['where', 'tee'], stderr=subprocess.DEVNULL).decode().strip()
+                tee_exe = _where_out.split('\n')[0].strip()
+            except Exception:
+                pass
+            if not tee_exe:
+                for _candidate in [
+                    r'C:\Program Files\Git\usr\bin\tee.exe',
+                    r'C:\Program Files (x86)\Git\usr\bin\tee.exe',
+                    r'C:\Git\usr\bin\tee.exe',
+                ]:
+                    if os.path.isfile(_candidate):
+                        tee_exe = _candidate
+                        break
+            if tee_exe:
+                print(f"tee_exe: {tee_exe}")
+                plink_base = f'plink -batch -T -load {test_filename.get()} | "{tee_exe}" "{csv_path}"'
             else:
-                plink_cmd = plink_base_cmd
-
-            win_color = '0A' if fg_color == '#00ff00' else '0F'
-            cmd = ['cmd', '/c', 'start', 'cmd', '/k', f"color {win_color} && {plink_cmd}"]
+                print("WARNING: tee.exe not found — install Git for Windows so plink output can be captured to file")
+                plink_base = f'plink -batch -T -load {test_filename.get()}'
+            if command_to_paste:
+                # Write command to a temp file so cmd.exe never sees the special chars (<>|&^)
+                _cmd_file = os.path.join(os.environ.get('TEMP', os.environ.get('TMP', 'C:\\Temp')), 'plink_cmd.txt')
+                with open(_cmd_file, 'w', newline='') as _cf:
+                    _cf.write(command_to_paste + '\r\n')
+                plink_cmd_bat = f'(type "{_cmd_file}" & type CON) | {plink_base}'
+            else:
+                plink_cmd_bat = plink_base
+            # Write to a temp batch file — avoids all cmd.exe quoting issues with paths containing spaces
+            bat_path = os.path.join(os.environ.get('TEMP', os.environ.get('TMP', 'C:\\Temp')), 'plink_run.bat')
+            with open(bat_path, 'w') as _bf:
+                _bf.write(f'@color {win_color}\r\n{plink_cmd_bat}\r\n')
+            cmd = ['cmd', '/c', 'start', 'cmd', '/k', bat_path]
             print(f"Running command: {' '.join(cmd)}")
             proc = subprocess.Popen(cmd)
             tksleep(1.0)
@@ -1811,10 +1889,11 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
             if auto_running:
                 print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
         elif platform.system() == 'Darwin':
+             # plink has no -tee flag; pipe stdout through shell tee instead
              if command_to_paste:
-                 plink_cmd = f"(echo '{command_to_paste}'; cat) | plink -batch -T -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
+                 plink_cmd = f"(echo '{command_to_paste}'; cat) | plink -batch -T -load {test_filename.get()} | tee {plink_test_csv_path.get()}"
              else:
-                 plink_cmd = f"plink -batch -T -load {test_filename.get()} -tee {plink_test_csv_path.get()}"
+                 plink_cmd = f"plink -batch -T -load {test_filename.get()} | tee {plink_test_csv_path.get()}"
 
              script = (f'tell application "Terminal" to do script '
                        f'"printf \\"\\\\e]11;#000000\\\\a\\\\e]10;#00ff00\\\\a\\"; clear; '
@@ -2094,27 +2173,33 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     start_label.pack(padx=5, pady=5, expand=True, fill='x')
     auto_group = tk.Frame(option_panel_right, relief='groove', bd=2, bg=bg_color)
     auto_group.pack(padx=2, pady=2)
+    auto_buttons_row = tk.Frame(auto_group, bg=bg_color)
     if platform.system() == 'Darwin':
         start_button = myButton(option_panel_ctr, text='', command=grab_start, fg="purple", bg=bg_color,
                                 justify='left', font=butt_font)
-        run_sim_all_button = myButton(auto_group, text='RunSimAll', command=run_sim_all_batch, fg="blue", bg=bg_color,
+        run_sim_all_button = myButton(auto_buttons_row, text='RunSimAll', command=run_sim_all_batch, fg="blue", bg=bg_color,
                                       justify='left', font=butt_font)
-        run_ver_button = myButton(auto_group, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color,
+        run_ver_button = myButton(auto_buttons_row, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color,
                                   justify='left', font=butt_font)
     else:
         start_button = myButton(option_panel_ctr, text='', command=grab_start, fg='#00ff00', bg='black', wraplength=wrap_length,
                                 justify='left', font=butt_font)
-        run_sim_all_button = myButton(auto_group, text='RunSimAll', command=run_sim_all_batch, fg="blue", bg=bg_color, wraplength=wrap_length,
+        run_sim_all_button = myButton(auto_buttons_row, text='RunSimAll', command=run_sim_all_batch, fg="blue", bg=bg_color, wraplength=wrap_length,
                                       justify='left', font=butt_font)
-        run_ver_button = myButton(auto_group, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color, wraplength=wrap_length,
+        run_ver_button = myButton(auto_buttons_row, text='RunVer', command=compare_run_ver_batch, fg="blue", bg=bg_color, wraplength=wrap_length,
                                   justify='left', font=butt_font)
     start_button.pack(padx=5, pady=5, expand=True, fill='both')
-    auto_button = myButton(auto_group, text='AUTO', command=grab_auto, fg="blue", bg=bg_color,
+    auto_button = myButton(auto_buttons_row, text='AUTO', command=grab_auto, fg="blue", bg=bg_color,
                            justify='left', font=butt_font)
+    auto_buttons_row.pack(fill='x')
     auto_button.pack(side='left', padx=5, pady=5)
     run_sim_all_button.pack(side='left', padx=5, pady=5)
     run_ver_button.pack(side='left', padx=5, pady=5)
     tk.Label(auto_group, text='Checkboxes don\'t matter', font=label_font_gentle, bg=bg_color).pack(pady=(0, 2))
+    auto_plink_path_var = tk.StringVar(master, str(Path(plink_test_csv_path.get()).parent / 'auto_plink.csv'))
+    auto_plink_entry = tk.Entry(auto_group, textvariable=auto_plink_path_var, state='readonly',
+                                font=label_font_gentle, readonlybackground=bg_color, relief='sunken')
+    auto_plink_entry.pack(padx=5, pady=(0, 4), fill='x')
     timer_val = tk.IntVar(master, 0)
 
     # macro panel

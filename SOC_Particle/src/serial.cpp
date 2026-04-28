@@ -127,7 +127,7 @@ void print_battery_header()
   String txBuf;
   txBuf = String::format("Battery_hdr, hdwe_ib_hi_lo, AMP_WRAP_TRIM_GAIN, ap_cc_diff_slr, ap_dc_dc_on, ap_disab_ib_fa, ap_disab_tb_fa, ap_disab_vb_fa_lt,") +
     String::format("ap_ds_voc_soc, ap_dv_voc_soc, ap_eframe_mult, ap_ewhi_slr, ap_ewlo_slr, ap_hys_scale, ap_ib_diff_slr, ap_ib_quiet_slr,") +
-    String::format("CHEM, DF2, DISAB_LO_RESET, DISAB_LO_SET, EKF_CONV, EKF_NOM_DT, EKF_Q_SD_NORM, EKF_R_SD_NORM,") +
+    String::format("cp_time_scale, CHEM, DF2, DISAB_LO_RESET, DISAB_LO_SET, EKF_CONV, EKF_NOM_DT, EKF_Q_SD_NORM, EKF_R_SD_NORM,") +
     String::format("EKF_T_CONV, EKF_T_RESET, EWHI_TRM_SLR, EWLO_TRM_SLR, F_MAX_T_WRAP, HDB_VB, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_AMP_LO,") +
     String::format("HDWE_IB_HI_LO_NOA_HI, HDWE_IB_HI_LO_NOA_LO, HYS_IB_THR, HYS_SOC_MIN_MARG, IB_ABS_MAX_AMP, IB_ABS_MAX_NOA, IB_MIN_UP, IBATT_DISAGREE_THRESH,") +
     String::format("IMAX_NUM, KF_Q_STD, KF_R_STD, MAX_TRIM_RATE, MAX_WRAP_ERR_FILT, MAX_Y_FILT, MIN_Y_FILT, MXEPS,") +
@@ -152,8 +152,8 @@ void print_battery_serial()
   String txBuf;
   txBuf = String::format("Battery_val,%d,%10.7f,%10.7f,%d,%d,%d,%d,%10.7f,%10.7f,",
       hdwe_ib_hi_lo, AMP_WRAP_TRIM_GAIN, ap.cc_diff_slr(), ap.dc_dc_on(), ap.disab_ib_fa(), ap.disab_tb_fa(), ap.disab_vb_fa_lt(), ap.ds_voc_soc(), ap.dv_voc_soc()) +
-    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%d,%10.7f,",
-      ap.eframe_mult(), ap.ewhi_slr(), ap.ewlo_slr(), ap.hys_scale(), ap.ib_diff_slr(), ap.ib_quiet_slr(), CHEM, DF2) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%d,%10.7f,",
+      ap.eframe_mult(), ap.ewhi_slr(), ap.ewlo_slr(), ap.hys_scale(), ap.ib_diff_slr(), ap.ib_quiet_slr(), cp.time_scale, CHEM, DF2) +
     String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
       DISAB_LO_RESET, DISAB_LO_SET, EKF_CONV, EKF_NOM_DT, EKF_Q_SD_NORM, EKF_R_SD_NORM, EKF_T_CONV, EKF_T_RESET) +
     String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",

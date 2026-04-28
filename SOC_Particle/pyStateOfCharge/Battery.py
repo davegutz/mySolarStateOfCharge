@@ -141,7 +141,6 @@ class Battery(BatteryConstants, Coulombs):
         self.bms_off = False
         self.bms_off_past = self.bms_off
         self.mod = 7
-        self.sel = 0
         self.tweak_test = tweak_test
         self.ib_lag = 0.
         self.IbLag = LagExp(1., 1., -100., 100.)  # Lag to be run on saturation to produce ib_lag.  T and tau set at run time
