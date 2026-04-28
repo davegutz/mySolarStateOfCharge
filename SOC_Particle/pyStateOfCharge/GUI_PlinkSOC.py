@@ -1378,6 +1378,9 @@ def grab_auto():
                 print(f"AUTO complete: {n_cases} case(s) run. Original configuration restored.")
                 tkinter.messagebox.showinfo("AUTO Complete",
                                             f"{n_cases} case(s) run.\nOriginal configuration restored.")
+                if auto_fig_list:
+                    string = 'plots ' + str(auto_fig_list[0].number) + ' - ' + str(auto_fig_list[-1].number)
+                    show_killer(string, 'AUTO', fig_list=auto_fig_list)
                 return
 
             values = data_rows[index]
@@ -1458,8 +1461,6 @@ def grab_auto():
                             if '***DONE***' in last_data:
                                 print(f"***DONE*** detected for config {index+1}")
                                 close_auto_windows(close_figs=False)
-                                # Never show PlotKiller in AUTO — its mainloop() blocks restoration.
-                                # Last case's figures stay open; user can close them manually.
                                 save_data(show_killer_=False)
                                 master.after(1000, lambda: process_next_config(index + 1))
                                 return
@@ -1500,7 +1501,8 @@ def ref_restore():
 
 def save_data(show_killer_=True):
     global timer, auto_fig_list
-    print(f"save_data: {plink_test_csv_path.get()=}")
+    _was_auto = auto_running  # snapshot before any async callback can flip it
+    print(f"save_data: {plink_test_csv_path.get()=}  auto_running={_was_auto}")
     if size_of(plink_test_csv_path.get()) > 64:  # bytes
         # For custom option, redefine Test.file_path if requested
         new_file_txt = None
@@ -1511,7 +1513,7 @@ def save_data(show_killer_=True):
                 Test.label.config(text=Test.file_txt)
                 print('Test.file_path', Test.file_path)
         if Path(Test.file_path).is_file() and Path(Test.file_path).stat().st_size > 0:  # bytes
-            if auto_overwrite.get():
+            if auto_overwrite.get() or _was_auto:
                 print('auto over-write enabled')
                 p = Path(Test.file_path)
                 ts = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
@@ -1542,7 +1544,9 @@ def save_data(show_killer_=True):
         empty_file(plink_test_csv_path.get())
         print('updating Test file label')
         Test.create_file_path_and_key(name_override=new_file_txt)
-        if auto_overwrite.get():
+        Test.update_key_label()  # refresh key_exists_in_file from the newly saved file
+        _was_auto = auto_running  # capture before process_next_config may clear it
+        if auto_overwrite.get() or _was_auto:
             print('auto over-write triggering comparison')
             # In AUTO mode close the previous case's figures now, before new ones are created
             if auto_running and auto_fig_list is not None:
