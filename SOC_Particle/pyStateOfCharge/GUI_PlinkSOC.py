@@ -1667,7 +1667,7 @@ def is_plink_ready():
                 f.seek(max(0, size - 1024))
                 last_data = f.read().decode('utf-8', errors='ignore')
                 # Check for ***READY*** with an extra line feed as requested
-                if '***READY***\n' in last_data:
+                if '***READY***' in last_data:
                     return True
         except Exception as e:
             print(f"Error checking plink ready: {e}")
@@ -1826,7 +1826,12 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
         elif platform.system() == 'Windows':
             # plink has no -tee flag; use Git's tee.exe piped in cmd.exe
             csv_path = plink_test_csv_path.get()
-            win_color = '8E'  # dark gray background, light yellow (wheat) foreground
+            if fg_color == '#00ff00':
+                win_color = '0A'  # black background, bright green (start_button)
+            elif fg_color == '#ffffff':
+                win_color = '0F'  # black background, white (init_button)
+            else:
+                win_color = '8E'  # dark gray background, light yellow wheat (AUTO)
             # Use Windows 'where' — same PATH lookup as cmd.exe, unlike shutil.which (Python PATH)
             tee_exe = None
             try:
