@@ -69,7 +69,7 @@
     #define DISAB_TB_FA false
 #endif
 #ifndef DISAB_VB_FA_LT
-    #define DISAB_V false
+    #define DISAB_VB_FA_LT false
 #endif
 // #ifndef PLATFORM_ID
 //     #define PLATFORM_ID  32
@@ -88,9 +88,7 @@ const char unit[] = version_str "_" HDWE_UNIT;
 #define PUBLISH_SERIAL_DELAY  400UL     // Serial print interval (400UL = 0.4 sec)
 #define DISPLAY_USER_DELAY    1200UL    // User display update (1200UL = 1.2 sec)
 #define DP_MULT               4         // Multiples of read to capture data DP
-#define TBATT_TEMPCAL         0.56      // Maxim 1-wire plenum temp sense calibrate (0.56), C
 #define MAX_TEMP_READS        10        // Number of consequetive temp queries allowed (10)
-#define TEMP_RANGE_CHECK      -5.       // Minimum expected temp reading, C (-5.)
 #define TEMP_RANGE_CHECK_MAX  70.       // Maximum allowed temp reading, C (70.)
 #define VB_S                  1.0       // Vb sense scalar (1.0)
 #define VB_A                  0.0       // Vb sense adder, V (0)
@@ -99,15 +97,12 @@ const char unit[] = version_str "_" HDWE_UNIT;
 #define F_MAX_T               ChargeTransfer_T_MAX  // Maximum call update time sensors and coulomb counter (0.5)
 #define F_MAX_T_TEMP          18.0      // Maximum call update time filters (18.0)
 #define TB_FILT               120.      // Temperature filter lag, s (120)
-#define F_W_I                 0.5       // Current filter wn, r/s (0.5)   
-#define F_Z_I                 0.80      // Current filter zeta (0.80)
 #define SCL_40                40.       // Data storage integer scaling
 #define SCL_60                60.       // Data storage integer scaling
 #define SCL_600               600.      // Data storage integer scaling
 #define SCL_1200              1200.     // Data storage integer scaling
 #define SCL_1500              1500.     // Data storage integer scaling
 #define SCL_3000              3000.f    // Data storage integer scaling
-#define SCL_6000              6000.     // Data storage integer scaling
 #define SCL_16000             16000.    // Data storage integer scaling
 #define SCL_30000             30000.    // Data storage integer scaling
 
@@ -223,7 +218,6 @@ const float QUIET_RES (QUIET_SET/10.);  // Quiet reset persistence, sec ('up 1 d
 #define HDWE_SHB_2WIRE  2.4775e-4       // 2-wire thermistor characteristic, Steinhart-Hart (2.4775e-4; see '2-wireRTD.ods')
 #define HDWE_SHC_2WIRE  1.0265e-7       // 2-wire thermistor characteristic, Steinhart-Hart (1.0265e-7; see '2-wireRTD.ods')
 #define SIZE_MARG         1.05          // Threshold margin, scalar (1.05)
-#define MAX_NOA_RATE        1.0         // Max reasonable noa rate used to disable amp e_wrap logic, A/s (1.0)
 #define CC_DIFF_RES         2.0         // Signal selection cc_diff ekf test reset persistence, s (2.)
 #define CC_DIFF_SET         5.0         // Signal selection cc_diff ekf test set persistence, s (5. to handle sawtooth action on cc_diff)
 #define DISAB_LO_SET        0.4         // Disable lo=amp wrap fault set persistence, s (0.4)

@@ -89,7 +89,7 @@ void Looparound::calculate(const bool reset, const bool disable_fault, const flo
   {
     trim_init = -(Mon_->vb() - Mon_->voc_soc() - dv_dyn_);
     trim_rate_lim = max(min(e_wrap_filt_*wrap_trim_gain_, MAX_TRIM_RATE), -MAX_TRIM_RATE);
-    e_wrap_trim_ = -Trim_->calculate(trim_rate_lim/cp.ts, min(Sen_->T(), F_MAX_T_WRAP), reset_, trim_init,
+    e_wrap_trim_ = -Trim_->calculate(trim_rate_lim, min(Sen_->T(), F_MAX_T_WRAP), reset_, trim_init,
                                       -ewlo_thr_base_*EWLO_TRM_SLR, -ewhi_thr_base_*EWHI_TRM_SLR);
   }
   else
