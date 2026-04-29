@@ -105,6 +105,9 @@ os.makedirs(_log_dir, exist_ok=True)
 _log_file = open(os.path.join(_log_dir, "GUI_TestSOC.log"), 'a', buffering=1)
 
 plink_pid = None
+cmd_window_pid = None  # Windows: cmd.exe /k window that hosts plink — killed separately on stop
+cmd_window_title_prefix = 'PLINK_SOC_WINDOW'  # Unique title set in bat file; used as taskkill fallback
+cmd_window_pids = set()  # Windows: every cmd.exe window we ever spawned this session (belt+suspenders)
 run_start_time = None  # Set at grab_start, used to print elapsed time on DONE
 auto_running = False  # Track if AUTO process is active
 auto_fig_list = None  # Handles to figures from the most recently completed AUTO case
@@ -983,8 +986,26 @@ def handle_test_unit(*_args):
     update_data_buttons()
 
 
+def _close_all_plink_windows_windows(silent=True):
+    """Close every cmd.exe window we ever opened in this session, plus any matching title."""
+    global cmd_window_pid, cmd_window_pids
+    for _pid in list(cmd_window_pids):
+        try:
+            run_shell_cmd(f'taskkill /f /pid {_pid}', silent=silent)
+        except Exception as e:
+            print(f"Error closing cmd window PID {_pid}: {e}")
+    cmd_window_pids.clear()
+    cmd_window_pid = None
+    # Belt-and-suspenders fallback: close any leftover window matching our title prefix.
+    # Wildcard form requires no /im — taskkill matches by window title filter.
+    try:
+        run_shell_cmd(f'taskkill /f /fi "WINDOWTITLE eq {cmd_window_title_prefix}*"', silent=silent)
+    except Exception as e:
+        print(f"Title-based taskkill fallback failed: {e}")
+
+
 def kill_plink(sys_=None, silent=True):
-    global plink_pid
+    global plink_pid, cmd_window_pid
     command = ''
     if plink_pid:
         if sys_ == 'Windows':
@@ -992,11 +1013,11 @@ def kill_plink(sys_=None, silent=True):
             print(f"Terminating Plink with command: {command}")
             try:
                 run_shell_cmd(command, silent=silent)
-                plink_pid = None
-                return 0
             except Exception as e:
                 print(f"Error killing PID {plink_pid}: {e}")
-                plink_pid = None
+            plink_pid = None
+            _close_all_plink_windows_windows(silent=silent)
+            return 0
         else:
             # On Linux/macOS, find the parent PID (PPID)
             ppid = None
@@ -1047,6 +1068,10 @@ def kill_plink(sys_=None, silent=True):
             return None, False
     else:
         result = run_shell_cmd(command, silent=silent)
+
+    if sys_ == 'Windows':
+        _close_all_plink_windows_windows(silent=silent)
+
     return result
 
 
@@ -1675,7 +1700,7 @@ def is_plink_ready():
 
 
 def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, fg_color='#00ff00', bg_color='#000000'):
-    global plink_pid
+    global plink_pid, cmd_window_pid, cmd_window_pids
     lookup_test()
     if look_plink(platform.system()):
         if force_kill:
@@ -1859,13 +1884,20 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                 plink_cmd_bat = f'(type "{_cmd_file}" & type CON) | {plink_base}'
             else:
                 plink_cmd_bat = plink_base
+            # Unique window title so we can fall back to taskkill /fi "WINDOWTITLE eq ..." if PID kill fails
+            _win_title = f'{cmd_window_title_prefix}_{os.getpid()}_{int(time.time()*1000)}'
             # Write to a temp batch file — avoids all cmd.exe quoting issues with paths containing spaces
-            bat_path = os.path.join(os.environ.get('TEMP', os.environ.get('TMP', 'C:\\Temp')), 'plink_run.bat')
+            # Use a unique bat name per launch so concurrent windows don't collide on the file
+            bat_path = os.path.join(os.environ.get('TEMP', os.environ.get('TMP', 'C:\\Temp')),
+                                    f'plink_run_{int(time.time()*1000)}.bat')
             with open(bat_path, 'w') as _bf:
-                _bf.write(f'@color {win_color}\r\n{plink_cmd_bat}\r\n')
-            cmd = ['cmd', '/c', 'start', 'cmd', '/k', bat_path]
-            print(f"Running command: {' '.join(cmd)}")
-            proc = subprocess.Popen(cmd)
+                _bf.write(f'@title {_win_title}\r\n@color {win_color}\r\n{plink_cmd_bat}\r\n')
+            # CREATE_NEW_CONSOLE opens a real separate window and proc.pid IS that window's PID
+            print(f"Running command: cmd /k {bat_path}  (title={_win_title})")
+            proc = subprocess.Popen(['cmd', '/k', bat_path],
+                                    creationflags=subprocess.CREATE_NEW_CONSOLE)
+            cmd_window_pid = proc.pid
+            cmd_window_pids.add(proc.pid)
             tksleep(1.0)
             try:
                 # Find the newest plink process
@@ -1879,19 +1911,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                         plink_pid = int(parts[1].strip('"'))
             except Exception:
                 plink_pid = proc.pid
-            
-            # Get the parent PID using ps
-            ppid = "Unknown"
-            try:
-                # tasklist doesn't easily give PPID without additional tools or WMI, 
-                # but we can try using 'wmic process where processid=... get parentprocessid'
-                wmic_out = subprocess.check_output(['wmic', 'process', 'where', f'processid={plink_pid}', 'get', 'parentprocessid']).decode('ascii')
-                lines = wmic_out.strip().split('\n')
-                if len(lines) > 1:
-                    ppid = lines[1].strip()
-            except Exception:
-                pass
-            print(f"Spawned PID: {plink_pid}  PPID: {ppid}")
+            print(f"Spawned plink PID: {plink_pid}  cmd window PID: {cmd_window_pid}")
             if auto_running:
                 print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
         elif platform.system() == 'Darwin':
