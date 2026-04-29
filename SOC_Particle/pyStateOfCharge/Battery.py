@@ -112,7 +112,7 @@ class Battery(BatteryConstants, Coulombs):
         self.sr = 1  # Resistance scalar
         self.vsat = self.chemistry.nom_vsat + vsat_add
         # range 0 - 50 C, V/deg C
-        self.dt = 0  # Update time, s
+        self.dt = 0.1  # Update time, s
         if OPT is not None:
             self.chemistry.r_0 *= OPT.slr_res_0
             self.chemistry.tau_ct *= OPT.stauct_mon
@@ -310,6 +310,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.voc_stat_f_tau = 0.
         self.voc_stat_f_T = 0.
         self.voc_ekf = 0.
+        self.Diff = Diff(self.dt)
         self.eframe = 0
         if OPT is not None:
             self.eframe_mult = OPT.eframe_mult
@@ -1288,15 +1289,15 @@ def sat_voc(tb_f, rated_temp, vsat, dvoc_dt, vsat_add=0.):
 class Diff:
     """Compare predicted voltage to actual and track toward zero to eliminate biases """
 
-    def __init__(self, dt=2.):
+    def __init__(self, dt=0.1):
         self.reset = True
-        self.dt = 0.
+        self.dt = dt
         self.ib_lo_limited_hi = False
         self.ib_lo_limited_lo = False
         self.ib_diff = 0.
-        self.LoHi = TFDelay(dt=dt, in_=False, t_true=Battery.IB_LO_ACTIVE_SET*Battery.cp_ts,
+        self.LoHi = TFDelay(dt=self.dt, in_=False, t_true=Battery.IB_LO_ACTIVE_SET*Battery.cp_ts,
                             t_false=Battery.IB_LO_ACTIVE_RES*Battery.cp_ts)
-        self.LoLo = TFDelay(dt=dt, in_=False, t_true=Battery.IB_LO_ACTIVE_SET*Battery.cp_ts,
+        self.LoLo = TFDelay(dt=self.dt, in_=False, t_true=Battery.IB_LO_ACTIVE_SET*Battery.cp_ts,
                             t_false=Battery.IB_LO_ACTIVE_RES*Battery.cp_ts)
 
     # Update the loop
@@ -1305,14 +1306,14 @@ class Diff:
         self.reset = reset
         self.dt = dt
 
-        ib_amp_hi = ib_amp_hdwe >= Battery.HDWE_IB_HI_LO_AMP_HI
+        ib_amp_hi = ib_amp >= Battery.HDWE_IB_HI_LO_AMP_HI
         self.ib_lo_limited_hi = self.LoHi.calculate(in_=ib_amp_hi, t_true=Battery.IB_LO_ACTIVE_SET*Battery.cp_ts,
                                                     t_false=Battery.IB_LO_ACTIVE_RES*Battery.cp_ts,
-                                                    dt=self.dt_past, reset=self.reset)  # non-latching
-        ib_amp_lo = ib_amp_hdwe <= Battery.HDWE_IB_HI_LO_AMP_LO
+                                                    dt=self.dt, reset=self.reset)  # non-latching
+        ib_amp_lo = ib_amp <= Battery.HDWE_IB_HI_LO_AMP_LO
         self.ib_lo_limited_lo = self.LoLo.calculate(in_=ib_amp_lo, t_true=Battery.IB_LO_ACTIVE_SET*Battery.cp_ts,
                                                     t_false=Battery.IB_LO_ACTIVE_RES*Battery.cp_ts,
-                                                    dt=self.dt_past, reset=self.reset)  # non-latching
+                                                    dt=self.dt, reset=self.reset)  # non-latching
 
         self.ib_diff = ib_amp - ib_noa
         if disable_amp_fault:

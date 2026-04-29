@@ -253,20 +253,20 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     # Cut-pasted from GUI_TestSOC Run window
-    data_file='G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/triTweakDisch_soc3p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/pulseSoft_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
-    time_end = 14
-    plots = False
+    time_end = None
+    plots = True
     use_mon_soc_ = False
     verbose = False
     scale_batt = 1.0
     slr_hys_sim = 1.0
-    request_history = 9
+    request_history = 5
     init_time = None
     time_shift = None
     strict_overplot = True
     terse = True
-    hardcopy = False
+    hardcopy = True
     mon_str = ''
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,

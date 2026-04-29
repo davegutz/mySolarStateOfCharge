@@ -220,6 +220,7 @@ In the spirit of Software Engineering principles, I document perceived requireme
         d) Constants for the application logic are derived from these values.
         e) C2 used in both R2 legs of the op-amp for symmetry.  Analysis indicates a theoretical transfer function asymmetry if two C2s are not used.   Why bother not putting in that capacitor for < $0.01?
     47. Loss of Vb sends fault logic low so a pulldown resistor on Vb is not needed.
+    48. Reasoning around haphazard use of cp.ts - sample time scalar. It was introduced to fix a problem where the automatic regression testing runs at a slow update rate to fit in all the serial traffic and defeats the persistence on ib_hi_lo logic for ib_diff.  But to implement it on all time constants and TFdelays would introduce complexity that adds no value.
 
 ## Decision Tables
 

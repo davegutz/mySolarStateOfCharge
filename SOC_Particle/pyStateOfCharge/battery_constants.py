@@ -62,6 +62,8 @@ class BatteryConstants:
     IB_ABS_MAX_AMP = 100.0
     IB_ABS_MAX_NOA = 100.0
     IB_DIFF_SLR = 1.0
+    IB_LO_ACTIVE_SET = 0.2
+    IB_LO_ACTIVE_RES = 0.4
     IB_MIN_UP = 0.1
     IBATT_DISAGREE_THRESH = 1.0
     IMAX_NUM = 100

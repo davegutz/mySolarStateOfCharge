@@ -129,7 +129,8 @@ void print_battery_header()
     String::format("ap_ds_voc_soc, ap_dv_voc_soc, ap_eframe_mult, ap_ewhi_slr, ap_ewlo_slr, ap_hys_scale, ap_ib_diff_slr, ap_ib_quiet_slr,") +
     String::format("cp_ts, CHEM, DF2, EKF_CONV, EKF_NOM_DT, EKF_Q_SD_NORM, EKF_R_SD_NORM,") +
     String::format("EKF_T_CONV, EKF_T_RES, EWHI_TRM_SLR, EWLO_TRM_SLR, F_MAX_T_WRAP, HDB_VB, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_AMP_LO,") +
-    String::format("HDWE_IB_HI_LO_NOA_HI, HDWE_IB_HI_LO_NOA_LO, HYS_IB_THR, HYS_SOC_MIN_MARG, IB_ABS_MAX_AMP, IB_ABS_MAX_NOA, IB_MIN_UP, IBATT_DISAGREE_THRESH,") +
+    String::format("HDWE_IB_HI_LO_NOA_HI, HDWE_IB_HI_LO_NOA_LO, HYS_IB_THR, HYS_SOC_MIN_MARG, IB_ABS_MAX_AMP, IB_ABS_MAX_NOA, IB_LO_ACTIVE_SET,") +
+    String::format("IB_LO_ACTIVE_RES, IB_MIN_UP, IBATT_DISAGREE_THRESH,") +
     String::format("IMAX_NUM, KF_Q_STD, KF_R_STD, MAX_TRIM_RATE, MAX_WRAP_ERR_FILT, MAX_Y_FILT, MIN_Y_FILT, MXEPS,") +
     String::format("NOA_WRAP_TRIM_GAIN, NOMINAL_VB, NOM_UNIT_CAP, NP, NS, RATED_TEMP, SHUNT_AMP_GAIN, SHUNT_NOA_GAIN,") +
     String::format("sp_cutback_gain_slr, sp_Dw, sp_ib_disch_slr, sp_s_cap_mon, sp_s_cap_sim, sp_vsat_add, TAU_Y_FILT, TB_FILT,") +
@@ -158,8 +159,8 @@ void print_battery_serial()
       EKF_CONV, EKF_NOM_DT, EKF_Q_SD_NORM, EKF_R_SD_NORM, EKF_T_CONV, EKF_T_RES) +
     String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
       EWHI_TRM_SLR, EWLO_TRM_SLR, F_MAX_T_WRAP, HDB_VB, HDWE_IB_HI_LO_AMP_HI, HDWE_IB_HI_LO_AMP_LO, HDWE_IB_HI_LO_NOA_HI, HDWE_IB_HI_LO_NOA_LO) +
-    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
-      HYS_IB_THR, HYS_SOC_MIN_MARG, IB_ABS_MAX_AMP, IB_ABS_MAX_NOA, IB_MIN_UP, IBATT_DISAGREE_THRESH, IMAX_NUM, KF_Q_STD) +
+    String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
+      HYS_IB_THR, HYS_SOC_MIN_MARG, IB_ABS_MAX_AMP, IB_ABS_MAX_NOA, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RES, IB_MIN_UP, IBATT_DISAGREE_THRESH, IMAX_NUM, KF_Q_STD) +
     String::format("%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
       KF_R_STD, MAX_TRIM_RATE, MAX_WRAP_ERR_FILT, MAX_Y_FILT, MIN_Y_FILT, MXEPS, NOA_WRAP_TRIM_GAIN, NOMINAL_VB) +
     String::format("%10.7f,%10.7f,%4.2f,%4.2f,%10.7f,%10.7f,%10.7f,%10.7f,",
