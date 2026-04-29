@@ -1,11 +1,12 @@
 """Compare all run/ver CSV pairs in the temp folder for the version pointed to by the Plink .ini file.
 
 For each *_run.csv / *_ver.csv pair, loads both into pandas, filters time >= 0, and reports
-numeric columns where |run - ver| > 1e-3 (disagreements visible at 3 decimal places).
-Produces a pyplot figure for each pair, with up to 9 subplots per figure.
+numeric columns where |run - ver| > tol + rtol*max(|run|, |ver|) — combined absolute/relative
+criterion so large-magnitude signals (e.g. q_capacity ~3.5e5) aren't tripped by tiny absolute
+differences.  Produces a pyplot figure for each pair, with up to 9 subplots per figure.
 
 Usage:
-    python CompareRunVer.py [--ini PATH] [--tol FLOAT] [--version VERSION]
+    python CompareRunVer.py [--ini PATH] [--tol FLOAT] [--rtol FLOAT] [--version VERSION]
 """
 
 import argparse
@@ -75,8 +76,13 @@ def find_pairs(temp_dir, option=''):
 
 # ── compare a single pair ─────────────────────────────────────────────────────
 
-def compare_pair(run_path, ver_path, tol):
-    """Return a summary dict for one run/ver pair."""
+def compare_pair(run_path, ver_path, tol, rtol=1e-3):
+    """Return a summary dict for one run/ver pair.
+
+    A sample is flagged when |run - ver| > tol + rtol * max(|run|, |ver|), so the
+    effective tolerance grows with signal magnitude — small absolute differences on
+    large-magnitude signals (e.g. q_capacity ~3.5e5) won't trip an atol of 1e-2.
+    """
     try:
         df_run = pd.read_csv(run_path)
         df_ver = pd.read_csv(ver_path)
@@ -121,7 +127,9 @@ def compare_pair(run_path, ver_path, tol):
     diffs = []
     for col in numeric_cols:
         delta = (df_run[col] - df_ver[col]).abs()
-        bad = delta[delta > tol]
+        ref = pd.concat([df_run[col].abs(), df_ver[col].abs()], axis=1).max(axis=1)
+        threshold = tol + rtol * ref
+        bad = delta[delta > threshold]
         if bad.empty:
             continue
         diffs.append({
@@ -147,10 +155,10 @@ def compare_pair(run_path, ver_path, tol):
 
 # ── report ────────────────────────────────────────────────────────────────────
 
-def report(results, tol, option='', macro=''):
+def report(results, tol, rtol=1e-3, option='', macro=''):
     any_diff = any(r.get('diffs') for r in results)
     print(f"\n{'='*72}")
-    print(f"  CompareRunVer  |  tol={tol}  |  option={option}  |  macro={macro}  |  {len(results)} pair(s)")
+    print(f"  CompareRunVer  |  tol={tol}  rtol={rtol}  |  option={option}  |  macro={macro}  |  {len(results)} pair(s)")
     print(f"{'='*72}\n")
 
     for r in results:
@@ -163,7 +171,7 @@ def report(results, tol, option='', macro=''):
             continue
         run_only = r.get('run_only', [])
         if not r['diffs']:
-            print(f"  {pair_label}  — no differences > {tol}  ({r['n_rows']} rows)")
+            print(f"  {pair_label}  — no differences > tol={tol} + rtol={rtol}*|val|  ({r['n_rows']} rows)")
             if run_only:
                 print(f"    run_only ({len(run_only)}): {', '.join(run_only)}")
             print()
@@ -271,7 +279,9 @@ def show_batch_diffs(all_fig_list, all_fig_files, save_pdf_path, hardcopy=True):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--ini', default=None, help='path to GUI_PlinkSOC .ini file (auto-detected by default)')
-    parser.add_argument('--tol', type=float, default=1e-3, help='difference tolerance (default 1e-3)')
+    parser.add_argument('--tol', type=float, default=1e-3, help='absolute difference tolerance (default 1e-3)')
+    parser.add_argument('--rtol', type=float, default=1e-3,
+                        help='relative tolerance: flag if |run-ver| > tol + rtol*max(|run|,|ver|) (default 1e-3, ~3 sig digits)')
     parser.add_argument('--version', default=None, help='override version string from .ini')
     args = parser.parse_args()
 
@@ -300,8 +310,8 @@ def main():
         print(f"No run/ver pairs found in {temp_dir}")
         sys.exit(0)
 
-    results = [compare_pair(run, ver, args.tol) for run, ver in pairs]
-    report(results, args.tol, option=option, macro=macro)
+    results = [compare_pair(run, ver, args.tol, args.rtol) for run, ver in pairs]
+    report(results, args.tol, args.rtol, option=option, macro=macro)
     plot_diffs(results)
 
 

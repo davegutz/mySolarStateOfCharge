@@ -291,13 +291,6 @@ void sense_synth_select(const bool reset, const bool reset_temp, const bool rese
   // Load Ib and Vb
   // Outputs: Sen->Ib_model_in, Sen->Ib, Sen->Vb
   load_ib_vb(reset, reset_temp, reset_kf, Sen, myPins, Mon);
-  Sen->Flt->ib_range(reset, Sen, Mon);
-  Sen->Flt->ib_logic(reset, Sen, Mon);
-  Sen->Flt->ib_wrap(reset, Sen, Mon);
-  Sen->Flt->ib_quiet(reset, Sen);
-  Sen->Flt->cc_diff(reset, Sen, Mon);
-  Sen->Flt->ib_diff(reset, Sen, Mon);
-
 
   // Sim initialize as needed from memory
   if ( reset_temp )
@@ -317,9 +310,17 @@ void sense_synth_select(const bool reset, const bool reset_temp, const bool rese
   cp.model_cutback = Sen->Sim->cutback();
   cp.model_saturated = Sen->Sim->saturated();
 
+  // Apply noise to model values BEFORE fault logic so ib_diff sees the same values that get logged.
   // Inputs:  Sim->Ib
   Sen->Ib_amp_model(max(min(Sen->Ib_model() + Sen->Ib_amp_add() + Sen->Ib_amp_noise(), Sen->Ib_amp_max()), Sen->Ib_amp_min()));  // Dm
   Sen->Ib_noa_model(max(min(Sen->Ib_model() + Sen->Ib_noa_add() + Sen->Ib_noa_noise(), Sen->Ib_noa_max()), Sen->Ib_noa_min()));  // Dn
+
+  Sen->Flt->ib_range(reset, Sen, Mon);
+  Sen->Flt->ib_logic(reset, Sen, Mon);
+  Sen->Flt->ib_wrap(reset, Sen, Mon);
+  Sen->Flt->ib_quiet(reset, Sen);
+  Sen->Flt->cc_diff(reset, Sen, Mon);
+  Sen->Flt->ib_diff(reset, Sen, Mon);
 
   // Select
   //  Inputs:                                       --->   Outputs:

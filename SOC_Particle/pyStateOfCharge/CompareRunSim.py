@@ -43,43 +43,66 @@ warnings.filterwarnings("ignore", category=UserWarning)
 import numpy as np
 
 
-def shift_time(obj, n_steps):
-    """Shift the time column of a struct-like object by n_steps positions.
+def shift_time(obj, n_steps, fields=None):
+    """Shift fields of a struct-like object by n_steps positions.
+
+    fields: iterable of attribute names to shift. If None (default), shifts the
+            time column ('time' or 'cTime' if present), back/forward-extrapolating
+            gaps using the local dt — original behavior. If provided, shifts each
+            named data field instead; gaps are filled with the boundary value
+            (data fields aren't necessarily monotonic so dt extrapolation doesn't
+            apply).
 
     n_steps > 0: shift right (each position gets the value from n_steps earlier rows).
     n_steps < 0: shift left (each position gets the value from n_steps later rows).
-    Gaps opened at the start are back-extrapolated using the local dt at time[0];
-    gaps at the end are forward-extrapolated using the local dt at time[-1].
     All other columns are unmodified.  Returns obj for chaining.
     """
     if obj is None or n_steps == 0:
         return obj
 
-    t_col = None
-    for candidate in ('time', 'cTime'):
-        if hasattr(obj, candidate):
-            raw = getattr(obj, candidate)
-            if raw is not None and hasattr(raw, '__len__') and len(raw) > 1:
-                t_col = candidate
-                break
+    if fields is None:
+        t_col = None
+        for candidate in ('time', 'cTime'):
+            if hasattr(obj, candidate):
+                raw = getattr(obj, candidate)
+                if raw is not None and hasattr(raw, '__len__') and len(raw) > 1:
+                    t_col = candidate
+                    break
 
-    if t_col is None:
+        if t_col is None:
+            return obj
+
+        time = np.asarray(getattr(obj, t_col), dtype=float)
+        n = len(time)
+        shifted = np.roll(time, n_steps)
+
+        if n_steps > 0:
+            # gap at start: extrapolate backward from time[0] using leading dt
+            dt = time[1] - time[0]
+            shifted[:n_steps] = time[0] - np.arange(n_steps, 0, -1) * dt
+        else:
+            # gap at end: extrapolate forward from time[-1] using trailing dt
+            dt = time[-1] - time[-2]
+            shifted[n + n_steps:] = time[-1] + np.arange(1, -n_steps + 1) * dt
+
+        setattr(obj, t_col, shifted)
         return obj
 
-    time = np.asarray(getattr(obj, t_col), dtype=float)
-    n = len(time)
-    shifted = np.roll(time, n_steps)
+    for field in fields:
+        if not hasattr(obj, field):
+            continue
+        raw = getattr(obj, field)
+        if raw is None or not hasattr(raw, '__len__') or len(raw) <= abs(n_steps):
+            continue
+        arr = np.asarray(raw, dtype=float)
+        n = len(arr)
+        shifted = np.roll(arr, n_steps)
+        if n_steps > 0:
+            shifted[:n_steps] = arr[0]
+        else:
+            shifted[n + n_steps:] = arr[-1]
+        setattr(obj, field, shifted)
 
-    if n_steps > 0:
-        # gap at start: extrapolate backward from time[0] using leading dt
-        dt = time[1] - time[0]
-        shifted[:n_steps] = time[0] - np.arange(n_steps, 0, -1) * dt
-    else:
-        # gap at end: extrapolate forward from time[-1] using trailing dt
-        dt = time[-1] - time[-2]
-        shifted[n + n_steps:] = time[-1] + np.arange(1, -n_steps + 1) * dt
-
-    setattr(obj, t_col, shifted)
     return obj
 
 
@@ -176,6 +199,11 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
                                              message="CompareRunSim: Replication broke early due to data skip.\n\nAborting without plots.")
             return fig_list, fig_files
 
+        # C++ prints cc_dif from the previous cycle (Fault.cc_diff() is set in
+        # sense_synth_select before monitor() updates soc_ekf and soc), so the
+        # replicate's cc_dif runs one sample ahead.  Shift to align with the run.
+        mon_ver = shift_time(mon_ver, 1, fields=('cc_dif',))
+
     # Save all time-dependent struct data to CSV files in the temp folder
     if hardcopy and plots:
         filename_root = data_file_clean.replace('.csv', '')
@@ -249,9 +277,10 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
                                   if ('_mon_run' in r.name or '_sim_run' in r.name)
                                   and r.name.startswith(_case_stem)]
                     if _ver_pairs:
-                        _tol = 1e-2
-                        _ver_results = [compare_pair(r, v, _tol) for r, v in _ver_pairs]
-                        ver_report(_ver_results, _tol)
+                        _tol = 1e-3
+                        _rtol = 1e-3  # ~3 significant digits — keeps q_capacity-class large-magnitude signals from tripping
+                        _ver_results = [compare_pair(r, v, _tol, _rtol) for r, v in _ver_pairs]
+                        ver_report(_ver_results, _tol, _rtol)
                         _ver_ret = ver_plot_diffs(_ver_results, data_file=data_file, show_killer_=False)
                         if _ver_ret:
                             _ver_figs, _ver_files, _ = _ver_ret

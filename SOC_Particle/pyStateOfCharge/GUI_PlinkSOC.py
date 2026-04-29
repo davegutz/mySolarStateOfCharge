@@ -572,7 +572,7 @@ def compare_run_ver_batch():
             tkinter.messagebox.showwarning(message="No valid data rows in auto_plink.csv")
             return
 
-        tol = 1e-2
+        tol = 1e-3
         all_fig_list = []
         all_fig_files = []
         last_pdf_path = None
