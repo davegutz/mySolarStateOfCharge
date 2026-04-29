@@ -512,8 +512,8 @@ void Sensors::select_volt_and_current(BatteryMonitor *Mon)
   ctime_ = double(now_)/1000.;
   // Log.info("    select_volt_and_current now:  now_,%lld, cTime,%7.3f,", now_, double(now_)/1000.);
 
-  if ( sp.debug()==62 ) Serial.printf(" ctime%12.3fIb%7.3f Ib_hdwe%7.3f Ib_hdwe_model%7.3f Ib_amp%7.3f Ib_amp_model%7.3f Ib_amp_hdwe%7.3f Ib_noa%7.3f Ib_noa_model%7.3f Ib_noa_hdwe%7.3f\n",
-   ctime_, Ib_, Ib_hdwe_, Ib_hdwe_model_, Ib_amp_, Ib_amp_model_, Ib_amp_hdwe_, Ib_noa_, Ib_noa_model_, Ib_noa_hdwe_);
+  if ( sp.debug()==62 ) Serial.printf(" ctime%12.3f T%6.3f Ib%7.3f Ib_hdwe%7.3f Ib_hdwe_model%7.3f Ib_amp%7.3f Ib_amp_model%7.3f Ib_amp_hdwe%7.3f Ib_noa%7.3f Ib_noa_model%7.3f Ib_noa_hdwe%7.3f\n",
+   ctime_, T_, Ib_, Ib_hdwe_, Ib_hdwe_model_, Ib_amp_, Ib_amp_model_, Ib_amp_hdwe_, Ib_noa_, Ib_noa_model_, Ib_noa_hdwe_);
 
 }
 

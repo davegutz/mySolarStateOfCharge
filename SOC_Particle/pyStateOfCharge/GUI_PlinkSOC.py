@@ -1824,7 +1824,9 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                 if auto_running:
                     print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
         elif platform.system() == 'Windows':
-            # plink has no -tee flag; use Git's tee.exe piped in cmd.exe
+            # plink has no -tee flag.  Git's tee.exe opens with deny-read sharing so check_completion
+            # can never read plink_test.csv while tee is running.  Use a tiny Python helper instead:
+            # os.open() on Windows defaults to _SH_DENYNO, so other processes can read freely.
             csv_path = plink_test_csv_path.get()
             if fg_color == '#00ff00':
                 win_color = '0A'  # black background, bright green (start_button)
@@ -1832,28 +1834,23 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                 win_color = '0F'  # black background, white (init_button)
             else:
                 win_color = '8E'  # dark gray background, light yellow wheat (AUTO)
-            # Use Windows 'where' — same PATH lookup as cmd.exe, unlike shutil.which (Python PATH)
-            tee_exe = None
-            try:
-                _where_out = subprocess.check_output(['where', 'tee'], stderr=subprocess.DEVNULL).decode().strip()
-                tee_exe = _where_out.split('\n')[0].strip()
-            except Exception:
-                pass
-            if not tee_exe:
-                for _candidate in [
-                    r'C:\Program Files\Git\usr\bin\tee.exe',
-                    r'C:\Program Files (x86)\Git\usr\bin\tee.exe',
-                    r'C:\Git\usr\bin\tee.exe',
-                ]:
-                    if os.path.isfile(_candidate):
-                        tee_exe = _candidate
-                        break
-            if tee_exe:
-                print(f"tee_exe: {tee_exe}")
-                plink_base = f'plink -batch -T -load {test_filename.get()} | "{tee_exe}" "{csv_path}"'
-            else:
-                print("WARNING: tee.exe not found — install Git for Windows so plink output can be captured to file")
-                plink_base = f'plink -batch -T -load {test_filename.get()}'
+            _tee_py = os.path.join(os.environ.get('TEMP', os.environ.get('TMP', 'C:\\Temp')), 'plink_tee.py')
+            with open(_tee_py, 'w') as _tf:
+                _tf.write(
+                    'import sys, os\n'
+                    'fd = os.open(sys.argv[1], os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_BINARY)\n'
+                    'try:\n'
+                    '    while True:\n'
+                    '        chunk = os.read(0, 4096)\n'
+                    '        if not chunk:\n'
+                    '            break\n'
+                    '        os.write(fd, chunk)\n'
+                    '        os.write(1, chunk)\n'
+                    'finally:\n'
+                    '    os.close(fd)\n'
+                )
+            py_exe = sys.executable
+            plink_base = f'plink -batch -T -load {test_filename.get()} | "{py_exe}" "{_tee_py}" "{csv_path}"'
             if command_to_paste:
                 # Write command to a temp file so cmd.exe never sees the special chars (<>|&^)
                 _cmd_file = os.path.join(os.environ.get('TEMP', os.environ.get('TMP', 'C:\\Temp')), 'plink_cmd.txt')

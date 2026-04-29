@@ -340,17 +340,17 @@ void KalmanFilter::print_serial()
 // print_signal_select for data collection
 void print_signal_sel_header(void)
 {
-  Serial.printf("unit_s,c_time_sel,reset,resaf,user_sel,   cc_dif,  ib_amp_hdwe,ib_noa_hdwe,ib_amp_model,ib_noa_model,ib_model,  kfres,vovcm,vovcn,ib_amp_hdwe_kf,ib_noa_hdwe_kf,  ib_diff, ib_diff_f,");
-  Serial.printf("  vc_sum,voc_soc,e_wrap,e_wrap_filt,ib_dyn_m,dv_dyn_m,e_wrap_m,e_wrap_m_reset,e_wrap_m_filt,e_wrap_m_trim,ib_dyn_n,dv_dyn_n,e_wrap_n,e_wrap_n_filt,e_wrap_n_trim,");
-  Serial.printf("  ib_sel_stat,ib_choice,vc_h,ib_h,ib_s,mib,ib, vb_sel,vb_hdwe,vb_s,mvb,vb,  mtb,Tb_fa, ");
-  Serial.printf("  ib_rate, ib_quiet, ib_really_quiet, tb_sel, ccd_thr, ewmhi_thr, ewmlo_thr, ewnhi_thr, ewnlo_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf,y_ekf_f,ib_dec,");
-  Serial.printf("  ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rstate_m, ib_dyn_lstate_m,");
-  Serial.printf("  ib_dyn_T_n, ib_dyn_tau_n, ib_dyn_rstate_n, ib_dyn_lstate_n,");
-  Serial.printf("  ib_wrp_T_n, ib_wrp_tau_n, ib_wrp_rate_n, ib_wrp_state_n, disable_amp_fault,");
-  Serial.printf("  ib_wrp_reset_m, ib_wrp_reset_n, ib_wrp_T_m, ib_wrp_tau_m, ib_wrp_rate_m, ib_wrp_state_m, ib_amp, ib_noa,");
-  Serial.printf("  ib_amp_lo, ib_amp_hi, ib_noa_lo, ib_noa_hi, ib_noa_kf, kfres, kf_v_m, kf_v_n, e_wrap_m_trimmed, e_wrap_n_trimmed,");
-  Serial.printf("  vb_model, voc_m, voc_soc_m, voc_n, voc_soc_n, wrap_m_and_n_fa, ib_is_functional,voltage_low,");
-  Serial.printf("  vb_hdwe_f,");
+  Serial.printf("unit_s, c_time_sel, dt_sel, reset, resaf, user_sel, cc_dif, ib_amp_hdwe, ib_noa_hdwe, ib_amp_model, ib_noa_model, ib_model, kfres, vovcm, vovcn, ib_amp_hdwe_kf, ib_noa_hdwe_kf, ib_diff, ib_diff_f, ");
+  Serial.printf("  vc_sum, voc_soc, e_wrap, e_wrap_filt, ib_dyn_m, dv_dyn_m, e_wrap_m, e_wrap_m_reset, e_wrap_m_filt, e_wrap_m_trim, ib_dyn_n, dv_dyn_n, e_wrap_n, e_wrap_n_filt, e_wrap_n_trim, ");
+  Serial.printf("  ib_sel_stat, ib_choice, vc_h,ib_h, ib_s, mib,ib, vb_sel, vb_hdwe, vb_s, mvb,vb,  mtb, Tb_fa, ");
+  Serial.printf("  ib_rate, ib_quiet, ib_really_quiet, tb_sel, ccd_thr, ewmhi_thr, ewmlo_thr, ewnhi_thr, ewnlo_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf,y_ekf_f,ib_dec, ");
+  Serial.printf("  ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rstate_m, ib_dyn_lstate_m, ");
+  Serial.printf("  ib_dyn_T_n, ib_dyn_tau_n, ib_dyn_rstate_n, ib_dyn_lstate_n, ");
+  Serial.printf("  ib_wrp_T_n, ib_wrp_tau_n, ib_wrp_rate_n, ib_wrp_state_n, disable_amp_fault, ");
+  Serial.printf("  ib_wrp_reset_m, ib_wrp_reset_n, ib_wrp_T_m, ib_wrp_tau_m, ib_wrp_rate_m, ib_wrp_state_m, ib_amp, ib_noa, ");
+  Serial.printf("  ib_amp_lo, ib_amp_hi, ib_noa_lo, ib_noa_hi, ib_noa_kf, kfres, kf_v_m, kf_v_n, e_wrap_m_trimmed, e_wrap_n_trimmed, ");
+  Serial.printf("  vb_model, voc_m, voc_soc_m, voc_n, voc_soc_n, wrap_m_and_n_fa, ib_is_functional,voltage_low, ");
+  Serial.printf("  vb_hdwe_f, ");
   Serial.printf("  fltw, falw, dispw,");
   Serial.printf("\n");
 }
@@ -358,10 +358,8 @@ void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon
 {
   if ( (sp.debug()==2 || sp.debug()==4 || sp.debug()==61 )  && cp.publishS )
   {
-      double cTime = double(Sen->now())/1000.;
-
-      sprintf(pr.buff, "unit_sel,%13.4f, %d, %d, %d, %10.7f, %8.6f,%8.6f,%8.6f,%8.6f,%8.6f,   %d,%8.6f,%8.6f,%8.6f,%8.6f,   %8.6f,%8.6f, ",
-          cTime, reset, Sen->Flt->reset_all_faults_print(), sp.ib_force(),
+      sprintf(pr.buff, "unit_sel,%13.4f, %8.6f, %d, %d, %d, %10.7f, %8.6f,%8.6f,%8.6f,%8.6f,%8.6f,   %d,%8.6f,%8.6f,%8.6f,%8.6f,   %8.6f,%8.6f, ",
+          Sen->cTime(), Sen->T(), reset, Sen->Flt->reset_all_faults_print(), sp.ib_force(),
           Sen->Flt->cc_diff(),
           Sen->ib_amp_hdwe(), Sen->ib_noa_hdwe(), Sen->ib_amp_model(), Sen->ib_noa_model(), Sen->ib_model(), 
           cp.kf_reset_print, Sen->ib_amp_vo_vc(), Sen->ib_noa_vo_vc(), Sen->ib_amp_hdwe_kf(), Sen->ib_noa_hdwe_kf(),
