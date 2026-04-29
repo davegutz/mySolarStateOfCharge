@@ -96,10 +96,6 @@ const char unit[] = version_str "_" HDWE_UNIT;
 #define VB_A                  0.0       // Vb sense adder, V (0)
 #define PHOTON_ADC_COUNT      4096      // Photon ADC range, counts (4096)
 #define PHOTON_ADC_VOLT       3.3       // Photon ADC range, V (3.3)
-#define SCREEN_WIDTH          128       // OLED display width, in pixels (128)
-#define SCREEN_HEIGHT         32        // OLED display height, in pixels (4)
-#define OLED_RESET            4         // Reset pin # (or -1 if sharing Arduino reset pin) (4)
-#define SCREEN_ADDRESS        0x3C      // See datasheet for Address; 0x3D for 128x64, (0x3C for 128x32)
 #define F_MAX_T               ChargeTransfer_T_MAX  // Maximum call update time sensors and coulomb counter (0.5)
 #define F_MAX_T_TEMP          18.0      // Maximum call update time filters (18.0)
 #define TB_FILT               120.      // Temperature filter lag, s (120)
@@ -142,7 +138,7 @@ const float T_DESAT =         20;       // De-saturation time, sec
 #define MAX_ERR_FILT          10.       // Current sensor difference Filter maximum windup, A (10.)
 #define MAX_ERR_T             10.       // Maximum update time allowed to avoid instability, s (10.)
 #define IB_LO_ACTIVE_SET      0.2       // Ib low range sensor is in-range persistence, s (0.2)
-#define IB_LO_ACTIVE_RESET    0.4       // Ib low range sensor is in-range reset persistence, s (0.4)
+#define IB_LO_ACTIVE_RES      0.4       // Ib low range sensor is in-range reset persistence, s (0.4)
 #define VB_MAX                17.       // Signal selection hard fault threshold, V (17. < VB_CONV_GAIN*4095)
 #define VB_MIN                2.        // Signal selection hard fault threshold, V (0.  < 2. < 10 bms shutoff, reads ~3 without power when off)
 #define VC_MAX                2.15      // Signal selection hard fault threshold, V (2.15, 1.85 too low)  // 1.65*1.3 is max ADC reading with 1.65v ref, but see 1.9v on truck with no power, so set at 2.15v to avoid false fault on truck when off
@@ -151,11 +147,11 @@ const float T_DESAT =         20;       // De-saturation time, sec
 #define TB_MAX                60.       // Signal selection hard fault threshold 2wire only, C (60.)
 #define TB_MIN               -40.       // Signal selection hard fault threshold 2wire only, C (-40.)
 #define TB_HARD_SET           1.        // Signal selection Tb 2-wire range fail persistence, s (1.)
-#define TB_HARD_RESET         2.        // Signal selection Tb 2-wire range fail reset persistence, s (2.)
+#define TB_HARD_RES           2.        // Signal selection Tb 2-wire range fail reset persistence, s (2.)
 #define VB_HARD_SET           1.        // Signal selection volt range fail persistence, s (1.)
-#define VB_HARD_RESET         2.        // Signal selection volt range fail reset persistence, s (2.)
+#define VB_HARD_RES           2.        // Signal selection volt range fail reset persistence, s (2.)
 #define VC_HARD_SET           1.        // Signal selection volt range fail persistence, s (1.)
-#define VC_HARD_RESET         2.        // Signal selection volt range fail reset persistence, s (2.)
+#define VC_HARD_RES           2.        // Signal selection volt range fail reset persistence, s (2.)
 #define TB_NOISE              0.        // Tb added noise amplitude, deg C pk-pk
 #define TB_NOISE_SEED         0xe2      // Tb added noise seed 0-255 = 0x00-0xFF (0xe2) 
 #define VB_NOISE              0.        // Vb added noise amplitude, V pk-pk
@@ -167,26 +163,26 @@ const float T_DESAT =         20;       // De-saturation time, sec
 #define WRAP_ERR_FILT         4.        // Wrap error filter time constant, s (4)
 #define F_MAX_T_WRAP          2.8       // Maximum update time of Wrap filter for stability at WRAP_ERR_FILT (0.7*T for Tustin), s (2.8)
 #define MAX_WRAP_ERR_FILT     10.       // Anti-windup wrap error filter, V (10)
-const float WRAP_LO_S =       9.;      // Wrap low failure set time, sec (9) // 9 is legacy must be quicker than SAT test
-const float WRAP_LO_R = (WRAP_LO_S/2.); // Wrap low failure reset time, sec ('up 1, down 2')
-const float WRAP_HI_S = WRAP_LO_S;      // Wrap high failure set time, sec (WRAP_LO_S)
-const float WRAP_HI_R = (WRAP_HI_S/2.); // Wrap high failure reset time, sec ('up 1, down 2')
+const float WRAP_LO_SET =      9.;      // Wrap low failure set time, sec (9) // 9 is legacy must be quicker than SAT test
+const float WRAP_LO_RES = (WRAP_LO_SET/2.); // Wrap low failure reset time, sec ('up 1, down 2')
+const float WRAP_HI_SET = WRAP_LO_SET;      // Wrap high failure set time, sec (WRAP_LO_SET)
+const float WRAP_HI_RES = (WRAP_HI_SET/2.); // Wrap high failure reset time, sec ('up 1, down 2')
 #define WRAP_LO_A       -40.            // Wrap high voltage threshold, A (-40, -20 too small on truck -16=-0.2v, -32 marginal)
 #define WRAP_HI_AMP     3.2             // Wrap high voltage threshold amplified, A (3.2)
 #define WRAP_LO_AMP     -4.             // Wrap high voltage threshold amplified, A (-4)
 #define WRAP_HI_NOA     6.4             // Wrap high voltage threshold non-amplified, A (32 after testing; 16=0.2v)
 #define WRAP_LO_NOA     -8.             // Wrap high voltage threshold non-amplified, A (-40, -20 too small on truck -16=-0.2v, -32 marginal)
-#define WRAP_HI_SAT_MARG  0.2           // Wrap voltage margin to saturation, V (0.2)
-#define WRAP_HI_SAT_SLR   2.0           // Wrap voltage margin scalar when saturated (2.0)
+#define WRAP_HI_SETAT_MARG  0.2         // Wrap voltage margin to saturation, V (0.2)
+#define WRAP_HI_SETAT_SLR   2.0         // Wrap voltage margin scalar when saturated (2.0)
 #ifdef HDWE_IB_HI_LO
-    #define IBATT_DISAGREE_THRESH 3.       // Signal selection threshold for current disagree test, A (3.)
+    #define IBATT_DISAGREE_THRESH 3.    // Signal selection threshold for current disagree test, A (3.)
 #else
-    #define IBATT_DISAGREE_THRESH 10.       // Signal selection threshold for current disagree test, A (10.)
+    #define IBATT_DISAGREE_THRESH 10.   // Signal selection threshold for current disagree test, A (10.)
 #endif
-const float IBATT_DISAGREE_SET = (WRAP_LO_S-1.); // Signal selection current disagree fail persistence, s (WRAP_LO_S-1) // must be quicker than wrap lo
+const float IBATT_DISAGREE_SET = (WRAP_LO_SET-1.); // Signal selection current disagree fail persistence, s (WRAP_LO_SET-1) // must be quicker than wrap lo
 #define IBATT_INST_DIFF_SET   0.2       // Persistence on instantaneous current difference, s (0.2)
-#define IBATT_INST_DIFF_RESET 0.0       // Persistence reset on instantaneous current difference, s (0.0)
-#define IBATT_DISAGREE_RESET  2.0       // Signal selection current disagree reset persistence, s (2.)
+#define IBATT_INST_DIFF_RES   0.0       // Persistence reset on instantaneous current difference, s (0.0)
+#define IBATT_DISAGREE_RES    2.0       // Signal selection current disagree reset persistence, s (2.)
 #define TAU_Q_FILT      0.5             // Quiet rate time constant, sec (0.5)
 #define MIN_Q_FILT      -5.0            // Quiet filter minimum, V (-0.5)
 #define MAX_Q_FILT      5.0             // Quiet filter maximum, V (0.5)
@@ -195,10 +191,10 @@ const float IBATT_DISAGREE_SET = (WRAP_LO_S-1.); // Signal selection current dis
 #define MAX_T_Q_FILT    0.2             // Quiet filter max update time (0.2)
 #define QUIET_A         0.005           // Quiet set threshold, sec (0.005, 0.01 too large in truck)
 #define LOW_A           1.0             // Currents are very small, A (1.0)
-#define QUIET_S         60.             // Quiet set persistence, sec (60.)
-const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 down 10')
+#define QUIET_SET         60.           // Quiet set persistence, sec (60.)
+const float QUIET_RES (QUIET_SET/10.);  // Quiet reset persistence, sec ('up 1 down 10')
 #define TB_STALE_SET    3600.           // Tb read from one-wire stale persistence for failure, s (3600, 1 hr)
-#define TB_STALE_RESET  0.0             // Tb read from one-wire stale persistence for reset, s (0)
+#define TB_STALE_RES    0.0             // Tb read from one-wire stale persistence for reset, s (0)
 #define NOMINAL_TB      15.             // Middle of the road Tb for decent reversionary operation, deg C (15.)
 #define NOMINAL_VB   (13.*NS)           // Middle of the road Vb for decent reversionary operation, V (13.)
 #define IMAX_NUM        100000.         // Simulation limit to prevent NaN, A (1e5)
@@ -228,18 +224,18 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #define HDWE_SHC_2WIRE  1.0265e-7       // 2-wire thermistor characteristic, Steinhart-Hart (1.0265e-7; see '2-wireRTD.ods')
 #define SIZE_MARG         1.05          // Threshold margin, scalar (1.05)
 #define MAX_NOA_RATE        1.0         // Max reasonable noa rate used to disable amp e_wrap logic, A/s (1.0)
-#define CC_DIFF_RESET       2.0         // Signal selection cc_diff ekf test reset persistence, s (2.)
+#define CC_DIFF_RES         2.0         // Signal selection cc_diff ekf test reset persistence, s (2.)
 #define CC_DIFF_SET         5.0         // Signal selection cc_diff ekf test set persistence, s (5. to handle sawtooth action on cc_diff)
-#define DISAB_LO_SET       0.4          // Disable lo=amp wrap fault set persistence, s (0.4)
-#define DISAB_LO_RESET     0.8          // Disable lo=amp wrap fault reset persistence, s (0.8)
-#define MAX_TRIM_RATE    0.005          // Max allowable amp e_wraptrim rate, V/s (0.005)
+#define DISAB_LO_SET        0.4         // Disable lo=amp wrap fault set persistence, s (0.4)
+#define DISAB_LO_RES        0.8         // Disable lo=amp wrap fault reset persistence, s (0.8)
+#define MAX_TRIM_RATE     0.005         // Max allowable amp e_wraptrim rate, V/s (0.005)
 
 // Default values for constants that can be overridden
 #if !defined(IB_HARD_SET)
     #define IB_HARD_SET        1.0          // Signal selection volt range fail persistence, s (1.)
 #endif
-#if !defined(IB_HARD_RESET)
-    #define IB_HARD_RESET      2.0          // Signal selection volt range fail reset persistence, s (2.)
+#if !defined(IB_HARD_RES)
+    #define IB_HARD_RES        2.0          // Signal selection volt range fail reset persistence, s (2.)
 #endif
 #if !defined(NOM_DS)
     #define NOM_DS             0.0          // Nominal VOC(SOC) del soc (Ds) 0.0)
@@ -416,11 +412,11 @@ const float QUIET_R   (QUIET_S/10.);    // Quiet reset persistence, sec ('up 1 d
 #if !defined(SNAP_WAIT)
     #define SNAP_WAIT             10000ULL  // Interval between fault snapshots (10000ULL = 10 sec)
 #endif
-#if !defined(RAW_BARE_S)
-    #define RAW_BARE_S   1. // Raw bare set persistence, s (1)
+#if !defined(RAW_BARE_SET)
+    #define RAW_BARE_SET   1. // Raw bare set persistence, s (1)
 #endif
-#if !defined(RAW_BARE_R)
-    #define RAW_BARE_R   2. // Raw bare reset persistence, s (2)
+#if !defined(RAW_BARE_RES)
+    #define RAW_BARE_RES   2. // Raw bare reset persistence, s (2)
 #endif
 
 // Conversion gains

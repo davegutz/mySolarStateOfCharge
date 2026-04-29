@@ -106,7 +106,7 @@ bool followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sen
                     {
                         Sen->ReadSensors->delay(ap.read_delay());  // validated
                         Sen->Summarize->delay(max(ap.read_delay(), ap.sum_delay()));  // validated
-                        cp.time_scale = ap.read_delay() / NOM_READ_DELAY_S / 1000.;
+                        cp.ts = ap.read_delay() / NOM_READ_DELAY_S / 1000.;
                     }
                     break;
 

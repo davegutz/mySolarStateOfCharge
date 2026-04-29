@@ -218,8 +218,8 @@ def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb, ap_ib_diff_slr=1., ap_i
     # There is no fault logic in the Python code, so hard code it here
     WRAP_HI_A = 32.  # Wrap high voltage threshold, A (32 after testing; 16=0.2v)
     WRAP_LO_A = -32.  # Wrap high voltage threshold, A (-32, -20 too small on truck -16=-0.2v)
-    WRAP_HI_SAT_MARG = 0.2  # Wrap voltage margin to saturation, V (0.2)
-    WRAP_HI_SAT_SCLR = 2.0  # Wrap voltage margin scalar when saturated (2.0)
+    WRAP_HI_SETAT_MARG = 0.2  # Wrap voltage margin to saturation, V (0.2)
+    WRAP_HI_SETAT_SCLR = 2.0  # Wrap voltage margin scalar when saturated (2.0)
     IBATT_DISAGREE_THRESH = 10.  # Signal selection threshold for current disagree test, A (10.)
     QUIET_A = 0.005  # Quiet set threshold, sec (0.005, 0.01 too large in truck)
     WRAP_SOC_HI_OFF = 0.97  # Disable e_wrap_hi when saturated
@@ -250,9 +250,9 @@ def fault_thr_bb(Tb, soc, voc_soc, voc_stat, C_rate, bb, ap_ib_diff_slr=1., ap_i
     elif soc <= max(soc_min+WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_OFF_ABS):
         ewsat_sclr_ = 1.
         ewmin_sclr_ = WRAP_SOC_LO_SCLR
-    elif voc_soc > (vsat_ - WRAP_HI_SAT_MARG) or \
-            (voc_stat > (vsat_ - WRAP_HI_SAT_MARG) and C_rate > WRAP_MOD_C_RATE and soc > WRAP_SOC_MOD_OFF):
-        ewsat_sclr_ = WRAP_HI_SAT_SCLR
+    elif voc_soc > (vsat_ - WRAP_HI_SETAT_MARG) or \
+            (voc_stat > (vsat_ - WRAP_HI_SETAT_MARG) and C_rate > WRAP_MOD_C_RATE and soc > WRAP_SOC_MOD_OFF):
+        ewsat_sclr_ = WRAP_HI_SETAT_SCLR
         ewmin_sclr_ = 1.
     else:
         ewsat_sclr_ = 1.

@@ -103,7 +103,7 @@ Shunt::Shunt(const String name, const uint8_t port, float *sp_ib_scale,  float *
   Vc_read_ = new AnalogReadP2(using_opamp_ ? vr_pin_ : vc_pin_);
   Vc_read_ = new AnalogReadP2(using_opamp_ ? vr_pin_ : vc_pin_);
   Vo_read_ = new AnalogReadP2(vo_pin_);
-  Bare_delay_ = new TFDelay(false, RAW_BARE_S, RAW_BARE_R, sample_time_);
+  Bare_delay_ = new TFDelay(false, RAW_BARE_SET, RAW_BARE_RES, sample_time_);
 }
 Shunt::~Shunt() {}
 // operators
@@ -146,7 +146,7 @@ void Shunt::convert(const bool disconnect, const bool reset, Sensors *Sen)
 {
   reset_ = reset;
   #ifndef HDWE_BARE
-    bare_shunt_ = Bare_delay_->calculate(Vc_read_->dead(), RAW_BARE_S, RAW_BARE_R, Sen->T(),reset_);
+    bare_shunt_ = Bare_delay_->calculate(Vc_read_->dead(), RAW_BARE_SET, RAW_BARE_RES, Sen->T(),reset_);
   #else
     bare_shunt_ = false;
   #endif
@@ -661,7 +661,7 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const bool reset_temp)
   #ifndef HDWE_BARE
     Tb_hdwe_ = SensorTb->sample(Sen, reset_temp_);  // Must sample even if using model
 
-    Tb_model_filt_ = TbModelFilt->calculate(Tb_model_, reset_temp_, ap.tb_filt(), min(T_temp_, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
+    Tb_model_filt_ = TbModelFilt->calculate(Tb_model_, reset_temp_, ap.tb_filt(), min(T_temp_, F_MAX_T_TEMP), T_RLIM/cp.ts, -T_RLIM/cp.ts);
     Tb_model_filt_rate_ = TbModelFilt->rate();
 
     if ( sp.mod_tb() )
@@ -681,7 +681,7 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const bool reset_temp)
   }
   Tb_hdwe_ += sp.Tb_bias_hdwe();  // Fault injection
 
-  Tb_hdwe_filt_ = TbSenseFilt->calculate(Tb_hdwe_, reset_temp_, ap.tb_filt(), min(T_temp_, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
+  Tb_hdwe_filt_ = TbSenseFilt->calculate(Tb_hdwe_, reset_temp_, ap.tb_filt(), min(T_temp_, F_MAX_T_TEMP), T_RLIM/cp.ts, -T_RLIM/cp.ts);
   Tb_hdwe_filt_rate_ = TbSenseFilt->rate();
 
   if ( sp.debug()==16 ) Serial.printf("temp_load_and_filter: T_temp, Tb_hdwe, Tb_hdwe_filt, rstate, lstate %11.8f %11.8f %11.8f %11.8f %11.8f\n",

@@ -59,8 +59,8 @@ Looparound::Looparound(BatteryMonitor *Mon, Sensors *Sen, const float wrap_hi_am
   ChargeTransfer_ = new LagExp(EKF_NOM_DT, chem_->tau_ct, -NOM_UNIT_CAP, NOM_UNIT_CAP);     // actual update time provided run time
   Trim_ = new TustinIntegrator(EKF_NOM_DT, -err_max*10., err_max*10.);          // actual update time provided run time
   WrapErrFilt_ = new LagTustin(2., WRAP_ERR_FILT, -err_max, err_max);   // actual update time provided run time
-  WrapHi_ = new TFDelay(false, WRAP_HI_S, WRAP_HI_R, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
-  WrapLo_ = new TFDelay(false, WRAP_LO_S, WRAP_LO_R, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
+  WrapHi_ = new TFDelay(false, WRAP_HI_SET, WRAP_HI_RES, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
+  WrapLo_ = new TFDelay(false, WRAP_LO_SET, WRAP_LO_RES, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
 }
 
 // Update the loop
@@ -89,7 +89,7 @@ void Looparound::calculate(const bool reset, const bool disable_fault, const flo
   {
     trim_init = -(Mon_->vb() - Mon_->voc_soc() - dv_dyn_);
     trim_rate_lim = max(min(e_wrap_filt_*wrap_trim_gain_, MAX_TRIM_RATE), -MAX_TRIM_RATE);
-    e_wrap_trim_ = -Trim_->calculate(trim_rate_lim, min(Sen_->T(), F_MAX_T_WRAP), reset_, trim_init,
+    e_wrap_trim_ = -Trim_->calculate(trim_rate_lim/cp.ts, min(Sen_->T(), F_MAX_T_WRAP), reset_, trim_init,
                                       -ewlo_thr_base_*EWLO_TRM_SLR, -ewhi_thr_base_*EWHI_TRM_SLR);
   }
   else
@@ -116,11 +116,11 @@ void Looparound::calculate(const bool reset, const bool disable_fault, const flo
 
   hi_fault_ = (e_wrap_filt_ >= ewhi_thr_) && !disable_fault;
   if ( !disable_fault )  // freeze fail
-    hi_fail_ = WrapHi_->calculate(hi_fault_, WRAP_HI_S, WRAP_HI_R, Sen_->T(), reset_) && !Sen_->Flt->vb_fa_lt();  // not latched
+    hi_fail_ = WrapHi_->calculate(hi_fault_, WRAP_HI_SET, WRAP_HI_RES, Sen_->T(), reset_) && !Sen_->Flt->vb_fa_lt();  // not latched
 
   lo_fault_ = (e_wrap_filt_ <= ewlo_thr_) && !disable_fault;
   if ( !disable_fault )  // freeze fail
-    lo_fail_ = WrapLo_->calculate(lo_fault_, WRAP_LO_S, WRAP_LO_R, Sen_->T(), reset_) && !Sen_->Flt->vb_fa_lt();  // not latched
+    lo_fail_ = WrapLo_->calculate(lo_fault_, WRAP_LO_SET, WRAP_LO_RES, Sen_->T(), reset_) && !Sen_->Flt->vb_fa_lt();  // not latched
 
   if ( sp.debug()==71 ) Serial.printf("ib%7.3f reset%d ewlo_thr/e_wrap_filt/ewhi_thr  %7.3f/%7.3f/%7.3f trim%7.3f vb_fa_lt %d lo_fault/fail %d/%d hi_fault/fail %d/%d\n",
    ib_, reset_, ewlo_thr_, e_wrap_filt_, ewhi_thr_, e_wrap_trim_, Sen_->Flt->vb_fa_lt(), lo_fault_, lo_fail_, hi_fault_, hi_fail_);
@@ -171,27 +171,27 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
    wrap_lo_amp_(WRAP_LO_AMP), wrap_lo_noa_(WRAP_LO_NOA)
 {
   IbDiffFilt = new LagTustin(T, TAU_ERR_FILT, -IBATT_DISAGREE_THRESH*1.5, IBATT_DISAGREE_THRESH*1.5);  // actual update time provided run time
-  IbdPosPer = new TFDelay(false, IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, T);
-  IbdNegPer = new TFDelay(false, IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, T);
-  IbdHiPer = new TFDelay(false, IBATT_DISAGREE_SET, IBATT_DISAGREE_RESET, T);
-  IbdLoPer = new TFDelay(false, IBATT_DISAGREE_SET, IBATT_DISAGREE_RESET, T);
-  CcdiffPer  = new TFDelay(false, CC_DIFF_SET, CC_DIFF_RESET, T);
-  IbAmpHardFail  = new TFDelay(false, IB_HARD_SET, IB_HARD_RESET, T);
-  IbLoLimitedHi  = new TFDelay(true, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET, T);
-  IbLoLimitedLo  = new TFDelay(true, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET, T);
-  IbNoAmpHardFail  = new TFDelay(false, IB_HARD_SET, IB_HARD_RESET, T);
-  TbHardFail  = new TFDelay(false, TB_HARD_SET, TB_HARD_RESET, T);
-  TbStaleFail  = new TFDelay(false, TB_STALE_SET, TB_STALE_RESET, T);
-  VbHardFail  = new TFDelay(false, VB_HARD_SET, VB_HARD_RESET, T);
-  VcHardFail  = new TFDelay(false, VC_HARD_SET, VC_HARD_RESET, T);
-  QuietPer  = new TFDelay(false, QUIET_S, QUIET_R, T);
+  IbdPosPer = new TFDelay(false, IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RES, T);
+  IbdNegPer = new TFDelay(false, IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RES, T);
+  IbdHiPer = new TFDelay(false, IBATT_DISAGREE_SET, IBATT_DISAGREE_RES, T);
+  IbdLoPer = new TFDelay(false, IBATT_DISAGREE_SET, IBATT_DISAGREE_RES, T);
+  CcdiffPer  = new TFDelay(false, CC_DIFF_SET, CC_DIFF_RES, T);
+  IbAmpHardFail  = new TFDelay(false, IB_HARD_SET, IB_HARD_RES, T);
+  IbLoLimitedHi  = new TFDelay(true, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RES, T);
+  IbLoLimitedLo  = new TFDelay(true, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RES, T);
+  IbNoAmpHardFail  = new TFDelay(false, IB_HARD_SET, IB_HARD_RES, T);
+  TbHardFail  = new TFDelay(false, TB_HARD_SET, TB_HARD_RES, T);
+  TbStaleFail  = new TFDelay(false, TB_STALE_SET, TB_STALE_RES, T);
+  VbHardFail  = new TFDelay(false, VB_HARD_SET, VB_HARD_RES, T);
+  VcHardFail  = new TFDelay(false, VC_HARD_SET, VC_HARD_RES, T);
+  QuietPer  = new TFDelay(false, QUIET_SET, QUIET_RES, T);
   if ( !sp.mod_ib() )
-    QuietPerFunc  = new TFDelay(false, QUIET_S, QUIET_R, T);
+    QuietPerFunc  = new TFDelay(false, QUIET_SET, QUIET_RES, T);
   else
-    QuietPerFunc  = new TFDelay(true, QUIET_S, QUIET_R, T);
+    QuietPerFunc  = new TFDelay(true, QUIET_SET, QUIET_RES, T);
   WrapErrFilt = new LagTustin(T, WRAP_ERR_FILT, -MAX_WRAP_ERR_FILT, MAX_WRAP_ERR_FILT);  // actual update time provided run time
-  WrapHi = new TFDelay(false, WRAP_HI_S, WRAP_HI_R, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
-  WrapLo = new TFDelay(false, WRAP_LO_S, WRAP_LO_R, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
+  WrapHi = new TFDelay(false, WRAP_HI_SET, WRAP_HI_RES, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
+  WrapLo = new TFDelay(false, WRAP_LO_SET, WRAP_LO_RES, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
   QuietFilt = new General2_Pole(T, WN_Q_FILT, ZETA_Q_FILT, MIN_Q_FILT, MAX_Q_FILT);  // actual update time provided run time
   QuietRate = new RateLagExp(T, TAU_Q_FILT, MIN_Q_FILT, MAX_Q_FILT);
   LoopIbAmp = new Looparound(Mon, Sen, WRAP_HI_AMP, WRAP_LO_AMP, AMP_WRAP_TRIM_GAIN, IB_ABS_MAX_AMP, -IB_ABS_MAX_AMP,
@@ -215,7 +215,7 @@ void Fault::cc_diff(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
   }
   // ewsat_slr_ used here because voc_soc map inaccurate on cold days
   cc_diff_thr_ = CC_DIFF_SOC_DIS_THRESH*ap.cc_diff_slr()*cc_diff_empty_slr_*ewsat_slr_;
-  failAssign( CcdiffPer->calculate(abs(cc_diff_)>=cc_diff_thr_, CC_DIFF_SET, CC_DIFF_RESET, Sen->T(), reset), CC_DIFF_FA ); // CC_DIFF_FA not latched
+  failAssign( CcdiffPer->calculate(abs(cc_diff_)>=cc_diff_thr_, CC_DIFF_SET, CC_DIFF_RES, Sen->T(), reset), CC_DIFF_FA ); // CC_DIFF_FA not latched
 }
 
 // Compare current sensors - failure conditions large difference
@@ -227,13 +227,13 @@ void Fault::ib_diff(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
   else if ( ib_lo_limited_lo_ ) ib_diff_ = min(0., ib_diff_);  // limit error when low amp is pegged low
   ib_diff_f_ = IbDiffFilt->calculate(ib_diff_, reset_loc || disable_amp_fault_ || ib_lo_limited_hi_ || ib_lo_limited_lo_, min(Sen->T(), MAX_ERR_T));
   ib_diff_thr_ = IBATT_DISAGREE_THRESH*ap.ib_diff_slr();
-  faultAssign( IbdPosPer->calculate((ib_diff_f_>=ib_diff_thr_), IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, Sen->T(), reset_loc),
+  faultAssign( IbdPosPer->calculate((ib_diff_f_>=ib_diff_thr_), IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RES, Sen->T(), reset_loc),
     IB_DIFF_HI_FLT );
-  faultAssign( IbdNegPer->calculate((ib_diff_f_<=-ib_diff_thr_), IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RESET, Sen->T(), reset_loc),
+  faultAssign( IbdNegPer->calculate((ib_diff_f_<=-ib_diff_thr_), IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RES, Sen->T(), reset_loc),
     IB_DIFF_LO_FLT );
-  failAssign( IbdHiPer->calculate(ib_diff_hi_flt(), IBATT_DISAGREE_SET, IBATT_DISAGREE_RESET, Sen->T(), reset_loc),
+  failAssign( IbdHiPer->calculate(ib_diff_hi_flt(), IBATT_DISAGREE_SET, IBATT_DISAGREE_RES, Sen->T(), reset_loc),
     IB_DIFF_HI_FA ); // IB_DIFF_FA not latched
-  failAssign( IbdLoPer->calculate(ib_diff_lo_flt(), IBATT_DISAGREE_SET, IBATT_DISAGREE_RESET, Sen->T(), reset_loc),
+  failAssign( IbdLoPer->calculate(ib_diff_lo_flt(), IBATT_DISAGREE_SET, IBATT_DISAGREE_RES, Sen->T(), reset_loc),
     IB_DIFF_LO_FA ); // IB_DIFF_FA not latched
 
   // if ( sp.debug()==2 || sp.debug()==4 ) Serial.printf("ib_diff_%7.3f reset_loc %d disable_amp_fault_ %d ib_diff_f_ %7.3f ib_diff_thr_ %7.3f ib_lo_active_ %d\n",
@@ -254,9 +254,9 @@ void Fault::ib_logic(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
       ib_amp_lo_ = Sen->ib_amp_model() <= HDWE_IB_HI_LO_AMP_LO / ap.nP();
       ib_noa_hi_ = Sen->ib_noa_model() >= HDWE_IB_HI_LO_NOA_HI / ap.nP();
       ib_noa_lo_ = Sen->ib_noa_model() <= HDWE_IB_HI_LO_NOA_LO / ap.nP();
-      ib_lo_limited_hi_ = IbLoLimitedHi->calculate(ib_amp_hi_, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET,
+      ib_lo_limited_hi_ = IbLoLimitedHi->calculate(ib_amp_hi_, IB_LO_ACTIVE_SET*cp.ts, IB_LO_ACTIVE_RES*cp.ts,
                                                    Sen->T() , reset_loc);
-      ib_lo_limited_lo_ = IbLoLimitedLo->calculate(ib_amp_lo_, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET,
+      ib_lo_limited_lo_ = IbLoLimitedLo->calculate(ib_amp_lo_, IB_LO_ACTIVE_SET*cp.ts, IB_LO_ACTIVE_RES*cp.ts,
                                                    Sen->T() , reset_loc);
       ib_lo_active_ = !ib_lo_limited_hi_ && !ib_lo_limited_lo_;
     #else
@@ -277,9 +277,9 @@ void Fault::ib_logic(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
       ib_amp_lo_ = Sen->ib_amp_hdwe() <= HDWE_IB_HI_LO_AMP_LO / ap.nP();
       ib_noa_hi_ = Sen->ib_noa_hdwe() >= HDWE_IB_HI_LO_NOA_HI / ap.nP();
       ib_noa_lo_ = Sen->ib_noa_hdwe() <= HDWE_IB_HI_LO_NOA_LO / ap.nP();
-      ib_lo_limited_hi_ = IbLoLimitedHi->calculate(ib_amp_hi_, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET,
+      ib_lo_limited_hi_ = IbLoLimitedHi->calculate(ib_amp_hi_, IB_LO_ACTIVE_SET*cp.ts, IB_LO_ACTIVE_RES*cp.ts,
                                                    Sen->T() , reset_loc);
-      ib_lo_limited_lo_ = IbLoLimitedLo->calculate(ib_amp_lo_, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RESET,
+      ib_lo_limited_lo_ = IbLoLimitedLo->calculate(ib_amp_lo_, IB_LO_ACTIVE_SET*cp.ts, IB_LO_ACTIVE_RES*cp.ts,
                                                    Sen->T() , reset_loc);
       ib_lo_active_ =    !ib_lo_limited_hi_ && !ib_lo_limited_lo_;
     #else
@@ -309,7 +309,7 @@ void Fault::ib_quiet(const bool reset, Sensors *Sen)
     ib_quiet_ = QuietFilt->calculate(ib_rate_, reset_loc, min(Sen->T(), MAX_T_Q_FILT));
     ib_quiet_thr_ = QUIET_A * ap.ib_quiet_slr();
     ib_is_quiet_ = abs(ib_quiet_)<=ib_quiet_thr_ && !reset_loc;
-    ib_is_functional_ = QuietPerFunc->calculate(!ib_is_quiet_, QUIET_S, QUIET_R, Sen->T(), reset_loc);
+    ib_is_functional_ = QuietPerFunc->calculate(!ib_is_quiet_, QUIET_SET, QUIET_RES, Sen->T(), reset_loc);
     // Really Quiet logic added for robust (no faults) during BMS shutoff
     ib_really_quiet_ = ib_is_quiet_ && ( abs(Sen->Ib_amp_hdwe()+Sen->Ib_noa_hdwe()) < LOW_A );
   }
@@ -320,7 +320,7 @@ void Fault::ib_quiet(const bool reset, Sensors *Sen)
     ib_quiet_ = QuietFilt->calculate(ib_rate_, reset_loc, min(Sen->T(), MAX_T_Q_FILT));
     ib_quiet_thr_ = QUIET_A * ap.ib_quiet_slr();
     ib_is_quiet_ = abs(ib_quiet_)<=ib_quiet_thr_ && !reset_loc;
-    ib_is_functional_ = QuietPerFunc->calculate(!ib_is_quiet_, QUIET_S, QUIET_R, Sen->T(), reset_loc);
+    ib_is_functional_ = QuietPerFunc->calculate(!ib_is_quiet_, QUIET_SET, QUIET_RES, Sen->T(), reset_loc);
     // Really Quiet logic added for robust (no faults) during BMS shutoff
     ib_really_quiet_ = ib_is_quiet_ && ( abs(Sen->Ib_amp_model()+Sen->Ib_noa_model()) < LOW_A );
   }
@@ -331,7 +331,7 @@ void Fault::ib_quiet(const bool reset, Sensors *Sen)
 
       // Fault
   faultAssign( ib_is_quiet_, IB_DSCN_FLT );   // initializes false
-  failAssign( QuietPer->calculate(dscn_flt(), QUIET_S, QUIET_R, Sen->T(), reset_loc), IB_DSCN_FA);
+  failAssign( QuietPer->calculate(dscn_flt(), QUIET_SET, QUIET_RES, Sen->T(), reset_loc), IB_DSCN_FA);
   debug_check_m13(Sen);
   debug_check_m23(Sen);
   debug_check_m24(Sen);
@@ -375,8 +375,8 @@ void Fault::ib_range(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
   }
   else
   {
-    failAssign( vc_fa() || ib_amp_bare() || ib_amp_fa() || IbAmpHardFail->calculate(ib_amp_flt(), IB_HARD_SET, IB_HARD_RESET, Sen->T(), reset_loc), IB_AMP_FA );
-    failAssign( vc_fa() || ib_noa_bare() || ib_noa_fa() || IbNoAmpHardFail->calculate(ib_noa_flt(), IB_HARD_SET, IB_HARD_RESET, Sen->T(), reset_loc), IB_NOA_FA);
+    failAssign( vc_fa() || ib_amp_bare() || ib_amp_fa() || IbAmpHardFail->calculate(ib_amp_flt(), IB_HARD_SET, IB_HARD_RES, Sen->T(), reset_loc), IB_AMP_FA );
+    failAssign( vc_fa() || ib_noa_bare() || ib_noa_fa() || IbNoAmpHardFail->calculate(ib_noa_flt(), IB_HARD_SET, IB_HARD_RES, Sen->T(), reset_loc), IB_NOA_FA);
   }
   #ifdef DEBUG_INIT
     if ( sp.mod_ib() )
@@ -439,8 +439,8 @@ void Fault::ib_wrap(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
     // Thresholds calculated by wrap_scalars()
     faultAssign( (e_wrap_filt_ >= ewhi_thr_ && !Mon->sat()), WRAP_HI_FLT);
     faultAssign( (e_wrap_filt_ <= ewlo_thr_), WRAP_LO_FLT);
-    failAssign( (WrapHi->calculate(wrap_hi_flt(), WRAP_HI_S, WRAP_HI_R, Sen->T(), reset_loc) && !vb_fa_lt()), WRAP_HI_FA );  // not latched
-    failAssign( (WrapLo->calculate(wrap_lo_flt(), WRAP_LO_S, WRAP_LO_R, Sen->T(), reset_loc) && !vb_fa_lt()), WRAP_LO_FA );  // not latched
+    failAssign( (WrapHi->calculate(wrap_hi_flt(), WRAP_HI_SET, WRAP_HI_RES, Sen->T(), reset_loc) && !vb_fa_lt()), WRAP_HI_FA );  // not latched
+    failAssign( (WrapLo->calculate(wrap_lo_flt(), WRAP_LO_SET, WRAP_LO_RES, Sen->T(), reset_loc) && !vb_fa_lt()), WRAP_LO_FA );  // not latched
   #endif
 
   // vb section of wrap logic - separate because vb is single sensor and can latch
@@ -927,8 +927,8 @@ void Fault::shunt_check(Sensors *Sen, BatteryMonitor *Mon, const bool reset)
   }
   else
   {
-    failAssign( vc_fa() || ib_amp_bare() || ib_amp_fa() || IbAmpHardFail->calculate(ib_amp_flt(), IB_HARD_SET, IB_HARD_RESET, Sen->T(), reset_loc), IB_AMP_FA );
-    failAssign( vc_fa() || ib_noa_bare() || ib_noa_fa() || IbNoAmpHardFail->calculate(ib_noa_flt(), IB_HARD_SET, IB_HARD_RESET, Sen->T(), reset_loc), IB_NOA_FA);
+    failAssign( vc_fa() || ib_amp_bare() || ib_amp_fa() || IbAmpHardFail->calculate(ib_amp_flt(), IB_HARD_SET, IB_HARD_RES, Sen->T(), reset_loc), IB_AMP_FA );
+    failAssign( vc_fa() || ib_noa_bare() || ib_noa_fa() || IbNoAmpHardFail->calculate(ib_noa_flt(), IB_HARD_SET, IB_HARD_RES, Sen->T(), reset_loc), IB_NOA_FA);
   }
 }
 
@@ -944,7 +944,7 @@ void Fault::tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, con
   {
     faultAssign( ((Sen->Tb_model_filt()<=_tb_min) || (Sen->Tb_model_filt()>=_tb_max)) &&
                  !ap.disab_tb_fa(), TB_FLT);
-    failAssign( tb_fa() || TbHardFail->calculate(tb_flt(), TB_HARD_SET, TB_HARD_RESET, Sen->T_temp(), reset_loc), TB_FA);
+    failAssign( tb_fa() || TbHardFail->calculate(tb_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T_temp(), reset_loc), TB_FA);
   }
   else if ( ap.disab_tb_fa() )
   {
@@ -953,7 +953,7 @@ void Fault::tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, con
   else
   {
     faultAssign( (Sen->Tb_hdwe()<=_tb_min) || (Sen->Tb_hdwe()>=_tb_max), TB_FLT);
-    failAssign( tb_fa() || TbHardFail->calculate(tb_flt(), TB_HARD_SET, TB_HARD_RESET, Sen->T_temp(), reset_loc), TB_FA);
+    failAssign( tb_fa() || TbHardFail->calculate(tb_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T_temp(), reset_loc), TB_FA);
   }
 }
 
@@ -970,7 +970,7 @@ void Fault::tb_stale(const bool reset, Sensors *Sen)
   else
   {
     faultAssign( Sen->SensorTb->tb_stale_flt(), TB_FLT );
-    failAssign( TbStaleFail->calculate(tb_flt(), TB_STALE_SET*ap.tb_stale_time_slr(), TB_STALE_RESET*ap.tb_stale_time_slr(),
+    failAssign( TbStaleFail->calculate(tb_flt(), TB_STALE_SET*ap.tb_stale_time_slr(), TB_STALE_RES*ap.tb_stale_time_slr(),
       Sen->T_temp(), reset_loc), TB_FA );
   }
 }
@@ -991,7 +991,7 @@ void Fault::vb_check(Sensors *Sen, BatteryMonitor *Mon, const float _vb_min, con
   else
   {
     faultAssign( (Sen->vb_hdwe()<=_vb_min && Sen->ib_hdwe()*ap.nP()>IB_MIN_UP) || (Sen->vb_hdwe()>=_vb_max), VB_FLT);
-    failAssign( vb_fa_lt() || VbHardFail->calculate(vb_flt(), VB_HARD_SET, VB_HARD_RESET, Sen->T(), reset_loc), VB_FA_LT);
+    failAssign( vb_fa_lt() || VbHardFail->calculate(vb_flt(), VB_HARD_SET, VB_HARD_RES, Sen->T(), reset_loc), VB_FA_LT);
   }
 }
 void Fault::vc_check(Sensors *Sen, BatteryMonitor *Mon, const float _vc_min, const float _vc_max, const bool reset)
@@ -1009,7 +1009,7 @@ void Fault::vc_check(Sensors *Sen, BatteryMonitor *Mon, const float _vc_min, con
   else
   {
     faultAssign( ( ((Sen->Vc()<=_vc_min) || (Sen->Vc()>=_vc_max)) && !reset_loc ), VC_FLT);
-    failAssign( vc_fa() || VcHardFail->calculate(vc_flt(), VC_HARD_SET, VC_HARD_RESET, Sen->T(), reset_loc), VC_FA);
+    failAssign( vc_fa() || VcHardFail->calculate(vc_flt(), VC_HARD_SET, VC_HARD_RES, Sen->T(), reset_loc), VC_FA);
   }
 }
 
@@ -1026,10 +1026,10 @@ void Fault::wrap_scalars(BatteryMonitor *Mon)
     ewsat_slr_ = 1.;
     ewmin_slr_ = WRAP_SOC_LO_SLR;
   }
-  else if ( Mon->voc_soc()>(Mon->vsat()-WRAP_HI_SAT_MARG) ||
-          ( Mon->voc_stat()>(Mon->vsat()-WRAP_HI_SAT_MARG) && Mon->C_rate()>WRAP_MOD_C_RATE && Mon->soc()>WRAP_SOC_MOD_OFF) ) // Use voc_stat to get some anticipation
+  else if ( Mon->voc_soc()>(Mon->vsat()-WRAP_HI_SETAT_MARG) ||
+          ( Mon->voc_stat()>(Mon->vsat()-WRAP_HI_SETAT_MARG) && Mon->C_rate()>WRAP_MOD_C_RATE && Mon->soc()>WRAP_SOC_MOD_OFF) ) // Use voc_stat to get some anticipation
   {
-    ewsat_slr_ = WRAP_HI_SAT_SLR;
+    ewsat_slr_ = WRAP_HI_SETAT_SLR;
     ewmin_slr_ = 1.;
   }
   else

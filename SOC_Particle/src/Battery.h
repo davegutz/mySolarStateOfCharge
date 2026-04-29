@@ -44,7 +44,7 @@ const float VB_DC_DC = 13.5;      // DC-DC charger estimated voltage, V (13.5 < 
   #define EKF_CONV        1.5e-3    // EKF tracking error indicating convergence, V (1.5e-3)
 #endif
 #define EKF_T_CONV      30.       // EKF set convergence test time, sec (30.)
-const float EKF_T_RESET = (EKF_T_CONV/2.); // EKF reset retest time, sec ('up 1, down 2')
+const float EKF_T_RES = (EKF_T_CONV/2.); // EKF reset retest time, sec ('up 1, down 2')
 #ifndef VOC_STAT_FILT  // allow override in config file
   #define VOC_STAT_FILT 120.  // voc_stat_f_ filtering for EKF (120) VF
 #endif

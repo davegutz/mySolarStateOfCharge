@@ -160,7 +160,7 @@ BatteryMonitor::BatteryMonitor(const float dx_voc, const float dy_voc, const flo
     this->Q_ = EKF_Q_SD_NORM*EKF_Q_SD_NORM;
     this->R_ = EKF_R_SD_NORM*EKF_R_SD_NORM;
     SdVb_ = new SlidingDeadband(HDB_VB);  // Noise filter
-    EKF_converged = new TFDelay(false, EKF_T_CONV, EKF_T_RESET, EKF_NOM_DT); // Convergence test debounce.  Initializes false
+    EKF_converged = new TFDelay(false, EKF_T_CONV, EKF_T_RES, EKF_NOM_DT); // Convergence test debounce.  Initializes false
     ice_ = new Iterator("EKF solver");
 }
 BatteryMonitor::~BatteryMonitor() {}
@@ -310,14 +310,14 @@ float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool 
         q_ekf_ = soc_ekf_ * q_capacity_;
         delta_q_ekf_ = q_ekf_ - q_capacity_;
         y_ekf_ = y();  // y = z - hx, residual between measurement and predicted measurement
-        y_ekf_f_ = Yfilt->calculate(y_ekf_, reset_temp, min(dt_ekf_, EKF_T_RESET));
+        y_ekf_f_ = Yfilt->calculate(y_ekf_, reset_temp, min(dt_ekf_, EKF_T_RES));
         y_ekf_f_T_ = Yfilt->T();
         y_ekf_f_tau_ = Yfilt->tau();
         y_ekf_f_state_ = Yfilt->state();
         // EKF convergence.  Audio industry found that detection of quietness requires no more than
         // second order filter of the signal.   Anything more is 'gilding the lily'
         bool conv = abs(y_ekf_f_)<ap.ekf_conv() && !cp.soft_reset && !cp.ekf_reset;  // Initialize false
-        ekf_conv_ = EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RESET, min(dt_ekf_, EKF_T_RESET), cp.soft_reset || cp.ekf_reset);
+        ekf_conv_ = EKF_converged->calculate(conv, EKF_T_CONV, EKF_T_RES, min(dt_ekf_, EKF_T_RES), cp.soft_reset || cp.ekf_reset);
         
         if ( sp.debug()==37 )
             sendTxBuf(String::format("r tbf ib vb voc_stat:%2d %8.4f%8.4f%8.4f%8.4f  H S K y_ekf:%11.6f%7.4f%7.4f%11.7f,   soc soc_ekf y_ekf_f:%11.8f%11.8f%11.7f, C:%2d,\n",
