@@ -1,9 +1,11 @@
 """Compare all run/ver CSV pairs in the temp folder for the version pointed to by the Plink .ini file.
 
 For each *_run.csv / *_ver.csv pair, loads both into pandas, filters time >= 0, and reports
-numeric columns where |run - ver| > tol + rtol*max(|run|, |ver|) — combined absolute/relative
-criterion so large-magnitude signals (e.g. q_capacity ~3.5e5) aren't tripped by tiny absolute
-differences.  Produces a pyplot figure for each pair, with up to 9 subplots per figure.
+numeric columns where |run - ver| > tol + rtol*peak, with `peak` = column-wise max(|run|, |ver|).
+Combined absolute/relative criterion scaled to a signal's full-range magnitude — large-swing
+signals (e.g. q_capacity ~3.5e5) aren't tripped by tiny absolute differences, and quiet
+near-zero transients on a big-swing signal aren't flagged either.  Produces a pyplot figure
+for each pair, with up to 9 subplots per figure.
 
 Usage:
     python CompareRunVer.py [--ini PATH] [--tol FLOAT] [--rtol FLOAT] [--version VERSION]
@@ -79,9 +81,11 @@ def find_pairs(temp_dir, option=''):
 def compare_pair(run_path, ver_path, tol, rtol=1e-3):
     """Return a summary dict for one run/ver pair.
 
-    A sample is flagged when |run - ver| > tol + rtol * max(|run|, |ver|), so the
-    effective tolerance grows with signal magnitude — small absolute differences on
-    large-magnitude signals (e.g. q_capacity ~3.5e5) won't trip an atol of 1e-2.
+    A sample is flagged when |run - ver| > tol + rtol * peak, where `peak` is the
+    column-wise max(|run|, |ver|) across all rows.  Tolerance scales with the
+    signal's full-range magnitude — large-swing signals (e.g. q_capacity ~3.5e5)
+    aren't tripped by tiny absolute differences, and transients near zero on a
+    big-swing signal aren't flagged just because the per-row reference collapses.
     """
     try:
         df_run = pd.read_csv(run_path)
@@ -127,8 +131,10 @@ def compare_pair(run_path, ver_path, tol, rtol=1e-3):
     diffs = []
     for col in numeric_cols:
         delta = (df_run[col] - df_ver[col]).abs()
-        ref = pd.concat([df_run[col].abs(), df_ver[col].abs()], axis=1).max(axis=1)
-        threshold = tol + rtol * ref
+        peak_run = df_run[col].abs().max()
+        peak_ver = df_ver[col].abs().max()
+        peak = max(peak_run if pd.notna(peak_run) else 0., peak_ver if pd.notna(peak_ver) else 0.)
+        threshold = tol + rtol * peak
         bad = delta[delta > threshold]
         if bad.empty:
             continue
@@ -171,7 +177,7 @@ def report(results, tol, rtol=1e-3, option='', macro=''):
             continue
         run_only = r.get('run_only', [])
         if not r['diffs']:
-            print(f"  {pair_label}  — no differences > tol={tol} + rtol={rtol}*|val|  ({r['n_rows']} rows)")
+            print(f"  {pair_label}  — no differences > tol={tol} + rtol={rtol}*peak  ({r['n_rows']} rows)")
             if run_only:
                 print(f"    run_only ({len(run_only)}): {', '.join(run_only)}")
             print()
@@ -281,7 +287,8 @@ def main():
     parser.add_argument('--ini', default=None, help='path to GUI_PlinkSOC .ini file (auto-detected by default)')
     parser.add_argument('--tol', type=float, default=1e-3, help='absolute difference tolerance (default 1e-3)')
     parser.add_argument('--rtol', type=float, default=1e-3,
-                        help='relative tolerance: flag if |run-ver| > tol + rtol*max(|run|,|ver|) (default 1e-3, ~3 sig digits)')
+                        help='relative tolerance: flag if |run-ver| > tol + rtol*peak, peak=column-wise max(|run|,|ver|) '
+                             '(default 1e-3, ~3 sig digits)')
     parser.add_argument('--version', default=None, help='override version string from .ini')
     args = parser.parse_args()
 
