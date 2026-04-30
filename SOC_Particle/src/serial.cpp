@@ -375,7 +375,7 @@ void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon
 
         sprintf(pr.buff, "  %d,%d,%8.6f,%8.6f,%8.6f, %d,%8.6f,  %d,%8.6f,%8.6f, %d,%8.6f,  %d, %d, ",
             Sen->Flt->ib_sel_stat(), Sen->Flt->ib_choice(), Sen->Vc_hdwe(), Sen->ib_hdwe(), Sim->ib_s(), sp.mod_ib(), Sen->ib(),
-            Sen->Flt->vb_sel_stat(), Sen->vb_hdwe(), Sen->vb_model(), sp.mod_vb(), Sen->vb(),
+            Sen->Flt->vb_sel_stat(), Sen->vb_hdwe(), Sen->Sim->vb(), sp.mod_vb(), Sen->vb(),
             sp.mod_tb(), Sen->Flt->tb_fa());
       Serial.printf("%s", pr.buff);
 

@@ -226,8 +226,8 @@ protected:
   LagTustin *WrapErrFilt_;  // Noise filter for voltage wrap
   TFDelay *WrapHi_;         // Wrap test persistence
   TFDelay *WrapLo_;         // Wrap test persistence
-  float wrap_hi_amp_;       // Wrap high amplitude, V
-  float wrap_lo_amp_;       // Wrap low amplitude, V
+  float wrap_hi_amp_;       // Wrap high current, A
+  float wrap_lo_amp_;       // Wrap low current, A
   double wrap_trim_gain_;   // Trim gain, r/s
 };
 

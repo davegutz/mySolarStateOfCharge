@@ -846,7 +846,7 @@ def save_clean_file(mon_ver, csv_file, unit_key):
             s += "{:7.4f},".format(mon_ver.time[i] + mon_ver.time_run_start)
             s += "{:7.4f},".format(mon_ver.dt[i])
             s += "{:1.0f},".format(mon_ver.sat[i])
-            s += "{:1.0f},".format(mon_ver.sel[i])
+            # s += "{:1.0f},".format(mon_ver.sel[i])
             s += "{:1.0f},".format(mon_ver.mod_data[i])
             s += "{:7.6f},".format(mon_ver.Tb[i])
             s += "{:7.6f},".format(mon_ver.Tb_rap[i])
