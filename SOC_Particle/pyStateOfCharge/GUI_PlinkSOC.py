@@ -1310,15 +1310,9 @@ def grab_auto():
         # Custom wide dialog
         dialog = tk.Toplevel(master)
         dialog.title("Automate Configurations?")
-        dialog.geometry("1200x400") 
+        dialog.geometry("1200x400")
         dialog.grab_set()
         dialog.transient(master)
-
-        msg_label = tk.Label(dialog, text=all_lines_text, justify='left', font=('Courier', 10))
-        msg_label.pack(padx=20, pady=20, fill='both', expand=True)
-
-        prompt_label = tk.Label(dialog, text="Do you want to run these configurations automatically?", font=('Arial', 11, 'bold'))
-        prompt_label.pack(pady=10)
 
         result = tk.BooleanVar(value=False)
 
@@ -1330,10 +1324,19 @@ def grab_auto():
             result.set(False)
             dialog.destroy()
 
-        btn_frame = tk.Frame(dialog)
-        btn_frame.pack(pady=20)
+        # Prompt + Yes/No at the top so they stay visible even when the config list is tall.
+        top_frame = tk.Frame(dialog)
+        top_frame.pack(side='top', fill='x', padx=20, pady=10)
+        prompt_label = tk.Label(top_frame, text="Do you want to run these configurations automatically?",
+                                font=('Arial', 11, 'bold'))
+        prompt_label.pack(side='left')
+        btn_frame = tk.Frame(top_frame)
+        btn_frame.pack(side='right')
         tk.Button(btn_frame, text="Yes", width=10, command=on_yes).pack(side='left', padx=10)
         tk.Button(btn_frame, text="No", width=10, command=on_no).pack(side='left', padx=10)
+
+        msg_label = tk.Label(dialog, text=all_lines_text, justify='left', font=('Courier', 10))
+        msg_label.pack(side='top', padx=20, pady=20, fill='both', expand=True)
 
         master.wait_window(dialog)
         
