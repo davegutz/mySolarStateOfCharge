@@ -97,8 +97,8 @@ def compare_pair(run_path, ver_path, tol, rtol=1e-3):
     if 'time' not in df_run.columns or 'time' not in df_ver.columns:
         return {'file': run_path.name, 'ver_file': ver_path.name, 'error': 'no "time" column', 'diffs': []}
 
-    df_run = df_run[pd.to_numeric(df_run['time'], errors='coerce') > 0].copy()
-    df_ver = df_ver[pd.to_numeric(df_ver['time'], errors='coerce') > 0].copy()
+    df_run = df_run[pd.to_numeric(df_run['time'], errors='coerce') >= 0].copy()
+    df_ver = df_ver[pd.to_numeric(df_ver['time'], errors='coerce') >= 0].copy()
 
     # clip to before the first reset event in ver that happens later in the run (time > 1 s).
     # Skip the clip if it would leave fewer than 5 rows (degenerate / old-format files).
@@ -118,7 +118,7 @@ def compare_pair(run_path, ver_path, tol, rtol=1e-3):
     n = min(len(df_run), len(df_ver))
     if n == 0:
         return {'file': run_path.name, 'ver_file': ver_path.name,
-                'error': 'no rows with time > 0 before reset', 'diffs': []}
+                'error': 'no rows with time >= 0 before reset', 'diffs': []}
     df_run = df_run.iloc[:n].reset_index(drop=True)
     df_ver = df_ver.iloc[:n].reset_index(drop=True)
 

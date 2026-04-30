@@ -202,10 +202,14 @@ float Coulombs::count_coulombs(Sensors *Sen, const bool reset_temp, const float 
 
     // Integration.   Can go to negative
     q_capacity_ = calculate_capacity(tb_f_);
-    if ( !reset_temp && !cp.inf_reset )
+
+    // soc integrator: gated only by reset_temp.  cp.inf_reset (HR) MUST NOT touch *sp_delta_q_,
+    // otherwise HR would slam soc to 1.0 — see commit history.  Per-window pos/neg/time accumulators
+    // are stepped here too; if cp.inf_reset is also asserted this cycle, the inf-counter block
+    // below will zero them right after, so the net effect is correct.
+    if ( !reset_temp )
     {
       *sp_delta_q_ = max(min(*sp_delta_q_ + d_delta_q_, 0.0), -q_capacity_*1.5);
-      delta_q_inf_ += d_delta_q_inf;
       if ( d_delta_q_ > 0. )
       {
         delta_q_pos_ += d_delta_q_;
@@ -216,19 +220,35 @@ float Coulombs::count_coulombs(Sensors *Sen, const bool reset_temp, const float 
         delta_q_neg_ += d_delta_q_;
         time_neg_ += dt_;
       }
-      delta_q_abs_ += abs(d_delta_q_inf) / 2.;
     }
-    else
+
+    // History (inf-counter) family: cp.inf_reset (HR) zeroes them so soc_inf -> 1.0; reset_temp
+    // rebaselines them to current *sp_delta_q_.  Neither path disturbs *sp_delta_q_ itself.
+    if ( cp.inf_reset )
     {
-      if ( cp.inf_reset ) *sp_delta_q_ = 0.;
+      delta_q_inf_ = 0.;
+      delta_q_abs_ = 0.;
+      delta_q_pos_ = 0.;
+      delta_q_neg_ = 0.;
+      time_pos_ = 0.;
+      time_neg_ = 0.;
+      cp.inf_reset = false;
+    }
+    else if ( reset_temp )
+    {
       delta_q_abs_ = *sp_delta_q_ / 2.;
       delta_q_inf_ = *sp_delta_q_;
       delta_q_neg_ = *sp_delta_q_;
       delta_q_pos_ = 0.;
-      cp.inf_reset = false;
-      time_neg_ = 0.;
       time_pos_ = 0.;
+      time_neg_ = 0.;
     }
+    else
+    {
+      delta_q_inf_ += d_delta_q_inf;
+      delta_q_abs_ += abs(d_delta_q_inf) / 2.;
+    }
+
     q_ = q_capacity_ + *sp_delta_q_;
     q_inf_ = q_capacity_ + delta_q_inf_;
 
