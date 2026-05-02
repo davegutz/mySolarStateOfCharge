@@ -342,7 +342,7 @@ void print_signal_sel_header(void)
 {
   Serial.printf("unit_s, c_time_sel, dt_sel, reset, resaf, user_sel, cc_dif, ib_amp_hdwe, ib_noa_hdwe, ib_amp_model, ib_noa_model, ib_model, kfres, vovcm, vovcn, ib_amp_hdwe_kf, ib_noa_hdwe_kf, ib_diff, ib_diff_f, ");
   Serial.printf("  vc_sum, voc_soc, e_wrap, e_wrap_filt, ib_dyn_m, dv_dyn_m, e_wrap_m, e_wrap_m_reset, e_wrap_m_filt, e_wrap_m_trim, ib_dyn_n, dv_dyn_n, e_wrap_n, e_wrap_n_filt, e_wrap_n_trim, ");
-  Serial.printf("  ib_sel_stat, ib_choice, vc_h,ib_h, ib_s, mib,ib, vb_sel, vb_hdwe, vb_s, mvb,vb,  mtb, Tb_fa, ");
+  Serial.printf("  ib_sel_stat, ib_choice, vc_h,ib_h, ib_s, mib,ib, vb_sel, vb_hdwe, vb_s, mvb,vb,  mtb, ");
   Serial.printf("  ib_rate, ib_quiet, ib_really_quiet, tb_sel, ccd_thr, ewmhi_thr, ewmlo_thr, ewnhi_thr, ewnlo_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf,y_ekf_f,ib_dec, ");
   Serial.printf("  ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rstate_m, ib_dyn_lstate_m, ");
   Serial.printf("  ib_dyn_T_n, ib_dyn_tau_n, ib_dyn_rstate_n, ib_dyn_lstate_n, ");
@@ -373,10 +373,10 @@ void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon
           Sen->Flt->LoopIbNoa->e_wrap_trim());
       Serial.printf("%s", pr.buff);
 
-        sprintf(pr.buff, "  %d,%d,%8.6f,%8.6f,%8.6f, %d,%8.6f,  %d,%8.6f,%8.6f, %d,%8.6f,  %d, %d, ",
+        sprintf(pr.buff, "  %d,%d,%8.6f,%8.6f,%8.6f, %d,%8.6f,  %d,%8.6f,%8.6f, %d,%8.6f,  %d, ",
             Sen->Flt->ib_sel_stat(), Sen->Flt->ib_choice(), Sen->Vc_hdwe(), Sen->ib_hdwe(), Sim->ib_s(), sp.mod_ib(), Sen->ib(),
             Sen->Flt->vb_sel_stat(), Sen->vb_hdwe(), Sen->Sim->vb(), sp.mod_vb(), Sen->vb(),
-            sp.mod_tb(), Sen->Flt->tb_fa());
+            sp.mod_tb());
       Serial.printf("%s", pr.buff);
 
       sprintf(pr.buff, "%10.6f, %10.6f, %d, %d, %9.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%d,%d,%8.6f,%8.6f,%d,",
@@ -471,7 +471,7 @@ void print_sim_serial(const bool initializing_all, const bool reset_temp, Sensor
 // print temperatures for data collection
 void print_temp_header(void)
 {
- Serial.printf("unit_t, c_time_t, Tt, Tb_hdwe, Tb_model, Tb, reset_temp_t,  Tb_hdwe_filt, Tb_model_filt,Tb_f,  Tb_hdwe_filt_rate, Tb_model_filt_rate, Tb_f_rate,\n");
+ Serial.printf("unit_t, c_time_t, Tt, Tb_hdwe, Tb_model, Tb, reset_temp_t,  Tb_hdwe_filt, Tb_model_filt,Tb_f,  Tb_hdwe_filt_rate, Tb_model_filt_rate, Tb_f_rate, tb_fa, \n");
 }
 void print_temp_serial(const bool reset, Sensors *Sen)
 {
@@ -479,9 +479,9 @@ void print_temp_serial(const bool reset, Sensors *Sen)
   {
     // if ( Sen->T_temp() == 0. ) return;
     double cTime = double(Sen->now_temp())/1000.;
-    Serial.printf("temp_unit, %13.4f, %8.4f, %11.8f, %11.8f, %11.8f, %d, %11.8f, %11.8f, %11.8f, %11.8f, %11.8f,  %11.8f,\n",
+    Serial.printf("temp_unit, %13.4f, %8.4f, %11.8f, %11.8f, %11.8f, %d, %11.8f, %11.8f, %11.8f, %11.8f, %11.8f,  %11.8f, %d,\n",
       cTime, Sen->T_temp(), Sen->Tb_hdwe(), Sen->Tb_model(), Sen->Tb(), reset, Sen->Tb_hdwe_filt(), Sen->Tb_model_filt(), Sen->Tb_f(), Sen->Tb_hdwe_filt_rate(),
-      Sen->Tb_model_filt_rate(), Sen->Tb_f_rate());
+      Sen->Tb_model_filt_rate(), Sen->Tb_f_rate(), Sen->Flt->tb_fa());
     // Log.info("    print_temp_serial cTime,%9.3f,", cTime);
   }
 }

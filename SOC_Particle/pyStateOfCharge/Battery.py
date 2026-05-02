@@ -491,6 +491,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.y_ekf_f_T = 0.
         self.y_ekf_f_tau = 0.
         self.y_ekf_f_state = 0.
+        self.tb_fa = False
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
