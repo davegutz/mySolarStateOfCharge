@@ -76,6 +76,7 @@ class BatteryConstants:
     MXEPS = 1e-6
     NOA_WRAP_TRIM_GAIN = 10.0
     NOM_UNIT_CAP = 108.4
+    NOMINAL_TB = 15.
     NOMINAL_VB = 13.2
     NP = 1
     NS = 1

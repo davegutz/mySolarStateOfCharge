@@ -302,9 +302,7 @@ class Sensors:
         self.x_prior_init = self.x_init
         self.soc_ekf_init = self.soc_init
         self.z_init = self.mon_run.z[0]
-
         self.reset_kf = True
-
         self.VoVcm = 0.
         self.VoVcm_f = 0.
         self.kf_v_m = 0.
@@ -313,6 +311,7 @@ class Sensors:
         self.kf_v_n = 0.
         self.iscn = 0.
         self.iscn_f = 0.
+        self.Tb_model_filt_past = self.sim_run.Tb_f_s[0]
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -361,22 +360,49 @@ class Sensors:
             mon.Tb_rap = self.Tb_past
             mon.Tb_f_rap = self.Tb_f_past
             mon.Tb_f_rate_rap = self.Tb_f_rate_past
-        sim.Tb_f = self.Tb_f_past  # same  modeling and sensed
+        sim.Tb_f = self.Tb_f_past  # same modeling and sensed
 
         return mon, sim
 
-    def calc_temp_pass_2(self, mon_run, mon, Battery_, i_temp, rp):
-        if hasattr(mon_run, 'Tb_hdwe_filt'):
-            mon.Tb_hdwe_filt = \
-                self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_run.Tb_hdwe_filt[i_temp], mon.reset_temp,
-                                                      mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
-                                                      rmin=-Battery_.T_RLIM)
+    def calc_temp_pass_2(self, mon_run, mon, Battery_, i_temp, rp, i_main=None):
+        self.temp_load_and_filter(mon_run, mon, Battery_, i_temp)
+        self.select_temp(mon_run, mon, Battery_, i_temp, rp, i_main)
+        self.assign_tb(mon.Tb, mon.Tb_f, mon.Tb_f_rate)
+        return mon
+
+    def select_temp(self, mon_run, mon, Battery_, i_temp, rp, i_main=None):
+        # select_temp
+        i = i_temp if i_main is None else i_main
+        tb_fa = bool(mon_run.tb_fa[i]) if hasattr(mon_run, 'tb_fa') else False
+        if rp.modeling_Tb:
+            if tb_fa:
+                mon.Tb = Battery.NOMINAL_TB
+                mon.Tb_f = Battery.NOMINAL_TB
+                mon.Tb_f_rate = 0.
+            else:
+                mon.Tb = mon.Tb_model
+                mon.Tb_f = mon.Tb_model_filt
+                mon.Tb_f_rate = mon.Tb_model_filt_rate
+            mon.Tb_rstate = self.TbModelFilt.rstate
+            mon.Tb_state = self.TbModelFilt.state
         else:
-            mon.Tb_hdwe_filt = \
-                self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon.Tb_hdwe,
-                                                      mon.reset_temp,
-                                                      mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
-                                                      rmin=-Battery_.T_RLIM)
+            if tb_fa:
+                mon.Tb = Battery.NOMINAL_TB
+                mon.Tb_f = Battery.NOMINAL_TB
+                mon.Tb_f_rate = 0.
+            else:
+                mon.Tb = mon.Tb_hdwe
+                mon.Tb_f = mon.Tb_hdwe_filt
+                mon.Tb_f_rate = mon.Tb_hdwe_filt_rate
+            mon.Tb_rstate = self.TbSenseFilt.rstate
+            mon.Tb_state = self.TbSenseFilt.state
+        # Final assignments
+        if not mon.reset_temp:
+            mon.Tb_rap = self.Tb_past
+            mon.Tb_f_rate = mon.Tb_model_filt_rate
+
+    def temp_load_and_filter(self, mon_run, mon, Battery_, i_temp):
+        # temp_load_and_filter
         if hasattr(mon_run, 'Tb_model_filt'):
             mon.Tb_model_filt = self.Tb_model_filt_fut
             mon.Tb_model_filt_rate = self.Tb_model_filt_rate_fut
@@ -388,31 +414,23 @@ class Sensors:
             self.Tb_model_filt_rate_fut = self.TbModelFilt.rate
         else:
             mon.Tb_model_filt = \
-                self.TbModelFilt.calculate_tau_seeded(mon.Tb_model, mon.Tb_model,
-                                                      mon.reset_temp,
+                self.TbModelFilt.calculate_tau_seeded(mon.Tb_model, mon.Tb_model, mon.reset_temp,
                                                       mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
             mon.Tb_model_filt_rate = self.TbModelFilt.rate
 
+        if hasattr(mon_run, 'Tb_hdwe_filt'):
+            mon.Tb_hdwe_filt = \
+                self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_run.Tb_hdwe_filt[i_temp], mon.reset_temp,
+                                                      mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
+                                                      rmin=-Battery_.T_RLIM)
+        else:
+            mon.Tb_hdwe_filt = \
+                self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon.Tb_hdwe, mon.reset_temp,
+                                                      mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
+                                                      rmin=-Battery_.T_RLIM)
 
         mon.Tb_hdwe_filt_rate = self.TbSenseFilt.rate
-        if not mon.reset_temp:
-            mon.Tb_rap = self.Tb_past
-            mon.Tb_f_rate = mon.Tb_model_filt_rate
-        if rp.modeling_Tb:
-            mon.Tb = mon.Tb_model
-            mon.Tb_f = mon.Tb_model_filt
-            mon.Tb_f_rate = mon.Tb_model_filt_rate
-            mon.Tb_rstate = self.TbModelFilt.rstate
-            mon.Tb_state = self.TbModelFilt.state
-        else:
-            mon.Tb = mon.Tb_hdwe
-            mon.Tb_f = mon.Tb_hdwe_filt
-            mon.Tb_f_rate = mon.Tb_hdwe_filt_rate
-            mon.Tb_rstate = self.TbSenseFilt.rstate
-            mon.Tb_state = self.TbSenseFilt.state
-        self.assign_tb(mon.Tb, mon.Tb_f, mon.Tb_f_rate)
-        return mon
 
     def update_ekf(self, i_ekf):
         self.z_init = self.z[i_ekf]

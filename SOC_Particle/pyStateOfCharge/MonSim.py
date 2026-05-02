@@ -227,7 +227,7 @@ def replicate(OPT: UserOptions):
             mon.sat = OPT.mon_run.sat[G.i]
 
         if calc_temp:
-            mon = SN.calc_temp_pass_2(OPT.mon_run, mon, Battery, i_temp, rp)
+            mon = SN.calc_temp_pass_2(OPT.mon_run, mon, Battery, i_temp, rp, G.i)
 
         # Models
         SN.update_ib_vb(G.i)

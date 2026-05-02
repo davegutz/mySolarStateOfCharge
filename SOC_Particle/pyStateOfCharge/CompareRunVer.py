@@ -15,6 +15,7 @@ import argparse
 import math
 import os
 import platform
+import re
 import sys
 from configparser import ConfigParser
 from pathlib import Path, PurePosixPath
@@ -22,6 +23,52 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from PlotKiller import show_killer
 from local_paths import version_from_data_file, local_paths
+
+# Default EKF frame-rate multiplier — must match firmware EKF_EFRAME_MULT in src/Battery.h
+EKF_DEFAULT_FRAME_MULT = 20
+
+# Column names suggesting EKF outputs/state (soc_ekf, voc_ekf, y_ekf, kfres, kf_v_m, *_kf, ekf_reset, flt_ekf, ...)
+_EKF_COL_RE = re.compile(r'(?:^|_)(?:ekf|kf|kfres|kfres_1)(?:_|$)', re.IGNORECASE)
+
+# Column names containing "Tb" (temperature) — skipped whenever reset_temp is True
+_TB_COL_RE = re.compile(r'Tb', re.IGNORECASE)
+
+
+def _extract_ed(macro_str):
+    """Return int ED from a macro fragment like 'Dr400;ED1;DP1;', or None if absent."""
+    if not macro_str:
+        return None
+    m = re.search(r'ED(\d+)', macro_str)
+    return int(m.group(1)) if m else None
+
+
+def _test_name_from_run_filename(run_name):
+    """'rapidTweakRegression_pro1a_bb_..._run.csv' -> 'rapidTweakRegression'."""
+    stem = run_name[:-len('_run.csv')] if run_name.endswith('_run.csv') else run_name
+    return stem.split('_', 1)[0]
+
+
+def _get_ed_for_case(test_name):
+    """Look up test_name in GUI_common.lookup, parse ED from its macro, default to EKF_DEFAULT_FRAME_MULT."""
+    if not test_name:
+        return EKF_DEFAULT_FRAME_MULT
+    try:
+        from GUI_common import lookup
+    except Exception:
+        return EKF_DEFAULT_FRAME_MULT
+    entry = lookup.get(test_name)
+    if not entry or len(entry) < 2:
+        return EKF_DEFAULT_FRAME_MULT
+    ed = _extract_ed(entry[1])
+    return ed if ed is not None else EKF_DEFAULT_FRAME_MULT
+
+
+def _is_ekf_column(name):
+    return bool(_EKF_COL_RE.search(name))
+
+
+def _is_tb_column(name):
+    return bool(_TB_COL_RE.search(name))
 
 # ── locate the .ini file ──────────────────────────────────────────────────────
 
@@ -78,7 +125,7 @@ def find_pairs(temp_dir, option=''):
 
 # ── compare a single pair ─────────────────────────────────────────────────────
 
-def compare_pair(run_path, ver_path, tol, rtol=1e-3):
+def compare_pair(run_path, ver_path, tol, rtol=1e-3, ed=None):
     """Return a summary dict for one run/ver pair.
 
     A sample is flagged when |run - ver| > tol + rtol * peak, where `peak` is the
@@ -86,6 +133,10 @@ def compare_pair(run_path, ver_path, tol, rtol=1e-3):
     signal's full-range magnitude — large-swing signals (e.g. q_capacity ~3.5e5)
     aren't tripped by tiny absolute differences, and transients near zero on a
     big-swing signal aren't flagged just because the per-row reference collapses.
+
+    `ed` is the EKF frame-rate multiplier (talk param "ED").  When ed > 1, the EKF
+    needs ~ed*dt to initialize, so EKF-related columns are not flagged before that.
+    If None, ed is inferred from the run filename via GUI_common.lookup.
     """
     try:
         df_run = pd.read_csv(run_path)
@@ -128,9 +179,30 @@ def compare_pair(run_path, ver_path, tol, rtol=1e-3):
                     if pd.api.types.is_numeric_dtype(df_run[c]) and pd.api.types.is_numeric_dtype(df_ver[c])
                     and not pd.api.types.is_bool_dtype(df_run[c]) and not pd.api.types.is_bool_dtype(df_ver[c])]
 
+    if ed is None:
+        ed = _get_ed_for_case(_test_name_from_run_filename(run_path.name))
+    dt_med = float(df_run['time'].diff().median()) if len(df_run) > 1 else 0.0
+    if not (dt_med > 0):
+        dt_med = 0.0
+    ekf_skip_until = (ed * dt_med) if (ed and ed > 1) else 0.0
+
+    # Build a boolean mask for rows where reset_temp is active (True/1), used to suppress Tb checks.
+    reset_temp_mask = None
+    for _rt_col in ('reset_temp', 'rt'):
+        if _rt_col in df_run.columns:
+            reset_temp_mask = df_run[_rt_col].astype(float).astype(bool)
+            break
+        if _rt_col in df_ver.columns:
+            reset_temp_mask = df_ver[_rt_col].astype(float).astype(bool)
+            break
+
     diffs = []
     for col in numeric_cols:
         delta = (df_run[col] - df_ver[col]).abs()
+        if ekf_skip_until > 0.0 and _is_ekf_column(col):
+            delta = delta.where(df_run['time'] >= ekf_skip_until, 0.0)
+        if reset_temp_mask is not None and _is_tb_column(col):
+            delta = delta.where(~reset_temp_mask, 0.0)
         peak_run = df_run[col].abs().max()
         peak_ver = df_ver[col].abs().max()
         peak = max(peak_run if pd.notna(peak_run) else 0., peak_ver if pd.notna(peak_ver) else 0.)
@@ -156,6 +228,8 @@ def compare_pair(run_path, ver_path, tol, rtol=1e-3):
         'run_only': run_only_cols,
         'df_run': df_run,
         'df_ver': df_ver,
+        'ed': ed,
+        'ekf_skip_until': ekf_skip_until,
     }
 
 
@@ -176,13 +250,16 @@ def report(results, tol, rtol=1e-3, option='', macro=''):
             print(f"    ERROR: {r['error']}\n")
             continue
         run_only = r.get('run_only', [])
+        ed_note = ''
+        if r.get('ekf_skip_until', 0.0) > 0.0:
+            ed_note = f"  [EKF init skip: t<{r['ekf_skip_until']:.3f}s, ED={r.get('ed')}]"
         if not r['diffs']:
-            print(f"  {pair_label}  — no differences > tol={tol} + rtol={rtol}*peak  ({r['n_rows']} rows)")
+            print(f"  {pair_label}  — no differences > tol={tol} + rtol={rtol}*peak  ({r['n_rows']} rows){ed_note}")
             if run_only:
                 print(f"    run_only ({len(run_only)}): {', '.join(run_only)}")
             print()
             continue
-        print(f"  {pair_label}  ({r['n_rows']} rows, {len(r['diffs'])} differing param(s))")
+        print(f"  {pair_label}  ({r['n_rows']} rows, {len(r['diffs'])} differing param(s)){ed_note}")
         if run_only:
             print(f"    Parameters in _run only ({len(run_only)}): {', '.join(run_only)}")
         print(f"    {'param':<30}  {'n_bad':>6}  {'max|d|':>12}  {'mean|d|':>12}  {'first_t':>10}")

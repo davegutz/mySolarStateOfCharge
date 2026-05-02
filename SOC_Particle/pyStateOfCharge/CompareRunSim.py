@@ -110,7 +110,7 @@ def shift_time(obj, n_steps, fields=None):
 def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw=0.,  use_mon_soc_=False,
                     verbose=False, scale_batt=1., slr_hys_sim=1., request_history=5, init_time=None,
                     time_shift=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
-                    fig_list=None, show_killer_=True, hardcopy=False):
+                    fig_list=None, show_killer_=True, hardcopy=False, compare_run_ver=True):
 
     print(f"\n compare_run_sim: \
     \n{data_file=} \
@@ -128,6 +128,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
     \n{terse=} \
     \n{hardcopy=} \
     \n{mon_str=} \
+    \n{compare_run_ver=} \
     \n")
 
     if fig_files is None:
@@ -264,30 +265,31 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
             threading.Thread(target=_assemble, daemon=True).start()
 
         # Append run-vs-ver comparison figures for this case so PlotKiller covers all plots
-        try:
-            from CompareRunVer import temp_folder, find_pairs, compare_pair, \
-                report as ver_report, plot_diffs as ver_plot_diffs
-            _ver_version = version_from_data_file(data_file) if data_file else None
-            _case_stem = Path(data_file_clean).stem if data_file_clean else None
-            if _ver_version and _case_stem:
-                _ver_temp = temp_folder(_ver_version)
-                if Path(_ver_temp).is_dir():
-                    _ver_pairs = find_pairs(_ver_temp)
-                    _ver_pairs = [(r, v) for r, v in _ver_pairs
-                                  if ('_mon_run' in r.name or '_sim_run' in r.name)
-                                  and r.name.startswith(_case_stem)]
-                    if _ver_pairs:
-                        _tol = 1e-3
-                        _rtol = 1e-3  # ~3 significant digits — keeps q_capacity-class large-magnitude signals from tripping
-                        _ver_results = [compare_pair(r, v, _tol, _rtol) for r, v in _ver_pairs]
-                        ver_report(_ver_results, _tol, _rtol)
-                        _ver_ret = ver_plot_diffs(_ver_results, data_file=data_file, show_killer_=False)
-                        if _ver_ret:
-                            _ver_figs, _ver_files, _ = _ver_ret
-                            fig_list.extend(_ver_figs)
-                            fig_files.extend(_ver_files)
-        except Exception as _ver_e:
-            print(f"compare_run_ver step: {_ver_e}")
+        if compare_run_ver:
+            try:
+                from CompareRunVer import temp_folder, find_pairs, compare_pair, \
+                    report as ver_report, plot_diffs as ver_plot_diffs
+                _ver_version = version_from_data_file(data_file) if data_file else None
+                _case_stem = Path(data_file_clean).stem if data_file_clean else None
+                if _ver_version and _case_stem:
+                    _ver_temp = temp_folder(_ver_version)
+                    if Path(_ver_temp).is_dir():
+                        _ver_pairs = find_pairs(_ver_temp)
+                        _ver_pairs = [(r, v) for r, v in _ver_pairs
+                                      if ('_mon_run' in r.name or '_sim_run' in r.name)
+                                      and r.name.startswith(_case_stem)]
+                        if _ver_pairs:
+                            _tol = 1e-3
+                            _rtol = 1e-3  # ~3 significant digits — keeps q_capacity-class large-magnitude signals from tripping
+                            _ver_results = [compare_pair(r, v, _tol, _rtol) for r, v in _ver_pairs]
+                            ver_report(_ver_results, _tol, _rtol)
+                            _ver_ret = ver_plot_diffs(_ver_results, data_file=data_file, show_killer_=False)
+                            if _ver_ret:
+                                _ver_figs, _ver_files, _ = _ver_ret
+                                fig_list.extend(_ver_figs)
+                                fig_files.extend(_ver_files)
+            except Exception as _ver_e:
+                print(f"compare_run_ver step: {_ver_e}")
 
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         if show_killer_:
@@ -307,26 +309,27 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     # Cut-pasted from GUI_TestSOC Run window
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/pulseSoft_soc3p2_hi_lo_bb.csv'
+    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/tLoFailHdwe_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = None
-    plots = True
+    plots = False
     use_mon_soc_ = False
     verbose = False
     scale_batt = 1.0
     slr_hys_sim = 1.0
-    request_history = 5
+    request_history = 4
     init_time = None
     time_shift = None
     strict_overplot = True
     terse = True
     hardcopy = True
     mon_str = ''
+    compare_run_ver = False
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,
                     use_mon_soc_=use_mon_soc_, verbose=verbose, scale_batt=scale_batt, slr_hys_sim=slr_hys_sim,
                     request_history=request_history, init_time=init_time, time_shift=time_shift,
-                    strict_overplot=strict_overplot, terse=terse, hardcopy=hardcopy)
+                    strict_overplot=strict_overplot, terse=terse, hardcopy=hardcopy, compare_run_ver=compare_run_ver)
 
 
 # import cProfile

@@ -662,7 +662,7 @@ BatterySim::~BatterySim() {}
 float BatterySim::calculate(Sensors *Sen, const bool dc_dc_on, const bool reset)
 {
     // Inputs
-    tb_f_ = Sen->Tb_f();
+    tb_f_ = Sen->Tb_model_filt();
     ctime_ = Sen->cTime();
     dt_ = Sen->T();
     ib_in_ = Sen->Ib_model_in() / ap.nP();
@@ -824,7 +824,7 @@ float BatterySim::count_coulombs(Sensors *Sen, const bool reset_temp, BatteryMon
     if ( ib_charge_>0. ) d_delta_q_s_ *= coul_eff_;
 
     // Rate limit temperature.  When modeling, initialize to no change
-    tb_f_ = Sen->Tb_f();
+    tb_f_ = Sen->Tb_model_filt();
     tb_f_rate_ = Sen->Tb_f_rate();
 
     // Saturation and re-init.   Goal is to set q_capacity and hold it so remember last saturation status

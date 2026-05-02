@@ -32,14 +32,14 @@ else:
 # Configuration for entire folder selection read with filepaths
 default_dict = {
     'test': {
-        "version": "g20240331",
-        "unit": "pro2p2",
+        "version": "g2025012a",
+        "unit": "soc3p2",
         "battery": "bb",
         'dataReduction_folder': default_dr,
     },
     'ref': {
-        "version": "g20240331",
-        "unit": "pro0p",
+        "version": "g2025012a",
+        "unit": "soc3p2",
         "battery": "bb",
         'dataReduction_folder': default_dr,
     },
@@ -64,13 +64,14 @@ battery_list = ['bb', 'chg']
 sel_list = [
     'custom', 'ampHiEmptFail', 'ampHiFail', 'noaHiFail', 'rapidTweakRegression',
     'pulseSoft', 'pulseHard', 'rapidTweakRegressionH0', 'offLowSoc', 'offSitHysBmsBB',
-    'offSitHysBmsCHG', 'triTweakDisch', 'ampHiFailFf', 'ampLoFail', 'ampLoFullFail', 'noaLoFail', 'noaLoFullFail', 'ampHiFailNoise', 'noaHiFailNoise',
+    'offSitHysBmsCHG', 'triTweakDisch', 'ampHiFailFf', 'ampLoFail', 'ampLoFullFail', 'noaLoFail', 'noaLoFullFail',
+    'ampHiFailNoise', 'noaHiFailNoise',
     'rapidTweakRegression40C', 'slowTweakRegression', 'satSitBB', 'satSitCHG',
     ]
 sel_list1 = [
     'flatSitHys', 'offSitHysBmsNoiseBB', 'offSitHysBmsNoiseCHG', 'ampHiFailSlow',
     'noaHiFailSlow', 'noaHiFailSlower', 'noaHiFailSlowest', 'vHiFail', 'vHiFailNoise', 'vHiFailH', 'vHiFailFf',
-    'pulseHard', 'tLoFailHdwe', 'DvMon', 'DvSim', 'faultParade', 'stepDown', 'stepUp', 'zero_with_pc',
+    'pulseHard', 'tLoFailHdwe', 'faultParade', 'stepDown', 'stepUp', 'zero_with_pc',
     ]
 
 # Default content for auto_plink.csv (analogous to default_dict for the .ini file)
@@ -87,8 +88,8 @@ default_auto = (
 macro_sel_list = [
     'end_early', 'hdwNoVbPcMidInit', 'modHalfInit', 'modEmptInitBB', 'modEmptInitCHG',
     'noisePackage', 'silentPackage', 'quiet', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
-    'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50', 'c00',
-    'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50', 'zeroPrepHdweNoVb', 'zero_set_hdwe_no_Vb',
+    'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50',
+    'c00', 'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50', 'zeroPrepHdweNoVb', 'zero_set_hdwe_no_Vb',
     'noaHiFail', 'noaHiFailNoise',
     ]
 
@@ -187,12 +188,10 @@ lookup = {
         'noaHiFailSlowest': (565, modHalfInit+ 'Fc0.0006;' + tranPrep + d05 + 'XQ400000;' + c00 + quiet + cleanup + '<XD;', ("5A bias on noa, amp in range at 0A and reflects battery state. Artificially tight cc_diff threshold. Not enough current to trip the noa wrap.  Cannnot ever produce a cc_diff fault because amp still used.", "Will display “diff” due to 5 A difference..", "EKF won't move because fed by amp.", "Run for 6  minutes to see potential cc_diff_fa")),
         'vHiFail': (230, modHalfInit + tranPrep + 'XY;Dv0.82;XQ60000;' + dv0 + quiet + cleanup + '<XD;', ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
         'vHiFailNoise': (205, modHalfInit + noisePackage + tranPrep + 'XY;Dv0.82;XQ60000;' + dv0 + quiet + cleanup + '<XD;', ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
-        'vHiFailH': (175, modHalfInit + tranPrep + 'SH.3;W10;' + 'XY;Dv0.82;XQ30000;' + dv0 + quiet + cleanup + '<XD;', ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION.  Initial BB shift will be limited by hys table")),
+        'vHiFailH': (175, modHalfInit + tranPrep + 'SH.3;W10;' + 'XY;Dv0.82;XQ30000;' + dv0 + quiet + cleanup + '<XD;', ("Should detect voltage failure and display '*fail' and 'redl' within 60 seconds.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION.  Initial BB shift will be limited by hys table.  The model will drift due to SH.3.  EKF may not initialize right away")),
         'vHiFailFf': (220, modHalfInit + tranPrep + 'Ff1;XY;Dv0.8;XQ60000;' + dv0 + quiet + cleanup + '<XD;', ("Run for about 1 minute.", "Should detect voltage failure (see DOM1) but not display anything on display.", "Usually shows SAT.")),
         'pulseSSH': (25, synced_slow + 'Xp8;' + quiet + cleanup + '<XD;', ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
         'tLoFailHdwe': (350, modHalfInit + 'Xm230;' + tranPrep + 'XY;Dt-113;XQ120000;' + 'Dt0;Rf;W50;' + cleanup + '<W50;' + quietwait + '<Pf;<XD;', ("Simulates open thermistor.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
-        'DvDriftHi': (275, modHalfInit + tranPrep + 'XY;Dv0.8;Dn0.0001;XQ120000;Dv0;Rf;W50;' + quiet + cleanup + '<XD;', ("Should detect and switch voltage failure and use vb_model", "'*fail' will be displayed.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'redl' flashing on display even after fault cleared automatically (lost redundancy).", "Run for 2 min to confirm no cc_diff_fa")),
-        'DvDriftLo': (275, modHalfInit + tranPrep + 'XY;Dv-0.8;Dn0.0001;XQ120000;Dv0;Rf;W50;' + quiet + cleanup + '<XD;', ("Should detect and switch voltage failure and use vb_model", "'*fail' will be displayed.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'redl' flashing on display even after fault cleared automatically (lost redundancy).", "Run for 2 min to confirm no cc_diff_fa")),
         'faultParade': (465, modHalfInit + 'Dh1000;vv4;W4;XY;Dm50;Dn0.0001;W200;Dm0;Dn0;W20;Rf;XQ240000;' + quiet + cleanup + '<XD;', ("Check fault, history, and summary logging", "Should flag faults but take no action", "", "", "")),
         'stepDown': (230, modHalfInit + tranPrep + sd50 + 'XQ25000;' + s00 + quiet + cleanup + '<XD;', ("Should be normal hard discharge step", "", "", "")),
         'stepUp': (195, modHalfInit + tranPrep + sc50 + 'XQ25000;' + s00 + quiet + cleanup + '<XD;', ("Should be normal hard charge step", "", "", "")),
