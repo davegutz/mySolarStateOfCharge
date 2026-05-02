@@ -567,7 +567,7 @@ def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
             vv_warning_printed = True
             print(Colors.reset, end='')
         return None
-    hdr = "  i  time     r       rt   rk   it   ct      re   ie  ce     Tt               Tb_hdwe                    tb_fa              Tb                         Tb_hdwe_filt               Tb_rap                     Tb_f_rap                   Tb_model                   Tb_model_filt              Tb_f                       Tb_f_s                      Tb_model_filt_rate         Tb_hdwe_filt_rate          Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
+    hdr = "  i  time     r   rt rk  it ct mtb     re  ie   ce     Tt               Tb_hdwe                       tb_fa      Tb                         Tb_hdwe_filt               Tb_rap                     Tb_f_rap                   Tb_model                   Tb_model_filt              Tb_f                       Tb_f_s                      Tb_model_filt_rate         Tb_hdwe_filt_rate          Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -577,8 +577,10 @@ def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
         print(Colors.fg.red, end='')
     elif mon.reset_temp:
         print(Colors.fg.orange, end='')
+    elif calc_temp:
+        print(Colors.fg.lightblue, end='')
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset),
-          "{:7d}".format(mon.reset_temp), "{:4d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:4d}".format(calc_temp),
+          "{:3d}".format(mon.reset_temp), "{:2d}".format(mon.reset_kf), "{:4d}".format(i_temp), "{:1d}".format(calc_temp), "{:2d}".format(mon.mtb),
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
           "{:9.3f}".format(SN.mon_run.Tt[i_temp]), "{:7.3f}".format(mon.dt_temp),
           "{:13.7f}".format(SN.mon_run.Tb_hdwe[i_temp]), "{:11.7f}".format(mon.Tb_hdwe),
@@ -604,7 +606,7 @@ def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
 # noinspection PyPep8Naming
 def print_volt_HistSim(SN, i_temp, i_ekf, t, mon, calc_temp, calc_ekf):
     global count_since_last_header
-    hdr = "  i   time r    rt it     ct   rk   re ie     ce   sa       Tb_f                      vb_f                   ib_f                  ib_nh_f               ib_mh_f               ib_dyn_m              e_wrap_n_filt        e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n               e_wrap_n_filt        e_wrap_filt          soc                        dt                 Tb_f                     vb_f                  ib_dyn                voc_f     voc         voc_stat_f             soc_ekf"
+    hdr = "  i   time r    rt it   ct   rk   re ie     ce   sa       Tb_f                      vb_f                   ib_f                  ib_nh_f               ib_mh_f               ib_dyn_m              e_wrap_n_filt        e_wrap_m_filt        e_wrap_m_trim       ib_hn                 ib_dyn_n               e_wrap_n_filt        e_wrap_filt          soc                        dt                 Tb_f                     vb_f                  ib_dyn                voc_f     voc         voc_stat_f             soc_ekf"
     if count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
