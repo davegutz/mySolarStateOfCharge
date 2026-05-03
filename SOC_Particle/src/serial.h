@@ -55,7 +55,7 @@ void print_rapid_header(void);
 void print_rapid_serial(const bool reset, Publish *pubList, Sensors *Sen, BatteryMonitor *Mon);
 void print_sim_serial(const bool initializing_all, const bool reset_temp, Sensors *Sen, BatterySim *Sim);
 void print_sim_header(void);
-void print_temp_serial(const bool reset, Sensors *Sen);
+void print_temp_serial(const bool reset, BatteryMonitor *Mon, Sensors *Sen);
 void print_temp_header(void);
 void print_shunt_header(Sensors *Sen);
 void print_shunt_serial(const bool reset, Sensors *Sen);

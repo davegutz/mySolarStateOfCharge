@@ -241,7 +241,8 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   Ib_hdwe_f_(0.), Ib_hdwe_kf_(0.), Ib_hdwe_f_cal_(0.), Ib_noa_(0.), Ib_noa_hdwe_(0.), Ib_noa_hdwe_f_(0.), Ib_noa_hdwe_kf_(0.), Ib_noa_rms_(0.),
   Ib_noa_model_(0.), Ib_hdwe_(0.), Ib_hdwe_model_(0.), Ib_model_(0.), Ib_model_in_(0.),
   Vb_rms_(0.), Vc_rms_(0.), Wb_(0.), now_(0ULL), now_temp_(0ULL), T_(0.), reset_(false), T_filt_(0.), T_temp_(0.),
-  elapsed_inj_(0ULL), start_inj_(0ULL), stop_inj_(0ULL), end_inj_(0ULL), control_time_(0.), display_(true), bms_off_(false), sat_(false), saturated_(false)
+  elapsed_inj_(0ULL), start_inj_(0ULL), stop_inj_(0ULL), end_inj_(0ULL), control_time_(0.), display_(true), bms_off_(false), sat_(false), saturated_(false),
+  tb_fa_one_shot_(false)
 {
   T_ = T;
   T_filt_ = T;
@@ -391,47 +392,6 @@ void Sensors::pretty_print()
   Serial.printf(" Tb_hdwe_filt_rate%11.8f; C\n", Tb_hdwe_filt_rate_);
   Serial.printf(" Tb_model%9.5f; C\n", Tb_model_);
   Serial.printf(" Tb_model_filt%9.5f; C\n", Tb_model_filt_);
-}
-
-// Make final assignemnts
-void Sensors::select_temp(BatteryMonitor *Mon)
-{
-  // Final assignments
-  // tb
-  if ( sp.mod_tb() )
-  {
-    if ( Flt->tb_fa() )
-    {
-      Tb_ = NOMINAL_TB;
-      Tb_f_ = NOMINAL_TB;
-      Tb_f_rate_ = 0.;
-    }
-    else
-    {
-      Tb_ = NOMINAL_TB + Tb_noise() + ap.Tb_bias_model();
-      Tb_model_ = Tb_;
-      Tb_f_ = Tb_model_filt_;
-      Tb_f_rate_ = Tb_model_filt_rate_;
-    }
-    if ( sp.debug()==16) Serial.printf("Tb_noise %9.5f Tb%9.5f Tb_f%9.5f Tb_f%9.5f tb_fa %d\n", Tb_noise(), Tb_, Tb_f_, Tb_f_, Flt->tb_fa());
-  }
-  else
-  {
-    if ( Flt->tb_fa() )
-    {
-      Tb_ = NOMINAL_TB;
-      Tb_f_ = NOMINAL_TB;
-      Tb_f_rate_ = 0.;
-    }
-    else
-    {
-      Tb_ = Tb_hdwe_;
-      Tb_f_ = Tb_hdwe_filt_;
-      Tb_f_rate_ = Tb_hdwe_filt_rate_;
-      // Log.info("    select_volt_and_current:  Tb=Tb_hdwe=%9.5f Tb_f%9.5f Tb_f_rate%11.8f", Tb_hdwe_, Tb_f_, Tb_f_rate_);
-    }
-  }
-  sample_time_tb_ = SensorTb->sample_time();
 }
 
 // Make final assignemnts
@@ -654,14 +614,21 @@ void Sensors::shunt_select_initial(const bool reset)
 }
 
 // Load and filter Tb
-void Sensors::temp_load_and_filter(Sensors *Sen, const bool reset_temp)
+// Inputs:  Tb_model_
+void Sensors::temp_load_and_filter_and_select(BatteryMonitor *Mon, bool reset_temp)
 {
   // Log.info("  temp_load_and_filter:  calling sample");
   reset_temp_ = reset_temp;
-  #ifndef HDWE_BARE
-    Tb_hdwe_ = SensorTb->sample(Sen, reset_temp_);  // Must sample even if using model
 
-    Tb_model_filt_ = TbModelFilt->calculate(Tb_model_, reset_temp_, ap.tb_filt(), min(T_temp_, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
+  // Reset Tb filters on tb_fa ( // TODO:  move this to Sensors)
+  if ( Flt->tb_fa() && !tb_fa_one_shot_ ) tb_fa_one_shot_ = true;
+  if ( !reset_temp && !Flt->tb_fa() ) tb_fa_one_shot_ = false;
+
+  #ifndef HDWE_BARE
+    Tb_hdwe_ = SensorTb->sample(this, reset_temp_);  // Must sample even if using model
+    if ( Flt->tb_fa() ) Tb_hdwe_ = NOMINAL_TB;
+
+    Tb_model_filt_ = TbModelFilt->calculate(Tb_model_, reset_temp_ || tb_fa_one_shot_, ap.tb_filt(), min(T_temp_, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
     Tb_model_filt_rate_ = TbModelFilt->rate();
 
     if ( sp.mod_tb() )
@@ -669,7 +636,7 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const bool reset_temp)
       Tb_hdwe_ = Tb_model_;
     }
     now_temp_ = sample_time_tb_ - inst_millis_ + inst_time_*1000;
-    // Log.info("    temp_load_and_filter:  now_temp_,%lld, cTime,%7.3f,", now_temp_, double(now_temp_)/1000.);
+    // Log.info("    temp_load_and_filter_and_select:  now_temp_,%lld, cTime,%7.3f,", now_temp_, double(now_temp_)/1000.);
   #else
     Tb_hdwe_ = RATED_TEMP;
   #endif
@@ -681,20 +648,49 @@ void Sensors::temp_load_and_filter(Sensors *Sen, const bool reset_temp)
   }
   Tb_hdwe_ += sp.Tb_bias_hdwe();  // Fault injection
 
-  Tb_hdwe_filt_ = TbSenseFilt->calculate(Tb_hdwe_, reset_temp_, ap.tb_filt(), min(T_temp_, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
+  Tb_hdwe_filt_ = TbSenseFilt->calculate(Tb_hdwe_, reset_temp_ || tb_fa_one_shot_, ap.tb_filt(), min(T_temp_, F_MAX_T_TEMP), T_RLIM, -T_RLIM);
   Tb_hdwe_filt_rate_ = TbSenseFilt->rate();
 
-  if ( sp.debug()==16 ) Serial.printf("temp_load_and_filter: T_temp, Tb_hdwe, Tb_hdwe_filt, rstate, lstate %11.8f %11.8f %11.8f %11.8f %11.8f\n",
-        T_temp_, Tb_hdwe_, Tb_hdwe_filt_, TbSenseFilt->rstate(), TbSenseFilt->lstate());
+  if ( sp.debug()==16 || tb_fa_one_shot_ ) Serial.printf("temp_load_and_filter: reset_temp%2d tb_fa%2d tb_fa_one_shot%2d T_temp%11.8f  Tb_hdwe%11.8f Tb_hdwe_filt%11.8f rstate%11.8f lstate%11.8f  Tb_model%11.8f  Tb_model_filt%11.8f\n",
+        reset_temp_, Flt->tb_fa(), tb_fa_one_shot_, T_temp_, Tb_hdwe_, Tb_hdwe_filt_, TbSenseFilt->rstate(), TbSenseFilt->lstate(), Tb_model_, Tb_model_filt_);
 
-  if ( sp.debug()==16 || (sp.debug()==-1 && reset_temp_) ) Serial.printf("reset_temp_ T_temp Tb_bias_hdwe_loc, RATED_TEMP, Tb_hdwe, Tb_hdwe_filt, Tb_hdwe_filt_rate, ready, rstate, lstate %d %8.6f %11.8f %11.8f %11.8f %11.8f %11.8f %d %11.8f  %11.8f\n",
-    reset_temp_, T_temp_, sp.Tb_bias_hdwe(), RATED_TEMP, Tb_hdwe_, Tb_hdwe_filt_, Tb_hdwe_filt_rate_, cp.tb_info.ready, TbSenseFilt->rstate(),  TbSenseFilt->lstate());
+  Flt->tb_check(this, TB_MIN, TB_MAX,  reset_temp_);  // Sets tb_fa()
+  // Make final assignemnts
+  if ( sp.mod_tb() )
+  {
+    if ( Flt->tb_fa() )
+    {
+      Tb_ = NOMINAL_TB;
+      Tb_f_ = NOMINAL_TB;
+      Tb_f_rate_ = 0.;
+    }
+    else
+    {
+      Tb_ = NOMINAL_TB + Tb_noise() + ap.Tb_bias_model();
+      Tb_f_ = Tb_model_filt_;
+      Tb_f_rate_ = Tb_model_filt_rate_;
+    }
+    if ( sp.debug()==16) Serial.printf("Tb_noise %9.5f Tb%9.5f Tb_f%9.5f Tb_f%9.5f tb_fa %d\n", Tb_noise(), Tb_, Tb_f_, Tb_f_, Flt->tb_fa());
+  }
+  else
+  {
+    if ( Flt->tb_fa() )
+    {
+      Tb_ = NOMINAL_TB;
+      Tb_f_ = NOMINAL_TB;
+      Tb_f_rate_ = 0.;
+    }
+    else
+    {
+      Tb_ = Tb_hdwe_;
+      Tb_f_ = Tb_hdwe_filt_;
+      Tb_f_rate_ = Tb_hdwe_filt_rate_;
+      // Log.info("    select_volt_and_current:  Tb=Tb_hdwe=%9.5f Tb_f%9.5f Tb_f_rate%11.8f", Tb_hdwe_, Tb_f_, Tb_f_rate_);
+    }
+  }
+  Tb_model_ = Tb_;
+  sample_time_tb_ = SensorTb->sample_time();
 
-  #ifdef HDWE_2WIRE
-    Flt->tb_check(Sen, TB_MIN, TB_MAX,  reset_temp_);
-  #else
-    Flt->tb_stale(reset_temp_, Sen);
-  #endif
 }
 
 // Load analog voltage

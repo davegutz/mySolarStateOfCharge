@@ -473,14 +473,12 @@ void print_temp_header(void)
 {
  Serial.printf("unit_t, c_time_t, Tt, Tb_hdwe, Tb_model, Tb, reset_temp_t,  Tb_hdwe_filt, Tb_model_filt,Tb_f,  Tb_hdwe_filt_rate, Tb_model_filt_rate, Tb_f_rate, tb_fa, \n");
 }
-void print_temp_serial(const bool reset, Sensors *Sen)
+void print_temp_serial(const bool reset, BatteryMonitor *Mon, Sensors *Sen)
 {
   if ( sp.debug()==1  || sp.debug()==2  || sp.debug()==3 || sp.debug()==4  || sp.debug()==16 )
   {
-    // if ( Sen->T_temp() == 0. ) return;
-    double cTime = double(Sen->now_temp())/1000.;
     Serial.printf("temp_unit, %13.4f, %8.4f, %11.8f, %11.8f, %11.8f, %d, %11.8f, %11.8f, %11.8f, %11.8f, %11.8f,  %11.8f, %d,\n",
-      cTime, Sen->T_temp(), Sen->Tb_hdwe(), Sen->Tb_model(), Sen->Tb(), reset, Sen->Tb_hdwe_filt(), Sen->Tb_model_filt(), Sen->Tb_f(), Sen->Tb_hdwe_filt_rate(),
+      Mon->cTime(), Sen->T_temp(), Sen->Tb_hdwe(), Sen->Tb_model(), Sen->Tb(), reset, Sen->Tb_hdwe_filt(), Sen->Tb_model_filt(), Sen->Tb_f(), Sen->Tb_hdwe_filt_rate(),
       Sen->Tb_model_filt_rate(), Sen->Tb_f_rate(), Sen->Flt->tb_fa());
     // Log.info("    print_temp_serial cTime,%9.3f,", cTime);
   }

@@ -209,6 +209,10 @@ public:
     uint64_t time_now, uint64_t millis, BatteryMonitor *Mon);
   ~Sensors();
   // Getters and setters for encapsulated member variables
+  void cTime(const double input) { ctime_ = input; }
+  double cTime() { return ctime_; }
+  void cTime_temp(const double input) { ctime_temp_ = input; }
+  double cTime_temp() { return ctime_temp_; }
   void Vb_raw(const int input) { Vb_raw_ = input; }
   int Vb_raw() { return Vb_raw_; }
   void Vb(const float input) { Vb_ = input; }
@@ -299,7 +303,6 @@ public:
   uint64_t now() { return now_; }
   void now_temp(const uint64_t input) { now_temp_ = input; }
   uint64_t now_temp() { return now_temp_; }
-  double cTime() { return ctime_; }
   void T(const double input) { T_ = input; }
   double T() { return T_; }
   void reset(const bool input) { reset_ = input; }
@@ -338,7 +341,6 @@ public:
   SlidingDeadband *SdTb;      // Non-linear filter for Tb
   BatterySim *Sim;            // Used to model Vb and Ib.   Use Talk 'Xp?' to toggle model on/off
   uint64_t dt_ib(void) { return dt_ib_; }; // ms since last update of selected Ib sample
-  void select_temp(BatteryMonitor *Mon);  // Make final signal selection
   void select_volt_and_current(BatteryMonitor *Mon);  // Make final signal selection
   float ib() { return Ib_ / ap.nP(); };                            // Battery unit current, A
   float ib_amp() { return Ib_amp_ / ap.nP(); };                    // Battery amp unit current, A
@@ -376,7 +378,8 @@ public:
   void select_print(Sensors *Sen, BatteryMonitor *Mon);
   void shunt_print();         // Print selection result
   void shunt_select_initial(const bool reset);   // Choose between shunts for model
-  void temp_load_and_filter(Sensors *Sen, const bool reset_temp);
+  bool tb_fa_one_shot() { return tb_fa_one_shot_; };
+  void temp_load_and_filter_and_select(BatteryMonitor *Mon, const bool reset_temp);
   float Tb_noise();
   float vb() { return Vb_ / ap.nS(); };                            // Battery select unit voltage, V
   float vb_hdwe() { return Vb_hdwe_ / ap.nS(); };                  // Battery select hardware unit voltage, V
@@ -460,6 +463,7 @@ protected:
   uint64_t now_;     // Time at sample, ms
   uint64_t now_temp_;// Time at sample, ms
   double ctime_;               // Decimal time, seconds since 1/1/2021
+  double ctime_temp_;          // Decimal time at temp read, seconds since 1/1/2021
   double T_;                   // Update time, s
   bool reset_;                 // Reset flag, T = reset
   double T_filt_;              // Filter update time, s
@@ -473,4 +477,5 @@ protected:
   bool bms_off_;            // Calculated by BatteryMonitor, battery off, low voltage, switched by battery management system?
   bool sat_;                // Battery potential saturation status based on Temp and VOC
   bool saturated_;          // Battery confirmed saturation status based on Temp and VOC
+  bool tb_fa_one_shot_;     // One shot to reset temp filters upon tb_fa failed sensor, T=reset
 };

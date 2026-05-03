@@ -154,10 +154,10 @@ void setup()
   digitalWrite(myPins->status_led, LOW);
 
   // 1-Wire chip card for I2C (after start Wire)
-  #if defined(HDWE_2WIRE)
-    sendTxBuf("Using 2Wire Temperature sensor\n", true, true);
-  #elif defined(HDWE_BARE)
+  #if defined(HDWE_BARE)
     sendTxBuf("Going naked\n", true, true);
+  #elif defined(HDWE_2WIRE)
+    sendTxBuf("Using 2Wire Temperature sensor\n", true, true);
   #else
     #error "Temperature sensor undefined"
   #endif
@@ -277,9 +277,6 @@ void loop()
 
 
   // Synchronize
-  #ifdef HDWE_DS2482_1WIRE
-    Ds2482.loop();
-  #endif
   if ( now - last_sync > ONE_DAY_MILLIS || reset )  sync_time(now, &last_sync, &millis_flip);
   Sen->control_time(double(Sen->now())/1000.);
   char buffer[32];
@@ -299,29 +296,31 @@ void loop()
   // Outputs:   Sen->Tb,  Sen->Tb_f
   if ( read_temp )
   {
-    #ifdef HDWE_DS2482_1WIRE
-        Ds2482.check();
-        cp.tb_info.t_c = Ds2482.tempC(0);
-        cp.tb_info.ready = Ds2482.ready();
-    #endif
     Sen->T_temp(ReadTemp->updateTime());
     if ( reset_temp )
     {
-      Sen->Tb_model(NOMINAL_TB + ap.Tb_bias_model());
-      Sen->Tb_model_filt(NOMINAL_TB + ap.Tb_bias_model());
+      if ( sp.mod_tb() )
+      {
+        Sen->Tb_model(NOMINAL_TB + ap.Tb_bias_model());
+        Sen->Tb_model_filt(NOMINAL_TB + ap.Tb_bias_model());
+      }
+      else
+      {
+        Sen->Tb_model(Sen->Tb());
+        Sen->Tb_model_filt(Sen->Tb_f());
+      }
 
       if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 336 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt, %11.8f %11.8f\n",
         Sen->Tb_model(), Sen->Tb_model_filt()), true, true);
     }
     // Log.info("ino:  temp_load_and_filter");
     
-    Sen->temp_load_and_filter(Sen, reset_temp);
-    Sen->select_temp(Mon);
+    Sen->temp_load_and_filter_and_select(Mon, reset_temp);
 
     if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 340 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
         reset_temp, Sen->Sim->tb_f(), Sen->Tb_model(), Sen->Tb_model_filt(), Sen->Tb_hdwe_filt_rate()), true, true);
     // Log.info("ino:  print_temp_serial");
-    print_temp_serial(reset_temp, Sen);
+    print_temp_serial(reset_temp, Mon, Sen);
   }
 
   // Sample Ib
@@ -446,13 +445,14 @@ void loop()
   if ( read )
   {
     reset = reset_ekf = reset_kf = cp.ekf_reset_print = cp.kf_reset_print = false;
-    if ( reset_temp ) sendTxBuf("*", true, true);
+    if ( reset_temp && !Sen->tb_fa_one_shot() ) sendTxBuf("*", true, true);
   }
   if ( read_temp && elapsed_reset>ap.temp_delay() && reset_temp )
   {
     sendTxBuf("...temp init complete\n", true, true);
     reset_temp = false;
   }
+
   if ( cp.publishS ) reset_publish = false;
 
   // Soft reset

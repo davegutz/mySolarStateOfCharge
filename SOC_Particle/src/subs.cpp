@@ -95,7 +95,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
     Sen->Ib_model_in(sp.inj_bias() + sp.ib_bias_all());
   else
     Sen->Ib_model_in(Sen->Ib_hdwe());
-  Sen->temp_load_and_filter(Sen, true);
+  Sen->temp_load_and_filter_and_select(Mon, true);
   if ( sp.mod_tb() )
   {
     Sen->Tb(Sen->Tb_model());
@@ -281,8 +281,8 @@ void  monitor(const bool reset, const bool reset_temp, const bool reset_ekf, con
 // States:  Sim.soc
 // Outputs: Sim.tb_f_, Sen->Tb_f, Sen->Ib, Sen->Ib_model,
 //   Sen->Vb_model, Sen->Tb_f, sp.inj_bias
-void sense_synth_select(const bool reset, const bool reset_temp, const bool reset_kf, const uint64_t now,
-  const uint64_t elapsed,  Pins *myPins, BatteryMonitor *Mon, Sensors *Sen)
+void sense_synth_select(const bool reset, const bool reset_temp, const bool reset_kf,
+   const uint64_t now, const uint64_t elapsed,  Pins *myPins, BatteryMonitor *Mon, Sensors *Sen)
 {
   static uint64_t last_snap = now;
   bool storing_fault_data = ( now - last_snap )>SNAP_WAIT;

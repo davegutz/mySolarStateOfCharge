@@ -71,7 +71,7 @@ sel_list = [
 sel_list1 = [
     'flatSitHys', 'offSitHysBmsNoiseBB', 'offSitHysBmsNoiseCHG', 'ampHiFailSlow',
     'noaHiFailSlow', 'noaHiFailSlower', 'noaHiFailSlowest', 'vHiFail', 'vHiFailNoise', 'vHiFailH', 'vHiFailFf',
-    'pulseHard', 'tLoFailHdwe', 'faultParade', 'stepDown', 'stepUp', 'zero_with_pc',
+    'pulseHard', 'tLoFailHdwe', 'tHiFailHdwe', 'faultParade', 'stepDown', 'stepUp', 'zero_with_pc',
     ]
 
 # Default content for auto_plink.csv (analogous to default_dict for the .ini file)
@@ -192,6 +192,7 @@ lookup = {
         'vHiFailFf': (220, modHalfInit + tranPrep + 'Ff1;XY;Dv0.8;XQ60000;' + dv0 + quiet + cleanup + '<XD;', ("Run for about 1 minute.", "Should detect voltage failure (see DOM1) but not display anything on display.", "Usually shows SAT.")),
         'pulseSSH': (25, synced_slow + 'Xp8;' + quiet + cleanup + '<XD;', ("Should generate a very short <10 sec data burst with a hw pulse.  Look at plots for good overlay. e_wrap should be flat.", "This is the shortest of all tests.  Useful for quick checks.", "ib_diff_flt will take time beyond event to reset running Hi-Lo.")),
         'tLoFailHdwe': (310, modHalfInit + 'Xm230;' + tranPrep + 'XY;W10;Dt-113;XQ120000;' + 'Dt0;Rf;W50;' + cleanup + '<W50;' + quietwait + '<Pf;<XD;', ("Simulates open thermistor.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
+        'tHiFailHdwe': (310, modHalfInit + 'Xm230;' + tranPrep + 'XY;W10;Dt+50;XQ120000;' + 'Dt0;Rf;W50;' + cleanup + '<W50;' + quietwait + '<Pf;<XD;', ("Simulates open thermistor.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
         'faultParade': (465, modHalfInit + 'Dh1000;vv4;W4;XY;Dm50;Dn0.0001;W200;Dm0;Dn0;W20;Rf;XQ240000;' + quiet + cleanup + '<XD;', ("Check fault, history, and summary logging", "Should flag faults but take no action", "", "", "")),
         'stepDown': (230, modHalfInit + tranPrep + sd50 + 'XQ25000;' + s00 + quiet + cleanup + '<XD;', ("Should be normal hard discharge step", "", "", "")),
         'stepUp': (195, modHalfInit + tranPrep + sc50 + 'XQ25000;' + s00 + quiet + cleanup + '<XD;', ("Should be normal hard charge step", "", "", "")),

@@ -179,18 +179,20 @@ def replicate(OPT: UserOptions):
 
         # Get temperature data
         if hasattr(OPT.mon_run, 'time_t'):
+            n = len(OPT.mon_run.time)
             if hasattr(OPT.mon_run, 'mtb') and OPT.mon_run.mtb is not None \
-                    and OPT.mon_run.mtb[G.i]>0. and G.i+1 < len(OPT.mon_run.time) :
+                    and OPT.mon_run.mtb[G.i]>0. and G.i+1 < n:
                 calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) \
                     and (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i+1])
             else:
                 calc_temp = (i_temp+1 < len(OPT.mon_run.time_t)) and \
-                            (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[G.i])
+                            (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[min(G.i,n-1)])
         else:
             calc_temp = True
         if calc_temp:
             i_temp += 1
             mon, sim = SN.calc_temp_pass_1(OPT, mon, sim, i_temp, rp)
+        mon = SN.calc_temp_pass_1_rap(mon, i_temp)  # get Tf_rap
 
         # Input
         rp.modeling = rp.add_modeling(modeling[G.i])

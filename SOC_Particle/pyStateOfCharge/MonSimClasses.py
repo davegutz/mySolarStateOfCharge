@@ -312,6 +312,7 @@ class Sensors:
         self.iscn = 0.
         self.iscn_f = 0.
         self.Tb_model_filt_past = self.sim_run.Tb_f_s[0]
+        self.mtb = self.mon_run.mtb[0]
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -357,12 +358,31 @@ class Sensors:
             mon.Tb_s = OPT.mon_run.Tb_f[i_temp]
         if i_temp > 0:
             self.update_tb()
-            mon.Tb_rap = self.Tb_past
-            mon.Tb_f_rap = self.Tb_f_past
-            mon.Tb_f_rate_rap = self.Tb_f_rate_past
+            if self.mtb:
+                mon.Tb_rap = self.Tb_past
+                mon.Tb_f_rap = self.Tb_f_past
+                mon.Tb_f_rate_rap = self.Tb_f_rate_past
+            else:
+                mon.Tb_rap = self.Tb
+                mon.Tb_f_rap = self.Tb_f
+                mon.Tb_f_rate_rap = self.Tb_f_rate
         sim.Tb_f = self.Tb_f_past  # same modeling and sensed
 
         return mon, sim
+
+    def calc_temp_pass_1_rap(self, mon_, i_temp):
+        mon = mon_
+        if i_temp > 0:
+            self.update_tb()
+            if self.mtb:
+                mon.Tb_rap = self.Tb_past
+                mon.Tb_f_rap = self.Tb_f_past
+                mon.Tb_f_rate_rap = self.Tb_f_rate_past
+            else:
+                mon.Tb_rap = self.Tb
+                mon.Tb_f_rap = self.Tb_f
+                mon.Tb_f_rate_rap = self.Tb_f_rate
+        return mon
 
     def calc_temp_pass_2(self, mon_run, mon, Battery_, i_temp, rp, i_main=None):
         self.temp_load_and_filter(mon_run, mon, Battery_, i_temp)
