@@ -80,6 +80,22 @@ def sync_to_mon_or_sim(mr, sr, t_mx=None):
         dtime = dtime[np.where(t_delt <= t_mx)]
     return time, dtime
 
+
+def tbx_from_raw_or_selected(use_raw, mr):
+    if use_raw:
+        tbx_ = mr.Tbx_hdwe
+        tbx_f_ = mr.Tbx_hdwe_f
+    else:
+        if hasattr(mr, 'Tbx'):
+            tbx_ = mr.Tbx
+        if hasattr(mr, 'Tbx_f'):
+                tbx_f_ = mr.Tbx_f
+        else:
+            tbx_ = mr.Tbx
+            tbx_f_ = mr.Tbx_f
+    return tbx_, tbx_f_
+
+
 def vb_from_raw_or_selected(use_raw, mr):
     if use_raw:
         vb_ = mr.vb_hdwe
@@ -111,6 +127,9 @@ def replicate(OPT: UserOptions):
     # vb
     vb = vb_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_run)
 
+    # Tbx
+    Tbx, Tbx_f = tbx_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_run)
+
     # chem
     chm_m, chm_s = chm_from_mon_or_sim(OPT.mon_run, OPT.sim_run)
 
@@ -134,9 +153,9 @@ def replicate(OPT: UserOptions):
     scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_batt, Battery.NOM_UNIT_CAP)
 
     # Make batteries from modified class constants
-    sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
+    sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], tbx_f=SN.sim_run.Tbx_f_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
                      vsat_add=Battery.sp_vsat_add)
-    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], tb_f=SN.mon_run.Tb_f[0], scale=scale_mon,
+    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], tbx_f=SN.mon_run.Tbx_f[0], tb_f=SN.mon_run.Tb_f[0], scale=scale_mon,
                          vsat_add=Battery.sp_vsat_add, tweak_test=tweak_test)
     Is_sat_delay = TFDelay(in_=OPT.mon_run.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
@@ -242,12 +261,30 @@ def replicate(OPT: UserOptions):
             else:
                 ib_in_s = OPT.mon_run.ib_f[G.i]
 
+        if OPT.ib_fail_t is not None and t[G.i] > OPT.ib_fail_t:
+            ib_ = OPT.ib_fail
+        else:
+            if OPT.mon_run.ib_sel is not None:
+                ib_ = OPT.mon_run.ib_sel[G.i]
+            else:
+                ib_ = OPT.mon_run.ib[G.i]
+
+        Tbx_ = Tbx[G.i]
+        Tbx_f_ = Tbx_f[G.i]
+
+        if OPT.use_vb_sim:
+            vb_ = sim.vb
+        elif OPT.vb_fail_t and t[G.i] >= OPT.vb_fail_t:
+            vb_ = OPT.vb_fail
+        else:
+            vb_ = vb[G.i]
+
         if OPT.Bsim is None:
             _chm_s = chm_s[G.i]
         else:
             _chm_s = OPT.Bsim
 
-        sim.calculate(_chm_s, None, ib_in_s, SN.dt_s[G.i], reset, None, None, SN, OPT,
+        sim.calculate(_chm_s, Tbx_, vb_, ib_in_s, SN.dt_s[G.i], reset, None, None, SN, OPT,
                       soc=sim.soc, q_capacity=sim.q_capacity, rp=rp, saturated_init=sat_s_init)
 
         sim.count_coulombs(OPT, SN, chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, charge_curr=sim.ib_charge, sat=False,
@@ -266,21 +303,6 @@ def replicate(OPT: UserOptions):
         else:
             _chm_m = OPT.Bmon
 
-        if OPT.ib_fail_t is not None and t[G.i] > OPT.ib_fail_t:
-            ib_ = OPT.ib_fail
-        else:
-            if OPT.mon_run.ib_sel is not None:
-                ib_ = OPT.mon_run.ib_sel[G.i]
-            else:
-                ib_ = OPT.mon_run.ib[G.i]
-
-        if OPT.use_vb_sim:
-            vb_ = sim.vb
-        elif OPT.vb_fail_t and t[G.i] >= OPT.vb_fail_t:
-            vb_ = OPT.vb_fail
-        else:
-            vb_ = vb[G.i]
-
         # Monitor EKF sequencing logic
         if (i_ekf+1 < len(OPT.mon_run.time_e)) and (OPT.mon_run.time_e[i_ekf+1] <= OPT.mon_run.time[G.i]):
             i_ekf += 1
@@ -298,7 +320,7 @@ def replicate(OPT: UserOptions):
             mon.init_soc_ekf(OPT.mon_run, G.i, i_ekf)  # when modeling (assumed in python) ekf wants to equal model
 
         # Monitor calculate
-        mon.calculate(_chm_m, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, OPT, rp=rp, reset_ekf=reset_ekf, i=G.i,
+        mon.calculate(_chm_m, Tbx_, Tbx_f_, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, OPT, rp=rp, reset_ekf=reset_ekf, i=G.i,
                       i_ekf=i_ekf)
         ib_charge = mon.ib_charge
 

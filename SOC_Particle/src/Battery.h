@@ -127,6 +127,8 @@ public:
   virtual void pretty_print();
   void print_signal(const bool print) { print_now_ = print; };
   double tb_f() { return tb_f_; };
+  double Tbx() { return Tbx_; };
+  double Tbx_f() { return Tbx_f_; };
   float vb() { return vb_; };
   double voc() { return voc_; };
   double voc_soc() { return voc_soc_; };
@@ -151,6 +153,8 @@ protected:
   bool print_now_; // Print command
   bool soft_reset_print_;  // Soft reset flag
   double tb_f_;    // Battery temperature, deg C
+  double Tbx_;     // Battery temperature, deg C
+  double Tbx_f_;   // Filtered battery temperature, deg C
   float vb_;       // Battery terminal voltage, V
   double voc_;      // Static model open circuit voltage, V
   double voc_soc_;      // Raw table lookup of voc, V

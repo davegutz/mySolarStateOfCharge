@@ -75,7 +75,7 @@ class Battery(BatteryConstants, Coulombs):
                             what gets delivered, e.g.Wshunt / NOMINAL_VB.  Also varies 0.2 - 0.4 C currents
                             or 20 - 40 A for a 100 Ah battery"""
 
-    def __init__(self, OPT=None, q_cap_rated=BatteryConstants.NOM_UNIT_CAP*3600, temp_rlim=0.017, t_rated=25., tb_f=25., tweak_test=False,
+    def __init__(self, OPT=None, q_cap_rated=BatteryConstants.NOM_UNIT_CAP*3600, temp_rlim=0.017, t_rated=25., tbx_f=BatteryConstants.NOMINAL_TB, tb_f=25., tweak_test=False,
                  dvoc=0., mod_code=0, vsat_add=0., scale_cap=1., mon=None, str_=None):
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
@@ -152,8 +152,15 @@ class Battery(BatteryConstants, Coulombs):
         self.Tb_hdwe_filt = None
         self.Tb_hdwe_filt_rate = None
         self.Tb_model_filt_rate = None
+        self.Tbx_rstate = None
+        self.Tbx_state = None
+        self.Tbx_hdwe_f = None
+        self.Tbx_hdwe_f_rate = None
+        self.Tbx_model_f_rate = None
         self.reset = True
         self.voltage_low = False
+        self.Tbx = 0.
+        self.Tbx_f = 0.
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -230,7 +237,7 @@ class Battery(BatteryConstants, Coulombs):
                 else:
                     setattr(sv, key, [val])
 
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
+    def calculate(self, chem, tb, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
                   q_capacity=None, rp=None, reset_ekf=None, soc=None, saturated_init=None):
         # Battery
         raise NotImplementedError
@@ -243,14 +250,14 @@ class Battery(BatteryConstants, Coulombs):
 class BatteryMonitor(Battery, EKF1x1):
     """Extend Battery class to make a monitor"""
     def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600, t_rated=25., temp_rlim=0.017, scale=1.,
-                 tb_f=25., tweak_test=False, dvoc=0., mod_code=0, vsat_add=0.):
+                 tbx_f=Battery.NOMINAL_TB, tb_f=25., tweak_test=False, dvoc=0., mod_code=0, vsat_add=0.):
         ref = None
         if hasattr(OPT, 'slr_res_0'):
             ref = OPT.mon_run
         else:
             pass
         q_cap_rated_scaled = q_cap_rated * scale
-        Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
+        Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, tbx_f=tbx_f, tb_f=tb_f,
                          tweak_test=tweak_test, dvoc=dvoc, mod_code=mod_code, scale_cap=scale, mon=True, str_='ver',
                          vsat_add=vsat_add)
 
@@ -352,6 +359,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.reset_temp = True
         self.Tb_rap = None
         self.Tb_model = None
+        self.Tbx_model = None
         self.Tb_f_rap = None
         self.Tb_f_rate_rap = None
         self.dt_temp = 0.
@@ -460,6 +468,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.bms_off_s = 0.
         self.Tb_s = 0.
         self.Tb_f_s = 0.
+        self.Tbx_s = 0.
+        self.Tbx_f_s = 0.
         self.vsat_s = 0.
         self.voc_s = 0.
         self.voc_stat_s = 0.
@@ -517,9 +527,11 @@ class BatteryMonitor(Battery, EKF1x1):
     # BatteryMonitor::calculate()
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
+    def calculate(self, chem, tbx, tbx_f, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
                   q_capacity=None, rp=None, soc=None, saturated_init=None, reset_ekf=None, i=None, i_ekf=None):
         self.reset = reset
+        self.Tbx = tbx
+        self.Tbx_f = tbx_f
         self.vb = vb
         self.ib_in = ib
         self.dt = dt
@@ -871,12 +883,12 @@ class BatteryMonitor(Battery, EKF1x1):
         self.sat_s  = sim.sat
         self.soc_s  = sim.soc
         self.vb_s  = sim.vb
+        self.Tbx_s = sim.Tbx
         self.ib_dyn_T_s  = sim.ib_dyn_T
         self.ib_dyn_lstate_s  = sim.ib_dyn_lstate
         self.ib_dyn_rstate_s  = sim.ib_dyn_rstate
         self.ib_dyn_tau_s  = sim.chemistry.tau_ct
         self.tau_hys_s  = sim.tau_hys
-        self.vb_s  = sim.vb
         self.q_s  = sim.q
         self.ib_fut_s  = sim.ib_fut
         self.reset_s  = sim.reset
@@ -984,8 +996,8 @@ class BatterySim(Battery):
     """Extend Battery class to make a model"""
 
     def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600, t_rated=25., temp_rlim=0.017,
-                 scale=1., tb_f=25., tweak_test=False, mod_code=0, vsat_add=0.):
-        Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tb_f=tb_f,
+                 scale=1., tbx_f=Battery.NOMINAL_TB, tb_f=25., tweak_test=False, mod_code=0, vsat_add=0.):
+        Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, tbx_f=tbx_f, tb_f=tb_f,
                          tweak_test=tweak_test, dvoc=OPT.add_voc_sim, mod_code=mod_code, scale_cap=scale, mon=False,
                          str_='ver_s', vsat_add=vsat_add)
         self.chemistry = Chemistry(mod_code=mod_code, dvoc=OPT.add_voc_sim, unit=OPT.unit)
@@ -1094,13 +1106,14 @@ class BatterySim(Battery):
         return s
 
     # BatterySim::calculate()
-    def calculate(self, chem, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
+    def calculate(self, chem, tb, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
                   q_capacity=None, rp=None, reset_ekf=None, soc=None, saturated_init=None):
         self.reset = reset
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)
             self.chm = chem
 
+        self.Tbx = tb
         self.dt_past = self.dt
         self.dt = dt
         self.ib_in = ib
@@ -1502,6 +1515,8 @@ class Saved:
         self.x_for_hx = []
         self.ib = []  # Bank current, A
         self.vb = []  # Bank voltage, V
+        self.Tbx = []  # Bank temp, C
+        self.Tbx_f = []  # Filtered bank temp, C
         self.sat = []  # Indication that battery is saturated, T=saturated
         self.saturated = []  # Confirmation that battery is saturated, T=saturation confirmed
         self.sel = []  # Current source selection, 0=amp, 1=no amp
