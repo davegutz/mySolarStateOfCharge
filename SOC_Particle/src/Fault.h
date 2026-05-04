@@ -53,7 +53,6 @@
 // extern CommandPars cp;  // Various parameters to be static at system level
 extern SavedPars sp;    // Various parameters to be static at system level and saved through power cycle
 extern VolatilePars ap; // Various adjustment parameters shared at system level
-// struct Pins;
 
 #ifdef HDWE_IB_HI_LO
   #define IB_SEL_STAT_DEF 0
@@ -121,10 +120,11 @@ struct ScaleBrk
 #define WRAP_HI_N_FLT 16  // Wrap reports Vb lo / Ib noa high fault
 #define WRAP_LO_N_FLT 17  // Wrap reports Vb hi / Ib noa low fault
 #define NUM_FLT       18  // Number of these
+#define TBX_FLT       19   // Momentary isolation of Tbx failure, T=faulted
 
 // Fail word bits.   A couple don't latch because single sensor fail in dual sensor system
 #define TB_FA         0   // Peristed, latched isolation of Tb failure, heals because soft type, T=failed
-#define VB_FA_LT         1   // Peristed, latched isolation of Vb failure, latches because hard type, T=failed
+#define VB_FA_LT      1   // Peristed, latched isolation of Vb failure, latches because hard type, T=failed
 #define IB_AMP_FA     2   // Amp sensor selection memory, latches because hard type, T = amp failed
 #define IB_NOA_FA     3   // Noamp sensor selection memory, latches because hard type, T = no amp failed
 #define CC_DIFF_FA    4   // Accumulated Coulomb Counter difference used to isolate IB differences, heals functional type, T = faulted=failed 
@@ -140,6 +140,7 @@ struct ScaleBrk
 #define WRAP_HI_N_FA  16  // Wrap isolates to Ib amp high fail, heals because dual sensor (no latch)
 #define WRAP_LO_N_FA  17  // Wrap isolates to Ib amp low fail, heals because dual sensor (no latch)
 #define NUM_FA        18  // Number of these
+#define TBX_FA        19  // Peristed, latched isolation of Tbx failure, heals because soft type, T=failed
 
 #define faultRead(bit) ( (fltw_ >> bit) & 1 )
 #define failRead(bit) ( (falw_ >> bit) & 1 )
@@ -329,11 +330,13 @@ public:
   void shunt_check(Sensors *Sen, BatteryMonitor *Mon, const bool reset);  // Range check Ib signals
   void shunt_select_initial(const bool reset);   // Choose between shunts for model
   void tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, const bool reset);  // Range check Tb
+  void tbx_check(Sensors *Sen, const float _tb_min, const float _tb_max, const bool reset);  // Range check Tb
   bool tb_fa() { return failRead(TB_FA); };
   bool tb_flt() { return faultRead(TB_FLT); };
+  bool tbx_fa() { return failRead(TBX_FA); };
+  bool tbx_flt() { return faultRead(TBX_FLT); };
   int8_t tb_sel_stat_past() { return tb_sel_stat_last_; };
   int8_t tb_sel_status() { return tb_sel_stat_; };
-  void tb_stale(const bool reset, Sensors *Sen);
   void vb_check(Sensors *Sen, BatteryMonitor *Mon, const float _vb_min, const float _vb_max, const bool reset);  // Range check Vb
   bool vb_clean() { return ( !vb_fail() ); };
   bool vb_fail() { return ( vb_fa_lt() || vb_sel_stat_==0 ); };

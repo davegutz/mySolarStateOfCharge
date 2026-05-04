@@ -235,12 +235,20 @@ public:
   float Vc_hdwe_sum() { return Vc_hdwe_sum_; }
   void Tb(const double input) { Tb_ = input; }
   double Tb() { return Tb_; }
+  void Tbx(const double input) { Tbx_ = input; }
+  double Tbx() { return Tbx_; }
   void Tb_f(const double input) { Tb_f_ = input; }
   double Tb_f() { return Tb_f_; }
+  void Tbx_f(const double input) { Tbx_f_ = input; }
+  double Tbx_f() { return Tbx_f_; }
   void Tb_f_rate(const double input) { Tb_f_rate_ = input; }
   double Tb_f_rate() { return Tb_f_rate_; }
   void Tb_hdwe(const double input) { Tb_hdwe_ = input; }
   double Tb_hdwe() { return Tb_hdwe_; }
+  void Tbx_hdwe(const double input) { Tbx_hdwe_ = input; }
+  double Tbx_hdwe() { return Tbx_hdwe_; }
+  void Tbx_hdwe_f(const double input) { Tbx_hdwe_f_ = input; }
+  double Tbx_hdwe_f() { return Tbx_hdwe_f_; }
   void Tb_hdwe_filt(const double input) { Tb_hdwe_filt_ = input; }
   double Tb_hdwe_filt() { return Tb_hdwe_filt_; }
   void Tb_hdwe_filt_rate(const double input) { Tb_hdwe_filt_rate_ = input; }
@@ -251,6 +259,10 @@ public:
   double Tb_model_filt() { return Tb_model_filt_; }
   void Tb_model_filt_rate(const double input) { Tb_model_filt_rate_ = input; }
   double Tb_model_filt_rate() { return Tb_model_filt_rate_; }
+  void Tbx_model(const double input) { Tb_model_ = input; }
+  double Tbx_model() { return Tb_model_; }
+  void Tbx_model_f(const double input) { Tbx_model_f_ = input; }
+  double Tbx_model_f() { return Tbx_model_f_; }
   void Ib(const float input) { Ib_ = input; }
   float Ib() { return Ib_; }
   void Ib_f(const float input) { Ib_f_ = input; }
@@ -341,7 +353,7 @@ public:
   SlidingDeadband *SdTb;      // Non-linear filter for Tb
   BatterySim *Sim;            // Used to model Vb and Ib.   Use Talk 'Xp?' to toggle model on/off
   uint64_t dt_ib(void) { return dt_ib_; }; // ms since last update of selected Ib sample
-  void select_volt_and_current(BatteryMonitor *Mon);  // Make final signal selection
+  void select_volt_and_current_and_temp(BatteryMonitor *Mon);      // Make final signal selection
   float ib() { return Ib_ / ap.nP(); };                            // Battery unit current, A
   float ib_amp() { return Ib_amp_ / ap.nP(); };                    // Battery amp unit current, A
   float ib_amp_hdwe() { return Ib_amp_hdwe_ / ap.nP(); };          // Battery amp unit current, A
@@ -381,10 +393,12 @@ public:
   bool tb_fa_one_shot() { return tb_fa_one_shot_; };
   void temp_load_and_filter_and_select(BatteryMonitor *Mon, const bool reset_temp);
   float Tb_noise();
+  void tbx_load(const uint16_t vb_pin, const bool reset);           // Analog read of Tb
+  void tbx_print(void);                                             // Print Tb result
   float vb() { return Vb_ / ap.nS(); };                            // Battery select unit voltage, V
   float vb_hdwe() { return Vb_hdwe_ / ap.nS(); };                  // Battery select hardware unit voltage, V
   float vb_hdwe_f() { return Vb_hdwe_f_ / ap.nS(); };              // Battery select hardware unit voltage filtered, V
-  void vb_load(const uint16_t vb_pin, const bool reset);       // Analog read of Vb
+  void vb_load(const uint16_t vb_pin, const bool reset);           // Analog read of Vb
   float vb_model() { return (Vb_model_ / ap.nS()); };              // Battery select model unit voltage, V
   float Vb_add();
   float Vb_noise();
@@ -410,13 +424,19 @@ protected:
   uint64_t sample_time_ib_;       // Exact moment of selected Ib sample, ms
   uint64_t sample_time_ib_hdwe_;  // Exact moment of Ib sample, ms
   uint64_t sample_time_tb_;       // Exact moment of selected Tb sample, ms
+  uint64_t sample_time_tbx_;       // Exact moment of Tbx sample, ms
+  uint64_t sample_time_tbx_hdwe_;  // Exact moment of Tbx sample, ms
   uint64_t sample_time_vb_;       // Exact moment of selected Vb sample, ms
   uint64_t sample_time_vb_hdwe_;  // Exact moment of Vb sample, ms
-  LagExp *SelFiltCal;      // Noise filter for calibration
-  LagExp *VbFilt;       // Noise filter for calibration
-  RecursiveRMSMonitorFP *VbRMS; // RMS noise monitor for Vb
-  RecursiveRMSMonitorFP *VcRMS; // RMS noise monitor for Vc
+  LagExp *SelFiltCal;             // Noise filter for calibration
+  LagExp *TbFilt;                 // Noise filter for calibration
+  LagExp *VbFilt;                 // Noise filter for calibration
+  RecursiveRMSMonitorFP *VbRMS;   // RMS noise monitor for Vb
+  RecursiveRMSMonitorFP *VcRMS;   // RMS noise monitor for Vc
+  AnalogReadP2 *Tbx_read_;      // Tb sense debounce
   AnalogReadP2 *Vb_read_;      // Vb sense debounce
+  int Tbx_raw_;                 // Raw analog read, integer
+  float Tbx_volt_;              // Sensed battery bank temperature at ADC, V
   int Vb_raw_;                 // Raw analog read, integer
   float Vb_;                   // Selected battery bank voltage, V
   float Vb_f_;                 // Selected filtered battery bank voltage, V
@@ -428,13 +448,19 @@ protected:
   float Vc_hdwe_;              // Sensed common reference voltage, V
   float Vc_hdwe_sum_;          // Sensed common reference voltage sum, V
   double Tb_;                  // Selected battery bank temp, C
+  double Tbx_;                  // Selected battery bank temp, C
   double Tb_f_;                // Selected filtered battery bank temp, C
+  double Tbx_f_;                // Selected filtered battery bank temp, C
   double Tb_f_rate_;           // Selected filtered battery bank temp rate, C/s
   double Tb_hdwe_;             // Sensed battery temp, C
+  double Tbx_hdwe_;             // Sensed battery temp, C
   double Tb_hdwe_filt_;        // Filtered, sensed battery temp, C
-  double Tb_hdwe_filt_rate_;   // Filtered, sensed battery temp, C/s
+  double Tb_hdwe_filt_rate_;   // Filtered, battery bank temp rate, C/s
+  double Tbx_hdwe_f_;           // Filtered, sensed battery temp, C
   double Tb_model_;            // Temperature used for battery bank temp in model, C
+  float Tbx_model_;             // Modeled battery bank temp, C
   double Tb_model_filt_;       // Filtered, modeled battery bank temp, C
+  float Tbx_model_f_;           // Filtered, modeled battery bank temp, C
   double Tb_model_filt_rate_;  // Filtered, modeled battery bank temp rate, C/s
   float Ib_;                   // Selected battery bank current, A
   float Ib_f_;                 // Selected filtered battery bank current, A

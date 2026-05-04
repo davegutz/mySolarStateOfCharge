@@ -386,6 +386,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plq(plt, hi, timestr, hi, 'ib_amp_fa', add=4, color='magenta', linestyle='-', marker='_', markersize='3')
         plq(plt, hi, timestr, hi, 'vb_fa_lt', add=2, color='cyan', linestyle='-', marker='1', markersize='3')
         plq(plt, hi, timestr, hi, 'tb_fa', color='orange', linestyle='-', marker='2', markersize='3')
+        plq(plt, hi, timestr, hi, 'tbx_fa', color='orange', linestyle='-', marker='2', markersize='3')
         plt.ylim(-1, 24)
         plt.xlabel(time_units)
         plt.legend(loc=1)
@@ -488,6 +489,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plq(plt, hi, timestr, hi, 'vb_fa_lt', color='black', linestyle=':')
     plq(plt, hi, timestr, hi, 'tb_flt', color='red', linestyle='-')
     plq(plt, hi, timestr, hi, 'tb_fa', color='cyan', linestyle='--')
+    plq(plt, hi, timestr, hi, 'tbx_fa', color='cyan', linestyle='--')
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)
@@ -722,6 +724,7 @@ def calc_fault(d_ra, d_mod):
     ib_amp_fa = np.bool_(falw & 2 ** 2)
     vb_fa_lt = np.bool_(falw & 2 ** 1)
     tb_fa = np.bool_(falw & 2 ** 0)
+    tbx_fa = np.bool_(falw & 2 ** 19)
     d_mod = rf.rec_append_fields(d_mod, 'ib_noa_bare_flt', np.array(ib_noa_bare_flt, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_amp_bare_flt', np.array(ib_amp_bare_flt, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_dscn_fa', np.array(ib_dscn_fa, dtype=float))
@@ -746,6 +749,7 @@ def calc_fault(d_ra, d_mod):
     d_mod = rf.rec_append_fields(d_mod, 'ib_amp_fa', np.array(ib_amp_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'vb_fa_lt', np.array(vb_fa_lt, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'tb_fa', np.array(tb_fa, dtype=float))
+    d_mod = rf.rec_append_fields(d_mod, 'tbx_fa', np.array(tbx_fa, dtype=float))
 
     try:
         ib_diff_flt = np.bool_((fltw & 2 ** 8) | (fltw & 2 ** 9))

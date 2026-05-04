@@ -484,6 +484,7 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
     String::format(" bms_off  %d\n\n", Mon->bms_off()) +
     String::format(" wrap_m_and_n_fa %d\n", Sen->Flt->wrap_m_and_n_fa()) +
     String::format(" Tbh%9.5f Tbm=%9.5f sel%9.5f\n", Sen->Tb_hdwe(), Sen->Tb_model(), Sen->Tb()) +
+    String::format(" Tbxh%9.5f Tbxm=%9.5f sel%9.5f\n", Sen->Tbx_hdwe(), Sen->Tbx_model(), Sen->Tbx()) +
     String::format(" Vbh%7.3f Vbm %7.3f sel%7.3f\n", Sen->Vb_hdwe(), Sen->Vb_model(), Sen->Vb()) +
     String::format(" Vc_h_m%7.3f\n", Sen->ShuntAmp->Vc()) +
     String::format(" Vc_h_n%7.3f\n", Sen->ShuntNoAmp->Vc()) +
@@ -957,21 +958,28 @@ void Fault::tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, con
   }
 }
 
-// Temp stale check
-void Fault::tb_stale(const bool reset, Sensors *Sen)
+// Check Tbx 2-wire analog voltage.  Latches
+void Fault::tbx_check(Sensors *Sen, const float _tb_min, const float _tb_max, const bool reset)
 {
   bool reset_loc = reset | reset_all_faults_;
-
-  if ( ap.disab_tb_fa() || reset_loc || (sp.mod_tb() && !ap.fail_tb()) )
+  if ( reset_loc )
   {
-    faultAssign( false, TB_FLT );
-    failAssign( false, TB_FA );
+    failAssign(false, TBX_FA);
   }
+  if ( sp.mod_tb() )
+  {
+    faultAssign( ((Sen->Tbx_model_f()<=_tb_min) || (Sen->Tbx_model_f()>=_tb_max)) &&
+                 !ap.disab_tb_fa(), TBX_FLT);
+    failAssign( tbx_fa() || TbHardFail->calculate(tb_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T_temp(), reset_loc), TBX_FA);
+  }
+  else if ( ap.disab_tb_fa() || sp.mod_tb() )
+  {
+    faultAssign( false, TBX_FLT);
+    failAssign( false, TBX_FA); }
   else
   {
-    faultAssign( Sen->SensorTb->tb_stale_flt(), TB_FLT );
-    failAssign( TbStaleFail->calculate(tb_flt(), TB_STALE_SET*ap.tb_stale_time_slr(), TB_STALE_RES*ap.tb_stale_time_slr(),
-      Sen->T_temp(), reset_loc), TB_FA );
+    faultAssign( (Sen->Tbx_hdwe()<=_tb_min) || (Sen->Tbx_hdwe()>=_tb_max), TBX_FLT);
+    failAssign( tbx_fa() || TbHardFail->calculate(tb_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TBX_FA);
   }
 }
 

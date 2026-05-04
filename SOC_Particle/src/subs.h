@@ -111,7 +111,7 @@ struct Pins
 void sample_burst(Pins *myPins, Sensors *SenS);
 void harvest_temp_change(const double tb_f, BatteryMonitor *Mon, BatterySim *Sim, const float rate, const float dt);
 void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const bool use_soc_in);
-void load_ib_vb(const bool reset, const bool reset_temp, const bool reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon);
+void load_ib_vb_tb(const bool reset, const bool reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon);
 void monitor(const bool reset, const bool reset_temp,  const bool reset_ekf, const uint64_t now,
   TFDelay *Is_sat_delay, BatteryMonitor *Mon, Sensors *Sen);
 void serial_display(Sensors *Sen, BatteryMonitor *Mon);

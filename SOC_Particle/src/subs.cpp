@@ -227,7 +227,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
 
 // Load high fidelity signals; filtered in hardware the same bandwidth, sampled the same
 // Outputs:   Sen->Ib_model_in, Sen->Ib_hdwe, 
-void load_ib_vb(const bool reset, const bool reset_temp, const bool reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon)
+void load_ib_vb_tb(const bool reset, const bool reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon)
 {
   // Load shunts Ib
   // Outputs:  Sen->Ib_model_in, Sen->Ib_hdwe, Sen->Vb, Sen->Wb
@@ -246,6 +246,13 @@ void load_ib_vb(const bool reset, const bool reset_temp, const bool reset_kf, Se
   if ( !sp.mod_vb_dscn() )  Sen->Flt->vb_check(Sen, Mon, VB_MIN, VB_MAX, reset);
   else                      Sen->Flt->vb_check(Sen, Mon, -1.0, 1.0, reset);
   if ( sp.debug()==15 ) Sen->vb_print();
+
+  // Load temperature Tbx
+  Sen->tbx_load(myPins->VTb_pin, reset);
+  
+  if ( !sp.mod_vb_dscn() )  Sen->Flt->tbx_check(Sen, TB_MIN, TB_MAX,  reset);  // Sets tb_fa()
+  else                      Sen->Flt->tbx_check(Sen, -1.0, 1.0, reset);
+  if ( sp.debug()==16 ) Sen->tbx_print();
 
   // Power calculation
   Sen->Wb(Sen->Vb()*Sen->Ib());
@@ -290,7 +297,7 @@ void sense_synth_select(const bool reset, const bool reset_temp, const bool rese
 
   // Load Ib and Vb
   // Outputs: Sen->Ib_model_in, Sen->Ib, Sen->Vb
-  load_ib_vb(reset, reset_temp, reset_kf, Sen, myPins, Mon);
+  load_ib_vb_tb(reset, reset_kf, Sen, myPins, Mon);
 
   // Sim initialize as needed from memory
   if ( reset_temp )
@@ -329,8 +336,8 @@ void sense_synth_select(const bool reset, const bool reset_temp, const bool rese
   //  constant,         Tb_hdwe, Tb_hdwe_filt       --->   Tb, Tb_f
   // Log.info("  sense_synth_select:  select_all_logic");
   Sen->Flt->select_all_logic(Sen, Mon, reset);
-  // Log.info("  sense_synth_select:  select_volt_and_current");
-  Sen->select_volt_and_current(Mon);
+  // Log.info("  sense_synth_select:  select_volt_and_current_and_temp");
+  Sen->select_volt_and_current_and_temp(Mon);
 
   // Fault snap buffer management
   static uint8_t fails_repeated = 0;
