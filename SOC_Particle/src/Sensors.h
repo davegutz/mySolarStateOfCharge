@@ -249,6 +249,12 @@ public:
   double Tbx_hdwe() { return Tbx_hdwe_; }
   void Tbx_hdwe_f(const double input) { Tbx_hdwe_f_ = input; }
   double Tbx_hdwe_f() { return Tbx_hdwe_f_; }
+  void Tbx_hdwe_f_rate(const double input) { Tbx_hdwe_f_rate_ = input; }
+  double Tbx_hdwe_f_rate() { return Tbx_hdwe_f_rate_; }
+  void Tbx_hdwe_f_rstate(const double input) { Tbx_hdwe_f_rstate_ = input; }
+  double Tbx_hdwe_f_rstate() { return Tbx_hdwe_f_rstate_; }
+  void Tbx_hdwe_f_lstate(const double input) { Tbx_hdwe_f_lstate_ = input; }
+  double Tbx_hdwe_f_lstate() { return Tbx_hdwe_f_lstate_; }
   void Tb_hdwe_filt(const double input) { Tb_hdwe_filt_ = input; }
   double Tb_hdwe_filt() { return Tb_hdwe_filt_; }
   void Tb_hdwe_filt_rate(const double input) { Tb_hdwe_filt_rate_ = input; }
@@ -393,8 +399,8 @@ public:
   bool tb_fa_one_shot() { return tb_fa_one_shot_; };
   void temp_load_and_filter_and_select(BatteryMonitor *Mon, const bool reset_temp);
   float Tb_noise();
-  void tbx_load(const uint16_t vb_pin, const bool reset);           // Analog read of Tb
-  void tbx_print(void);                                             // Print Tb result
+  void Tbx_load(const uint16_t vb_pin, const bool reset);           // Analog read of Tb
+  void Tbx_print(void);                                             // Print Tb result
   float vb() { return Vb_ / ap.nS(); };                            // Battery select unit voltage, V
   float vb_hdwe() { return Vb_hdwe_ / ap.nS(); };                  // Battery select hardware unit voltage, V
   float vb_hdwe_f() { return Vb_hdwe_f_ / ap.nS(); };              // Battery select hardware unit voltage filtered, V
@@ -424,12 +430,12 @@ protected:
   uint64_t sample_time_ib_;       // Exact moment of selected Ib sample, ms
   uint64_t sample_time_ib_hdwe_;  // Exact moment of Ib sample, ms
   uint64_t sample_time_tb_;       // Exact moment of selected Tb sample, ms
-  uint64_t sample_time_tbx_;       // Exact moment of Tbx sample, ms
-  uint64_t sample_time_tbx_hdwe_;  // Exact moment of Tbx sample, ms
+  uint64_t sample_time_Tbx_;       // Exact moment of Tbx sample, ms
+  uint64_t sample_time_Tbx_hdwe_;  // Exact moment of Tbx sample, ms
   uint64_t sample_time_vb_;       // Exact moment of selected Vb sample, ms
   uint64_t sample_time_vb_hdwe_;  // Exact moment of Vb sample, ms
   LagExp *SelFiltCal;             // Noise filter for calibration
-  LagExp *TbFilt;                 // Noise filter for calibration
+  LagExp *TbxHdweFilt;                 // Noise filter for calibration
   LagExp *VbFilt;                 // Noise filter for calibration
   RecursiveRMSMonitorFP *VbRMS;   // RMS noise monitor for Vb
   RecursiveRMSMonitorFP *VcRMS;   // RMS noise monitor for Vc
@@ -457,6 +463,9 @@ protected:
   double Tb_hdwe_filt_;        // Filtered, sensed battery temp, C
   double Tb_hdwe_filt_rate_;   // Filtered, battery bank temp rate, C/s
   double Tbx_hdwe_f_;           // Filtered, sensed battery temp, C
+  double Tbx_hdwe_f_rate_;      // Filtered, sensed battery temp rate, C/s
+  double Tbx_hdwe_f_rstate_;    // Filtered, sensed battery temp rate state, C/s
+  double Tbx_hdwe_f_lstate_;    // Filtered, sensed battery temp rate state, C/s
   double Tb_model_;            // Temperature used for battery bank temp in model, C
   float Tbx_model_;             // Modeled battery bank temp, C
   double Tb_model_filt_;       // Filtered, modeled battery bank temp, C

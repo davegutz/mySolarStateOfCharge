@@ -330,11 +330,11 @@ public:
   void shunt_check(Sensors *Sen, BatteryMonitor *Mon, const bool reset);  // Range check Ib signals
   void shunt_select_initial(const bool reset);   // Choose between shunts for model
   void tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, const bool reset);  // Range check Tb
-  void tbx_check(Sensors *Sen, const float _tb_min, const float _tb_max, const bool reset);  // Range check Tb
+  void Tbx_check(Sensors *Sen, const float _tb_min, const float _tb_max, const bool reset);  // Range check Tb
   bool tb_fa() { return failRead(TB_FA); };
   bool tb_flt() { return faultRead(TB_FLT); };
-  bool tbx_fa() { return failRead(TBX_FA); };
-  bool tbx_flt() { return faultRead(TBX_FLT); };
+  bool Tbx_fa() { return failRead(TBX_FA); };
+  bool Tbx_flt() { return faultRead(TBX_FLT); };
   int8_t tb_sel_stat_past() { return tb_sel_stat_last_; };
   int8_t tb_sel_status() { return tb_sel_stat_; };
   void vb_check(Sensors *Sen, BatteryMonitor *Mon, const float _vb_min, const float _vb_max, const bool reset);  // Range check Vb

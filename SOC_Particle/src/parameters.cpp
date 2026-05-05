@@ -155,7 +155,7 @@ void  VolatilePars::initialize()
     V_[n_++] =(vc_add_p         = new FloatV("  ", "D3", NULL,"Bias on Vc/Vr",        "v",     -1.65, 0.85, &vc_add_,          0));  // D3
     V_[n_++] =(wait_inj_p       = new ULongV("  ", "XW", NULL,"Wait start inj",       "ms",     0UL,  120000UL, &wait_inj_,    0UL));  // XW
     V_[n_++] =(voc_stat_filt_p  = new FloatV("  ", "VF", NULL,"voc_stat_f time",      "s",      1,    180,  &voc_stat_filt_,   VOC_STAT_FILT));  // VF
-    V_[n_++] =(tb_filt_p        = new FloatV("  ", "VT", NULL,"tb_f time",            "s",      1,    180,  &tb_filt_,         TB_FILT));  // VT
+    V_[n_++] =(Tbx_filt_p        = new FloatV("  ", "VT", NULL,"Tbx_f time",            "s",      1,    180,  &Tbx_filt_,         TB_FILT));  // VT
     V_[n_++] =(ekf_q_p          = new FloatV("  ", "VQ", NULL,"EKF_Q_SD_NORM volt",   "slr",    0,    10000,&ekf_q_,           1));  // VQ
     V_[n_++] =(ekf_r_p          = new FloatV("  ", "VR", NULL,"EKF_R_SD_NORM frac",   "slr",    0,    10000,&ekf_r_,           1));  // VR
     V_[n_++] =(ekf_conv_p       = new FloatV("  ", "VC", NULL,"ekf conv abs",         "v",      0,    1,    &ekf_conv_,        EKF_CONV));  // V:C

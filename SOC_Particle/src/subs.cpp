@@ -248,11 +248,10 @@ void load_ib_vb_tb(const bool reset, const bool reset_kf, Sensors *Sen, Pins *my
   if ( sp.debug()==15 ) Sen->vb_print();
 
   // Load temperature Tbx
-  Sen->tbx_load(myPins->VTb_pin, reset);
-  
-  if ( !sp.mod_vb_dscn() )  Sen->Flt->tbx_check(Sen, TB_MIN, TB_MAX,  reset);  // Sets tb_fa()
-  else                      Sen->Flt->tbx_check(Sen, -1.0, 1.0, reset);
-  if ( sp.debug()==16 ) Sen->tbx_print();
+  Sen->Tbx_load(myPins->VTb_pin, reset);
+  if ( !sp.mod_vb_dscn() )  Sen->Flt->Tbx_check(Sen, TB_MIN, TB_MAX,  reset);  // Sets tb_fa()
+  else                      Sen->Flt->Tbx_check(Sen, -1.0, 1.0, reset);
+  if ( sp.debug()==18 ) Sen->Tbx_print();
 
   // Power calculation
   Sen->Wb(Sen->Vb()*Sen->Ib());
