@@ -243,6 +243,8 @@ public:
   double Tbx_f() { return Tbx_f_; }
   void Tb_f_rate(const double input) { Tb_f_rate_ = input; }
   double Tb_f_rate() { return Tb_f_rate_; }
+  void Tbx_f_rate(const double input) { Tbx_f_rate_ = input; }
+  double Tbx_f_rate() { return Tbx_f_rate_; }
   void Tb_hdwe(const double input) { Tb_hdwe_ = input; }
   double Tb_hdwe() { return Tb_hdwe_; }
   void Tbx_hdwe(const double input) { Tbx_hdwe_ = input; }
@@ -265,10 +267,16 @@ public:
   double Tb_model_filt() { return Tb_model_filt_; }
   void Tb_model_filt_rate(const double input) { Tb_model_filt_rate_ = input; }
   double Tb_model_filt_rate() { return Tb_model_filt_rate_; }
-  void Tbx_model(const double input) { Tb_model_ = input; }
-  double Tbx_model() { return Tb_model_; }
+  void Tbx_model(const double input) { Tbx_model_ = input; }
+  double Tbx_model() { return Tbx_model_; }
   void Tbx_model_f(const double input) { Tbx_model_f_ = input; }
   double Tbx_model_f() { return Tbx_model_f_; }
+  void Tbx_model_f_rate(const double input) { Tbx_model_f_rate_ = input; }
+  double Tbx_model_f_rate() { return Tbx_model_f_rate_; }
+  void Tbx_model_f_lstate(const double input) { Tbx_model_f_lstate_ = input; }
+  double Tbx_model_f_lstate() { return Tbx_model_f_lstate_; }
+  void Tbx_model_f_rstate(const double input) { Tbx_model_f_rstate_ = input; }
+  double Tbx_model_f_rstate() { return Tbx_model_f_rstate_; }
   void Ib(const float input) { Ib_ = input; }
   float Ib() { return Ib_; }
   void Ib_f(const float input) { Ib_f_ = input; }
@@ -436,6 +444,7 @@ protected:
   uint64_t sample_time_vb_hdwe_;  // Exact moment of Vb sample, ms
   LagExp *SelFiltCal;             // Noise filter for calibration
   LagExp *TbxHdweFilt;                 // Noise filter for calibration
+  LagExp *TbxModelFilt;                // Noise filter for calibration
   LagExp *VbFilt;                 // Noise filter for calibration
   RecursiveRMSMonitorFP *VbRMS;   // RMS noise monitor for Vb
   RecursiveRMSMonitorFP *VcRMS;   // RMS noise monitor for Vc
@@ -454,23 +463,27 @@ protected:
   float Vc_hdwe_;              // Sensed common reference voltage, V
   float Vc_hdwe_sum_;          // Sensed common reference voltage sum, V
   double Tb_;                  // Selected battery bank temp, C
-  double Tbx_;                  // Selected battery bank temp, C
   double Tb_f_;                // Selected filtered battery bank temp, C
-  double Tbx_f_;                // Selected filtered battery bank temp, C
   double Tb_f_rate_;           // Selected filtered battery bank temp rate, C/s
   double Tb_hdwe_;             // Sensed battery temp, C
-  double Tbx_hdwe_;             // Sensed battery temp, C
   double Tb_hdwe_filt_;        // Filtered, sensed battery temp, C
   double Tb_hdwe_filt_rate_;   // Filtered, battery bank temp rate, C/s
+  double Tb_model_;            // Temperature used for battery bank temp in model, C
+  double Tb_model_filt_;       // Filtered, modeled battery bank temp, C
+  double Tb_model_filt_rate_;  // Filtered, modeled battery bank temp rate, C/s
+  double Tbx_;                  // Selected battery bank temp, C
+  double Tbx_f_;                // Selected filtered battery bank temp, C
+  double Tbx_f_rate_;           // Selected filtered battery bank temp rate, C/s
+  double Tbx_hdwe_;             // Sensed battery temp, C
   double Tbx_hdwe_f_;           // Filtered, sensed battery temp, C
   double Tbx_hdwe_f_rate_;      // Filtered, sensed battery temp rate, C/s
   double Tbx_hdwe_f_rstate_;    // Filtered, sensed battery temp rate state, C/s
   double Tbx_hdwe_f_lstate_;    // Filtered, sensed battery temp rate state, C/s
-  double Tb_model_;            // Temperature used for battery bank temp in model, C
   float Tbx_model_;             // Modeled battery bank temp, C
-  double Tb_model_filt_;       // Filtered, modeled battery bank temp, C
   float Tbx_model_f_;           // Filtered, modeled battery bank temp, C
-  double Tb_model_filt_rate_;  // Filtered, modeled battery bank temp rate, C/s
+  double Tbx_model_f_rate_;     // Filtered, modeled battery bank temp rate, C/s
+  double Tbx_model_f_rstate_;   // Filtered, sensed battery temp rate state, C/s
+  double Tbx_model_f_lstate_;   // Filtered, sensed battery temp rate state, C/s
   float Ib_;                   // Selected battery bank current, A
   float Ib_f_;                 // Selected filtered battery bank current, A
   float Ib_amp_;               // Initial selected amp battery bank current, A

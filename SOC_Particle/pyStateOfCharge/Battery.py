@@ -423,6 +423,8 @@ class BatteryMonitor(Battery, EKF1x1):
             self.Tb_hdwe_filt_rate = SN.Tb_hdwe_filt_rate_init
             self.Tb_model_filt =SN.Tb_model_filt_init
             self.Tb_model_filt_rate = SN.Tb_model_filt_rate_init
+            self.Tbx_model_f = SN.mon_run.Tbx_model_f[0]
+            self.Tbx_model_f_rate = SN.mon_run.Tbx_model_f_rate[0]
             self.e_wrap = SN.e_wrap_init
             self.e_wrap_filt = SN.mon_run.e_wrap_filt[0]
             self.ib_amp_lo = False

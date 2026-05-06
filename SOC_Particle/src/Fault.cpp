@@ -970,7 +970,7 @@ void Fault::Tbx_check(Sensors *Sen, const float _tb_min, const float _tb_max, co
   {
     faultAssign( ((Sen->Tbx_model_f()<=_tb_min) || (Sen->Tbx_model_f()>=_tb_max)) &&
                  !ap.disab_tb_fa(), TBX_FLT);
-    failAssign( Tbx_fa() || TbHardFail->calculate(tb_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T_temp(), reset_loc), TBX_FA);
+    failAssign( Tbx_fa() || TbHardFail->calculate(Tbx_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T_temp(), reset_loc), TBX_FA);
   }
   else if ( ap.disab_tb_fa() || sp.mod_tb() )
   {
@@ -979,7 +979,7 @@ void Fault::Tbx_check(Sensors *Sen, const float _tb_min, const float _tb_max, co
   else
   {
     faultAssign( (Sen->Tbx_hdwe()<=_tb_min) || (Sen->Tbx_hdwe()>=_tb_max), TBX_FLT);
-    failAssign( Tbx_fa() || TbHardFail->calculate(tb_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TBX_FA);
+    failAssign( Tbx_fa() || TbHardFail->calculate(Tbx_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TBX_FA);
   }
 }
 

@@ -110,7 +110,9 @@ class Sensors:
             self.Tb_f_past = self.mon_run.Tb_f_rap[0] + self.dTb
             self.Tb_f_rate_past = self.mon_run.Tb_f_rate_rap[0]
             self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
+            self.TbxSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
             self.TbModelFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
+            self.TbxModelFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
             self.LoopAmp = SensorLooparound(self.mon_run.ib_amp_hdwe, self.mon_run.ib_dyn_m, self.mon_run.e_wrap_m_trim,
                                             self.mon_run.e_wrap_m_filt)
             self.LoopNoa = SensorLooparound(self.mon_run.ib_noa_hdwe, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_n_trim,
@@ -333,10 +335,18 @@ class Sensors:
             mon.Tb_hdwe = OPT.mon_run.Tb_hdwe[i_temp]
         else:
             mon.Tb_hdwe = OPT.mon_run.Tb_f[i_temp]
+        if hasattr(OPT.mon_run, 'Tbx_hdwe'):
+            mon.Tbx_hdwe = OPT.mon_run.Tbx_hdwe[i_temp]
+        else:
+            mon.Tbx_hdwe = OPT.mon_run.Tbx_f[i_temp]
         if hasattr(OPT.mon_run, 'Tb_model'):
             mon.Tb_model = OPT.mon_run.Tb_model[i_temp]
         else:
             mon.Tb_model = OPT.mon_run.Tb_f[i_temp]
+        if hasattr(OPT.mon_run, 'Tbx_model'):
+            mon.Tbx_model = OPT.mon_run.Tbx_model[i_temp]
+        else:
+            mon.Tbx_model = OPT.mon_run.Tbx_f[i_temp]
         mon.reset_temp = (i_temp < 2) or mon.reset or OPT.run_type == 'HistSim'  # make sure temp init is longer than reset
         if hasattr(OPT.mon_run, 'Tt'):
             mon.dt_temp = OPT.mon_run.Tt[i_temp]
@@ -399,23 +409,39 @@ class Sensors:
                 mon.Tb = Battery.NOMINAL_TB
                 mon.Tb_f = Battery.NOMINAL_TB
                 mon.Tb_f_rate = 0.
+                mon.Tbx = Battery.NOMINAL_TB
+                mon.Tbx_f = Battery.NOMINAL_TB
+                mon.Tbx_f_rate = 0.
             else:
                 mon.Tb = mon.Tb_model
                 mon.Tb_f = mon.Tb_model_filt
                 mon.Tb_f_rate = mon.Tb_model_filt_rate
+                mon.Tbx = mon.Tbx_model
+                mon.Tbx_f = mon.Tbx_model_f
+                mon.Tbx_f_rate = mon.Tbx_model_rate
             mon.Tb_rstate = self.TbModelFilt.rstate
             mon.Tb_state = self.TbModelFilt.state
+            mon.Tbx_rstate = self.TbxModelFilt.rstate
+            mon.Tbx_state = self.TbxModelFilt.state
         else:
             if mon.tb_fa:
                 mon.Tb = Battery.NOMINAL_TB
                 mon.Tb_f = Battery.NOMINAL_TB
                 mon.Tb_f_rate = 0.
+                mon.Tbx = Battery.NOMINAL_TB
+                mon.Tbx_f = Battery.NOMINAL_TB
+                mon.Tbx_f_rate = 0.
             else:
                 mon.Tb = mon.Tb_hdwe
                 mon.Tb_f = mon.Tb_hdwe_filt
                 mon.Tb_f_rate = mon.Tb_hdwe_filt_rate
+                mon.Tbx = mon.Tbx_hdwe
+                mon.Tbx_f = mon.Tbx_hdwe_f
+                mon.Tbx_f_rate = mon.Tbx_hdwe_f_rate
             mon.Tb_rstate = self.TbSenseFilt.rstate
             mon.Tb_state = self.TbSenseFilt.state
+            mon.Tbx_rstate = self.TbxSenseFilt.rstate
+            mon.Tbx_state = self.TbxSenseFilt.state
         # Final assignments
         if not mon.reset_temp:
             mon.Tb_rap = self.Tb_past
@@ -447,6 +473,17 @@ class Sensors:
         else:
             mon.Tb_hdwe_filt = \
                 self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon.Tb_hdwe, mon.reset_temp,
+                                                      mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
+                                                      rmin=-Battery_.T_RLIM)
+
+        if hasattr(mon_run, 'Tbx_hdwe_f'):
+            mon.Tbx_hdwe_f = \
+                self.TbxSenseFilt.calculate_tau_seeded(mon.Tbx_hdwe, mon_run.Tbx_hdwe_f[i_temp], mon.reset_temp,
+                                                      mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
+                                                      rmin=-Battery_.T_RLIM)
+        else:
+            mon.Tbx_hdwe_f = \
+                self.TbxSenseFilt.calculate_tau_seeded(mon.Tbx_hdwe, mon.Tbx_hdwe, mon.reset_temp,
                                                       mon.dt_temp, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
 

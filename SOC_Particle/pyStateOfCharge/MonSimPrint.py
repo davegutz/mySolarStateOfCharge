@@ -567,7 +567,7 @@ def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
             vv_warning_printed = True
             print(Colors.reset, end='')
         return None
-    hdr = "  i  time     r   rt rk  it ct mtb     re  ie   ce     Tt               Tb_hdwe                       tb_fa         tbx_fa     Tb                         Tb_hdwe_filt               Tb_rap                     Tbx                        Tb_f_rap                   Tbx_f                      Tb_model                   Tb_model_filt              Tb_f                       Tb_f_s                      Tb_model_filt_rate         Tb_hdwe_filt_rate          Tb_f_rate                              Tb_f_rate_rap             tb_f_for_hx"
+    hdr = "  i  time     r   rt rk  it ct mtb     re  ie   ce     Tt               Tb_hdwe                       tb_fa         tbx_fa     Tb                         Tb_hdwe_filt               Tbx_hdwe_filt              Tb_rap                     Tbx                        Tb_f_rap                   Tbx_f                      Tb_model                   Tbx_model                  Tb_model_filt              Tbx_model_f                Tb_f                       Tb_f_s                      Tb_model_filt_rate          Tbx_model_f_rate           Tb_hdwe_filt_rate          Tbx_hdwe_f_rate            Tb_f_rate                              Tb_f_rate_rap             Tbx_f_rate               tb_f_for_hx"
     if calc_temp and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -588,18 +588,24 @@ def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
           "{:8d}".format(bool(SN.mon_run.tbx_fa[i_temp])), "{:4d}".format(mon.tbx_fa),
           "{:14.7f}".format(SN.mon_run.Tb[i_temp]), "{:11.7f}".format(mon.Tb),
           "{:14.7f}".format(SN.mon_run.Tb_hdwe_filt[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt),
+          "{:14.7f}".format(SN.mon_run.Tb_hdwe_filt[i_temp]), "{:11.7f}".format(mon.Tbx_hdwe_f),
           "{:14.7f}".format(SN.mon_run.Tb_rap[G.i]), "{:11.7f}".format(mon.Tb_rap),
           "{:14.7f}".format(SN.mon_run.Tbx[i_temp]), "{:11.7f}".format(mon.Tbx),
           "{:14.7f}".format(SN.mon_run.Tb_f_rap[G.i]), "{:11.7f}".format(mon.Tb_f_rap),
           "{:14.7f}".format(SN.mon_run.Tbx_f[i_temp]), "{:11.7f}".format(mon.Tbx_f),
           "{:14.7f}".format(SN.mon_run.Tb_model[i_temp]), "{:11.7f}".format(mon.Tb_model),
+          "{:14.7f}".format(SN.mon_run.Tbx_model[i_temp]), "{:11.7f}".format(mon.Tbx_model),
           "{:14.7f}".format(SN.mon_run.Tb_model_filt[i_temp]), "{:11.7f}".format(mon.Tb_model_filt),
+          "{:14.7f}".format(SN.mon_run.Tbx_model_f[i_temp]), "{:11.7f}".format(mon.Tbx_model_f),
           "{:14.7f}".format(SN.mon_run.Tb_f[i_temp]), "{:11.7f}".format(mon.Tb_f),
           "{:14.7f}".format(SN.sim_run.Tb_f_s[G.i]), "{:11.7f}".format(sim.Tb_f),
           "{:14.7f}".format(SN.mon_run.Tb_model_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_model_filt_rate),
+          "{:14.7f}".format(SN.mon_run.Tbx_model_f_rate[i_temp]), "{:11.7f}".format(mon.Tbx_model_f_rate),
           "{:14.7f}".format(SN.mon_run.Tb_hdwe_filt_rate[i_temp]), "{:11.7f}".format(mon.Tb_hdwe_filt_rate),
+          "{:14.7f}".format(SN.mon_run.Tbx_hdwe_f_rate[i_temp]), "{:11.7f}".format(mon.Tbx_hdwe_f_rate),
           "{:14.7f}".format(SN.mon_run.Tb_f_rate[i_temp]), "{:11.7f}".format(mon.Tb_f_rate), "{:11.7f}".format(SN.Tb_f_rate),
           "{:14.7f}".format(SN.mon_run.Tb_f_rate_rap[G.i]), "{:11.7f}".format(mon.Tb_f_rate_rap),
+          "{:14.7f}".format(SN.mon_run.Tbx_f_rate[G.i]), "{:11.7f}".format(mon.Tbx_f_rate),
           "{:14.7f}".format(SN.mon_run.tb_f_for_hx[i_ekf]), "{:10.7f}".format(mon.tb_f_for_hx),
           )
     print(Colors.reset, end='')

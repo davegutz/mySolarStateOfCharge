@@ -101,12 +101,18 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
     Sen->Tb(Sen->Tb_model());
     Sen->Tb_f(Sen->Tb_model_filt());
     Sen->Tb_f_rate(Sen->Tb_model_filt_rate());
+    Sen->Tbx(Sen->Tbx_model());
+    Sen->Tbx_f(Sen->Tbx_model_f());
+    Sen->Tbx_f_rate(Sen->Tbx_model_f_rate());
   }
   else
   {
     Sen->Tb(Sen->Tb_hdwe());
     Sen->Tb_f(Sen->Tb_hdwe_filt());
     Sen->Tb_f_rate(Sen->Tb_hdwe_filt_rate());
+    Sen->Tbx(Sen->Tbx_hdwe());
+    Sen->Tbx_f(Sen->Tbx_hdwe_f());
+    Sen->Tbx_f_rate(Sen->Tbx_hdwe_f_rate());
   }
   if ( use_soc_in )
   {

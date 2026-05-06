@@ -232,11 +232,13 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   uint64_t time_now, uint64_t millis, BatteryMonitor *Mon):
   AmpFilt(nullptr), dt_ib_(0ULL), dt_ib_hdwe_(0ULL), IbAmpRMS(nullptr), IbNoaRMS(nullptr),
   inst_millis_(millis), inst_time_(time_now), NoaFilt(nullptr), Prbn_Tb_(nullptr), Prbn_Vb_(nullptr), Prbn_Ib_amp_(nullptr), Prbn_Ib_noa_(nullptr),
-  reset_temp_(false), sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_tb_(0UL), sample_time_Tbx_hdwe_(0UL), sample_time_vb_(0UL), sample_time_vb_hdwe_(0UL),
+  reset_temp_(false), sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_tb_(0UL), sample_time_Tbx_(0ULL), sample_time_Tbx_hdwe_(0UL), sample_time_vb_(0UL), sample_time_vb_hdwe_(0UL),
   SelFiltCal(nullptr), VbFilt(nullptr), VbRMS(nullptr), VcRMS(nullptr), Tbx_raw_(0), Tbx_volt_(NOMINAL_TB), Vb_raw_(0), Vb_(NOMINAL_VB), Vb_f_(NOMINAL_VB), Vb_hdwe_(NOMINAL_VB),
   Vb_hdwe_f_(NOMINAL_VB), Vb_model_(NOMINAL_VB), Vb_volt_(NOMINAL_VB), Vc_(0.), Vc_hdwe_(0.), Vc_hdwe_sum_(0.),
-  Tb_(NOMINAL_TB), Tb_f_(NOMINAL_TB), Tb_f_rate_(0.), Tbx_hdwe_(NOMINAL_TB), Tbx_hdwe_f_(NOMINAL_TB),
-  Tb_model_(NOMINAL_TB), Tbx_model_(NOMINAL_TB), Tb_model_filt_(NOMINAL_TB), Tbx_model_f_(NOMINAL_TB), Tb_model_filt_rate_(0.),
+  Tb_(NOMINAL_TB), Tb_f_(NOMINAL_TB), Tb_f_rate_(0.), Tb_hdwe_(NOMINAL_TB), Tb_hdwe_filt_(NOMINAL_TB),  Tb_hdwe_filt_rate_(0.),
+  Tb_model_(NOMINAL_TB), Tb_model_filt_(NOMINAL_TB), Tb_model_filt_rate_(0.), 
+  Tbx_(NOMINAL_TB), Tbx_f_(NOMINAL_TB), Tbx_hdwe_(NOMINAL_TB), Tbx_hdwe_f_(NOMINAL_TB), Tbx_hdwe_f_rate_(0.), Tbx_hdwe_f_rstate_(NOMINAL_TB), Tbx_hdwe_f_lstate_(NOMINAL_TB),
+  Tbx_model_(NOMINAL_TB), Tbx_model_f_(NOMINAL_TB),  Tbx_model_f_rate_(0.), 
   Ib_(0.), Ib_f_(0.), Ib_amp_(0.), Ib_amp_hdwe_(0.), Ib_amp_hdwe_f_(0.), Ib_amp_hdwe_kf_(0.), Ib_amp_model_(0.), Ib_amp_rms_(0.),
   Ib_hdwe_f_(0.), Ib_hdwe_kf_(0.), Ib_hdwe_f_cal_(0.), Ib_noa_(0.), Ib_noa_hdwe_(0.), Ib_noa_hdwe_f_(0.), Ib_noa_hdwe_kf_(0.), Ib_noa_rms_(0.),
   Ib_noa_model_(0.), Ib_hdwe_(0.), Ib_hdwe_model_(0.), Ib_model_(0.), Ib_model_in_(0.),
@@ -280,6 +282,7 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   NoaFilt = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*ap.nS()*ap.nP(), NOM_UNIT_CAP*ap.nS()*ap.nP());
   SelFiltCal = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*ap.nS()*ap.nP(), NOM_UNIT_CAP*ap.nS()*ap.nP());
   TbxHdweFilt = new LagExp(double(READ_DELAY)/1000., ap.Tbx_filt(), -20.0, 150.);
+  TbxModelFilt = new LagExp(double(READ_DELAY)/1000., ap.Tbx_filt(), -20.0, 150.);
   VbFilt = new LagExp(T, AMP_FILT_TAU, 0., NOMINAL_VB*2.5);
   Vb_read_ = new AnalogReadP2(pins->Vb_pin);
   Tbx_read_ = new AnalogReadP2(pins->VTb_pin);
@@ -418,10 +421,10 @@ void Sensors::select_volt_and_current_and_temp(BatteryMonitor *Mon)
   // Tbx
   if ( sp.mod_tb() )
   {
-    Tbx_f_ = Tbx_;
+    Tbx_f_ = Tbx_model_;
     if ( Flt->tb_fa() && !ap.fake_faults() )
     {
-      Tbx_ = NOMINAL_TB;
+      Tbx_ = Tbx_model_;
       sample_time_Tbx_ = Sim->sample_time();
     }
     else
@@ -739,14 +742,16 @@ void Sensors::Tbx_load(const uint16_t tb_pin, const bool reset)
       // Steinhart-Hart (see '2-wireRTD.ods')
       float lnres = log(res);
       Tbx_hdwe_ = ( 1. / max( HDWE_SHA_2WIRE + (HDWE_SHB_2WIRE + HDWE_SHC_2WIRE *lnres*lnres) * lnres, 0.000001 ) ) - 273.;
-    if ( sp.debug()==18 ) Serial.printf("Tbx_load: Tbx_hdwe%7.3f + sp.Tb_bias_hdwe%7.3f  = ", Tbx_hdwe_, sp.Tb_bias_hdwe());
       Tbx_hdwe_ += sp.Tb_bias_hdwe();  // Fault injection
-    if ( sp.debug()==18 ) Serial.printf("Tbx_hdwe%7.3f\n", Tbx_hdwe_);
     #endif
     Tbx_hdwe_f_ = TbxHdweFilt->calculate(Tbx_hdwe_, reset, ap.Tbx_filt(), T_);
     Tbx_hdwe_f_rate_ = TbxHdweFilt->rate();
     Tbx_hdwe_f_rstate_ = TbxHdweFilt->rstate();
     Tbx_hdwe_f_lstate_ = TbxHdweFilt->lstate();
+    Tbx_model_f_ = TbxModelFilt->calculate(Tbx_model_, reset, ap.Tbx_filt(), T_);
+    Tbx_model_f_rate_ = TbxModelFilt->rate();
+    Tbx_model_f_rstate_ = TbxModelFilt->rstate();
+    Tbx_model_f_lstate_ = TbxModelFilt->lstate();
   }
   else
   {

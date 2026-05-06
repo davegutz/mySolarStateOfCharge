@@ -225,6 +225,8 @@ float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool 
     // Inputs
     tb_f_ = Sen->Tb_f();
     tb_f_rate_ = Sen->Tb_f_rate();
+    Tbx_f_ = Sen->Tbx_f();
+    Tbx_f_rate_ = Sen->Tbx_f_rate();
     vsat_ = calc_vsat();
     dt_ =  Sen->T();
     ctime_ = Sen->cTime();
@@ -663,6 +665,7 @@ float BatterySim::calculate(Sensors *Sen, const bool dc_dc_on, const bool reset)
 {
     // Inputs
     tb_f_ = Sen->Tb_model_filt();
+    Tbx_f_ = Sen->Tbx_model_f();
     ctime_ = Sen->cTime();
     dt_ = Sen->T();
     ib_in_ = Sen->Ib_model_in() / ap.nP();
@@ -826,6 +829,8 @@ float BatterySim::count_coulombs(Sensors *Sen, const bool reset_temp, BatteryMon
     // Rate limit temperature.  When modeling, initialize to no change
     tb_f_ = Sen->Tb_model_filt();
     tb_f_rate_ = Sen->Tb_f_rate();
+    Tbx_f_ = Sen->Tbx_model_f();
+    Tbx_f_rate_ = Sen->Tbx_f_rate();
 
     // Saturation and re-init.   Goal is to set q_capacity and hold it so remember last saturation status
     // But if not modeling in real world, set to Monitor when Monitor saturated and reset_temp to EKF otherwise
@@ -863,7 +868,7 @@ float BatterySim::count_coulombs(Sensors *Sen, const bool reset_temp, BatteryMon
 
     if ( sp.debug()==36 || (sp.debug()==-1 && initializing_) )
         sendTxBuf(String::format("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q %9.2f sp_delta_q %9.2f q %9.2f mod_vb %d, model_saturated_%d, reset_temp_past %d,\n",
-            ib_charge_, dt_, -chem_.dqdt*q_capacity_*tb_f_rate_*dt_, coul_eff_, d_delta_q_s_, *sp_delta_q_, q_, sp.mod_vb(), model_saturated_, reset_temp_past), true, true);
+            ib_charge_, dt_, -chem_.dqdt*q_capacity_*Tbx_f_rate_*dt_, coul_eff_, d_delta_q_s_, *sp_delta_q_, q_, sp.mod_vb(), model_saturated_, reset_temp_past), true, true);
 
     // print_sim_serial
     print_sim_serial(initializing_all, reset_temp, Sen, this);

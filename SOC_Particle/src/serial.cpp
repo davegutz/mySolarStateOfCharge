@@ -140,7 +140,7 @@ void print_battery_header()
     String::format("WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_SOC_MOD_OFF, ZETA_Y_FILT,") +
     String::format("\n");
 
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, false);
 }
 
 void print_battery_serial()
@@ -177,7 +177,7 @@ void print_battery_serial()
       WRAP_SOC_LO_SLR, WRAP_SOC_MOD_OFF, ZETA_Y_FILT) +
     String::format("\n");
 
-    sendTxBuf(txBuf, true, true);
+    sendTxBuf(txBuf, true, false);
 }
 
 // Print primary data
@@ -185,7 +185,7 @@ void print_rapid_header(void)
 {
   Serial.printf ("unit_rap, hm, cTime, dt, reset, reset_temp, soft_reset, soft_reset_sim, reset_all_faults, ekf_reset, kf_reset, init_mon, init_sim,   ");
   Serial.printf("chm, qcrs, qcap, sat, saturated, sel, mod, bmso,  ");
-  Serial.printf("Tb_rap, Tb_f_rap, Tb_f_rate_rap, Tbx, Tbx_f, Tbx_hdwe, Tbx_hdwe_f, Tbx_hdwe_f_rate, Tbx_hdwe_f_rstate, Tbx_hdwe_f_lstate, ");
+  Serial.printf("Tb_rap, Tb_f_rap, Tbx, Tbx_f, ");
   Serial.printf("vb, ib, ib_dyn, dv_hys,   ");
   Serial.printf("ib_charge, voc_soc, ib_dyn_r, ib_dyn_T, ib_dyn_rstate, ib_dyn_lstate,    ");
   Serial.printf("vsat, dv_dyn, voc_stat, voc_ekf, y_ekf,    ");
@@ -198,30 +198,29 @@ void print_rapid_serial(const bool reset, Publish *pubList, Sensors *Sen, Batter
     pubList->unit.c_str(), pubList->hm_string.c_str(), Mon->cTime(), Mon->dt(),
     reset, Sen->reset_temp(), cp.soft_reset_print, cp.soft_reset_sim_print, Sen->Flt->reset_all_faults_print(), cp.ekf_reset_print,
     cp.kf_reset_print, Mon->initializing(), Sen->Sim->initializing());
-    Serial.printf("%s", pr.buff);
+  Serial.printf("%s", pr.buff);
 
   sprintf(pr.buff,  "%d,%10.4f,%10.4f,%2d,%2d,%2d,%2d,%2d, ", \
     CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(), pubList->sat, pubList->saturated, sp.ib_force(), sp.modeling(), Mon->bms_off());
-    Serial.printf("%s", pr.buff);
+  Serial.printf("%s", pr.buff);
 
-  sprintf(pr.buff,  "%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f, ", \
-    Sen->Tb(), Sen->Tb_f(), Sen->Tb_f_rate(), Sen->Tbx(), Sen->Tbx_f(), Sen->Tbx_hdwe(), Sen->Tbx_hdwe_f(), Sen->Tbx_hdwe_f_rate(),
-    Sen->Tbx_hdwe_f_rstate(), Sen->Tbx_hdwe_f_lstate());
-    Serial.printf("%s", pr.buff);
+  sprintf(pr.buff,  "%11.8f,%11.8f,%11.8f,%11.8f, ", \
+    Sen->Tb(), Sen->Tb_f(), Sen->Tbx(), Sen->Tbx_f());
+  Serial.printf("%s", pr.buff);
 
   sprintf(pr.buff,  "%11.7f,%11.7f,%11.7f,%11.7f,   %11.7f,%11.7f,%11.7f,%11.7f,%11.7f,%11.7f,", \
     Mon->vb(), Mon->ib(), Mon->ib_dyn(), Mon->dv_hys(),
     Mon->ib_charge(), Mon->voc_soc(), Mon->ib_dyn_r(), Mon->ib_dyn_T(), Mon->ib_dyn_rstate(), Mon->ib_dyn_lstate());
-    Serial.printf("%s", pr.buff);
+  Serial.printf("%s", pr.buff);
 
   sprintf(pr.buff,  "%11.9f,%11.9f,%11.9f,%11.9f,%11.9f,  %11.9f,%11.9f,%11.9f,%5.3f,%12.7f,%12.7f,", \
     Mon->vsat(), Mon->dv_dyn(), Mon->voc_stat(), Mon->hx(), Mon->y_ekf(),
     Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc(), Mon->soc_min(), Mon->d_delta_q(), Mon->delta_q());
-    Serial.printf("%s", pr.buff);
+  Serial.printf("%s", pr.buff);
 
-    Serial.printf("\n");
+  Serial.printf("\n");
 
-    // Log.info("    print_rapid_create_string cTime,%9.3f,", cTime);
+  // Log.info("    print_rapid_create_string cTime,%9.3f,", cTime);
 }
 void print_rapid_data(const bool reset, Sensors *Sen, BatteryMonitor *Mon, const bool reset_temp)
 {
@@ -354,7 +353,8 @@ void print_signal_sel_header(void)
   Serial.printf("  ib_wrp_reset_m, ib_wrp_reset_n, ib_wrp_T_m, ib_wrp_tau_m, ib_wrp_rate_m, ib_wrp_state_m, ib_amp, ib_noa, ");
   Serial.printf("  ib_amp_lo, ib_amp_hi, ib_noa_lo, ib_noa_hi, ib_noa_kf, kfres, kf_v_m, kf_v_n, e_wrap_m_trimmed, e_wrap_n_trimmed, ");
   Serial.printf("  vb_model, voc_m, voc_soc_m, voc_n, voc_soc_n, wrap_m_and_n_fa, ib_is_functional,voltage_low, ");
-  Serial.printf("  Tbx_model, Tbx_model_f, vb_hdwe_f, Tbx_hdwe, Tbx_hdwe_f, ");
+  Serial.printf("  Tb_f_rate_rap, Tbx_hdwe, Tbx_hdwe_f, Tbx_hdwe_f_rate, Tbx_hdwe_f_rstate, Tbx_hdwe_f_lstate, ");
+  Serial.printf("  Tbx_hdwe, Tbx_hdwe_f, Tbx_hdwe_f_rate, Tbx_hdwe_f_rstate, Tbx_hdwe_f_lstate, ");
   Serial.printf("  fltw, falw, dispw,");
   Serial.printf("\n");
 }
@@ -426,9 +426,15 @@ void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon
         Mon->voltage_low());
       Serial.printf("%s", pr.buff);
 
-      sprintf(pr.buff, "%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,",
-        Sen->Tbx_model(), Sen->Tbx_model_f(), Sen->vb_hdwe_f(), Sen->Tbx_hdwe(), Sen->Tbx_hdwe_f());
-      Serial.printf("%s", pr.buff);
+      sprintf(pr.buff,  "%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f, ", \
+        Sen->Tb_f_rate(), Sen->Tbx_hdwe(), Sen->Tbx_hdwe_f(), Sen->Tbx_hdwe_f_rate(),
+        Sen->Tbx_hdwe_f_rstate(), Sen->Tbx_hdwe_f_lstate());
+        Serial.printf("%s", pr.buff);
+
+      sprintf(pr.buff,  "%11.8f,%11.8f,%11.8f,%11.8f,%11.8f, ", \
+        Sen->Tbx_model(), Sen->Tbx_model_f(), Sen->Tbx_model_f_rate(),
+        Sen->Tbx_model_f_rstate(), Sen->Tbx_model_f_lstate());
+        Serial.printf("%s", pr.buff);
 
       sprintf(pr.buff, "%ld, %ld, %ld,", Sen->Flt->fltw(), Sen->Flt->falw(), cp.disp_word);
       Serial.printf("%s", pr.buff);

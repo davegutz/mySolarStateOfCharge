@@ -362,6 +362,9 @@ class SavedData:
         if self.Tb_model_filt is None:
             print(f"Using Tb_f_rap to initialize Tb_model_filt")
             self.Tb_model_filt = np.copy(self.Tb_f_rap)
+        if self.Tbx_model_f is None:
+            print(f"Using Tbx_f to initialize Tbx_model_f")
+            self.Tbx_model_f = np.copy(self.Tbx_f)
         if self.dt_ekf is None:
             self.dt_ekf = np.copy(self.dt)
         if self.vb_hdwe is None:

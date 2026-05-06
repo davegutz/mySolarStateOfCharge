@@ -303,22 +303,30 @@ void loop()
       {
         Sen->Tb_model(NOMINAL_TB + ap.Tb_bias_model());
         Sen->Tb_model_filt(NOMINAL_TB + ap.Tb_bias_model());
+        Sen->Tbx_model(NOMINAL_TB + ap.Tb_bias_model());
+        Sen->Tbx_model_f(NOMINAL_TB + ap.Tb_bias_model());
       }
       else
       {
         Sen->Tb_model(Sen->Tb());
         Sen->Tb_model_filt(Sen->Tb_f());
+        Sen->Tbx_model(Sen->Tbx());
+        Sen->Tbx_model_f(Sen->Tbx_f());
       }
 
-      if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 336 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt, %11.8f %11.8f\n",
+      if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 336 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt,  %11.8f %11.8f\n",
         Sen->Tb_model(), Sen->Tb_model_filt()), true, true);
+      if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 336 reset_temp:  Sen->Tbx_model, Sen->Tbx_model_f, %11.8f %11.8f \n",
+        Sen->Tbx_model(), Sen->Tbx_model_f()), true, true);
     }
     // Log.info("ino:  temp_load_and_filter");
     
     Sen->temp_load_and_filter_and_select(Mon, reset_temp);
 
-    if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 340 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
+    if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 324 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
         reset_temp, Sen->Sim->tb_f(), Sen->Tb_model(), Sen->Tb_model_filt(), Sen->Tb_hdwe_filt_rate()), true, true);
+    if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 326 final: reset_temp Sen->Sim->tbx_f Sen->Tbx_model, Sen->Tbx_model_f, Sen->Tbx_model, Sen->Tbx_model_f, %d %11.8f %11.8f %11.8f  %11.8f\n",
+        reset_temp, Sen->Sim->Tbx_f(), Sen->Tbx_model(), Sen->Tbx_model_f(), Sen->Tbx_model(), Sen->Tbx_model_f()), true, true);
     // Log.info("ino:  print_temp_serial");
     print_temp_serial(reset_temp, Mon, Sen);
   }
