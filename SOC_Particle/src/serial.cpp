@@ -354,7 +354,7 @@ void print_signal_sel_header(void)
   Serial.printf("  ib_amp_lo, ib_amp_hi, ib_noa_lo, ib_noa_hi, ib_noa_kf, kfres, kf_v_m, kf_v_n, e_wrap_m_trimmed, e_wrap_n_trimmed, ");
   Serial.printf("  vb_model, voc_m, voc_soc_m, voc_n, voc_soc_n, wrap_m_and_n_fa, ib_is_functional,voltage_low, ");
   Serial.printf("  Tb_f_rate_rap, Tbx_hdwe, Tbx_hdwe_f, Tbx_hdwe_f_rate, Tbx_hdwe_f_rstate, Tbx_hdwe_f_lstate, ");
-  Serial.printf("  Tbx_hdwe, Tbx_hdwe_f, Tbx_hdwe_f_rate, Tbx_hdwe_f_rstate, Tbx_hdwe_f_lstate, ");
+  Serial.printf("  Tbx_model, Tbx_model_f, Tbx_model_f_rate, Tbx_model_f_rstate, Tbx_model_f_lstate, ");
   Serial.printf("  fltw, falw, dispw,");
   Serial.printf("\n");
 }
