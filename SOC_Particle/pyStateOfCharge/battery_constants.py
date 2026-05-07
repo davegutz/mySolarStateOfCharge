@@ -93,7 +93,7 @@ class BatteryConstants:
     sp_vsat_add = 0.0
     T_RLIM = 0.017
     TAU_Y_FILT = 1.
-    TB_FILT = 20.
+    TB_FILT = 120.
     TB_MAX = 60.
     TB_MIN = -20.
     TCHARGE_DISPLAY_DEADBAND = 0.1

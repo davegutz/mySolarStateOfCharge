@@ -119,8 +119,8 @@ struct ScaleBrk
 #define WRAP_LO_M_FLT 15  // Wrap reports Vb hi / Ib amp low fault
 #define WRAP_HI_N_FLT 16  // Wrap reports Vb lo / Ib noa high fault
 #define WRAP_LO_N_FLT 17  // Wrap reports Vb hi / Ib noa low fault
-#define NUM_FLT       18  // Number of these
 #define TBX_FLT       19   // Momentary isolation of Tbx failure, T=faulted
+#define NUM_FLT       20  // Number of these
 
 // Fail word bits.   A couple don't latch because single sensor fail in dual sensor system
 #define TB_FA         0   // Peristed, latched isolation of Tb failure, heals because soft type, T=failed
@@ -139,8 +139,8 @@ struct ScaleBrk
 #define WRAP_LO_M_FA  15  // Wrap isolates to Ib amp low fail, heals because dual sensor (no latch)
 #define WRAP_HI_N_FA  16  // Wrap isolates to Ib amp high fail, heals because dual sensor (no latch)
 #define WRAP_LO_N_FA  17  // Wrap isolates to Ib amp low fail, heals because dual sensor (no latch)
-#define NUM_FA        18  // Number of these
 #define TBX_FA        19  // Peristed, latched isolation of Tbx failure, heals because soft type, T=failed
+#define NUM_FA        20  // Number of these
 
 #define faultRead(bit) ( (fltw_ >> bit) & 1 )
 #define failRead(bit) ( (falw_ >> bit) & 1 )

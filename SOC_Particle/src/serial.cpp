@@ -372,8 +372,8 @@ void print_signal_sel_header(void)
   Serial.printf("  ib_wrp_reset_m, ib_wrp_reset_n, ib_wrp_T_m, ib_wrp_tau_m, ib_wrp_rate_m, ib_wrp_state_m, ib_amp, ib_noa, ");
   Serial.printf("  ib_amp_lo, ib_amp_hi, ib_noa_lo, ib_noa_hi, ib_noa_kf, kfres, kf_v_m, kf_v_n, e_wrap_m_trimmed, e_wrap_n_trimmed, ");
   Serial.printf("  vb_model, voc_m, voc_soc_m, voc_n, voc_soc_n, wrap_m_and_n_fa, ib_is_functional,voltage_low, ");
-  Serial.printf("  Tb_f_rate_rap, Tbx_hdwe, Tbx_hdwe_f, Tbx_hdwe_f_rate, Tbx_hdwe_f_rstate, Tbx_hdwe_f_lstate, ");
-  Serial.printf("  Tbx_model, Tbx_model_f, Tbx_model_f_rate, Tbx_model_f_rstate, Tbx_model_f_lstate, ");
+  Serial.printf("  Tb_f_rate_rap, Tbx_hdwe, Tbx_hdwe_f, Tbx_hdwe_f_rate, Tbx_hdwe_f_rstate, Tbx_hdwe_f_lstate, Tbx_hdwe_f_dt, Tbx_hdwe_f_tau, ");
+  Serial.printf("  Tbx_model, Tbx_model_f, Tbx_model_f_rate, Tbx_model_f_rstate, Tbx_model_f_lstate, Tbx_model_f_dt, Tbx_model_f_tau, ");
   Serial.printf("  fltw, falw, dispw,");
   Serial.printf("\n");
 }
@@ -445,14 +445,14 @@ void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon
         Mon->voltage_low());
       Serial.printf("%s", pr.buff);
 
-      sprintf(pr.buff,  "%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f, ", \
+      sprintf(pr.buff,  "%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f, ", \
         Sen->Tb_f_rate(), Sen->Tbx_hdwe(), Sen->Tbx_hdwe_f(), Sen->Tbx_hdwe_f_rate(),
-        Sen->Tbx_hdwe_f_rstate(), Sen->Tbx_hdwe_f_lstate());
+        Sen->Tbx_hdwe_f_rstate(), Sen->Tbx_hdwe_f_lstate(), Sen->Tbx_hdwe_f_dt(), Sen->Tbx_hdwe_f_tau());
         Serial.printf("%s", pr.buff);
 
-      sprintf(pr.buff,  "%11.8f,%11.8f,%11.8f,%11.8f,%11.8f, ", \
+      sprintf(pr.buff,  "%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f, ", \
         Sen->Tbx_model(), Sen->Tbx_model_f(), Sen->Tbx_model_f_rate(),
-        Sen->Tbx_model_f_rstate(), Sen->Tbx_model_f_lstate());
+        Sen->Tbx_model_f_rstate(), Sen->Tbx_model_f_lstate(), Sen->Tbx_model_f_dt(), Sen->Tbx_model_f_tau());
         Serial.printf("%s", pr.buff);
 
       sprintf(pr.buff, "%ld, %ld, %ld,", Sen->Flt->fltw(), Sen->Flt->falw(), cp.disp_word);

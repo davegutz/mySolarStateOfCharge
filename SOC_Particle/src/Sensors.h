@@ -251,12 +251,14 @@ public:
   double Tbx_hdwe() { return Tbx_hdwe_; }
   void Tbx_hdwe_f(const double input) { Tbx_hdwe_f_ = input; }
   double Tbx_hdwe_f() { return Tbx_hdwe_f_; }
+  double Tbx_hdwe_f_dt() { return Tbx_hdwe_f_dt_; }
   void Tbx_hdwe_f_rate(const double input) { Tbx_hdwe_f_rate_ = input; }
   double Tbx_hdwe_f_rate() { return Tbx_hdwe_f_rate_; }
   void Tbx_hdwe_f_rstate(const double input) { Tbx_hdwe_f_rstate_ = input; }
   double Tbx_hdwe_f_rstate() { return Tbx_hdwe_f_rstate_; }
   void Tbx_hdwe_f_lstate(const double input) { Tbx_hdwe_f_lstate_ = input; }
   double Tbx_hdwe_f_lstate() { return Tbx_hdwe_f_lstate_; }
+  double Tbx_hdwe_f_tau() { return Tbx_hdwe_f_tau_; }
   void Tb_hdwe_filt(const double input) { Tb_hdwe_filt_ = input; }
   double Tb_hdwe_filt() { return Tb_hdwe_filt_; }
   void Tb_hdwe_filt_rate(const double input) { Tb_hdwe_filt_rate_ = input; }
@@ -271,12 +273,14 @@ public:
   double Tbx_model() { return Tbx_model_; }
   void Tbx_model_f(const double input) { Tbx_model_f_ = input; }
   double Tbx_model_f() { return Tbx_model_f_; }
+  double Tbx_model_f_dt() { return Tbx_model_f_dt_; }
   void Tbx_model_f_rate(const double input) { Tbx_model_f_rate_ = input; }
   double Tbx_model_f_rate() { return Tbx_model_f_rate_; }
   void Tbx_model_f_lstate(const double input) { Tbx_model_f_lstate_ = input; }
   double Tbx_model_f_lstate() { return Tbx_model_f_lstate_; }
   void Tbx_model_f_rstate(const double input) { Tbx_model_f_rstate_ = input; }
   double Tbx_model_f_rstate() { return Tbx_model_f_rstate_; }
+  double Tbx_model_f_tau() { return Tbx_model_f_tau_; }
   void Ib(const float input) { Ib_ = input; }
   float Ib() { return Ib_; }
   void Ib_f(const float input) { Ib_f_ = input; }
@@ -476,14 +480,18 @@ protected:
   double Tbx_f_rate_;           // Selected filtered battery bank temp rate, C/s
   double Tbx_hdwe_;             // Sensed battery temp, C
   double Tbx_hdwe_f_;           // Filtered, sensed battery temp, C
+  double Tbx_hdwe_f_dt_;        // Battery hdwe temp filter update time, s
   double Tbx_hdwe_f_rate_;      // Filtered, sensed battery temp rate, C/s
   double Tbx_hdwe_f_rstate_;    // Filtered, sensed battery temp rate state, C/s
   double Tbx_hdwe_f_lstate_;    // Filtered, sensed battery temp rate state, C/s
+  double Tbx_hdwe_f_tau_;       // Battery hdwe temp filter time constant, s
   float Tbx_model_;             // Modeled battery bank temp, C
   float Tbx_model_f_;           // Filtered, modeled battery bank temp, C
+  double Tbx_model_f_dt_;       // Battery model temp filter update time, s
   double Tbx_model_f_rate_;     // Filtered, modeled battery bank temp rate, C/s
   double Tbx_model_f_rstate_;   // Filtered, sensed battery temp rate state, C/s
   double Tbx_model_f_lstate_;   // Filtered, sensed battery temp rate state, C/s
+  double Tbx_model_f_tau_;      // Battery model temp filter time constant, s
   float Ib_;                   // Selected battery bank current, A
   float Ib_f_;                 // Selected filtered battery bank current, A
   float Ib_amp_;               // Initial selected amp battery bank current, A
