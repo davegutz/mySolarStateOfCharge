@@ -342,18 +342,10 @@ class Sensors:
             mon.Tb_hdwe = OPT.mon_run.Tb_hdwe[i_temp]
         else:
             mon.Tb_hdwe = OPT.mon_run.Tb_f[i_temp]
-        if hasattr(OPT.mon_run, 'Tbx_hdwe'):
-            mon.Tbx_hdwe = OPT.mon_run.Tbx_hdwe[i_temp]
-        else:
-            mon.Tbx_hdwe = OPT.mon_run.Tbx_f[i_temp]
         if hasattr(OPT.mon_run, 'Tb_model'):
             mon.Tb_model = OPT.mon_run.Tb_model[i_temp]
         else:
             mon.Tb_model = OPT.mon_run.Tb_f[i_temp]
-        if hasattr(OPT.mon_run, 'Tbx_model'):
-            mon.Tbx_model = OPT.mon_run.Tbx_model[i_temp]
-        else:
-            mon.Tbx_model = OPT.mon_run.Tbx_f[i_temp]
         mon.reset_temp = (i_temp < 2) or mon.reset or OPT.run_type == 'HistSim'  # make sure temp init is longer than reset
         if hasattr(OPT.mon_run, 'Tt'):
             mon.dt_temp = OPT.mon_run.Tt[i_temp]
@@ -384,6 +376,20 @@ class Sensors:
                 mon.Tb_f_rap = self.Tb_f
                 mon.Tb_f_rate_rap = self.Tb_f_rate
         sim.Tb_f = self.Tb_f_past  # same modeling and sensed
+
+        return mon, sim
+
+    def calc_tempx_pass_1(self, OPT, mon_, sim_, i, rp):
+        mon = mon_
+        sim = sim_
+        if hasattr(OPT.mon_run, 'Tbx_hdwe'):
+            mon.Tbx_hdwe = OPT.mon_run.Tbx_hdwe[i]
+        else:
+            mon.Tbx_hdwe = OPT.mon_run.Tbx_f[i]
+        if hasattr(OPT.mon_run, 'Tbx_model'):
+            mon.Tbx_model = OPT.mon_run.Tbx_model[i]
+        else:
+            mon.Tbx_model = OPT.mon_run.Tbx_f[i]
 
         return mon, sim
 

@@ -208,6 +208,7 @@ def replicate(OPT: UserOptions):
                             (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[min(G.i,n-1)])
         else:
             calc_temp = True
+        mon, sim = SN.calc_tempx_pass_1(OPT, mon, sim, G.i, rp)
         if calc_temp:
             i_temp += 1
             mon, sim = SN.calc_temp_pass_1(OPT, mon, sim, i_temp, rp)
