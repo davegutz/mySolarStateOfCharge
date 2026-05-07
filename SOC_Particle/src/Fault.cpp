@@ -181,7 +181,7 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
   IbLoLimitedLo  = new TFDelay(true, IB_LO_ACTIVE_SET, IB_LO_ACTIVE_RES, T);
   IbNoAmpHardFail  = new TFDelay(false, IB_HARD_SET, IB_HARD_RES, T);
   TbHardFail  = new TFDelay(false, TB_HARD_SET, TB_HARD_RES, T);
-  TbStaleFail  = new TFDelay(false, TB_STALE_SET, TB_STALE_RES, T);
+  TbxHardFail  = new TFDelay(false, TB_HARD_SET, TB_HARD_RES, T);
   VbHardFail  = new TFDelay(false, VB_HARD_SET, VB_HARD_RES, T);
   VcHardFail  = new TFDelay(false, VC_HARD_SET, VC_HARD_RES, T);
   QuietPer  = new TFDelay(false, QUIET_SET, QUIET_RES, T);
@@ -970,7 +970,7 @@ void Fault::Tbx_check(Sensors *Sen, const float _tb_min, const float _tb_max, co
   {
     faultAssign( ((Sen->Tbx_model_f()<=_tb_min) || (Sen->Tbx_model_f()>=_tb_max)) &&
                  !ap.disab_tb_fa(), TBX_FLT);
-    failAssign( Tbx_fa() || TbHardFail->calculate(Tbx_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T_temp(), reset_loc), TBX_FA);
+    failAssign( Tbx_fa() || TbxHardFail->calculate(Tbx_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TBX_FA);
   }
   else if ( ap.disab_tb_fa() || sp.mod_tb() )
   {
@@ -979,8 +979,10 @@ void Fault::Tbx_check(Sensors *Sen, const float _tb_min, const float _tb_max, co
   else
   {
     faultAssign( (Sen->Tbx_hdwe()<=_tb_min) || (Sen->Tbx_hdwe()>=_tb_max), TBX_FLT);
-    failAssign( Tbx_fa() || TbHardFail->calculate(Tbx_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TBX_FA);
+    failAssign( Tbx_fa() || TbxHardFail->calculate(Tbx_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TBX_FA);
   }
+  if ( sp.debug()==18 ) Serial.printf("tb_check: mod_tb %d disab_tb_fa %d Sen->Tbx_model_filt() %7.3f Sen->Tbx_hdwe() %7.3f _tb_min%7.3f _tb_max%7.3f TBX_FLT %d TBX_FA %d\n",
+    sp.mod_tb(), ap.disab_tb_fa(), Sen->Tbx_model_f(), Sen->Tbx_hdwe(), _tb_min, _tb_max, Tbx_flt(), Tbx_fa());
 }
 
 // Check analog voltage.  Latches

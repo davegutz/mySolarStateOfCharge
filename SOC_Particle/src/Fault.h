@@ -382,7 +382,7 @@ protected:
   TFDelay *QuietPerFunc;    // Persistence ib quiet normal functional detection
   RateLagExp *QuietRate;    // Linear filter to calculate rate for quiet
   TFDelay *TbHardFail;      // Persistence Tb hard fail
-  TFDelay *TbStaleFail;     // Persistence stale tb one-wire data
+  TFDelay *TbxHardFail;      // Persistence Tbx hard fail
   TFDelay *VbHardFail;      // Persistence vb hard fail
   TFDelay *VcHardFail;      // Persistence vc hard fail
   LagTustin *WrapErrFilt;   // Noise filter for voltage wrap

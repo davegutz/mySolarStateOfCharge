@@ -255,7 +255,7 @@ void load_ib_vb_tb(const bool reset, const bool reset_kf, Sensors *Sen, Pins *my
 
   // Load temperature Tbx
   Sen->Tbx_load(myPins->VTb_pin, reset);
-  if ( !sp.mod_vb_dscn() )  Sen->Flt->Tbx_check(Sen, TB_MIN, TB_MAX,  reset);  // Sets tb_fa()
+  if ( !sp.mod_tb_dscn() )  Sen->Flt->Tbx_check(Sen, TB_MIN, TB_MAX,  reset);  // Sets tb_fa()
   else                      Sen->Flt->Tbx_check(Sen, -1.0, 1.0, reset);
   if ( sp.debug()==18 ) Sen->Tbx_print();
 

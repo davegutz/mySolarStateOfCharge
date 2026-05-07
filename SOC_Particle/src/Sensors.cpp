@@ -764,9 +764,9 @@ void Sensors::Tbx_load(const uint16_t tb_pin, const bool reset)
 // Print analog voltage
 void Sensors::Tbx_print()
 {
-  Serial.printf("reset%2d stime%7.3f T%7.3f tb_dscn%2d Tbx_raw%4d sp.Tb_bias_hdwe%7.3f Tbx_hdwe%7.3f Tbx_hdwe_f%7.3f Tbx_hdwe_f_rate%7.3f Tbx_hdwe_f_rstate%7.3f Tbx_hdwe_f_lstate%7.3f tb_flt%2d tb_fa%2d\n",
+  Serial.printf("reset%2d stime%7.3f T%7.3f tb_dscn%2d Tbx_raw%4d sp.Tb_bias_hdwe%7.3f Tbx_hdwe%7.3f Tbx_hdwe_f%7.3f Tbx_hdwe_f_rate%7.3f Tbx_hdwe_f_rstate%7.3f Tbx_hdwe_f_lstate%7.3f tbx_flt%2d tbx_fa%2d\n",
     reset_, float(sample_time_Tbx_hdwe_)/1000.f, T_, sp.mod_tb_dscn(), Tbx_raw_, sp.Tb_bias_hdwe(), Tbx_hdwe_, Tbx_hdwe_f_, Tbx_hdwe_f_rate_, Tbx_hdwe_f_rstate_,
-    Tbx_hdwe_f_lstate_, Flt->tb_flt(), Flt->tb_fa());
+    Tbx_hdwe_f_lstate_, Flt->Tbx_flt(), Flt->Tbx_fa());
 }
 
 // Load analog voltage
