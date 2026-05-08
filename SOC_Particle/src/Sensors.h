@@ -113,6 +113,7 @@ public:
   uint64_t sample_time() { return sample_time_; };
   float sample(Sensors *Sen, const bool reset);
   float noise();
+  void Tb_raw(const int input) { Tb_raw_ = input; };
   float Tb_volt(){ return Tb_volt_; };
 protected:
   SlidingDeadband *SdTb;
@@ -120,7 +121,7 @@ protected:
   uint16_t VTb_pin_;      // Using 2wire
   double Tb_volt_;              // Sensed battery temp voltage from ADC, V
   uint64_t sample_time_;  // Sample time
-  uint32_t Tb_raw_ = 0;
+  int Tb_raw_ = 0;
   AnalogReadP2 *Tb_read_;
 };
 

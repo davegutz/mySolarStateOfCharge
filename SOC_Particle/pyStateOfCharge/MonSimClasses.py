@@ -510,12 +510,12 @@ class Sensors:
     def tempx_load_and_filter(self, mon_run, mon, Battery_, i):
         if hasattr(mon_run, 'Tbx_hdwe_f'):
             mon.Tbx_hdwe_f = \
-                self.TbxSenseFilt.calculate_tau_seeded(mon.Tbx_hdwe, mon_run.Tbx_hdwe_f[i], mon.reset,
+                self.TbxSenseFilt.calculate_tau_seeded(mon.Tbx_hdwe, mon_run.Tbx_hdwe_f[i], mon.reset or mon.tbx_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
         else:
             mon.Tbx_hdwe_f = \
-                self.TbxSenseFilt.calculate_tau_seeded(mon.Tbx_hdwe, mon.Tbx_hdwe, mon.reset,
+                self.TbxSenseFilt.calculate_tau_seeded(mon.Tbx_hdwe, mon.Tbx_hdwe, mon.reset or mon.tbx_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
         mon.Tbx_hdwe_f_rate = self.TbxSenseFilt.rate
@@ -528,7 +528,7 @@ class Sensors:
             mon.Tbx_model_f = self.Tbx_model_f_fut
             mon.Tbx_model_f_rate = self.Tbx_model_f_rate_fut
             self.Tbx_model_f_fut = \
-                self.TbxModelFilt.calculate_tau_seeded(mon.Tbx_model, mon_run.Tbx_model_f[i], mon.reset,
+                self.TbxModelFilt.calculate_tau_seeded(mon.Tbx_model, mon_run.Tbx_model_f[i], mon.reset or mon.tbx_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
             self.Tbx_model_f_rate_fut = self.TbxModelFilt.rate
@@ -537,7 +537,7 @@ class Sensors:
             mon.Tbx_model_f_lstate = self.TbxModelFilt.state
         else:
             mon.Tbx_model_f = \
-                self.TbxModelFilt.calculate_tau_seeded(mon.Tbx_model, mon.Tbx_model, mon.reset,
+                self.TbxModelFilt.calculate_tau_seeded(mon.Tbx_model, mon.Tbx_model, mon.reset or mon.tbx_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
             mon.Tbx_model_f_rate = self.TbxModelFilt.rate

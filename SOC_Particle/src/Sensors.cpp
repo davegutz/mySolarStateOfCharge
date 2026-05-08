@@ -60,8 +60,8 @@ float TempSensor::sample(Sensors *Sen, const bool reset)
   // MAXIM conversion 1-wire Tp plenum temperature
   static double Tb_hdwe = 0.;
 
-  int Tb_raw_ = 0;
-  Tb_raw_ = Tb_read_->analogReadDebounced(VRAW_BARE_DETECTED, reset, "Tb");
+  // int Tb_raw_ = 0;
+  // Tb_raw_ = Tb_read_->analogReadDebounced(VRAW_BARE_DETECTED, reset, "Tb");
   Tb_volt_ = float(Tb_raw_)*VTB_CONV_GAIN;
   sample_time_ = millis();
 
@@ -422,7 +422,7 @@ void Sensors::select_volt_and_current_and_temp(BatteryMonitor *Mon)
   if ( sp.mod_tb() )
   {
     Tbx_f_ = Tbx_model_;
-    if ( Flt->tb_fa() && !ap.fake_faults() )
+    if ( Flt->Tbx_fa() && !ap.fake_faults() )
     {
       Tbx_ = Tbx_model_;
       sample_time_Tbx_ = Sim->sample_time();
@@ -435,15 +435,16 @@ void Sensors::select_volt_and_current_and_temp(BatteryMonitor *Mon)
   }
   else
   {
-    Tbx_f_ = Tbx_hdwe_f_;
-    if ( Flt->tb_fa() && !ap.fake_faults() )
+    if ( Flt->Tbx_fa() && !ap.fake_faults() )
     {
       Tbx_ = NOMINAL_TB;
+      Tbx_f_ = NOMINAL_TB;
       sample_time_Tbx_ = Sim->sample_time();
     }
     else
     {
       Tbx_ = Tbx_hdwe_;
+      Tbx_f_ = Tbx_hdwe_f_;
       sample_time_Tbx_ = sample_time_Tbx_hdwe_;
     }
   }
@@ -737,6 +738,7 @@ void Sensors::Tbx_load(const uint16_t tb_pin, const bool reset)
   {
     #if !defined(HDWE_BARE)
       Tbx_raw_ = Tbx_read_-> analogReadDebounced(VRAW_BARE_DETECTED, reset, "Tbx");
+      SensorTb->Tb_raw(Tbx_raw_);  // For debug
       Tbx_volt_ = float(Tbx_raw_)*VTB_CONV_GAIN;
       float res = Tbx_volt_ * float(HDWE_RS_2WIRE) / (V3V3 - Tbx_volt_);
       // Steinhart-Hart (see '2-wireRTD.ods')
@@ -744,13 +746,13 @@ void Sensors::Tbx_load(const uint16_t tb_pin, const bool reset)
       Tbx_hdwe_ = ( 1. / max( HDWE_SHA_2WIRE + (HDWE_SHB_2WIRE + HDWE_SHC_2WIRE *lnres*lnres) * lnres, 0.000001 ) ) - 273.;
       Tbx_hdwe_ += sp.Tb_bias_hdwe();  // Fault injection
     #endif
-    Tbx_hdwe_f_ = TbxHdweFilt->calculate(Tbx_hdwe_, reset, ap.Tbx_filt(), T_, T_RLIM, -T_RLIM);
+    Tbx_hdwe_f_ = TbxHdweFilt->calculate(Tbx_hdwe_, reset || Flt->Tbx_fa(), ap.Tbx_filt(), T_, T_RLIM, -T_RLIM);
     Tbx_hdwe_f_dt_ = TbxHdweFilt->T();
     Tbx_hdwe_f_tau_ = TbxHdweFilt->tau();
     Tbx_hdwe_f_rate_ = TbxHdweFilt->rate();
     Tbx_hdwe_f_rstate_ = TbxHdweFilt->rstate();
     Tbx_hdwe_f_lstate_ = TbxHdweFilt->lstate();
-    Tbx_model_f_ = TbxModelFilt->calculate(Tbx_model_, reset, ap.Tbx_filt(), T_, T_RLIM, -T_RLIM);
+    Tbx_model_f_ = TbxModelFilt->calculate(Tbx_model_, reset || Flt->Tbx_fa(), ap.Tbx_filt(), T_, T_RLIM, -T_RLIM);
     Tbx_model_f_dt_ = TbxModelFilt->T();
     Tbx_model_f_tau_ = TbxModelFilt->tau();
     Tbx_model_f_rate_ = TbxModelFilt->rate();

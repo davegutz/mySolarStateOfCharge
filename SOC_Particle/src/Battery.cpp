@@ -40,9 +40,9 @@ extern PublishPars pp;  // For publishing
 Battery::Battery(double *sp_delta_q, const float d_voc_soc, const float dx_voc, const float dy_voc,
                 const float dz_voc)
     : Coulombs(sp_delta_q, (NOM_UNIT_CAP*3600), COULOMBIC_EFF_SCALE, dx_voc, dy_voc, dz_voc),
-    bms_charging_(false), bms_off_(false), dt_(0.1), dv_dsoc_(0.3), dv_dyn_(0.), dv_hys_(0.), 
+    bms_charging_(false), bms_off_(false), dt_(0.1), dv_dsoc_(0.3), dv_dyn_(0.), dv_hys_(0.),
     ib_(0.), ibs_(0.), ib_dyn_(0.), initializing_(false), ioc_(0.), nom_vsat_(0.),
-    print_now_(false), soft_reset_print_(false), tb_f_(NOMINAL_TB), vb_(NOMINAL_VB),
+    print_now_(false), soft_reset_print_(false), tb_f_(NOMINAL_TB), Tbx_(NOMINAL_TB), vb_(NOMINAL_VB),
     voc_(NOMINAL_VB), voc_soc_(NOMINAL_VB), voc_stat_(NOMINAL_VB), voltage_low_(false), vsat_(NOMINAL_VB),
     ChargeTransfer_(nullptr), rand_A_(nullptr), rand_B_(nullptr), rand_C_(nullptr), rand_D_(nullptr)
 {
@@ -225,6 +225,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool 
     // Inputs
     tb_f_ = Sen->Tb_f();
     tb_f_rate_ = Sen->Tb_f_rate();
+    bool tb_bad = (Sen->Flt->tb_flt() || Sen->Flt->Tbx_fa()) && !ap.fake_faults();
     Tbx_f_ = Sen->Tbx_f();
     Tbx_f_rate_ = Sen->Tbx_f_rate();
     vsat_ = calc_vsat();
@@ -250,7 +251,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool 
         voltage_low_ = voc_stat_ < chem_.vb_rising;
         if ( voltage_low_ != voltage_low_past ) Serial.printf("\nBMS ON  voc_stat%7.3f vb_down%7.3f vb_rising%7.3f bms_off %d voltage_low %d \n\n", voc_stat_, chem_.vb_down, chem_.vb_rising, bms_off_, voltage_low_);
     }
-    bms_off_ = (tb_f_ <= chem_.low_t) || ( Sen->Flt->ib_really_quiet() && voltage_low_ && !Sen->Flt->vb_fa_lt() && !sp.tweak_test() );    // KISS
+    bms_off_ = ( tb_f_ <= chem_.low_t && !tb_bad ) || ( Sen->Flt->ib_really_quiet() && voltage_low_ && !Sen->Flt->vb_fa_lt() && !sp.tweak_test() );    // KISS
     Sen->bms_off(bms_off_);
     ib_charge_ = ib_;
     float ib_charge_ekf = ib_charge_;
@@ -666,6 +667,7 @@ float BatterySim::calculate(Sensors *Sen, const bool dc_dc_on, const bool reset)
     // Inputs
     tb_f_ = Sen->Tb_model_filt();
     Tbx_f_ = Sen->Tbx_model_f();
+    bool tb_bad = (Sen->Flt->tb_flt() || Sen->Flt->Tbx_fa()) && !ap.fake_faults();
     ctime_ = Sen->cTime();
     dt_ = Sen->T();
     ib_in_ = Sen->Ib_model_in() / ap.nP();
@@ -696,7 +698,7 @@ float BatterySim::calculate(Sensors *Sen, const bool dc_dc_on, const bool reset)
     else
         voltage_low_ = voc_stat_ < chem_.vb_rising_sim;
     bms_charging_ = ib_in_ > IB_MIN_UP;
-    bms_off_ = (tb_f_ <= chem_.low_t) || (voltage_low_ && !sp.tweak_test());
+    bms_off_ = ( tb_f_ <= chem_.low_t && !tb_bad ) || (voltage_low_ && !sp.tweak_test());
     float ib_charge_fut = ib_in_;  // Pass along current to charge unless bms_off
     if ( bms_off_ && sp.mod_ib() && !bms_charging_)
         ib_charge_fut = 0.;

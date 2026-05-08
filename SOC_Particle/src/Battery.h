@@ -154,7 +154,7 @@ protected:
   bool soft_reset_print_;  // Soft reset flag
   double tb_f_;    // Battery temperature, deg C
   double Tbx_;     // Battery temperature, deg C
-  double Tbx_f_;   // Filtered battery temperature, deg C
+  // double Tbx_f_;   // Filtered battery temperature, deg C
   float vb_;       // Battery terminal voltage, V
   double voc_;      // Static model open circuit voltage, V
   double voc_soc_;      // Raw table lookup of voc, V

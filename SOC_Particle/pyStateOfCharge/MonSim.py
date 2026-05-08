@@ -271,8 +271,8 @@ def replicate(OPT: UserOptions):
             else:
                 ib_ = OPT.mon_run.ib[G.i]
 
-        Tbx_ = Tbx[G.i]
-        Tbx_f_ = Tbx_f[G.i]
+        Tbx_ = mon.Tbx
+        Tbx_f_ = mon.Tbx_f
 
         if OPT.use_vb_sim:
             vb_ = sim.vb
