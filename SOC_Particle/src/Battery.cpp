@@ -40,7 +40,7 @@ extern PublishPars pp;  // For publishing
 Battery::Battery(double *sp_delta_q, const float d_voc_soc, const float dx_voc, const float dy_voc,
                 const float dz_voc)
     : Coulombs(sp_delta_q, (NOM_UNIT_CAP*3600), COULOMBIC_EFF_SCALE, dx_voc, dy_voc, dz_voc),
-    bms_charging_(false), bms_off_(false), dt_(0.1), dv_dsoc_(0.3), dv_dyn_(0.), dv_hys_(0.),
+    bms_charging_(false), bms_off_(false), ctime_(0.), dt_(0.1), dv_dsoc_(0.3), dv_dyn_(0.), dv_hys_(0.),
     ib_(0.), ibs_(0.), ib_dyn_(0.), initializing_(false), ioc_(0.), nom_vsat_(0.),
     print_now_(false), soft_reset_print_(false), tb_f_(NOMINAL_TB), Tbx_(NOMINAL_TB), vb_(NOMINAL_VB),
     voc_(NOMINAL_VB), voc_soc_(NOMINAL_VB), voc_stat_(NOMINAL_VB), voltage_low_(false), vsat_(NOMINAL_VB),
@@ -150,10 +150,12 @@ double Battery::voc_soc_tab(const double soc, const double tb_f)
 // Battery monitor class
 BatteryMonitor::BatteryMonitor(const float dx_voc, const float dy_voc, const float dz_voc):
     Battery(sp.delta_q_ptr(), VM, dx_voc, dy_voc, dz_voc),
+    delta_q_ekf_(0.),
     SdVb_(nullptr), EKF_converged(nullptr), ice_(nullptr),
-    amp_hrs_remaining_ekf_(0.), amp_hrs_remaining_soc_(0.), eframe_(0), ekf_conv_(false), 
-    ib_charge_(0.), ib_past_(0.), q_ekf_(NOM_UNIT_CAP*3600.), soc_ekf_(1.0), tcharge_(0.), 
-    tcharge_ekf_(0.), vb_model_rev_(NOMINAL_VB), voc_dead_(NOMINAL_VB), voc_stat_f_(NOMINAL_VB), y_ekf_f_(0.)
+    amp_hrs_remaining_ekf_(0.), amp_hrs_remaining_soc_(0.), eframe_(0), ekf_conv_(false),
+    ib_charge_(0.), ib_past_(0.), q_ekf_(NOM_UNIT_CAP*3600.), soc_ekf_(1.0), tcharge_(0.),
+    tcharge_ekf_(0.), vb_model_rev_(NOMINAL_VB), voc_dead_(NOMINAL_VB), voc_stat_f_(NOMINAL_VB),
+    y_ekf_(0.), y_ekf_f_(0.), y_ekf_f_T_(0.), y_ekf_f_tau_(0.), y_ekf_f_state_(0.)
 {
     voc_dead_ = calc_vsat() - HDB_VB;
     // EKF

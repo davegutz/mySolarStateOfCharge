@@ -38,13 +38,13 @@ extern SavedPars sp;    // Various parameters to be static at system level and s
 // class TempSensor
 // constructors
 TempSensor::TempSensor(const uint16_t pin, const bool parasitic, const uint16_t conversion_delay)
-: tb_stale_flt_(true)
+: tb_stale_flt_(true), VTb_pin_(0), Tb_volt_(0.), sample_time_(0ULL), Tb_read_(nullptr)
 {
   SdTb = new SlidingDeadband(HDB_TBATT);
   Serial.printf("Tb started\n");
 }
 TempSensor::TempSensor(const uint16_t pin, const bool parasitic, const uint16_t conversion_delay, const uint16_t VTb_pin)
-: tb_stale_flt_(true), VTb_pin_(VTb_pin)
+: tb_stale_flt_(true), VTb_pin_(VTb_pin), Tb_volt_(0.), sample_time_(0ULL), Tb_read_(nullptr)
 {
   Tb_read_ = new AnalogReadP2(VTb_pin_);
   SdTb = new SlidingDeadband(HDB_TBATT);
@@ -92,10 +92,10 @@ Shunt::Shunt()
 Shunt::Shunt(const String name, const uint8_t port, float *sp_ib_scale,  float *sp_Ib_bias, const float v2a_s,
   const uint8_t vc_pin, const uint8_t vo_pin, const uint8_t vh3v3_pin, const bool using_opAmp, const bool using_kf)
 : name_(name), port_(port), bare_shunt_(false), v2a_s_(v2a_s),
-  vshunt_int_(0), vshunt_int_0_(0), vshunt_int_1_(0), vshunt_(0), Ishunt_cal_(0),
-  sp_ib_bias_(sp_Ib_bias), sp_ib_scale_(sp_ib_scale), sample_time_(0UL), sample_time_z_(0UL), dscn_cmd_(false),
+  vshunt_int_(0), vshunt_int_0_(0), vshunt_int_1_(0), vshunt_(0.), vshunt_kf_(0.), Ishunt_cal_(0.), Ishunt_cal_kf_(0.),
+  sp_ib_bias_(sp_Ib_bias), sp_ib_scale_(sp_ib_scale), reset_(false), sample_time_(0UL), sample_time_z_(0UL), dscn_cmd_(false),
   vc_pin_(vc_pin), vo_pin_(vo_pin), vr_pin_(vh3v3_pin), Vc_raw_(HALF_V3V3/VH3V3_CONV_GAIN), Vc_(HALF_V3V3),
-  Vo_Vc_(0.), using_opamp_(using_opAmp), using_kf_(using_kf)
+  Vo_raw_(0), Vo_(0.), Vo_Vc_(0.), using_opamp_(using_opAmp), using_kf_(using_kf)
 {
   if ( using_opamp_ ) Serial.printf("Ib %s sense ADC pin %d started using OpAmp and 3V3 pin %d\n", name_.c_str(), vo_pin_, vr_pin_);
   else Serial.printf("Ib %s sense ADC pins %d and %d started\n", name_.c_str(), vo_pin_, vc_pin_);
@@ -230,10 +230,11 @@ void Shunt::sample_Vo()
 // Class Sensors
 Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *ReadTemp, Sync *Talk, Sync *Summarize,
   uint64_t time_now, uint64_t millis, BatteryMonitor *Mon):
+  SdTb(nullptr),
   AmpFilt(nullptr), dt_ib_(0ULL), dt_ib_hdwe_(0ULL), IbAmpRMS(nullptr), IbNoaRMS(nullptr),
   inst_millis_(millis), inst_time_(time_now), NoaFilt(nullptr), Prbn_Tb_(nullptr), Prbn_Vb_(nullptr), Prbn_Ib_amp_(nullptr), Prbn_Ib_noa_(nullptr),
   reset_temp_(false), sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_tb_(0UL), sample_time_Tbx_(0ULL), sample_time_Tbx_hdwe_(0UL), sample_time_vb_(0UL), sample_time_vb_hdwe_(0UL),
-  SelFiltCal(nullptr), TbxHdweFilt(nullptr), TbxModelFilt(nullptr), VbFilt(nullptr), VbRMS(nullptr), VcRMS(nullptr), Tbx_raw_(0), Tbx_volt_(NOMINAL_TB), Vb_raw_(0), Vb_(NOMINAL_VB), Vb_f_(NOMINAL_VB), Vb_hdwe_(NOMINAL_VB),
+  SelFiltCal(nullptr), TbxHdweFilt(nullptr), TbxModelFilt(nullptr), VbFilt(nullptr), VbRMS(nullptr), VcRMS(nullptr), Tbx_read_(nullptr), Vb_read_(nullptr), Tbx_raw_(0), Tbx_volt_(NOMINAL_TB), Vb_raw_(0), Vb_(NOMINAL_VB), Vb_f_(NOMINAL_VB), Vb_hdwe_(NOMINAL_VB),
   Vb_hdwe_f_(NOMINAL_VB), Vb_model_(NOMINAL_VB), Vb_volt_(NOMINAL_VB), Vc_(0.), Vc_hdwe_(0.), Vc_hdwe_sum_(0.),
   Tb_(NOMINAL_TB), Tb_f_(NOMINAL_TB), Tb_f_rate_(0.), Tb_hdwe_(NOMINAL_TB), Tb_hdwe_filt_(NOMINAL_TB),  Tb_hdwe_filt_rate_(0.),
   Tb_model_(NOMINAL_TB), Tb_model_filt_(NOMINAL_TB), Tb_model_filt_rate_(0.), 
@@ -746,23 +747,29 @@ void Sensors::Tbx_load(const uint16_t tb_pin, const bool reset)
       Tbx_hdwe_ = ( 1. / max( HDWE_SHA_2WIRE + (HDWE_SHB_2WIRE + HDWE_SHC_2WIRE *lnres*lnres) * lnres, 0.000001 ) ) - 273.;
       Tbx_hdwe_ += sp.Tb_bias_hdwe();  // Fault injection
     #endif
-    Tbx_hdwe_f_ = TbxHdweFilt->calculate(Tbx_hdwe_, reset || Flt->Tbx_fa(), ap.Tbx_filt(), T_, T_RLIM, -T_RLIM);
-    Tbx_hdwe_f_dt_ = TbxHdweFilt->T();
-    Tbx_hdwe_f_tau_ = TbxHdweFilt->tau();
-    Tbx_hdwe_f_rate_ = TbxHdweFilt->rate();
-    Tbx_hdwe_f_rstate_ = TbxHdweFilt->rstate();
-    Tbx_hdwe_f_lstate_ = TbxHdweFilt->lstate();
-    Tbx_model_f_ = TbxModelFilt->calculate(Tbx_model_, reset || Flt->Tbx_fa(), ap.Tbx_filt(), T_, T_RLIM, -T_RLIM);
-    Tbx_model_f_dt_ = TbxModelFilt->T();
-    Tbx_model_f_tau_ = TbxModelFilt->tau();
-    Tbx_model_f_rate_ = TbxModelFilt->rate();
-    Tbx_model_f_rstate_ = TbxModelFilt->rstate();
-    Tbx_model_f_lstate_ = TbxModelFilt->lstate();
   }
   else
   {
     Tbx_raw_ = 0;
-    Tbx_hdwe_ = 0.;
+    Tbx_hdwe_ = NOMINAL_TB;
+  }
+  Tbx_hdwe_f_ = TbxHdweFilt->calculate(Tbx_hdwe_, reset || Flt->Tbx_fa() || sp.mod_tb_dscn(), ap.Tbx_filt(), T_, T_RLIM, -T_RLIM);
+  Tbx_hdwe_f_dt_ = TbxHdweFilt->T();
+  Tbx_hdwe_f_tau_ = TbxHdweFilt->tau();
+  Tbx_hdwe_f_rate_ = TbxHdweFilt->rate();
+  Tbx_hdwe_f_rstate_ = TbxHdweFilt->rstate();
+  Tbx_hdwe_f_lstate_ = TbxHdweFilt->lstate();
+  Tbx_model_f_ = TbxModelFilt->calculate(Tbx_model_, reset || Flt->Tbx_fa(), ap.Tbx_filt(), T_, T_RLIM, -T_RLIM);
+  Tbx_model_f_dt_ = TbxModelFilt->T();
+  Tbx_model_f_tau_ = TbxModelFilt->tau();
+  Tbx_model_f_rate_ = TbxModelFilt->rate();
+  Tbx_model_f_rstate_ = TbxModelFilt->rstate();
+  Tbx_model_f_lstate_ = TbxModelFilt->lstate();
+  if ( sp.debug()==18 )
+  {
+    Serial.printf("\nTbx_load: T_%7.3f", T_);
+    Tbx_print();
+    Serial.printf("\n");
   }
   sample_time_Tbx_hdwe_ = millis();
 }
@@ -770,8 +777,8 @@ void Sensors::Tbx_load(const uint16_t tb_pin, const bool reset)
 // Print analog voltage
 void Sensors::Tbx_print()
 {
-  Serial.printf("reset%2d stime%7.3f T%7.3f tb_dscn%2d Tbx_raw%4d sp.Tb_bias_hdwe%7.3f Tbx_hdwe%7.3f Tbx_hdwe_f%7.3f Tbx_hdwe_f_rate%7.3f Tbx_hdwe_f_rstate%7.3f Tbx_hdwe_f_lstate%7.3f tbx_flt%2d tbx_fa%2d\n",
-    reset_, float(sample_time_Tbx_hdwe_)/1000.f, T_, sp.mod_tb_dscn(), Tbx_raw_, sp.Tb_bias_hdwe(), Tbx_hdwe_, Tbx_hdwe_f_, Tbx_hdwe_f_rate_, Tbx_hdwe_f_rstate_,
+  Serial.printf("reset%2d stime%7.3f T%7.3f tb_dscn%2d Tbx_raw%4d sp.Tb_bias_hdwe%7.3f Tbx_hdwe%7.3f Tbx_hdwe_f%7.3f Tbx_hdwe_f_dt%7.3f Tbx_hdwe_f_rate%7.3f Tbx_hdwe_f_rstate%7.3f Tbx_hdwe_f_lstate%7.3f tbx_flt%2d tbx_fa%2d\n",
+    reset_, float(sample_time_Tbx_hdwe_)/1000.f, T_, sp.mod_tb_dscn(), Tbx_raw_, sp.Tb_bias_hdwe(), Tbx_hdwe_, Tbx_hdwe_f_, Tbx_hdwe_f_dt_, Tbx_hdwe_f_rate_, Tbx_hdwe_f_rstate_,
     Tbx_hdwe_f_lstate_, Flt->Tbx_flt(), Flt->Tbx_fa());
 }
 

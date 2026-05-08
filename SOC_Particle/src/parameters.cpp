@@ -33,7 +33,7 @@ extern CommandPars cp;
 // class Parameters
 // Corruption test on bootup.  Needed because retained parameter memory is not managed by the compiler as it relies on
 // battery.  Small compilation changes can change where in this memory the program points, too
-Parameters::Parameters():n_(0) {};
+Parameters::Parameters():n_(0), V_(nullptr) {};
 
 Parameters::~Parameters(){};
 

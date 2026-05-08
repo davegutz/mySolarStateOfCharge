@@ -531,19 +531,15 @@ class Sensors:
                 self.TbxModelFilt.calculate_tau_seeded(mon.Tbx_model, mon_run.Tbx_model_f[i], mon.reset or mon.tbx_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
-            self.Tbx_model_f_rate_fut = self.TbxModelFilt.rate
-            mon.Tbx_model_f_dt = self.TbxModelFilt.dt
-            mon.Tbx_model_f_rstate = self.TbxModelFilt.rstate
-            mon.Tbx_model_f_lstate = self.TbxModelFilt.state
         else:
             mon.Tbx_model_f = \
                 self.TbxModelFilt.calculate_tau_seeded(mon.Tbx_model, mon.Tbx_model, mon.reset or mon.tbx_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
-            mon.Tbx_model_f_rate = self.TbxModelFilt.rate
-            mon.Tbx_model_f_dt = self.TbxModelFilt.dt
-            mon.Tbx_model_f_rstate = self.TbxModelFilt.rstate
-            mon.Tbx_model_f_lstate = self.TbxModelFilt.state
+        mon.Tbx_model_f_rate = self.TbxModelFilt.rate
+        mon.Tbx_model_f_dt = self.TbxModelFilt.dt
+        mon.Tbx_model_f_rstate = self.TbxModelFilt.rstate
+        mon.Tbx_model_f_lstate = self.TbxModelFilt.state
 
     def update_ekf(self, i_ekf):
         self.z_init = self.z[i_ekf]

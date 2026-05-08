@@ -106,7 +106,7 @@ _log_file = open(os.path.join(_log_dir, "GUI_TestSOC.log"), 'a', buffering=1)
 
 plink_pid = None
 cmd_window_pid = None  # Windows: cmd.exe /k window that hosts plink — killed separately on stop
-cmd_window_title_prefix = 'PLINK_SOC_WINDOW'  # Unique title set in bat file; used as taskkill fallback
+cmd_window_title_prefix = 'plink-terminal-server'  # Unique title set in bat file; used as taskkill fallback
 cmd_window_pids = set()  # Windows: every cmd.exe window we ever spawned this session (belt+suspenders)
 run_start_time = None  # Set at grab_start, used to print elapsed time on DONE
 auto_running = False  # Track if AUTO process is active
@@ -1753,8 +1753,8 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
 
             if 'gnome-terminal' in term:
                 # zoom 0.8 is roughly "two sizes smaller" (standard is 1.0, 0.9 is one size, 0.8 is two)
-                cmd = [term, '--zoom=0.8', '--', 'bash', '-c',
-                       f"echo -e '\\e]11;{bg_color}\\a\\e]10;{fg_color}\\a'; clear; {plink_cmd}"]
+                cmd = [term, '--app-id=local.plink-terminal-server', '--zoom=0.8', '--', 'bash', '-c',
+                       f"echo -e '\\e]11;{bg_color}\\a\\e]10;{fg_color}\\a\\e]0;plink-terminal-server\\a'; clear; {plink_cmd}"]
                 print(f"Running command: {shlex.join(cmd)}")
                 proc = subprocess.Popen(cmd)
                 tksleep(1.0) # Wait for terminal to spawn plink
@@ -1788,7 +1788,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                     print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
             elif 'xterm' in term:
                 # xterm -bg black -fg green -fs 10 (assuming default is ~12)
-                cmd = [term, '-bg', bg_color, '-fg', fg_color, '-fs', '10', '-e', f"bash -c '{plink_cmd}'"]
+                cmd = [term, '-T', 'plink-terminal-server', '-bg', bg_color, '-fg', fg_color, '-fs', '10', '-e', f"bash -c '{plink_cmd}'"]
                 print(f"Running command: {shlex.join(cmd)}")
                 proc = subprocess.Popen(cmd)
                 tksleep(1.0) # Wait for terminal to spawn plink
@@ -1820,7 +1820,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                 if auto_running:
                     print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
             else:
-                cmd = [term, '-e', f"bash -c '{plink_cmd}'"]
+                cmd = [term, '-e', f"bash -c 'printf \"\\e]0;plink-terminal-server\\a\"; {plink_cmd}'"]
                 print(f"Running command: {shlex.join(cmd)}")
                 proc = subprocess.Popen(cmd)
                 tksleep(1.0) # Wait for terminal to spawn plink
@@ -1925,7 +1925,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                  plink_cmd = f"plink -batch -T -load {test_filename.get()} | tee {plink_test_csv_path.get()}"
 
              script = (f'tell application "Terminal" to do script '
-                       f'"printf \\"\\\\e]11;#000000\\\\a\\\\e]10;#00ff00\\\\a\\"; clear; '
+                       f'"printf \\"\\\\e]11;#000000\\\\a\\\\e]10;#00ff00\\\\a\\\\e]0;plink-terminal-server\\\\a\\"; clear; '
                        f'{plink_cmd}"\n'
                        f'tell application "Terminal" to set font size of window 1 to 10')
              cmd = ['osascript', '-e', script]

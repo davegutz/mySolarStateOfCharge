@@ -29,7 +29,7 @@ extern SavedPars sp;  // Various parameters to be static at system level and sav
 
 // Constructors
 Sync::Sync()
-  : delay_(0), last_(0ULL), now_(0ULL), stat_(false), updateDiff_(0), updateTime_(0)
+  : delay_(0), last_(0ULL), now_(0ULL), stat_(false), updateDiff_(0), updateTime_(0), updateTimeInput_(0.)
 {}
 Sync::Sync(uint64_t delay)
     : delay_(delay), last_(0ULL), now_(0ULL), stat_(false), updateDiff_(0), updateTime_(0)

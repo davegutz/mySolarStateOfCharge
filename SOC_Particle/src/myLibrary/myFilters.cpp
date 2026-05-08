@@ -299,7 +299,7 @@ double SlidingDeadband::update(const double in, const int RESET)
 // class DiscreteFilter
 // constructors
 DiscreteFilter::DiscreteFilter()
-    : max_(1e32), min_(-1e32), rate_(0.0), T_(1.0), tau_(0.0) {}
+    : reset_(false), max_(1e32), min_(-1e32), rate_(0.0), T_(1.0), tau_(0.0) {}
 DiscreteFilter::DiscreteFilter(const double T, const double tau, const double min, const double max)
     : max_(max), min_(min), rate_(0.0), T_(T), tau_(tau) {}
 DiscreteFilter::~DiscreteFilter() {}
@@ -322,7 +322,7 @@ double DiscreteFilter::state(void) { return (0); }
 
 // Tustin rate-lag rate calculator, non-pre-warped, no limits, fixed update rate
 // constructors
-RateLagTustin::RateLagTustin() : DiscreteFilter() {}
+RateLagTustin::RateLagTustin() : DiscreteFilter(), a_(0.), b_(0.), state_(0.) {}
 RateLagTustin::RateLagTustin(const double T, const double tau, const double min, const double max)
     : DiscreteFilter(T, tau, min, max)
 {
@@ -356,7 +356,7 @@ double RateLagTustin::state(void) { return (state_); };
 
 // Tustin lead-lag alculator, non-pre-warped, no limits, fixed update rate
 // constructors
-LeadLagTustin::LeadLagTustin() : DiscreteFilter() {}
+LeadLagTustin::LeadLagTustin() : DiscreteFilter(), a_(0.), b_(0.), state_(0.), tld_(0.) {}
 LeadLagTustin::LeadLagTustin(const double T, const double tld, const double tau, const double min, const double max)
     : DiscreteFilter(T, tau, min, max)
 {
@@ -420,7 +420,7 @@ double LeadLagTustin::state(void) { return (state_); };
 // Exponential lead-lag calculator, non-pre-warped, no limits, fixed update rate
 // http://www.mathpages.com/home/kmath198/2-2/2-2.htm
 // constructors
-LeadLagExp::LeadLagExp() : DiscreteFilter() {}
+LeadLagExp::LeadLagExp() : DiscreteFilter(), a_(0.), b_(0.), state_(0.), instate_(0.), tld_(0.) {}
 LeadLagExp::LeadLagExp(const double T, const double tld, const double tau, const double min, const double max)
     : DiscreteFilter(T, tau, min, max)
 {
@@ -490,7 +490,7 @@ double LeadLagExp::state(void) { return (state_); };
 
 // Exponential rate-lag rate calculator, non-pre-warped, no limits, fixed update rate
 // constructors
-RateLagExp::RateLagExp() : DiscreteFilter() {}
+RateLagExp::RateLagExp() : DiscreteFilter(), a_(0.), b_(0.), c_(0.), lstate_(0.), rstate_(0.) {}
 RateLagExp::RateLagExp(const double T, const double tau, const double min, const double max)
     : DiscreteFilter(T, tau, min, max)
 {
@@ -546,7 +546,7 @@ double RateLagExp::state(void) { return (lstate_); };
 
 // Tustin lag calculator, non-pre-warped
 // constructors
-LagTustin::LagTustin() : DiscreteFilter() {}
+LagTustin::LagTustin() : DiscreteFilter(), a_(0.), b_(0.), state_(0.) {}
 LagTustin::LagTustin(const double T, const double tau, const double min, const double max)
     : DiscreteFilter(T, tau, min, max)
 {
@@ -597,7 +597,7 @@ double LagTustin::state(void) { return (state_); };
 
 // Exp lag calculator variable update rate and limits
 // constructors
-LagExp::LagExp() : DiscreteFilter() {}
+LagExp::LagExp() : DiscreteFilter(), a_(0.), b_(0.), c_(0.), lstate_(0.), rstate_(0.) {}
 LagExp::LagExp(const double T, const double tau, const double min, const double max)
     : DiscreteFilter(T, tau, min, max)
 {
@@ -686,7 +686,7 @@ void LagExp::rateStateLim(double in, int RESET, double max_rate, double min_rate
 // class DiscreteIntegrator
 // constructors
 DiscreteIntegrator::DiscreteIntegrator()
-  : max_(1e32), min_(-1e32), T_(1.0){}
+  : a_(0.), b_(0.), c_(1.), lim_(false), max_(1e32), min_(-1e32), lstate_(0.), reset_(false), rstate_(0.), T_(1.0){}
 DiscreteIntegrator::DiscreteIntegrator(const double T, const double min, const double max, 
   const double a, const double b, const double c)
   : a_(a), b_(b), c_(c), lim_(false), max_(max), min_(min), lstate_(0), rstate_(0), T_(T) {}

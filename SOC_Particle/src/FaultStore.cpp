@@ -222,6 +222,7 @@ void Flt_st::put_nominal()
 
 // Class fault ram to interface Flt_st to ram
 Flt_ram::Flt_ram()
+  : rP_(nullptr)
 {
   Flt_st();
 }

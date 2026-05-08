@@ -1012,7 +1012,7 @@ def start_putty():
     if enter_size < 64:
         kill_putty(platform.system())
         print(f'restarting putty   putty -load {test_filename.get()}')
-        subprocess.Popen(['putty', '-load', test_filename.get()], 
+        subprocess.Popen(['putty', '-title', 'putty-terminal-server', '-load', test_filename.get()],
                          stdin=subprocess.PIPE, bufsize=1, universal_newlines=True)
 
 

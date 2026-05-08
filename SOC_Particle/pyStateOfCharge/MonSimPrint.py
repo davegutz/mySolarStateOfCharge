@@ -606,7 +606,7 @@ def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
           "{:14.7f}".format(SN.mon_run.Tbx_hdwe_f_rate[G.i]), "{:11.7f}".format(mon.Tbx_hdwe_f_rate),
           "{:13.7f}".format(SN.mon_run.Tbx_hdwe[G.i]), "{:11.7f}".format(mon.Tbx_hdwe),
           "{:14.7f}".format(SN.mon_run.Tbx_hdwe_f[G.i]), "{:11.7f}".format(mon.Tbx_hdwe_f),
-          "{:14.7f}".format(SN.mon_run.Tbx_hdwe_f_dt[G.i]), "{:11.7f}".format(mon.Tbx_hdwe_f_dt),
+          "{:14.7f}".format(SN.mon_run.dt_sel[G.i]), "{:11.7f}".format(mon.Tbx_hdwe_f_dt),
           "{:14.7f}".format(SN.mon_run.Tbx_hdwe_f_tau[G.i]), "{:11.7f}".format(mon.Tbx_hdwe_f_tau),
           "{:14.7f}".format(SN.mon_run.Tbx_hdwe_f_rstate[G.i]), "{:11.7f}".format(mon.Tbx_hdwe_f_rstate),
           "{:14.7f}".format(SN.mon_run.Tbx_hdwe_f_lstate[G.i]), "{:11.7f}".format(mon.Tbx_hdwe_f_lstate),

@@ -50,7 +50,7 @@ String bitMapPrint(char *buf, const int16_t fw, const uint8_t num)
 // Class Looparound
 Looparound::Looparound(BatteryMonitor *Mon, Sensors *Sen, const float wrap_hi_amp, const float wrap_lo_amp, const double wrap_trim_gain,
     const float imax, const float imin, const float err_max):
-  chem_(Mon->chem()), e_wrap_(0.), e_wrap_filt_(0.), e_wrap_rate_(0.), e_wrap_trim_(0.), e_wrap_trimmed_(0.), 
+  chem_(Mon->chem()), dv_dyn_(0.), e_wrap_(0.), e_wrap_filt_(0.), e_wrap_rate_(0.), e_wrap_trim_(0.), e_wrap_trimmed_(0.),
   ewhi_thr_(0.), ewhi_thr_base_(0.), ewlo_thr_(0.), ewlo_thr_base_(0.), hi_fail_(false), hi_fault_(false), 
   ib_(0.), ib_dyn_(0.), ib_past_(0.), imax_(imax), imin_(imin), lo_fail_(false), lo_fault_(false), Mon_(Mon), 
   reset_(false), Sen_(Sen), vb_(0.), voc_(0.), voc_soc_(0.), wrap_hi_amp_(wrap_hi_amp), wrap_lo_amp_(wrap_lo_amp),
@@ -158,17 +158,21 @@ String Looparound::pretty_print(Sensors *Sen)
 
 // Class Fault
 Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *Sen):
-  cc_diff_(0.), cc_diff_empty_slr_(1), disable_amp_fault_(false), ewsat_slr_(1),
-  e_wrap_(0), e_wrap_filt_(0), fltw_(0UL), falw_(0UL),
-  ib_amp_hi_(false), ib_amp_invalid_(false), ib_amp_lo_(false), ib_choice_(KeepTrying),
-  ib_choice_last_(KeepTrying), ib_decision_(0), ib_diff_(0), ib_diff_f_(0), ib_lo_active_(true),
+  cc_diff_thr_(0.), ib_diff_thr_(0.), ib_quiet_thr_(0.),
+  cc_diff_(0.), cc_diff_fa_(false), cc_diff_empty_slr_(1.), disable_amp_fault_(false),
+  ewmax_slr_(1.), ewmin_slr_(1.), ewsat_slr_(1.),
+  e_wrap_(0.), e_wrap_filt_(0.), e_wrap_rate_(0.), fltw_(0UL), falw_(0UL),
+  ib_amp_hi_(false), ib_amp_invalid_(false), ib_amp_lo_(false), ib_noa_rate_(0.),
+  ib_choice_(KeepTrying), ib_choice_last_(KeepTrying), ib_decision_(0),
+  ib_diff_(0.), ib_diff_f_(0.), ib_is_functional_(false), ib_is_quiet_(false), ib_lo_active_(true),
   ib_lo_limited_hi_(false), ib_lo_limited_lo_(false),
-  ib_noa_hi_(false), ib_noa_invalid_(false), ib_noa_lo_(false), ib_quiet_(0), ib_rate_(0),
+  ib_noa_hi_(false), ib_noa_invalid_(false), ib_noa_lo_(false), ib_quiet_(0.), ib_really_quiet_(false), ib_rate_(0.),
   ib_sel_stat_(IB_SEL_STAT_DEF), ib_sel_stat_last_(IB_SEL_STAT_DEF), latch_(false),
-  latch_fake_(false), reset_all_faults_(false), sp_preserving_(preserving), tb_sel_stat_(TB_SEL_STAT_DEF),
-  tb_sel_stat_last_(TB_SEL_STAT_DEF), vb_sel_stat_(VB_SEL_STAT_DEF),
+  latch_fake_(false), rate_amp_(false), rate_noa_(false), reset_all_faults_(false),
+  reset_all_faults_print_(false), sp_preserving_(preserving), splrr_amp_(false), splrr_noa_(false),
+  tb_sel_stat_(TB_SEL_STAT_DEF), tb_sel_stat_last_(TB_SEL_STAT_DEF), vb_sel_stat_(VB_SEL_STAT_DEF),
   vb_sel_stat_last_(VB_SEL_STAT_DEF), wrap_hi_amp_(WRAP_HI_AMP), wrap_hi_noa_(WRAP_HI_NOA),
-   wrap_lo_amp_(WRAP_LO_AMP), wrap_lo_noa_(WRAP_LO_NOA)
+  wrap_lo_amp_(WRAP_LO_AMP), wrap_lo_noa_(WRAP_LO_NOA)
 {
   IbDiffFilt = new LagTustin(T, TAU_ERR_FILT, -IBATT_DISAGREE_THRESH*1.5, IBATT_DISAGREE_THRESH*1.5);  // actual update time provided run time
   IbdPosPer = new TFDelay(false, IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RES, T);

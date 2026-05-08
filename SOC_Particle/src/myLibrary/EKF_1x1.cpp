@@ -32,7 +32,11 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 
 // class EKF_1x1
 // constructors
-EKF_1x1::EKF_1x1(){}
+EKF_1x1::EKF_1x1()
+    : Fx_(0.), Bu_(0.), Q_(0.), R_(0.), P_(0.), S_(0.), K_(0.), u_(0.), x_(0.), y_(0.), z_(0.),
+      x_prior_(0.), P_prior_(0.), x_post_(0.), P_post_(0.), hx_(0.), H_(0.),
+      freeze_(false), now_ekf_(0ULL), dt_ekf_(0.), Tb_f_for_hx_(0.), x_for_hx_(0.)
+{}
 EKF_1x1::~EKF_1x1() {}
 
 // operators

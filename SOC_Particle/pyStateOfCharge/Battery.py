@@ -591,7 +591,6 @@ class BatteryMonitor(Battery, EKF1x1):
         if self.reset:
             self.bms_off_past = SN.mon_run.bms_off[G.i-1]
             self.voltage_low = self.bms_off = SN.mon_run.bms_off[G.i]
-            print(f"reset {self.voltage_low=}")
         else:
             if not self.bms_off:
                 voltage_low_past = self.voltage_low
