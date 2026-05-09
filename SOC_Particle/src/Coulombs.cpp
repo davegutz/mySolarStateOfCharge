@@ -100,7 +100,7 @@ void Coulombs::pretty_print()
 void Coulombs::apply_cap_scale(const float scale)
 {
   q_cap_rated_scaled_ = scale * q_cap_rated_;
-  q_capacity_ = calculate_capacity(tb_f_);  // tb_f_ usually Tb_f to reduce electrical noise effects
+  q_capacity_ = calculate_capacity(tb_f_);  // tb_f_ usually Tbx_f to reduce electrical noise effects
   q_ = *sp_delta_q_ + q_capacity_; // preserve delta_q, deficit since last saturation (like real life)
   soc_ = q_ / q_capacity_;
   resetting_ = true;     // momentarily turn off saturation check
@@ -169,8 +169,8 @@ float Coulombs::count_coulombs(Sensors *Sen, const bool reset_temp, const float 
 {
     // Inputs
     dt_ = Sen->T();
-    tb_f_ = Sen->Tb_f();
-    tb_f_rate_ = Sen->Tb_f_rate();
+    tb_f_ = Sen->Tbx_f();
+    tb_f_rate_ = Sen->Tbx_f_rate();
     Tbx_f_ = Sen->Tbx_f();
     Tbx_f_rate_ = Sen->Tbx_f_rate();
     d_delta_q_ = charge_curr * dt_;

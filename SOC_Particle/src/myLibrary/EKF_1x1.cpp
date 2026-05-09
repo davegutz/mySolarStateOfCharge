@@ -35,7 +35,7 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 EKF_1x1::EKF_1x1()
     : Fx_(0.), Bu_(0.), Q_(0.), R_(0.), P_(0.), S_(0.), K_(0.), u_(0.), x_(0.), y_(0.), z_(0.),
       x_prior_(0.), P_prior_(0.), x_post_(0.), P_post_(0.), hx_(0.), H_(0.),
-      freeze_(false), now_ekf_(0ULL), dt_ekf_(0.), Tb_f_for_hx_(0.), x_for_hx_(0.)
+      freeze_(false), now_ekf_(0ULL), dt_ekf_(0.), Tbx_f_for_hx_(0.), x_for_hx_(0.)
 {}
 EKF_1x1::~EKF_1x1() {}
 
@@ -85,7 +85,7 @@ void EKF_1x1::update_ekf(const double z, double x_min, double x_max)
     S   1x1 system uncertainty
     SI  1x1 system uncertainty inverse
   */
-  this->ekf_update(&hx_, &H_, &x_for_hx_, &Tb_f_for_hx_);
+  this->ekf_update(&hx_, &H_, &x_for_hx_, &Tbx_f_for_hx_);
   z_ = z;
   double pht = P_*H_;
   S_ = H_*pht + R_*ap.ekf_r()*ap.ekf_r();
@@ -110,7 +110,7 @@ void EKF_1x1::update_ekf(const double z, double x_min, double x_max)
 
   if ( sp.debug()==35 )
     sendTxBuf(String::format("tbf u freeze z hx: %8.4f%8.4f%2d%8.4f%8.4f,   xp x P Pp:  %13.10f%13.10f%13.10f%13.10f,  H S K y:  %11.6f%7.4f%7.4f%11.7f,\n",
-      Tb_f_for_hx_, u_, freeze_, z_, hx_,        x_prior_, x_, P_, P_prior_,      H_, S_, K_, y_), true, true);
+      Tbx_f_for_hx_, u_, freeze_, z_, hx_,        x_prior_, x_, P_, P_prior_,      H_, S_, K_, y_), true, true);
 
 }
 

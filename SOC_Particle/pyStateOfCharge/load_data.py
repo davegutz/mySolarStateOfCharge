@@ -110,8 +110,6 @@ def load_data(path_to_data, skip, unit_key, zero_zero, time_end, rated_batt_cap=
     hdr_key_sim = "unit_m,"  # Find one instance of title
     unit_key_sim = "unit_sim"
     temp_flt_file = 'flt_compareRunSim.txt'
-    hdr_key_temp = "unit_t"
-    unit_key_temp = "temp_unit"
     hdr_key_shunt = "unit_shunt"
     unit_key_shunt = "shunt_unit"
 
@@ -171,16 +169,6 @@ def load_data(path_to_data, skip, unit_key, zero_zero, time_end, rated_batt_cap=
         sel_raw = None
         print(f"load_data: returning sel_raw=None")
 
-    # Load temp (ref)
-    temp_file_clean = write_clean_file(path_to_data, type_='_temp', hdr_key=hdr_key_temp,
-                                       unit_key=unit_key_temp, skip=skip)
-    if temp_file_clean:
-        temp_raw = np.genfromtxt(temp_file_clean, delimiter=',', names=True, dtype=float).view(np.recarray)
-        temp_raw = rename_all(temp_raw)
-    else:
-        temp_raw = None
-        print(f"load_data: returning temp_raw=None")
-
     # Load ekf (ref)
     ekf_file_clean = write_clean_file(path_to_data, type_='_ekf', hdr_key=hdr_key,
                                       unit_key=unit_key_ekf, skip=skip)
@@ -200,7 +188,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero, time_end, rated_batt_cap=
         shunt_raw = None
         print(f"load_data: returning shunt_raw=None")
 
-    mon = SavedData(battery=battery_raw, rap=mon_raw, sel=sel_raw, ekf=ekf_raw, temp=temp_raw, shunt=shunt_raw,
+    mon = SavedData(battery=battery_raw, rap=mon_raw, sel=sel_raw, ekf=ekf_raw, shunt=shunt_raw,
                     time_end=time_end, zero_zero=zero_zero, zero_thr=zero_thr_in, sync_cTime=sync,
                     init_time=init_time, time_shift=time_shift, str_=mon_str)
 

@@ -90,18 +90,18 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     for i in range(len(d_ra.time_ux)):
         soc = d_ra.soc[i]
         voc_stat_f = d_ra.voc_stat_f[i]
-        Tb_f = d_ra.Tb_f[i]
+        Tbx_f = d_ra.Tbx_f[i]
         ib_diff_ = d_ra.ib_amp_hdwe_f[i] - d_ra.ib_noa_hdwe_f[i]
         cc_dif_ = d_ra.soc[i] - d_ra.soc_ekf[i]
         ib_diff.append(ib_diff_)
         C_rate = d_ra.ib_f[i] / rated_batt_cap
-        voc_soc.append(mon.chemistry.lookup_voc(d_ra.soc[i], d_ra.Tb_f[i]) + Dw)
+        voc_soc.append(mon.chemistry.lookup_voc(d_ra.soc[i], d_ra.Tbx_f[i]) + Dw)
         BB = BatteryMonitor(OPT=None)
         cc_diff_thr_, ewhi_thr_, ewlo_thr_, ib_diff_thr_, ib_quiet_thr_ = \
-            fault_thr_bb(Tb_f, soc, voc_soc[i], voc_stat_f, C_rate, BB, ap_ib_diff_slr=ap_ib_diff_slr,
+            fault_thr_bb(Tbx_f, soc, voc_soc[i], voc_stat_f, C_rate, BB, ap_ib_diff_slr=ap_ib_diff_slr,
                          ap_ib_quiet_slr=ap_ib_quiet_slr)
         ib_f_ = d_ra.ib_f[i]
-        tb_f_ = d_ra.Tb_f[i]
+        tb_f_ = d_ra.Tbx_f[i]
         vb_f_ = d_ra.vb_f[i]
         voc_f_ = d_ra.voc_f[i]
         ib_dyn_ = d_ra.ib_f[i]
@@ -125,9 +125,9 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
         ewlo_thr.append(ewlo_thr_)
         ib_diff_thr.append(ib_diff_thr_)
         ib_quiet_thr.append(ib_quiet_thr_)
-        soc_min.append((BB.chemistry.lut_min_soc.interp(d_ra.Tb_f[i])))
+        soc_min.append((BB.chemistry.lut_min_soc.interp(d_ra.Tbx_f[i])))
         ib_dyn.append(ib_dyn_)
-        vsat.append(mon.chemistry.nom_vsat + (d_ra.Tb_f[i] - mon.chemistry.rated_temp) * mon.chemistry.dvoc_dt)
+        vsat.append(mon.chemistry.nom_vsat + (d_ra.Tbx_f[i] - mon.chemistry.rated_temp) * mon.chemistry.dvoc_dt)
         time_sec.append(float(d_ra.time_ux[i] - time_sync))
         if i > 0:
             dt.append(float(d_ra.time_ux[i] - d_ra.time_ux[i - 1]))
@@ -288,7 +288,7 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plq(plt, hi, timestr, hi, 'soc_ekf', color='blue', linestyle='--', marker='+', markersize='3')
         plt.legend(loc=1)
         plt.subplot(332)
-        plq(plt, hi, timestr, hi, 'Tb_f', color='black', linestyle='-', marker='.', markersize='3')
+        plq(plt, hi, timestr, hi, 'Tbx_f', color='black', linestyle='-', marker='.', markersize='3')
         plq(plt, hi, timestr, hi, 'Tb', color='black', linestyle='-', marker='.', markersize='3', warn=False)
         plt.legend(loc=1)
         plt.subplot(333)
@@ -385,8 +385,8 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
         plq(plt, hi, timestr, hi, 'ib_noa_fa', add=6, color='red', linestyle='-', marker='+', markersize='3')
         plq(plt, hi, timestr, hi, 'ib_amp_fa', add=4, color='magenta', linestyle='-', marker='_', markersize='3')
         plq(plt, hi, timestr, hi, 'vb_fa_lt', add=2, color='cyan', linestyle='-', marker='1', markersize='3')
-        plq(plt, hi, timestr, hi, 'tb_fa', color='orange', linestyle='-', marker='2', markersize='3')
-        plq(plt, hi, timestr, hi, 'tbx_fa', color='orange', linestyle='-', marker='2', markersize='3')
+        plq(plt, hi, timestr, hi, 'Tb_fa', color='orange', linestyle='-', marker='2', markersize='3')
+        plq(plt, hi, timestr, hi, 'Tbx_fa', color='orange', linestyle='-', marker='2', markersize='3')
         plt.ylim(-1, 24)
         plt.xlabel(time_units)
         plt.legend(loc=1)
@@ -519,8 +519,8 @@ def overall_fault(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title
         plq(plt, mv, 'time', mv, 'Tb', color='blue', linestyle='--', warn=not run_type=='HistSim')
         plq(plt, smv, 'time', smv, 'Tb', color='green', linestyle='-.', warn=not run_type=='HistSim')
     else:
-        plq(plt, mr, 'time', mr, 'Tb_f', color='red', linestyle='-')
-        plq(plt, mv, 'time', mv, 'Tb_f', color='blue', linestyle='--')
+        plq(plt, mr, 'time', mr, 'Tbx_f', color='red', linestyle='-')
+        plq(plt, mv, 'time', mv, 'Tbx_f', color='blue', linestyle='--')
     plt.legend(loc=1)
     if not run_type=='HistHist':
         plt.subplot(332)
@@ -682,9 +682,9 @@ def overall_fault(mr, mv, sr, sv, smr, smv, filename, fig_files=None, plot_title
     plt.legend(loc=3)
     plt.subplot(339)
     plq(plt, mr, 'time', mr, 'Tb', color='blue', linestyle='-', warn=run_type!='HistHist' and not run_type=='HistSim')
-    plq(plt, mr, 'time', mr, 'Tb_f', color='blue', linestyle='-')
+    plq(plt, mr, 'time', mr, 'Tbx_f', color='blue', linestyle='-')
     plq(plt, mv, 'time', mv, 'Tb', color='red', linestyle='--', warn=run_type!='HistHist' and not run_type=='HistSim')
-    plq(plt, mv, 'time', mv, 'Tb_f', color='red', linestyle='--', warn=not run_type=='HistSim')
+    plq(plt, mv, 'time', mv, 'Tbx_f', color='red', linestyle='--', warn=not run_type=='HistSim')
     plq(plt, mr, 'time', mr, 'tau_hys', color='black', linestyle='-', warn=run_type!='HistHist' and not run_type=='HistSim')
     plq(plt, mv, 'time', mv, 'tau_hys', color='cyan', linestyle='--', warn=run_type!='HistHist' and not run_type=='HistSim')
     plt.legend(loc=3)
@@ -723,7 +723,7 @@ def calc_fault(d_ra, d_mod):
     ib_amp_flt = np.bool_(fltw & 2 ** 2)
     ib_amp_fa = np.bool_(falw & 2 ** 2)
     vb_fa_lt = np.bool_(falw & 2 ** 1)
-    tb_fa = np.bool_(falw & 2 ** 0)
+    Tb_fa = np.bool_(falw & 2 ** 0)
     tbx_fa = np.bool_(falw & 2 ** 19)
     d_mod = rf.rec_append_fields(d_mod, 'ib_noa_bare_flt', np.array(ib_noa_bare_flt, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_amp_bare_flt', np.array(ib_amp_bare_flt, dtype=float))
@@ -748,7 +748,7 @@ def calc_fault(d_ra, d_mod):
     d_mod = rf.rec_append_fields(d_mod, 'ib_noa_fa', np.array(ib_noa_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_amp_fa', np.array(ib_amp_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'vb_fa_lt', np.array(vb_fa_lt, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'tb_fa', np.array(tb_fa, dtype=float))
+    d_mod = rf.rec_append_fields(d_mod, 'tb_fa', np.array(Tb_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'tbx_fa', np.array(tbx_fa, dtype=float))
 
     try:
@@ -820,25 +820,25 @@ def bandaid(h, chm_in=0):
 
 # Make an array useful for analysis (around temp) and add some metrics
 def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
-    h = raw[abs(raw.Tb_f - temp_corr) < tb_band]
+    h = raw[abs(raw.Tbx_f - temp_corr) < tb_band]
 
-    saturated_ = np.copy(h.Tb_f)
-    bms_off_ = np.copy(h.Tb_f)
-    for i in range(len(h.Tb_f)):
-        saturated_[i] = is_sat(h.Tb_f[i], mon.chemistry.rated_temp, h.voc_f[i], h.soc[i], mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt,
+    saturated_ = np.copy(h.Tbx_f)
+    bms_off_ = np.copy(h.Tbx_f)
+    for i in range(len(h.Tbx_f)):
+        saturated_[i] = is_sat(h.Tbx_f[i], mon.chemistry.rated_temp, h.voc_f[i], h.soc[i], mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt,
                          mon.chemistry.low_t, vsat_add=mon.sp_vsat_add)
-        bms_off_[i] = (h.Tb_f[i] < mon.chemistry.low_t) or ((h.voc_stat_f[i] < 10.5) and (h.ib_f[i] < Battery.IB_MIN_UP))
+        bms_off_[i] = (h.Tbx_f[i] < mon.chemistry.low_t) or ((h.voc_stat_f[i] < 10.5) and (h.ib_f[i] < Battery.IB_MIN_UP))
 
     # Correct for temp
-    q_cap = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, tb_f=h.Tb_f,
+    q_cap = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, tb_f=h.Tbx_f,
                                t_rated=mon.chemistry.rated_temp)
     dq = (h.soc - 1.) * q_cap
-    dq -= mon.chemistry.dqdt * q_cap * (temp_corr - h.Tb_f)
+    dq -= mon.chemistry.dqdt * q_cap * (temp_corr - h.Tbx_f)
     q_cap_r = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, tb_f=temp_corr,
                                  t_rated=mon.chemistry.rated_temp)
     soc_r = 1. + dq / q_cap_r
     h = rf.rec_append_fields(h, 'soc_r', soc_r)
-    h.voc_stat_r = h.voc_stat_f - (h.Tb_f - temp_corr) * mon.chemistry.dvoc_dt
+    h.voc_stat_r = h.voc_stat_f - (h.Tbx_f - temp_corr) * mon.chemistry.dvoc_dt
 
     # delineate charging and discharging
     voc_stat_r_chg = np.copy(h.voc_stat_f)

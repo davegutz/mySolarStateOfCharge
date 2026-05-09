@@ -33,9 +33,8 @@ import numpy as np
 # type: ignore
 class SavedData:
     # noinspection PyPep8Naming
-    def __init__(self, battery=None, rap=None, sel=None, ekf=None, temp=None, shunt=None,
-                 time_end=None, zero_zero=False, zero_thr=0.02, sync_cTime=None, init_time=None, time_shift=None,
-                 str_=None):
+    def __init__(self, battery=None, rap=None, sel=None, ekf=None, shunt=None, time_end=None, zero_zero=False,
+                 zero_thr=0.02, sync_cTime=None, init_time=None, time_shift=None, str_=None):
         self.str = str_
         i_end = 0
         n = 0
@@ -87,23 +86,7 @@ class SavedData:
 
             # Truncate
             if time_end is None:
-                if temp is None:
-                    print(Colors.fg.red, end='')
-                    print(f"\n**********\nRun too short, no temp.csv data for {self.time[-1]} s run\n*************\n")
-                    print(Colors.reset, end='')
-                    exit(0)
-                if temp is not None:
-                    time_t = np.atleast_1d(np.array(np.array(temp.c_time_t) - self.time_run_start))
-                    Tt = np.atleast_1d(np.array(temp.Tt))
-                    if len(Tt) <= 1:
-                        print(Colors.fg.red, end='')
-                        print(f"\n**********\nRun too short, length Tt = {len(Tt)} for {self.time[-1]} s run.  Need at least 2 samples (asynchronous so time not definitive).\n*************\n")
-                        print(Colors.reset, end='')
-                        exit(0)
-                    time_end = time_t[-1] + Tt[-1]
-                    i_end = np.where(self.time <= time_end)[0][-1] + 1
-                else:
-                    i_end = len(self.time)
+                i_end = len(self.time)
                 if sel is not None:
                     self.c_time_sel = np.array(sel.c_time_sel) - self.time_run_start
                     i_end = min(i_end, len(self.c_time_sel))
@@ -217,8 +200,7 @@ class SavedData:
             self.vb_flt = np.bool_(np.array(fltw) & 2**1)
             self.vb_fa_lt = np.bool_(np.array(falw) & 2**1)
             self.Tb_flt = np.bool_(np.array(fltw) & 2**0)
-            self.tb_fa = np.bool_(np.array(falw) & 2**0)
-            self.tbx_fa = np.bool_(np.array(falw) & 2**19)
+            self.Tb_fa = np.bool_(np.array(falw) & 2**0)
             self.time_long = np.bool_(np.array(dispw) & 2**11)
             self.accy = np.bool_(np.array(dispw) & 2**10)
             self.off = np.bool_(np.array(dispw) & 2**9)
@@ -248,14 +230,6 @@ class SavedData:
             self.assign_all_from_frame(ekf, i_end)
             # Special handling
             self.time_e = np.array(np.atleast_1d(ekf.c_time_e)[:i_end] - self.time_run_start)
-
-        if temp is None:
-            pass
-        else:
-            # Load
-            self.assign_all_from_frame(temp, i_end)
-            # Specials
-            self.time_t = np.array(np.atleast_1d(temp.c_time_t)[:i_end]) - self.time_run_start
 
         # Workarounds for incomplete data sets e.g. vv1, vv2, vv3
         if self.dv_dyn_m is None:
@@ -342,26 +316,6 @@ class SavedData:
             self.e_wrap_filt = np.copy(self.ib) * 0.
         if self.mvb is None:
             self.mvb = np.bool(np.copy(self.mod_data))
-        if self.Tb is None:
-            self.Tb = np.copy(self.Tb_rap)
-        if self.Tb_f is None:
-            self.Tb_f = np.copy(self.Tb_f_rap)
-        if self.Tb_f_rate is None:
-            self.Tb_f_rate = np.copy(self.Tb_f_rate_rap)
-        if self.Tb_hdwe is None:
-            self.Tb_hdwe = np.copy(self.Tb_rap)
-        if self.Tb_hdwe_filt_rate is None:
-            self.Tb_hdwe_filt_rate = np.copy(self.Tb_f_rate_rap)
-        if self.Tb_model_filt_rate is None:
-            self.Tb_model_filt_rate = np.copy(self.Tb_f_rate_rap)
-        if self.Tb_hdwe_filt is None:
-            print(f"Using Tb_f_rap to initialize Tb_hdwe_filt")
-            self.Tb_hdwe_filt = np.copy(self.Tb_f_rap)
-        if self.Tb_model is None:
-            self.Tb_model = np.copy(self.Tb_rap)
-        if self.Tb_model_filt is None:
-            print(f"Using Tb_f_rap to initialize Tb_model_filt")
-            self.Tb_model_filt = np.copy(self.Tb_f_rap)
         if self.Tbx_model_f is None:
             print(f"Using Tbx_f to initialize Tbx_model_f")
             self.Tbx_model_f = np.copy(self.Tbx_f)
@@ -398,15 +352,13 @@ class SavedData:
         if self.S is None:
             self.S = np.copy(self.x) * 0.
         if self.tb_f_for_hx is None:
-            self.tb_f_for_hx = np.copy(self.Tb_f)
+            self.tb_f_for_hx = np.copy(self.Tbx_f)
         if self.x_for_hx is None:
             self.x_for_hx = np.copy(self.x)
         if self.disable_amp_fault is None:
             self.disable_amp_fault = np.copy(self.ib) * 0
         if self.time_e is None:
             self.time_e = np.copy(self.dt)
-        if self.time_t is None:
-            self.time_t = np.copy(self.dt)
 
         # Initialization time logic
         if init_time:

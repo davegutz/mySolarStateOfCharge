@@ -67,15 +67,15 @@ bool recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
 
         case ( 'r' ):  // Rr:  small reset counters
             Serial.printf("CC reset\n");
-            Sen->Sim->apply_soc(1.0, Sen->Tb_f());
-            Mon->apply_soc(1.0, Sen->Tb_f());
+            Sen->Sim->apply_soc(1.0, Sen->Tbx_f());
+            Mon->apply_soc(1.0, Sen->Tbx_f());
             cp.cmd_reset();
             break;
 
         case ( 'R' ):  // RR:  large reset
             sendTxBuf("RESET\n", true, true);
-            Sen->Sim->apply_soc(1.0, Sen->Tb_f());
-            Mon->apply_soc(1.0, Sen->Tb_f());
+            Sen->Sim->apply_soc(1.0, Sen->Tbx_f());
+            Mon->apply_soc(1.0, Sen->Tbx_f());
             cp.cmd_reset();
             Sen->ReadSensors->delay(READ_DELAY);
             Sen->ReadTemp->delay(TEMP_DELAY);

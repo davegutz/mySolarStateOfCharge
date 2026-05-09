@@ -99,32 +99,6 @@ protected:
 };
 
 
-// 2-wire temp sensor
-class TempSensor
-{
-public:
-  TempSensor();
-  TempSensor(const uint16_t pin, const bool parasitic, const uint16_t conversion_delay);
-  TempSensor(const uint16_t pin, const bool parasitic, const uint16_t conversion_delay, const uint16_t VTb_pin);
-  ~TempSensor();
-  // operators
-  // functions
-  bool tb_stale_flt() { return tb_stale_flt_; };
-  uint64_t sample_time() { return sample_time_; };
-  float sample(Sensors *Sen, const bool reset);
-  float noise();
-  void Tb_raw(const int input) { Tb_raw_ = input; };
-  float Tb_volt(){ return Tb_volt_; };
-protected:
-  SlidingDeadband *SdTb;
-  bool tb_stale_flt_;  // One-wire did not update last pass
-  uint16_t VTb_pin_;      // Using 2wire
-  double Tb_volt_;              // Sensed battery temp voltage from ADC, V
-  uint64_t sample_time_;  // Sample time
-  int Tb_raw_ = 0;
-  AnalogReadP2 *Tb_read_;
-};
-
 
 // Current reading class
 class Shunt
@@ -234,20 +208,12 @@ public:
   float Vc_hdwe() { return Vc_hdwe_; }
   void Vc_hdwe_sum(const float input) { Vc_hdwe_sum_ = input; }
   float Vc_hdwe_sum() { return Vc_hdwe_sum_; }
-  void Tb(const double input) { Tb_ = input; }
-  double Tb() { return Tb_; }
   void Tbx(const double input) { Tbx_ = input; }
   double Tbx() { return Tbx_; }
-  void Tb_f(const double input) { Tb_f_ = input; }
-  double Tb_f() { return Tb_f_; }
   void Tbx_f(const double input) { Tbx_f_ = input; }
   double Tbx_f() { return Tbx_f_; }
-  void Tb_f_rate(const double input) { Tb_f_rate_ = input; }
-  double Tb_f_rate() { return Tb_f_rate_; }
   void Tbx_f_rate(const double input) { Tbx_f_rate_ = input; }
   double Tbx_f_rate() { return Tbx_f_rate_; }
-  void Tb_hdwe(const double input) { Tb_hdwe_ = input; }
-  double Tb_hdwe() { return Tb_hdwe_; }
   void Tbx_hdwe(const double input) { Tbx_hdwe_ = input; }
   double Tbx_hdwe() { return Tbx_hdwe_; }
   void Tbx_hdwe_f(const double input) { Tbx_hdwe_f_ = input; }
@@ -260,16 +226,6 @@ public:
   void Tbx_hdwe_f_lstate(const double input) { Tbx_hdwe_f_lstate_ = input; }
   double Tbx_hdwe_f_lstate() { return Tbx_hdwe_f_lstate_; }
   double Tbx_hdwe_f_tau() { return Tbx_hdwe_f_tau_; }
-  void Tb_hdwe_filt(const double input) { Tb_hdwe_filt_ = input; }
-  double Tb_hdwe_filt() { return Tb_hdwe_filt_; }
-  void Tb_hdwe_filt_rate(const double input) { Tb_hdwe_filt_rate_ = input; }
-  double Tb_hdwe_filt_rate() { return Tb_hdwe_filt_rate_; }
-  void Tb_model(const double input) { Tb_model_ = input; }
-  double Tb_model() { return Tb_model_; }
-  void Tb_model_filt(const double input) { Tb_model_filt_ = input; }
-  double Tb_model_filt() { return Tb_model_filt_; }
-  void Tb_model_filt_rate(const double input) { Tb_model_filt_rate_ = input; }
-  double Tb_model_filt_rate() { return Tb_model_filt_rate_; }
   void Tbx_model(const double input) { Tbx_model_ = input; }
   double Tbx_model() { return Tbx_model_; }
   void Tbx_model_f(const double input) { Tbx_model_f_ = input; }
@@ -364,12 +320,8 @@ public:
   bool saturated() { return saturated_; }
   Shunt *ShuntAmp;            // Ib sense amplified
   Shunt *ShuntNoAmp;          // Ib sense non-amplified
-  TempSensor* SensorTb;       // Tb sense
   Sync *Summarize;            // Handle to debug read time
   Sync *Talk;                 // Handle to debug talk time
-  LagExp* TbModelFilt;        // Linear filter for modeled Tb (with injected noise).
-  LagExp* TbSenseFilt;        // Linear filter for Tb. There are 1 Hz AAFs in hardware for Vb and Ib
-  SlidingDeadband *SdTb;      // Non-linear filter for Tb
   BatterySim *Sim;            // Used to model Vb and Ib.   Use Talk 'Xp?' to toggle model on/off
   uint64_t dt_ib(void) { return dt_ib_; }; // ms since last update of selected Ib sample
   void select_volt_and_current_and_temp(BatteryMonitor *Mon);      // Make final signal selection
@@ -409,9 +361,7 @@ public:
   void select_print(Sensors *Sen, BatteryMonitor *Mon);
   void shunt_print();         // Print selection result
   void shunt_select_initial(const bool reset);   // Choose between shunts for model
-  bool tb_fa_one_shot() { return tb_fa_one_shot_; };
-  void temp_load_and_filter_and_select(BatteryMonitor *Mon, const bool reset_temp);
-  float Tb_noise();
+  float Tbx_noise();
   void Tbx_load(const uint16_t vb_pin, const bool reset);           // Analog read of Tb
   void Tbx_print(void);                                             // Print Tb result
   float vb() { return Vb_ / ap.nS(); };                            // Battery select unit voltage, V
@@ -442,7 +392,6 @@ protected:
   bool reset_temp_;  // Keep track of temperature reset, stored for plotting, T=reset
   uint64_t sample_time_ib_;       // Exact moment of selected Ib sample, ms
   uint64_t sample_time_ib_hdwe_;  // Exact moment of Ib sample, ms
-  uint64_t sample_time_tb_;       // Exact moment of selected Tb sample, ms
   uint64_t sample_time_Tbx_;       // Exact moment of Tbx sample, ms
   uint64_t sample_time_Tbx_hdwe_;  // Exact moment of Tbx sample, ms
   uint64_t sample_time_vb_;       // Exact moment of selected Vb sample, ms
@@ -467,15 +416,6 @@ protected:
   float Vc_;                   // Selected common reference voltage, V
   float Vc_hdwe_;              // Sensed common reference voltage, V
   float Vc_hdwe_sum_;          // Sensed common reference voltage sum, V
-  double Tb_;                  // Selected battery bank temp, C
-  double Tb_f_;                // Selected filtered battery bank temp, C
-  double Tb_f_rate_;           // Selected filtered battery bank temp rate, C/s
-  double Tb_hdwe_;             // Sensed battery temp, C
-  double Tb_hdwe_filt_;        // Filtered, sensed battery temp, C
-  double Tb_hdwe_filt_rate_;   // Filtered, battery bank temp rate, C/s
-  double Tb_model_;            // Temperature used for battery bank temp in model, C
-  double Tb_model_filt_;       // Filtered, modeled battery bank temp, C
-  double Tb_model_filt_rate_;  // Filtered, modeled battery bank temp rate, C/s
   double Tbx_;                  // Selected battery bank temp, C
   double Tbx_f_;                // Selected filtered battery bank temp, C
   double Tbx_f_rate_;           // Selected filtered battery bank temp rate, C/s
@@ -534,5 +474,4 @@ protected:
   bool bms_off_;            // Calculated by BatteryMonitor, battery off, low voltage, switched by battery management system?
   bool sat_;                // Battery potential saturation status based on Temp and VOC
   bool saturated_;          // Battery confirmed saturation status based on Temp and VOC
-  bool tb_fa_one_shot_;     // One shot to reset temp filters upon tb_fa failed sensor, T=reset
 };

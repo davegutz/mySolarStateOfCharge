@@ -27,12 +27,6 @@
 #include "constants.h"
 #include "Variable.h"
 
-// DS2482 data union
-typedef union {
-	float t_c;
-	bool ready;
-} Tb_union;
-
 
 // Definition of structure for external control coordination
 struct PublishPars
@@ -72,7 +66,6 @@ public:
   bool soft_reset_sim;   // Use talk to reset sim only
   bool soft_reset_sim_print;   // Use talk to reset sim only
   bool soft_sim_hold;    // Use talk to reset sim only
-  Tb_union tb_info;         // Use cp to pass DS2482 I2C information
   double ts;     // Used to scale time delays in fault logic when running very slow verification testing, slr
   bool write_summary;    // Use talk to issue a write command to summary
   bool ekf_reset;        // Reset Extended Kalman Filter
@@ -95,8 +88,6 @@ public:
     soft_reset_sim_print = false;
     soft_sim_hold = false;
     write_summary = false;
-    tb_info.t_c = 0.;
-    tb_info.ready = false;
     ts = 1.;
     chitchat = false;
     inp_token = false;
@@ -154,8 +145,6 @@ public:
       sendTxBuf(String::format(" publishS %d\n", publishS), true, true);
       sendTxBuf(String::format(" soft_reset %d\n", soft_reset), true, true);
       sendTxBuf(String::format(" soft_reset_sim %d\n", soft_reset_sim), true, true);
-      sendTxBuf(String::format(" tb_info.t_c %7.3f\n", tb_info.t_c), true, true);
-      sendTxBuf(String::format(" tb_info.ready %d\n", tb_info.ready), true, true);
       sendTxBuf(String::format(" ts %7.3f\n", ts), true, true);
       sendTxBuf(String::format(" write_summary %d\n", write_summary), true, true);
       sendTxBuf(String::format(" kf_reset %d\n", kf_reset), true, true);

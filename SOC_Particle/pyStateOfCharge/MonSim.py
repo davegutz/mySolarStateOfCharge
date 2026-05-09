@@ -155,7 +155,7 @@ def replicate(OPT: UserOptions):
     # Make batteries from modified class constants
     sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], tbx_f=SN.sim_run.Tbx_f_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
                      vsat_add=Battery.sp_vsat_add)
-    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], tbx_f=SN.mon_run.Tbx_f[0], tb_f=SN.mon_run.Tb_f[0], scale=scale_mon,
+    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], tbx_f=SN.mon_run.Tbx_f[0], tb_f=SN.mon_run.Tbx_f[0], scale=scale_mon,
                          vsat_add=Battery.sp_vsat_add, tweak_test=tweak_test)
     Is_sat_delay = TFDelay(in_=OPT.mon_run.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
@@ -208,11 +208,7 @@ def replicate(OPT: UserOptions):
                             (OPT.mon_run.time_t[i_temp+1] <= OPT.mon_run.time[min(G.i,n-1)])
         else:
             calc_temp = True
-        mon, sim = SN.calc_tempx_pass_1(OPT, mon, sim, G.i, rp)
-        if calc_temp:
-            i_temp += 1
-            mon, sim = SN.calc_temp_pass_1(OPT, mon, sim, i_temp, rp)
-        mon = SN.calc_temp_pass_1_rap(mon, i_temp)  # get Tf_rap
+        mon, sim = SN.calc_temp_pass_1(OPT, mon, sim, G.i, rp)
 
         # Input
         rp.modeling = rp.add_modeling(modeling[G.i])
@@ -247,11 +243,7 @@ def replicate(OPT: UserOptions):
                 sat_s_init = OPT.sim_run.sat_s[G.i]
             sim.sat = sat_s_init
             mon.sat = OPT.mon_run.sat[G.i]
-
-        mon = SN.calc_tempx_pass_2(OPT.mon_run, mon, Battery, G.i, rp, G.i)
-        if calc_temp:
-            mon = SN.calc_temp_pass_2(OPT.mon_run, mon, Battery, i_temp, rp, G.i)
-
+        mon = SN.calc_temp_pass_2(OPT.mon_run, mon, Battery, rp, G.i)
         # Models
         SN.update_ib_vb(G.i)
 
@@ -294,7 +286,7 @@ def replicate(OPT: UserOptions):
 
         # Charge init
         if reset:
-            mon.apply_delta_q_t(SN.delta_q[G.i], SN.Tb_f_rap[G.i])
+            mon.apply_delta_q_t(SN.mon_run.delta_q[G.i], SN.mon_run.Tbx_f[G.i])
             prn_soc_debug(OPT, time=now, leader="after mon.apply_delta_q_t", i_temp=i_temp, mon=mon, sim=sim)
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
@@ -343,8 +335,8 @@ def replicate(OPT: UserOptions):
 
         # Break if data integrity questionable
         if SN.run_type == 'RunSim':
-            if SN.mon_run.skip_ekf[i_ekf] or SN.mon_run.skip_temp[i_temp] or SN.mon_run.skip_sel[G.i] \
-                    or SN.mon_run.skip_mon[G.i] or SN.sim_run.skip_sim[G.i]:
+            if (SN.mon_run.skip_ekf[i_ekf] or SN.mon_run.skip_sel[G.i] or SN.mon_run.skip_mon[G.i]
+                    or SN.sim_run.skip_sim[G.i]):
                 print(f"Broke early due to skip in one of the data files")
                 break
 
@@ -375,8 +367,8 @@ def replicate(OPT: UserOptions):
     if OPT.request_history is not None and OPT.request_history > 0:
         print(hdr)
     if SN.run_type == 'RunSim':
-        if SN.mon_run.skip_ekf[i_ekf] or SN.mon_run.skip_temp[i_temp] or SN.mon_run.skip_sel[G.i] or \
-                SN.mon_run.skip_mon[G.i] or SN.sim_run.skip_sim[G.i]:
+        if (SN.mon_run.skip_ekf[i_ekf] or SN.mon_run.skip_sel[G.i] or SN.mon_run.skip_mon[G.i]
+                or SN.sim_run.skip_sim[G.i]):
             print(f"\n\n************** Data integrity degraded by skip.  A digit could have been inserted anywhere in data.  Break.")
             print(f"\nCheck for W too short before vv4 or TEMP_INIT_DELAY or TEMP_DELAY too long in SOC_Particle.ino")
             print("   now {:5.3f}".format(now),

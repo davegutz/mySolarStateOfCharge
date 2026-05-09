@@ -95,29 +95,22 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
     Sen->Ib_model_in(sp.inj_bias() + sp.ib_bias_all());
   else
     Sen->Ib_model_in(Sen->Ib_hdwe());
-  Sen->temp_load_and_filter_and_select(Mon, true);
   if ( sp.mod_tb() )
   {
-    Sen->Tb(Sen->Tb_model());
-    Sen->Tb_f(Sen->Tb_model_filt());
-    Sen->Tb_f_rate(Sen->Tb_model_filt_rate());
     Sen->Tbx(Sen->Tbx_model());
     Sen->Tbx_f(Sen->Tbx_model_f());
     Sen->Tbx_f_rate(Sen->Tbx_model_f_rate());
   }
   else
   {
-    Sen->Tb(Sen->Tb_hdwe());
-    Sen->Tb_f(Sen->Tb_hdwe_filt());
-    Sen->Tb_f_rate(Sen->Tb_hdwe_filt_rate());
     Sen->Tbx(Sen->Tbx_hdwe());
     Sen->Tbx_f(Sen->Tbx_hdwe_f());
     Sen->Tbx_f_rate(Sen->Tbx_hdwe_f_rate());
   }
   if ( use_soc_in )
   {
-    Mon->apply_soc(soc_in, Sen->Tb_f());  // saves sp.delta_q and sp.T_state
-    Sen->Sim->apply_soc(soc_in, Sen->Tb_f());  // saves sp.delta_q and sp.T_state
+    Mon->apply_soc(soc_in, Sen->Tbx_f());  // saves sp.delta_q and sp.T_state
+    Sen->Sim->apply_soc(soc_in, Sen->Tbx_f());  // saves sp.delta_q and sp.T_state
   }
   #ifdef DEBUG_INIT
     if ( sp.debug()==-1 )
@@ -125,7 +118,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
       Serial.printf("before harvest_temp, use_soc_in %d falw %ld tb_fa %d:  ", use_soc_in, Sen->Flt->falw(), Sen->Flt->tb_fa()); debug_m1(Mon, Sen);
     }
   #endif
-  if ( !Sen->Flt->tb_fa() ) harvest_temp_change(Sen->Tb_f(), Mon, Sen->Sim, Sen->Tb_f_rate(), 0.);
+  if ( !Sen->Flt->Tbx_fa() ) harvest_temp_change(Sen->Tbx_f(), Mon, Sen->Sim, Sen->Tbx_f_rate(), 0.);
   
   #ifdef DEBUG_INIT
     if ( sp.debug()==-1 ){ Serial.printf("after harvest_temp:  cp.soft_sim_hold %d:  ", cp.soft_sim_hold); debug_m1(Mon, Sen);}
@@ -147,7 +140,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #endif
   if ( !sp.mod_vb() )
   {
-    Sen->Sim->apply_soc(Sen->Sim->soc(), Sen->Tb_f());
+    Sen->Sim->apply_soc(Sen->Sim->soc(), Sen->Tbx_f());
   }
   #ifdef DEBUG_INIT
     if ( sp.debug()==-1 ){ Serial.printf("S.a_b: sp.mod_vb() %d:  ", sp.mod_vb()); debug_m1(Mon, Sen);}
@@ -196,7 +189,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #endif
   if ( sp.mod_vb() && !cp.soft_sim_hold )
   {
-    Mon->apply_soc(Sen->Sim->soc(), Sen->Tb_f());
+    Mon->apply_soc(Sen->Sim->soc(), Sen->Tbx_f());
   }
   Mon->init_battery_mon(true, Sen);
   #ifdef DEBUG_INIT
@@ -255,7 +248,7 @@ void load_ib_vb_tb(const bool reset, const bool reset_kf, Sensors *Sen, Pins *my
 
   // Load temperature Tbx
   Sen->Tbx_load(myPins->VTb_pin, reset);
-  if ( !sp.mod_tb_dscn() )  Sen->Flt->Tbx_check(Sen, TB_MIN, TB_MAX,  reset);  // Sets Tbx_fa()
+  if ( !sp.mod_vb_dscn() )  Sen->Flt->Tbx_check(Sen, TB_MIN, TB_MAX,  reset);  // Sets tb_fa()
   else                      Sen->Flt->Tbx_check(Sen, -1.0, 1.0, reset);
   if ( sp.debug()==18 ) Sen->Tbx_print();
 
@@ -264,7 +257,7 @@ void load_ib_vb_tb(const bool reset, const bool reset_kf, Sensors *Sen, Pins *my
 }
 
 // Calculate Ah remaining for display to user
-// Inputs:  sp.mon_chm, Sen->Ib, Sen->Vb, Sen->Tb_f
+// Inputs:  sp.mon_chm, Sen->Ib, Sen->Vb, Sen->Tbx_f
 // States:  Mon.soc, Mon.soc_ekf
 // Outputs: tcharge_wt, tcharge_ekf, Voc, Voc_filt
 void  monitor(const bool reset, const bool reset_temp, const bool reset_ekf, const uint64_t now,
@@ -287,12 +280,12 @@ void  monitor(const bool reset, const bool reset_temp, const bool reset_ekf, con
 // Read sensors, model signals, select between them.
 // Sim used for any missing signals (Tb, Vb, Ib)
 //    Needed here in this location to have available a value for
-//    Sen->Tb_f when called.   Recalculates Sen->Ib accounting for
+//    Sen->Tbx_f when called.   Recalculates Sen->Ib accounting for
 //    saturation.  Sen->Ib is a feedback (used-before-calculated).
 // Inputs:  sp.config, sp.sim_chm, Sen->Tb, Sen->Ib_model_in
 // States:  Sim.soc
-// Outputs: Sim.tb_f_, Sen->Tb_f, Sen->Ib, Sen->Ib_model,
-//   Sen->Vb_model, Sen->Tb_f, sp.inj_bias
+// Outputs: Sim.Tbx_f, Sen->Ib, Sen->Ib_model,
+//   Sen->Vb_model, Sen->Tbx_f, sp.inj_bias
 void sense_synth_select(const bool reset, const bool reset_temp, const bool reset_kf,
    const uint64_t now, const uint64_t elapsed,  Pins *myPins, BatteryMonitor *Mon, Sensors *Sen)
 {
@@ -314,9 +307,9 @@ void sense_synth_select(const bool reset, const bool reset_temp, const bool rese
   Mon->init_battery_mon(reset, Sen);
 
   // Sim calculation
-  //  Inputs:  Sen->Tb_f(past), Sen->Ib_model_in
+  //  Inputs:  Sen->Tbx_f(past), Sen->Ib_model_in
   //  States: Sim->soc(past)
-  //  Outputs:  Tb_hdwe, Ib_model, Vb_model, sp.inj_bias, Sim.model_saturated
+  //  Outputs:  Tbx_hdwe, Ib_model, Vb_model, sp.inj_bias, Sim.model_saturated
   Sen->Vb_model(Sen->Sim->calculate(Sen, ap.dc_dc_on(), reset) * ap.nS() + Sen->Vb_add());
   Sen->Ib_model(Sen->Sim->ib_fut() * ap.nP());
   cp.model_cutback = Sen->Sim->cutback();
@@ -338,7 +331,7 @@ void sense_synth_select(const bool reset, const bool reset_temp, const bool rese
   //  Inputs:                                       --->   Outputs:
   //  Ib_model, Ib_hdwe, Vc_hdwe                    --->   Ib
   //  Vb_model, Vb_hdwe,                            --->   Vb
-  //  constant,         Tb_hdwe, Tb_hdwe_filt       --->   Tb, Tb_f
+  //  constant,         Tbx_hdwe, Tbx_hdwe_f        --->   Tbx, Tbx_f
   // Log.info("  sense_synth_select:  select_all_logic");
   Sen->Flt->select_all_logic(Sen, Mon, reset);
   // Log.info("  sense_synth_select:  select_volt_and_current_and_temp");
@@ -438,7 +431,7 @@ void serial_display(Sensors *Sen, BatteryMonitor *Mon)
   // Tb
   sprintf(pr.buff, "%3.0f", pp.pubList.Tb);
   disp_0 = pr.buff;  // Default
-  if ( Sen->Flt->tb_fa() && (blink==0 || blink==1) )
+  if ( Sen->Flt->Tbx_fa() && (blink==0 || blink==1) )
   {
     disp_0 = "***";
     dispAssign(true, flt_tb);

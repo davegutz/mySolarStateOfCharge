@@ -32,12 +32,12 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 void Flt_st::assign(const uint64_t now, BatteryMonitor *Mon, Sensors *Sen)
 {
   this->t_flt = now;
-  this->Tb_hdwe_filt = int16_t(Sen->Tb_hdwe_filt()*SCL_600);
+  this->Tbx_hdwe_filt = int16_t(Sen->Tbx_hdwe_f()*SCL_600);
   this->vb_hdwe_filt = int16_t(Sen->Vb_hdwe_f()/ap.nS()*sp.vb_hist_slr());
   this->Vc_hdwe_sum = int16_t((Sen->ShuntAmp->Vc() + Sen->ShuntNoAmp->Vc())*SCL_3000);
   this->ib_amp_hdwe_filt = int16_t(Sen->Ib_amp_hdwe_f()/ap.nP()*sp.ib_hist_m_slr());
   this->ib_noa_hdwe_filt = int16_t(Sen->Ib_noa_hdwe_f()/ap.nP()*sp.ib_hist_n_slr());
-  this->Tb_filt = int16_t(Sen->Tb_f()*SCL_600);
+  this->Tbx_filt = int16_t(Sen->Tbx_f()*SCL_600);
   this->vb_filt = int16_t(Sen->Vb_f()/ap.nS()*sp.vb_hist_slr());
   this->ib_filt = int16_t(Sen->Ib_f()/ap.nP()*sp.ib_hist_n_slr());
   this->soc = int16_t(Mon->soc()*SCL_16000);
@@ -57,12 +57,12 @@ void Flt_st::assign(const uint64_t now, BatteryMonitor *Mon, Sensors *Sen)
 void Flt_st::assign_unfilt(const uint64_t now, BatteryMonitor *Mon, Sensors *Sen)
 {
   this->t_flt = now;
-  this->Tb_hdwe_filt = int16_t(Sen->Tb_hdwe()*SCL_600);
+  this->Tbx_hdwe_filt = int16_t(Sen->Tbx_hdwe()*SCL_600);
   this->vb_hdwe_filt = int16_t(Sen->Vb_hdwe()/ap.nS()*sp.vb_hist_slr());
   this->Vc_hdwe_sum = int16_t((Sen->ShuntAmp->Vc() + Sen->ShuntNoAmp->Vc())*SCL_3000);
   this->ib_amp_hdwe_filt = int16_t(Sen->Ib_amp_hdwe()/ap.nP()*sp.ib_hist_m_slr());
   this->ib_noa_hdwe_filt = int16_t(Sen->Ib_noa_hdwe()/ap.nP()*sp.ib_hist_n_slr());
-  this->Tb_filt = int16_t(Sen->Tb_f()*SCL_600);
+  this->Tbx_filt = int16_t(Sen->Tbx_f()*SCL_600);
   this->vb_filt = int16_t(Sen->Vb_f()/ap.nS()*sp.vb_hist_slr());
   this->ib_filt = int16_t(Sen->Ib_f()/ap.nP()*sp.ib_hist_n_slr());
   this->soc = int16_t(Mon->soc()*SCL_16000);
@@ -82,12 +82,12 @@ void Flt_st::assign_unfilt(const uint64_t now, BatteryMonitor *Mon, Sensors *Sen
 void Flt_st::copy_to_Flt_ram_from(Flt_st input)
 {
   t_flt = input.t_flt;
-  Tb_hdwe_filt = input.Tb_hdwe_filt;
+  Tbx_hdwe_filt = input.Tbx_hdwe_filt;
   vb_hdwe_filt = input.vb_hdwe_filt;
   Vc_hdwe_sum = input.Vc_hdwe_sum;
   ib_amp_hdwe_filt = input.ib_amp_hdwe_filt;
   ib_noa_hdwe_filt = input.ib_noa_hdwe_filt;
-  Tb_filt = input.Tb_filt;
+  Tbx_filt = input.Tbx_filt;
   vb_filt = input.vb_filt;
   ib_filt = input.ib_filt;
   soc = input.soc;
@@ -107,12 +107,12 @@ void Flt_st::copy_to_Flt_ram_from(Flt_st input)
 void Flt_st::nominal()
 {
   this->t_flt = 1ULL;
-  this->Tb_hdwe_filt = int16_t(0);
+  this->Tbx_hdwe_filt = int16_t(0);
   this->vb_hdwe_filt = int16_t(0);
   this->Vc_hdwe_sum = int16_t(0);
   this->ib_amp_hdwe_filt = int16_t(0);
   this->ib_noa_hdwe_filt = int16_t(0);
-  this->Tb_filt = int16_t(0);
+  this->Tbx_filt = int16_t(0);
   this->vb_filt = int16_t(0);
   this->ib_filt = int16_t(0);
   this->soc = int16_t(0);
@@ -140,12 +140,12 @@ void Flt_st::pretty_print(const String code)
     time_long_2_str((time_t)(this->t_flt / 1000ULL), buffer);
     Serial.printf("buffer %s\n", buffer);
     Serial.printf("t %lld\n", this->t_flt);
-    Serial.printf("Tb_hdwe_filt %7.3f\n", float(this->Tb_hdwe_filt)/SCL_600);
+    Serial.printf("Tbx_hdwe_filt %7.3f\n", float(this->Tbx_hdwe_filt)/SCL_600);
     Serial.printf("vb_hdwe_filt %7.3f\n", float(this->vb_hdwe_filt)/sp.vb_hist_slr());
     Serial.printf("Vc_hdwe_sum %7.3f\n", float(this->Vc_hdwe_sum)/SCL_3000);
     Serial.printf("ib_amp_hdwe_filt %7.3f\n", float(this->ib_amp_hdwe_filt)/sp.ib_hist_m_slr());
     Serial.printf("ib_noa_hdwe_filt %7.3f\n", float(this->ib_noa_hdwe_filt)/sp.ib_hist_n_slr());
-    Serial.printf("Tb_filt %7.3f\n", float(this->Tb_filt)/SCL_600);
+    Serial.printf("Tbx_filt %7.3f\n", float(this->Tbx_filt)/SCL_600);
     Serial.printf("vb_filt %7.3f\n", float(this->vb_filt)/sp.vb_hist_slr());
     Serial.printf("ib_filt %7.3f\n", float(this->ib_filt)/sp.ib_hist_n_slr());
     Serial.printf("soc %7.4f\n", float(this->soc)/SCL_16000);
@@ -168,7 +168,7 @@ void SavedPars::print_fault_header(Publish *pubList)
     txBuf = String::format("Config:  %s \n", pubList->unit.c_str());
     sendTxBuf(txBuf, true, true);
 
-    txBuf = String::format("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, Vc_h, ib_amp_hdwe_f, ib_noa_hdwe_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_wrap_filt, e_wrap_m_filt, e_wrap_m_trim, e_wrap_n_filt, fltw, falw,\n");
+    txBuf = String::format("fltb,  date,             time_ux,    Tbx_h_f, vb_h_f, Vc_h, ib_amp_hdwe_f, ib_noa_hdwe_f, Tbx_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_wrap_filt, e_wrap_m_filt, e_wrap_m_trim, e_wrap_n_filt, fltw, falw,\n");
     sendTxBuf(txBuf, true, true);
 }
 
@@ -183,12 +183,12 @@ void Flt_st::print_flt(const String code)
     time_long_2_str((time_t)(this->t_flt / 1000ULL), buffer);
     txBuf = String::format("%s, %s, %lld, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.4f, %7.4f, %7.4f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %ld, %ld,\n",
       code.c_str(), buffer, this->t_flt,
-      float(this->Tb_hdwe_filt)/SCL_600,
+      float(this->Tbx_hdwe_filt)/SCL_600,
       float(this->vb_hdwe_filt)/sp.vb_hist_slr(),
       float(this->Vc_hdwe_sum)/SCL_3000,
       float(this->ib_amp_hdwe_filt)/sp.ib_hist_m_slr(),
       float(this->ib_noa_hdwe_filt)/sp.ib_hist_n_slr(),
-      float(this->Tb_filt)/SCL_600,
+      float(this->Tbx_filt)/SCL_600,
       float(this->vb_filt)/sp.vb_hist_slr(),
       float(this->ib_filt)/sp.ib_hist_n_slr(),
       float(this->soc)/SCL_16000,

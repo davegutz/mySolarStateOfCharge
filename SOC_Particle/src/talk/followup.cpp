@@ -68,7 +68,7 @@ bool followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sen
                 case ( 'm' ):  // Cm<>:  assign curve charge state in fraction to model only (ekf if modeling)
                     if ( ap.init_sim_soc_p->success() )  // Apply crude limit to prevent user error
                     {
-                        Sen->Sim->apply_soc(ap.init_sim_soc(), Sen->Tb_f());
+                        Sen->Sim->apply_soc(ap.init_sim_soc(), Sen->Tbx_f());
                         Serial.printf("soc%8.4f, dq%7.3f, soc_mod%8.4f, dq mod%7.3f,\n",
                             Mon->soc(), Mon->delta_q(), Sen->Sim->soc(), Sen->Sim->delta_q());
                         if ( sp.modeling() ) cp.cmd_reset_sim(); // Does not block.  Commands a reset
@@ -180,24 +180,20 @@ bool followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sen
                 break;
                 case ( 1 ):  // l1:
                 print_rapid_header();
-                print_temp_header();
                 break;
                 case ( 2 ):  // l2:
                 print_signal_sel_header();
                 print_sim_header();
                 print_shunt_header(Sen);
                 print_rapid_header();
-                print_temp_header();
                 break;
                 case ( 3 ):  // l3:
                 print_ekf_header();
                 print_sim_header();
                 print_rapid_header();
-                print_temp_header();
                 break;
                 default:
                 print_rapid_header();
-                print_temp_header();
             }
             break;
 

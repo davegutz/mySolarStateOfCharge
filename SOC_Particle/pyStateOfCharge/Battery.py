@@ -360,7 +360,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.Tb_rap = None
         self.Tb_model = None
         self.Tbx_model = None
-        self.Tb_f_rap = None
+        self.Tb_f = None
         self.Tb_f_rate_rap = None
         self.dt_temp = 0.
         self.sel_brk_hdwe = ScaleSelector(Battery.HDWE_IB_HI_LO_NOA_LO, Battery.HDWE_IB_HI_LO_AMP_LO,
@@ -418,11 +418,11 @@ class BatteryMonitor(Battery, EKF1x1):
         self.cc_dif  = 0.
 
         if SN is not None:
-            self.Tb_hdwe = SN.Tb_hdwe_init
-            self.Tb_hdwe_filt =SN.Tb_hdwe_filt_init
-            self.Tb_hdwe_filt_rate = SN.Tb_hdwe_filt_rate_init
-            self.Tb_model_filt =SN.Tb_model_filt_init
-            self.Tb_model_filt_rate = SN.Tb_model_filt_rate_init
+            self.Tb_hdwe = SN.mon_run.Tbx_hdwe[0]
+            self.Tb_hdwe_f = SN.mon_run.Tbx_hdwe_f[0]
+            self.Tb_hdwe_f_rate = SN.mon_run.Tbx_hdwe_f_rate[0]
+            self.Tb_model_filt =SN.mon_run.Tbx_model_f[0]
+            self.Tb_model_filt_rate = SN.mon_run.Tbx_model_f_rate[0]
             self.Tbx = SN.mon_run.Tbx[0]
             self.Tbx_f = SN.mon_run.Tbx_f[0]
             self.Tbx_hdwe = SN.mon_run.Tbx_hdwe[0]
@@ -446,13 +446,16 @@ class BatteryMonitor(Battery, EKF1x1):
             self.e_wrap_n_trim = 0.
             self.voc_soc = SN.mon_run.voc_soc[0]
             self.voc_stat = self.voc_soc - self.e_wrap
-            self.Tb = SN.mon_run.Tb_f[0]
-            self.Tb_f = SN.Tb_f_init
-            self.Tb_f_rate = SN.Tb_f_rate_init
-            self.Tb_rap = SN.Tb_rap_init
-            self.Tb_model = SN.Tb_model_init
-            self.Tb_f_rap = SN.Tb_f_rap_init
-            self.Tb_f_rate_rap = SN.Tb_f_rate_rap_init
+            self.Tb = SN.mon_run.Tbx_f[0]
+            # self.Tb_f = SN.Tb_f_init
+            self.Tb_f = SN.Tb_f[0]
+            # self.Tb_f_rate = SN.Tb_f_rate_init
+            self.Tb_f_rate = SN.mon_run.Tbx_f_rate[0]
+            # self.Tb = SN.Tb_init
+            # self.Tb_model = SN.Tb_model_init
+            self.Tb_model = SN.mon_run.Tbx_model[0]
+            # self.Tb_f = SN.Tb_f_init
+            # self.Tb_f_rate_rap = SN.Tb_f_rate_rap_init
             self.ib = SN.ib_init
             self.ib_dyn = SN.ib_dyn[0]
             self.ib_charge = SN.ib_charge_init
@@ -509,8 +512,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.y_ekf_f_T = 0.
         self.y_ekf_f_tau = 0.
         self.y_ekf_f_state = 0.
-        self.tb_fa = False
-        self.tbx_fa = False
+        self.Tb_fa = False
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -584,7 +586,7 @@ class BatteryMonitor(Battery, EKF1x1):
         self.vb_model_rev = self.voc_soc + self.dv_dyn + self.dv_hys
 
         # Table lookup
-        self.voc_soc, self.dv_dsoc = self.calc_soc_voc(self.soc, self.Tb_f_rap)
+        self.voc_soc, self.dv_dsoc = self.calc_soc_voc(self.soc, self.Tb_f)
 
         # Battery management system model (uses past value bms_off and voc_stat)
         self.bms_off_past = self.bms_off
@@ -743,7 +745,7 @@ class BatteryMonitor(Battery, EKF1x1):
         # Measurement function hx(x), x = soc ideal capacitor
         x_lim = max(min(self.x, Battery.MXEPS), 0.)
         self.x_for_hx = x_lim
-        self.tb_f_for_hx = self.Tb_f_rap
+        self.tb_f_for_hx = self.Tb_f
         self.hx, self.dv_dsoc = self.calc_soc_voc(x_lim, tb_f=self.tb_f_for_hx, printit=False)
         # Jacobian of measurement function
         self.H = self.dv_dsoc
@@ -1072,7 +1074,7 @@ class BatterySim(Battery):
         self.tau_s = 0.
         self.tau_hys_s = 0.
         if SN is not None:
-            self.Tb = SN.mon_run.Tb_f[0]
+            self.Tb = SN.mon_run.Tbx_f[0]
             self.dv_dyn = SN.dv_dyn_s[0]
             self.ib_in = SN.sim_run.ib_in_s[0]
             self.d_delta_q = SN.d_delta_q_s_init
@@ -1534,7 +1536,7 @@ class Saved:
         self.Tb_f = []  # Battery bank filtered temperature, deg C
         self.Tb_f_rate = []  # Temp rate, deg C / s
         self.Tb_rap = []  # Battery bank temperature, deg C
-        self.Tb_f_rap = []  # Battery bank filtered temperature, deg C
+        self.Tb_f = []  # Battery bank filtered temperature, deg C
         self.Tb_f_rate_rap = []  # Temp rate, deg C / s
         self.vsat = []  # Monitor Bank saturation threshold at temperature, deg C
         self.dv_dyn = []  # Monitor Bank current induced back emf, V

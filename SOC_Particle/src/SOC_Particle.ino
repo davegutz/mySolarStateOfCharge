@@ -130,21 +130,12 @@ void setup()
   sp.put_Time_now(max(sp.Time_now(), (uint32_t)Time.now()));  // Synch with web when possible
   Time.setTime( (time_t) (sp.Time_now()) );
 
-  // Peripherals (non-Photon2)
-  // D6 - one-wire temp sensor
-  // D7 - status led heartbeat
-  // A1 - Vb
-  // A2 - Primary Ib amp (called by old ADS name Amplified, amp)
-  // A3 - Backup Ib amp (called by old ADS name Non Amplified, noa)
-  // A4 - Vr or Vc
-
   // Peripherals (Photon2)
-  // D3 - one-wire temp sensor ******** to be replaced by I2C device
   // D7 - status led heartbeat
   // A0 (pin 'D11') - Primary Ib amp (called by old ADS name Amplified, amp)
   // A1 (pin 'D12') - Vb
   // A2 (pin 'D13') - Backup Ib amp (called by old ADS name Non Amplified, noa)
-  // A3 (pin 'D0') - alternate to SDA.  Sometimes used for 2wire temperature
+  // A3 (pin 'D0') - alternate to SDA.  Used for 2wire temperature
   // A4 (pin 'D1') - alternate to SCL.
   // A5 (pin 'D14') - Vr or Vc
 
@@ -292,45 +283,6 @@ void loop()
   if ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay()) ) boot_wait = false;
   summarizing = Summarize->update(now, false) || boot_summ;
 
-  // Sample temperature
-  // Outputs:   Sen->Tb,  Sen->Tb_f
-  if ( read_temp )
-  {
-    Sen->T_temp(ReadTemp->updateTime());
-    if ( reset_temp )
-    {
-      if ( sp.mod_tb() )
-      {
-        Sen->Tb_model(NOMINAL_TB + ap.Tb_bias_model());
-        Sen->Tb_model_filt(NOMINAL_TB + ap.Tb_bias_model());
-        Sen->Tbx_model(NOMINAL_TB + ap.Tb_bias_model());
-        Sen->Tbx_model_f(NOMINAL_TB + ap.Tb_bias_model());
-      }
-      else
-      {
-        Sen->Tb_model(Sen->Tb());
-        Sen->Tb_model_filt(Sen->Tb_f());
-        Sen->Tbx_model(Sen->Tbx());
-        Sen->Tbx_model_f(Sen->Tbx_f());
-      }
-
-      if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 336 reset_temp:  Sen->Tb_model, Sen->Tb_model_filt,  %11.8f %11.8f\n",
-        Sen->Tb_model(), Sen->Tb_model_filt()), true, true);
-      if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 336 reset_temp:  Sen->Tbx_model, Sen->Tbx_model_f, %11.8f %11.8f \n",
-        Sen->Tbx_model(), Sen->Tbx_model_f()), true, true);
-    }
-    // Log.info("ino:  temp_load_and_filter");
-    
-    Sen->temp_load_and_filter_and_select(Mon, reset_temp);
-
-    if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 324 final: reset_temp Sen->Sim->tb_f Sen->Tb_model, Sen->Tb_model_filt, Sen->Tb_hdwe_filt_rate, %d %11.8f %11.8f %11.8f  %11.8f\n",
-        reset_temp, Sen->Sim->tb_f(), Sen->Tb_model(), Sen->Tb_model_filt(), Sen->Tb_hdwe_filt_rate()), true, true);
-    if ( sp.debug()==16 ) sendTxBuf(String::format("SOC_Particle.ino ln 326 final: reset_temp Sen->Sim->tbx_f Sen->Tbx_model, Sen->Tbx_model_f, Sen->Tbx_model, Sen->Tbx_model_f, %d %11.8f %11.8f %11.8f  %11.8f\n",
-        reset_temp, Sen->Sim->Tbx_f(), Sen->Tbx_model(), Sen->Tbx_model_f(), Sen->Tbx_model(), Sen->Tbx_model_f()), true, true);
-    // Log.info("ino:  print_temp_serial");
-    print_temp_serial(reset_temp, Mon, Sen);
-  }
-
   // Sample Ib
   if ( read )
   {
@@ -376,7 +328,7 @@ void loop()
     monitor(reset, reset_temp, reset_ekf, now, Is_sat_delay, Mon, Sen);
 
     // Re-init Coulomb Counter to EKF if it is different than EKF or if never saturated
-    Mon->regauge(Sen->Tb_f());
+    Mon->regauge(Sen->Tbx_f());
 
     // Empty battery
     if ( sp.modeling() && reset && Sen->Sim->q()<=0. ) Sen->Ib(0.);
@@ -453,7 +405,7 @@ void loop()
   if ( read )
   {
     reset = reset_ekf = reset_kf = cp.ekf_reset_print = cp.kf_reset_print = false;
-    if ( reset_temp && !Sen->tb_fa_one_shot() ) sendTxBuf("*", true, true);
+    if ( reset_temp ) sendTxBuf("*", true, true);
   }
   if ( read_temp && elapsed_reset>ap.temp_delay() && reset_temp )
   {
