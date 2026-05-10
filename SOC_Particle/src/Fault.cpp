@@ -524,7 +524,7 @@ txBuf = String::format("") +
     String::format("2 ib m    %d  %d 'FI 1'\n", ib_amp_flt(), ib_amp_fa()) +
     String::format("1 vb      %d  %d 'Fv 1  SV, *Dc/*Dv'.", vb_flt(), vb_fa_lt()) +
     String::format("  bms_off %d\n", Mon->bms_off()) +
-    String::format("0 tbx     %d  %d 'Ft 1'\n\n", Tbx_flt(), Tbx_fa()) +
+    String::format("0 Tbx      %d  %d 'Ft 1'\n\n", Tbx_flt(), Tbx_fa()) +
     // String::format("B-time_long%2d\n", dispRead(time_long)) +  // distracting
     String::format("A-accy     %2d\n", dispRead(accy)) +
     String::format("9-off      %2d\n", dispRead(off)) +
@@ -951,7 +951,7 @@ void Fault::Tbx_check(Sensors *Sen, const float _tb_min, const float _tb_max, co
                  !ap.disab_tb_fa(), TBX_FLT);
     failAssign( Tbx_fa() || TbxHardFail->calculate(Tbx_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TBX_FA);
   }
-  else if ( ap.disab_tb_fa() || sp.mod_tb() )
+  else if ( ap.disab_tb_fa() )
   {
     faultAssign( false, TBX_FLT);
     failAssign( false, TBX_FA); }
@@ -960,8 +960,8 @@ void Fault::Tbx_check(Sensors *Sen, const float _tb_min, const float _tb_max, co
     faultAssign( (Sen->Tbx_hdwe()<=_tb_min) || (Sen->Tbx_hdwe()>=_tb_max), TBX_FLT);
     failAssign( Tbx_fa() || TbxHardFail->calculate(Tbx_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TBX_FA);
   }
-  if ( sp.debug()==18 ) Serial.printf("tb_check: mod_tb %d disab_tb_fa %d Sen->Tbx_model_filt() %7.3f Sen->Tbx_hdwe() %7.3f _tb_min%7.3f _tb_max%7.3f TBX_FLT %d TBX_FA %d\n",
-    sp.mod_tb(), ap.disab_tb_fa(), Sen->Tbx_model_f(), Sen->Tbx_hdwe(), _tb_min, _tb_max, Tbx_flt(), Tbx_fa());
+  if ( sp.debug()==18 ) Serial.printf("Tbx_check: mod_tb %d disab_tb_fa %d Sen->Tbx_model() %7.3f Sen->Tbx_model_f() %7.3f Sen->Tbx_hdwe() %7.3f Sen->Tbx_hdwe_f() %7.3f _tb_min%7.3f _tb_max%7.3f TBX_FLT %d TBX_FA %d\n",
+    sp.mod_tb(), ap.disab_tb_fa(), Sen->Tbx_model(), Sen->Tbx_model_f(), Sen->Tbx_hdwe(), Sen->Tbx_hdwe_f(), _tb_min, _tb_max, Tbx_flt(), Tbx_fa());
 }
 
 // Check analog voltage.  Latches

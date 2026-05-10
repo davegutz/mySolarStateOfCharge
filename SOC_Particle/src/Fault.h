@@ -101,6 +101,7 @@ struct ScaleBrk
 };
 
 // Fault word bits.   All faults heal
+#define TBX_FLT        0   // Momentary isolation of Tbx failure, T=faulted
 #define VB_FLT        1   // Momentary isolation of Vb failure, T=faulted
 #define IB_AMP_FLT    2   // Momentary isolation of Ib amp failure, T=faulted 
 #define IB_NOA_FLT    3   // Momentary isolation of Ib no amp failure, T=faulted 
@@ -118,10 +119,10 @@ struct ScaleBrk
 #define WRAP_LO_M_FLT 15  // Wrap reports Vb hi / Ib amp low fault
 #define WRAP_HI_N_FLT 16  // Wrap reports Vb lo / Ib noa high fault
 #define WRAP_LO_N_FLT 17  // Wrap reports Vb hi / Ib noa low fault
-#define TBX_FLT       19   // Momentary isolation of Tbx failure, T=faulted
 #define NUM_FLT       20  // Number of these
 
 // Fail word bits.   A couple don't latch because single sensor fail in dual sensor system
+#define TBX_FA         0   // Peristed, latched isolation of Tbx failure, heals because soft type, T=failed
 #define VB_FA_LT      1   // Peristed, latched isolation of Vb failure, latches because hard type, T=failed
 #define IB_AMP_FA     2   // Amp sensor selection memory, latches because hard type, T = amp failed
 #define IB_NOA_FA     3   // Noamp sensor selection memory, latches because hard type, T = no amp failed
@@ -137,7 +138,6 @@ struct ScaleBrk
 #define WRAP_LO_M_FA  15  // Wrap isolates to Ib amp low fail, heals because dual sensor (no latch)
 #define WRAP_HI_N_FA  16  // Wrap isolates to Ib amp high fail, heals because dual sensor (no latch)
 #define WRAP_LO_N_FA  17  // Wrap isolates to Ib amp low fail, heals because dual sensor (no latch)
-#define TBX_FA        19  // Peristed, latched isolation of Tbx failure, heals because soft type, T=failed
 #define NUM_FA        20  // Number of these
 
 #define faultRead(bit) ( (fltw_ >> bit) & 1 )

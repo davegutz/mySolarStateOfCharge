@@ -87,7 +87,7 @@ default_auto = (
 )
 
 macro_sel_list = [
-    'end_early', 'hdwNoVbPcMidInit', 'modHalfInit', 'modHalfInit230', 'modEmptInitBB', 'modEmptInitCHG',
+    'end_early', 'hdwNoVbPcMidInit', 'modHalfInit', 'modHalfInit230', 'modHalfInit239', 'modEmptInitBB', 'modEmptInitCHG',
     'noisePackage', 'silentPackage', 'quiet', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
     'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50',
     'c00', 'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50', 'zeroPrepHdweNoVb', 'zero_set_hdwe_no_Vb',
@@ -101,6 +101,7 @@ modFullInit = 'vv0;Xm247;Ca0.93;BZ;Ff0;DP1;HR;Rf;'  # kickers off 0.94
 modLoInit = 'vv0;Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;'
 modHalfInit = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;'
 modHalfInit230 = '-vv0;-Xm230;-Ca0.50;BZ;Ff0;DP1;HR;Rf;'
+modHalfInit239 = '-vv0;-Xm239;-Ca0.50;BZ;Ff0;DP1;HR;Rf;'
 modHalfInitNoCc = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;'
 modEmptInitBB = 'vv0;Xm247;Ca0.090;BZ;Ff0;DP1;HR;Rf;'
 modEmptInitCHG = 'vv0;Xm247;Ca-0.004;BZ;Ff0;DP1;HR;Rf;'
@@ -210,6 +211,7 @@ macro_lookup = {
         'modLoInit': (5, modLoInit, ('', '', '', '')),
         'modHalfInit': (5, modHalfInit, ('', '', '', '')),
         'modHalfInit230': (5, modHalfInit230, ('', '', '', '')),
+        'modHalfInit239': (5, modHalfInit239, ('', '', '', '')),
         'modEmptInitBB': (5, modEmptInitBB, ('', '', '', '')),
         'noisePackage': (5, noisePackage, ('', '', '', '')),
         'silentPackage': (5, silentPackage, ('', '', '', '')),

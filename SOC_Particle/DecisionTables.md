@@ -37,10 +37,10 @@ Hard Faults take precedence over Soft Faults. Soft Faults are used in reasoning.
 
 ## Single Hard Faults
 
-### Fault::tb_check
+### Fault::Tbx_check
 
 ```text
-| # | Tb       | Tb       | Persisted    || tb_fa |
+| # | Tb       | Tb       | Persisted    || Tbx_fa |
 |   | <=TB_MIN | >=TB_MAX | tb_stale_flt ||       |
 | - | -------- | -------- | ------------ || ----- |
 | 1 | T        | ·        | ·            || T     |
@@ -221,7 +221,7 @@ Hard Faults take precedence over Soft Faults. Soft Faults are used in reasoning.
 ### serial_display()
 
 ```text
-| #  | not           | tcharge | bms_off | not    | sat | ib_choice | ib_amp_fa | ib_noa_fa | cc_diff_fa | ib_dscn_fa | ib_diff_fa | ib_choice | tb_fa | vb_sel_stat || time_long | accy | off | SAT | flt ekf | fail vb | fail ib | red loss | diff ib | conn |
+| #  | not           | tcharge | bms_off | not    | sat | ib_choice | ib_amp_fa | ib_noa_fa | cc_diff_fa | ib_dscn_fa | ib_diff_fa | ib_choice | Tbx_fa | vb_sel_stat || time_long | accy | off | SAT | flt ekf | fail vb | fail ib | red loss | diff ib | conn |
 |    | HDWE_IB_HI_LO | < 24    |         | mod_ib |     | != 0      |           |           |            |            |            |           |       |             ||           |      |     |     |         |         |         |          |         |      |
 | -- | ------------- | ------- | ------- | ------ | --- | --------- | --------- | --------- | ---------- | ---------- | ---------- | --------- | ----- | ----------- || --------- | ---- | --- | --- | ------- | ------- | ------- | -------- | ------- | ---- |
 | 1  | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | T     | ·           || ·         | ·    | ·   | ·   | ·       | ·       | T       | ·        | ·       | ·    |
@@ -256,7 +256,7 @@ Hard Faults take precedence over Soft Faults. Soft Faults are used in reasoning.
 ### serial_display()
 
 ```text
-| #  | not           | tcharge | bms_off | not    | sat | ib_choice | ib_amp_fa | ib_noa_fa | cc_diff_fa | ib_dscn_fa | ib_diff_fa | ib_choice | tb_fa | vb_sel_stat || Tb character | Vb character | Ib character | AH ekf                | time character | AH cc                 |
+| #  | not           | tcharge | bms_off | not    | sat | ib_choice | ib_amp_fa | ib_noa_fa | cc_diff_fa | ib_dscn_fa | ib_diff_fa | ib_choice | Tbx_fa | vb_sel_stat || Tb character | Vb character | Ib character | AH ekf                | time character | AH cc                 |
 |    | HDWE_IB_HI_LO | < 24    |         | mod_ib |     | != 0      |           |           |            |            |            |           |       |             || flash        | flash        | flash        | character flash       | flash          | character flash       |
 | -- | ------------- | ------- | ------- | ------ | --- | --------- | --------- | --------- | ---------- | ---------- | ---------- | --------- | ----- | ----------- || ------------ | ------------ | ------------ | --------------------- | -------------- | --------------------- |
 | 1  | ·             | ·       | ·       | ·      | ·   | ·         | ·         | ·         | ·          | ·          | ·          | ·         | T     | ·           || ****         | ·            | ·            | ·                     | ·              | ·                     |

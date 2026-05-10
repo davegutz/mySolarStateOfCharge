@@ -51,8 +51,6 @@
 // Faults
 #define FAKE_FAULTS           true    // What to do with faults, T=detect and display them but don't change signals
 #define CC_DIFF_SOC_DIS_THRESH  0.5   // Signal selection threshold for Coulomb counter EKF disagree test (0.2, 0.1 too small on truck)
-#define DISAB_VB_FA_LT true
-#define DISAB_TB_FA true          // Had high out of range failure.  Want to keep running without latch on the truck
 
 // ekf tune
 #define WRAP_SOC_HI_OFF     0.94        // Disable e_wrap_hi when saturated (0.94)

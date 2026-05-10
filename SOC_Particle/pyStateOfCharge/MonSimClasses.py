@@ -91,10 +91,10 @@ class Sensors:
                 self.mod_tb = self.mon_run.mtb
             else:
                 self.mod_tb = np.copy(self.mon_run.mod_data)
-            self.Tb0 = self.mon_run.Tbx_f[0]
+            self.Tb0 = self.mon_run.Tb_f[0]
             self.Tb0_s = self.mon_run.Tbx[0]
             self.Tb = self.mon_run.Tbx[0]
-            self.Tb_f = self.mon_run.Tbx_f[0]
+            self.Tb_f = self.mon_run.Tb_f[0]
             self.lut_dTb = None
             self.dTb = 0.
             if OPT.add_Tb is not None:
@@ -102,10 +102,10 @@ class Sensors:
                 self.Tb0 += OPT.add_Tb[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb[0, :]), np.array(OPT.add_Tb[1, :]))
                 self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
-            self.Tb_f_rate = self.mon_run.Tbx_f_rate[0]
+            self.Tb_f_rate = self.mon_run.Tb_f_rate[0]
             self.Tb_past = self.mon_run.Tbx[0] + self.dTb
-            self.Tb_f_past = self.mon_run.Tbx_f[0] + self.dTb
-            self.Tb_f_rate_past = self.mon_run.Tbx_f_rate[0]
+            self.Tb_f_past = self.mon_run.Tb_f[0] + self.dTb
+            self.Tb_f_rate_past = self.mon_run.Tb_f_rate[0]
             self.TbxSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
             self.TbxModelFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
             self.LoopAmp = SensorLooparound(self.mon_run.ib_amp_hdwe, self.mon_run.ib_dyn_m, self.mon_run.e_wrap_m_trim,
@@ -144,21 +144,15 @@ class Sensors:
             self.dv_dyn_s = self.sim_run.dv_dyn_s
             self.dt_s = self.sim_run.dt_s
             self.d_delta_q_s_init = 0.
-            self.Tb_hdwe_init = self.mon_run.Tbx_hdwe[0]
-            self.Tb_model_init = self.mon_run.Tbx_model[0]
-            self.Tb_hdwe_f_init = self.mon_run.Tbx_hdwe_f[0]
-            self.Tb_model_f_init = self.mon_run.Tbx_model_f[0]
-            self.Tb_model_f_fut = self.mon_run.Tbx_model_f[0]
-            self.Tb_model_f_rate_fut = self.mon_run.Tbx_model_f_rate[0]
-            self.Tb_hdwe_f_rate_init = self.mon_run.Tbx_hdwe_f_rate[0]
-            self.Tb_model_f_rate_init = self.mon_run.Tbx_model_f_rate[0]
+            self.Tb_model_f_fut = self.mon_run.Tb_model_f[1]
+            self.Tb_model_f_rate_fut = self.mon_run.Tb_model_f_rate[1]
             self.e_wrap_init = self.mon_run.e_wrap[0]
             self.e_wrap_filt_init = self.mon_run.e_wrap_filt[0]
             self.e_wrap_m_init = self.mon_run.e_wrap_m[0]
             self.e_wrap_n_init = self.mon_run.e_wrap_n[0]
             self.vb_s_init = self.mon_run.vb[0]
-            self.Tb_f_init = self.mon_run.Tbx_f[0]
-            self.Tb_f_rate_init = self.mon_run.Tbx_f_rate[0]
+            self.Tb_f_init = self.mon_run.Tb_f[0]
+            self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
             self.lut_dTb = None
             self.dTb = 0.
             if OPT.add_Tb is not None:
@@ -166,10 +160,10 @@ class Sensors:
                 self.Tb0 += OPT.add_Tb[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb[0, :]), np.array(OPT.add_Tb[1, :]))
                 self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
-            self.Tb_f = self.mon_run.Tbx_f
+            self.Tb_f = self.mon_run.Tb_f
             self.Tb_init = self.mon_run.Tbx[0] + self.dTb
-            self.Tb_f_init = self.mon_run.Tbx_f[0] + self.dTb
-            self.Tb_f_rate_init = self.mon_run.Tbx_f_rate[0]
+            self.Tb_f_init = self.mon_run.Tb_f[0] + self.dTb
+            self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
             self.ib_init = self.mon_run.ib[0]
             self.ib_charge_init = self.mon_run.ib_charge[0]
             self.vb_init = self.mon_run.vb[0]
@@ -193,12 +187,6 @@ class Sensors:
                self.mon_run.ib_h = np.copy(self.mon_run.ib_f)
             self.Battery = Battery
 
-            self.Tb_hdwe_init = self.mon_run.Tb_h_f[0]
-            self.Tb_hdwe_filt_init = self.mon_run.Tb_h_f[0]
-            self.Tb_hdwe_filt_rate_init = 0.
-            self.Tb_model_filt_rate_init = 0.
-            self.Tb_model_init = self.mon_run.Tb_h_f[0]
-            self.Tb_model_filt_init = self.mon_run.Tb_h_f[0]
             if hasattr(self.mon_run, 'e_wrap'):
                 self.e_wrap_init = self.mon_run.e_wrap[0]
                 self.e_wrap_m_init = self.mon_run.e_wrap_m[0]
@@ -210,10 +198,10 @@ class Sensors:
             self.e_wrap_filt_init = self.mon_run.e_wrap_filt[0]
             self.voc_stat_init = self.mon_run.voc_stat_f[0]
             self.vb_s_init = self.mon_run.vb_f[0]
-            self.Tb0 = self.mon_run.Tbx_f[0]
-            self.Tbx_f = self.mon_run.Tbx_f
-            self.Tb_f_init = self.mon_run.Tbx_f[0]
-            self.Tb0_s = self.mon_run.Tbx_f[0]
+            self.Tb0 = self.mon_run.Tb_f[0]
+            self.Tb_f = self.mon_run.Tb_f
+            self.Tb_f_init = self.mon_run.Tb_f[0]
+            self.Tb0_s = self.mon_run.Tb_f[0]
             self.Tb_f_rate_init = 0.
             self.lut_dTb = None
             self.dTb = 0.
@@ -222,14 +210,14 @@ class Sensors:
                 self.Tb0 += OPT.add_Tb[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb[0, :]), np.array(OPT.add_Tb[1, :]))
                 self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
-            self.Tb_rap_init = self.mon_run.Tbx_f[0] + self.dTb
-            self.Tb_f_init = self.mon_run.Tbx_f[0] + self.dTb
+            self.Tb_rap_init = self.mon_run.Tb_f[0] + self.dTb
+            self.Tb_f_init = self.mon_run.Tb_f[0] + self.dTb
             self.Tb_f_rate_rap_init = 0.
-            self.Tb = self.mon_run.Tbx_f[0]
-            self.Tb_f = np.copy(self.mon_run.Tbx_f)
-            self.Tbx_f_rate = np.copy(self.Tb_f) * 0.
-            self.Tb_past = self.mon_run.Tbx_f[0] + self.dTb
-            self.Tb_f_past = self.mon_run.Tbx_f[0] + self.dTb
+            self.Tb = self.mon_run.Tb_f[0]
+            self.Tb_f = np.copy(self.mon_run.Tb_f)
+            self.Tb_f_rate = np.copy(self.Tb_f) * 0.
+            self.Tb_past = self.mon_run.Tb_f[0] + self.dTb
+            self.Tb_f_past = self.mon_run.Tb_f[0] + self.dTb
             self.Tb_f_rate_past = np.copy(self.Tb_f) * 0.
             self.TbModelFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
             self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
@@ -268,10 +256,10 @@ class Sensors:
             self.delta_q = -self.q_cap * (1. - self.mon_run.soc)
         else:
             self.delta_q = self.mon_run.delta_q
-        if not hasattr(self.mon_run, 'Tbx_f'):
-            self.Tb_f = self.mon_run.Tbx_f
+        if not hasattr(self.mon_run, 'Tb_f'):
+            self.Tb_f = self.mon_run.Tb_f
         else:
-            self.Tb_f = self.mon_run.Tbx_f
+            self.Tb_f = self.mon_run.Tb_f
         if not hasattr(self.sim_run, 'qcap_s'):
             self.qcap_s = calculate_capacity(q_cap_rated_scaled=self.mon_run.qcrs_s, dqdt=self.mon_run.dqdt, tb_f=self.Tb_f,
                                               t_rated=self.mon_run.t_rated)
@@ -310,7 +298,7 @@ class Sensors:
         self.kf_v_n = 0.
         self.iscn = 0.
         self.iscn_f = 0.
-        self.Tb_model_filt_past = self.sim_run.Tb_f_s[0]
+        self.Tb_model_f_past = self.sim_run.Tb_f_s[0]
         self.mtb = self.mon_run.mtb[0]
 
     def __str__(self, prefix=''):
@@ -325,31 +313,31 @@ class Sensors:
         self.Tb_f = mon_Tb_f + self.dTb
         self.Tb_f_rate = mon_Tb_f_rate
 
-    def calc_temp_pass_1(self, OPT, mon_, sim_, i_temp, rp):
+    def calc_temp_pass_1(self, OPT, mon_, sim_, i, rp):
         mon = mon_
         sim = sim_
         if hasattr(OPT.mon_run, 'Tb_hdwe'):
-            mon.Tb_hdwe = OPT.mon_run.Tbx_hdwe[i_temp]
+            mon.Tb_hdwe = OPT.mon_run.Tb_hdwe[i]
         else:
-            mon.Tb_hdwe = OPT.mon_run.Tbx_f[i_temp]
+            mon.Tb_hdwe = OPT.mon_run.Tb_f[i]
         if hasattr(OPT.mon_run, 'Tb_model'):
-            mon.Tb_model = OPT.mon_run.Tbx_model[i_temp]
+            mon.Tb_model = OPT.mon_run.Tb_model[i]
         else:
-            mon.Tb_model = OPT.mon_run.Tbx_f[i_temp]
-        mon.reset_temp = (i_temp < 2) or mon.reset or OPT.run_type == 'HistSim'  # make sure temp init is longer than reset
+            mon.Tb_model = OPT.mon_run.Tb_f[i]
+        mon.reset_temp = (i < 2) or mon.reset or OPT.run_type == 'HistSim'  # make sure temp init is longer than reset
         mon.dt_temp = mon.dt
         if OPT.run_type == 'RunSim':
-            if bool(self.mod_tb[i_temp]):
-                mon.Tb = OPT.mon_run.Tbx[i_temp]
+            if bool(self.mod_tb[i]):
+                mon.Tb = OPT.mon_run.Tbx[i]
             else:
                 mon.Tb = mon.Tb_hdwe  # past value
             sim.Tb = mon.Tb
             mon.Tb_s = mon.Tb
         else:
-            sim.Tb = OPT.mon_run.Tbx_f[i_temp]
-            mon.Tb = OPT.mon_run.Tbx_f[i_temp]
-            mon.Tb_s = OPT.mon_run.Tbx_f[i_temp]
-        if i_temp > 0:
+            sim.Tb = OPT.mon_run.Tb_f[i]
+            mon.Tb = OPT.mon_run.Tb_f[i]
+            mon.Tb_s = OPT.mon_run.Tb_f[i]
+        if i > 0:
             self.update_tb()
             if self.mtb:
                 mon.Tb = self.Tb_past
@@ -363,29 +351,15 @@ class Sensors:
 
         return mon, sim
 
-    def calc_temp_pass_1_rap(self, mon_, i_temp):
-        mon = mon_
-        if i_temp > 0:
-            self.update_tb()
-            if self.mtb:
-                mon.Tb = self.Tb_past
-                mon.Tb_f = self.Tb_f_past
-                mon.Tb_f_rate = self.Tb_f_rate_past
-            else:
-                mon.Tb = self.Tb
-                mon.Tb_f = self.Tb_f
-                mon.Tb_f_rate = self.Tbx_f_rate
-        return mon
-
-    def calc_temp_pass_2(self, mon_run, mon, Battery_, rp, i_main=None):
-        self.temp_load_and_filter(mon_run, mon, Battery_, i_main)
-        self.select_temp(mon_run, mon, Battery_, rp, i_main)
+    def calc_temp_pass_2(self, mon_run, mon, Battery_, rp, i=None):
+        self.temp_load_and_filter(mon_run, mon, Battery_, i)
+        self.select_temp(mon_run, mon, Battery_, rp, i)
         self.assign_tb(mon.Tb, mon.Tb_f, mon.Tb_f_rate)
         return mon
 
-    def select_temp(self, mon_run, mon, Battery_, rp, i_main=None):
+    def select_temp(self, mon_run, mon, Battery_, rp, i=None):
         # select_temp
-        mon.Tb_fa = bool(mon_run.Tbx_fa[i_main]) if hasattr(mon_run, 'Tbx_fa') else False
+        mon.Tb_fa = bool(mon_run.Tb_fa[i]) if hasattr(mon_run, 'Tb_fa') else False
         if rp.modeling_Tb:
             if mon.Tb_fa:
                 mon.Tb = Battery.NOMINAL_TB
@@ -414,14 +388,14 @@ class Sensors:
             mon.Tb_f_rate = mon.Tb_model_f_rate
 
     def temp_load_and_filter(self, mon_run, mon, Battery_, i):
-        if hasattr(mon_run, 'Tbx_hdwe_f'):
+        if hasattr(mon_run, 'Tb_hdwe_f'):
             mon.Tb_hdwe_f = \
-                self.TbxSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_run.Tbx_hdwe_f[i], mon.reset or mon.Tb_fa,
+                self.TbxSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_run.Tb_hdwe_f[i], mon.reset or mon.Tb_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
         else:
             mon.Tb_hdwe_f = \
-                self.TbxSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon.Tb_hdwe, mon.reset or mon.Tbx_fa,
+                self.TbxSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon.Tb_hdwe, mon.reset or mon.Tb_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
         mon.Tb_hdwe_f_rate = self.TbxSenseFilt.rate
@@ -430,16 +404,16 @@ class Sensors:
         mon.Tb_hdwe_f_rstate = self.TbxSenseFilt.rstate
         mon.Tb_hdwe_f_lstate = self.TbxSenseFilt.state
 
-        if hasattr(mon_run, 'Tbx_model_f'):
+        if hasattr(mon_run, 'Tb_model_f'):
             mon.Tb_model_f = self.Tb_model_f_fut
             mon.Tb_model_f_rate = self.Tb_model_f_rate_fut
             self.Tb_model_f_fut = \
-                self.TbxModelFilt.calculate_tau_seeded(mon.Tb_model, mon_run.Tbx_model_f[i], mon.reset or mon.Tb_fa,
+                self.TbxModelFilt.calculate_tau_seeded(mon.Tb_model, mon_run.Tb_model_f[i], mon.reset or mon.Tb_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
         else:
             mon.Tb_model_f = \
-                self.TbxModelFilt.calculate_tau_seeded(mon.Tb_model, mon.Tb_model, mon.reset or mon.tbx_fa,
+                self.TbxModelFilt.calculate_tau_seeded(mon.Tb_model, mon.Tb_model, mon.reset or mon.Tb_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
         mon.Tb_model_f_rate = self.TbxModelFilt.rate

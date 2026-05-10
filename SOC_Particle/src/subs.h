@@ -45,7 +45,6 @@ extern CommandPars cp;  // Various parameters to be static at system level
 // Pins
 struct Pins
 {
-  uint16_t pin_1_wire;  // 1-wire Plenum temperature sensor
   uint16_t status_led;  // On-board led
   uint16_t Vb_pin;      // Battery voltage, e.g. Battleborn, CHINS
   uint16_t Vcn_pin;     // No Amp (n) common voltage
@@ -58,9 +57,8 @@ struct Pins
   bool using_hv3v3;  // Using differential hardware amp
   bool using_VTb;    // Using I2C port for 2wire temperature measurement (RTD)
   Pins(void) {}
-  Pins(uint16_t pin_1_wire, uint16_t status_led, uint16_t Vb_pin, uint16_t Vcn_pin, uint16_t Von_pin, uint16_t Vcm_pin, uint16_t Vom_pin)
+  Pins(uint16_t status_led, uint16_t Vb_pin, uint16_t Vcn_pin, uint16_t Von_pin, uint16_t Vcm_pin, uint16_t Vom_pin)
   {
-    this->pin_1_wire = pin_1_wire;
     this->status_led = status_led;
     this->Vb_pin = Vb_pin;
     this->Vcn_pin = Vcn_pin;
@@ -70,9 +68,8 @@ struct Pins
     this->using_opAmp = false;
     this->using_hv3v3 = false;
   }
-  Pins(uint16_t pin_1_wire, uint16_t status_led, uint16_t Vb_pin, uint16_t Von_pin, uint16_t Vom_pin)
+  Pins(uint16_t status_led, uint16_t Vb_pin, uint16_t Von_pin, uint16_t Vom_pin)
   {
-    this->pin_1_wire = pin_1_wire;
     this->status_led = status_led;
     this->Vb_pin = Vb_pin;
     this->Von_pin = Von_pin;
@@ -80,9 +77,8 @@ struct Pins
     this->using_opAmp = true;
     this->using_hv3v3 = false;
   }
-  Pins(uint16_t pin_1_wire, uint16_t status_led, uint16_t Vb_pin, uint16_t Von_pin, uint16_t Vom_pin, uint16_t Vh3v3_pin)
+  Pins(uint16_t status_led, uint16_t Vb_pin, uint16_t Von_pin, uint16_t Vom_pin, uint16_t Vh3v3_pin)
   {
-    this->pin_1_wire = pin_1_wire;
     this->status_led = status_led;
     this->Vb_pin = Vb_pin;
     this->Von_pin = Von_pin;
@@ -91,9 +87,8 @@ struct Pins
     this->using_opAmp = true;
     this->using_hv3v3 = true;
   }
-  Pins(uint16_t pin_1_wire, uint16_t status_led, uint16_t Vb_pin, uint16_t Von_pin, uint16_t Vom_pin, uint16_t Vh3v3_pin, uint16_t VTb_pin, bool using_2wire)
+  Pins(uint16_t status_led, uint16_t Vb_pin, uint16_t Von_pin, uint16_t Vom_pin, uint16_t Vh3v3_pin, uint16_t VTb_pin, bool using_2wire)
   {
-    this->pin_1_wire = pin_1_wire;
     this->status_led = status_led;
     this->Vb_pin = Vb_pin;
     this->Von_pin = Von_pin;

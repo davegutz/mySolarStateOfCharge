@@ -82,7 +82,7 @@ const char unit[] = version_str "_" HDWE_UNIT;
 #define ONE_DAY_MILLIS        86400000UL// Number of milliseconds in one day (24*60*60*1000)
 #define TALK_DELAY            313UL      // Talk wait, ms (313UL = 0.313 sec)
 #define READ_DELAY            100UL     // Sensor read wait, ms (100UL = 0.1 sec) Dr
-#define TEMP_DELAY            6000UL    // Sensor read wait, ms (6000UL = 6.0 sec) Dq
+#define TEMP_DELAY            600UL     // Sensor read wait, ms (600UL = 0.6 sec) Dq
 #define SUMMARY_DELAY         1800000UL // Battery state tracking and reporting, ms (1800000UL = 30 min) Dh
 #define SUMMARY_WAIT          60000UL   // Summarize alive time before first save, ms (60000UL = 1 min) Dh
 #define PUBLISH_SERIAL_DELAY  400UL     // Serial print interval (400UL = 0.4 sec)
@@ -126,7 +126,7 @@ const char unit[] = version_str "_" HDWE_UNIT;
 const float T_DESAT =         20;       // De-saturation time, sec
 #define TEMP_PARASITIC        true      // Temperature sensor power. true means leave it on all the time (true)
 #ifndef TEMP_INIT_DELAY
-    #define TEMP_INIT_DELAY       7000     // It takes 10 seconds first read of DS18 (10000)
+    #define TEMP_INIT_DELAY 700         // Time after power on to start reading temp, ms (700)
 #endif
 #define CC_DIFF_LO_SOC_SLR    4.        // Large to disable cc_diff
 #define TAU_ERR_FILT          5.        // Current sensor difference filter time constant, s (5.)

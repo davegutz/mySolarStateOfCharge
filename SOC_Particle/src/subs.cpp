@@ -85,7 +85,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
       Serial.printf("\n\n");
       sp.pretty_print(true);
       cp.pretty_print();
-      Serial.printf("Entering initialize_all: use_soc_in %d soc_in %5.3f, falw %ld tb_fa %d\n", use_soc_in, soc_in, Sen->Flt->falw(), Sen->Flt->tb_fa());
+      Serial.printf("Entering initialize_all: use_soc_in %d soc_in %5.3f, falw %ld Tbx_fa %d\n", use_soc_in, soc_in, Sen->Flt->falw(), Sen->Flt->Tbx_fa());
       debug_m1(Mon, Sen);
     }
   #endif
@@ -115,7 +115,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #ifdef DEBUG_INIT
     if ( sp.debug()==-1 )
     { 
-      Serial.printf("before harvest_temp, use_soc_in %d falw %ld tb_fa %d:  ", use_soc_in, Sen->Flt->falw(), Sen->Flt->tb_fa()); debug_m1(Mon, Sen);
+      Serial.printf("before harvest_temp, use_soc_in %d falw %ld Tbx_fa %d:  ", use_soc_in, Sen->Flt->falw(), Sen->Flt->Tbx_fa()); debug_m1(Mon, Sen);
     }
   #endif
   if ( !Sen->Flt->Tbx_fa() ) harvest_temp_change(Sen->Tbx_f(), Mon, Sen->Sim, Sen->Tbx_f_rate(), 0.);
@@ -248,8 +248,7 @@ void load_ib_vb_tb(const bool reset, const bool reset_kf, Sensors *Sen, Pins *my
 
   // Load temperature Tbx
   Sen->Tbx_load(myPins->VTb_pin, reset);
-  if ( !sp.mod_vb_dscn() )  Sen->Flt->Tbx_check(Sen, TB_MIN, TB_MAX,  reset);  // Sets tb_fa()
-  else                      Sen->Flt->Tbx_check(Sen, -1.0, 1.0, reset);
+  Sen->Flt->Tbx_check(Sen, TB_MIN, TB_MAX,  reset);  // Sets Tbx_fa()
   if ( sp.debug()==18 ) Sen->Tbx_print();
 
   // Power calculation
@@ -652,12 +651,12 @@ void serial_display(Sensors *Sen, BatteryMonitor *Mon)
     {
       #ifdef HDWE_IB_HI_LO
         Serial.printf("\nmodib %d ibchc %d vbsst %d tbfa %d ibmfa %d ibnafa %d ibdiffa %d dscnfa %d redloss %d\n",
-            sp.mod_ib(), Sen->Flt->ib_choice(), Sen->Flt->vb_sel_stat(), Sen->Flt->tb_fa(), Sen->Flt->ib_amp_fa(), Sen->Flt->ib_noa_fa(),  Sen->Flt->ib_diff_fa(), Sen->Flt->dscn_fa(), Sen->Flt->red_loss());
+            sp.mod_ib(), Sen->Flt->ib_choice(), Sen->Flt->vb_sel_stat(), Sen->Flt->Tbx_fa(), Sen->Flt->ib_amp_fa(), Sen->Flt->ib_noa_fa(),  Sen->Flt->ib_diff_fa(), Sen->Flt->dscn_fa(), Sen->Flt->red_loss());
         Serial.printf("%s   Tb,C  VOC,V  Ib,A \n%s   EKF,Ah  chg,hrs  CC, Ah\nPf; for fails.  prints=%ld\n\n",
             disp_Tbop.c_str(), dispBot.c_str(), cp.num_v_print);
       #else
         Serial.printf("\nmodib %d ibsst %d vbsst %d tbfa %d ibmfa %d ibnafa %d ibdiffa %d dscnfa %d redloss %d\n",
-            sp.mod_ib(), Sen->Flt->ib_sel_stat(), Sen->Flt->vb_sel_stat(), Sen->Flt->tb_fa(), Sen->Flt->ib_amp_fa(), Sen->Flt->ib_noa_fa(),  Sen->Flt->ib_diff_fa(), Sen->Flt->dscn_fa(), Sen->Flt->red_loss());
+            sp.mod_ib(), Sen->Flt->ib_sel_stat(), Sen->Flt->vb_sel_stat(), Sen->Flt->Tbx_fa(), Sen->Flt->ib_amp_fa(), Sen->Flt->ib_noa_fa(),  Sen->Flt->ib_diff_fa(), Sen->Flt->dscn_fa(), Sen->Flt->red_loss());
         Serial.printf("%s   Tb,C  VOC,V  Ib,A \n%s   EKF,Ah  chg,hrs  CC, Ah\nPf; for fails.  prints=%ld\n\n",
             disp_Tbop.c_str(), dispBot.c_str(), cp.num_v_print);
       #endif

@@ -81,19 +81,19 @@ def sync_to_mon_or_sim(mr, sr, t_mx=None):
     return time, dtime
 
 
-def tbx_from_raw_or_selected(use_raw, mr):
+def Tb_from_raw_or_selected(use_raw, mr):
     if use_raw:
-        tbx_ = mr.Tbx_hdwe
-        tbx_f_ = mr.Tbx_hdwe_f
-    else:
-        if hasattr(mr, 'Tbx'):
-            tbx_ = mr.Tbx
-        if hasattr(mr, 'Tbx_f'):
-                tbx_f_ = mr.Tbx_f
+        if rp.modeling_tb():
+            Tb_ = mr.Tb_model
+            Tb_f_ = mr.Tb_model_f
         else:
-            tbx_ = mr.Tbx
-            tbx_f_ = mr.Tbx_f
-    return tbx_, tbx_f_
+            Tb_ = mr.Tb_hdwe
+            Tb_f_ = mr.Tb_hdwe_f
+    else:
+        Tb_ = mr.Tbx
+        Tb_f_ = mr.Tb_f
+
+    return Tb_, Tb_f_
 
 
 def vb_from_raw_or_selected(use_raw, mr):
@@ -128,7 +128,7 @@ def replicate(OPT: UserOptions):
     vb = vb_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_run)
 
     # Tbx
-    Tbx, Tbx_f = tbx_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_run)
+    Tbx, Tb_f = Tb_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_run)
 
     # chem
     chm_m, chm_s = chm_from_mon_or_sim(OPT.mon_run, OPT.sim_run)
@@ -153,9 +153,9 @@ def replicate(OPT: UserOptions):
     scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_batt, Battery.NOM_UNIT_CAP)
 
     # Make batteries from modified class constants
-    sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], tbx_f=SN.sim_run.Tbx_f_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
+    sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], Tb_f=SN.sim_run.Tb_f_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
                      vsat_add=Battery.sp_vsat_add)
-    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], tbx_f=SN.mon_run.Tbx_f[0], tb_f=SN.mon_run.Tbx_f[0], scale=scale_mon,
+    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], Tb_f=SN.mon_run.Tb_f[0], tb_f=SN.mon_run.Tb_f[0], scale=scale_mon,
                          vsat_add=Battery.sp_vsat_add, tweak_test=tweak_test)
     Is_sat_delay = TFDelay(in_=OPT.mon_run.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 
@@ -263,8 +263,8 @@ def replicate(OPT: UserOptions):
             else:
                 ib_ = OPT.mon_run.ib[G.i]
 
-        Tbx_ = mon.Tbx
-        Tbx_f_ = mon.Tbx_f
+        Tb_ = mon.Tb
+        Tb_f_ = mon.Tb_f
 
         if OPT.use_vb_sim:
             vb_ = sim.vb
@@ -278,7 +278,7 @@ def replicate(OPT: UserOptions):
         else:
             _chm_s = OPT.Bsim
 
-        sim.calculate(_chm_s, Tbx_, vb_, ib_in_s, SN.dt_s[G.i], reset, None, None, SN, OPT,
+        sim.calculate(_chm_s, Tb_, vb_, ib_in_s, SN.dt_s[G.i], reset, None, None, SN, OPT,
                       soc=sim.soc, q_capacity=sim.q_capacity, rp=rp, saturated_init=sat_s_init)
 
         sim.count_coulombs(OPT, SN, chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, charge_curr=sim.ib_charge, sat=False,
@@ -286,7 +286,7 @@ def replicate(OPT: UserOptions):
 
         # Charge init
         if reset:
-            mon.apply_delta_q_t(SN.mon_run.delta_q[G.i], SN.mon_run.Tbx_f[G.i])
+            mon.apply_delta_q_t(SN.mon_run.delta_q[G.i], SN.mon_run.Tb_f[G.i])
             prn_soc_debug(OPT, time=now, leader="after mon.apply_delta_q_t", i_temp=i_temp, mon=mon, sim=sim)
             rp.delta_q = mon.delta_q
             mon.load(rp.delta_q)
@@ -314,8 +314,8 @@ def replicate(OPT: UserOptions):
             mon.init_soc_ekf(OPT.mon_run, G.i, i_ekf)  # when modeling (assumed in python) ekf wants to equal model
 
         # Monitor calculate
-        mon.calculate(_chm_m, Tbx_, Tbx_f_, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, OPT, rp=rp, reset_ekf=reset_ekf, i=G.i,
-                      i_ekf=i_ekf)
+        mon.calculate(_chm_m, Tb_, Tb_f_, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, OPT, rp=rp, reset_ekf=reset_ekf,
+                      i=G.i, i_ekf=i_ekf)
         ib_charge = mon.ib_charge
 
         if OPT.use_sat_mon:

@@ -140,7 +140,7 @@ void setup()
   // A5 (pin 'D14') - Vr or Vc
 
   // Log.info("setup Pins");
-  myPins = new Pins(D3, D7, D12, D11, D13, D14, D0, true);
+  myPins = new Pins(D7, D12, D11, D13, D14, D0, true);
   pinMode(myPins->status_led, OUTPUT);
   digitalWrite(myPins->status_led, LOW);
 

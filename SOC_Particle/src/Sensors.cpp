@@ -371,7 +371,7 @@ void Sensors::select_volt_and_current_and_temp(BatteryMonitor *Mon)
     }
     else
     {
-      Tbx_ = Tbx_model_ + Tbx_noise();
+      Tbx_ = Tbx_model_;
       sample_time_Tbx_ = Sim->sample_time();
     }
   }
@@ -593,27 +593,49 @@ void Sensors::shunt_select_initial(const bool reset)
     }
 }
 
-
-
 // Load analog voltage
 void Sensors::Tbx_load(const uint16_t tb_pin, const bool reset)
 {
+  float hdwe_add, mod_add;
+  if ( !sp.mod_tb() )
+  {
+    mod_add = 0.;
+    hdwe_add = sp.Tb_bias_hdwe();
+  }
+  else
+  {
+    mod_add = ap.Tb_bias_model() + Tbx_noise();
+    hdwe_add = 0.;
+  }
+
+  float res = Tbx_volt_ * float(HDWE_RS_2WIRE) / (V3V3 - Tbx_volt_);
+  // Steinhart-Hart (see '2-wireRTD.ods')
+  float lnres = log(res);
   if ( !sp.mod_tb_dscn() )
   {
     #if !defined(HDWE_BARE)
       Tbx_raw_ = Tbx_read_-> analogReadDebounced(VRAW_BARE_DETECTED, reset, "Tbx");
       Tbx_volt_ = float(Tbx_raw_)*VTB_CONV_GAIN;
-      float res = Tbx_volt_ * float(HDWE_RS_2WIRE) / (V3V3 - Tbx_volt_);
-      // Steinhart-Hart (see '2-wireRTD.ods')
-      float lnres = log(res);
       Tbx_hdwe_ = ( 1. / max( HDWE_SHA_2WIRE + (HDWE_SHB_2WIRE + HDWE_SHC_2WIRE *lnres*lnres) * lnres, 0.000001 ) ) - 273.;
-      Tbx_hdwe_ += sp.Tb_bias_hdwe();  // Fault injection
+      Tbx_hdwe_ += hdwe_add;  // Fault injection
+    #else
+      Tbx_raw_ = 0.;
+      Tbx_volt_ = 0.;
+      Tbx_hdwe_ = 0.;
     #endif
+    Tbx_model_ = NOMINAL_TB;
   }
   else
   {
     Tbx_raw_ = 0;
     Tbx_hdwe_ = NOMINAL_TB;
+    Tbx_model_ = NOMINAL_TB + mod_add;  // Fault injection
+  }
+  if ( sp.debug()==18 )
+  {
+    Serial.printf("\nTbx_load: T_%7.3f sp.mod_tb() %2d,", T_, sp.mod_tb());
+    Serial.printf(" Tbx_raw_ %d Tbx_volt_ %7.3f res %7.3f lnres %7.3f hdwe_add %7.3f Tbx_hdwe_ %7.3f mod_add %7.3f Tbx_model_ %7.3f\n",
+      Tbx_raw_, Tbx_volt_, res, lnres, hdwe_add, Tbx_hdwe_, mod_add, Tbx_model_);
   }
   Tbx_hdwe_f_ = TbxHdweFilt->calculate(Tbx_hdwe_, reset || Flt->Tbx_fa() || sp.mod_tb_dscn(), ap.Tbx_filt(), T_, T_RLIM, -T_RLIM);
   Tbx_hdwe_f_dt_ = TbxHdweFilt->T();
@@ -639,9 +661,12 @@ void Sensors::Tbx_load(const uint16_t tb_pin, const bool reset)
 // Print analog voltage
 void Sensors::Tbx_print()
 {
-  Serial.printf("reset%2d stime%7.3f T%7.3f tb_dscn%2d Tbx_raw%4d sp.Tb_bias_hdwe%7.3f Tbx_hdwe%7.3f Tbx_hdwe_f%7.3f Tbx_hdwe_f_dt%7.3f Tbx_hdwe_f_rate%7.3f Tbx_hdwe_f_rstate%7.3f Tbx_hdwe_f_lstate%7.3f tbx_flt%2d tbx_fa%2d\n",
-    reset_, float(sample_time_Tbx_hdwe_)/1000.f, T_, sp.mod_tb_dscn(), Tbx_raw_, sp.Tb_bias_hdwe(), Tbx_hdwe_, Tbx_hdwe_f_, Tbx_hdwe_f_dt_, Tbx_hdwe_f_rate_, Tbx_hdwe_f_rstate_,
+  Serial.printf("tb_dscn%2d reset%2d stime%7.3f T%7.3f tb_dscn%2d Tbx_raw%4d sp.Tb_bias_hdwe%7.3f Tbx_hdwe%7.3f Tbx_hdwe_f%7.3f Tbx_hdwe_f_dt%7.3f Tbx_hdwe_f_rate%7.3f Tbx_hdwe_f_rstate%7.3f Tbx_hdwe_f_lstate%7.3f tbx_flt%2d tbx_fa%2d\n\n",
+    sp.mod_tb_dscn(), reset_, float(sample_time_Tbx_hdwe_)/1000.f, T_, sp.mod_tb_dscn(), Tbx_raw_, sp.Tb_bias_hdwe(), Tbx_hdwe_, Tbx_hdwe_f_, Tbx_hdwe_f_dt_, Tbx_hdwe_f_rate_, Tbx_hdwe_f_rstate_,
     Tbx_hdwe_f_lstate_, Flt->Tbx_flt(), Flt->Tbx_fa());
+  Serial.printf("reset%2d stime%7.3f T%7.3f tb_dscn%2d            ap.Tb_bias_model%7.3f Tbx_model%7.3f Tbx_model_f%7.3f Tbx_model_f_dt%7.3f Tbx_model_f_rate%7.3f Tbx_model_f_rstate%7.3f Tbx_model_f_lstate%7.3f tbx_flt%2d tbx_fa%2d\n\n",
+    reset_, float(sample_time_Tbx_hdwe_)/1000.f, T_, sp.mod_tb_dscn(), ap.Tb_bias_model(), Tbx_model_, Tbx_model_f_, Tbx_model_f_dt_, Tbx_model_f_rate_, Tbx_model_f_rstate_,
+    Tbx_model_f_lstate_, Flt->Tbx_flt(), Flt->Tbx_fa());
 }
 
 // Load analog voltage

@@ -557,8 +557,7 @@ View results
 | Gnd       | Ground                            |
 | 3v3       | 3.3 V supply for all peripherals  |
 | VUSB      | 5 V supply for Photon2            |
-| D3        | One-wire temperature sensor       |
-| A3 (D0)   | Two-wire temperature sensor (alt) |
+| A3 (D0)   | Two-wire temperature sensor       |
 | D7        | Status LED (heartbeat)            |
 | A0 (D11)  | Primary Ib amp ('amp')            |
 | A1 (D12)  | Vb voltage sense                  |
