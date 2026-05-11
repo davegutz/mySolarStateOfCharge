@@ -312,7 +312,7 @@ def main():  # Example usage.  ok on 20260217
     data_file='/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/tLoFailModel_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = None
-    plots = True
+    plots = False
     use_mon_soc_ = False
     verbose = False
     scale_batt = 1.0

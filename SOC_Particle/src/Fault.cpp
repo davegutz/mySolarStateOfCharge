@@ -170,7 +170,7 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
   ib_sel_stat_(IB_SEL_STAT_DEF), ib_sel_stat_last_(IB_SEL_STAT_DEF), latch_(false),
   latch_fake_(false), rate_amp_(false), rate_noa_(false), reset_all_faults_(false),
   reset_all_faults_print_(false), sp_preserving_(preserving), splrr_amp_(false), splrr_noa_(false),
-  tb_sel_stat_(TBX_SEL_STAT_DEF), tb_sel_stat_last_(TBX_SEL_STAT_DEF), vb_sel_stat_(VB_SEL_STAT_DEF),
+  tb_sel_stat_(TB_SEL_STAT_DEF), tb_sel_stat_last_(TB_SEL_STAT_DEF), vb_sel_stat_(VB_SEL_STAT_DEF),
   vb_sel_stat_last_(VB_SEL_STAT_DEF), wrap_hi_amp_(WRAP_HI_AMP), wrap_hi_noa_(WRAP_HI_NOA),
   wrap_lo_amp_(WRAP_LO_AMP), wrap_lo_noa_(WRAP_LO_NOA)
 {
@@ -637,7 +637,7 @@ void Fault::select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const bool reset
     tb_sel_stat_last_ = 1;
     tb_sel_stat_ = 1;
     Serial.printf("reset tb flts\n");
-    failAssign(false, TBX_FA);
+    failAssign(false, TB_FA);
   }
   if ( Tb_fa() )  // Latches
   {
@@ -943,24 +943,24 @@ void Fault::Tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, con
   bool reset_loc = reset | reset_all_faults_;
   if ( reset_loc )
   {
-    failAssign(false, TBX_FA);
+    failAssign(false, TB_FA);
   }
   if ( sp.mod_tb() )
   {
-    faultAssign( ((Sen->Tb_model_f()<=_tb_min) || (Sen->Tb_model_f()>=_tb_max)) &&
-                 !ap.disab_tb_fa(), TBX_FLT);
-    failAssign( Tb_fa() || TbHardFail->calculate(Tb_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TBX_FA);
+    faultAssign( ((Sen->Tb_model()<=_tb_min) || (Sen->Tb_model_f()>=_tb_max)) &&
+                 !ap.disab_tb_fa(), TB_FLT);
+    failAssign( Tb_fa() || TbHardFail->calculate(Tb_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TB_FA);
   }
   else if ( ap.disab_tb_fa() )
   {
-    faultAssign( false, TBX_FLT);
-    failAssign( false, TBX_FA); }
+    faultAssign( false, TB_FLT);
+    failAssign( false, TB_FA); }
   else
   {
-    faultAssign( (Sen->Tb_hdwe()<=_tb_min) || (Sen->Tb_hdwe()>=_tb_max), TBX_FLT);
-    failAssign( Tb_fa() || TbHardFail->calculate(Tb_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TBX_FA);
+    faultAssign( (Sen->Tb_hdwe()<=_tb_min) || (Sen->Tb_hdwe()>=_tb_max), TB_FLT);
+    failAssign( Tb_fa() || TbHardFail->calculate(Tb_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TB_FA);
   }
-  if ( sp.debug()==18 ) Serial.printf("Tb_check: mod_tb %d disab_tb_fa %d Sen->Tb_model() %7.3f Sen->Tb_model_f() %7.3f Sen->Tb_hdwe() %7.3f Sen->Tb_hdwe_f() %7.3f _tb_min%7.3f _tb_max%7.3f TBX_FLT %d TBX_FA %d\n",
+  if ( sp.debug()==18 ) Serial.printf("Tb_check: mod_tb %d disab_tb_fa %d Sen->Tb_model() %7.3f Sen->Tb_model_f() %7.3f Sen->Tb_hdwe() %7.3f Sen->Tb_hdwe_f() %7.3f _tb_min%7.3f _tb_max%7.3f TB_FLT %d TB_FA %d\n",
     sp.mod_tb(), ap.disab_tb_fa(), Sen->Tb_model(), Sen->Tb_model_f(), Sen->Tb_hdwe(), Sen->Tb_hdwe_f(), _tb_min, _tb_max, Tb_flt(), Tb_fa());
 }
 

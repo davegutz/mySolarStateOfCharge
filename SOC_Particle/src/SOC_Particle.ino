@@ -235,6 +235,7 @@ void loop()
   now = (uint64_t) millis();
   bool chitchat = false;
   static Sync *Talk = new Sync(TALK_DELAY);
+  static Sync *NoSaveWarn = new Sync(NO_SAVE_WARN);
   bool read = false;
   static Sync *ReadSensors = new Sync(READ_DELAY);
   bool read_temp = false;
@@ -276,6 +277,10 @@ void loop()
   read_temp = ReadTemp->update(now, reset);
   read = ReadSensors->update(now, reset);
   chitchat = Talk->update(now, reset);
+  if ( NoSaveWarn->update(now, reset) && sp.dirty() )
+  {
+    sendTxBuf("WARNING: unsaved Retained parameter.  Enter 'w' to save.\n", true, true);
+  }
   elapsed = ReadSensors->now() - start;
   elapsed_reset = ReadSensors->now() - start_reset;
   display_and_remember = DisplayUserSync->update(now, reset);
@@ -328,7 +333,7 @@ void loop()
     monitor(reset, reset_temp, reset_ekf, now, Is_sat_delay, Mon, Sen);
 
     // Re-init Coulomb Counter to EKF if it is different than EKF or if never saturated
-    Mon->regauge(Sen->Tb_f());
+    Mon->regauge(Sen->Tb_f(), Sen);
 
     // Empty battery
     if ( sp.modeling() && reset && Sen->Sim->q()<=0. ) Sen->Ib(0.);

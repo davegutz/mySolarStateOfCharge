@@ -537,6 +537,7 @@ void describe(BatteryMonitor *Mon, Sensors *Sen)
       // This was not done for all passes just to save only when an adjustment change verified by user (* parameters), to avoid SRAM life impact.
       case ( 'w' ):  // w:  confirm write * adjustments to to SRAM
         System.backupRamSync();
+        sp.dirty(false);
         sendTxBuf("SAVED *\n", true, true);
         break;
 

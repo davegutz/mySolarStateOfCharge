@@ -359,6 +359,7 @@ class Sensors:
 
     def select_temp(self, mon_run, mon, Battery_, rp, i=None):
         # select_temp
+        mon.Tb_flt = bool(mon_run.Tb_flt[i]) if hasattr(mon_run, 'Tb_flt') else False
         mon.Tb_fa = bool(mon_run.Tb_fa[i]) if hasattr(mon_run, 'Tb_fa') else False
         if rp.modeling_Tb:
             if mon.Tb_fa:

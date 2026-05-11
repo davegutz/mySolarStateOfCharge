@@ -472,7 +472,7 @@ void print_sim_serial(const bool initializing_all, const bool reset_temp, Sensor
   if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)
   {
     sprintf(pr.buff, "unit_sim, %13.4f, %8.4f, %d, %10.4f, %d, %11.8f, %11.8f, %11.8f, %7.6f,%7.6f, ",
-        Sim->cTime(), Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->Tb(), Sim->Tb_f(), Sim->tb_f(), Sim->vsat(), Sim->voc_stat());
+        Sim->cTime(), Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->Tb(), Sim->Tb_f(), Sim->Tb_f(), Sim->vsat(), Sim->voc_stat());
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%7.6f,%8.6f, %7.6f,%7.6f,%7.6f,%7.6f,%7.6f,%7.6f, ",

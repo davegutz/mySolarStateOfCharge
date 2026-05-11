@@ -362,16 +362,23 @@ void Sensors::select_volt_and_current_and_temp(BatteryMonitor *Mon)
   // Tb
   if ( sp.mod_tb() )
   {
-    Tb_f_ = Tb_model_f_;
-    Tb_f_rate_ = Tb_model_f_rate_;
     if ( Flt->Tb_fa() && !ap.fake_faults() )
     {
-      Tb_ = Tb_model_;
+      Tb_ = NOMINAL_TB;
+      Tb_f_ = NOMINAL_TB;
+      Tb_f_rate_ = 0.;
       sample_time_Tb_ = Sim->sample_time();
+    }
+    else if ( Flt->Tb_flt() && !ap.fake_faults() )
+    {
+      sample_time_Tb_ = sample_time_Tb_hdwe_;
+      return;
     }
     else
     {
       Tb_ = Tb_model_;
+      Tb_f_ = Tb_model_f_;
+      Tb_f_rate_ = Tb_model_f_rate_;
       sample_time_Tb_ = Sim->sample_time();
     }
   }
@@ -381,12 +388,19 @@ void Sensors::select_volt_and_current_and_temp(BatteryMonitor *Mon)
     {
       Tb_ = NOMINAL_TB;
       Tb_f_ = NOMINAL_TB;
+      Tb_f_rate_ = 0.;
       sample_time_Tb_ = Sim->sample_time();
+    }
+    else if ( Flt->Tb_flt() && !ap.fake_faults() )
+    {
+      sample_time_Tb_ = sample_time_Tb_hdwe_;
+      return;
     }
     else
     {
       Tb_ = Tb_hdwe_;
       Tb_f_ = Tb_hdwe_f_;
+      Tb_f_rate_ = Tb_hdwe_f_rate_;
       sample_time_Tb_ = sample_time_Tb_hdwe_;
     }
   }

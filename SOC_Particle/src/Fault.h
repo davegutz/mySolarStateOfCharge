@@ -56,11 +56,11 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 
 #ifdef HDWE_IB_HI_LO
   #define IB_SEL_STAT_DEF 0
-  #define TBX_SEL_STAT_DEF 1
+  #define TB_SEL_STAT_DEF 1
   #define VB_SEL_STAT_DEF 1
 #else
   #define IB_SEL_STAT_DEF 1
-  #define TBX_SEL_STAT_DEF 1
+  #define TB_SEL_STAT_DEF 1
   #define VB_SEL_STAT_DEF 1
 #endif
 
@@ -101,7 +101,7 @@ struct ScaleBrk
 };
 
 // Fault word bits.   All faults heal
-#define TBX_FLT        0   // Momentary isolation of Tb failure, T=faulted
+#define TB_FLT        0   // Momentary isolation of Tb failure, T=faulted
 #define VB_FLT        1   // Momentary isolation of Vb failure, T=faulted
 #define IB_AMP_FLT    2   // Momentary isolation of Ib amp failure, T=faulted 
 #define IB_NOA_FLT    3   // Momentary isolation of Ib no amp failure, T=faulted 
@@ -122,7 +122,7 @@ struct ScaleBrk
 #define NUM_FLT       20  // Number of these
 
 // Fail word bits.   A couple don't latch because single sensor fail in dual sensor system
-#define TBX_FA         0   // Peristed, latched isolation of Tb failure, heals because soft type, T=failed
+#define TB_FA         0   // Peristed, latched isolation of Tb failure, heals because soft type, T=failed
 #define VB_FA_LT      1   // Peristed, latched isolation of Vb failure, latches because hard type, T=failed
 #define IB_AMP_FA     2   // Amp sensor selection memory, latches because hard type, T = amp failed
 #define IB_NOA_FA     3   // Noamp sensor selection memory, latches because hard type, T = no amp failed
@@ -328,8 +328,8 @@ public:
   void shunt_check(Sensors *Sen, BatteryMonitor *Mon, const bool reset);  // Range check Ib signals
   void shunt_select_initial(const bool reset);   // Choose between shunts for model
   void Tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, const bool reset);  // Range check Tb
-  bool Tb_fa() { return failRead(TBX_FA); };
-  bool Tb_flt() { return faultRead(TBX_FLT); };
+  bool Tb_fa() { return failRead(TB_FA); };
+  bool Tb_flt() { return faultRead(TB_FLT); };
   int8_t tb_sel_stat_past() { return tb_sel_stat_last_; };
   int8_t tb_sel_status() { return tb_sel_stat_; };
   void vb_check(Sensors *Sen, BatteryMonitor *Mon, const float _vb_min, const float _vb_max, const bool reset);  // Range check Vb

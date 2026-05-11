@@ -584,7 +584,7 @@ public:
     uint16_t assign_addr(uint16_t next)
     {
         addr_.a16 = next;
-        return next + sizeof(uint16_t);  // int8_t is padded to 2 bytes before uint16_t in struct layout
+        return next + sizeof(int8_t);
     }
 
     bool check_set_put(int8_t val)

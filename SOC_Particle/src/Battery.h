@@ -95,10 +95,10 @@ public:
   Battery(double *sp_delta_q, const float d_voc_soc, const float dx_voc, const float dy_voc,
                 const float dz_voc);
   ~Battery();
-  virtual double calc_soc_voc(const double soc, const double tb_f, double *dv_dsoc);
-  double calc_soc_voc_slope(float soc, double tb_f);
+  virtual double calc_soc_voc(const double soc, const double Tb_f, double *dv_dsoc);
+  double calc_soc_voc_slope(float soc, double Tb_f);
   float calc_vsat(void);
-  virtual float calculate(const double tb_f, const float soc_frac, float curr_in, const double dt, const bool dc_dc_on);
+  virtual float calculate(const double Tb_f, const float soc_frac, float curr_in, const double dt, const bool dc_dc_on);
   float chargeTransfer_a() { return ChargeTransfer_->a(); };
   float chargeTransfer_b() { return ChargeTransfer_->b(); };
   float chargeTransfer_c() { return ChargeTransfer_->c(); };
@@ -126,13 +126,12 @@ public:
   float ioc() { return ioc_; };
   virtual void pretty_print();
   void print_signal(const bool print) { print_now_ = print; };
-  double tb_f() { return tb_f_; };
   double Tb() { return Tb_; };
   double Tb_f() { return Tb_f_; };
   float vb() { return vb_; };
   double voc() { return voc_; };
   double voc_soc() { return voc_soc_; };
-  double voc_soc_tab(const double soc, const double tb_f);
+  double voc_soc_tab(const double soc, const double Tb_f);
   double voc_stat() { return voc_stat_; };
   bool voltage_low() { return voltage_low_; };
   float vsat() { return vsat_; };
@@ -152,9 +151,8 @@ protected:
   float nom_vsat_; // Nominal saturation threshold at 25C, V
   bool print_now_; // Print command
   bool soft_reset_print_;  // Soft reset flag
-  double tb_f_;    // Battery temperature, deg C
   double Tb_;     // Battery temperature, deg C
-  // double Tb_f_;   // Filtered battery temperature, deg C
+  double Tb_f_;   // Filtered battery temperature, deg C
   float vb_;       // Battery terminal voltage, V
   double voc_;      // Static model open circuit voltage, V
   double voc_soc_;      // Raw table lookup of voc, V
@@ -180,7 +178,7 @@ public:
   float amp_hrs_remaining_ekf() { return amp_hrs_remaining_ekf_; };
   float amp_hrs_remaining_soc() { return amp_hrs_remaining_soc_; };
   float calc_charge_time(const double q, const float q_capacity, const float charge_curr, const float soc);
-  virtual double calc_soc_voc(const double soc, const double tb_f, double *dv_dsoc);
+  virtual double calc_soc_voc(const double soc, const double Tb_f, double *dv_dsoc);
   float calculate(Sensors *Sen, const bool reset,  const bool reset_ekf);
   bool converged_ekf() { return ekf_conv_; };
   double delta_q_ekf() { return delta_q_ekf_; };
@@ -193,7 +191,7 @@ public:
   bool is_sat(const bool reset);
   double K_ekf() { return K_; };
   void pretty_print(Sensors *Sen);
-  void regauge(const double tb_f);
+  void regauge(const double Tb_f, Sensors *Sen);
   float r_sd ();
   float r_ss ();
   double soc_ekf() { return soc_ekf_; };
@@ -236,7 +234,7 @@ protected:
   double y_ekf_;       // EKF y value, V
   float y_ekf_f_;      // Filtered EKF y value, V
   void ekf_predict(double *Fx_, double *Bu_);
-  void ekf_update(double *hx, double *H, double *x, double *tb_f);
+  void ekf_update(double *hx, double *H, double *x, double *Tb_f);
   float y_ekf_f_T_;        // EKF filter
   float y_ekf_f_tau_;      // EKF filter
   float y_ekf_f_state_;    // EKF filter
@@ -250,7 +248,7 @@ public:
   BatterySim(const float dx_voc, const float dy_voc, const float dz_voc);
   ~BatterySim();
   float calc_inj(const uint64_t now, const uint8_t type, const float amp, const double freq);
-  virtual double calc_soc_voc(const double soc, const double tb_f, double *dv_dsoc);
+  virtual double calc_soc_voc(const double soc, const double Tb_f, double *dv_dsoc);
   float calculate(Sensors *Sen, const bool dc_dc_on, const bool reset);
   float count_coulombs(Sensors *Sen, const bool reset, BatteryMonitor *Mon, const bool initializing_all);
   bool cutback() { return model_cutback_; };

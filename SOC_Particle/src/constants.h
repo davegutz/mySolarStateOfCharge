@@ -81,6 +81,7 @@ const char unit[] = version_str "_" HDWE_UNIT;
 #define ONE_HOUR_MILLIS       3600000UL // Number of milliseconds in one hour (60*60*1000)
 #define ONE_DAY_MILLIS        86400000UL// Number of milliseconds in one day (24*60*60*1000)
 #define TALK_DELAY            313UL      // Talk wait, ms (313UL = 0.313 sec)
+#define NO_SAVE_WARN          30000UL   // Unsaved retained param warning interval, ms (30000UL = 30 sec)
 #define READ_DELAY            100UL     // Sensor read wait, ms (100UL = 0.1 sec) Dr
 #define TEMP_DELAY            600UL     // Sensor read wait, ms (600UL = 0.6 sec) Dq
 #define SUMMARY_DELAY         1800000UL // Battery state tracking and reporting, ms (1800000UL = 30 min) Dh

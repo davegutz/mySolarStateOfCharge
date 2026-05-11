@@ -33,7 +33,7 @@ extern CommandPars cp;
 // class Parameters
 // Corruption test on bootup.  Needed because retained parameter memory is not managed by the compiler as it relies on
 // battery.  Small compilation changes can change where in this memory the program points, too
-Parameters::Parameters():n_(0), V_(nullptr) {};
+Parameters::Parameters():n_(0), V_(nullptr), dirty_(false) {};
 
 Parameters::~Parameters(){};
 
@@ -54,7 +54,11 @@ bool Parameters::find_adjust(const String &str)
         if ( substr==V_[i]->code() )
         {
             found = true;
-            if ( !count ) success = V_[i]->print_adjust(value_str_);  // prints own error messages
+            if ( !count )
+            {
+                success = V_[i]->print_adjust(value_str_);  // prints own error messages
+                if ( success ) dirty_ = true;
+            }
             else Serial.printf("RPT: %d %s success=%d\n", i, V_[i]->code().c_str(), success);
             count++;
         }

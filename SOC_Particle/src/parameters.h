@@ -37,6 +37,8 @@ public:
     Parameters();
     ~Parameters();
     // Do everything
+    bool dirty() { return dirty_; }
+    void dirty(const bool d) { dirty_ = d; }
     bool find_adjust(const String &str);
     virtual void initialize() {}
     bool is_corrupt();
@@ -47,6 +49,7 @@ protected:
     int8_t n_;
     Variable **V_;
     String value_str_;
+    bool dirty_;  // set when a retained param is modified; cleared on backupRamSync (talk 'w')
 };
 
 

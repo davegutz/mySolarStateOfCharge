@@ -60,17 +60,17 @@ void sample_burst(Pins *myPins, Sensors *Sen)
 }
 
 // Harvest charge caused temperature change.   More charge becomes available as battery warms
-void harvest_temp_change(const double tb_f, BatteryMonitor *Mon, BatterySim *Sim, const float tb_rate, const float dt)
+void harvest_temp_change(const double Tb_f, BatteryMonitor *Mon, BatterySim *Sim, const float tb_rate, const float dt)
 {
 #ifdef DEBUG_INIT
-if ( sp.debug()==-1 ) Serial.printf("entry harvest_temp_change:  Delta_q %10.1f tb_f %5.1f delta_q_model %10.1f tb_s %5.1f\n",
-  sp.delta_q(), tb_f, sp.delta_q_model(), tb_f);
+if ( sp.debug()==-1 ) Serial.printf("entry harvest_temp_change:  Delta_q %10.1f Tb_f %5.1f delta_q_model %10.1f tb_s %5.1f\n",
+  sp.delta_q(), Tb_f, sp.delta_q_model(), Tb_f);
 #endif
   sp.put_Delta_q(sp.delta_q() - Mon->dqdt() * Mon->q_capacity() * tb_rate * dt);
   sp.put_delta_q_model(sp.delta_q_model() - Sim->dqdt() * Sim->q_capacity() * tb_rate * dt);
 #ifdef DEBUG_INIT
-if ( sp.debug()==-1 ) Serial.printf("exit harvest_temp_change:  Delta_q %10.1f tb_f %5.1f delta_q_model %10.1f tb_s %5.1f\n",
-  sp.delta_q(), tb_f, sp.delta_q_model(), tb_f);
+if ( sp.debug()==-1 ) Serial.printf("exit harvest_temp_change:  Delta_q %10.1f Tb_f %5.1f delta_q_model %10.1f tb_s %5.1f\n",
+  sp.delta_q(), Tb_f, sp.delta_q_model(), Tb_f);
 #endif
 }
 
@@ -125,9 +125,9 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
   #endif
 
   if ( cp.soft_sim_hold )  
-    Sen->Sim->apply_delta_q_t(Sen->Sim->delta_q(), Sen->Sim->tb_f());  // applies sp.delta_q and sp.T_state
+    Sen->Sim->apply_delta_q_t(Sen->Sim->delta_q(), Sen->Sim->Tb_f());  // applies sp.delta_q and sp.T_state
   else
-    Sen->Sim->apply_delta_q_t(Mon->delta_q(), Mon->tb_f());  // applies sp.delta_q and sp.T_state
+    Sen->Sim->apply_delta_q_t(Mon->delta_q(), Mon->Tb_f());  // applies sp.delta_q and sp.T_state
 
   #ifdef DEBUG_INIT
     if ( sp.debug()==-1 ){ Serial.printf("S.a_d_q_t: cp.soft_sim_hold %d:  ", cp.soft_sim_hold); debug_m1(Mon, Sen);}
