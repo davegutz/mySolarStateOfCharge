@@ -104,8 +104,8 @@ protected:
   double *sp_delta_q_;// Charge since saturated, C
   double tb_f_;        // Temperature, deg C
   double tb_f_rate_;   // Tb rate, deg C / s
-  double Tbx_f_;        // Temperature, deg C
-  double Tbx_f_rate_;   // Tb rate, deg C / s
+  double Tb_f_;        // Temperature, deg C
+  double Tb_f_rate_;   // Tb rate, deg C / s
   double time_neg_;   // Time spent accumulating delta_q_neg_, s
   double time_pos_;   // Time spent accumulating delta_q_pos_, s
   Chemistry chem_;    // Chemistry

@@ -32,12 +32,12 @@ String time_long_2_str(const time_t current_time, char *tempStr);
 struct Flt_st
 {
   uint64_t t_flt = 1ULL; // Timestamp ms since start of epoch
-  int16_t Tbx_hdwe_filt = 0;  // Battery bank temperature, hardware, C
+  int16_t Tb_hdwe_filt = 0;  // Battery bank temperature, hardware, C
   int16_t vb_hdwe_filt = 0;  // Battery single unit measured potential, hardware, V
   int16_t Vc_hdwe_sum = 0;  // Common voltage used Ib sensing, hardware, V
   int16_t ib_amp_hdwe_filt = 0;  // Battery single unit measured input current, amp, A
   int16_t ib_noa_hdwe_filt = 0;  // Battery single unit measured input current, no amp, A
-  int16_t Tbx_filt = 0;       // Battery bank temperature, filtered, C
+  int16_t Tb_filt = 0;       // Battery bank temperature, filtered, C
   int16_t vb_filt = 0;       // Battery single unit measured potential, filtered, V
   int16_t ib_filt = 0;       // Battery single unit measured input current, filtered, A
   int16_t soc = 0;      // Battery bank state of charge, free Coulomb counting algorithm, frac
@@ -73,12 +73,12 @@ public:
   void put_nominal();
 
   void put_t_flt(const uint64_t value) { t_flt = value; };
-  void put_Tbx_hdwe_filt(const int16_t value)         { Tbx_hdwe_filt = value; };
+  void put_Tb_hdwe_filt(const int16_t value)         { Tb_hdwe_filt = value; };
   void put_vb_hdwe_filt(const int16_t value)         { vb_hdwe_filt = value; };
   void put_Vc_hdwe_sum(const int16_t value)              { Vc_hdwe_sum = value; };
   void put_ib_amp_hdwe_filt(const int16_t value)     { ib_amp_hdwe_filt = value; };
   void put_ib_noa_hdwe_filt(const int16_t value)     { ib_noa_hdwe_filt = value; };
-  void put_Tb_filt(const int16_t value)              { Tbx_filt = value; };
+  void put_Tb_filt(const int16_t value)              { Tb_filt = value; };
   void put_vb_filt(const int16_t value)              { vb_filt = value; };
   void put_ib_filt(const int16_t value)              { ib_filt = value; };
   void put_soc(const int16_t value)             { soc = value; };

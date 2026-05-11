@@ -183,11 +183,11 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   uint64_t time_now, uint64_t millis, BatteryMonitor *Mon):
   AmpFilt(nullptr), dt_ib_(0ULL), dt_ib_hdwe_(0ULL), IbAmpRMS(nullptr), IbNoaRMS(nullptr),
   inst_millis_(millis), inst_time_(time_now), NoaFilt(nullptr), Prbn_Tb_(nullptr), Prbn_Vb_(nullptr), Prbn_Ib_amp_(nullptr), Prbn_Ib_noa_(nullptr),
-  reset_temp_(false), sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_Tbx_(0ULL), sample_time_Tbx_hdwe_(0UL), sample_time_vb_(0UL), sample_time_vb_hdwe_(0UL),
-  SelFiltCal(nullptr), TbxHdweFilt(nullptr), TbxModelFilt(nullptr), VbFilt(nullptr), VbRMS(nullptr), VcRMS(nullptr), Tbx_read_(nullptr), Vb_read_(nullptr), Tbx_raw_(0), Tbx_volt_(NOMINAL_TB), Vb_raw_(0), Vb_(NOMINAL_VB), Vb_f_(NOMINAL_VB), Vb_hdwe_(NOMINAL_VB),
+  reset_temp_(false), sample_time_ib_(0UL), sample_time_ib_hdwe_(0UL), sample_time_Tb_(0ULL), sample_time_Tb_hdwe_(0UL), sample_time_vb_(0UL), sample_time_vb_hdwe_(0UL),
+  SelFiltCal(nullptr), TbHdweFilt(nullptr), TbModelFilt(nullptr), VbFilt(nullptr), VbRMS(nullptr), VcRMS(nullptr), Tb_read_(nullptr), Vb_read_(nullptr), Tb_raw_(0), Tb_volt_(NOMINAL_TB), Vb_raw_(0), Vb_(NOMINAL_VB), Vb_f_(NOMINAL_VB), Vb_hdwe_(NOMINAL_VB),
   Vb_hdwe_f_(NOMINAL_VB), Vb_model_(NOMINAL_VB), Vb_volt_(NOMINAL_VB), Vc_(0.), Vc_hdwe_(0.), Vc_hdwe_sum_(0.),
-  Tbx_(NOMINAL_TB), Tbx_f_(NOMINAL_TB), Tbx_f_rate_(0.), Tbx_hdwe_(NOMINAL_TB), Tbx_hdwe_f_(NOMINAL_TB), Tbx_hdwe_f_dt_(0.), Tbx_hdwe_f_rate_(0.), Tbx_hdwe_f_rstate_(NOMINAL_TB), Tbx_hdwe_f_lstate_(NOMINAL_TB), Tbx_hdwe_f_tau_(0.),
-  Tbx_model_(NOMINAL_TB), Tbx_model_f_(NOMINAL_TB), Tbx_model_f_dt_(0.), Tbx_model_f_rate_(0.), Tbx_model_f_rstate_(NOMINAL_TB), Tbx_model_f_lstate_(NOMINAL_TB), Tbx_model_f_tau_(0.),
+  Tb_(NOMINAL_TB), Tb_f_(NOMINAL_TB), Tb_f_rate_(0.), Tb_hdwe_(NOMINAL_TB), Tb_hdwe_f_(NOMINAL_TB), Tb_hdwe_f_dt_(0.), Tb_hdwe_f_rate_(0.), Tb_hdwe_f_rstate_(NOMINAL_TB), Tb_hdwe_f_lstate_(NOMINAL_TB), Tb_hdwe_f_tau_(0.),
+  Tb_model_(NOMINAL_TB), Tb_model_f_(NOMINAL_TB), Tb_model_f_dt_(0.), Tb_model_f_rate_(0.), Tb_model_f_rstate_(NOMINAL_TB), Tb_model_f_lstate_(NOMINAL_TB), Tb_model_f_tau_(0.),
   Ib_(0.), Ib_f_(0.), Ib_amp_(0.), Ib_amp_hdwe_(0.), Ib_amp_hdwe_f_(0.), Ib_amp_hdwe_kf_(0.), Ib_amp_model_(0.), Ib_amp_rms_(0.),
   Ib_hdwe_f_(0.), Ib_hdwe_kf_(0.), Ib_hdwe_f_cal_(0.), Ib_noa_(0.), Ib_noa_hdwe_(0.), Ib_noa_hdwe_f_(0.), Ib_noa_hdwe_kf_(0.), Ib_noa_rms_(0.),
   Ib_noa_model_(0.), Ib_hdwe_(0.), Ib_hdwe_model_(0.), Ib_model_(0.), Ib_model_in_(0.),
@@ -224,11 +224,11 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   AmpFilt = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*ap.nS()*ap.nP(), NOM_UNIT_CAP*ap.nS()*ap.nP());
   NoaFilt = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*ap.nS()*ap.nP(), NOM_UNIT_CAP*ap.nS()*ap.nP());
   SelFiltCal = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*ap.nS()*ap.nP(), NOM_UNIT_CAP*ap.nS()*ap.nP());
-  TbxHdweFilt = new LagExp(double(READ_DELAY)/1000., ap.Tbx_filt(), -20.0, 150.);
-  TbxModelFilt = new LagExp(double(READ_DELAY)/1000., ap.Tbx_filt(), -20.0, 150.);
+  TbHdweFilt = new LagExp(double(READ_DELAY)/1000., ap.Tb_filt(), -20.0, 150.);
+  TbModelFilt = new LagExp(double(READ_DELAY)/1000., ap.Tb_filt(), -20.0, 150.);
   VbFilt = new LagExp(T, AMP_FILT_TAU, 0., NOMINAL_VB*2.5);
   Vb_read_ = new AnalogReadP2(pins->Vb_pin);
-  Tbx_read_ = new AnalogReadP2(pins->VTb_pin);
+  Tb_read_ = new AnalogReadP2(pins->VTb_pin);
   IbAmpRMS = new RecursiveRMSMonitorFP();
   IbNoaRMS = new RecursiveRMSMonitorFP();
   VbRMS = new RecursiveRMSMonitorFP();
@@ -324,7 +324,7 @@ void Sensors::ib_choose_hi_lo()
 // Pretty print
 void Sensors::pretty_print()
 {
-  Serial.printf(" Tbx_raw%d; cnt\n", Tbx_raw_);
+  Serial.printf(" Tb_raw%d; cnt\n", Tb_raw_);
   Serial.printf(" Vb_raw%d; cnt\n", Vb_raw_);
   Serial.printf(" Vb%8.4f; V\n", Vb_);
   Serial.printf(" Vb_hdwe%8.4f; V\n", Vb_hdwe_);
@@ -333,13 +333,13 @@ void Sensors::pretty_print()
   Serial.printf(" Vc%8.4f; V\n", Vc_);
   Serial.printf(" Vc_hdwe%8.4f; V\n", Vc_hdwe_);
   Serial.printf(" Vc_hdwe_sum%8.4f; V\n", Vc_hdwe_sum_);
-  Serial.printf(" Tbx%9.5f; C\n", Tbx_);
-  Serial.printf(" Tbx_f%9.5f; C\n", Tbx_f_);
-  Serial.printf(" Tbx_f_rate%11.8f; C/s\n", Tbx_f_rate_);
-  Serial.printf(" Tbx_hdwe%9.5f; C\n", Tbx_hdwe_);
-  Serial.printf(" Tbx_hdwe_f%9.5f; C\n", Tbx_hdwe_f_);
-  Serial.printf(" Tbx_model%9.5f; C\n", Tbx_model_);
-  Serial.printf(" Tbx_model_f%9.5f; C\n", Tbx_model_f_);
+  Serial.printf(" Tb%9.5f; C\n", Tb_);
+  Serial.printf(" Tb_f%9.5f; C\n", Tb_f_);
+  Serial.printf(" Tb_f_rate%11.8f; C/s\n", Tb_f_rate_);
+  Serial.printf(" Tb_hdwe%9.5f; C\n", Tb_hdwe_);
+  Serial.printf(" Tb_hdwe_f%9.5f; C\n", Tb_hdwe_f_);
+  Serial.printf(" Tb_model%9.5f; C\n", Tb_model_);
+  Serial.printf(" Tb_model_f%9.5f; C\n", Tb_model_f_);
 }
 
 // Make final assignemnts
@@ -359,35 +359,35 @@ void Sensors::select_volt_and_current_and_temp(BatteryMonitor *Mon)
   #endif
 
   // Final assignments
-  // Tbx
+  // Tb
   if ( sp.mod_tb() )
   {
-    Tbx_f_ = Tbx_model_f_;
-    Tbx_f_rate_ = Tbx_model_f_rate_;
-    if ( Flt->Tbx_fa() && !ap.fake_faults() )
+    Tb_f_ = Tb_model_f_;
+    Tb_f_rate_ = Tb_model_f_rate_;
+    if ( Flt->Tb_fa() && !ap.fake_faults() )
     {
-      Tbx_ = Tbx_model_;
-      sample_time_Tbx_ = Sim->sample_time();
+      Tb_ = Tb_model_;
+      sample_time_Tb_ = Sim->sample_time();
     }
     else
     {
-      Tbx_ = Tbx_model_;
-      sample_time_Tbx_ = Sim->sample_time();
+      Tb_ = Tb_model_;
+      sample_time_Tb_ = Sim->sample_time();
     }
   }
   else
   {
-    if ( Flt->Tbx_fa() && !ap.fake_faults() )
+    if ( Flt->Tb_fa() && !ap.fake_faults() )
     {
-      Tbx_ = NOMINAL_TB;
-      Tbx_f_ = NOMINAL_TB;
-      sample_time_Tbx_ = Sim->sample_time();
+      Tb_ = NOMINAL_TB;
+      Tb_f_ = NOMINAL_TB;
+      sample_time_Tb_ = Sim->sample_time();
     }
     else
     {
-      Tbx_ = Tbx_hdwe_;
-      Tbx_f_ = Tbx_hdwe_f_;
-      sample_time_Tbx_ = sample_time_Tbx_hdwe_;
+      Tb_ = Tb_hdwe_;
+      Tb_f_ = Tb_hdwe_f_;
+      sample_time_Tb_ = sample_time_Tb_hdwe_;
     }
   }
 
@@ -461,7 +461,7 @@ void Sensors::select_volt_and_current_and_temp(BatteryMonitor *Mon)
 #ifdef DEBUG_INIT
   void Sensors::select_print(Sensors *Sen, BatteryMonitor *Mon)  // vv==62
   {
-    Serial.printf("ib_ %7.3f                     vb_hdwe %7.3f                      Tb_hdwe %7.3f\n", ib_hdwe(), vb_hdwe(), Tbx_hdwe_);
+    Serial.printf("ib_ %7.3f                     vb_hdwe %7.3f                      Tb_hdwe %7.3f\n", ib_hdwe(), vb_hdwe(), Tb_hdwe_);
     Serial.printf("ib limits amp%7.3f noa %7.3f  diff %7.3f\n", ap.ib_amp_max(), ap.ib_noa_max(), Flt->ib_diff_thr());
     Serial.printf("ib_hdwe_?: %7.3f %7.3f ib_model_?: %7.3f %7.3f", ib_amp_hdwe(), ib_noa_hdwe(), ib_amp_model(), ib_noa_model());
     #ifdef HDWE_IB_HI_LO
@@ -472,7 +472,7 @@ void Sensors::select_volt_and_current_and_temp(BatteryMonitor *Mon)
     Serial.printf("ib_hdwe:     %7.3f     ib_hdwe_model: %7.3f  modeling=%d\n", ib_hdwe(), ib_hdwe_model(), sp.mod_ib());
     Serial.printf("               ib:  %7.3f\n", ib());
     Serial.printf("     ");
-    Serial.printf("ib_ %7.3f                     vb_hdwe %7.3f                      Tb_hdwe %7.3f\n", ib_hdwe(), vb_hdwe(), Tbx_hdwe_);
+    Serial.printf("ib_ %7.3f                     vb_hdwe %7.3f                      Tb_hdwe %7.3f\n", ib_hdwe(), vb_hdwe(), Tb_hdwe_);
     Serial.printf("ib limits amp%7.3f noa %7.3f  diff %7.3f\n", ap.ib_amp_max(), ap.ib_noa_max(), Flt->ib_diff_thr());
     Serial.printf("ib_hdwe_?: %7.3f %7.3f ib_model_?: %7.3f %7.3f", ib_amp_hdwe(), ib_noa_hdwe(), ib_amp_model(), ib_noa_model());
     Serial.printf("ib_hdwe:     %7.3f     ib_hdwe_model: %7.3f  modeling=%d\n", ib_hdwe(), ib_hdwe_model(), sp.mod_ib());
@@ -482,7 +482,7 @@ void Sensors::select_volt_and_current_and_temp(BatteryMonitor *Mon)
 #endif
 
 // Tb noise
-float Sensors::Tbx_noise()
+float Sensors::Tb_noise()
 {
   if ( ap.Tb_noise_amp()==0. ) return ( 0. );
   uint8_t raw = Prbn_Tb_->calculate();
@@ -594,7 +594,7 @@ void Sensors::shunt_select_initial(const bool reset)
 }
 
 // Load analog voltage
-void Sensors::Tbx_load(const uint16_t tb_pin, const bool reset)
+void Sensors::Tb_load(const uint16_t tb_pin, const bool reset)
 {
   float hdwe_add, mod_add;
   if ( !sp.mod_tb() )
@@ -604,69 +604,69 @@ void Sensors::Tbx_load(const uint16_t tb_pin, const bool reset)
   }
   else
   {
-    mod_add = ap.Tb_bias_model() + Tbx_noise();
+    mod_add = ap.Tb_bias_model() + Tb_noise();
     hdwe_add = 0.;
   }
 
-  float res = Tbx_volt_ * float(HDWE_RS_2WIRE) / (V3V3 - Tbx_volt_);
+  float res = Tb_volt_ * float(HDWE_RS_2WIRE) / (V3V3 - Tb_volt_);
   // Steinhart-Hart (see '2-wireRTD.ods')
   float lnres = log(res);
   if ( !sp.mod_tb_dscn() )
   {
     #if !defined(HDWE_BARE)
-      Tbx_raw_ = Tbx_read_-> analogReadDebounced(VRAW_BARE_DETECTED, reset, "Tbx");
-      Tbx_volt_ = float(Tbx_raw_)*VTB_CONV_GAIN;
-      Tbx_hdwe_ = ( 1. / max( HDWE_SHA_2WIRE + (HDWE_SHB_2WIRE + HDWE_SHC_2WIRE *lnres*lnres) * lnres, 0.000001 ) ) - 273.;
-      Tbx_hdwe_ += hdwe_add;  // Fault injection
+      Tb_raw_ = Tb_read_-> analogReadDebounced(VRAW_BARE_DETECTED, reset, "Tb");
+      Tb_volt_ = float(Tb_raw_)*VTB_CONV_GAIN;
+      Tb_hdwe_ = ( 1. / max( HDWE_SHA_2WIRE + (HDWE_SHB_2WIRE + HDWE_SHC_2WIRE *lnres*lnres) * lnres, 0.000001 ) ) - 273.;
+      Tb_hdwe_ += hdwe_add;  // Fault injection
     #else
-      Tbx_raw_ = 0.;
-      Tbx_volt_ = 0.;
-      Tbx_hdwe_ = 0.;
+      Tb_raw_ = 0.;
+      Tb_volt_ = 0.;
+      Tb_hdwe_ = 0.;
     #endif
-    Tbx_model_ = NOMINAL_TB;
+    Tb_model_ = NOMINAL_TB;
   }
   else
   {
-    Tbx_raw_ = 0;
-    Tbx_hdwe_ = NOMINAL_TB;
-    Tbx_model_ = NOMINAL_TB + mod_add;  // Fault injection
+    Tb_raw_ = 0;
+    Tb_hdwe_ = NOMINAL_TB;
+    Tb_model_ = NOMINAL_TB + mod_add;  // Fault injection
   }
   if ( sp.debug()==18 )
   {
-    Serial.printf("\nTbx_load: T_%7.3f sp.mod_tb() %2d,", T_, sp.mod_tb());
-    Serial.printf(" Tbx_raw_ %d Tbx_volt_ %7.3f res %7.3f lnres %7.3f hdwe_add %7.3f Tbx_hdwe_ %7.3f mod_add %7.3f Tbx_model_ %7.3f\n",
-      Tbx_raw_, Tbx_volt_, res, lnres, hdwe_add, Tbx_hdwe_, mod_add, Tbx_model_);
+    Serial.printf("\nTb_load: T_%7.3f sp.mod_tb() %2d,", T_, sp.mod_tb());
+    Serial.printf(" Tb_raw_ %d Tb_volt_ %7.3f res %7.3f lnres %7.3f hdwe_add %7.3f Tb_hdwe_ %7.3f mod_add %7.3f Tb_model_ %7.3f\n",
+      Tb_raw_, Tb_volt_, res, lnres, hdwe_add, Tb_hdwe_, mod_add, Tb_model_);
   }
-  Tbx_hdwe_f_ = TbxHdweFilt->calculate(Tbx_hdwe_, reset || Flt->Tbx_fa() || sp.mod_tb_dscn(), ap.Tbx_filt(), T_, T_RLIM, -T_RLIM);
-  Tbx_hdwe_f_dt_ = TbxHdweFilt->T();
-  Tbx_hdwe_f_tau_ = TbxHdweFilt->tau();
-  Tbx_hdwe_f_rate_ = TbxHdweFilt->rate();
-  Tbx_hdwe_f_rstate_ = TbxHdweFilt->rstate();
-  Tbx_hdwe_f_lstate_ = TbxHdweFilt->lstate();
-  Tbx_model_f_ = TbxModelFilt->calculate(Tbx_model_, reset || Flt->Tbx_fa(), ap.Tbx_filt(), T_, T_RLIM, -T_RLIM);
-  Tbx_model_f_dt_ = TbxModelFilt->T();
-  Tbx_model_f_tau_ = TbxModelFilt->tau();
-  Tbx_model_f_rate_ = TbxModelFilt->rate();
-  Tbx_model_f_rstate_ = TbxModelFilt->rstate();
-  Tbx_model_f_lstate_ = TbxModelFilt->lstate();
+  Tb_hdwe_f_ = TbHdweFilt->calculate(Tb_hdwe_, reset || Flt->Tb_fa() || sp.mod_tb_dscn(), ap.Tb_filt(), T_, T_RLIM, -T_RLIM);
+  Tb_hdwe_f_dt_ = TbHdweFilt->T();
+  Tb_hdwe_f_tau_ = TbHdweFilt->tau();
+  Tb_hdwe_f_rate_ = TbHdweFilt->rate();
+  Tb_hdwe_f_rstate_ = TbHdweFilt->rstate();
+  Tb_hdwe_f_lstate_ = TbHdweFilt->lstate();
+  Tb_model_f_ = TbModelFilt->calculate(Tb_model_, reset || Flt->Tb_fa(), ap.Tb_filt(), T_, T_RLIM, -T_RLIM);
+  Tb_model_f_dt_ = TbModelFilt->T();
+  Tb_model_f_tau_ = TbModelFilt->tau();
+  Tb_model_f_rate_ = TbModelFilt->rate();
+  Tb_model_f_rstate_ = TbModelFilt->rstate();
+  Tb_model_f_lstate_ = TbModelFilt->lstate();
   if ( sp.debug()==18 )
   {
-    Serial.printf("\nTbx_load: T_%7.3f", T_);
-    Tbx_print();
+    Serial.printf("\nTb_load: T_%7.3f", T_);
+    Tb_print();
     Serial.printf("\n");
   }
-  sample_time_Tbx_hdwe_ = millis();
+  sample_time_Tb_hdwe_ = millis();
 }
 
 // Print analog voltage
-void Sensors::Tbx_print()
+void Sensors::Tb_print()
 {
-  Serial.printf("tb_dscn%2d reset%2d stime%7.3f T%7.3f tb_dscn%2d Tbx_raw%4d sp.Tb_bias_hdwe%7.3f Tbx_hdwe%7.3f Tbx_hdwe_f%7.3f Tbx_hdwe_f_dt%7.3f Tbx_hdwe_f_rate%7.3f Tbx_hdwe_f_rstate%7.3f Tbx_hdwe_f_lstate%7.3f tbx_flt%2d tbx_fa%2d\n\n",
-    sp.mod_tb_dscn(), reset_, float(sample_time_Tbx_hdwe_)/1000.f, T_, sp.mod_tb_dscn(), Tbx_raw_, sp.Tb_bias_hdwe(), Tbx_hdwe_, Tbx_hdwe_f_, Tbx_hdwe_f_dt_, Tbx_hdwe_f_rate_, Tbx_hdwe_f_rstate_,
-    Tbx_hdwe_f_lstate_, Flt->Tbx_flt(), Flt->Tbx_fa());
-  Serial.printf("reset%2d stime%7.3f T%7.3f tb_dscn%2d            ap.Tb_bias_model%7.3f Tbx_model%7.3f Tbx_model_f%7.3f Tbx_model_f_dt%7.3f Tbx_model_f_rate%7.3f Tbx_model_f_rstate%7.3f Tbx_model_f_lstate%7.3f tbx_flt%2d tbx_fa%2d\n\n",
-    reset_, float(sample_time_Tbx_hdwe_)/1000.f, T_, sp.mod_tb_dscn(), ap.Tb_bias_model(), Tbx_model_, Tbx_model_f_, Tbx_model_f_dt_, Tbx_model_f_rate_, Tbx_model_f_rstate_,
-    Tbx_model_f_lstate_, Flt->Tbx_flt(), Flt->Tbx_fa());
+  Serial.printf("tb_dscn%2d reset%2d stime%7.3f T%7.3f tb_dscn%2d Tb_raw%4d sp.Tb_bias_hdwe%7.3f Tb_hdwe%7.3f Tb_hdwe_f%7.3f Tb_hdwe_f_dt%7.3f Tb_hdwe_f_rate%7.3f Tb_hdwe_f_rstate%7.3f Tb_hdwe_f_lstate%7.3f tb_flt%2d tb_fa%2d\n\n",
+    sp.mod_tb_dscn(), reset_, float(sample_time_Tb_hdwe_)/1000.f, T_, sp.mod_tb_dscn(), Tb_raw_, sp.Tb_bias_hdwe(), Tb_hdwe_, Tb_hdwe_f_, Tb_hdwe_f_dt_, Tb_hdwe_f_rate_, Tb_hdwe_f_rstate_,
+    Tb_hdwe_f_lstate_, Flt->Tb_flt(), Flt->Tb_fa());
+  Serial.printf("reset%2d stime%7.3f T%7.3f tb_dscn%2d            ap.Tb_bias_model%7.3f Tb_model%7.3f Tb_model_f%7.3f Tb_model_f_dt%7.3f Tb_model_f_rate%7.3f Tb_model_f_rstate%7.3f Tb_model_f_lstate%7.3f tb_flt%2d tb_fa%2d\n\n",
+    reset_, float(sample_time_Tb_hdwe_)/1000.f, T_, sp.mod_tb_dscn(), ap.Tb_bias_model(), Tb_model_, Tb_model_f_, Tb_model_f_dt_, Tb_model_f_rate_, Tb_model_f_rstate_,
+    Tb_model_f_lstate_, Flt->Tb_flt(), Flt->Tb_fa());
 }
 
 // Load analog voltage

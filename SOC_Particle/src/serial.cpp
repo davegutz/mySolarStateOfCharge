@@ -214,7 +214,7 @@ void EKF_1x1::print_ekf_serial(BatteryMonitor *Mon)
     eTime, dt_ekf_, Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_);
 
   Serial.printf("%11.9g,%10.7g,%11.9g,%10.7g,%10.7g,%10.7g,%d,%11.8f,%11.9f,",
-    x_prior_, P_prior_, x_post_, P_post_, hx_, H_, freeze_, Tbx_f_for_hx_, x_for_hx_);
+    x_prior_, P_prior_, x_post_, P_post_, hx_, H_, freeze_, Tb_f_for_hx_, x_for_hx_);
 
   Serial.printf("%9.6f,%9.6f,%9.6f,%9.6f,",
     Mon->vocStatFilt_T(), Mon->vocStatFilt_tau(),
@@ -254,7 +254,7 @@ void print_rapid_header(void)
 {
   Serial.printf ("unit_rap, hm, cTime, dt, reset, reset_temp, soft_reset, soft_reset_sim, reset_all_faults, ekf_reset, kf_reset, init_mon, init_sim,   ");
   Serial.printf("chm, qcrs, qcap, sat, saturated, sel, mod, bmso,  ");
-  Serial.printf("Tbx, Tb_f, ");
+  Serial.printf("Tb, Tb_f, ");
   Serial.printf("vb, ib, ib_dyn, dv_hys,   ");
   Serial.printf("ib_charge, voc_soc, ib_dyn_r, ib_dyn_T, ib_dyn_rstate, ib_dyn_lstate,    ");
   Serial.printf("vsat, dv_dyn, voc_stat, voc_ekf, y_ekf,    ");
@@ -275,7 +275,7 @@ void print_rapid_serial(const bool reset, Publish *pubList, Sensors *Sen, Batter
   Serial.printf("%s", pr.buff);
 
   sprintf(pr.buff,  "%11.8f,%11.8f, ", \
-    Sen->Tbx(), Sen->Tbx_f());
+    Sen->Tb(), Sen->Tb_f());
   Serial.printf("%s", pr.buff);
 
   sprintf(pr.buff,  "%11.7f,%11.7f,%11.7f,%11.7f,   %11.7f,%11.7f,%11.7f,%11.7f,%11.7f,%11.7f,", \
@@ -358,7 +358,7 @@ void print_signal_sel_header(void)
   Serial.printf("unit_s, c_time_sel, dt_sel, reset, resaf, user_sel, cc_dif, ib_amp_hdwe, ib_noa_hdwe, ib_amp_model, ib_noa_model, ib_model, kfres, vovcm, vovcn, ib_amp_hdwe_kf, ib_noa_hdwe_kf, ib_diff, ib_diff_f, ");
   Serial.printf("  vc_sum, voc_soc, e_wrap, e_wrap_filt, ib_dyn_m, dv_dyn_m, e_wrap_m, e_wrap_m_reset, e_wrap_m_filt, e_wrap_m_trim, ib_dyn_n, dv_dyn_n, e_wrap_n, e_wrap_n_filt, e_wrap_n_trim, ");
   Serial.printf("  ib_sel_stat, ib_choice, vc_h,ib_h, ib_s, mib,ib, vb_sel, vb_hdwe, vb_s, mvb,vb,  mtb, ");
-  Serial.printf("  ib_rate, ib_quiet, ib_really_quiet, tbx_sel, ccd_thr, ewmhi_thr, ewmlo_thr, ewnhi_thr, ewnlo_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf,y_ekf_f,ib_dec, ");
+  Serial.printf("  ib_rate, ib_quiet, ib_really_quiet, tb_sel, ccd_thr, ewmhi_thr, ewmlo_thr, ewnhi_thr, ewnlo_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf,y_ekf_f,ib_dec, ");
   Serial.printf("  ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rstate_m, ib_dyn_lstate_m, ");
   Serial.printf("  ib_dyn_T_n, ib_dyn_tau_n, ib_dyn_rstate_n, ib_dyn_lstate_n, ");
   Serial.printf("  ib_wrp_T_n, ib_wrp_tau_n, ib_wrp_rate_n, ib_wrp_state_n, disable_amp_fault, ");
@@ -397,7 +397,7 @@ void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%10.6f, %10.6f, %d, %d, %9.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%d,%d,%8.6f,%8.6f,%d,",
-        Sen->Flt->ib_rate(), Sen->Flt->ib_quiet(), Sen->Flt->ib_really_quiet(), Sen->Flt->tbx_sel_status(),
+        Sen->Flt->ib_rate(), Sen->Flt->ib_quiet(), Sen->Flt->ib_really_quiet(), Sen->Flt->tb_sel_status(),
         Sen->Flt->cc_diff_thr(), Sen->Flt->LoopIbAmp->ewhi_thr(), Sen->Flt->LoopIbAmp->ewlo_thr(), Sen->Flt->LoopIbNoa->ewhi_thr(),
         Sen->Flt->LoopIbNoa->ewlo_thr(), Sen->Flt->ib_diff_thr(), Sen->Flt->ib_quiet_thr(), Sen->Flt->preserving(),
         ap.fake_faults(), Mon->y_ekf(), Mon->y_ekf_f(), Sen->Flt->ib_decision());
@@ -440,13 +440,13 @@ void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f, ",
-      Sen->Tbx_f_rate(), Sen->Tbx_hdwe(), Sen->Tbx_hdwe_f(), Sen->Tbx_hdwe_f_rate(),
-      Sen->Tbx_hdwe_f_rstate(), Sen->Tbx_hdwe_f_lstate(), Sen->Tbx_hdwe_f_dt(), Sen->Tbx_hdwe_f_tau());
+      Sen->Tb_f_rate(), Sen->Tb_hdwe(), Sen->Tb_hdwe_f(), Sen->Tb_hdwe_f_rate(),
+      Sen->Tb_hdwe_f_rstate(), Sen->Tb_hdwe_f_lstate(), Sen->Tb_hdwe_f_dt(), Sen->Tb_hdwe_f_tau());
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f,%11.8f, ",
-      Sen->Tbx_model(), Sen->Tbx_model_f(), Sen->Tbx_model_f_rate(),
-      Sen->Tbx_model_f_rstate(), Sen->Tbx_model_f_lstate(), Sen->Tbx_model_f_dt(), Sen->Tbx_model_f_tau());
+      Sen->Tb_model(), Sen->Tb_model_f(), Sen->Tb_model_f_rate(),
+      Sen->Tb_model_f_rstate(), Sen->Tb_model_f_lstate(), Sen->Tb_model_f_dt(), Sen->Tb_model_f_tau());
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%ld, %ld, %ld,", Sen->Flt->fltw(), Sen->Flt->falw(), cp.disp_word);
@@ -472,7 +472,7 @@ void print_sim_serial(const bool initializing_all, const bool reset_temp, Sensor
   if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)
   {
     sprintf(pr.buff, "unit_sim, %13.4f, %8.4f, %d, %10.4f, %d, %11.8f, %11.8f, %11.8f, %7.6f,%7.6f, ",
-        Sim->cTime(), Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->Tbx(), Sim->Tbx_f(), Sim->tb_f(), Sim->vsat(), Sim->voc_stat());
+        Sim->cTime(), Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->Tb(), Sim->Tb_f(), Sim->tb_f(), Sim->vsat(), Sim->voc_stat());
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%7.6f,%8.6f, %7.6f,%7.6f,%7.6f,%7.6f,%7.6f,%7.6f, ",

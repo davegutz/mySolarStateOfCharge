@@ -90,7 +90,7 @@ def Tb_from_raw_or_selected(use_raw, mr):
             Tb_ = mr.Tb_hdwe
             Tb_f_ = mr.Tb_hdwe_f
     else:
-        Tb_ = mr.Tbx
+        Tb_ = mr.Tb
         Tb_f_ = mr.Tb_f
 
     return Tb_, Tb_f_
@@ -127,8 +127,8 @@ def replicate(OPT: UserOptions):
     # vb
     vb = vb_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_run)
 
-    # Tbx
-    Tbx, Tb_f = Tb_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_run)
+    # Tb
+    Tb, Tb_f = Tb_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_run)
 
     # chem
     chm_m, chm_s = chm_from_mon_or_sim(OPT.mon_run, OPT.sim_run)

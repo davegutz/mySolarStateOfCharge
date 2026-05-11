@@ -430,7 +430,7 @@ def print_soc_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
           "{:12.4f}".format(SN.mon_run.delta_q[G.i]), "{:11.4f}".format(mon.delta_q),
           "{:12.1f}".format(SN.mon_run.qcrs[G.i]), "{:9.1f}".format(mon.q_cap_rated_scaled),
           "{:12.1f}".format(SN.mon_run.q_capacity[G.i]), "{:9.1f}".format(mon.q_capacity),
-          "{:14.7f}".format(SN.mon_run.Tbx[i_temp]), "{:10.7f}".format(mon.Tb),
+          "{:14.7f}".format(SN.mon_run.Tb[i_temp]), "{:10.7f}".format(mon.Tb),
           "{:12.7f}".format(SN.mon_run.Tb_f_rate[i_temp]), "{:10.7f}".format(mon.Tb_f_rate),
          )
     print(Colors.reset, end='')
@@ -582,7 +582,7 @@ def print_temp_RunSim(SN, i_temp, t, mon, sim, calc_temp, i_ekf, calc_ekf):
           "{:7d}".format(mon.reset_ekf), "{:4d}".format(i_ekf), "{:4d}".format(calc_ekf),
           "{:13.7f}".format(SN.mon_run.Tb_hdwe[G.i]), "{:11.7f}".format(mon.Tb_hdwe),
           "{:8d}".format(bool(SN.mon_run.Tb_fa[G.i])), "{:4d}".format(mon.Tb_fa),
-          "{:14.7f}".format(SN.mon_run.Tbx[G.i]), "{:11.7f}".format(mon.Tb),
+          "{:14.7f}".format(SN.mon_run.Tb[G.i]), "{:11.7f}".format(mon.Tb),
           "{:14.7f}".format(SN.mon_run.Tb_hdwe_f[G.i]), "{:11.7f}".format(mon.Tb_hdwe_f),
           "{:14.7f}".format(SN.mon_run.Tb_f[G.i]), "{:11.7f}".format(mon.Tb_f),
           "{:14.7f}".format(SN.mon_run.Tb_model[G.i]), "{:11.7f}".format(mon.Tb_model),
@@ -912,7 +912,7 @@ def save_fault_coverage(mon_run, csv_file, unit_key):
                 'wrap_lo_n_flt', 'wrap_m_and_n_flt', 'red_loss', 'wrap_hi_fa', 'wrap_lo_fa', 'wv_fa', 'vc_fa',
                 'wrap_hi_m_fa', 'wrap_lo_m_fa', 'wrap_hi_n_fa', 'wrap_lo_n_fa', 'wrap_m_and_n_fa', 'ib_sel',
                 'ib_noa_bare_flt', 'ib_amp_bare_flt', 'ib_dscn_flt', 'ib_dscn_fa', 'ib_noa_flt', 'ib_noa_fa',
-                'ib_amp_flt', 'ib_amp_fa', 'vb_flt', 'vb_fa_lt', 'tb_flt', 'tb_fa', 'bms_off', 'sat', 'red_loss']
+                'ib_amp_flt', 'ib_amp_fa', 'vb_flt', 'vb_fa_lt', 'Tb_flt', 'Tb_fa', 'bms_off', 'sat', 'red_loss']
     default_header_str = ''
     import numpy as np
     m = 0

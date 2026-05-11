@@ -328,7 +328,7 @@ void loop()
     monitor(reset, reset_temp, reset_ekf, now, Is_sat_delay, Mon, Sen);
 
     // Re-init Coulomb Counter to EKF if it is different than EKF or if never saturated
-    Mon->regauge(Sen->Tbx_f());
+    Mon->regauge(Sen->Tb_f());
 
     // Empty battery
     if ( sp.modeling() && reset && Sen->Sim->q()<=0. ) Sen->Ib(0.);

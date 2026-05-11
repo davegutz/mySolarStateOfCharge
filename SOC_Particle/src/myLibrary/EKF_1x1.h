@@ -36,7 +36,7 @@ public:
   void predict_ekf(const double u, const bool freeze);
   virtual void pretty_print(void);
   void print_ekf_serial(BatteryMonitor *Mon);
-  double Tb_f_for_hx() { return ( Tbx_f_for_hx_); };
+  double Tb_f_for_hx() { return ( Tb_f_for_hx_); };
   void update_ekf(const double z, double x_min, double x_max);
   double x() { return ( x_ ); };
   double x_f_for_hx() { return ( x_for_hx_); };
@@ -64,7 +64,7 @@ protected:
   bool freeze_;  // Command to freeze x_ and P_
   uint64_t now_ekf_;  // Time value extracted from sensors, ms
   double dt_ekf_;   // Update time for EKF major frame
-  double Tbx_f_for_hx_;  // Tb_f used for the hx_ calculation, C
+  double Tb_f_for_hx_;  // Tb_f used for the hx_ calculation, C
   double x_for_hx_;     // soc used for the hx_ calculation, scalar
   /*
     Implement this function for your EKF model.

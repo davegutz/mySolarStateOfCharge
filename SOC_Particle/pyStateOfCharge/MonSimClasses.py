@@ -92,8 +92,8 @@ class Sensors:
             else:
                 self.mod_tb = np.copy(self.mon_run.mod_data)
             self.Tb0 = self.mon_run.Tb_f[0]
-            self.Tb0_s = self.mon_run.Tbx[0]
-            self.Tb = self.mon_run.Tbx[0]
+            self.Tb0_s = self.mon_run.Tb[0]
+            self.Tb = self.mon_run.Tb[0]
             self.Tb_f = self.mon_run.Tb_f[0]
             self.lut_dTb = None
             self.dTb = 0.
@@ -103,11 +103,11 @@ class Sensors:
                 self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb[0, :]), np.array(OPT.add_Tb[1, :]))
                 self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
             self.Tb_f_rate = self.mon_run.Tb_f_rate[0]
-            self.Tb_past = self.mon_run.Tbx[0] + self.dTb
+            self.Tb_past = self.mon_run.Tb[0] + self.dTb
             self.Tb_f_past = self.mon_run.Tb_f[0] + self.dTb
             self.Tb_f_rate_past = self.mon_run.Tb_f_rate[0]
-            self.TbxSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
-            self.TbxModelFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
+            self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
+            self.TbModelFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
             self.LoopAmp = SensorLooparound(self.mon_run.ib_amp_hdwe, self.mon_run.ib_dyn_m, self.mon_run.e_wrap_m_trim,
                                             self.mon_run.e_wrap_m_filt)
             self.LoopNoa = SensorLooparound(self.mon_run.ib_noa_hdwe, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_n_trim,
@@ -161,7 +161,7 @@ class Sensors:
                 self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb[0, :]), np.array(OPT.add_Tb[1, :]))
                 self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
             self.Tb_f = self.mon_run.Tb_f
-            self.Tb_init = self.mon_run.Tbx[0] + self.dTb
+            self.Tb_init = self.mon_run.Tb[0] + self.dTb
             self.Tb_f_init = self.mon_run.Tb_f[0] + self.dTb
             self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
             self.ib_init = self.mon_run.ib[0]
@@ -328,7 +328,7 @@ class Sensors:
         mon.dt_temp = mon.dt
         if OPT.run_type == 'RunSim':
             if bool(self.mod_tb[i]):
-                mon.Tb = OPT.mon_run.Tbx[i]
+                mon.Tb = OPT.mon_run.Tb[i]
             else:
                 mon.Tb = mon.Tb_hdwe  # past value
             sim.Tb = mon.Tb
@@ -369,8 +369,8 @@ class Sensors:
                 mon.Tb = mon.Tb_model
                 mon.Tb_f = mon.Tb_model_f
                 mon.Tb_f_rate = mon.Tb_model_f_rate
-            mon.Tb_rstate = self.TbxModelFilt.rstate
-            mon.Tb_state = self.TbxModelFilt.state
+            mon.Tb_rstate = self.TbModelFilt.rstate
+            mon.Tb_state = self.TbModelFilt.state
         else:
             if mon.Tb_fa:
                 mon.Tb = Battery.NOMINAL_TB
@@ -380,8 +380,8 @@ class Sensors:
                 mon.Tb = mon.Tb_hdwe
                 mon.Tb_f = mon.Tb_hdwe_f
                 mon.Tb_f_rate = mon.Tb_hdwe_f_rate
-            mon.Tb_rstate = self.TbxSenseFilt.rstate
-            mon.Tb_state = self.TbxSenseFilt.state
+            mon.Tb_rstate = self.TbSenseFilt.rstate
+            mon.Tb_state = self.TbSenseFilt.state
         # Final assignments
         if not mon.reset_temp:
             mon.Tb = self.Tb_past
@@ -390,36 +390,36 @@ class Sensors:
     def temp_load_and_filter(self, mon_run, mon, Battery_, i):
         if hasattr(mon_run, 'Tb_hdwe_f'):
             mon.Tb_hdwe_f = \
-                self.TbxSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_run.Tb_hdwe_f[i], mon.reset or mon.Tb_fa,
+                self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_run.Tb_hdwe_f[i], mon.reset or mon.Tb_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
         else:
             mon.Tb_hdwe_f = \
-                self.TbxSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon.Tb_hdwe, mon.reset or mon.Tb_fa,
+                self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon.Tb_hdwe, mon.reset or mon.Tb_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
-        mon.Tb_hdwe_f_rate = self.TbxSenseFilt.rate
-        mon.Tb_hdwe_f_dt = self.TbxSenseFilt.dt
-        mon.Tb_hdwe_f_tau = self.TbxSenseFilt.tau
-        mon.Tb_hdwe_f_rstate = self.TbxSenseFilt.rstate
-        mon.Tb_hdwe_f_lstate = self.TbxSenseFilt.state
+        mon.Tb_hdwe_f_rate = self.TbSenseFilt.rate
+        mon.Tb_hdwe_f_dt = self.TbSenseFilt.dt
+        mon.Tb_hdwe_f_tau = self.TbSenseFilt.tau
+        mon.Tb_hdwe_f_rstate = self.TbSenseFilt.rstate
+        mon.Tb_hdwe_f_lstate = self.TbSenseFilt.state
 
         if hasattr(mon_run, 'Tb_model_f'):
             mon.Tb_model_f = self.Tb_model_f_fut
             mon.Tb_model_f_rate = self.Tb_model_f_rate_fut
             self.Tb_model_f_fut = \
-                self.TbxModelFilt.calculate_tau_seeded(mon.Tb_model, mon_run.Tb_model_f[i], mon.reset or mon.Tb_fa,
+                self.TbModelFilt.calculate_tau_seeded(mon.Tb_model, mon_run.Tb_model_f[i], mon.reset or mon.Tb_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
         else:
             mon.Tb_model_f = \
-                self.TbxModelFilt.calculate_tau_seeded(mon.Tb_model, mon.Tb_model, mon.reset or mon.Tb_fa,
+                self.TbModelFilt.calculate_tau_seeded(mon.Tb_model, mon.Tb_model, mon.reset or mon.Tb_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
                                                       rmin=-Battery_.T_RLIM)
-        mon.Tb_model_f_rate = self.TbxModelFilt.rate
-        mon.Tb_model_f_dt = self.TbxModelFilt.dt
-        mon.Tb_model_f_rstate = self.TbxModelFilt.rstate
-        mon.Tb_model_f_lstate = self.TbxModelFilt.state
+        mon.Tb_model_f_rate = self.TbModelFilt.rate
+        mon.Tb_model_f_dt = self.TbModelFilt.dt
+        mon.Tb_model_f_rstate = self.TbModelFilt.rstate
+        mon.Tb_model_f_lstate = self.TbModelFilt.state
 
     def update_ekf(self, i_ekf):
         self.z_init = self.z[i_ekf]

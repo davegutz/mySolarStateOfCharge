@@ -104,7 +104,7 @@ public:
     FloatV *ib_max_noa_p;
     FloatV *ib_min_noa_p;
     FloatV *voc_stat_filt_p;
-    FloatV *Tbx_filt_p;
+    FloatV *Tb_filt_p;
     FloatV *ekf_q_p;
     FloatV *ekf_r_p;
     FloatV *ekf_conv_p;
@@ -222,8 +222,8 @@ public:
     void talk_delay(const uint32_t input) { talk_delay_ = input; }
     float Tb_bias_model() { return Tb_bias_model_; }
     void Tb_bias_model(const float input) { Tb_bias_model_ = input; }
-    float Tbx_filt() { return Tbx_filt_; }
-    void Tbx_filt(const float input) { Tbx_filt_ = input; }
+    float Tb_filt() { return Tb_filt_; }
+    void Tb_filt(const float input) { Tb_filt_ = input; }
     float Tb_noise_amp() { return Tb_noise_amp_; }
     void Tb_noise_amp(const float input) { Tb_noise_amp_ = input; }
     float tb_stale_time_slr() { return tb_stale_time_slr_; }
@@ -306,7 +306,7 @@ protected:
     uint32_t tail_inj_; // Tail after end injection, ms
     uint32_t talk_delay_; // Talk frame, ms
     float Tb_bias_model_;        // Bias on Tb for model
-    float Tbx_filt_;              // TbxHdweFilt time constant, s
+    float Tb_filt_;              // TbHdweFilt time constant, s
     float Tb_noise_amp_;         // Tb noise amplitude model only, deg C pk-pk
     float tb_stale_time_slr_;    // Scalar on persistences of Tb hardware stale check
     uint32_t temp_delay_; // Temp frame, ms

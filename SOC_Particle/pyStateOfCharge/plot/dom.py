@@ -256,9 +256,9 @@ def dom_4a(S:PlotOptions, fig_list=None, fig_files=None):
     plq(plt, S.mv, 'time', S.mv, 'soc', color='black', linestyle=':')
     plt.legend(loc=1)
     plt.subplot(313)
-    plq(plt, S.mr, 'time', S.mr, 'Tb_rap', color='red', linestyle='-', warn=not S.run_is_stdy)
+    plq(plt, S.mr, 'time', S.mr, 'Tb', color='red', linestyle='-', warn=not S.run_is_stdy)
     plq(plt, S.mr, 'time', S.mr, 'Tb_f', color='red', linestyle='-', warn=S.run_type=='HistHist')
-    plq(plt, S.mv, 'time', S.mv, 'Tb_rap', color='cyan', linestyle='--', warn=not S.ver_is_stdy)
+    plq(plt, S.mv, 'time', S.mv, 'Tb', color='cyan', linestyle='--', warn=not S.ver_is_stdy)
     plq(plt, S.mv, 'time', S.mv, 'Tb_f', color='cyan', linestyle='--', warn=not S.ver_is_stdy and not S.ver_is_run)
     plt.legend(loc=1)
     fig_file_name = S.filename + '_' + str(len(fig_list)) + ".png"

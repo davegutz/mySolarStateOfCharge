@@ -311,8 +311,8 @@ def main():  # Example usage.  ok on 20260217
     # Cut-pasted from GUI_TestSOC Run window
     data_file='/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/tLoFailModel_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
-    time_end = 9
-    plots = False
+    time_end = None
+    plots = True
     use_mon_soc_ = False
     verbose = False
     scale_batt = 1.0

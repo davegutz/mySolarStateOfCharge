@@ -166,7 +166,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.ekf_q_p->print_help();  // VQ
   ap.ekf_r_p->print_help();  // VR
   ap.voc_stat_filt_p->print_help();  // VS
-  ap.Tbx_filt_p->print_help();  // VT
+  ap.Tb_filt_p->print_help();  // VT
   sp.debug_p->print_help();  // vv
 
   sendTxBuf("  -<>: Negative - Arduino plot compatible\n", true, true);

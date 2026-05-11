@@ -90,18 +90,18 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     for i in range(len(d_ra.time_ux)):
         soc = d_ra.soc[i]
         voc_stat_f = d_ra.voc_stat_f[i]
-        Tb_f = d_ra.Tbx_f[i]
+        Tb_f = d_ra.Tb_f[i]
         ib_diff_ = d_ra.ib_amp_hdwe_f[i] - d_ra.ib_noa_hdwe_f[i]
         cc_dif_ = d_ra.soc[i] - d_ra.soc_ekf[i]
         ib_diff.append(ib_diff_)
         C_rate = d_ra.ib_f[i] / rated_batt_cap
-        voc_soc.append(mon.chemistry.lookup_voc(d_ra.soc[i], d_ra.Tbx_f[i]) + Dw)
+        voc_soc.append(mon.chemistry.lookup_voc(d_ra.soc[i], d_ra.Tb_f[i]) + Dw)
         BB = BatteryMonitor(OPT=None)
         cc_diff_thr_, ewhi_thr_, ewlo_thr_, ib_diff_thr_, ib_quiet_thr_ = \
             fault_thr_bb(Tb_f, soc, voc_soc[i], voc_stat_f, C_rate, BB, ap_ib_diff_slr=ap_ib_diff_slr,
                          ap_ib_quiet_slr=ap_ib_quiet_slr)
         ib_f_ = d_ra.ib_f[i]
-        tb_f_ = d_ra.Tbx_f[i]
+        tb_f_ = d_ra.Tb_f[i]
         vb_f_ = d_ra.vb_f[i]
         voc_f_ = d_ra.voc_f[i]
         ib_dyn_ = d_ra.ib_f[i]
@@ -125,9 +125,9 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
         ewlo_thr.append(ewlo_thr_)
         ib_diff_thr.append(ib_diff_thr_)
         ib_quiet_thr.append(ib_quiet_thr_)
-        soc_min.append((BB.chemistry.lut_min_soc.interp(d_ra.Tbx_f[i])))
+        soc_min.append((BB.chemistry.lut_min_soc.interp(d_ra.Tb_f[i])))
         ib_dyn.append(ib_dyn_)
-        vsat.append(mon.chemistry.nom_vsat + (d_ra.Tbx_f[i] - mon.chemistry.rated_temp) * mon.chemistry.dvoc_dt)
+        vsat.append(mon.chemistry.nom_vsat + (d_ra.Tb_f[i] - mon.chemistry.rated_temp) * mon.chemistry.dvoc_dt)
         time_sec.append(float(d_ra.time_ux[i] - time_sync))
         if i > 0:
             dt.append(float(d_ra.time_ux[i] - d_ra.time_ux[i - 1]))
@@ -487,8 +487,8 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plq(plt, hi, timestr, hi, 'ib_diff_fa', add=2, color='magenta', linestyle='--')
     plq(plt, hi, timestr, hi, 'vb_flt', color='blue', linestyle='-.')
     plq(plt, hi, timestr, hi, 'vb_fa_lt', color='black', linestyle=':')
-    plq(plt, hi, timestr, hi, 'tb_flt', color='red', linestyle='-')
-    plq(plt, hi, timestr, hi, 'tb_fa', color='cyan', linestyle='--')
+    plq(plt, hi, timestr, hi, 'Tb_flt', color='red', linestyle='-')
+    plq(plt, hi, timestr, hi, 'Tb_fa', color='cyan', linestyle='--')
     plq(plt, hi, timestr, hi, 'Tb_fa', color='cyan', linestyle='--')
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
@@ -748,7 +748,6 @@ def calc_fault(d_ra, d_mod):
     d_mod = rf.rec_append_fields(d_mod, 'ib_noa_fa', np.array(ib_noa_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_amp_fa', np.array(ib_amp_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'vb_fa_lt', np.array(vb_fa_lt, dtype=float))
-    d_mod = rf.rec_append_fields(d_mod, 'tb_fa', np.array(Tb_fa, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'Tb_fa', np.array(Tb_fa, dtype=float))
 
     try:
@@ -758,14 +757,14 @@ def calc_fault(d_ra, d_mod):
         red_loss = np.bool_(fltw & 2 ** 7)
         ib_dscn_flt = np.bool_(fltw & 2 ** 10)
         vb_flt = np.bool_(fltw & 2 ** 1)
-        tb_flt = np.bool_(fltw & 2 ** 0)
+        Tb_flt = np.bool_(fltw & 2 ** 0)
         d_mod = rf.rec_append_fields(d_mod, 'ib_diff_flt', np.array(ib_diff_flt, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'wrap_hi_flt', np.array(wrap_hi_flt, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'wrap_lo_flt', np.array(wrap_lo_flt, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'red_loss', np.array(red_loss, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'ib_dscn_flt', np.array(ib_dscn_flt, dtype=float))
         d_mod = rf.rec_append_fields(d_mod, 'vb_flt', np.array(vb_flt, dtype=float))
-        d_mod = rf.rec_append_fields(d_mod, 'tb_flt', np.array(tb_flt, dtype=float))
+        d_mod = rf.rec_append_fields(d_mod, 'Tb_flt', np.array(Tb_flt, dtype=float))
     except IOError:
         pass
 
@@ -820,25 +819,25 @@ def bandaid(h, chm_in=0):
 
 # Make an array useful for analysis (around temp) and add some metrics
 def filter_Tb(raw, temp_corr, mon, tb_band=5., rated_batt_cap=100.):
-    h = raw[abs(raw.Tbx_f - temp_corr) < tb_band]
+    h = raw[abs(raw.Tb_f - temp_corr) < tb_band]
 
-    saturated_ = np.copy(h.Tbx_f)
-    bms_off_ = np.copy(h.Tbx_f)
-    for i in range(len(h.Tbx_f)):
-        saturated_[i] = is_sat(h.Tbx_f[i], mon.chemistry.rated_temp, h.voc_f[i], h.soc[i], mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt,
+    saturated_ = np.copy(h.Tb_f)
+    bms_off_ = np.copy(h.Tb_f)
+    for i in range(len(h.Tb_f)):
+        saturated_[i] = is_sat(h.Tb_f[i], mon.chemistry.rated_temp, h.voc_f[i], h.soc[i], mon.chemistry.nom_vsat, mon.chemistry.dvoc_dt,
                          mon.chemistry.low_t, vsat_add=mon.sp_vsat_add)
-        bms_off_[i] = (h.Tbx_f[i] < mon.chemistry.low_t) or ((h.voc_stat_f[i] < 10.5) and (h.ib_f[i] < Battery.IB_MIN_UP))
+        bms_off_[i] = (h.Tb_f[i] < mon.chemistry.low_t) or ((h.voc_stat_f[i] < 10.5) and (h.ib_f[i] < Battery.IB_MIN_UP))
 
     # Correct for temp
-    q_cap = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, tb_f=h.Tbx_f,
+    q_cap = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, tb_f=h.Tb_f,
                                t_rated=mon.chemistry.rated_temp)
     dq = (h.soc - 1.) * q_cap
-    dq -= mon.chemistry.dqdt * q_cap * (temp_corr - h.Tbx_f)
+    dq -= mon.chemistry.dqdt * q_cap * (temp_corr - h.Tb_f)
     q_cap_r = calculate_capacity(q_cap_rated_scaled=rated_batt_cap * 3600., dqdt=mon.chemistry.dqdt, tb_f=temp_corr,
                                  t_rated=mon.chemistry.rated_temp)
     soc_r = 1. + dq / q_cap_r
     h = rf.rec_append_fields(h, 'soc_r', soc_r)
-    h.voc_stat_r = h.voc_stat_f - (h.Tbx_f - temp_corr) * mon.chemistry.dvoc_dt
+    h.voc_stat_r = h.voc_stat_f - (h.Tb_f - temp_corr) * mon.chemistry.dvoc_dt
 
     # delineate charging and discharging
     voc_stat_r_chg = np.copy(h.voc_stat_f)

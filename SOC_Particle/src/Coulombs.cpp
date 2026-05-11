@@ -43,7 +43,7 @@ Coulombs::Coulombs(double *sp_delta_q, const float q_cap_rated,
   : resetting_(false), d_delta_q_(0.), delta_q_abs_(0.), delta_q_inf_(0.), delta_q_neg_(0.), delta_q_pos_(0.), dt_(0.),
     q_(q_cap_rated), q_capacity_(q_cap_rated), q_cap_rated_(q_cap_rated), q_cap_rated_scaled_(q_cap_rated), q_inf_(0.), q_min_(0.),
     sat_(true), saturated_(false), soc_(1.), soc_ekf_min_(0.), soc_inf_(0.), soc_min_(0.), sp_delta_q_(sp_delta_q),
-    tb_f_(0.), tb_f_rate_(0.), Tbx_f_(0.), Tbx_f_rate_(0.), time_neg_(0.), time_pos_(0.), chem_()
+    tb_f_(0.), tb_f_rate_(0.), Tb_f_(0.), Tb_f_rate_(0.), time_neg_(0.), time_pos_(0.), chem_()
     {
       coul_eff_ = chem_.coul_eff*s_coul_eff;
       soc_ekf_min_ = chem_.soc_ekf_min;
@@ -82,7 +82,7 @@ void Coulombs::pretty_print()
   Serial.printf(" tb_f_%5.1f dg C\n", tb_f_);
   Serial.printf(" rated_t%5.1f dg C\n", chem_.rated_temp);
   Serial.printf(" tb_f_rate%9.5f dg C / s\n", tb_f_rate_);
-  Serial.printf(" tbx_f_rate%9.5f dg C / s\n", Tbx_f_rate_);
+  Serial.printf(" tb_f_rate%9.5f dg C / s\n", Tb_f_rate_);
   Serial.printf("Coulombs (mod_code=%d) ", mod_code());
   Serial.printf("Coulombs: silent DEPLOY\n");
   Serial.printf(" Chemistry::\n");
@@ -100,7 +100,7 @@ void Coulombs::pretty_print()
 void Coulombs::apply_cap_scale(const float scale)
 {
   q_cap_rated_scaled_ = scale * q_cap_rated_;
-  q_capacity_ = calculate_capacity(tb_f_);  // tb_f_ usually Tbx_f to reduce electrical noise effects
+  q_capacity_ = calculate_capacity(tb_f_);  // tb_f_ usually Tb_f to reduce electrical noise effects
   q_ = *sp_delta_q_ + q_capacity_; // preserve delta_q, deficit since last saturation (like real life)
   soc_ = q_ / q_capacity_;
   resetting_ = true;     // momentarily turn off saturation check
@@ -169,10 +169,10 @@ float Coulombs::count_coulombs(Sensors *Sen, const bool reset_temp, const float 
 {
     // Inputs
     dt_ = Sen->T();
-    tb_f_ = Sen->Tbx_f();
-    tb_f_rate_ = Sen->Tbx_f_rate();
-    Tbx_f_ = Sen->Tbx_f();
-    Tbx_f_rate_ = Sen->Tbx_f_rate();
+    tb_f_ = Sen->Tb_f();
+    tb_f_rate_ = Sen->Tb_f_rate();
+    Tb_f_ = Sen->Tb_f();
+    Tb_f_rate_ = Sen->Tb_f_rate();
     d_delta_q_ = charge_curr * dt_;
 
     // State change
@@ -265,11 +265,11 @@ float Coulombs::count_coulombs(Sensors *Sen, const bool reset_temp, const float 
     
     if ( sp.debug()==36 )
       sendTxBuf(String::format("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
-        charge_curr, dt_, -chem_.dqdt*q_capacity_*Tbx_f_rate_*dt_, coul_eff_, d_delta_q_, *sp_delta_q_, q_), true, true);
+        charge_curr, dt_, -chem_.dqdt*q_capacity_*Tb_f_rate_*dt_, coul_eff_, d_delta_q_, *sp_delta_q_, q_), true, true);
 
     if ( sp.debug()==-99 )
       sendTxBuf(String::format("sat, dt_, tb_f_, charge_curr, dq, dqt+, ddq, q, soc_min soc, %d, %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%12.1f,%10.7f,%10.7f,\n",
-        sat, dt_, tb_f_, charge_curr, charge_curr * dt_, chem_.dqdt*q_capacity_*Tbx_f_rate_*dt_, d_delta_q_, q_, soc_min_, soc_),
+        sat, dt_, tb_f_, charge_curr, charge_curr * dt_, chem_.dqdt*q_capacity_*Tb_f_rate_*dt_, d_delta_q_, q_, soc_min_, soc_),
         true, true);
 
     return ( soc_ );

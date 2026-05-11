@@ -101,7 +101,7 @@ struct ScaleBrk
 };
 
 // Fault word bits.   All faults heal
-#define TBX_FLT        0   // Momentary isolation of Tbx failure, T=faulted
+#define TBX_FLT        0   // Momentary isolation of Tb failure, T=faulted
 #define VB_FLT        1   // Momentary isolation of Vb failure, T=faulted
 #define IB_AMP_FLT    2   // Momentary isolation of Ib amp failure, T=faulted 
 #define IB_NOA_FLT    3   // Momentary isolation of Ib no amp failure, T=faulted 
@@ -122,7 +122,7 @@ struct ScaleBrk
 #define NUM_FLT       20  // Number of these
 
 // Fail word bits.   A couple don't latch because single sensor fail in dual sensor system
-#define TBX_FA         0   // Peristed, latched isolation of Tbx failure, heals because soft type, T=failed
+#define TBX_FA         0   // Peristed, latched isolation of Tb failure, heals because soft type, T=failed
 #define VB_FA_LT      1   // Peristed, latched isolation of Vb failure, latches because hard type, T=failed
 #define IB_AMP_FA     2   // Amp sensor selection memory, latches because hard type, T = amp failed
 #define IB_NOA_FA     3   // Noamp sensor selection memory, latches because hard type, T = no amp failed
@@ -327,11 +327,11 @@ public:
   void select_all_logic(Sensors *Sen, BatteryMonitor *Mon, const bool reset);
   void shunt_check(Sensors *Sen, BatteryMonitor *Mon, const bool reset);  // Range check Ib signals
   void shunt_select_initial(const bool reset);   // Choose between shunts for model
-  void Tbx_check(Sensors *Sen, const float _tb_min, const float _tb_max, const bool reset);  // Range check Tbx
-  bool Tbx_fa() { return failRead(TBX_FA); };
-  bool Tbx_flt() { return faultRead(TBX_FLT); };
-  int8_t tbx_sel_stat_past() { return tbx_sel_stat_last_; };
-  int8_t tbx_sel_status() { return tbx_sel_stat_; };
+  void Tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, const bool reset);  // Range check Tb
+  bool Tb_fa() { return failRead(TBX_FA); };
+  bool Tb_flt() { return faultRead(TBX_FLT); };
+  int8_t tb_sel_stat_past() { return tb_sel_stat_last_; };
+  int8_t tb_sel_status() { return tb_sel_stat_; };
   void vb_check(Sensors *Sen, BatteryMonitor *Mon, const float _vb_min, const float _vb_max, const bool reset);  // Range check Vb
   bool vb_clean() { return ( !vb_fail() ); };
   bool vb_fail() { return ( vb_fa_lt() || vb_sel_stat_==0 ); };
@@ -376,7 +376,7 @@ protected:
   TFDelay *QuietPer;        // Persistence ib quiet disconnect detection
   TFDelay *QuietPerFunc;    // Persistence ib quiet normal functional detection
   RateLagExp *QuietRate;    // Linear filter to calculate rate for quiet
-  TFDelay *TbxHardFail;      // Persistence Tbx hard fail
+  TFDelay *TbHardFail;      // Persistence Tb hard fail
   TFDelay *VbHardFail;      // Persistence vb hard fail
   TFDelay *VcHardFail;      // Persistence vc hard fail
   LagTustin *WrapErrFilt;   // Noise filter for voltage wrap
@@ -425,8 +425,8 @@ protected:
   uint8_t *sp_preserving_;  // Saving fault buffer.   Stopped recording.  T=preserve
   bool splrr_amp_;       // ib_amp soft fault preceeded by local rate or range, T=preserve
   bool splrr_noa_;       // ib_noa soft fault preceeded by local rate or range, T=preserve
-  int8_t tbx_sel_stat_;      // Memory of Tbx signal selection, 0=none, 1=sensor
-  int8_t tbx_sel_stat_last_; // past value
+  int8_t tb_sel_stat_;      // Memory of Tb signal selection, 0=none, 1=sensor
+  int8_t tb_sel_stat_last_; // past value
   int8_t vb_sel_stat_;      // Memory of Vb signal selection, 0=none, 1=sensor
   int8_t vb_sel_stat_last_; // past value
   float wrap_hi_amp_;       // Wrap high amplified, V
