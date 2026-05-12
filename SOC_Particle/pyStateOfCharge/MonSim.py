@@ -150,7 +150,7 @@ def replicate(OPT: UserOptions):
         apply_off_nominal_battery(Battery, OPT.mon_run.Battery_off_dict)
 
     # Instantiate sensors after above translation / over-write
-    SN = Sensors(OPT, run_type=OPT.run_type)
+    SN = Sensors(OPT, rp, run_type=OPT.run_type)
 
     # Battery sizing
     scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_batt, Battery.NOM_UNIT_CAP)

@@ -78,7 +78,7 @@ class SensorLooparound:
 class Sensors:
     """Collect various sense parameters to create proper delays in data feed and connections to model"""
 
-    def __init__(self, OPT, run_type=None):
+    def __init__(self, OPT, rp, run_type=None):
         self.run_type = run_type
         if self.run_type == 'HistSim':
             self.mon_run = OPT.mon_run.copy()
@@ -311,9 +311,9 @@ class Sensors:
             self.Tb_model_f_fut = self.mon_run.Tb_h_f
         if not hasattr(self.mon_run, 'Tb_model_f'):
             self.mon_run.Tb_model_f = self.mon_run.Tb_h_f
-        if not hasattr(self.mon_run, 'Tb_model_f_rate'):
-                self.mon_run.Tb_model_f_rate = 0.*self.mon_run.Tb_h_f.copy()
-                self.Tb_model_f_rate_fut = 0. * self.mon_run.Tb_h_f.copy()
+        # if not hasattr(self.mon_run, 'Tb_model_f_rate'):
+        #         self.mon_run.Tb_model_f_rate = 0.*self.mon_run.Tb_h_f.copy()
+        #         self.mon_run.Tb_model_f_rate = 0. * self.mon_run.Tb_h_f.copy()
         if not hasattr(self.mon_run, 'Tb_hdwe'):
             self.mon_run.Tb_hdwe = self.mon_run.Tb_h_f
         if not hasattr(self.mon_run, 'Tb_hdwe_f'):
@@ -327,6 +327,8 @@ class Sensors:
             self.sim_run.Tb_f_s = self.mon_run.Tb_f
         if hasattr(self.mon_run, 'mtb'):
             self.mtb = self.mon_run.mtb[0]
+        else:
+            self.mtb = rp.modeling_Tb
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -343,6 +345,7 @@ class Sensors:
     def calc_temp_pass_1(self, OPT, mon_, sim_, i, rp):
         mon = mon_
         sim = sim_
+        self.Tb_model_f_rate_fut = OPT.mon_run.Tb_model_f_rate_fut[i]
         if hasattr(OPT.mon_run, 'Tb_hdwe'):
             mon.Tb_hdwe = OPT.mon_run.Tb_hdwe[i]
         else:

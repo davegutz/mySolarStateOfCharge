@@ -147,6 +147,10 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     d_mod = rf.rec_append_fields(d_mod, 'voc_soc', np.array(voc_soc, dtype=float))
     if not hasattr(d_mod, 'soc_min'):
         d_mod = rf.rec_append_fields(d_mod, 'soc_min', np.array(soc_min, dtype=float))
+    Tb_model_f_rate = np.zeros(len(d_mod.time_ux))
+    d_mod = rf.rec_append_fields(d_mod, 'Tb_model_f_rate', Tb_model_f_rate)
+    Tb_model_f_rate_fut = np.zeros(len(d_mod.time_ux))
+    d_mod = rf.rec_append_fields(d_mod, 'Tb_model_f_rate_fut', Tb_model_f_rate_fut)
     d_mod = rf.rec_append_fields(d_mod, 'vsat', np.array(vsat, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_diff', np.array(ib_diff, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_dyn', np.array(ib_dyn, dtype=float))
