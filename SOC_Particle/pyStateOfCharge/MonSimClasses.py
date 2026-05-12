@@ -298,8 +298,35 @@ class Sensors:
         self.kf_v_n = 0.
         self.iscn = 0.
         self.iscn_f = 0.
-        self.Tb_model_f_past = self.sim_run.Tb_f_s[0]
-        self.mtb = self.mon_run.mtb[0]
+        if not hasattr(self.mon_run, 'Tb'):
+            self.mon_run.Tb = self.mon_run.Tb_h_f
+        if not hasattr(self.mon_run, 'Tb_f'):
+            self.mon_run.Tb_f = self.mon_run.Tb_h_f
+        if not hasattr(self.mon_run, 'Tb_f_rate'):
+            self.mon_run.Tb_f_rate = 0.*self.mon_run.Tb_h_f.copy()
+        if not hasattr(self.mon_run, 'Tb_model'):
+            self.mon_run.Tb_model = self.mon_run.Tb_h_f
+        if not hasattr(self.mon_run, 'Tb_model_f_fut'):
+            self.mon_run.Tb_model_f_fut = self.mon_run.Tb_h_f
+            self.Tb_model_f_fut = self.mon_run.Tb_h_f
+        if not hasattr(self.mon_run, 'Tb_model_f'):
+            self.mon_run.Tb_model_f = self.mon_run.Tb_h_f
+        if not hasattr(self.mon_run, 'Tb_model_f_rate'):
+                self.mon_run.Tb_model_f_rate = 0.*self.mon_run.Tb_h_f.copy()
+                self.Tb_model_f_rate_fut = 0. * self.mon_run.Tb_h_f.copy()
+        if not hasattr(self.mon_run, 'Tb_hdwe'):
+            self.mon_run.Tb_hdwe = self.mon_run.Tb_h_f
+        if not hasattr(self.mon_run, 'Tb_hdwe_f'):
+                self.mon_run.Tb_hdwe_f = self.mon_run.Tb_h_f
+        if not hasattr(self.mon_run, 'Tb_hdwe_f_rate'):
+                self.mon_run.Tb_hdwe_f_rate = 0.*self.mon_run.Tb_h_f.copy()
+        if hasattr(self.sim_run, 'Tb_f_s'):
+            self.Tb_model_f_past = self.sim_run.Tb_f_s[0]
+        else:
+            self.Tb_model_f_past = self.mon_run.Tb_f[0]
+            self.sim_run.Tb_f_s = self.mon_run.Tb_f
+        if hasattr(self.mon_run, 'mtb'):
+            self.mtb = self.mon_run.mtb[0]
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
@@ -352,7 +379,7 @@ class Sensors:
         return mon, sim
 
     def calc_temp_pass_2(self, mon_run, mon, Battery_, rp, i=None):
-        self.temp_load_and_filter(mon_run, mon, Battery_, i)
+        self.temp_load_and_filter(mon_run, mon, Battery_, rp, i)
         self.select_temp(mon_run, mon, Battery_, rp, i)
         self.assign_tb(mon.Tb, mon.Tb_f, mon.Tb_f_rate)
         return mon
@@ -366,6 +393,8 @@ class Sensors:
                 mon.Tb = Battery.NOMINAL_TB
                 mon.Tb_f = Battery.NOMINAL_TB
                 mon.Tb_f_rate = 0.
+            elif mon.Tb_flt:  # lgv
+                pass
             else:
                 mon.Tb = mon.Tb_model
                 mon.Tb_f = mon.Tb_model_f
@@ -388,7 +417,7 @@ class Sensors:
             mon.Tb = self.Tb_past
             mon.Tb_f_rate = mon.Tb_model_f_rate
 
-    def temp_load_and_filter(self, mon_run, mon, Battery_, i):
+    def temp_load_and_filter(self, mon_run, mon, Battery_, rp, i):
         if hasattr(mon_run, 'Tb_hdwe_f'):
             mon.Tb_hdwe_f = \
                 self.TbSenseFilt.calculate_tau_seeded(mon.Tb_hdwe, mon_run.Tb_hdwe_f[i], mon.reset or mon.Tb_fa,
@@ -406,13 +435,21 @@ class Sensors:
         mon.Tb_hdwe_f_lstate = self.TbSenseFilt.state
 
         if hasattr(mon_run, 'Tb_model_f'):
+            if rp.modeling_Tb:
+                mon.Tb_model_f = \
+                    self.TbModelFilt.calculate_tau_seeded(mon.Tb_model, mon_run.Tb_model_f[i], mon.reset or mon.Tb_fa,
+                                                          mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
+                                                          rmin=-Battery_.T_RLIM)
+            else:
+                mon.Tb_model_f = self.Tb_model_f_fut
+                mon.Tb_model_f_rate = self.Tb_model_f_rate_fut
+                self.Tb_model_f_fut = \
+                    self.TbModelFilt.calculate_tau_seeded(mon.Tb_model, mon_run.Tb_model_f[i], mon.reset or mon.Tb_fa,
+                                                          mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
+                                                          rmin=-Battery_.T_RLIM)
+        else:
             mon.Tb_model_f = self.Tb_model_f_fut
             mon.Tb_model_f_rate = self.Tb_model_f_rate_fut
-            self.Tb_model_f_fut = \
-                self.TbModelFilt.calculate_tau_seeded(mon.Tb_model, mon_run.Tb_model_f[i], mon.reset or mon.Tb_fa,
-                                                      mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,
-                                                      rmin=-Battery_.T_RLIM)
-        else:
             mon.Tb_model_f = \
                 self.TbModelFilt.calculate_tau_seeded(mon.Tb_model, mon.Tb_model, mon.reset or mon.Tb_fa,
                                                       mon.dt, Battery_.TB_FILT, rmax=Battery_.T_RLIM,

@@ -947,7 +947,7 @@ void Fault::Tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, con
   }
   if ( sp.mod_tb() )
   {
-    faultAssign( ((Sen->Tb_model()<=_tb_min) || (Sen->Tb_model_f()>=_tb_max)) &&
+    faultAssign( ((Sen->Tb_model()<=_tb_min) || (Sen->Tb_model()>=_tb_max)) &&
                  !ap.disab_tb_fa(), TB_FLT);
     failAssign( Tb_fa() || TbHardFail->calculate(Tb_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TB_FA);
   }
@@ -960,8 +960,8 @@ void Fault::Tb_check(Sensors *Sen, const float _tb_min, const float _tb_max, con
     faultAssign( (Sen->Tb_hdwe()<=_tb_min) || (Sen->Tb_hdwe()>=_tb_max), TB_FLT);
     failAssign( Tb_fa() || TbHardFail->calculate(Tb_flt(), TB_HARD_SET, TB_HARD_RES, Sen->T(), reset_loc), TB_FA);
   }
-  if ( sp.debug()==18 ) Serial.printf("Tb_check: mod_tb %d disab_tb_fa %d Sen->Tb_model() %7.3f Sen->Tb_model_f() %7.3f Sen->Tb_hdwe() %7.3f Sen->Tb_hdwe_f() %7.3f _tb_min%7.3f _tb_max%7.3f TB_FLT %d TB_FA %d\n",
-    sp.mod_tb(), ap.disab_tb_fa(), Sen->Tb_model(), Sen->Tb_model_f(), Sen->Tb_hdwe(), Sen->Tb_hdwe_f(), _tb_min, _tb_max, Tb_flt(), Tb_fa());
+  // if ( sp.debug()==18 ) Serial.printf("Tb_check: mod_tb %d disab_tb_fa %d Sen->Tb_model() %7.3f Sen->Tb_model_f() %7.3f Sen->Tb_hdwe() %7.3f Sen->Tb_hdwe_f() %7.3f _tb_min%7.3f _tb_max%7.3f TB_FLT %d TB_FA %d\n",
+  //   sp.mod_tb(), ap.disab_tb_fa(), Sen->Tb_model(), Sen->Tb_model_f(), Sen->Tb_hdwe(), Sen->Tb_hdwe_f(), _tb_min, _tb_max, Tb_flt(), Tb_fa());
 }
 
 // Check analog voltage.  Latches

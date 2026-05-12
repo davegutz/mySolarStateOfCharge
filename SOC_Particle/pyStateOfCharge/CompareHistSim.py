@@ -662,13 +662,13 @@ def main():  # Sample usage. OK on 20260217
     # Cut-pasted from GUI_TestSOC Run window
     # data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/truckHist_20260302.csv'
 
-    data_file = 'G:/My Drive/GitHubArchive/SOC_Particle/dataReduction/g20250612a/LongHist_20260430_soc4p2_hi_lo_bb.csv'
+    data_file = '/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/tLoFailModel_soc3p2_hi_lo_bb.csv'
     time_end = None
     plots = True
-    use_mon_csv = False
-    unit_key = 'g20250612a_soc4p2_hi_lo_bb'
+    use_mon_csv = True
+    unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     sync_time = None
-    dt_resample = 900
+    dt_resample = 10
     Tb_force = None
     request_history = None
     strict_overplot = True
@@ -676,7 +676,7 @@ def main():  # Sample usage. OK on 20260217
     fig_files = None
     fig_list = None
     show_killer_ = True
-    hardcopy = False
+    hardcopy = True
 
     compare_hist_sim(data_file=data_file, use_mon_csv=use_mon_csv, unit_key=unit_key, dt_resample=dt_resample,
                      plots=plots, Tb_force=Tb_force, request_history=request_history,

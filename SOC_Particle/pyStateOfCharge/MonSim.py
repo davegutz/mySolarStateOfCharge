@@ -90,7 +90,10 @@ def Tb_from_raw_or_selected(use_raw, mr):
             Tb_ = mr.Tb_hdwe
             Tb_f_ = mr.Tb_hdwe_f
     else:
-        Tb_ = mr.Tb
+        if hasattr(mr, 'Tb'):
+            Tb_ = mr.Tb
+        else:
+            Tb_ = mr.Tb_f
         Tb_f_ = mr.Tb_f
 
     return Tb_, Tb_f_

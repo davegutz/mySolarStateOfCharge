@@ -667,9 +667,9 @@ BatterySim::~BatterySim() {}
 float BatterySim::calculate(Sensors *Sen, const bool dc_dc_on, const bool reset)
 {
     // Inputs
-    Tb_f_ = Sen->Tb_model_f();
-    Tb_f_ = Sen->Tb_model_f();
-    bool tb_bad = (Sen->Flt->Tb_flt() || Sen->Flt->Tb_fa()) && !ap.fake_faults();
+    Tb_ = Sen->Tb();
+    Tb_f_ = Sen->Tb_f();
+
     ctime_ = Sen->cTime();
     dt_ = Sen->T();
     ib_in_ = Sen->Ib_model_in() / ap.nP();
@@ -700,7 +700,7 @@ float BatterySim::calculate(Sensors *Sen, const bool dc_dc_on, const bool reset)
     else
         voltage_low_ = voc_stat_ < chem_.vb_rising_sim;
     bms_charging_ = ib_in_ > IB_MIN_UP;
-    bms_off_ = ( Tb_f_ <= chem_.low_t && !tb_bad ) || (voltage_low_ && !sp.tweak_test());
+    bms_off_ = Tb_f_ <= chem_.low_t || (voltage_low_ && !sp.tweak_test());
     float ib_charge_fut = ib_in_;  // Pass along current to charge unless bms_off
     if ( bms_off_ && sp.mod_ib() && !bms_charging_)
         ib_charge_fut = 0.;
@@ -713,6 +713,7 @@ float BatterySim::calculate(Sensors *Sen, const bool dc_dc_on, const bool reset)
 
     vb_ = voc_ + dvdyn;
     voc_soc_ = voc_stat_;
+
 
     // Special cases override
     if ( bms_off_ )
@@ -831,13 +832,12 @@ float BatterySim::count_coulombs(Sensors *Sen, const bool reset_temp, BatteryMon
     if ( ib_charge_>0. ) d_delta_q_s_ *= coul_eff_;
 
     // Rate limit temperature.  When modeling, initialize to no change
-    Tb_f_ = Sen->Tb_model_f();
-    Tb_f_rate_ = Sen->Tb_f_rate();
-    Tb_f_ = Sen->Tb_model_f();
+    // TODO: cannot figure out why re-entering Tb stuff here.
+    Tb_ = Sen->Tb();
+    Tb_f_ = Sen->Tb_f();
     Tb_f_rate_ = Sen->Tb_f_rate();
 
     // Saturation and re-init.   Goal is to set q_capacity and hold it so remember last saturation status
-    // But if not modeling in real world, set to Monitor when Monitor saturated and reset_temp to EKF otherwise
     static bool reset_temp_past = reset_temp;   // needed because model called first in reset_temp path; need to pick up latest
     if ( initializing_all ) reset_temp_past = true;
     if ( !sp.mod_vb() )  // Real world init to track Monitor
