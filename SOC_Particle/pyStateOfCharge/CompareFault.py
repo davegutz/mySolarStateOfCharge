@@ -82,12 +82,14 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     ib_charge_f = []
     dv_dyn_f = []
     ib_dyn = []
+    Tb_model_f_fut = []
     bms_off_init = False
     bms_off = False
     rp = Retained()
     if time_sync is None:
         time_sync = d_ra.time_ux[0]
-    for i in range(len(d_ra.time_ux)):
+        n = len(d_ra.time_ux)
+    for i in range(n):
         soc = d_ra.soc[i]
         voc_stat_f = d_ra.voc_stat_f[i]
         Tb_f = d_ra.Tb_f[i]
@@ -95,6 +97,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
         cc_dif_ = d_ra.soc[i] - d_ra.soc_ekf[i]
         ib_diff.append(ib_diff_)
         C_rate = d_ra.ib_f[i] / rated_batt_cap
+        Tb_model_f_fut.append(d_ra.Tb_f[min(i+1,n-1)])
         voc_soc.append(mon.chemistry.lookup_voc(d_ra.soc[i], d_ra.Tb_f[i]) + Dw)
         BB = BatteryMonitor(OPT=None)
         cc_diff_thr_, ewhi_thr_, ewlo_thr_, ib_diff_thr_, ib_quiet_thr_ = \
@@ -141,6 +144,7 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     time_min = (d_ra.time_ux - time_sync)/60.
     time_day = (d_ra.time_ux - time_sync)/3600./24.
     d_mod = rf.rec_append_fields(d_ra, 'time_sec', np.array(time_sec, dtype=float))
+    d_mod = rf.rec_append_fields(d_mod, 'Tb_model_f_fut', np.array(time_sec, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'time', np.array(time_sec, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'time_min', np.array(time_min, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'time_day', np.array(time_day, dtype=float))
@@ -152,6 +156,9 @@ def add_stuff_f(d_ra, mon, ib_band=0.5, rated_batt_cap=100., Dw=0., time_sync=No
     Tb_model_f_rate_fut = np.zeros(len(d_mod.time_ux))
     d_mod = rf.rec_append_fields(d_mod, 'Tb_model_f_rate_fut', Tb_model_f_rate_fut)
     d_mod = rf.rec_append_fields(d_mod, 'vsat', np.array(vsat, dtype=float))
+    # Tb_model_f_fut = d_mod.Tb_h_f.copy()
+    # d_mod = rf.rec_append_fields(d_mod, 'Tb_model_f_fut', np.array(Tb_model_f_fut, dtype=float))
+    # d_mod = rf.rec_append_fields(d_mod, 'Tb_f', np.array(Tb_f, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_diff', np.array(ib_diff, dtype=float))
     d_mod = rf.rec_append_fields(d_mod, 'ib_dyn', np.array(ib_dyn, dtype=float))
     # d_mod = rf.rec_append_fields(d_mod, 'time_sec', np.array(time_sec, dtype=float))

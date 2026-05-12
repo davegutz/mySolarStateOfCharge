@@ -455,10 +455,10 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_charge = SN.ib_charge_init
             self.ib_charge_ekf = self.ib_charge
             self.vb = SN.vb_init
-            self.soc = SN.soc_init
+            self.soc = SN.mon_run.soc[0]
             self.reset = True
             self.sat = SN.sat_init
-            self.saturated = SN.saturated_init
+            self.saturated = SN.mon_run.saturated[0]
             self.reset_ekf = True
             self.init_soc_ekf(ref,  0, 0)
             self.voc_ekf = SN.hx_init
@@ -957,12 +957,10 @@ class BatteryMonitor(Battery, EKF1x1):
             if rp.modeling_ib or SN.run_type == 'HistSim':
                 self.ib_amp = ib_amp
                 self.ib_amp_pst = ib_amp_pst
-                ib_dyn_m_init = SN.LoopAmp.ib_dyn[G.i]
                 ibamp = self.ib_amp
             else:
                 self.ib_amp = ib_amp
                 self.ib_amp_pst = ib_amp_pst
-                ib_dyn_m_init = SN.LoopAmp.ib_dyn[G.i]
                 ibamp = self.ib_amp_pst
             self.ib_amp_hi = self.ib_amp >= Battery.HDWE_IB_HI_LO_AMP_HI
             self.ib_amp_lo = self.ib_amp <= Battery.HDWE_IB_HI_LO_AMP_LO
@@ -975,7 +973,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.e_wrap_m_reset = reset or self.disable_amp_fault
             self.LoopIbAmp.calculate(reset=self.e_wrap_m_reset, rp=rp, ib=ibamp, loop_gain=Battery.AMP_WRAP_TRIM_GAIN,
                                      dt=dt_local, ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_dyn_init=ib_dyn_m_init,
+                                     ib_dyn_init=SN.LoopAmp.ib_dyn[G.i],
                                      e_wrap_filt_init=SN.mon_run.e_wrap_m_filt[G.i],
                                      e_wrap_trim_init=SN.mon_run.e_wrap_m_trim[G.i])
             self.ib_dyn_T_m = self.LoopIbAmp.ChargeTransfer.dt
@@ -1077,10 +1075,13 @@ class BatterySim(Battery):
             self.ib_fut = SN.ib_fut_s_init
             self.ib_charge = SN.ib_charge_s_init
             self.ioc = SN.ioc_s_init
-            self.vb = SN.vb_s_init
+            if SN.run_type == 'HistSim':
+                self.vb = SN.mon_run.vb_f[0]
+            else:
+                self.vb = SN.mon_run.vb[0]
             self.voc = SN.voc_s_init
             self.ib_dyn = SN.ib_dyn_s[0]
-            self.soc = SN.soc_s_init
+            self.soc = SN.mon_run.soc_s[0]
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -1192,8 +1193,8 @@ class BatterySim(Battery):
         #         self.ib_charge = 0.  # empty
         self.model_cutback = (self.voc_stat > self.vsat) & (self.ib_fut == self.sat_ib_max)
         self.model_saturated = self.model_cutback & (self.ib_fut < self.ib_sat)
-        if self.reset and saturated_init is not None:
-            self.model_saturated = saturated_init
+        if self.reset and SN.mon_run.saturated[0] is not None:
+            self.model_saturated = SN.mon_run.saturated[0]
         self.sat = self.model_saturated
 
         return self.vb

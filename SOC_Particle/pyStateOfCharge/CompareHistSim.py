@@ -664,13 +664,13 @@ def main():  # Sample usage. OK on 20260217
 
     data_file = '/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/tLoFailModel_soc3p2_hi_lo_bb.csv'
     time_end = None
-    plots = True
+    plots = False
     use_mon_csv = True
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     sync_time = None
     dt_resample = 10
     Tb_force = None
-    request_history = None
+    request_history = 5
     strict_overplot = True
     terse = True
     fig_files = None

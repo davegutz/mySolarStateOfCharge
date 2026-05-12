@@ -150,9 +150,8 @@ class Sensors:
             self.e_wrap_filt_init = self.mon_run.e_wrap_filt[0]
             self.e_wrap_m_init = self.mon_run.e_wrap_m[0]
             self.e_wrap_n_init = self.mon_run.e_wrap_n[0]
-            self.vb_s_init = self.mon_run.vb[0]
-            self.Tb_f_init = self.mon_run.Tb_f[0]
-            self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
+            # self.Tb_f_init = self.mon_run.Tb_f[0]
+            # self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
             self.lut_dTb = None
             self.dTb = 0.
             if OPT.add_Tb is not None:
@@ -162,8 +161,8 @@ class Sensors:
                 self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
             self.Tb_f = self.mon_run.Tb_f
             self.Tb_init = self.mon_run.Tb[0] + self.dTb
-            self.Tb_f_init = self.mon_run.Tb_f[0] + self.dTb
-            self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
+            # self.Tb_f_init = self.mon_run.Tb_f[0] + self.dTb
+            # self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
             self.ib_init = self.mon_run.ib[0]
             self.ib_charge_init = self.mon_run.ib_charge[0]
             self.vb_init = self.mon_run.vb[0]
@@ -197,12 +196,11 @@ class Sensors:
                 self.e_wrap_n_init = self.mon_run.e_wrap_n_filt[0]
             self.e_wrap_filt_init = self.mon_run.e_wrap_filt[0]
             self.voc_stat_init = self.mon_run.voc_stat_f[0]
-            self.vb_s_init = self.mon_run.vb_f[0]
             self.Tb0 = self.mon_run.Tb_f[0]
             self.Tb_f = self.mon_run.Tb_f
             self.Tb_f_init = self.mon_run.Tb_f[0]
             self.Tb0_s = self.mon_run.Tb_f[0]
-            self.Tb_f_rate_init = 0.
+            # self.Tb_f_rate_init = 0.
             self.lut_dTb = None
             self.dTb = 0.
             if OPT.add_Tb is not None:
@@ -210,9 +208,9 @@ class Sensors:
                 self.Tb0 += OPT.add_Tb[1, 0]
                 self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb[0, :]), np.array(OPT.add_Tb[1, :]))
                 self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
-            self.Tb_rap_init = self.mon_run.Tb_f[0] + self.dTb
-            self.Tb_f_init = self.mon_run.Tb_f[0] + self.dTb
-            self.Tb_f_rate_rap_init = 0.
+            # self.Tb_rap_init = self.mon_run.Tb_f[0] + self.dTb
+            # self.Tb_f_init = self.mon_run.Tb_f[0] + self.dTb
+            # self.Tb_f_rate_rap_init = 0.
             self.Tb = self.mon_run.Tb_f[0]
             self.Tb_f = np.copy(self.mon_run.Tb_f)
             self.Tb_f_rate = np.copy(self.Tb_f) * 0.
@@ -243,8 +241,9 @@ class Sensors:
 
         self.i = 0
         self.sat_init = self.mon_run.sat[0]
-        self.saturated_init = self.mon_run.saturated[0]
         self.soc_s = self.mon_run.soc_s
+        if hasattr(self.mon_run, 'Tb_model_f_fut'):
+            self.Tb_model_f_fut = self.mon_run.Tb_model_f_fut[0]
 
         # q
         if not hasattr(self.mon_run, 'q_capacity'):
@@ -282,12 +281,10 @@ class Sensors:
         self.ib_charge_s_init = self.ib_in_s[0]
         self.ioc_s_init = self.ib_in_s[0]
         self.voc_s_init = self.sim_run.voc_stat_s[0]
-        self.soc_s_init = self.mon_run.soc_s[0]
         self.hx_init = self.mon_run.voc_soc[0]
-        self.soc_init = self.mon_run.soc[0]
-        self.x_init = self.soc_init
+        self.x_init = self.mon_run.soc[0]
         self.x_prior_init = self.x_init
-        self.soc_ekf_init = self.soc_init
+        self.soc_ekf_init = self.mon_run.soc[0]
         self.z_init = self.mon_run.z[0]
         self.reset_kf = True
         self.VoVcm = 0.
@@ -307,8 +304,10 @@ class Sensors:
         if not hasattr(self.mon_run, 'Tb_model'):
             self.mon_run.Tb_model = self.mon_run.Tb_h_f
         if not hasattr(self.mon_run, 'Tb_model_f_fut'):
-            self.mon_run.Tb_model_f_fut = self.mon_run.Tb_h_f
-            self.Tb_model_f_fut = self.mon_run.Tb_h_f
+            if hasattr(self.mon_run, 'Tb_h_f'):
+                self.mon_run.Tb_model_f_fut = self.mon_run.Tb_h_f
+            else:
+                self.Tb_model_f_fut = self.mon_run.Tb_f
         if not hasattr(self.mon_run, 'Tb_model_f'):
             self.mon_run.Tb_model_f = self.mon_run.Tb_h_f
         # if not hasattr(self.mon_run, 'Tb_model_f_rate'):
@@ -345,7 +344,10 @@ class Sensors:
     def calc_temp_pass_1(self, OPT, mon_, sim_, i, rp):
         mon = mon_
         sim = sim_
-        self.Tb_model_f_rate_fut = OPT.mon_run.Tb_model_f_rate_fut[i]
+        if OPT.run_type == 'RunSim':
+            self.Tb_model_f_rate_fut = OPT.mon_run.Tb_model_f_rate[i]
+        else:
+            self.Tb_model_f_rate_fut = OPT.mon_run.Tb_model_f_rate_fut[i]
         if hasattr(OPT.mon_run, 'Tb_hdwe'):
             mon.Tb_hdwe = OPT.mon_run.Tb_hdwe[i]
         else:
