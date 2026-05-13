@@ -265,12 +265,12 @@ float Coulombs::count_coulombs(Sensors *Sen, const bool reset_temp, const float 
     
     if ( sp.debug()==36 )
       sendTxBuf(String::format("BM::CC: cc %7.3f dt%9.6f dq_T%9.2f, coul_eff%7.3f d_delta_q%9.2f sp_delta_q_%9.2f q%9.2f\n",
-        charge_curr, dt_, -chem_.dqdt*q_capacity_*Tb_f_rate_*dt_, coul_eff_, d_delta_q_, *sp_delta_q_, q_), true, true);
+        charge_curr, dt_, -chem_.dqdt*q_capacity_*Tb_f_rate_*dt_, coul_eff_, d_delta_q_, *sp_delta_q_, q_), true, IN_SERVICE);
 
     if ( sp.debug()==-99 )
       sendTxBuf(String::format("sat, dt_, tb_f_, charge_curr, dq, dqt+, ddq, q, soc_min soc, %d, %7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%7.4f,%12.1f,%10.7f,%10.7f,\n",
         sat, dt_, tb_f_, charge_curr, charge_curr * dt_, chem_.dqdt*q_capacity_*Tb_f_rate_*dt_, d_delta_q_, q_, soc_min_, soc_),
-        true, true);
+        true, IN_SERVICE);
 
     return ( soc_ );
 }

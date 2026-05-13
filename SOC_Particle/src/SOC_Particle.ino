@@ -116,7 +116,7 @@ void setup()
   Serial.begin(SOFT_SBAUD);
   Serial.flush();
   delay(1000);          // Ensures a clean display
-  sendTxBuf("Hi!\n", true, true);
+  sendTxBuf("Hi!\n", true, IN_SERVICE);
 
   // BLE
 	BLE.on();
@@ -146,9 +146,9 @@ void setup()
 
   // 1-Wire chip card for I2C (after start Wire)
   #if defined(HDWE_BARE)
-    sendTxBuf("Going naked\n", true, true);
+    sendTxBuf("Going naked\n", true, IN_SERVICE);
   #elif defined(HDWE_2WIRE)
-    sendTxBuf("Using 2Wire Temperature sensor\n", true, true);
+    sendTxBuf("Using 2Wire Temperature sensor\n", true, IN_SERVICE);
   #else
     #error "Temperature sensor undefined"
   #endif
@@ -159,24 +159,24 @@ void setup()
   delay(2000);
   WiFi.off();
   delay(1000);
-  sendTxBuf("Done WiFi\n", true, true);
-  sendTxBuf("done CLOUD\n", true, true);
+  sendTxBuf("Done WiFi\n", true, IN_SERVICE);
+  sendTxBuf("done CLOUD\n", true, IN_SERVICE);
 
   // Clean boot logic.  This occurs only when doing a structural rebuild clean make on initial flash, because
   // the SRAM is not explicitly initialized.   This is by design, as SRAM must be remembered between boots
   // Time is never changed by this operation.  It could be corrupt.  Change using "UT" talk feature.
-  sendTxBuf("Check corruption......", true, true);
+  sendTxBuf("Check corruption......", true, IN_SERVICE);
   bool corrupt = sp.is_corrupt();
   if ( corrupt )
   {
-    sendTxBuf("\n\n", true, true);
+    sendTxBuf("\n\n", true, IN_SERVICE);
     sp.pretty_print( false );
-    sendTxBuf("\n\n", true, true);
+    sendTxBuf("\n\n", true, IN_SERVICE);
     sp.set_nominal();
-    sendTxBuf("Fixed corruption\n", true, true);
+    sendTxBuf("Fixed corruption\n", true, IN_SERVICE);
     sp.pretty_print(true);
   }
-  else sendTxBuf("\nclean\n", true, true);
+  else sendTxBuf("\nclean\n", true, IN_SERVICE);
 
   // Determine millis() at turn of Time.now   Used to improve accuracy of timing.
   long time_begin = Time.now();
@@ -198,18 +198,18 @@ void setup()
 
   // Ask to renominalize or force nominal.  Set in config file (see local_config.h for presesntly used config file)
   sp.get_booted();  // get the stored booted state.  This is a hack to ensure that we don't have to wait for the normal backup on reset to occur.
-  sendTxBuf(String::format("booted = %d\n", sp.booted()), true, true);
+  sendTxBuf(String::format("booted = %d\n", sp.booted()), true, IN_SERVICE);
   if ( ASK_DURING_BOOT == 0 && !sp.booted() )  // automatically renominalize and reboot after a dirty boot.
   {
     sp.set_nominal();  // sets booted to false by the way
     sp.put_booted(true);  // sets booted to true so on next startups we don't have to renominalize to clean a dirty boot.
-    sendTxBuf("\n\nSet booted true and stored...", true, true);
+    sendTxBuf("\n\nSet booted true and stored...", true, IN_SERVICE);
     System.backupRamSync();  // Force backup of RAM to ensure booted = true is saved.  This is important because the system reset below is a no-wait reset that doesn't wait for the normal backup on reset to occur.
     delay(1000);
-    sendTxBuf("backup Ram synced *\n", true, true);
+    sendTxBuf("backup Ram synced *\n", true, IN_SERVICE);
     sp.get_booted();  // get the stored booted state.  This is a hack to ensure that we don't have to wait for the normal backup on reset to occur.
-    sendTxBuf(String::format("booted = %d\n", sp.booted()), true, true);
-    sendTxBuf("booted should be true\n\n", true, true);
+    sendTxBuf(String::format("booted = %d\n", sp.booted()), true, IN_SERVICE);
+    sendTxBuf("booted should be true\n\n", true, IN_SERVICE);
     delay(1000);          // Ensures true saves before rebooting
   }
   
@@ -223,7 +223,7 @@ void setup()
   }
 
   // Log.info("setup end");
-  sendTxBuf("End setup()\n\n", true, true);
+  sendTxBuf("End setup()\n\n", true, IN_SERVICE);
 } // setup
 
 
@@ -279,7 +279,7 @@ void loop()
   chitchat = Talk->update(now, reset);
   if ( NoSaveWarn->update(now, reset) && sp.dirty() )
   {
-    sendTxBuf("WARNING: unsaved Retained parameter.  Enter 'w' to save.\n", true, true);
+    sendTxBuf("WARNING: unsaved Retained parameter.  Enter 'w' to save.\n", true, IN_SERVICE);
   }
   elapsed = ReadSensors->now() - start;
   elapsed_reset = ReadSensors->now() - start_reset;
@@ -292,7 +292,7 @@ void loop()
   if ( read )
   {
     // Log.info("Read shunt");
-    if ( reset_kf )sendTxBuf(" SOC_Particle:  reseting kfs\n", true, true);
+    if ( reset_kf )sendTxBuf(" SOC_Particle:  reseting kfs\n", true, IN_SERVICE);
     Sen->ShuntAmp->sample(reset_kf);
     // Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.f);
     Sen->ShuntNoAmp->sample(reset_kf);
@@ -399,7 +399,7 @@ void loop()
     sp.put_Isum(sp.isum() + 1);
     if ( sp.isum() > (uint16_t)(sp.nsum()-1) ) sp.put_Isum(0);  // wrap buffer
     mySum[sp.isum()].copy_to_Flt_ram_from(hist_bounced);
-    sendTxBuf("Summ...\n", true, true);
+    sendTxBuf("Summ...\n", true, IN_SERVICE);
     cp.write_summary = false;
   }
 
@@ -410,11 +410,11 @@ void loop()
   if ( read )
   {
     reset = reset_ekf = reset_kf = cp.ekf_reset_print = cp.kf_reset_print = false;
-    if ( reset_temp ) sendTxBuf("*", true, true);
+    if ( reset_temp ) sendTxBuf("*", true, IN_SERVICE);
   }
   if ( read_temp && elapsed_reset>ap.temp_delay() && reset_temp )
   {
-    sendTxBuf("...temp init complete\n", true, true);
+    sendTxBuf("...temp init complete\n", true, IN_SERVICE);
     reset_temp = false;
   }
 

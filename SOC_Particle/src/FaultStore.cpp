@@ -166,10 +166,10 @@ void SavedPars::print_fault_header(Publish *pubList)
     String txBuf;
 
     txBuf = String::format("Config:  %s \n", pubList->unit.c_str());
-    sendTxBuf(txBuf, true, true);
+    sendTxBuf(txBuf, true, IN_SERVICE);
 
     txBuf = String::format("fltb,  date,             time_ux,    Tb_h_f, vb_h_f, Vc_h, ib_amp_hdwe_f, ib_noa_hdwe_f, Tb_f, vb_f, ib_f, soc, soc_min, soc_ekf, voc_f, voc_stat_f, e_wrap_filt, e_wrap_m_filt, e_wrap_m_trim, e_wrap_n_filt, fltw, falw,\n");
-    sendTxBuf(txBuf, true, true);
+    sendTxBuf(txBuf, true, IN_SERVICE);
 }
 
 void Flt_st::print_flt(const String code)
@@ -202,7 +202,7 @@ void Flt_st::print_flt(const String code)
       float(this->e_wrap_n_filt)/sp.vb_hist_slr(),
       this->fltw,
       this->falw);
-    sendTxBuf(txBuf, true, true);
+    sendTxBuf(txBuf, true, IN_SERVICE);
   }
 }
 

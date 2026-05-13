@@ -470,11 +470,11 @@ void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon
 // print sim for data collection
 void print_sim_header(void)
 {
-  Serial.printf("unit_m,  c_time_sim,      dt_s, chm_s, qcrs_s, bms_off_s, Tb_s, Tb_f_s, Tb_f_s, vsat_s, voc_stat_s, ");
+  Serial.printf("unit_m,  c_time_sim,      dt_s, chm_s, qcrs_s, bms_off_s, Tb_s, Tb_f_s, vsat_s, voc_stat_s, ");
   Serial.printf("dv_dyn_s, vb_s, ib_s, ib_dyn_s, dv_hys_s, ib_in_s, ib_charge_s, ioc_s, ");
   Serial.printf("sat_s, delta_q_s, qcap_s, soc_s, reset_s, d_delta_q_s, ");
   Serial.printf("ib_dyn_T_s, ib_dyn_tau_s, ib_dyn_rstate_s, ib_dyn_lstate_s, ");
-  Serial.printf("bms_off_s, voltage_low_s,");
+  Serial.printf("voltage_low_s,");
   Serial.printf("\n");
 }
 
@@ -485,8 +485,8 @@ void print_sim_serial(const bool initializing_all, const bool reset_temp, Sensor
        && (reset_temp || Sim->cTime() > last_cTime_sim + 0.00005) )
   {
     last_cTime_sim = Sim->cTime();
-    sprintf(pr.buff, "unit_sim, %13.4f, %8.4f, %d, %10.4f, %d, %11.8f, %11.8f, %11.8f, %7.6f,%7.6f, ",
-        Sim->cTime(), Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->Tb(), Sim->Tb_f(), Sim->Tb_f(), Sim->vsat(), Sim->voc_stat());
+    sprintf(pr.buff, "unit_sim, %13.4f, %8.4f, %d, %10.4f, %d, %11.8f, %11.8f, %7.6f,%7.6f, ",
+        Sim->cTime(), Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->Tb(), Sim->Tb_f(), Sim->vsat(), Sim->voc_stat());
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%7.6f,%8.6f, %7.6f,%7.6f,%7.6f,%7.6f,%7.6f,%7.6f, ",
@@ -502,8 +502,8 @@ void print_sim_serial(const bool initializing_all, const bool reset_temp, Sensor
         Sim->chargeTransfer_rstate(), Sim->chargeTransfer_lstate());
     Serial.printf("%s", pr.buff);
 
-    sprintf(pr.buff, "%d, %d,",
-        Sim->bms_off(), Sim->voltage_low());
+    sprintf(pr.buff, "%d,",
+        Sim->voltage_low());
     Serial.printf("%s", pr.buff);
 
     Serial.printf("\n");
@@ -579,9 +579,9 @@ void wait_on_user_input()
   uint8_t count = 0;
   int answer = 0;
 
-  sendTxBuf("\n\n", true, true);
+  sendTxBuf("\n\n", true, IN_SERVICE);
   sp.pretty_print(false);
-  sendTxBuf("Reset to defaults? [y/N]:", true, true);
+  sendTxBuf("Reset to defaults? [y/N]:", true, IN_SERVICE);
 
   while ( count < 30 && answer!='Y' && answer!='y' && answer!='n' && answer!='N' )
   {
@@ -614,13 +614,13 @@ void wait_on_user_input()
 
   if ( answer=='Y' || answer=='y' )
   {
-    sendTxBuf("  Y reset\n\n", true, true);
+    sendTxBuf("  Y reset\n\n", true, IN_SERVICE);
     sp.set_nominal();
     sp.pretty_print(true);
     System.backupRamSync();
   }
   else
   {
-    sendTxBuf(" N.  moving on...\n\n", true, true);
+    sendTxBuf(" N.  moving on...\n\n", true, IN_SERVICE);
   }
 }

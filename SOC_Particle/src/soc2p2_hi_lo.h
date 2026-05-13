@@ -60,3 +60,5 @@
 
 // ekf tune
 #define WRAP_SOC_HI_OFF     0.94        // Disable e_wrap_hi when saturated (0.94)
+
+#define IN_SERVICE            false    // Whether to put serial out BLE, which blocks and disrupts timed tests

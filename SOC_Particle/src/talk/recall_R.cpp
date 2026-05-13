@@ -73,7 +73,7 @@ bool recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             break;
 
         case ( 'R' ):  // RR:  large reset
-            sendTxBuf("RESET\n", true, true);
+            sendTxBuf("RESET\n", true, IN_SERVICE);
             Sen->Sim->apply_soc(1.0, Sen->Tb_f());
             Mon->apply_soc(1.0, Sen->Tb_f());
             cp.cmd_reset();

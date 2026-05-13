@@ -449,7 +449,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.voc_soc = SN.mon_run.voc_soc[0]
             self.voc_stat = self.voc_soc - self.e_wrap
             self.Tb = SN.mon_run.Tb_f[0]
-            self.Tb_f = SN.Tb_f[0]
+            self.Tb_f = SN.Tb_f
             self.Tb_f_rate = SN.mon_run.Tb_f_rate[0]
             self.Tb_model = SN.mon_run.Tb_model[0]
             self.ib = SN.ib_init
@@ -473,10 +473,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.qcrs_s = 0.
         self.qcap_s = 0.
         self.bms_off_s = 0.
-        self.Tb_s = 0.
-        self.Tb_f_s = 0.
-        self.Tb_s = 0.
-        self.Tb_f_s = 0.
+        # self.Tb_s = 0.
+        # self.Tb_f_s = 0.
         self.vsat_s = 0.
         self.voc_s = 0.
         self.voc_stat_s = 0.
@@ -1040,8 +1038,8 @@ class BatterySim(Battery):
         self.qcrs_s = 0.
         self.qcap_s = 0.
         self.bms_off_s = 0
-        self.Tb_s = 0.
-        self.Tb_f_s = 0.
+        # self.Tb_s = 0.
+        # self.Tb_f_s = 0.
         self.vsat_s = 0.
         self.voc_s = 0.
         self.voc_stat_s = 0.

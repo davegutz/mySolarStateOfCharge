@@ -246,7 +246,7 @@ bool followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sen
                 case ( 'T' ):  //*  UT<>:  Unix time since epoch
                   Time.setTime( (time_t) (sp.Time_now()) );
                   time_long_2_str((time_t)sp.Time_now(), buffer);
-                  sendTxBuf(String::format(" time %ld hms:  %s\n", sp.Time_now(), buffer), true, true);
+                  sendTxBuf(String::format(" time %ld hms:  %s\n", sp.Time_now(), buffer), true, IN_SERVICE);
                 break;
 
             }

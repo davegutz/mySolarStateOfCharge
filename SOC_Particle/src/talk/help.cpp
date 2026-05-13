@@ -41,38 +41,38 @@ extern Flt_st mySum[NSUM];  // Summaries for saving charge history
 void talkH(BatteryMonitor *Mon, Sensors *Sen)
 {
   char buffer[32];
-  sendTxBuf("No help photon for test. Look at code.\n", true, true);
-  sendTxBuf("\n\nHelp menu.  Omit '=' and end entry with ';'\n", true, true);
+  sendTxBuf("No help photon for test. Look at code.\n", true, IN_SERVICE);
+  sendTxBuf("\n\nHelp menu.  Omit '=' and end entry with ';'\n", true, IN_SERVICE);
 
   #ifndef HELPLESS
-  sendTxBuf("\nb<?>   Manage fault buffer\n", true, true);
-  sendTxBuf("  bd= ", true, true); sendTxBuf("dump fault buffer\n", true, true);
-  sendTxBuf("  bh= ", true, true); sendTxBuf("reset history buffer\n", true, true);
-  sendTxBuf("  br= ", true, true); sendTxBuf("reset fault buffer\n", true, true);
-  sendTxBuf("  bR= ", true, true); sendTxBuf("reset all buffers\n", true, true);
+  sendTxBuf("\nb<?>   Manage fault buffer\n", true, IN_SERVICE);
+  sendTxBuf("  bd= ", true, IN_SERVICE); sendTxBuf("dump fault buffer\n", true, IN_SERVICE);
+  sendTxBuf("  bh= ", true, IN_SERVICE); sendTxBuf("reset history buffer\n", true, IN_SERVICE);
+  sendTxBuf("  br= ", true, IN_SERVICE); sendTxBuf("reset fault buffer\n", true, IN_SERVICE);
+  sendTxBuf("  bR= ", true, IN_SERVICE); sendTxBuf("reset all buffers\n", true, IN_SERVICE);
 
-  sendTxBuf("\nB<?> Battery e.g.:\n", true, true);
+  sendTxBuf("\nB<?> Battery e.g.:\n", true, IN_SERVICE);
   ap.nP_p->print_help();  //* BP
   ap.nS_p->print_help();  //* BS
 
-  sendTxBuf("\nBZ Benignly zero test settings\n", true, true);
+  sendTxBuf("\nBZ Benignly zero test settings\n", true, IN_SERVICE);
   
-  sendTxBuf("\ncc  clear talk queues end XQ\n", true, true);
-  sendTxBuf("\ncf  freeze talk queues\n", true, true);
-  sendTxBuf("\ncu  unfreeze talk queues\n", true, true);
+  sendTxBuf("\ncc  clear talk queues end XQ\n", true, IN_SERVICE);
+  sendTxBuf("\ncf  freeze talk queues\n", true, IN_SERVICE);
+  sendTxBuf("\ncu  unfreeze talk queues\n", true, IN_SERVICE);
 
-  sendTxBuf("\nC<?> Chg SOC e.g.:\n", true, true);
+  sendTxBuf("\nC<?> Chg SOC e.g.:\n", true, IN_SERVICE);
   ap.init_all_soc_p->print_help();  // Ca
-  sendTxBuf("  Cm=  model (& ekf if mod)- '(0-1.1)'\n", true, true); 
+  sendTxBuf("  Cm=  model (& ekf if mod)- '(0-1.1)'\n", true, IN_SERVICE); 
   ap.ekf_x_p->print_help();  // Ce
   ap.ekf_p_p->print_help();  // Cp
 
-  sendTxBuf("\nD/S<?> Adj e.g.:\n", true, true);
+  sendTxBuf("\nD/S<?> Adj e.g.:\n", true, IN_SERVICE);
   sp.ib_bias_amp_p->print_help();  //* DA
   sp.ib_bias_noa_p->print_help();  //* DB
   sp.Vb_bias_hdwe_p->print_help();  //* Dc
   ap.sum_delay_p->print_help();  //  Dh
-  sendTxBuf("    set 'Dh0;' for nominal\n", true, true);
+  sendTxBuf("    set 'Dh0;' for nominal\n", true, IN_SERVICE);
   sp.ib_bias_all_p->print_help();  //* DI
   sp.ib_bias_amp_p->print_help();  //  Dm
   ap.eframe_mult_p->print_help();  //  ED
@@ -112,7 +112,7 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.q_std_p->print_help();  // Kq
   ap.r_std_p->print_help();  // Kr
 
-  sendTxBuf("\nF<?>   Faults\n", true, true);
+  sendTxBuf("\nF<?>   Faults\n", true, IN_SERVICE);
   ap.cc_diff_slr_p->print_help();  // Fc
   ap.fake_faults_p->print_help();  // Ff
   ap.ewhi_slr_p->print_help();  // Fi
@@ -122,46 +122,46 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.disab_tb_fa_p->print_help();  // FT
   ap.dis_vb_fa_lt_p->print_help();  // FV
 
-  sendTxBuf("\nH<?>   Manage history\n", true, true);
-  sendTxBuf("  Hd= ", true, true); sendTxBuf("dump summ log\n", true, true);
-  sendTxBuf("  HR= ", true, true); sendTxBuf("reset summ log\n", true, true);
-  sendTxBuf("  Hs= ", true, true); sendTxBuf("save and print log\n", true, true);
+  sendTxBuf("\nH<?>   Manage history\n", true, IN_SERVICE);
+  sendTxBuf("  Hd= ", true, IN_SERVICE); sendTxBuf("dump summ log\n", true, IN_SERVICE);
+  sendTxBuf("  HR= ", true, IN_SERVICE); sendTxBuf("reset summ log\n", true, IN_SERVICE);
+  sendTxBuf("  Hs= ", true, IN_SERVICE); sendTxBuf("save and print log\n", true, IN_SERVICE);
 
-  sendTxBuf("\nP<?>   Print values\n", true, true);
-  sendTxBuf("  Pa= ", true, true); sendTxBuf("all\n", true, true);
-  sendTxBuf("  Pb= ", true, true); sendTxBuf("vb details\n", true, true);
-  sendTxBuf("  Pe= ", true, true); sendTxBuf("ekf\n", true, true);
-  sendTxBuf("  Pf= ", true, true); sendTxBuf("faults\n", true, true);
-  sendTxBuf("  Pm= ", true, true); sendTxBuf("Mon\n", true, true);
-  sendTxBuf("  PM= ", true, true); sendTxBuf("amp shunt\n", true, true);
-  sendTxBuf("  PN= ", true, true); sendTxBuf("noa shunt\n", true, true);
-  sendTxBuf("  PR= ", true, true); sendTxBuf("all retained adj\n", true, true);
-  sendTxBuf("  Pr= ", true, true); sendTxBuf("off-nom ret adj\n", true, true);
-  sendTxBuf("  PS= ", true, true); sendTxBuf("Sensors\n", true, true);
-  sendTxBuf("  Ps= ", true, true); sendTxBuf("Sim\n", true, true);
-  sendTxBuf("  PV= ", true, true); sendTxBuf("all vol adj\n", true, true);
-  sendTxBuf("  Pv= ", true, true); sendTxBuf("off-nom vol adj\n", true, true);
-  sendTxBuf("  Px= ", true, true); sendTxBuf("ib select\n", true, true);
+  sendTxBuf("\nP<?>   Print values\n", true, IN_SERVICE);
+  sendTxBuf("  Pa= ", true, IN_SERVICE); sendTxBuf("all\n", true, IN_SERVICE);
+  sendTxBuf("  Pb= ", true, IN_SERVICE); sendTxBuf("vb details\n", true, IN_SERVICE);
+  sendTxBuf("  Pe= ", true, IN_SERVICE); sendTxBuf("ekf\n", true, IN_SERVICE);
+  sendTxBuf("  Pf= ", true, IN_SERVICE); sendTxBuf("faults\n", true, IN_SERVICE);
+  sendTxBuf("  Pm= ", true, IN_SERVICE); sendTxBuf("Mon\n", true, IN_SERVICE);
+  sendTxBuf("  PM= ", true, IN_SERVICE); sendTxBuf("amp shunt\n", true, IN_SERVICE);
+  sendTxBuf("  PN= ", true, IN_SERVICE); sendTxBuf("noa shunt\n", true, IN_SERVICE);
+  sendTxBuf("  PR= ", true, IN_SERVICE); sendTxBuf("all retained adj\n", true, IN_SERVICE);
+  sendTxBuf("  Pr= ", true, IN_SERVICE); sendTxBuf("off-nom ret adj\n", true, IN_SERVICE);
+  sendTxBuf("  PS= ", true, IN_SERVICE); sendTxBuf("Sensors\n", true, IN_SERVICE);
+  sendTxBuf("  Ps= ", true, IN_SERVICE); sendTxBuf("Sim\n", true, IN_SERVICE);
+  sendTxBuf("  PV= ", true, IN_SERVICE); sendTxBuf("all vol adj\n", true, IN_SERVICE);
+  sendTxBuf("  Pv= ", true, IN_SERVICE); sendTxBuf("off-nom vol adj\n", true, IN_SERVICE);
+  sendTxBuf("  Px= ", true, IN_SERVICE); sendTxBuf("ib select\n", true, IN_SERVICE);
 
-  sendTxBuf("\nQ      vital stats\n", true, true);
+  sendTxBuf("\nQ      vital stats\n", true, IN_SERVICE);
 
-  sendTxBuf("\nR<?>   Reset\n", true, true);
-  sendTxBuf("  Ca=<val> ", true, true); sendTxBuf("initialize_all to present inputs\n", true, true);
-  sendTxBuf("  Rb= ", true, true); sendTxBuf("batteries to present inputs\n", true, true);
-  sendTxBuf("  Re= ", true, true); sendTxBuf("Extended Kalman Filter in battery\n", true, true);
-  sendTxBuf("  Rf= ", true, true); sendTxBuf("fault logic latches\n", true, true);
-  sendTxBuf("  Ri= ", true, true); sendTxBuf("infinite counter\n", true, true);
-  sendTxBuf("  Rk= ", true, true); sendTxBuf("kalman Filters in shunt\n", true, true);
-  sendTxBuf("  Rr= ", true, true); sendTxBuf("saturate Mon and equalize Sim & Mon\n", true, true);
-  sendTxBuf("  RR= ", true, true); sendTxBuf("DEPLOY\n", true, true);
-  sendTxBuf("  Rs= ", true, true); sendTxBuf("small.  Reinitialize filters\n", true, true);
-  sendTxBuf("  RS= ", true, true); sendTxBuf("SavedPars: Renominalize saved\n", true, true);
-  sendTxBuf("  RV= ", true, true); sendTxBuf("Renominalize volatile\n", true, true);
+  sendTxBuf("\nR<?>   Reset\n", true, IN_SERVICE);
+  sendTxBuf("  Ca=<val> ", true, IN_SERVICE); sendTxBuf("initialize_all to present inputs\n", true, IN_SERVICE);
+  sendTxBuf("  Rb= ", true, IN_SERVICE); sendTxBuf("batteries to present inputs\n", true, IN_SERVICE);
+  sendTxBuf("  Re= ", true, IN_SERVICE); sendTxBuf("Extended Kalman Filter in battery\n", true, IN_SERVICE);
+  sendTxBuf("  Rf= ", true, IN_SERVICE); sendTxBuf("fault logic latches\n", true, IN_SERVICE);
+  sendTxBuf("  Ri= ", true, IN_SERVICE); sendTxBuf("infinite counter\n", true, IN_SERVICE);
+  sendTxBuf("  Rk= ", true, IN_SERVICE); sendTxBuf("kalman Filters in shunt\n", true, IN_SERVICE);
+  sendTxBuf("  Rr= ", true, IN_SERVICE); sendTxBuf("saturate Mon and equalize Sim & Mon\n", true, IN_SERVICE);
+  sendTxBuf("  RR= ", true, IN_SERVICE); sendTxBuf("DEPLOY\n", true, IN_SERVICE);
+  sendTxBuf("  Rs= ", true, IN_SERVICE); sendTxBuf("small.  Reinitialize filters\n", true, IN_SERVICE);
+  sendTxBuf("  RS= ", true, IN_SERVICE); sendTxBuf("SavedPars: Renominalize saved\n", true, IN_SERVICE);
+  sendTxBuf("  RV= ", true, IN_SERVICE); sendTxBuf("Renominalize volatile\n", true, IN_SERVICE);
 
   sp.ib_force_p->print_help();  //* si
   sp.Time_now_p->print_help();  //* UT
   time_long_2_str((time_t)sp.Time_now(), buffer);
-  sendTxBuf(String::format(" time %ld hms:  %s\n", sp.Time_now(), buffer), true, true);
+  sendTxBuf(String::format(" time %ld hms:  %s\n", sp.Time_now(), buffer), true, IN_SERVICE);
   ap.ekf_conv_p->print_help();  // VC
   ap.ekf_q_p->print_help();  // VQ
   ap.ekf_r_p->print_help();  // VR
@@ -169,34 +169,34 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.Tb_filt_p->print_help();  // VT
   sp.debug_p->print_help();  // vv
 
-  sendTxBuf("  -<>: Negative - Arduino plot compatible\n", true, true);
+  sendTxBuf("  -<>: Negative - Arduino plot compatible\n", true, IN_SERVICE);
   #ifdef DEBUG_INIT
-    sendTxBuf("  v-1: Debug\n", true, true);
+    sendTxBuf("  v-1: Debug\n", true, IN_SERVICE);
   #endif
-  sendTxBuf("  vv1: GP\n", true, true);
-  sendTxBuf("  vv2: GP, Sim, Sel, & Shunt\n", true, true);
-  sendTxBuf("  vv3: EKF\n", true, true);
-  sendTxBuf("  vv4: GP, Sim, Sel, & EKF\n", true, true);
-  sendTxBuf("  vv5: OLED display\n", true, true);
-  sendTxBuf(" vv12: EKF\n", true, true);
-  sendTxBuf("vv-13: ib_dscn\n", true, true);
-  sendTxBuf(" vv14: vshunt and Ib raw\n", true, true);
-  sendTxBuf(" vv15: vb raw\n", true, true);
-  sendTxBuf(" vv16: Tb\n", true, true);
-  sendTxBuf(" vv21: ib_quiet\n", true, true);
-  sendTxBuf("vv-23: Vb_hdwe_ac\n", true, true);
-  sendTxBuf("vv-24: Vb_hdwe_ac, Ib_hdwe\n", true, true);
-  sendTxBuf(" vv34: EKF detail\n", true, true);
-  sendTxBuf(" vv35: ChargeTransfer balance\n", true, true);
-  sendTxBuf(" vv36: EKF short in EKF\n", true, true);
-  sendTxBuf(" vv37: EKF short\n", true, true);
-  sendTxBuf(" vv99: calibration\n", true, true);
+  sendTxBuf("  vv1: GP\n", true, IN_SERVICE);
+  sendTxBuf("  vv2: GP, Sim, Sel, & Shunt\n", true, IN_SERVICE);
+  sendTxBuf("  vv3: EKF\n", true, IN_SERVICE);
+  sendTxBuf("  vv4: GP, Sim, Sel, & EKF\n", true, IN_SERVICE);
+  sendTxBuf("  vv5: OLED display\n", true, IN_SERVICE);
+  sendTxBuf(" vv12: EKF\n", true, IN_SERVICE);
+  sendTxBuf("vv-13: ib_dscn\n", true, IN_SERVICE);
+  sendTxBuf(" vv14: vshunt and Ib raw\n", true, IN_SERVICE);
+  sendTxBuf(" vv15: vb raw\n", true, IN_SERVICE);
+  sendTxBuf(" vv16: Tb\n", true, IN_SERVICE);
+  sendTxBuf(" vv21: ib_quiet\n", true, IN_SERVICE);
+  sendTxBuf("vv-23: Vb_hdwe_ac\n", true, IN_SERVICE);
+  sendTxBuf("vv-24: Vb_hdwe_ac, Ib_hdwe\n", true, IN_SERVICE);
+  sendTxBuf(" vv34: EKF detail\n", true, IN_SERVICE);
+  sendTxBuf(" vv35: ChargeTransfer balance\n", true, IN_SERVICE);
+  sendTxBuf(" vv36: EKF short in EKF\n", true, IN_SERVICE);
+  sendTxBuf(" vv37: EKF short\n", true, IN_SERVICE);
+  sendTxBuf(" vv99: calibration\n", true, IN_SERVICE);
 
-  sendTxBuf("\nW<?> - iters to wait\n", true, true);
+  sendTxBuf("\nW<?> - iters to wait\n", true, IN_SERVICE);
 
-  sendTxBuf("\nw - save * confirm adjustments to SRAM\n", true, true);
+  sendTxBuf("\nw - save * confirm adjustments to SRAM\n", true, IN_SERVICE);
 
-  sendTxBuf("\nX<?> - Test Mode.   For example:\n", true, true);
+  sendTxBuf("\nX<?> - Test Mode.   For example:\n", true, IN_SERVICE);
   ap.dc_dc_on_p->print_help();  // Xd
   ap.until_q_p->print_help();  // XQ
   sp.modeling_p->print_help();  //* Xm
@@ -209,28 +209,28 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   sp.Type_p->print_help();  //* Xt
 
   #ifndef HELPLESS
-  sendTxBuf(" Xp= <?>, scripted tests...\n", true, true); 
-  sendTxBuf("  Xp0: reset tests\n", true, true);
-  sendTxBuf("  Xp6: +/-500 A pulse EKF\n", true, true);
-  sendTxBuf("  Xp7: +/-500 A sw pulse SS\n", true, true);
-  sendTxBuf("  Xp8: +/-500 A hw pulse SS\n", true, true);
-  sendTxBuf("  Xp10:tweak sin\n", true, true);
-  sendTxBuf("  Xp11:slow sin\n", true, true);
-  sendTxBuf("  Xp12:slow half sin\n", true, true);
-  sendTxBuf("  Xp13:tweak tri\n", true, true);
-  sendTxBuf("  Xp20:collect fast\n", true, true);
-  sendTxBuf("  Xp21:collect slow\n", true, true);
+  sendTxBuf(" Xp= <?>, scripted tests...\n", true, IN_SERVICE); 
+  sendTxBuf("  Xp0: reset tests\n", true, IN_SERVICE);
+  sendTxBuf("  Xp6: +/-500 A pulse EKF\n", true, IN_SERVICE);
+  sendTxBuf("  Xp7: +/-500 A sw pulse SS\n", true, IN_SERVICE);
+  sendTxBuf("  Xp8: +/-500 A hw pulse SS\n", true, IN_SERVICE);
+  sendTxBuf("  Xp10:tweak sin\n", true, IN_SERVICE);
+  sendTxBuf("  Xp11:slow sin\n", true, IN_SERVICE);
+  sendTxBuf("  Xp12:slow half sin\n", true, IN_SERVICE);
+  sendTxBuf("  Xp13:tweak tri\n", true, IN_SERVICE);
+  sendTxBuf("  Xp20:collect fast\n", true, IN_SERVICE);
+  sendTxBuf("  Xp21:collect slow\n", true, IN_SERVICE);
   ap.cycles_inj_p->print_help();  // XC
-  sendTxBuf(" XD  ", true, true); sendTxBuf("DONE message\n", true, true);
-  sendTxBuf(" XK  ", true, true); sendTxBuf("READY message\n", true, true);
-  sendTxBuf(" XR  ", true, true); sendTxBuf("RUN inj\n", true, true);
-  sendTxBuf(" XS  ", true, true); sendTxBuf("STOP inj\n", true, true);
-  sendTxBuf(" XY  ", true, true); sendTxBuf("SYNC message\n", true, true);
+  sendTxBuf(" XD  ", true, IN_SERVICE); sendTxBuf("DONE message\n", true, IN_SERVICE);
+  sendTxBuf(" XK  ", true, IN_SERVICE); sendTxBuf("READY message\n", true, IN_SERVICE);
+  sendTxBuf(" XR  ", true, IN_SERVICE); sendTxBuf("RUN inj\n", true, IN_SERVICE);
+  sendTxBuf(" XS  ", true, IN_SERVICE); sendTxBuf("STOP inj\n", true, IN_SERVICE);
+  sendTxBuf(" XY  ", true, IN_SERVICE); sendTxBuf("SYNC message\n", true, IN_SERVICE);
   ap.s_t_sat_p->print_help();  // Xs
   ap.tail_inj_p->print_help();  // XT
   ap.wait_inj_p->print_help();  // XW
   ap.fail_tb_p->print_help();  // Xu
   ap.tb_stale_time_slr_p->print_help();  // Xv
-  sendTxBuf("\nurgency of cmds: -=ASAP,*=SOON, '' or +=QUEUE, <=LAST\n", true, true);
+  sendTxBuf("\nurgency of cmds: -=ASAP,*=SOON, '' or +=QUEUE, <=LAST\n", true, IN_SERVICE);
   #endif
 }

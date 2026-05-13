@@ -413,6 +413,9 @@ const float QUIET_RES (QUIET_SET/10.);  // Quiet reset persistence, sec ('up 1 d
 #if !defined(RAW_BARE_RES)
     #define RAW_BARE_RES   2. // Raw bare reset persistence, s (2)
 #endif
+#if !defined(IN_SERVICE)
+    #define IN_SERVICE      true // In service flag for testing (true)
+#endif
 
 // Conversion gains
 // Voltage measurement gains

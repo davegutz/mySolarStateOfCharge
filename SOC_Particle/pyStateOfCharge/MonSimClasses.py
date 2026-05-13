@@ -148,10 +148,7 @@ class Sensors:
             # self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
             self.lut_dTb = None
             self.dTb = 0.
-            self.Tb_f = self.mon_run.Tb_f
-            self.Tb_init = self.mon_run.Tb[0] + self.dTb
-            # self.Tb_f_init = self.mon_run.Tb_f[0] + self.dTb
-            # self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
+            # self.Tb_f = self.mon_run.Tb_f
             self.ib_init = self.mon_run.ib[0]
             self.ib_charge_init = self.mon_run.ib_charge[0]
             self.vb_init = self.mon_run.vb[0]
@@ -186,14 +183,14 @@ class Sensors:
             self.e_wrap_filt_init = self.mon_run.e_wrap_filt[0]
             self.voc_stat_init = self.mon_run.voc_stat_f[0]
             self.Tb0 = self.mon_run.Tb_f[0]
-            self.Tb_f = self.mon_run.Tb_f
+            # self.Tb_f = self.mon_run.Tb_f
             self.Tb_f_init = self.mon_run.Tb_f[0]
             self.Tb0_s = self.mon_run.Tb_f[0]
             # self.Tb_f_rate_init = 0.
             self.lut_dTb = None
             self.dTb = 0.
             self.Tb = self.mon_run.Tb_f[0]
-            self.Tb_f = np.copy(self.mon_run.Tb_f)
+            # self.Tb_f = np.copy(self.mon_run.Tb_f)
             self.Tb_f_rate = np.copy(self.Tb_f) * 0.
             self.Tb_past = self.mon_run.Tb_f[0] + self.dTb
             self.Tb_f_past = self.mon_run.Tb_f[0] + self.dTb
@@ -236,10 +233,7 @@ class Sensors:
             self.delta_q = -self.q_cap * (1. - self.mon_run.soc)
         else:
             self.delta_q = self.mon_run.delta_q
-        if not hasattr(self.mon_run, 'Tb_f'):
-            self.Tb_f = self.mon_run.Tb_f
-        else:
-            self.Tb_f = self.mon_run.Tb_f
+        # self.Tb_f = self.mon_run.Tb_f
         if not hasattr(self.sim_run, 'qcap_s'):
             self.qcap_s = calculate_capacity(q_cap_rated_scaled=self.mon_run.qcrs_s, dqdt=self.mon_run.dqdt, tb_f=self.Tb_f,
                                               t_rated=self.mon_run.t_rated)
@@ -339,12 +333,13 @@ class Sensors:
                 mon.Tb = OPT.mon_run.Tb[i]
             else:
                 mon.Tb = mon.Tb_hdwe  # past value
-            sim.Tb = mon.Tb
             mon.Tb_s = mon.Tb
+            sim.Tb_f = self.Tb_f
         else:
             sim.Tb = OPT.mon_run.Tb_f[i]
             mon.Tb = OPT.mon_run.Tb_f[i]
             mon.Tb_s = OPT.mon_run.Tb_f[i]
+            sim.Tb_f = self.Tb_f_past  # same model and hdwe
         if i > 0:
             self.update_tb()
             if self.mtb:
@@ -355,7 +350,6 @@ class Sensors:
                 mon.Tb = self.Tb
                 mon.Tb_f = self.Tb_f
                 mon.Tb_f_rate = self.Tb_f_rate
-        sim.Tb_f = self.Tb_f_past  # same modeling and sensed
 
         return mon, sim
 

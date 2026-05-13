@@ -73,7 +73,7 @@ public:
     {
       raw_debounced_ = lgv_;   // exactly 2nd consecutive low: hold last good value
       sendTxBuf(String::format("trip %s reset %d raw %d < %d raw_low %d dead %d raw_low_prev %d lgv_ %d raw_debounced %d \n",
-        name.c_str(), reset, raw_, debounce_level, raw_low_, dead_, raw_low_prev_, lgv_, raw_debounced_), true, true);
+        name.c_str(), reset, raw_, debounce_level, raw_low_, dead_, raw_low_prev_, lgv_, raw_debounced_), true, IN_SERVICE);
     }
     else
     {
@@ -82,7 +82,7 @@ public:
     dead_prev_ = dead_;
     if ( sp.debug()==57 )
       sendTxBuf(String::format("not yet dead %s reset %d raw %d < %d raw_low %d dead %d raw_low_prev %d lgv_ %d raw_debounced %d \n",
-        name.c_str(), reset, raw_, debounce_level, raw_low_, dead_, raw_low_prev_, lgv_, raw_debounced_), true, true);
+        name.c_str(), reset, raw_, debounce_level, raw_low_, dead_, raw_low_prev_, lgv_, raw_debounced_), true, IN_SERVICE);
 
     return ( raw_debounced_ );
   }

@@ -81,7 +81,7 @@ public:
     bool print_nominalize()
     {
         set_nominal();
-        sendTxBuf(" Nominalizing:  ", true, true);
+        sendTxBuf(" Nominalizing:  ", true, IN_SERVICE);
         return ( true );
     }
     virtual void set_nominal(){};
@@ -146,7 +146,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, IN_SERVICE); 
         return corrupt;
     }
 
@@ -168,7 +168,7 @@ public:
     void print()
     {
         print_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
     
     void print_help_str()
@@ -179,7 +179,7 @@ public:
     void print_help()
     {
         print_help_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
 
     virtual bool print_adjust(const String &str)
@@ -263,7 +263,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, IN_SERVICE); 
         return corrupt;
     }
 
@@ -285,7 +285,7 @@ public:
     void print()
     {
         print_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
 
     void print_help_str()
@@ -296,7 +296,7 @@ public:
     void print_help()
     {
         print_help_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
 
     virtual bool print_adjust(const String &str)
@@ -380,7 +380,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, IN_SERVICE); 
         return corrupt;
     }
 
@@ -402,7 +402,7 @@ public:
     void print()
     {
         print_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
 
     void print_help_str()
@@ -413,7 +413,7 @@ public:
     void print_help()
     {
         print_help_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
 
     virtual bool print_adjust(const String &str)
@@ -497,7 +497,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, IN_SERVICE); 
         return corrupt;
     }
 
@@ -518,7 +518,7 @@ public:
     void print()
     {
         print_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
     
     void print_help_str()
@@ -529,7 +529,7 @@ public:
     void print_help()
     {
         print_help_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
     
     virtual bool print_adjust(const String &str)
@@ -613,7 +613,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, IN_SERVICE); 
         return corrupt;
     }
 
@@ -635,7 +635,7 @@ public:
     void print()
     {
         print_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
     
     void print_help_str()
@@ -646,7 +646,7 @@ public:
     void print_help()
     {
         print_help_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
     
     virtual bool print_adjust(const String &str)
@@ -727,7 +727,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, IN_SERVICE); 
         return corrupt;
     }
 
@@ -752,7 +752,7 @@ public:
     void print()
     {
         print_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
     
     void print_help_str()
@@ -763,7 +763,7 @@ public:
     void print_help()
     {
         print_help_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
 
     virtual bool print_adjust(const String &str)
@@ -843,7 +843,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, IN_SERVICE); 
         return corrupt;
     }
 
@@ -865,7 +865,7 @@ public:
     void print()
     {
         print_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
     
     void print_help_str()
@@ -876,7 +876,7 @@ public:
     void print_help()
     {
         print_help_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
 
     virtual bool print_adjust(const String &str)
@@ -960,7 +960,7 @@ public:
     virtual bool is_corrupt()
     {
         bool corrupt = *val_ > max_ || *val_ < min_;
-        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, true); 
+        if ( corrupt ) sendTxBuf(String::format("\n%s %s corrupt", code_.c_str(), description_.c_str()), true, IN_SERVICE); 
         return corrupt;
     }
 
@@ -982,7 +982,7 @@ public:
     void print()
     {
         print_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
     
     void print_help_str()
@@ -993,7 +993,7 @@ public:
     void print_help()
     {
         print_help_str();
-        sendTxBuf(String::format("%s\n", pr.buff), true, true);
+        sendTxBuf(String::format("%s\n", pr.buff), true, IN_SERVICE);
     }
 
     virtual bool print_adjust(const String &str)

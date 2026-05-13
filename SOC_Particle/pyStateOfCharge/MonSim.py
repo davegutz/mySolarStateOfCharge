@@ -81,7 +81,7 @@ def sync_to_mon_or_sim(mr, sr, t_mx=None):
     return time, dtime
 
 
-def Tb_from_raw_or_selected(use_raw, mr):
+def Tb_from_raw_or_selected(use_raw, mr, sr):
     if use_raw:
         if rp.modeling_tb():
             Tb_ = mr.Tb_model
@@ -89,14 +89,18 @@ def Tb_from_raw_or_selected(use_raw, mr):
         else:
             Tb_ = mr.Tb_hdwe
             Tb_f_ = mr.Tb_hdwe_f
+        Tb_s_ = Tb_
+        Tb_f_s_ = Tb_f_
     else:
         if hasattr(mr, 'Tb'):
             Tb_ = mr.Tb
         else:
             Tb_ = mr.Tb_f
         Tb_f_ = mr.Tb_f
+        Tb_s_ = sr.Tb_s
+        Tb_f_s_ = sr.Tb_f_s
 
-    return Tb_, Tb_f_
+    return Tb_, Tb_f_, Tb_s_, Tb_f_s_
 
 
 def vb_from_raw_or_selected(use_raw, mr):
@@ -131,7 +135,7 @@ def replicate(OPT: UserOptions):
     vb = vb_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_run)
 
     # Tb
-    Tb, Tb_f = Tb_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_run)
+    Tb, Tb_f, Tb_s, Tb_f_s = Tb_from_raw_or_selected(OPT.use_vb_raw, OPT.mon_run, OPT.sim_run)
 
     # chem
     chm_m, chm_s = chm_from_mon_or_sim(OPT.mon_run, OPT.sim_run)
@@ -278,11 +282,11 @@ def replicate(OPT: UserOptions):
         else:
             _chm_s = OPT.Bsim
 
-        sim.calculate(_chm_s, Tb[G.i], vb_, ib_in_s, SN.dt_s[G.i], reset, None, None, SN, OPT,
+        sim.calculate(_chm_s, Tb_s[G.i], vb_, ib_in_s, SN.dt_s[G.i], reset, None, None, SN, OPT,
                       soc=sim.soc, q_capacity=sim.q_capacity, rp=rp, saturated_init=sat_s_init)
 
-        sim.count_coulombs(OPT, SN, chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, charge_curr=sim.ib_charge, sat=False,
-                           saturated=False, mon_sat=mon.sat, rp=rp)
+        sim.count_coulombs(OPT, SN, chem=_chm_s, reset_temp=reset, tb_f=Tb_f_s[G.i], charge_curr=sim.ib_charge,
+                           sat=False, saturated=False, mon_sat=mon.sat, rp=rp)
 
         # Charge init
         if reset:

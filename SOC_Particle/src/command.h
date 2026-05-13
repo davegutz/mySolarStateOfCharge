@@ -138,18 +138,18 @@ public:
 
       //   text    data     bss     dec     hex filename
       // 290338  119852   13698  423888   677d0 c:/Users/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/target/6.
-      sendTxBuf(String::format("command parameters(cp):\n"), true, true);
-      sendTxBuf(String::format(" inf_reset %d\n", inf_reset), true, true);
-      sendTxBuf(String::format(" model_cutback %d\n", model_cutback), true, true);
-      sendTxBuf(String::format(" model_saturated %d\n", model_saturated), true, true);
-      sendTxBuf(String::format(" publishS %d\n", publishS), true, true);
-      sendTxBuf(String::format(" soft_reset %d\n", soft_reset), true, true);
-      sendTxBuf(String::format(" soft_reset_sim %d\n", soft_reset_sim), true, true);
-      sendTxBuf(String::format(" ts %7.3f\n", ts), true, true);
-      sendTxBuf(String::format(" write_summary %d\n", write_summary), true, true);
-      sendTxBuf(String::format(" kf_reset %d\n", kf_reset), true, true);
-      sendTxBuf(String::format(" ekf_reset %d\n", ekf_reset), true, true);
-      sendTxBuf(String::format(" disp_word %d\n\n", disp_word), true, true);
+      sendTxBuf(String::format("command parameters(cp):\n"), true, IN_SERVICE);
+      sendTxBuf(String::format(" inf_reset %d\n", inf_reset), true, IN_SERVICE);
+      sendTxBuf(String::format(" model_cutback %d\n", model_cutback), true, IN_SERVICE);
+      sendTxBuf(String::format(" model_saturated %d\n", model_saturated), true, IN_SERVICE);
+      sendTxBuf(String::format(" publishS %d\n", publishS), true, IN_SERVICE);
+      sendTxBuf(String::format(" soft_reset %d\n", soft_reset), true, IN_SERVICE);
+      sendTxBuf(String::format(" soft_reset_sim %d\n", soft_reset_sim), true, IN_SERVICE);
+      sendTxBuf(String::format(" ts %7.3f\n", ts), true, IN_SERVICE);
+      sendTxBuf(String::format(" write_summary %d\n", write_summary), true, IN_SERVICE);
+      sendTxBuf(String::format(" kf_reset %d\n", kf_reset), true, IN_SERVICE);
+      sendTxBuf(String::format(" ekf_reset %d\n", ekf_reset), true, IN_SERVICE);
+      sendTxBuf(String::format(" disp_word %d\n\n", disp_word), true, IN_SERVICE);
 
     #endif
   }

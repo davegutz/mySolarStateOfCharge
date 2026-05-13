@@ -330,7 +330,7 @@ void Fault::ib_quiet(const bool reset, Sensors *Sen)
 
   if ( sp.debug()==21 )
     sendTxBuf(String::format("Isum %8.3f ib_quiet %8.3f ib_quiet_thr %8.3f ib_is_quiet %d ib_is_func %d ib_really_quiet %d\n",
-      Sen->Ib_amp_hdwe() + Sen->Ib_noa_hdwe(), ib_quiet_, ib_quiet_thr_, ib_is_quiet_, ib_is_functional_, ib_really_quiet_), true, true);
+      Sen->Ib_amp_hdwe() + Sen->Ib_noa_hdwe(), ib_quiet_, ib_quiet_thr_, ib_is_quiet_, ib_is_functional_, ib_really_quiet_), true, IN_SERVICE);
 
       // Fault
   faultAssign( ib_is_quiet_, IB_DSCN_FLT );   // initializes false
@@ -457,14 +457,14 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
   String txBuf;
 
   txBuf = String::format("\nLooparound Amp:\n");
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
   txBuf = LoopIbAmp->pretty_print(Sen);
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
 
   txBuf = String::format("\nLooparound Noa:\n");
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
   txBuf = LoopIbNoa->pretty_print(Sen);
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
 
   txBuf = String::format("\nFault:\n") +
     String::format(" cc_diff%9.6f  thr%9.6f Fc^\n", cc_diff_, cc_diff_thr_) +
@@ -475,11 +475,11 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
     String::format(" e_wrap_filt%7.3f\n", e_wrap_filt_) +
     String::format(" ib_quiet%7.3f thr%7.3f Fq v\n", ib_quiet_, ib_quiet_thr_) +
     String::format(" sel_brk_hdwe:     ");
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
 
   txBuf = Sen->sel_brk_hdwe->pretty_print() +
     String::format("\n");
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
 
   txBuf = String::format(" soc%7.3f soc_inf%7.3f voc%7.3f  voc_soc%7.3f\n", Mon->soc(), Mon->soc_inf(), Mon->voc(), Mon->voc_soc()) +
     String::format(" dis_tb_fa %d  dis_vb_fa %d  dis_ib_fa %d\n", ap.disab_tb_fa(), ap.disab_vb_fa_lt(), ap.disab_ib_fa()) +
@@ -494,7 +494,7 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
     String::format(" Imh%7.3f Imm %7.3f Ib%7.3f\n", Sen->Ib_amp_hdwe(), Sen->Ib_amp_model(), Sen->Ib()) +
     String::format(" Inh%7.3f Inm %7.3f Ib%7.3f\n", Sen->Ib_noa_hdwe(), Sen->Ib_noa_model(), Sen->Ib()) +
     String::format(" Ibh%7.3f Ibh %7.3f Ib%7.3f\n\n", Sen->Ib_hdwe(), Sen->Ib_hdwe_model(), Sen->Ib());
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
 
   // if ( ib_choice_ != ib_choice_last_ || vb_sel_stat_ != vb_sel_stat_last_ || tb_sel_stat_ != tb_sel_stat_last_ )
   debug_qs(Mon, Sen);
@@ -537,7 +537,7 @@ txBuf = String::format("") +
     String::format("2-red_loss %2d\n", dispRead(dispw::red_loss)) +
     String::format("1-diff_ib  %2d\n", dispRead(diff_ib)) +
     String::format("0-conn     %2d\n\n", dispRead(conn)); 
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
   // enum dispw {conn=0, diff_ib=1, red_loss=2, fail_ib=3, fail_ibm=4, fail_vb=5, flt_tb=6, flt_ekf=7, SAT=8, off=9, accy=10, time_long=11, Count};
 
   txBuf = bitMapPrint(pr.buff, fltw_, NUM_FLT) +
@@ -549,18 +549,18 @@ txBuf = String::format("") +
     String::format("10FEDCBA9876543210   10FExxBA9876543210   BA9876543210\n\n") +
     String::format("  fltw=%8ld       falw=%8ld         dispw=%8ld\n",
       fltw_, falw_, cp.disp_word);
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
 
   if ( ap.fake_faults() )
   {
     txBuf = String::format("fake_faults=>redl\n");
-    sendTxBuf(txBuf, true, true);
+    sendTxBuf(txBuf, true, IN_SERVICE);
   }
 
   if ( sp.Time_now() < 1746684000UL )
   {
     txBuf = String::format("\n\n////////////////// WARN set UT (h;) %lu < %lu\n\n", sp.Time_now(), 1746684000UL);
-    sendTxBuf(txBuf, true, true);
+    sendTxBuf(txBuf, true, IN_SERVICE);
   }
 }
 

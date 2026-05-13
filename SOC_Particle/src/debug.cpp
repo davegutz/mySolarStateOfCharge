@@ -121,32 +121,32 @@ soc_ekf%8.4f\nsoc%8.4f\nsoc_min%8.4f\nsoc_inf%8.4f\nmodeling %d\n",
     Sen->Flt->ib_amp_fa(), Sen->Flt->ib_noa_fa(), Sen->Flt->vb_fail(),
     Sen->Tb_f(), Mon->vb(), Mon->voc(), Mon->voc_dead(), Mon->voc_stat(), Mon->voc_stat_f(), Mon->voc_soc(), Mon->vsat(), Sen->Vc(), Mon->ib(), Sen->Sim->soc(), Mon->soc_ekf(),
     Mon->soc(), Mon->soc_min(), Mon->soc_inf(), sp.modeling());
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
 
   txBuf = String::format("dq_inf/dq_abs%10.1f/%10.1f %8.4f coul_eff*=%9.6f, DAB+=%9.6f\nDQn%10.1f Tn%10.1f DQp%10.1f Tp%10.1f\n",
     Mon->delta_q_inf(), Mon->delta_q_abs(), Mon->delta_q_inf()/Mon->delta_q_abs(),
     -Mon->delta_q_neg()/Mon->delta_q_pos(),
     -(Mon->delta_q_neg() + Mon->delta_q_pos()) / nice_zero(Mon->time_neg() + Mon->time_pos(), 1e-6),
     Mon->delta_q_neg(), Mon->time_neg(), Mon->delta_q_pos(), Mon->time_pos());
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
 
   // if ( Sen->Flt->falw() || Sen->Flt->fltw() ) chit("Pf;", SOON);
   // time_long_2_str((time_t)sp.Time_now(), pr.buff);
   // txBuf = String::format(" time %ld hms:  %s\n", sp.Time_now(), pr.buff);
-  // sendTxBuf(txBuf, true, true);
+  // sendTxBuf(txBuf, true, IN_SERVICE);
   if ( Sen->Flt->fltw()>0UL || Sen->Flt->falw()>0UL )
   {
     if ( Sen->Flt->falw()>0UL )
-      sendTxBuf("THERE ARE FAILURES:  ", true, true);
+      sendTxBuf("THERE ARE FAILURES:  ", true, IN_SERVICE);
     else if ( Sen->Flt->fltw()>0UL )
-      sendTxBuf("there are faults:  ", true, true);
+      sendTxBuf("there are faults:  ", true, IN_SERVICE);
     txBuf = String::format("fltw %lu falw %lu\n", Sen->Flt->fltw(), Sen->Flt->falw());
-    sendTxBuf(txBuf, true, true);
+    sendTxBuf(txBuf, true, IN_SERVICE);
   }
   else
   {
     txBuf = String::format("no faults:  fltw %lu falw %lu\n", Sen->Flt->fltw(), Sen->Flt->falw());
-    sendTxBuf(txBuf, true, true);
+    sendTxBuf(txBuf, true, IN_SERVICE);
   }
 }
 
@@ -159,12 +159,12 @@ void debug_qf(BatteryMonitor *Mon, Sensors *Sen)
       sp.mod_tb(), sp.mod_vb(), sp.mod_ib(),
       sp.mod_tb_dscn(), sp.mod_vb_dscn(), sp.mod_ib_amp_dscn(), sp.mod_ib_noa_dscn(),
       Sen->Flt->tb_sel_status(), Sen->Flt->vb_sel_stat(), Sen->Flt->ib_sel_stat(), Sen->Flt->ib_choice(), Sen->Flt->ib_decision());
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
 
   txBuf = String::format(" fake_faults %d\n latched_fail %d\n latch_fake %d\n preserving %d\n\n",
       ap.fake_faults(), Sen->Flt->latched_fail(), Sen->Flt->latch_fake(), Sen->Flt->preserving()) +
     String::format(" wrap_hi_or_lo_fa %d wrap_hi_and_lo_fa %d\n\n", Sen->Flt->wrap_hi_or_lo_fa(), Sen->Flt->wrap_hi_and_lo_fa());
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
 
 }
 
@@ -178,7 +178,7 @@ void debug_qs(BatteryMonitor *Mon, Sensors *Sen)
     String::format(" %d  fake\n %d  ib choice\n %d  ib choice past\n %d  ib decision\n %d  vb sel stat\n %d  vb sel stat past\n %d  latch\n %d  latch_fake\n",
     ap.fake_faults(), Sen->Flt->ib_choice(), Sen->Flt->ib_choice_past(), Sen->Flt->ib_decision(), Sen->Flt->vb_sel_stat(), Sen->Flt->vb_sel_stat_past(), Sen->Flt->latched_fail(), Sen->Flt->latch_fake()) +
     String::format(" %d  preserving faults\n", Sen->Flt->preserving());
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
 
 }
 
@@ -192,7 +192,7 @@ void debug_check_98(BatteryMonitor *Mon, Sensors *Sen)
   txBuf = String::format("imh imhkf inh inkfh: %6.2fA %6.2fA,  %6.2fA,%6.2fA\n",
     Sen->Ib_amp_hdwe_f(), Sen->Ib_amp_hdwe_kf(), Sen->Ib_noa_hdwe_f(), Sen->Ib_noa_hdwe_kf());
 
-  sendTxBuf(txBuf, true, true);
+  sendTxBuf(txBuf, true, IN_SERVICE);
 }
 void debug_check_99(BatteryMonitor *Mon, Sensors *Sen)
 {
@@ -201,7 +201,7 @@ void debug_check_99(BatteryMonitor *Mon, Sensors *Sen)
   {
     if ( sp.debug()==99 )
     {
-      sendTxBuf(String::format("\nSetting hardware 'Xm0,' and throughput 'Dr1,'\n"), true, true);
+      sendTxBuf(String::format("\nSetting hardware 'Xm0,' and throughput 'Dr1,'\n"), true, IN_SERVICE);
       chit("Xm0,", QUEUE);      // Hardware mode
       chit("Dr1,", QUEUE);      // Max rate to measure throughput in zero script
     }
@@ -233,7 +233,7 @@ void debug_check_99(BatteryMonitor *Mon, Sensors *Sen)
       ap.slr_res(),
       Sen->T());
 
-    sendTxBuf(txBuf, true, true);
+    sendTxBuf(txBuf, true, IN_SERVICE);
   }
 }
 

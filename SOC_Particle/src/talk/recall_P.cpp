@@ -51,7 +51,7 @@ bool recall_P(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             break;
 
         case ( 'e' ):  // Pe:  Print EKF
-            sendTxBuf("\nMon::", true, true); Mon->EKF_1x1::pretty_print();
+            sendTxBuf("\nMon::", true, IN_SERVICE); Mon->EKF_1x1::pretty_print();
             break;
 
         case ( 'f' ):  // Pf:  Print faults
@@ -60,7 +60,7 @@ bool recall_P(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             sp.print_fault_array();
             sp.print_fault_header(&pp.pubList);
             txBuf = String::format("\nSen::\n");
-            sendTxBuf(txBuf, true, true);
+            sendTxBuf(txBuf, true, IN_SERVICE);
             Sen->Flt->pretty_print(Sen, Mon);
             break;
 

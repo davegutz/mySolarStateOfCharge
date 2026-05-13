@@ -84,12 +84,12 @@ bool Parameters::is_corrupt()
     bool corruption = false;
     for ( int i=0; i<n_; i++ )
     {
-        if ( V_[i]->is_corrupt() ) sendTxBuf(String::format("\n%s %s corrupt", V_[i]->code().c_str(), V_[i]->description()), true, true);
+        if ( V_[i]->is_corrupt() ) sendTxBuf(String::format("\n%s %s corrupt", V_[i]->code().c_str(), V_[i]->description()), true, IN_SERVICE);
         corruption |= V_[i]->is_corrupt();
     }
     if ( corruption )
     {
-        sendTxBuf(String::format("\ncorrupt****\n"), true, true);
+        sendTxBuf(String::format("\ncorrupt****\n"), true, IN_SERVICE);
         pretty_print(false);
     }
     return corruption;
@@ -183,7 +183,7 @@ void VolatilePars::pretty_print(const bool all)
     #ifndef SOFT_DEPLOY_PHOTON
         if ( all )
         {
-            sendTxBuf("volatile all:\n", true, true);
+            sendTxBuf("volatile all:\n", true, IN_SERVICE);
             for (uint8_t i=0; i<n_; i++ )
             {
                 if ( !(V_[i]->is_eeram()) )
@@ -195,7 +195,7 @@ void VolatilePars::pretty_print(const bool all)
     #endif
     if ( !all )
     {
-        sendTxBuf("volatile off:\n", true, true);
+        sendTxBuf("volatile off:\n", true, IN_SERVICE);
         uint8_t count = 0;
         for (uint8_t i=0; i<n_; i++ )
         {
@@ -208,9 +208,9 @@ void VolatilePars::pretty_print(const bool all)
                 }
             }
         }
-        if ( count==0 ) sendTxBuf("**none**\n\n", true, true);
+        if ( count==0 ) sendTxBuf("**none**\n\n", true, IN_SERVICE);
     }
-    while ( n_ != NVOL ) { delay(5000); sendTxBuf(String::format("set NVOL=%d\n", n_), true, true); }
+    while ( n_ != NVOL ) { delay(5000); sendTxBuf(String::format("set NVOL=%d\n", n_), true, IN_SERVICE); }
 }
 
 
@@ -304,13 +304,13 @@ void SavedPars::pretty_print(const bool all)
 {
     if ( all )
     {
-        sendTxBuf("saved (sp) all\n", true, true);
+        sendTxBuf("saved (sp) all\n", true, IN_SERVICE);
         for (int i=0; i<n_; i++ )
         {
             V_[i]->print();
         }
         #ifndef SOFT_DEPLOY_PHOTON
-            sendTxBuf("Xm:\n", true, true);
+            sendTxBuf("Xm:\n", true, IN_SERVICE);
             pretty_print_modeling();
         #endif
     }
@@ -326,10 +326,10 @@ void SavedPars::pretty_print(const bool all)
                 V_[i]->print();
             }
         }
-        if ( count==0 ) sendTxBuf("**none**\n\n", true, true);
+        if ( count==0 ) sendTxBuf("**none**\n\n", true, IN_SERVICE);
 
         // Build integrity test
-        while ( n_ != NSAV ) { delay(5000); sendTxBuf(String::format("set NSAV=%d\n", n_), true, true); }
+        while ( n_ != NSAV ) { delay(5000); sendTxBuf(String::format("set NSAV=%d\n", n_), true, IN_SERVICE); }
     }
 }
 
@@ -349,7 +349,7 @@ void SavedPars::pretty_print_modeling()
 
   
   time_long_2_str((time_t)Time_now_, buffer);
-  sendTxBuf(String::format(" time %ld hms:  %s\n", Time_now_, buffer), true, true);
+  sendTxBuf(String::format(" time %ld hms:  %s\n", Time_now_, buffer), true, IN_SERVICE);
 }
 
 // Print faults

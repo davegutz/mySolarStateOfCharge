@@ -419,9 +419,9 @@ void clear_queues()
 void cmd_echo(urgency request)
 {
   if ( request==0 )
-    sendTxBuf(String::format("cmd: %s\n", cp.cmd_str.c_str()), true, true);
+    sendTxBuf(String::format("cmd: %s\n", cp.cmd_str.c_str()), true, IN_SERVICE);
   else
-    sendTxBuf(String::format("echo: %s, %d\n", cp.cmd_str.c_str(), request), true, true);
+    sendTxBuf(String::format("echo: %s, %d\n", cp.cmd_str.c_str(), request), true, IN_SERVICE);
 }
 
 
@@ -538,7 +538,7 @@ void describe(BatteryMonitor *Mon, Sensors *Sen)
       case ( 'w' ):  // w:  confirm write * adjustments to to SRAM
         System.backupRamSync();
         sp.dirty(false);
-        sendTxBuf("SAVED *\n", true, true);
+        sendTxBuf("SAVED *\n", true, IN_SERVICE);
         break;
 
       case ( 'W' ):  // W<>:  wait.  Skip
