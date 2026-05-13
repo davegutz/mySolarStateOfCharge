@@ -500,7 +500,6 @@ def over_fault(hi, filename, fig_files=None, plot_title=None, fig_list=None, sub
     plq(plt, hi, timestr, hi, 'vb_fa_lt', color='black', linestyle=':')
     plq(plt, hi, timestr, hi, 'Tb_flt', color='red', linestyle='-')
     plq(plt, hi, timestr, hi, 'Tb_fa', color='cyan', linestyle='--')
-    plq(plt, hi, timestr, hi, 'Tb_fa', color='cyan', linestyle='--')
     plt.legend(loc=1)
     fig_file_name = filename + '_' + str(len(fig_list)) + ".png"
     fig_files.append(fig_file_name)

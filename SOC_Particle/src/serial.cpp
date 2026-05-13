@@ -208,7 +208,10 @@ void print_ekf_header(void)
 
 void EKF_1x1::print_ekf_serial(BatteryMonitor *Mon)
 {
+  static double last_eTime = 0.;
   double eTime = double(now_ekf_)/1000.;
+  if ( eTime <= last_eTime + 0.00005 ) return;
+  last_eTime = eTime;
 
   Serial.printf("unit_ekf,%13.4f,%8.4f,%13.10f,%13.10f,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%10.7g,%11.9g,%10.7g,%10.7g,",
     eTime, dt_ekf_, Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_);
@@ -229,6 +232,7 @@ void EKF_1x1::print_ekf_serial(BatteryMonitor *Mon)
 void print_rapid_data(const bool reset, Sensors *Sen, BatteryMonitor *Mon, const bool reset_temp)
 {
   static uint8_t last_read_debug = 0;
+  static double last_cTime = 0.;
   if ( ( sp.debug()==1 || sp.debug()==2 || sp.debug()==3 || sp.debug()==4 ) )
   {
     if ( reset || (last_read_debug != sp.debug()) )
@@ -240,10 +244,11 @@ void print_rapid_data(const bool reset, Sensors *Sen, BatteryMonitor *Mon, const
     {
       cp.num_v_print++;
     }
-    if ( cp.publishS )
+    if ( cp.publishS && (reset || Mon->cTime() > last_cTime + 0.00005) )
     {
       print_rapid_serial(reset, &pp.pubList, Sen, Mon);
       cp.num_v_print++;
+      last_cTime = Mon->cTime();
     }
   }
   last_read_debug = sp.debug();
@@ -336,9 +341,12 @@ void print_shunt_header(Sensors *Sen)
 
 void print_shunt_serial(const bool reset, Sensors *Sen)
 {
+  static double last_cTime_sh = 0.;
   if ( ( sp.debug()==2  ) && cp.publishS )
   {
     double cTime = double(Sen->now())/1000.;
+    if ( !reset && cTime <= last_cTime_sh + 0.00005 ) return;
+    last_cTime_sh = cTime;
 
     sprintf(pr.buff, "shunt_unit,%13.4f, %d, %d,  %11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,%11.6f,  ",
       cTime, reset, cp.kf_reset_print,
@@ -373,8 +381,11 @@ void print_signal_sel_header(void)
 
 void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon, BatterySim *Sim)
 {
+  static double last_cTime_sel = 0.;
   if ( (sp.debug()==2 || sp.debug()==4 || sp.debug()==61 )  && cp.publishS )
   {
+    if ( !reset && Sen->cTime() <= last_cTime_sel + 0.00005 ) return;
+    last_cTime_sel = Sen->cTime();
     sprintf(pr.buff, "unit_sel,%13.4f, %8.6f, %d, %d, %d, %10.7f, %8.6f,%8.6f,%8.6f,%8.6f,%8.6f,   %d,%8.6f,%8.6f,%8.6f,%8.6f,   %8.6f,%8.6f, ",
         Sen->cTime(), Sen->T(), reset, Sen->Flt->reset_all_faults_print(), sp.ib_force(),
         Sen->Flt->cc_diff(),
@@ -469,8 +480,11 @@ void print_sim_header(void)
 
 void print_sim_serial(const bool initializing_all, const bool reset_temp, Sensors *Sen, BatterySim *Sim)
 {
-  if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all)
+  static double last_cTime_sim = 0.;
+  if ( (sp.debug()==2 || sp.debug()==3 || sp.debug()==4 )  && cp.publishS && !initializing_all
+       && (reset_temp || Sim->cTime() > last_cTime_sim + 0.00005) )
   {
+    last_cTime_sim = Sim->cTime();
     sprintf(pr.buff, "unit_sim, %13.4f, %8.4f, %d, %10.4f, %d, %11.8f, %11.8f, %11.8f, %7.6f,%7.6f, ",
         Sim->cTime(), Sim->dt(), CHEM, Sim->q_cap_rated_scaled(), Sim->bms_off(), Sim->Tb(), Sim->Tb_f(), Sim->Tb_f(), Sim->vsat(), Sim->voc_stat());
     Serial.printf("%s", pr.buff);

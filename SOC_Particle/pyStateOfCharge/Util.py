@@ -113,7 +113,7 @@ def save_struct_to_csv(obj, file_path):
     if t_col not in cols:
         cols[t_col] = time
 
-    headers = [t_col] + sorted(k for k in cols if k != t_col)
+    headers = [t_col] + sorted((k for k in cols if k != t_col), key=str.lower)
 
     # --- write CSV -----------------------------------------------------------
     out_dir = os.path.dirname(file_path)
