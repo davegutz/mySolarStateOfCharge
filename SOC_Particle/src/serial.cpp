@@ -252,7 +252,7 @@ void print_rapid_data(const bool reset, Sensors *Sen, BatteryMonitor *Mon, const
 // Print primary data
 void print_rapid_header(void)
 {
-  Serial.printf ("unit_rap, hm, cTime, dt, reset, reset_temp, soft_reset, soft_reset_sim, reset_all_faults, ekf_reset, kf_reset, init_mon, init_sim,   ");
+  Serial.printf ("unit_rap, cTime, dt, hm, reset, reset_temp, soft_reset, soft_reset_sim, reset_all_faults, ekf_reset, kf_reset, init_mon, init_sim,   ");
   Serial.printf("chm, qcrs, qcap, sat, saturated, sel, mod, bmso,  ");
   Serial.printf("Tb, Tb_f, ");
   Serial.printf("vb, ib, ib_dyn, dv_hys,   ");
@@ -264,8 +264,8 @@ void print_rapid_header(void)
 
 void print_rapid_serial(const bool reset, Publish *pubList, Sensors *Sen, BatteryMonitor *Mon)
 {
-  sprintf(pr.buff,  "%s,%s,%13.4f,%8.4f,   %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,   ", \
-    pubList->unit.c_str(), pubList->hm_string.c_str(), Mon->cTime(), Mon->dt(),
+  sprintf(pr.buff,  "%s,%13.4f,%8.4f,%s,   %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,   ", \
+    pubList->unit.c_str(), Mon->cTime(), Mon->dt(), pubList->hm_string.c_str(), 
     reset, Sen->reset_temp(), cp.soft_reset_print, cp.soft_reset_sim_print, Sen->Flt->reset_all_faults_print(), cp.ekf_reset_print,
     cp.kf_reset_print, Mon->initializing(), Sen->Sim->initializing());
   Serial.printf("%s", pr.buff);
@@ -283,7 +283,7 @@ void print_rapid_serial(const bool reset, Publish *pubList, Sensors *Sen, Batter
     Mon->ib_charge(), Mon->voc_soc(), Mon->ib_dyn_r(), Mon->ib_dyn_T(), Mon->ib_dyn_rstate(), Mon->ib_dyn_lstate());
   Serial.printf("%s", pr.buff);
 
-  sprintf(pr.buff,  "%11.9f,%11.9f,%11.9f,%11.9f,%11.9f,  %11.9f,%11.9f,%11.9f,%5.3f,%12.7f,%12.7f,", \
+  sprintf(pr.buff,  "%11.9f,%11.9f,%11.9f,%11.9f,%11.9f,  %11.9f,%11.9f,%11.9f,%9.7f,%12.7f,%12.7f,", \
     Mon->vsat(), Mon->dv_dyn(), Mon->voc_stat(), Mon->hx(), Mon->y_ekf(),
     Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc(), Mon->soc_min(), Mon->d_delta_q(), Mon->delta_q());
   Serial.printf("%s", pr.buff);

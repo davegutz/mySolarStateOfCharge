@@ -156,9 +156,9 @@ def replicate(OPT: UserOptions):
     scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_batt, Battery.NOM_UNIT_CAP)
 
     # Make batteries from modified class constants
-    sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], Tb_f=SN.sim_run.Tb_f_s[0], tb_f=SN.mon_run.Tb_f[0], scale=scale_sim, tweak_test=tweak_test,
-                     vsat_add=Battery.sp_vsat_add)
-    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], Tb_f=SN.mon_run.Tb_f[0], tb_f=SN.mon_run.Tb_f[0], scale=scale_mon,
+    sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], Tb_f=SN.sim_run.Tb_f_s[0], scale=scale_sim,
+                     tweak_test=tweak_test, vsat_add=Battery.sp_vsat_add)
+    mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], Tb_f=SN.mon_run.Tb_f[0], scale=scale_mon,
                          vsat_add=Battery.sp_vsat_add, tweak_test=tweak_test)
     Is_sat_delay = TFDelay(in_=OPT.mon_run.soc[0] > 0.97, t_true=T_SAT, t_false=T_DESAT, dt=0.1)  # later, dt is changed
 

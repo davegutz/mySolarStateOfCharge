@@ -75,8 +75,10 @@ class Battery(BatteryConstants, Coulombs):
                             what gets delivered, e.g.Wshunt / NOMINAL_VB.  Also varies 0.2 - 0.4 C currents
                             or 20 - 40 A for a 100 Ah battery"""
 
-    def __init__(self, OPT=None, q_cap_rated=BatteryConstants.NOM_UNIT_CAP*3600, temp_rlim=0.017, t_rated=25., Tb_f=BatteryConstants.NOMINAL_TB, tb_f=25., tweak_test=False,
-                 dvoc=0., mod_code=0, vsat_add=0., scale_cap=1., mon=None, str_=None):
+    def __init__(self, OPT=None, q_cap_rated=BatteryConstants.NOM_UNIT_CAP*3600, temp_rlim=0.017,
+                 t_rated=BatteryConstants.RATED_TEMP, Tb_f=BatteryConstants.NOMINAL_TB,
+                 tweak_test=False, dvoc=0., mod_code=0, vsat_add=0., scale_cap=1., mon=None,
+                 str_=None):
         """ Default values from Taborelli & Onori, 2013, State of Charge Estimation Using Extended Kalman Filters for
         Battery Management System.   Battery equations from LiFePO4 BattleBorn.xlsx and 'Generalized SOC-OCV Model Zhang
         etal.pdf.'  SOC-OCV curve fit './Battery State/BattleBorn Rev1.xls:Model Fit' using solver with min slope
@@ -127,8 +129,8 @@ class Battery(BatteryConstants, Coulombs):
             self.chemistry.coul_eff *= OPT.slr_coul_eff
             if hasattr(OPT, 'unit'):
                 self.unit = OPT.unit
-        self.Tb = tb_f
-        self.Tb_f = tb_f
+        self.Tb = Tb_f
+        self.Tb_f = Tb_f
         self.Tb_f_rate = None
         self.saved = Saved(str_)  # for plots and prints
         self.dv_hys = 0.  # Placeholder so BatterySim can be plotted
@@ -148,19 +150,17 @@ class Battery(BatteryConstants, Coulombs):
         self.voc_soc_new = 0.
         self.scale_cap = scale_cap
         self.Tb_rstate = None
-        self.Tb_state = None
-        self.Tb_hdwe_f = None
-        self.Tb_hdwe_f_rate = None
-        self.Tb_model_f_rate = None
+        self.Tb_state = Tb_f
+        self.Tb_hdwe_f = Tb_f
+        self.Tb_hdwe_f_rate = 0.
+        self.Tb_model_f_rate = 0.
         self.Tb_rstate = None
-        self.Tb_state = None
-        self.Tb_hdwe_f = None
-        self.Tb_hdwe_f_rate = None
-        self.Tb_model_f_rate = None
+        self.Tb_state = Tb_f
+        self.Tb_hdwe_f = Tb_f
+        self.Tb_hdwe_f_rate = 0.
+        self.Tb_model_f_rate = 0.
         self.reset = True
         self.voltage_low = False
-        self.Tb = 0.
-        self.Tb_f = 0.
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -249,15 +249,17 @@ class Battery(BatteryConstants, Coulombs):
 # noinspection PyPep8Naming
 class BatteryMonitor(Battery, EKF1x1):
     """Extend Battery class to make a monitor"""
-    def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600, t_rated=25., temp_rlim=0.017, scale=1.,
-                 Tb_f=Battery.NOMINAL_TB, tb_f=25., tweak_test=False, dvoc=0., mod_code=0, vsat_add=0.):
+    def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600,
+                 t_rated=BatteryConstants.RATED_TEMP, temp_rlim=0.017, scale=1.,
+                 Tb_f=Battery.NOMINAL_TB, tweak_test=False, dvoc=0.,
+                 mod_code=0, vsat_add=0.):
         ref = None
         if hasattr(OPT, 'slr_res_0'):
             ref = OPT.mon_run
         else:
             pass
         q_cap_rated_scaled = q_cap_rated * scale
-        Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, Tb_f=Tb_f, tb_f=tb_f,
+        Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated_scaled, t_rated=t_rated, temp_rlim=temp_rlim, Tb_f=Tb_f,
                          tweak_test=tweak_test, dvoc=dvoc, mod_code=mod_code, scale_cap=scale, mon=True, str_='ver',
                          vsat_add=vsat_add)
 
@@ -999,9 +1001,10 @@ class BatteryMonitor(Battery, EKF1x1):
 class BatterySim(Battery):
     """Extend Battery class to make a model"""
 
-    def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600, t_rated=25., temp_rlim=0.017,
-                 scale=1., Tb_f=Battery.NOMINAL_TB, tb_f=25., tweak_test=False, mod_code=0, vsat_add=0.):
-        Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, Tb_f=Tb_f, tb_f=tb_f,
+    def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600,
+                 t_rated=BatteryConstants.RATED_TEMP, temp_rlim=0.017, scale=1.,
+                 Tb_f=Battery.NOMINAL_TB, tweak_test=False, mod_code=0, vsat_add=0.):
+        Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, Tb_f=Tb_f,
                          tweak_test=tweak_test, dvoc=OPT.add_voc_sim, mod_code=mod_code, scale_cap=scale, mon=False,
                          str_='ver_s', vsat_add=vsat_add)
         self.chemistry = Chemistry(mod_code=mod_code, dvoc=OPT.add_voc_sim, unit=OPT.unit)
@@ -1201,7 +1204,8 @@ class BatterySim(Battery):
 
         return self.vb
 
-    def count_coulombs(self, OPT, SN, chem, reset_temp, tb_f, charge_curr, sat, saturated, mon_sat=None, rp=None):
+    def count_coulombs(self, OPT, SN, chem, reset_temp, tb_f, charge_curr, sat,
+                       saturated, mon_sat=None, rp=None):
         # BatterySim
         """Coulomb counter based on true=actual capacity
         Internal resistance of battery is a loss

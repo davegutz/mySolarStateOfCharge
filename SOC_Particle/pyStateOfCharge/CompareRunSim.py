@@ -116,6 +116,7 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
     \n{data_file=} \
     \n{unit_key=} \
     \n{time_end=} \
+    \n{compare_run_ver=} \
     \n{plots=} \
     \n{use_mon_soc_=} \
     \n{verbose=} \
@@ -128,7 +129,6 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
     \n{terse=} \
     \n{hardcopy=} \
     \n{mon_str=} \
-    \n{compare_run_ver=} \
     \n")
 
     if fig_files is None:
@@ -264,33 +264,35 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
                     print(f"pdf assembly ERROR: {e}")
             threading.Thread(target=_assemble, daemon=True).start()
 
-        # Append run-vs-ver comparison figures for this case so PlotKiller covers all plots
-        if compare_run_ver:
-            try:
-                from CompareRunVer import temp_folder, find_pairs, compare_pair, \
-                    report as ver_report, plot_diffs as ver_plot_diffs
-                _ver_version = version_from_data_file(data_file) if data_file else None
-                _case_stem = Path(data_file_clean).stem if data_file_clean else None
-                if _ver_version and _case_stem:
-                    _ver_temp = temp_folder(_ver_version)
-                    if Path(_ver_temp).is_dir():
-                        _ver_pairs = find_pairs(_ver_temp)
-                        _ver_pairs = [(r, v) for r, v in _ver_pairs
-                                      if ('_mon_run' in r.name or '_sim_run' in r.name)
-                                      and r.name.startswith(_case_stem)]
-                        if _ver_pairs:
-                            _tol = 1e-3
-                            _rtol = 1e-3  # ~3 significant digits — keeps q_capacity-class large-magnitude signals from tripping
-                            _ver_results = [compare_pair(r, v, _tol, _rtol) for r, v in _ver_pairs]
-                            ver_report(_ver_results, _tol, _rtol)
+    # compare_run_ver runs regardless of plots; makes plots only when plots=True
+    if compare_run_ver:
+        try:
+            from CompareRunVer import temp_folder, find_pairs, compare_pair, \
+                report as ver_report, plot_diffs as ver_plot_diffs
+            _ver_version = version_from_data_file(data_file) if data_file else None
+            _case_stem = Path(data_file_clean).stem if data_file_clean else None
+            if _ver_version and _case_stem:
+                _ver_temp = temp_folder(_ver_version)
+                if Path(_ver_temp).is_dir():
+                    _ver_pairs = find_pairs(_ver_temp)
+                    _ver_pairs = [(r, v) for r, v in _ver_pairs
+                                  if ('_mon_run' in r.name or '_sim_run' in r.name)
+                                  and r.name.startswith(_case_stem)]
+                    if _ver_pairs:
+                        _tol = 1e-3
+                        _rtol = 1e-3  # ~3 significant digits — keeps q_capacity-class large-magnitude signals from tripping
+                        _ver_results = [compare_pair(r, v, _tol, _rtol) for r, v in _ver_pairs]
+                        ver_report(_ver_results, _tol, _rtol)
+                        if plots:
                             _ver_ret = ver_plot_diffs(_ver_results, data_file=data_file, show_killer_=False)
                             if _ver_ret:
                                 _ver_figs, _ver_files, _ = _ver_ret
                                 fig_list.extend(_ver_figs)
                                 fig_files.extend(_ver_files)
-            except Exception as _ver_e:
-                print(f"compare_run_ver step: {_ver_e}")
+        except Exception as _ver_e:
+            print(f"compare_run_ver step: {_ver_e}")
 
+    if plots:
         string = 'plots ' + str(fig_list[0].number) + ' - ' + str(fig_list[-1].number)
         if show_killer_:
             show_killer(string, 'CompareRunSim', fig_list=fig_list, fig_files=fig_files, pdf_path=save_pdf_path,
@@ -312,7 +314,8 @@ def main():  # Example usage.  ok on 20260217
     data_file='/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/tLoFailHdwe_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = 10
-    plots = True
+    compare_run_ver = True
+    plots = False
     use_mon_soc_ = False
     verbose = False
     scale_batt = 1.0
@@ -324,7 +327,6 @@ def main():  # Example usage.  ok on 20260217
     terse = True
     hardcopy = True
     mon_str = ''
-    compare_run_ver = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,
                     use_mon_soc_=use_mon_soc_, verbose=verbose, scale_batt=scale_batt, slr_hys_sim=slr_hys_sim,
