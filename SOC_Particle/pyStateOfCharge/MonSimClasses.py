@@ -92,16 +92,10 @@ class Sensors:
             else:
                 self.mod_tb = np.copy(self.mon_run.mod_data)
             self.Tb0 = self.mon_run.Tb_f[0]
-            self.Tb0_s = self.mon_run.Tb[0]
             self.Tb = self.mon_run.Tb[0]
             self.Tb_f = self.mon_run.Tb_f[0]
             self.lut_dTb = None
             self.dTb = 0.
-            if OPT.add_Tb is not None:
-                self.add_Tb = np.array(OPT.add_Tb)
-                self.Tb0 += OPT.add_Tb[1, 0]
-                self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb[0, :]), np.array(OPT.add_Tb[1, :]))
-                self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
             self.Tb_f_rate = self.mon_run.Tb_f_rate[0]
             self.Tb_past = self.mon_run.Tb[0] + self.dTb
             self.Tb_f_past = self.mon_run.Tb_f[0] + self.dTb
@@ -154,11 +148,6 @@ class Sensors:
             # self.Tb_f_rate_init = self.mon_run.Tb_f_rate[0]
             self.lut_dTb = None
             self.dTb = 0.
-            if OPT.add_Tb is not None:
-                self.add_Tb = np.array(OPT.add_Tb)
-                self.Tb0 += OPT.add_Tb[1, 0]
-                self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb[0, :]), np.array(OPT.add_Tb[1, :]))
-                self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
             self.Tb_f = self.mon_run.Tb_f
             self.Tb_init = self.mon_run.Tb[0] + self.dTb
             # self.Tb_f_init = self.mon_run.Tb_f[0] + self.dTb
@@ -203,14 +192,6 @@ class Sensors:
             # self.Tb_f_rate_init = 0.
             self.lut_dTb = None
             self.dTb = 0.
-            if OPT.add_Tb is not None:
-                self.add_Tb = np.array(OPT.add_Tb)
-                self.Tb0 += OPT.add_Tb[1, 0]
-                self.lut_dTb = myTables.TableInterp1D(np.array(OPT.add_Tb[0, :]), np.array(OPT.add_Tb[1, :]))
-                self.dTb = self.lut_dTb.interp(self.mon_run.t[0])
-            # self.Tb_rap_init = self.mon_run.Tb_f[0] + self.dTb
-            # self.Tb_f_init = self.mon_run.Tb_f[0] + self.dTb
-            # self.Tb_f_rate_rap_init = 0.
             self.Tb = self.mon_run.Tb_f[0]
             self.Tb_f = np.copy(self.mon_run.Tb_f)
             self.Tb_f_rate = np.copy(self.Tb_f) * 0.
@@ -307,12 +288,9 @@ class Sensors:
             if hasattr(self.mon_run, 'Tb_h_f'):
                 self.mon_run.Tb_model_f_fut = self.mon_run.Tb_h_f
             else:
-                self.Tb_model_f_fut = self.mon_run.Tb_f
+                self.Tb_model_f_fut = self.mon_run.Tb_f[0]
         if not hasattr(self.mon_run, 'Tb_model_f'):
             self.mon_run.Tb_model_f = self.mon_run.Tb_h_f
-        # if not hasattr(self.mon_run, 'Tb_model_f_rate'):
-        #         self.mon_run.Tb_model_f_rate = 0.*self.mon_run.Tb_h_f.copy()
-        #         self.mon_run.Tb_model_f_rate = 0. * self.mon_run.Tb_h_f.copy()
         if not hasattr(self.mon_run, 'Tb_hdwe'):
             self.mon_run.Tb_hdwe = self.mon_run.Tb_h_f
         if not hasattr(self.mon_run, 'Tb_hdwe_f'):
@@ -331,8 +309,6 @@ class Sensors:
 
     def __str__(self, prefix=''):
         s = prefix + "TFDelay:\n"
-        s += "  Tb0 =  {:9.7f}  // deg C\n".format(self.Tb0)
-        s += "  Tb0_s =  {:9.7f}  // deg C\n".format(self.Tb0_s)
         return s
 
     # noinspection PyPep8Naming

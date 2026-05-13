@@ -156,7 +156,7 @@ def replicate(OPT: UserOptions):
     scale_mon, scale_sim = battery_size(OPT.mon_run, OPT.sim_run, OPT.scale_batt, Battery.NOM_UNIT_CAP)
 
     # Make batteries from modified class constants
-    sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], Tb_f=SN.sim_run.Tb_f_s[0], tb_f=SN.Tb0_s, scale=scale_sim, tweak_test=tweak_test,
+    sim = BatterySim(SN=SN, OPT=OPT, mod_code=chm_s[0], Tb_f=SN.sim_run.Tb_f_s[0], tb_f=SN.mon_run.Tb_f[0], scale=scale_sim, tweak_test=tweak_test,
                      vsat_add=Battery.sp_vsat_add)
     mon = BatteryMonitor(SN=SN, OPT=OPT, mod_code=chm_m[0], Tb_f=SN.mon_run.Tb_f[0], tb_f=SN.mon_run.Tb_f[0], scale=scale_mon,
                          vsat_add=Battery.sp_vsat_add, tweak_test=tweak_test)
@@ -266,9 +266,6 @@ def replicate(OPT: UserOptions):
             else:
                 ib_ = OPT.mon_run.ib[G.i]
 
-        Tb_ = mon.Tb
-        Tb_f_ = mon.Tb_f
-
         if OPT.use_vb_sim:
             vb_ = sim.vb
         elif OPT.vb_fail_t and t[G.i] >= OPT.vb_fail_t:
@@ -281,7 +278,7 @@ def replicate(OPT: UserOptions):
         else:
             _chm_s = OPT.Bsim
 
-        sim.calculate(_chm_s, Tb_, vb_, ib_in_s, SN.dt_s[G.i], reset, None, None, SN, OPT,
+        sim.calculate(_chm_s, Tb[G.i], vb_, ib_in_s, SN.dt_s[G.i], reset, None, None, SN, OPT,
                       soc=sim.soc, q_capacity=sim.q_capacity, rp=rp, saturated_init=sat_s_init)
 
         sim.count_coulombs(OPT, SN, chem=_chm_s, reset_temp=reset, tb_f=sim.Tb_f, charge_curr=sim.ib_charge, sat=False,
@@ -317,7 +314,7 @@ def replicate(OPT: UserOptions):
             mon.init_soc_ekf(OPT.mon_run, G.i, i_ekf)  # when modeling (assumed in python) ekf wants to equal model
 
         # Monitor calculate
-        mon.calculate(_chm_m, Tb_, Tb_f_, vb_, ib_, T, reset, calc_ekf, T_ekf, SN, OPT, rp=rp, reset_ekf=reset_ekf,
+        mon.calculate(_chm_m, Tb[G.i], Tb_f[G.i], vb_, ib_, T, reset, calc_ekf, T_ekf, SN, OPT, rp=rp, reset_ekf=reset_ekf,
                       i=G.i, i_ekf=i_ekf)
         ib_charge = mon.ib_charge
 

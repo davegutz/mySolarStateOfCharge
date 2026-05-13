@@ -309,10 +309,10 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     # Cut-pasted from GUI_TestSOC Run window
-    data_file='/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/tHiFailModel_soc3p2_hi_lo_bb.csv'
+    data_file='/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/tLoFailHdwe_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
-    time_end = None
-    plots = False
+    time_end = 10
+    plots = True
     use_mon_soc_ = False
     verbose = False
     scale_batt = 1.0
@@ -324,7 +324,7 @@ def main():  # Example usage.  ok on 20260217
     terse = True
     hardcopy = True
     mon_str = ''
-    compare_run_ver = False
+    compare_run_ver = True
 
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,
                     use_mon_soc_=use_mon_soc_, verbose=verbose, scale_batt=scale_batt, slr_hys_sim=slr_hys_sim,

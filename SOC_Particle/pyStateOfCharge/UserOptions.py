@@ -56,8 +56,6 @@ class UserOptions:
     slr_tauct_sim: Optional[float] = 1.  # Scalar on Randles charge transfer function time constant in ModelSim
     add_voc_sim: Optional[float] = 0.  # Adder to BatterySim voc table outputs (should match dvoc of Chemistry_BMS.cpp)
     add_voc_mon: Optional[float] = 0.  # Adder to BatteryMonitor voc table outputs (should match dvoc of
-    # Chemistry_BMS.cpp)
-    add_Tb: Optional[float] = None  # Adder on sensed Tb, deg C
 
     # Failure injection
     ib_fail_t: Optional[float] = None  # Time to inject a failure into the Ib input signal

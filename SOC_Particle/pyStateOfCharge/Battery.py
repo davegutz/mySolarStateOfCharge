@@ -238,7 +238,7 @@ class Battery(BatteryConstants, Coulombs):
                     setattr(sv, key, [val])
 
     def calculate(self, chem, tb, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
-                  q_capacity=None, rp=None, reset_ekf=None, soc=None, saturated_init=None):
+                  q_capacity=None, rp=None, reset_ekf=None, soc=None, saturated_init=None, i=None, i_ekf=None):
         # Battery
         raise NotImplementedError
 
@@ -532,7 +532,8 @@ class BatteryMonitor(Battery, EKF1x1):
     # It is assumed that ekf always runs slower than subsampled input data stream
     # (EKF_EFRAME_MULT multi-frame always <= DP)
     def calculate(self, chem, Tb, Tb_f, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
-                  q_capacity=None, rp=None, soc=None, saturated_init=None, reset_ekf=None, i=None, i_ekf=None):
+                  q_capacity=None, rp=None, soc=None, saturated_init=None, reset_ekf=None, i=None,
+                  i_ekf=None):
         self.reset = reset
         self.Tb = Tb
         self.Tb_f = Tb_f
@@ -1113,7 +1114,8 @@ class BatterySim(Battery):
 
     # BatterySim::calculate()
     def calculate(self, chem, tb, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
-                  q_capacity=None, rp=None, reset_ekf=None, soc=None, saturated_init=None):
+                  q_capacity=None, rp=None, reset_ekf=None, soc=None,
+                  saturated_init=None, i=None, i_ekf=None):
         self.reset = reset
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)
