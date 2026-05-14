@@ -275,7 +275,7 @@ void print_rapid_serial(const bool reset, Publish *pubList, Sensors *Sen, Batter
     cp.kf_reset_print, Mon->initializing(), Sen->Sim->initializing());
   Serial.printf("%s", pr.buff);
 
-  sprintf(pr.buff,  "%d,%10.4f,%10.4f,%2d,%2d,%2d,%2d,%2d, ", \
+  sprintf(pr.buff,  "%d,%15.9f,%15.9f,%2d,%2d,%2d,%2d,%2d, ", \
     CHEM, Mon->q_cap_rated_scaled(), Mon->q_capacity(), pubList->sat, pubList->saturated, sp.ib_force(), sp.modeling(), Mon->bms_off());
   Serial.printf("%s", pr.buff);
 
@@ -288,7 +288,7 @@ void print_rapid_serial(const bool reset, Publish *pubList, Sensors *Sen, Batter
     Mon->ib_charge(), Mon->voc_soc(), Mon->ib_dyn_r(), Mon->ib_dyn_T(), Mon->ib_dyn_rstate(), Mon->ib_dyn_lstate());
   Serial.printf("%s", pr.buff);
 
-  sprintf(pr.buff,  "%11.9f,%11.9f,%11.9f,%11.9f,%11.9f,  %11.9f,%11.9f,%11.9f,%9.7f,%12.7f,%12.7f,", \
+  sprintf(pr.buff,  "%11.9f,%11.9f,%11.9f,%11.9f,%11.9f,  %11.9f,%11.9f,%11.9f,%9.7f,%15.9f,%15.9f,", \
     Mon->vsat(), Mon->dv_dyn(), Mon->voc_stat(), Mon->hx(), Mon->y_ekf(),
     Sen->Sim->soc(), Mon->soc_ekf(), Mon->soc(), Mon->soc_min(), Mon->d_delta_q(), Mon->delta_q());
   Serial.printf("%s", pr.buff);

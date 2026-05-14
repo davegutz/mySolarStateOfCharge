@@ -54,7 +54,7 @@ Battery::~Battery() {}
 // functions
 
 // Placeholder; not used
-float Battery::calculate(const double Tb_f, const float soc_frac, float curr_in, const double dt, const bool dc_dc_on)
+float Battery::calculate(const double Tb_f, const double soc_frac, float curr_in, const double dt, const bool dc_dc_on)
 {
     return 0.;
 }
@@ -82,7 +82,7 @@ double Battery::calc_soc_voc(const double soc, const double Tb_f, double *dv_dso
     OUTPUTS:
         dv_dsoc     Derivative scaled, V/fraction
 */
-double Battery::calc_soc_voc_slope(const float soc, const double Tb_f)
+double Battery::calc_soc_voc_slope(const double soc, const double Tb_f)
 {
     float dv_dsoc;  // return value
     if ( soc > 0.5 )
@@ -359,7 +359,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool 
 }
 
 // Charge time calculation
-float BatteryMonitor::calc_charge_time(const double q, const float q_capacity, const float charge_curr, const float soc)
+float BatteryMonitor::calc_charge_time(const double q, const double q_capacity, const float charge_curr, const double soc)
 {
     double delta_q = q - q_capacity;
     if ( charge_curr > TCHARGE_DISPLAY_DEADBAND )
@@ -457,7 +457,7 @@ void BatteryMonitor::init_battery_mon(const bool reset, Sensors *Sen)
 }
 
 // Init EKF
-void BatteryMonitor::init_soc_ekf(const float soc)
+void BatteryMonitor::init_soc_ekf(const double soc)
 {
     soc_ekf_ = soc;
     init_ekf(soc_ekf_, 0.0);
@@ -676,7 +676,7 @@ float BatterySim::calculate(Sensors *Sen, const bool dc_dc_on, const bool reset)
     if ( reset ) ib_fut_ = ib_in_;
     ib_ = max(min(ib_fut_, IMAX_NUM), -IMAX_NUM);  //  Past value ib_.  Overflow protection when ib_ past value used
     vsat_ = calc_vsat();
-    float soc_lim = max(min(soc_, 1.0), -0.2);  // slightly beyond
+    double soc_lim = max(min(soc_, 1.0), -0.2);  // slightly beyond
 
     // VOC-OCV model
     voc_stat_ = calc_soc_voc(soc_, Tb_f_, &dv_dsoc_) + ap.dv_voc_soc();
@@ -826,7 +826,7 @@ Outputs:
     soc_min_        Estimated soc where battery BMS will shutoff current, fraction
     q_min_          Estimated charge at low voltage shutdown, C\
 */
-float BatterySim::count_coulombs(Sensors *Sen, const bool reset_temp, BatteryMonitor *Mon, const bool initializing_all) 
+double BatterySim::count_coulombs(Sensors *Sen, const bool reset_temp, BatteryMonitor *Mon, const bool initializing_all) 
 {
     d_delta_q_s_ = ib_charge_ * dt_;
     if ( ib_charge_>0. ) d_delta_q_s_ *= coul_eff_;

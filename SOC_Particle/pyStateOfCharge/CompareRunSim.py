@@ -311,16 +311,27 @@ def main():  # Example usage.  ok on 20260217
         gdrive = 'G:/My Drive/'
 
     # Cut-pasted from GUI_TestSOC Run window
+    """Request history:
+        1:  ekf
+        2:  soc
+        3:  soc_s
+        4:  temp
+        5:  volt all
+        6:  kf
+        7:  dyn_m
+        8:  vb_wrap
+        9:  dyn_n
+    """
     data_file='/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/tLoFailHdwe_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
-    time_end = 10
+    time_end = 12
     compare_run_ver = True
     plots = False
     use_mon_soc_ = False
     verbose = False
     scale_batt = 1.0
     slr_hys_sim = 1.0
-    request_history = 4
+    request_history = 2
     init_time = None
     time_shift = None
     strict_overplot = True

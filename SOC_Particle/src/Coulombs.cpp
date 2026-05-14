@@ -38,7 +38,7 @@ extern PublishPars pp;    // For publishing
 
 // class Coulombs
 Coulombs::Coulombs() {}
-Coulombs::Coulombs(double *sp_delta_q, const float q_cap_rated,
+Coulombs::Coulombs(double *sp_delta_q, const double q_cap_rated,
   const double s_coul_eff, const float dx_voc, const float dy_voc, const float dz_voc)
   : resetting_(false), d_delta_q_(0.), delta_q_abs_(0.), delta_q_inf_(0.), delta_q_neg_(0.), delta_q_pos_(0.), dt_(0.),
     q_(q_cap_rated), q_capacity_(q_cap_rated), q_cap_rated_(q_cap_rated), q_cap_rated_scaled_(q_cap_rated), q_inf_(0.), q_min_(0.),
@@ -97,7 +97,7 @@ void Coulombs::pretty_print()
 // test comparisons.   The rationale for this is that the battery is frequently saturated which
 // resets all the model parameters.   This happens daily.   Then both the model and the battery
 // are discharged by the same current so the delta_q will be the same.
-void Coulombs::apply_cap_scale(const float scale)
+void Coulombs::apply_cap_scale(const double scale)
 {
   q_cap_rated_scaled_ = scale * q_cap_rated_;
   q_capacity_ = calculate_capacity(tb_f_);  // tb_f_ usually Tb_f to reduce electrical noise effects
@@ -133,7 +133,7 @@ void Coulombs::apply_delta_q_t(const double delta_q, const double tb_f)
 
 
 // Memory set, adjust book-keeping as needed.  delta_q preserved
-void Coulombs::apply_soc(const float soc, const double tb_f)
+void Coulombs::apply_soc(const double soc, const double tb_f)
 {
   soc_ = soc;
   q_capacity_ = calculate_capacity(tb_f);
@@ -164,7 +164,7 @@ Outputs:
   soc_min_        Estimated soc where battery BMS will shutoff current, fraction
   q_min_          Estimated charge at low voltage shutdown, C\
 */
-float Coulombs::count_coulombs(Sensors *Sen, const bool reset_temp, const float charge_curr, const bool sat,
+double Coulombs::count_coulombs(Sensors *Sen, const bool reset_temp, const float charge_curr, const bool sat,
   const bool saturated)
 {
     // Inputs

@@ -96,9 +96,9 @@ public:
                 const float dz_voc);
   ~Battery();
   virtual double calc_soc_voc(const double soc, const double Tb_f, double *dv_dsoc);
-  double calc_soc_voc_slope(float soc, double Tb_f);
+  double calc_soc_voc_slope(double soc, double Tb_f);
   float calc_vsat(void);
-  virtual float calculate(const double Tb_f, const float soc_frac, float curr_in, const double dt, const bool dc_dc_on);
+  virtual float calculate(const double Tb_f, const double soc_frac, float curr_in, const double dt, const bool dc_dc_on);
   float chargeTransfer_a() { return ChargeTransfer_->a(); };
   float chargeTransfer_b() { return ChargeTransfer_->b(); };
   float chargeTransfer_c() { return ChargeTransfer_->c(); };
@@ -177,7 +177,7 @@ public:
   ~BatteryMonitor();
   float amp_hrs_remaining_ekf() { return amp_hrs_remaining_ekf_; };
   float amp_hrs_remaining_soc() { return amp_hrs_remaining_soc_; };
-  float calc_charge_time(const double q, const float q_capacity, const float charge_curr, const float soc);
+  float calc_charge_time(const double q, const double q_capacity, const float charge_curr, const double soc);
   virtual double calc_soc_voc(const double soc, const double Tb_f, double *dv_dsoc);
   float calculate(Sensors *Sen, const bool reset,  const bool reset_ekf);
   bool converged_ekf() { return ekf_conv_; };
@@ -187,7 +187,7 @@ public:
   double hx() { return hx_; };
   float ib_charge() { return ib_charge_; };
   void init_battery_mon(const bool reset, Sensors *Sen);
-  void init_soc_ekf(const float soc);
+  void init_soc_ekf(const double soc);
   bool is_sat(const bool reset);
   double K_ekf() { return K_; };
   void pretty_print(Sensors *Sen);
@@ -250,7 +250,7 @@ public:
   float calc_inj(const uint64_t now, const uint8_t type, const float amp, const double freq);
   virtual double calc_soc_voc(const double soc, const double Tb_f, double *dv_dsoc);
   float calculate(Sensors *Sen, const bool dc_dc_on, const bool reset);
-  float count_coulombs(Sensors *Sen, const bool reset, BatteryMonitor *Mon, const bool initializing_all);
+  double count_coulombs(Sensors *Sen, const bool reset, BatteryMonitor *Mon, const bool initializing_all);
   bool cutback() { return model_cutback_; };
   double delta_q() { return *sp_delta_q_; };
   double d_delta_q_s() { return d_delta_q_s_; };

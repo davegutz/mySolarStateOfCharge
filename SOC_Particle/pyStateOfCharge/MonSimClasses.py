@@ -91,7 +91,6 @@ class Sensors:
                 self.mod_tb = self.mon_run.mtb
             else:
                 self.mod_tb = np.copy(self.mon_run.mod_data)
-            self.Tb0 = self.mon_run.Tb_f[0]
             self.Tb = self.mon_run.Tb[0]
             self.Tb_f = self.mon_run.Tb_f[0]
             self.lut_dTb = None
@@ -182,15 +181,9 @@ class Sensors:
                 self.e_wrap_n_init = self.mon_run.e_wrap_n_filt[0]
             self.e_wrap_filt_init = self.mon_run.e_wrap_filt[0]
             self.voc_stat_init = self.mon_run.voc_stat_f[0]
-            self.Tb0 = self.mon_run.Tb_f[0]
-            # self.Tb_f = self.mon_run.Tb_f
-            self.Tb_f_init = self.mon_run.Tb_f[0]
-            self.Tb0_s = self.mon_run.Tb_f[0]
-            # self.Tb_f_rate_init = 0.
             self.lut_dTb = None
             self.dTb = 0.
             self.Tb = self.mon_run.Tb_f[0]
-            # self.Tb_f = np.copy(self.mon_run.Tb_f)
             self.Tb_f_rate = np.copy(self.Tb_f) * 0.
             self.Tb_past = self.mon_run.Tb_f[0] + self.dTb
             self.Tb_f_past = self.mon_run.Tb_f[0] + self.dTb

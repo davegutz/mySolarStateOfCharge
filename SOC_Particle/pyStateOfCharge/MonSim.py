@@ -331,7 +331,7 @@ def replicate(OPT: UserOptions):
             saturated = Is_sat_delay.calculate(sat, T_SAT, T_DESAT, min(T, T_SAT / 2.), reset)
 
         # Monitor count Coulumbs
-        mon.count_coulombs(OPT, chem=_chm_m, dt=T, reset=reset, tb_f=SN.Tb_f_past, charge_curr=ib_charge, sat=sat,
+        mon.count_coulombs(OPT, chem=_chm_m, dt=T, reset=reset, tb_f=Tb_f[G.i], charge_curr=ib_charge, sat=sat,
                            saturated=saturated)
         prn_soc_debug(OPT, time=now, leader="after mn.count_coulombs: ", i_temp=i_temp, mon=mon, sim=sim)
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
