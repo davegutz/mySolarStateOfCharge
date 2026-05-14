@@ -46,7 +46,7 @@ class Coulombs:
         self.chm = mod_code
         self.tweak_test = tweak_test
         self.reset = False
-        self.tb_f = 0.
+        self.Tb_f = 0.
         self.chemistry = Chemistry(mod_code=mod_code, dvoc=dvoc, unit=unit, Dw=Dw)
         self.chemistry.assign_all_mod(mod_code, unit=unit)
 
@@ -100,8 +100,8 @@ class Coulombs:
 
     def apply_delta_q_t(self, delta_q, tb_f):
         self.delta_q = delta_q
-        self.tb_f = tb_f
-        self.q_capacity = self.calculate_capacity(tb_f=self.tb_f)
+        self.Tb_f = tb_f
+        self.q_capacity = self.calculate_capacity(tb_f=self.Tb_f)
         self.q = self.q_capacity + self.delta_q
         if self.q_capacity != 0. and self.q_capacity is not None:
             self.soc = self.q / self.q_capacity
@@ -110,7 +110,7 @@ class Coulombs:
     def apply_soc(self, soc, tb_f, delta_q):
         """Memory set, adjust bookkeeping as needed.  delta_q preserved"""
         self.soc = soc
-        self.tb_f = tb_f
+        self.Tb_f = tb_f
         self.q_capacity = self.calculate_capacity(tb_f=tb_f)
         self.q = self.soc * self.q_capacity
         # self.q_eps = delta_q + self.q_capacity * (1. - self.soc)
@@ -150,7 +150,7 @@ class Coulombs:
             self.d_delta_q *= self.chemistry.coul_eff
         self.sat = sat
         self.saturated = saturated
-        self.tb_f = tb_f
+        self.Tb_f = tb_f
 
         # if charge_curr < 0.:
         #     print(f"{OPT.mon_run.time[G.i]=} {OPT.mon_run.time[G.i]-OPT.mon_run.time[G.i-1]=} {OPT.mon_run.dt[G.i]=} {dt} {OPT.mon_run.ib_charge[G.i]=} {charge_curr} {OPT.mon_run.ib_charge[G.i] * OPT.mon_run.dt[G.i]=} {dt * charge_curr} {OPT.mon_run.d_delta_q[G.i]=} {self.d_delta_q}")
@@ -164,7 +164,7 @@ class Coulombs:
         self.resetting = False  # one pass flag.  Saturation debounce should reset next pass
 
         # Integration
-        self.q_capacity = self.calculate_capacity(tb_f=self.tb_f)
+        self.q_capacity = self.calculate_capacity(tb_f=self.Tb_f)
         if OPT.use_mon_soc:
             self.soc = OPT.mon_run.soc[G.i]
             self.q = self.q_capacity * self.soc
@@ -184,7 +184,7 @@ class Coulombs:
         # Normalize
         if self.q_capacity != 0. and self.q_capacity is not None:
             self.soc = self.q / self.q_capacity
-        self.soc_min = self.chemistry.lut_min_soc.interp(self.tb_f)
+        self.soc_min = self.chemistry.lut_min_soc.interp(self.Tb_f)
         self.q_min = self.soc_min * self.q_capacity
 
         # Save and return

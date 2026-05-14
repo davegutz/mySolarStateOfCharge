@@ -206,13 +206,15 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
         mon_ver = shift_time(mon_ver, 1, fields=('cc_dif',))
 
     # Save all time-dependent struct data to CSV files in the temp folder
-    if hardcopy and plots:
+    # if hardcopy and plots:
+    if True:
         filename_root = data_file_clean.replace('.csv', '')
         if filename_root is None:
             print("save_struct_to_csv: no filename available, skipping CSV export")
         else:
-            # Shift time in sim_ver
+            # Shift time in sim_ver; soc_s is computed at G.i but save_s() records at t[G.i-1]
             sim_ver = shift_time(sim_ver, 1)
+            sim_ver = shift_time(sim_ver, 1, fields=('soc_s',))
             for obj, struct_name in (
                 (mon_run,   'mon_run'),
                 (mon_ver,   'mon_ver'),
@@ -322,16 +324,16 @@ def main():  # Example usage.  ok on 20260217
         8:  vb_wrap
         9:  dyn_n
     """
-    data_file='/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/tLoFailHdwe_soc3p2_hi_lo_bb.csv'
+    data_file='/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/tLoFailModel_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = 12
     compare_run_ver = True
-    plots = False
+    plots = True
     use_mon_soc_ = False
     verbose = False
     scale_batt = 1.0
     slr_hys_sim = 1.0
-    request_history = 2
+    request_history = 3
     init_time = None
     time_shift = None
     strict_overplot = True

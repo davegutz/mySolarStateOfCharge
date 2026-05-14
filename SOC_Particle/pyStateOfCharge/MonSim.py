@@ -238,12 +238,14 @@ def replicate(OPT: UserOptions):
         mon.reset_kf = reset
 
         if reset:
-            sim.apply_soc(OPT.mon_run.soc_s[G.i], SN.Tb_f_past, OPT.sim_run.delta_q_s[G.i])  # calculates delta_q
+            if hasattr(OPT.sim_run, 'qcrs_s') and OPT.sim_run.qcrs_s is not None:
+                sim.q_cap_rated_scaled = OPT.sim_run.qcrs_s[G.i]
+            sim.apply_soc(OPT.mon_run.soc_s[G.i], Tb_f_s[G.i], OPT.sim_run.delta_q_s[G.i])  # calculates delta_q
             prn_soc_debug(OPT, time=now, leader="after sim.apply_soc:     ", i_temp=i_temp, mon=mon, sim=sim)
             sim.load(sim.delta_q)
             sim.assign_tb(sim.Tb)
             sim.assign_tb_f(sim.Tb_f)
-            sim.apply_delta_q_t(sim.delta_q, SN.Tb_f_past)
+            sim.apply_delta_q_t(sim.delta_q, Tb_f_s[G.i])
             prn_soc_debug(OPT, time=now, leader="after sm.apply_delta_q_t:", i_temp=i_temp, mon=mon, sim=sim)
             sat_s_init = SN.voc_stat_init > OPT.mon_run.vsat[G.i]
             if OPT.sim_run is not None:
@@ -290,6 +292,8 @@ def replicate(OPT: UserOptions):
 
         # Charge init
         if reset:
+            if hasattr(SN.mon_run, 'qcrs') and SN.mon_run.qcrs is not None:
+                mon.q_cap_rated_scaled = SN.mon_run.qcrs[G.i]
             mon.apply_delta_q_t(SN.mon_run.delta_q[G.i], SN.mon_run.Tb_f[G.i])
             prn_soc_debug(OPT, time=now, leader="after mon.apply_delta_q_t", i_temp=i_temp, mon=mon, sim=sim)
             rp.delta_q = mon.delta_q
@@ -335,6 +339,9 @@ def replicate(OPT: UserOptions):
                            saturated=saturated)
         prn_soc_debug(OPT, time=now, leader="after mn.count_coulombs: ", i_temp=i_temp, mon=mon, sim=sim)
         mon.calc_charge_time(mon.q, mon.q_capacity, ib_charge, mon.soc)
+        # Firmware uses monitor's NOMINAL_TB q_capacity for soc_s during Tb_fa; mirror that here so soc_s tracks soc.
+        if hasattr(OPT.mon_run, 'Tb_fa') and bool(OPT.mon_run.Tb_fa[G.i]) and mon.q_capacity and mon.q_capacity != 0.:
+            sim.soc = (mon.q_capacity + sim.delta_q) / mon.q_capacity
         mon.assign_soc_s(sim.soc)
 
         # Break if data integrity questionable
