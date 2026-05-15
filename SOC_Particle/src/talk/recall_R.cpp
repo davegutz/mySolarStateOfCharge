@@ -78,7 +78,6 @@ bool recall_R(const char letter_1, BatteryMonitor *Mon, Sensors *Sen)
             Mon->apply_soc(1.0, Sen->Tb_f());
             cp.cmd_reset();
             Sen->ReadSensors->delay(READ_DELAY);
-            Sen->ReadTemp->delay(TEMP_DELAY);
             Sen->Talk->delay(TALK_DELAY);
             sp.large_reset();
             sp.large_reset();

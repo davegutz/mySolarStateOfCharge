@@ -93,14 +93,6 @@ bool followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sen
                     }
                     break;
 
-                case ( 'q' ):  //   Dq<>:  TEMP sample time input
-                    if ( ap.temp_delay_p->success() )
-                    {
-                        Sen->ReadTemp->delay(ap.temp_delay());  // validated
-                        Sen->Summarize->delay(max(ap.temp_delay(), ap.sum_delay()));  // validated
-                    }
-                    break;
-
                 case ( 'r' ):  //   Dr<>:  READ sample time input
                     if ( ap.read_delay_p->success() )
                     {

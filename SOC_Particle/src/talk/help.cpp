@@ -86,7 +86,6 @@ void talkH(BatteryMonitor *Mon, Sensors *Sen)
   ap.Ib_noa_noise_amp_p->print_help();  // DN
   ap.vc_add_p->print_help();  // D3
   ap.print_mult_p->print_help();  //  DP
-  ap.temp_delay_p->print_help();  //  Dq
   ap.read_delay_p->print_help();  //  Dr
   ap.ds_voc_soc_p->print_help();  //  Ds
   sp.vsat_add_p->print_help();  //  DS

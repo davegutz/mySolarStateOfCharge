@@ -96,7 +96,6 @@ public:
     FloatV *Tb_bias_model_p;
     FloatV *Tb_noise_amp_p;
     FloatV *tb_stale_time_slr_p;
-    ULongV *temp_delay_p;
     ULongV *until_q_p;
     FloatV *vb_add_p;
     FloatV *Vb_noise_amp_p;
@@ -231,8 +230,6 @@ public:
     void Tb_noise_amp(const float input) { Tb_noise_amp_ = input; }
     float tb_stale_time_slr() { return tb_stale_time_slr_; }
     void tb_stale_time_slr(const float input) { tb_stale_time_slr_ = input; }
-    uint32_t temp_delay() { return temp_delay_; }
-    void temp_delay(const uint32_t input) { temp_delay_ = input; }
     uint32_t until_q() { return until_q_; }
     void until_q(const uint32_t input) { until_q_ = input; }
     float vb_add() { return vb_add_; }
@@ -312,7 +309,6 @@ protected:
     float Tb_filt_;              // TbHdweFilt time constant, s
     float Tb_noise_amp_;         // Tb noise amplitude model only, deg C pk-pk
     float tb_stale_time_slr_;    // Scalar on persistences of Tb hardware stale check
-    uint32_t temp_delay_; // Temp frame, ms
     uint32_t until_q_;  // Time until set vv0, ms
     float vb_add_;               // Fault injection bias, V
     float Vb_noise_amp_;         // Vb bank noise amplitude model only, V pk-pk

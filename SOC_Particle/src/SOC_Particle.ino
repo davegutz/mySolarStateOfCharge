@@ -412,7 +412,7 @@ void loop()
     reset = reset_ekf = reset_kf = cp.ekf_reset_print = cp.kf_reset_print = false;
     if ( reset_temp ) sendTxBuf("*", true, IN_SERVICE);
   }
-  if ( read_temp && elapsed_reset>ap.temp_delay() && reset_temp )
+  if ( read_temp && elapsed_reset>TEMP_DELAY && reset_temp )
   {
     sendTxBuf("...temp init complete\n", true, IN_SERVICE);
     reset_temp = false;

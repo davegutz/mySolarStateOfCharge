@@ -110,13 +110,15 @@ def shift_time(obj, n_steps, fields=None):
 def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw=0.,  use_mon_soc_=False,
                     verbose=False, scale_batt=1., slr_hys_sim=1., request_history=5, init_time=None,
                     time_shift=None, strict_overplot=False, terse=False, mon_str='', fig_files=None,
-                    fig_list=None, show_killer_=True, hardcopy=False, compare_run_ver=True):
+                    fig_list=None, show_killer_=True, hardcopy=False, compare_run_ver=True,
+                    shift_soc_s=True):
 
     print(f"\n compare_run_sim: \
     \n{data_file=} \
     \n{unit_key=} \
     \n{time_end=} \
     \n{compare_run_ver=} \
+    \n{shift_soc_s=} \
     \n{plots=} \
     \n{use_mon_soc_=} \
     \n{verbose=} \
@@ -214,7 +216,8 @@ def compare_run_sim(data_file=None, unit_key=None, time_end=None, plots=True, Dw
         else:
             # Shift time in sim_ver; soc_s is computed at G.i but save_s() records at t[G.i-1]
             sim_ver = shift_time(sim_ver, 1)
-            sim_ver = shift_time(sim_ver, 1, fields=('soc_s',))
+            if shift_soc_s:
+                sim_ver = shift_time(sim_ver, 1, fields=('soc_s',))
             for obj, struct_name in (
                 (mon_run,   'mon_run'),
                 (mon_ver,   'mon_ver'),
@@ -324,10 +327,11 @@ def main():  # Example usage.  ok on 20260217
         8:  vb_wrap
         9:  dyn_n
     """
-    data_file='/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/tLoFailModel_soc3p2_hi_lo_bb.csv'
+    data_file='/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/rapidTweakRegression_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = 12
     compare_run_ver = True
+    shift_soc_s = False
     plots = True
     use_mon_soc_ = False
     verbose = False
@@ -344,7 +348,8 @@ def main():  # Example usage.  ok on 20260217
     compare_run_sim(data_file=data_file, unit_key=unit_key, plots=plots, time_end=time_end,
                     use_mon_soc_=use_mon_soc_, verbose=verbose, scale_batt=scale_batt, slr_hys_sim=slr_hys_sim,
                     request_history=request_history, init_time=init_time, time_shift=time_shift,
-                    strict_overplot=strict_overplot, terse=terse, hardcopy=hardcopy, compare_run_ver=compare_run_ver)
+                    strict_overplot=strict_overplot, terse=terse, hardcopy=hardcopy, compare_run_ver=compare_run_ver,
+                    shift_soc_s=shift_soc_s)
 
 
 # import cProfile

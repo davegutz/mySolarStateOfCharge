@@ -78,25 +78,19 @@
 const char unit[] = version_str "_" HDWE_UNIT;
 
 // Constants always defined
-#define ONE_HOUR_MILLIS       3600000UL // Number of milliseconds in one hour (60*60*1000)
 #define ONE_DAY_MILLIS        86400000UL// Number of milliseconds in one day (24*60*60*1000)
 #define TALK_DELAY            313UL      // Talk wait, ms (313UL = 0.313 sec)
 #define NO_SAVE_WARN          30000UL   // Unsaved retained param warning interval, ms (30000UL = 30 sec)
 #define READ_DELAY            100UL     // Sensor read wait, ms (100UL = 0.1 sec) Dr
-#define TEMP_DELAY            600UL     // Sensor read wait, ms (600UL = 0.6 sec) Dq
+#define TEMP_DELAY            600UL     // Sensor read wait, ms (600UL = 0.6 sec)
 #define SUMMARY_DELAY         1800000UL // Battery state tracking and reporting, ms (1800000UL = 30 min) Dh
 #define SUMMARY_WAIT          60000UL   // Summarize alive time before first save, ms (60000UL = 1 min) Dh
-#define PUBLISH_SERIAL_DELAY  400UL     // Serial print interval (400UL = 0.4 sec)
 #define DISPLAY_USER_DELAY    1200UL    // User display update (1200UL = 1.2 sec)
 #define DP_MULT               4         // Multiples of read to capture data DP
-#define MAX_TEMP_READS        10        // Number of consequetive temp queries allowed (10)
-#define TEMP_RANGE_CHECK_MAX  70.       // Maximum allowed temp reading, C (70.)
 #define VB_S                  1.0       // Vb sense scalar (1.0)
 #define VB_A                  0.0       // Vb sense adder, V (0)
 #define PHOTON_ADC_COUNT      4096      // Photon ADC range, counts (4096)
 #define PHOTON_ADC_VOLT       3.3       // Photon ADC range, V (3.3)
-#define F_MAX_T               ChargeTransfer_T_MAX  // Maximum call update time sensors and coulomb counter (0.5)
-#define F_MAX_T_TEMP          18.0      // Maximum call update time filters (18.0)
 #define TB_FILT               120.      // Temperature filter lag, s (120)
 #define SCL_40                40.       // Data storage integer scaling
 #define SCL_60                60.       // Data storage integer scaling
@@ -117,7 +111,6 @@ const char unit[] = version_str "_" HDWE_UNIT;
 #define NHIS   43  // Number of saved SRAM history data slices. If NFLT + NHIS too large will get compile error BACKUPSRAM, BACKUPSRAM_USER  (45)
 #define NSUM 2000  // Number of saved summaries. If NFLT + NHIS + NSUM too large, will get compile error SRAM, or GUI FRAG msg (2845) or SOS 4 Bus Fault (2500)
 
-#define HDB_TBATT             0.06      // Half deadband to filter Tb, F (0.06)
 #define HDB_VB                0.05      // Half deadband to filter Vb, V (0.05)
 #ifndef HDWE_IB_HI_LO
     #define T_SAT                 22        // Saturation time, sec (>21 for no SAT with Dv0.82)
@@ -125,13 +118,11 @@ const char unit[] = version_str "_" HDWE_UNIT;
     #define T_SAT                 24        // Saturation time, sec (>21 for no SAT with Dv0.82)
 #endif
 const float T_DESAT =         20;       // De-saturation time, sec
-#define TEMP_PARASITIC        true      // Temperature sensor power. true means leave it on all the time (true)
 #ifndef TEMP_INIT_DELAY
     #define TEMP_INIT_DELAY 700         // Time after power on to start reading temp, ms (700)
 #endif
 #define CC_DIFF_LO_SOC_SLR    4.        // Large to disable cc_diff
 #define TAU_ERR_FILT          5.        // Current sensor difference filter time constant, s (5.)
-#define MAX_ERR_FILT          10.       // Current sensor difference Filter maximum windup, A (10.)
 #define MAX_ERR_T             10.       // Maximum update time allowed to avoid instability, s (10.)
 #define IB_LO_ACTIVE_SET      0.2       // Ib low range sensor is in-range persistence, s (0.2)
 #define IB_LO_ACTIVE_RES      0.4       // Ib low range sensor is in-range reset persistence, s (0.4)
@@ -163,7 +154,6 @@ const float WRAP_LO_SET =      9.;      // Wrap low failure set time, sec (9) //
 const float WRAP_LO_RES = (WRAP_LO_SET/2.); // Wrap low failure reset time, sec ('up 1, down 2')
 const float WRAP_HI_SET = WRAP_LO_SET;      // Wrap high failure set time, sec (WRAP_LO_SET)
 const float WRAP_HI_RES = (WRAP_HI_SET/2.); // Wrap high failure reset time, sec ('up 1, down 2')
-#define WRAP_LO_A       -40.            // Wrap low voltage threshold, A (-40, -20 too small on truck -16=-0.2v, -32 marginal)
 #define WRAP_HI_AMP     3.2             // Wrap high voltage threshold amplified, A (3.2)
 #define WRAP_LO_AMP     -4.             // Wrap low voltage threshold amplified, A (-4)
 #define WRAP_HI_NOA     6.4             // Wrap high voltage threshold non-amplified, A (32 after testing; 16=0.2v)
@@ -189,8 +179,6 @@ const float IBATT_DISAGREE_SET = (WRAP_LO_SET-1.); // Signal selection current d
 #define LOW_A           1.0             // Currents are very small, A (1.0)
 #define QUIET_SET         60.           // Quiet set persistence, sec (60.)
 const float QUIET_RES (QUIET_SET/10.);  // Quiet reset persistence, sec ('up 1 down 10')
-#define TB_STALE_SET    3600.           // Tb read from one-wire stale persistence for failure, s (3600, 1 hr)
-#define TB_STALE_RES    0.0             // Tb read from one-wire stale persistence for reset, s (0)
 #define NOMINAL_TB      15.             // Middle of the road Tb for decent reversionary operation, deg C (15.)
 #define NOMINAL_VB   (13.*NS)           // Middle of the road Vb for decent reversionary operation, V (13.)
 #define IMAX_NUM        100000.         // Simulation limit to prevent NaN, A (1e5)
@@ -211,7 +199,6 @@ const float QUIET_RES (QUIET_SET/10.);  // Quiet reset persistence, sec ('up 1 d
 #define AMP_FILT_TAU        4.0         // Ib filters time constant for calibration only, s (4.0)
 #define V3V3                3.3         // Theoretical nominal V3v3, V (3.3)
 #define HALF_V3V3         (V3V3/2.)     // Theoretical center of differential TSC2010
-#define USE_SH_2WIRE                    // Use Steinhart-Hart 2-wire temperature characteristic when defined
 #define HDWE_RS_2WIRE   15000.          // 2-wire sense resistor, ohm (15000.)
 #define HDWE_M_2WIRE    -58.96          // 2-wire thermistor characteristic, data fit (-58.96; see '2-wireRTD.ods')
 #define HDWE_B_2WIRE    262.79          // 2-wire thermistor characteristic, data fit (262.79; see '2-wireRTD.ods')
@@ -221,8 +208,6 @@ const float QUIET_RES (QUIET_SET/10.);  // Quiet reset persistence, sec ('up 1 d
 #define SIZE_MARG         1.05          // Threshold margin, scalar (1.05)
 #define CC_DIFF_RES         2.0         // Signal selection cc_diff ekf test reset persistence, s (2.)
 #define CC_DIFF_SET         5.0         // Signal selection cc_diff ekf test set persistence, s (5. to handle sawtooth action on cc_diff)
-#define DISAB_LO_SET        0.4         // Disable lo=amp wrap fault set persistence, s (0.4)
-#define DISAB_LO_RES        0.8         // Disable lo=amp wrap fault reset persistence, s (0.8)
 #define MAX_TRIM_RATE     0.005         // Max allowable amp e_wraptrim rate, V/s (0.005)
 
 // Default values for constants that can be overridden
