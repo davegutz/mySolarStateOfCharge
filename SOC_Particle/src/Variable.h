@@ -70,7 +70,6 @@ public:
     const char* units() { return units_.c_str(); }
 
     // Placeholders
-    virtual uint16_t assign_addr(uint16_t next){return next;}
     virtual void get(){};
     virtual bool is_corrupt(){return false;};
     virtual bool is_eeram(){return is_eeram_;};
@@ -116,12 +115,6 @@ public:
     }
 
     ~BooleanV(){}
-
-    uint16_t assign_addr(uint16_t next)
-    {
-        addr_.a16 = next;
-        return next + sizeof(uint32_t);  // bool is padded to 4 bytes in struct layout
-    }
 
     bool check_set_put(bool val)
     {
@@ -230,12 +223,6 @@ public:
     }
 
     ~DoubleV(){}
-
-    uint16_t assign_addr(uint16_t next)
-    {
-        addr_.a16 = next;
-        return next + sizeof(double);
-    }
 
     bool check_set_put(double val)
     {
@@ -348,12 +335,6 @@ public:
 
     ~FloatV(){}
 
-    uint16_t assign_addr(uint16_t next)
-    {
-        addr_.a16 = next;
-        return next + sizeof(float);
-    }
-
     bool check_set_put(float val)
     {
         if ( val>max_ || val<min_ )
@@ -465,12 +446,6 @@ public:
 
     ~IntV(){}
 
-    uint16_t assign_addr(uint16_t next)
-    {
-        addr_.a16 = next;
-        return next + sizeof(int);
-    }
-
     bool check_set_put(int val)
     {
         if ( val>max_ || val<min_ )
@@ -580,12 +555,6 @@ public:
     }
 
     ~Int8tV(){}
-
-    uint16_t assign_addr(uint16_t next)
-    {
-        addr_.a16 = next;
-        return next + sizeof(int8_t);
-    }
 
     bool check_set_put(int8_t val)
     {
@@ -698,12 +667,6 @@ public:
 
     ~Uint16tV(){}
 
-    uint16_t assign_addr(uint16_t next)
-    {
-        addr_.a16 = next;
-        return next + sizeof(uint16_t);
-    }
-
     bool check_set_put(uint16_t val)
     {
         if ( val>max_ || val<min_ )
@@ -814,12 +777,6 @@ public:
 
     ~Uint8tV(){}
 
-    uint16_t assign_addr(uint16_t next)
-    {
-        addr_.a16 = next;
-        return next + sizeof(uint8_t);
-    }
-
     bool check_set_put(uint8_t val)
     {
         if ( val>max_ || val<min_ )
@@ -927,12 +884,6 @@ public:
     }
 
     ~ULongV(){}
-
-    uint16_t assign_addr(uint16_t next)
-    {
-        addr_.a16 = next;
-        return next + sizeof(uint32_t);
-    }
 
     bool check_set_put(uint32_t val)
     {

@@ -251,7 +251,6 @@ void loop()
   static bool reset_ekf = true;
   static bool reset_kf = true;
   static bool reset_temp = true;
-  static bool reset_publish = true;
   static uint64_t start = millis();
   static uint64_t start_reset = millis();
 
@@ -418,15 +417,13 @@ void loop()
     reset_temp = false;
   }
 
-  if ( cp.publishS ) reset_publish = false;
-
   // Soft reset
   if ( read ) cp.soft_sim_hold = false;
   cp.soft_reset_print = cp.soft_reset;
   cp.soft_reset_sim_print = cp.soft_reset_sim;
   if ( cp.soft_reset || cp.soft_reset_sim )
   {
-    reset = reset_temp = reset_kf = reset_publish = true;
+    reset = reset_temp = reset_kf = true;
     start_reset = millis();
     if ( cp.soft_reset_sim ) cp.cmd_soft_sim_hold();
   }

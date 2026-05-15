@@ -1020,7 +1020,7 @@ class BatterySim(Battery):
         self.s_cap = scale  # Rated capacity scalar
         if scale is not None:
             self.apply_cap_scale(scale)
-        self.hys = Hysteresis(scale=OPT.slr_hys_sim*Battery.ap_hys_scale, dv_hys=OPT.mon_run.dv_hys[0], scale_cap=OPT.slr_hys_cap_sim, slr_cap_chg=OPT.slr_cap_chg,
+        self.hys = Hysteresis(scale=OPT.slr_hys_sim*Battery.ap_hys_scale, dv_hys=OPT.sim_run.dv_hys_s[0], scale_cap=OPT.slr_hys_cap_sim, slr_cap_chg=OPT.slr_cap_chg,
                               slr_cap_dis=OPT.slr_cap_dis, slr_hys_chg=OPT.slr_hys_chg, slr_hys_dis=OPT.slr_hys_dis, chem=self.chem,
                               chemistry=self.chemistry)  # Battery hysteresis model - drift of voc
         self.tweak_test = tweak_test

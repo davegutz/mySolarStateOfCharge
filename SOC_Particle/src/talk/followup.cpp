@@ -197,7 +197,7 @@ bool followup(const char letter_0, const char letter_1, BatteryMonitor *Mon, Sen
                     if ( ap.hys_state_p->success() )
                     {
                         Sen->Sim->hys_state(ap.hys_state());
-                        Sen->Flt->wrap_err_filt_state(-ap.hys_state());
+                        Sen->Flt->wrap_err_filt_state(0.);
                     }
                     break;
 

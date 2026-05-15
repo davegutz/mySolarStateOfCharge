@@ -327,7 +327,7 @@ def main():  # Example usage.  ok on 20260217
         8:  vb_wrap
         9:  dyn_n
     """
-    data_file='/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/rapidTweakRegression_soc3p2_hi_lo_bb.csv'
+    data_file='/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/vHiFailH_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = 12
     compare_run_ver = True

@@ -32,8 +32,6 @@ void add_verify(String *src, const String addend);
     void debug_m1(BatteryMonitor *Mon, Sensors *Sen);
 #endif
 
-void debug_m7(BatteryMonitor *Mon, Sensors *Sen);
-
 void debug_12(BatteryMonitor *Mon, Sensors *Sen);
 void debug_check_m13(Sensors *Sen);
 void debug_check_m23(Sensors *Sen);
