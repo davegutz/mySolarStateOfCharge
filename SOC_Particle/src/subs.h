@@ -32,14 +32,17 @@
 #include "parameters.h"
 #include "command.h"
 #include "Sync.h"
+#include "FaultStore.h"
 
 // Sensors
 #include "Sensors.h"
 #include "serial.h"
 
-extern SavedPars sp;    // Various parameters to be static at system level and saved through power cycle
-extern PublishPars pp;  // For publishing
-extern CommandPars cp;  // Various parameters to be static at system level
+extern SavedPars sp;         // Various parameters to be static at system level and saved through power cycle
+extern PublishPars pp;       // For publishing
+extern CommandPars cp;       // Various parameters to be static at system level
+extern Pins *myPins;         // Hardware pin mapping
+extern Flt_st mySum[NSUM];  // Summaries
 
 
 // Pins
@@ -103,14 +106,21 @@ struct Pins
 
 
 // Headers
-void sample_burst(Pins *myPins, Sensors *SenS);
+void check_and_fix_corruption();
+void handle_boot_sequence();
+void handle_soft_reset(bool *reset, bool *reset_temp, bool *reset_kf, bool *reset_ekf, uint64_t *start_reset, const bool read);
 void harvest_temp_change(const double tb_f, BatteryMonitor *Mon, BatterySim *Sim, const float rate, const float dt);
 void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const bool use_soc_in);
 void load_ib_vb_tb(const bool reset, const bool reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon);
-void monitor(const bool reset, const bool reset_temp,  const bool reset_ekf, const uint64_t now,
+void manage_summaries(const bool boot_wait, const bool summarizing, BatteryMonitor *Mon, Sensors *Sen);
+void monitor(const bool reset, const bool reset_temp, const bool reset_ekf, const uint64_t now,
   TFDelay *Is_sat_delay, BatteryMonitor *Mon, Sensors *Sen);
-void serial_display(Sensors *Sen, BatteryMonitor *Mon);
+void sample_burst(Pins *myPins, Sensors *SenS);
 void sense_synth_select(const bool reset, const bool reset_temp, const bool reset_kf, const uint64_t now,
   const uint64_t elapsed, Pins *myPins, BatteryMonitor *Mon, Sensors *Sen);
+void serial_display(Sensors *Sen, BatteryMonitor *Mon);
+void setup_pins();
+void setup_serial_ble();
 void sync_time(uint64_t now, uint64_t *last_sync, uint64_t *millis_flip);
 String time_long_2_str(const time_t current_time, char *tempStr);
+void update_publish_frame();

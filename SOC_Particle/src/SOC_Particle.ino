@@ -1,35 +1,40 @@
 /*
  * Project SOC_Photon
-  * Description:
-  * Monitor battery State of Charge (SOC) using Coulomb Counting (CC).  An experimental EKF is 
+
+ * Description:
+  * Monitor battery State of Charge (SOC) using Coulomb Counting (CC).  An experimental EKF is
   * used to estimate the SOC from voltage and temperature and to detect faults in the current
   * sensor.  The EKF is also used to reset the CC when it drifts too far from the EKF estimate.
   * The EKF is based on a simple battery model with a voltage source (VOC) and series resistance (Rss) that are functions of SOC and temperature.  The model parameters are stored in tables that can be generated from data or from a more complex model.  The EKF also estimates the hysteresis charge storage and diffusion effects that cause VOC to lag behind SOC changes.  The hysteresis model is used to improve the EKF performance and to detect faults in the current sensor by comparing the expected hysteresis voltage with the measured voltage.
+  * To improve the accuracy of the current measurement, two current sensors are used: an amplified sensor for low currents and a non-amplified sensor for high currents.  The system automatically switches between the two sensors based on the current level and the sensor errors.  The system also includes various parameters to control the modeling and fault handling behavior, as well as support for BLE communication and a GUI for configuration and data visualization.
+
   * By:  Dave Gutz September 2021
+
   * 09-Aug-2021   Initial Git commit.   Unamplified ASD1013 12-bit shunt voltage sensor
-  * ??-Sep-2021   Added 1 Hz anti-alias filters (AAF) in hardware to cleanup the 60 Hz
+  * 26-Dec-2021   Added 1 Hz anti-alias filters (AAF) in hardware to cleanup the 60 Hz
   * inverter noise on Vb and Ib.
-  * 27-Oct-2021   Add amplified (OPA333) current sensor ASD1013 with Texas Instruments (TI)
+  *               Add amplified (OPA333) current sensor ASD1013 with Texas Instruments (TI)
   * amplifier design in hardware
-  * 27-Aug-2021   First working prototype with iterative solver SOC-->Vb from polynomial
+  *               First working prototype with iterative solver SOC-->Vb from polynomial
   * that have coefficients in tables
-  * 22-Dec-2021   Mark last good working version before class code.  EKF functional
-  * 26-Dec-2021   Put in class code for Monitor and Model
-  * ??-Jan-2021   Vb model in tables.  Add battery heater in hardware
-  * 03-Mar-2022   Manually tune for current sensor errors.   Vb model in tables
-  * 21-Apr-2022   Add Tweak methods to dynamically determine current sensor erros
-  * 18-May-2022   Bunch of cleanup and reorganization
+  *               Mark last good working version before class code.  EKF functional
+  *               Put in class code for Monitor and Model
+  * 31-Jan-2022   Vb model in tables.  Add battery heater in hardware
+  * 18-May-2022   Manually tune for current sensor errors.   Vb model in tables
+  *               Add Tweak methods to dynamically determine current sensor erros
+  *               Bunch of cleanup and reorganization
   * 21-Sep-2022   Alpha release v20220917.  Branch GitHub repository.  Added signal redundancy checks and fault handling.
-  * 26-Nov-2022   First Beta release v20221028.   Branch GitHub repository.  Various debugging fixes hysteresis.
-  * 12-Dec-2022   RetainedPars-->SavedPars to support Argon with 47L16 EERAM device
-  * 22-Dec-2022   Dual amplifier replaces dual ADS.  Beta release v20221220.  ADS still used on Photon.
+  * 22-Dec-2022   First Beta release v20221028.   Branch GitHub repository.  Various debugging fixes hysteresis.
+  *               RetainedPars-->SavedPars to support Argon with 47L16 EERAM device
+  *               Dual amplifier replaces dual ADS.  Beta release v20221220.  ADS still used on Photon.
   * 01-Dec-2023   g20231111 Photon 2, DS2482
-  * 01-Apr-2024   g20230331 ib_charge = ib_ / ap.nS() while Randles uses ib_.  Tune Tb initialization
-  * 17-Apr-2024   Undo previous ib_/ap.nS() change
-  * ....see git log for more details
+  * 17-Apr-2024   g20230331 ib_charge = ib_ / ap.nS() while Randles uses ib_.  Tune Tb initialization
+  *               Undo previous ib_/ap.nS() change
   * 02-Feb-2026   BLE and HI_LO ib selection
   * 13-Mar-2026   Add modeling and preserving parameters to control how much of the system is modeled
   * and how much is preserved in faults.  Use claude code to clean up and simplify code
+  * 20-Apr-2026   Add support for GUI_Plink fully automated testing and configuration.  Add more parameters to support testing and configuration.  Add fake_faults parameter to allow testing of fault handling without actually causing faults.
+  * ....see git log for more details
 //
 // MIT License
 //
@@ -55,8 +60,8 @@
 //
 // See README.md
 */
+
 #include "constants.h"
-// Prevent mixing up local_config files (still could sneak soc0p through as pro0p)
 #undef ARDUINO
 #if (PLATFORM_ID != PLATFORM_P2)
   #error "copy local_config.xxxx.h to constants.h"
@@ -79,7 +84,7 @@
   SerialLogHandler logHandler;
 #endif
 
-// Globals
+// ── extern declarations (defined in other .cpp files) ────────────────
 extern SavedPars sp;              // Various parameters to be static at system level and saved through power cycle
 extern VolatilePars ap;           // Various adjustment parameters shared at system level
 extern CommandPars cp;            // Various parameters shared at system level
@@ -89,10 +94,12 @@ extern Flt_st mySum[NSUM];        // Summaries for saving charge history
 extern BleCharacteristic txCharacteristic;  // Transmit to BLE
 extern BleCharacteristic rxCharacteristic;  // Receive from BLE
 
+// ── retained SRAM (survives power cycle) ─────────────────────────────
 retained Flt_st saved_hist[NHIS];    // For displaying history
 retained Flt_st saved_faults[NFLT];  // For displaying faults
 retained SavedPars sp = SavedPars(saved_hist, uint16_t(NHIS), saved_faults, uint16_t(NFLT));  // Various parameters to be common at system level
 
+// ── regular globals ───────────────────────────────────────────────────
 Flt_st mySum[NSUM];                   // Summaries
 PrinterPars pr = PrinterPars();       // Print buffer
 VolatilePars ap = VolatilePars();     // Various adjustment parameters commanding at system level.  Initialized on start up.  Not retained.
@@ -110,82 +117,27 @@ Pins *myPins;                   // Photon hardware pin mapping used
 // Setup
 void setup()
 {
-  // Log.info("begin setup");
-  // Serial
-  // Serial.blockOnOverrun(false);  doesn't work
-  Serial.begin(SOFT_SBAUD);
-  Serial.flush();
-  delay(1000);          // Ensures a clean display
-  sendTxBuf("Hi!\n", true, IN_SERVICE);
-
-  // BLE
-	BLE.on();
-  BLE.addCharacteristic(txCharacteristic);
-  BLE.addCharacteristic(rxCharacteristic);
-  BleAdvertisingData data;
-  data.appendServiceUUID(serviceUuid);
-  BLE.advertise(&data);
+  setup_serial_ble();
 
   // Time
   sp.put_Time_now(max(sp.Time_now(), (uint32_t)Time.now()));  // Synch with web when possible
   Time.setTime( (time_t) (sp.Time_now()) );
 
-  // Peripherals (Photon2)
-  // D7 - status led heartbeat
-  // A0 (pin 'D11') - Primary Ib amp (called by old ADS name Amplified, amp)
-  // A1 (pin 'D12') - Vb
-  // A2 (pin 'D13') - Backup Ib amp (called by old ADS name Non Amplified, noa)
-  // A3 (pin 'D0') - alternate to SDA.  Used for 2wire temperature
-  // A4 (pin 'D1') - alternate to SCL.
-  // A5 (pin 'D14') - Vr or Vc
-
-  // Log.info("setup Pins");
-  myPins = new Pins(D7, D12, D11, D13, D14, D0, true);
-  pinMode(myPins->status_led, OUTPUT);
-  digitalWrite(myPins->status_led, LOW);
-
-  // 1-Wire chip card for I2C (after start Wire)
-  #if defined(HDWE_BARE)
-    sendTxBuf("Going naked\n", true, IN_SERVICE);
-  #elif defined(HDWE_2WIRE)
-    sendTxBuf("Using 2Wire Temperature sensor\n", true, IN_SERVICE);
-  #else
-    #error "Temperature sensor undefined"
-  #endif
+  setup_pins();
 
   // Synchronize clock
   // Device needs to be configured for wifi (hold setup 3 sec run Particle app) and in range of wifi
-  // Phone hotspot is very convenientwait_on_user_input
+  // Phone hotspot is very convenient
   delay(2000);
   WiFi.off();
   delay(1000);
   sendTxBuf("Done WiFi\n", true, IN_SERVICE);
   sendTxBuf("done CLOUD\n", true, IN_SERVICE);
 
-  // Clean boot logic.  This occurs only when doing a structural rebuild clean make on initial flash, because
-  // the SRAM is not explicitly initialized.   This is by design, as SRAM must be remembered between boots
-  // Time is never changed by this operation.  It could be corrupt.  Change using "UT" talk feature.
-  sendTxBuf("Check corruption......", true, IN_SERVICE);
-  bool corrupt = sp.is_corrupt();
-  if ( corrupt )
-  {
-    sendTxBuf("\n\n", true, IN_SERVICE);
-    sp.pretty_print( false );
-    sendTxBuf("\n\n", true, IN_SERVICE);
-    sp.set_nominal();
-    sendTxBuf("Fixed corruption\n", true, IN_SERVICE);
-    sp.pretty_print(true);
-  }
-  else sendTxBuf("\nclean\n", true, IN_SERVICE);
+  check_and_fix_corruption();
 
   // Determine millis() at turn of Time.now   Used to improve accuracy of timing.
-  long time_begin = Time.now();
-  uint16_t count = 0;
-  while ( Time.now()==time_begin && count++<1000 )
-  {
-    delay(1);
-    millis_flip = millis()%1000;
-  }
+  sync_time(millis(), &last_sync, &millis_flip);
 
   // Enable and print stored history
   System.enableFeature(FEATURE_RETAINED_MEMORY);
@@ -196,33 +148,9 @@ void setup()
   }
   sp.nsum(NSUM);  // Store
 
-  // Ask to renominalize or force nominal.  Set in config file (see local_config.h for presesntly used config file)
-  sp.get_booted();  // get the stored booted state.  This is a hack to ensure that we don't have to wait for the normal backup on reset to occur.
-  sendTxBuf(String::format("booted = %d\n", sp.booted()), true, IN_SERVICE);
-  if ( ASK_DURING_BOOT == 0 && !sp.booted() )  // automatically renominalize and reboot after a dirty boot.
-  {
-    sp.set_nominal();  // sets booted to false by the way
-    sp.put_booted(true);  // sets booted to true so on next startups we don't have to renominalize to clean a dirty boot.
-    sendTxBuf("\n\nSet booted true and stored...", true, IN_SERVICE);
-    System.backupRamSync();  // Force backup of RAM to ensure booted = true is saved.  This is important because the system reset below is a no-wait reset that doesn't wait for the normal backup on reset to occur.
-    delay(1000);
-    sendTxBuf("backup Ram synced *\n", true, IN_SERVICE);
-    sp.get_booted();  // get the stored booted state.  This is a hack to ensure that we don't have to wait for the normal backup on reset to occur.
-    sendTxBuf(String::format("booted = %d\n", sp.booted()), true, IN_SERVICE);
-    sendTxBuf("booted should be true\n\n", true, IN_SERVICE);
-    delay(1000);          // Ensures true saves before rebooting
-  }
-  
-  if ( ASK_DURING_BOOT == 1 )
-  {
-    // Log.info("setup renominalize");
-    if ( sp.num_diffs() )
-    {
-      wait_on_user_input();
-    }
-  }
+  // Ask to renominalize or force nominal.  Set in config file (see local_config.h for presently used config file)
+  handle_boot_sequence();
 
-  // Log.info("setup end");
   sendTxBuf("End setup()\n\n", true, IN_SERVICE);
 } // setup
 
@@ -254,7 +182,7 @@ void loop()
   static uint64_t start = millis();
   static uint64_t start_reset = millis();
 
-   // Monitor to count Coulombs and run EKF
+  // Monitor to count Coulombs and run EKF
   static BatteryMonitor *Mon = new BatteryMonitor(0., 0., sp.Dw());
 
   // Sensor conversions.  The embedded model 'Sim' is contained in Sensors
@@ -263,6 +191,7 @@ void loop()
 
   // Battery saturation debounce
   static TFDelay *Is_sat_delay = new TFDelay(false, T_SAT, T_DESAT, EKF_NOM_DT);
+
 
   ///////////////////////////////////////////////////////////// Top of loop////////////////////////////////////////
 
@@ -287,45 +216,27 @@ void loop()
   if ( elapsed >= SUMMARY_WAIT / (SUMMARY_DELAY / ap.sum_delay()) ) boot_wait = false;
   summarizing = Summarize->update(now, false) || boot_summ;
 
-  // Sample Ib
-  if ( read )
-  {
-    // Log.info("Read shunt");
-    if ( reset_kf )sendTxBuf(" SOC_Particle:  reseting kfs\n", true, IN_SERVICE);
-    Sen->ShuntAmp->sample(reset_kf);
-    // Log.info("ino:  Shunt::sample_time,%lld,cTime,%7.3f,", Sen->ShuntAmp->sample_time(), double(Sen->ShuntAmp->sample_time() - Sen->inst_millis() + Sen->inst_time()*1000)/1000.f);
-    Sen->ShuntNoAmp->sample(reset_kf);
-  }
 
-  // Input all other sensors and do high rate calculations
   if ( read )
   {
-    // Log.info("ino:  read");
+    // Sample Ib
+    if ( reset_kf ) sendTxBuf(" SOC_Particle:  reseting kfs\n", true, IN_SERVICE);
+    Sen->ShuntAmp->sample(reset_kf);
+    Sen->ShuntNoAmp->sample(reset_kf);
+
     Sen->reset(reset);
 
     // Check for really slow data capture and run EKF each read frame
     // ap.eframe_mult() = max(int(float(READ_DELAY)*float(EKF_EFRAME_MULT)/float(ReadSensors->delay())+0.9999), 1);
 
-    // Set print frame
-    static uint8_t print_count = 0;
-    if ( print_count>=ap.print_mult()-1 || print_count==UINT8_MAX )  // > avoids lockup on change by user
-    {
-      print_count = 0;
-      cp.publishS = true;
-    }
-    else
-    {
-      print_count++;
-      cp.publishS = false;
-    }
+    update_publish_frame();
 
     // Read sensors, model signals, select between them, synthesize injection signals on current
     // Inputs:  sp.config, sp.sim_chm
     // Outputs: Sen->Ib, Sen->Vb, sp.inj_bias
-    // Log.info("ino:  sense_synth_select");
     sense_synth_select(reset, reset_temp, reset_kf, ReadSensors->now(), elapsed, myPins, Mon, Sen);
 
-    // Calculate Ah remaining`
+    // Calculate Ah remaining
     // Inputs:  sp.mon_chm, Sen->Ib, Sen->Vb, Sen->Tb_f
     // States:  Mon.soc
     // Outputs: tcharge_wt, tcharge_ekf
@@ -343,7 +254,6 @@ void loop()
     // Publish for variable print rate
     if ( cp.publishS )
     {
-      // Log.info("ino:  assign_publist ReadSensors->now()=%lld", ReadSensors->now());
       assign_publist(&pp.pubList, ReadSensors->now(), unit, hm_string, Sen, num_timeouts, Mon);
       static bool wrote_last_time = false;
       if ( wrote_last_time )
@@ -354,22 +264,21 @@ void loop()
     }
 
     // Print
-    // Log.info("ino:  print_rapid_data");
     print_shunt_serial(reset, Sen);
     print_signal_sel_serial(reset, Sen, Mon, Sen->Sim);
     print_rapid_data(reset, Sen, Mon, reset_temp);
 
-    // Log.info("end read");
   }  // end read (high speed frame)
+
 
   // Bluetooth display drivers.   Also convenient update time for saving parameters (remember)
   if ( display_and_remember )
   {
-    // Log.info("display and remember");
     serial_display(Sen, Mon);
     sp.put_Time_now(max( sp.Time_now(), (uint32_t)Time.now()));  // If happen to connect to wifi (assume updated automatically), save new time
   }
 
+  
   // Discuss things with the user
   // When open interactive serial monitor such as puTTY
   // then can enter commands by sending strings.   End the strings with a real carriage return
@@ -385,26 +294,16 @@ void loop()
     describe(Mon, Sen);  // Run the commands
   }
 
+  
   // Summary management.   Every boot after a wait an initial summary is saved in rotating buffer
   // Then every half-hour unless modeling.   Can also request manually via cp.write_summary (Talk)
-  if ( (!boot_wait && summarizing) || cp.write_summary )
-  {
-    sp.put_Ihis(sp.ihis() + 1);
-    if ( sp.ihis() > (sp.nhis() - 1) ) sp.put_Ihis(0);  // wrap buffer
-    Flt_st hist_snap, hist_bounced;
-    hist_snap.assign(Sen->now(), Mon, Sen);
-    hist_bounced = sp.put_history(hist_snap, sp.ihis());
+  manage_summaries(boot_wait, summarizing, Mon, Sen);
 
-    sp.put_Isum(sp.isum() + 1);
-    if ( sp.isum() > (uint16_t)(sp.nsum()-1) ) sp.put_Isum(0);  // wrap buffer
-    mySum[sp.isum()].copy_to_Flt_ram_from(hist_bounced);
-    sendTxBuf("Summ...\n", true, IN_SERVICE);
-    cp.write_summary = false;
-  }
-
+  
   // Data capture
   sample_burst(myPins, Sen);
 
+  
   // Initialize complete once sensors and models started and summary written
   if ( read )
   {
@@ -417,20 +316,8 @@ void loop()
     reset_temp = false;
   }
 
+
   // Soft reset
-  if ( read ) cp.soft_sim_hold = false;
-  cp.soft_reset_print = cp.soft_reset;
-  cp.soft_reset_sim_print = cp.soft_reset_sim;
-  if ( cp.soft_reset || cp.soft_reset_sim )
-  {
-    reset = reset_temp = reset_kf = true;
-    start_reset = millis();
-    if ( cp.soft_reset_sim ) cp.cmd_soft_sim_hold();
-  }
-  if ( cp.ekf_reset ) cp.ekf_reset_print = reset_ekf = true;
-  if ( cp.kf_reset ) cp.kf_reset_print = reset_kf = true;
-  cp.soft_reset = cp.soft_reset_sim = cp.ekf_reset = cp.kf_reset = false;
-  // Log.info("ino:  end loop\n\n\n");
+  handle_soft_reset(&reset, &reset_temp, &reset_kf, &reset_ekf, &start_reset, read);
 
 } // loop
-

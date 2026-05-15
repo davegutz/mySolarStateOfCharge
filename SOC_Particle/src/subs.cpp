@@ -36,7 +36,10 @@ extern VolatilePars ap; // Various adjustment parameters shared at system level
 extern CommandPars cp;  // Various parameters shared at system level
 extern PrinterPars pr;  // Print buffer
 extern PublishPars pp;  // For publishing
+extern Flt_st mySum[NSUM];
+extern Pins *myPins;
 extern BleCharacteristic txCharacteristic;
+extern BleCharacteristic rxCharacteristic;
 
 void sample_burst(Pins *myPins, Sensors *Sen)
 {
@@ -683,6 +686,132 @@ void sync_time(uint64_t now, uint64_t *last_sync, uint64_t *millis_flip)
   }
 }
 
+
+// Initialize serial and BLE in setup()
+void setup_serial_ble()
+{
+  Serial.begin(SOFT_SBAUD);
+  Serial.flush();
+  delay(1000);
+  sendTxBuf("Hi!\n", true, IN_SERVICE);
+
+  BLE.on();
+  BLE.addCharacteristic(txCharacteristic);
+  BLE.addCharacteristic(rxCharacteristic);
+  BleAdvertisingData data;
+  data.appendServiceUUID(serviceUuid);
+  BLE.advertise(&data);
+}
+
+// Configure hardware pins and report temperature sensor type in setup()
+void setup_pins()
+{
+  myPins = new Pins(D7, D12, D11, D13, D14, D0, true);
+  pinMode(myPins->status_led, OUTPUT);
+  digitalWrite(myPins->status_led, LOW);
+
+  #if defined(HDWE_BARE)
+    sendTxBuf("Going naked\n", true, IN_SERVICE);
+  #elif defined(HDWE_2WIRE)
+    sendTxBuf("Using 2Wire Temperature sensor\n", true, IN_SERVICE);
+  #else
+    #error "Temperature sensor undefined"
+  #endif
+}
+
+// Check retained memory for corruption; reset to nominal if found
+void check_and_fix_corruption()
+{
+  sendTxBuf("Check corruption......", true, IN_SERVICE);
+  bool corrupt = sp.is_corrupt();
+  if ( corrupt )
+  {
+    sendTxBuf("\n\n", true, IN_SERVICE);
+    sp.pretty_print(false);
+    sendTxBuf("\n\n", true, IN_SERVICE);
+    sp.set_nominal();
+    sendTxBuf("Fixed corruption\n", true, IN_SERVICE);
+    sp.pretty_print(true);
+  }
+  else sendTxBuf("\nclean\n", true, IN_SERVICE);
+}
+
+// Handle booted flag and optional renominalize prompt in setup()
+void handle_boot_sequence()
+{
+  sp.get_booted();
+  sendTxBuf(String::format("booted = %d\n", sp.booted()), true, IN_SERVICE);
+  if ( ASK_DURING_BOOT == 0 && !sp.booted() )
+  {
+    sp.set_nominal();
+    sp.put_booted(true);
+    sendTxBuf("\n\nSet booted true and stored...", true, IN_SERVICE);
+    System.backupRamSync();
+    delay(1000);
+    sendTxBuf("backup Ram synced *\n", true, IN_SERVICE);
+    sp.get_booted();
+    sendTxBuf(String::format("booted = %d\n", sp.booted()), true, IN_SERVICE);
+    sendTxBuf("booted should be true\n\n", true, IN_SERVICE);
+    delay(1000);
+  }
+  if ( ASK_DURING_BOOT == 1 )
+  {
+    if ( sp.num_diffs() )
+      wait_on_user_input();
+  }
+}
+
+// Rate-divide the read frame to set cp.publishS true every print_mult reads
+void update_publish_frame()
+{
+  static uint8_t print_count = 0;
+  if ( print_count >= ap.print_mult()-1 || print_count == UINT8_MAX )
+  {
+    print_count = 0;
+    cp.publishS = true;
+  }
+  else
+  {
+    print_count++;
+    cp.publishS = false;
+  }
+}
+
+// Rotate history and summary ring buffers on schedule or manual request
+void manage_summaries(const bool boot_wait, const bool summarizing, BatteryMonitor *Mon, Sensors *Sen)
+{
+  if ( (!boot_wait && summarizing) || cp.write_summary )
+  {
+    sp.put_Ihis(sp.ihis() + 1);
+    if ( sp.ihis() > (sp.nhis() - 1) ) sp.put_Ihis(0);
+    Flt_st hist_snap, hist_bounced;
+    hist_snap.assign(Sen->now(), Mon, Sen);
+    hist_bounced = sp.put_history(hist_snap, sp.ihis());
+
+    sp.put_Isum(sp.isum() + 1);
+    if ( sp.isum() > (uint16_t)(sp.nsum()-1) ) sp.put_Isum(0);
+    mySum[sp.isum()].copy_to_Flt_ram_from(hist_bounced);
+    sendTxBuf("Summ...\n", true, IN_SERVICE);
+    cp.write_summary = false;
+  }
+}
+
+// Apply pending soft/ekf/kf reset command-par flags to loop state variables
+void handle_soft_reset(bool *reset, bool *reset_temp, bool *reset_kf, bool *reset_ekf, uint64_t *start_reset, const bool read)
+{
+  if ( read ) cp.soft_sim_hold = false;
+  cp.soft_reset_print = cp.soft_reset;
+  cp.soft_reset_sim_print = cp.soft_reset_sim;
+  if ( cp.soft_reset || cp.soft_reset_sim )
+  {
+    *reset = *reset_temp = *reset_kf = true;
+    *start_reset = millis();
+    if ( cp.soft_reset_sim ) cp.cmd_soft_sim_hold();
+  }
+  if ( cp.ekf_reset ) cp.ekf_reset_print = *reset_ekf = true;
+  if ( cp.kf_reset ) cp.kf_reset_print = *reset_kf = true;
+  cp.soft_reset = cp.soft_reset_sim = cp.ekf_reset = cp.kf_reset = false;
+}
 
 // For summary prints
 String time_long_2_str(const time_t time, char *tempStr)
