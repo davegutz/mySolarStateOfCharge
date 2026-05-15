@@ -204,6 +204,14 @@ lookup = {
         'zero_with_pc': (120, hdwNoVbPcMidInit + zeroPrepHdweNoVb + 'vv4;W17;' + 'XQ25000;' + 'vv99;Xm2;XQ15000;' + quiet  + cleanup + '<XD;', ("Hardware zero_with_pc run", "", "", "")),
         }
 
+# Lookup keys for which compare_run_sim should be called with shift_soc_s=False
+no_shift_soc_s = frozenset({
+    'rapidTweakRegression',
+    'rapidTweakRegressionH0',
+    'rapidTweakRegression40C',
+    'triTweakDisch',
+})
+
 macro_lookup = {
         'end_early': (22, 'Y;cc;Dh1800000;*W;*vv0;*XS;*Ca1;<Hd;<Pf;', ('', '', '', '')),
         'hdwNoVbPcMidInit': (5, hdwNoVbPcMidInit, ('', '', '', '')),

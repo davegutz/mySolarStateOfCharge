@@ -87,6 +87,7 @@ from GUI_common import (
     lookup,
     macro_lookup,
     macro_sel_list,
+    no_shift_soc_s,
     plat,
     plink_connection,
     register_last_task,
@@ -447,7 +448,8 @@ def compare_run(show_killer_=True):
     if modeling.get():
         print('compare_run_sim.  save_pdf_path', str(PurePosixPath(Test.version_path) / 'figures'))
         return compare_run_sim(data_file=Test.file_path, unit_key=Test.key, strict_overplot=strict_overplot.get(),
-                               terse=terse.get(), hardcopy=hardcopy.get(), show_killer_=show_killer_)
+                               terse=terse.get(), hardcopy=hardcopy.get(), show_killer_=show_killer_,
+                               shift_soc_s=option.get() not in no_shift_soc_s)
     else:
         if not Ref.key_exists_in_file:
             tkinter.messagebox.showwarning(message="Ref Key '" + Ref.key + "' does not exist in " + Ref.file_txt)
@@ -691,7 +693,8 @@ def run_sim_all_batch():
                 print(f"run_sim_all_batch: {file_path}")
                 result = compare_run_sim(data_file=file_path, unit_key=key,
                                          strict_overplot=True, terse=True, hardcopy=True,
-                                         show_killer_=False, fig_list=all_fig_list)
+                                         show_killer_=False, fig_list=all_fig_list,
+                                         shift_soc_s=macro not in no_shift_soc_s)
                 if result is not None:
                     all_fig_list = result[0]
             except Exception as case_e:
