@@ -213,7 +213,7 @@ public:
   float y_ekf_f_tau() { return y_ekf_f_tau_; };
   float y_ekf_f_state() { return y_ekf_f_state_; };
 protected:
-  LagTustin *Yfilt = new LagTustin(EKF_NOM_DT, TAU_Y_FILT, MIN_Y_FILT, MAX_Y_FILT);  // actual update time provided run time
+  LagExp *Yfilt = new LagExp(EKF_NOM_DT, TAU_Y_FILT, MIN_Y_FILT, MAX_Y_FILT);  // actual update time provided run time
   SlidingDeadband *SdVb_;  // Sliding deadband filter for Vb
   TFDelay *EKF_converged;  // Time persistence
   Iterator *ice_;      // Iteration control for EKF solver

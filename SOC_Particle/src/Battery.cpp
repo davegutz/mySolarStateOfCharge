@@ -315,7 +315,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool 
         q_ekf_ = soc_ekf_ * q_capacity_;
         delta_q_ekf_ = q_ekf_ - q_capacity_;
         y_ekf_ = y();  // y = z - hx, residual between measurement and predicted measurement
-        y_ekf_f_ = Yfilt->calculate(y_ekf_, reset_temp, min(dt_ekf_, EKF_T_RES));
+        y_ekf_f_ = Yfilt->calculate(y_ekf_, reset_temp, dt_ekf_);
         y_ekf_f_T_ = Yfilt->T();
         y_ekf_f_tau_ = Yfilt->tau();
         y_ekf_f_state_ = Yfilt->state();

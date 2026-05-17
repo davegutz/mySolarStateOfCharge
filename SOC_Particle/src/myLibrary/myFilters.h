@@ -7,6 +7,7 @@
   30-Sep-2016   Dave Gutz   LeadLagTustin
   23-Nov-2016   Dave Gutz   LeadLagExp
   09-Feb-2021   Dave Gutz   RateLagExp, LagExp, General2_Pole
+  17-May-2026   Dave Gutz   Update for new hardware and software configuration approach, remove unused code, add comments
  ****************************************************/
 #pragma once
 
@@ -14,6 +15,54 @@
 #include <math.h>
 
 #define DEAD(X, HDB)  ( max(X-HDB, 0) + min(X+HDB, 0) )
+
+
+class Debounce
+{
+public:
+  Debounce();
+  Debounce(const bool icValue, const int updates);
+  ~Debounce();
+  // operators
+  // functions
+  bool calculate(const bool in);
+  bool calculate(const bool in, const int RESET);
+protected:
+  int nz_;     // Number of past consequetive states to agree with input to pass debounce
+  bool passed_out_; // latched value of output
+  bool *past_; // Array(nz_-1) of past inputs
+};
+
+
+class Delay
+{
+public:
+  Delay();
+  Delay(const double in, const int nz);
+  ~Delay();
+  // operators
+  // functions
+  double calculate(const double in);
+  double calculate(const double in, const int RESET);
+protected:
+  double *past_;
+  int nz_;
+};
+
+
+class DetectRise
+{
+public:
+  DetectRise();
+  ~DetectRise();
+  // operators
+  // functions
+  bool calculate(const bool in);
+  bool calculate(const int in);
+  bool calculate(const double in);
+protected:
+  double past_;
+};
 
 
 /* Pseudo-Random Binary Sequence, 7 bits
@@ -34,35 +83,41 @@ protected:
 };
 
 
-class Debounce
+class RateLimit
 {
 public:
-  Debounce();
-  Debounce(const bool icValue, const int updates);
-  ~Debounce();
+  RateLimit();
+  RateLimit(const double in, const double T);
+  RateLimit(const double in, const double T, const double Rmin, const double Rmax);
+  ~RateLimit();
   // operators
   // functions
-  bool calculate(const bool in);
-  bool calculate(const bool in, const int RESET);
+  double calculate(const double in);
+  double calculate(const double in, const int RESET);
+  double calculate(const double in, const double Rmin, const double Rmax);
+  double calculate(const double in, const double Rmin, const double Rmax, const int RESET);
+  double calculate(const double in, const double Rmin, const double Rmax, const int RESET, const double T);
 protected:
-  int nz_;     // Number of past consequetive states to agree with input to pass debounce
-  bool passed_out_; // latched value of output
-  bool *past_; // Array(nz_-1) of past inputs
+  double past_;
+  double jmax_;   // Max rate limit, units of in/update
+  double jmin_;   // Min rate limit, units of in/update (<0)
+  double T_;      // Update rate, sec
 };
 
 
-class DetectRise
+class SlidingDeadband
 {
 public:
-  DetectRise();
-  ~DetectRise();
+  SlidingDeadband();
+  SlidingDeadband(const double hdb);
+  ~SlidingDeadband();
   // operators
   // functions
-  bool calculate(const bool in);
-  bool calculate(const int in);
-  bool calculate(const double in);
+  double update(const double in);
+  double update(const double in, const int RESET);
 protected:
-  double past_;
+  double z_;      // State of output, units of input
+  double hdb_;    // Half of deadband width, units of input
 };
 
 
@@ -77,22 +132,6 @@ public:
   bool calculate(const bool S, const bool R);
 protected:
   bool state_;
-};
-
-
-class Delay
-{
-public:
-  Delay();
-  Delay(const double in, const int nz);
-  ~Delay();
-  // operators
-  // functions
-  double calculate(const double in);
-  double calculate(const double in, const int RESET);
-protected:
-  double *past_;
-  int nz_;
 };
 
 
@@ -125,44 +164,6 @@ protected:
 };
 
 
-class RateLimit
-{
-public:
-  RateLimit();
-  RateLimit(const double in, const double T);
-  RateLimit(const double in, const double T, const double Rmax, const double Rmin);
-  ~RateLimit();
-  // operators
-  // functions
-  double calculate(const double in);
-  double calculate(const double in, const int RESET);
-  double calculate(const double in, const double Rmax, const double Rmin);
-  double calculate(const double in, const double Rmax, const double Rmin, const int RESET);
-  double calculate(const double in, const double Rmax, const double Rmin, const int RESET, const double T);
-protected:
-  double past_;
-  double jmax_;   // Max rate limit, units of in/update
-  double jmin_;   // Min rate limit, units of in/update (<0)
-  double T_;      // Update rate, sec
-};
-
-
-class SlidingDeadband
-{
-public:
-  SlidingDeadband();
-  SlidingDeadband(const double hdb);
-  ~SlidingDeadband();
-  // operators
-  // functions
-  double update(const double in);
-  double update(const double in, const int RESET);
-protected:
-  double z_;      // State of output, units of input
-  double hdb_;    // Half of deadband width, units of input
-};
-
-
 // ************************** 1-Pole Filters ***********************************************
 class DiscreteFilter
 {
@@ -173,9 +174,11 @@ public:
   // operators
   // functions
   virtual double calculate(double in, int RESET);
+  virtual double calculate(double in, int RESET, const double T);
+  virtual double calculate(double in, int RESET, const double T, const double r_min, const double r_max);
   virtual void assignCoeff(double tau);
   virtual void rateState(double in);
-  virtual double rateStateCalc(double in, const double max_rate, const double min_rate);
+  virtual double rateStateCalc(double in, const double min_rate, const double max_rate);
   virtual double rateStateCalc(double in);
   virtual bool reset() { return reset_; };
   virtual double state(void);
@@ -192,106 +195,37 @@ protected:
 };
 
 
-// Tustin rate-lag rate calculator, non-pre-warped, no limits
-class LeadLagTustin : public DiscreteFilter
+// Exponential lag calculator
+class LagExp : public DiscreteFilter
 {
 public:
-  LeadLagTustin();
-  LeadLagTustin(const double T, const double tld, const double tau, const double min, const double max);
-  //  LeadLagTustin(const LeadLagTustin & RLT);
-  ~LeadLagTustin();
+  LagExp();
+  LagExp(const double T, const double tau, const double min, const double max);
+  ~LagExp();
   //operators
   //functions
-  virtual double calculate(const double in, const int RESET);
-  virtual double calculate(const double in, const int RESET, const double T);
-  virtual double calculate(double in, int RESET, const double T, const double tau, const double tld);
-  virtual void assignCoeff(const double tld, const double tau, const double T);
-  virtual double rateStateCalc(const double in);
-  virtual double rateStateCalc(const double in, const double T);
-  virtual double state(void);
-protected:
-  double a_;
-  double b_;
-  double state_;
-  double tld_;
-};
-
-
-// Tustin rate-lag rate calculator, non-pre-warped, no limits, fixed update rate
-class LeadLagExp : public DiscreteFilter
-{
-public:
-  LeadLagExp();
-  LeadLagExp(const double T, const double tld, const double tau, const double min, const double max);
-  //  LeadLagExp(const LeadLagExp & RLT);
-  ~LeadLagExp();
-  //operators
-  //functions
-  virtual double calculate(const double in, const int RESET);
-  virtual double calculate(const double in, const int RESET, const double T);
-  virtual double calculate(double in, int RESET, const double T, const double tau, const double tld);
-  virtual void assignCoeff(const double tld, const double tau, const double T);
-  virtual double rateStateCalc(const double in);
-  virtual double rateStateCalc(const double in, const double T);
-  virtual double state(void);
-protected:
-  double a_;
-  double b_;
-  double state_;
-  double instate_;
-  double tld_;
-};
-
-
-// Tustin rate-lag rate calculator, non-pre-warped, no limits, fixed update rate
-class RateLagTustin : public DiscreteFilter
-{
-public:
-  RateLagTustin();
-  RateLagTustin(const double T, const double tau, const double min, const double max);
-  //  RateLagTustin(const RateLagTustin & RLT);
-  ~RateLagTustin();
-  //operators
-  //functions
-  virtual double calculate(double in, int RESET);
-  virtual void assignCoeff(double tau);
-  virtual void rateState(double in);
-  virtual void rateState(double in, const double max_rate, const double min_rate);
-  virtual double state(void);
-protected:
-  double a_;
-  double b_;
-  double state_;
-};
-
-
-// Exponential rate-lag rate calculator
-class RateLagExp : public DiscreteFilter
-{
-public:
-  RateLagExp();
-  RateLagExp(const double T, const double tau, const double min, const double max);
-  ~RateLagExp();
-  //operators
-  //functions
+  void absorb(LagExp *LE) { lstate_ = LE->lstate_; rstate_ = LE->rstate_; };
   virtual double calculate(double in, int RESET);
   virtual double calculate(double in, int RESET, const double T);
-  virtual void assignCoeff(double tau);
+  virtual double calculate(double in, int RESET, const double tau, const double T);
+  virtual double calculate(double in, int RESET, const double T, const double r_min, const double r_max);
+  virtual double calculate(double in, int RESET, const double tau, const double T, const double min_rate, const double max_rate);
+  virtual void assignCoeff(double tau, double T);
   virtual void rateState(double in);
-  virtual void rateState(double in, const double T);
-  virtual void rateState(double in, const double max_rate, const double min_rate);
-  virtual double state(void);
+  virtual void rateStateLim(double in, int RESET, double min_rate, double max_rate);
   double a() { return (a_); };
   double b() { return (b_); };
   double c() { return (c_); };
   double lstate() { return (lstate_); };
+  void lstate(const double in) { lstate_ = in; };
   double rstate() { return (rstate_); };
+  void rstate(const double in) { rstate_ = in; };
 protected:
   double a_;
   double b_;
   double c_;
-  double lstate_; // lag state
-  double rstate_; // rate state
+  double lstate_;
+  double rstate_;
 };
 
 
@@ -321,35 +255,106 @@ protected:
 };
 
 
-// Exponential lag calculator
-class LagExp : public DiscreteFilter
+// Tustin rate-lag rate calculator, non-pre-warped, no limits, fixed update rate
+class LeadLagExp : public DiscreteFilter
 {
 public:
-  LagExp();
-  LagExp(const double T, const double tau, const double min, const double max);
-  ~LagExp();
+  LeadLagExp();
+  LeadLagExp(const double T, const double tld, const double tau, const double min, const double max);
+  //  LeadLagExp(const LeadLagExp & RLT);
+  ~LeadLagExp();
   //operators
   //functions
-  void absorb(LagExp *LE) { lstate_ = LE->lstate_; rstate_ = LE->rstate_; };
+  virtual double calculate(const double in, const int RESET);
+  virtual double calculate(const double in, const int RESET, const double T);
+  virtual double calculate(double in, int RESET, const double T, const double tau, const double tld);
+  virtual void assignCoeff(const double tld, const double tau, const double T);
+  virtual double rateStateCalc(const double in);
+  virtual double rateStateCalc(const double in, const double T);
+  virtual double state(void);
+protected:
+  double a_;
+  double b_;
+  double state_;
+  double instate_;
+  double tld_;
+};
+
+
+// Tustin rate-lag rate calculator, non-pre-warped, no limits
+class LeadLagTustin : public DiscreteFilter
+{
+public:
+  LeadLagTustin();
+  LeadLagTustin(const double T, const double tld, const double tau, const double min, const double max);
+  //  LeadLagTustin(const LeadLagTustin & RLT);
+  ~LeadLagTustin();
+  //operators
+  //functions
+  virtual double calculate(const double in, const int RESET);
+  virtual double calculate(const double in, const int RESET, const double T);
+  virtual double calculate(double in, int RESET, const double T, const double tau, const double tld);
+  virtual void assignCoeff(const double tld, const double tau, const double T);
+  virtual double rateStateCalc(const double in);
+  virtual double rateStateCalc(const double in, const double T);
+  virtual double state(void);
+protected:
+  double a_;
+  double b_;
+  double state_;
+  double tld_;
+};
+
+
+// Exponential rate-lag rate calculator
+class RateLagExp : public DiscreteFilter
+{
+public:
+  RateLagExp();
+  RateLagExp(const double T, const double tau, const double min, const double max);
+  ~RateLagExp();
+  //operators
+  //functions
   virtual double calculate(double in, int RESET);
-  virtual double calculate(double in, int RESET, const double tau, const double T);
-  virtual double calculate(double in, int RESET, const double tau, const double T, const double max_rate, const double  min_rate);
-  virtual void assignCoeff(double tau, double T);
+  virtual double calculate(double in, int RESET, const double T);
+  virtual void assignCoeff(double tau);
   virtual void rateState(double in);
-  virtual void rateStateLim(double in, int RESET, double max_rate, double min_rate);
+  virtual void rateState(double in, const double T);
+  virtual void rateState(double in, const double min_rate, const double max_rate);
+  virtual double state(void);
   double a() { return (a_); };
   double b() { return (b_); };
   double c() { return (c_); };
   double lstate() { return (lstate_); };
-  void lstate(const double in) { lstate_ = in; };
   double rstate() { return (rstate_); };
-  void rstate(const double in) { rstate_ = in; };
 protected:
   double a_;
   double b_;
   double c_;
-  double lstate_;
-  double rstate_;
+  double lstate_; // lag state
+  double rstate_; // rate state
+};
+
+
+// Tustin rate-lag rate calculator, non-pre-warped, no limits, fixed update rate
+class RateLagTustin : public DiscreteFilter
+{
+public:
+  RateLagTustin();
+  RateLagTustin(const double T, const double tau, const double min, const double max);
+  //  RateLagTustin(const RateLagTustin & RLT);
+  ~RateLagTustin();
+  //operators
+  //functions
+  virtual double calculate(double in, int RESET);
+  virtual void assignCoeff(double tau);
+  virtual void rateState(double in);
+  virtual void rateState(double in, const double min_rate, const double max_rate);
+  virtual double state(void);
+protected:
+  double a_;
+  double b_;
+  double state_;
 };
 
 
@@ -364,7 +369,7 @@ public:
   // functions
   virtual double calculate(double in, bool RESET, double init_value);
   virtual double calculate(double in, double T, bool RESET, double init_value);
-  virtual double calculate(double in, double T, bool RESET, double init_value, double max, double min);
+  virtual double calculate(double in, double T, bool RESET, double init_value, double min, double max);
   virtual void newState(double newState);
   virtual double state() { return lstate_; };
   virtual bool lim() { return lim_; };
@@ -487,7 +492,7 @@ struct PID
   void Ag(const double A) { ag_ = A; };
   void St(const double S) { st_ = S; };
   void At(const double A) { at_ = A; };
-  PID(double G, double tau, double MAX, double MIN, double LLMAX, double LLMIN, double prop, double integ, double DB,
+  PID(double G, double tau, double MIN, double MAX, double LLMIN, double LLMAX, double prop, double integ, double DB,
     double err, double err_comp, double cont, double kick_th, double kick)
   {
     this->G = G;
@@ -511,7 +516,7 @@ struct PID
     this->kick_th_ = kick_th;
     this->kick_ = kick;
   }
-  void update(bool reset, double ref, double fb, double updateTime, double init, double dyn_max, double dyn_min, bool kill_db)
+  void update(bool reset, double ref, double fb, double updateTime, double init, double dyn_min, double dyn_max, bool kill_db)
   {
     err = ref - fb;
     double DB_loc = DB;

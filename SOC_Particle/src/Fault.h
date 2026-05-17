@@ -157,10 +157,10 @@ class Looparound
 {
 public:
   Looparound();
-  Looparound(BatteryMonitor *Mon, Sensors *Sen, const float wrap_hi_amp, const float wrap_lo_amp, const double wrap_trim_gain,
-    const float imax, const float imin, const float err_max);
+  Looparound(BatteryMonitor *Mon, Sensors *Sen, const float wrap_hi_volt, const float wrap_lo_volt, const double wrap_trim_gain,
+    const float imin, const float imax, const float err_max);
   ~Looparound();
-  void calculate(const bool reset, const bool disable_fault, const float ib, Sensors *Sen);
+  void calculate(const bool reset, const bool disable_fault, const float ib, Sensors *Sen, const bool freeze);
   float dv_dyn() { return dv_dyn_; };
   float e_wrap() { return e_wrap_; };
   float e_wrap_filt() { return e_wrap_filt_; };
@@ -183,7 +183,7 @@ public:
   float ib_wrp_a() { return WrapErrFilt_->a(); };
   float ib_wrp_b() { return WrapErrFilt_->b(); };
   float ib_wrp_rate() { return WrapErrFilt_->rate(); };
-  float ib_wrp_state() { return WrapErrFilt_->state(); };
+  float ib_wrp_state() { return WrapErrFilt_->lstate(); };
   float ib_wrp_T() { return WrapErrFilt_->T(); };
   float ib_wrp_tau() { return WrapErrFilt_->tau(); };
   uint8_t lo_fail() { return lo_fail_; };
@@ -222,11 +222,11 @@ protected:
   float vb_;                // Looparound version of vb, V
   float voc_;               // Looparound version of voc, V 
   float voc_soc_;           // Looparound version of voc_soc, V 
-  LagTustin *WrapErrFilt_;  // Noise filter for voltage wrap
+  LagExp *WrapErrFilt_;  // Noise filter for voltage wrap
   TFDelay *WrapHi_;         // Wrap test persistence
   TFDelay *WrapLo_;         // Wrap test persistence
-  float wrap_hi_amp_;       // Wrap high current, A
-  float wrap_lo_amp_;       // Wrap low current, A
+  float wrap_hi_volt_;      // Wrap high voltage (hyst +), V
+  float wrap_lo_volt_;      // Wrap low voltage (hyst -), V
   double wrap_trim_gain_;   // Trim gain, r/s
 };
 
@@ -342,7 +342,7 @@ public:
   void vc_check(Sensors *Sen, BatteryMonitor *Mon, const float _vc_min, const float _vc_max, const bool reset);  // Range check Vc
   bool vc_fa() { return failRead(VC_FA); };
   bool vc_flt() { return faultRead(VC_FLT); };
-  void wrap_err_filt_state(const float in) { WrapErrFilt->state(in); }
+  void wrap_err_filt_state(const float in) { WrapErrFilt->lstate(in); }
   bool wrap_hi_and_lo_fa() { return ( failRead(WRAP_HI_FA) && failRead(WRAP_LO_FA) ); };
   bool wrap_hi_fa() { return failRead(WRAP_HI_FA); };
   bool wrap_hi_flt() { return faultRead(WRAP_HI_FLT); };
@@ -370,7 +370,7 @@ protected:
   TFDelay *IbdNegPer;       // Persistence ib diff lo instantaneous
   TFDelay *IbdHiPer;        // Persistence ib diff hi
   TFDelay *IbdLoPer;        // Persistence ib diff lo
-  LagTustin *IbDiffFilt;     // Noise filter for signal selection
+  LagExp *IbDiffFilt;       // Noise filter for signal selection
   TFDelay *IbNoAmpHardFail; // Persistence ib hard fail noa
   General2_Pole *QuietFilt; // Linear filter to test for quiet
   TFDelay *QuietPer;        // Persistence ib quiet disconnect detection
@@ -379,13 +379,13 @@ protected:
   TFDelay *TbHardFail;      // Persistence Tb hard fail
   TFDelay *VbHardFail;      // Persistence vb hard fail
   TFDelay *VcHardFail;      // Persistence vc hard fail
-  LagTustin *WrapErrFilt;   // Noise filter for voltage wrap
+  LagExp *WrapErrFilt;      // Noise filter for voltage wrap
   TFDelay *WrapHi;          // Time high wrap fail persistence
   TFDelay *WrapLo;          // Time low wrap fail persistence
   float cc_diff_;           // EKF tracking error, C
-  bool cc_diff_fa_;      // EKF tested disagree, T = error
+  bool cc_diff_fa_;         // EKF tested disagree, T = error
   float cc_diff_empty_slr_; // Scale cc_diff when soc low, scalar
-  bool disable_amp_fault_;     // Disable amp faults (both sensors agree), T=disable
+  bool disable_amp_fault_;  // Disable amp faults (both sensors agree), T=disable
   float ewmax_slr_;         // Scale wrap detection thresh when voc(soc) greater than max, scalar
   float ewmin_slr_;         // Scale wrap detection thresh when voc(soc) less than min, scalar
   float ewsat_slr_;         // Scale wrap detection thresh when voc(soc) saturated, scalar
@@ -394,44 +394,44 @@ protected:
   float e_wrap_rate_;       // Wrap error rate, V/s
   uint32_t fltw_;           // Bitmapped faults
   uint32_t falw_;           // Bitmapped fails
-  bool ib_amp_hi_;       // ib amp near it's range limit, T=near hi
-  bool ib_amp_invalid_;  // Battery amp is invalid (hard failed)
-  bool ib_amp_lo_;       // ib amp near it's range limit, T=near lo
+  bool ib_amp_hi_;          // ib amp near it's range limit, T=near hi
+  bool ib_amp_invalid_;     // Battery amp is invalid (hard failed)
+  bool ib_amp_lo_;          // ib amp near it's range limit, T=near lo
   float ib_noa_rate_;       // ib amp rate, A/s
   ibSel ib_choice_;         // ib signal selection
   ibSel ib_choice_last_;    // ib signal selection
   uint16_t ib_decision_;    // ib_decision_hi_lo_, code (stops 0, stops on last decision)
   float ib_diff_;           // Current sensor difference error, A
   float ib_diff_f_;         // Filtered sensor difference error, A
-  bool ib_is_functional_;// Ib is active, T=functional
-  bool ib_is_quiet_;     // Ib is found to be quiet, T=quiet
-  bool ib_lo_active_;    // Battery low amp is in active range, T=active
-  bool ib_lo_limited_hi_;// Battery low amp is pegged at positive limit of hardware, T=limited
-  bool ib_lo_limited_lo_;// Battery low amp is pegged at negative limit of hardware, T=limited
-  bool ib_noa_hi_;       // ib noa above amp high limit, T=above hi
-  bool ib_noa_invalid_;  // Battery noa is invalid (hard failed)
-  bool ib_noa_lo_;       // ib noa below amp low limit, T=below hi
+  bool ib_is_functional_;   // Ib is active, T=functional
+  bool ib_is_quiet_;        // Ib is found to be quiet, T=quiet
+  bool ib_lo_active_;       // Battery low amp is in active range, T=active
+  bool ib_lo_limited_hi_;   // Battery low amp is pegged at positive limit of hardware, T=limited
+  bool ib_lo_limited_lo_;   // Battery low amp is pegged at negative limit of hardware, T=limited
+  bool ib_noa_hi_;          // ib noa above amp high limit, T=above hi
+  bool ib_noa_invalid_;     // Battery noa is invalid (hard failed)
+  bool ib_noa_lo_;          // ib noa below amp low limit, T=below hi
   float ib_quiet_;          // ib hardware noise, A/s
-  bool ib_really_quiet_; // ib hardware noise and low abs level
+  bool ib_really_quiet_;    // ib hardware noise and low abs level
   float ib_rate_;           // ib rate, A/s
   int8_t ib_sel_stat_;      // Memory of Ib signal selection, -1=noa, 0=none, 1=a
   int8_t ib_sel_stat_last_; // past value
-  bool latch_;    // There is a latched fail, T=latched fail
-  bool latch_fake_; // There would be a latched fail if not faking, T=latched fail
-  bool rate_amp_;   // ib_amp rate fault, T=fault
-  bool rate_noa_;   // ib_noa rate fault, T=fault
-  bool reset_all_faults_;  // Reset all fault logic, gets reset before serial call
+  bool latch_;              // There is a latched fail, T=latched fail
+  bool latch_fake_;         // There would be a latched fail if not faking, T=latched fail
+  bool rate_amp_;           // ib_amp rate fault, T=fault
+  bool rate_noa_;           // ib_noa rate fault, T=fault
+  bool reset_all_faults_;   // Reset all fault logic, gets reset before serial call
   bool reset_all_faults_print_;  // Reset all fault logic
   uint8_t *sp_preserving_;  // Saving fault buffer.   Stopped recording.  T=preserve
-  bool splrr_amp_;       // ib_amp soft fault preceeded by local rate or range, T=preserve
-  bool splrr_noa_;       // ib_noa soft fault preceeded by local rate or range, T=preserve
+  bool splrr_amp_;          // ib_amp soft fault preceeded by local rate or range, T=preserve
+  bool splrr_noa_;          // ib_noa soft fault preceeded by local rate or range, T=preserve
   int8_t tb_sel_stat_;      // Memory of Tb signal selection, 0=none, 1=sensor
   int8_t tb_sel_stat_last_; // past value
   int8_t vb_sel_stat_;      // Memory of Vb signal selection, 0=none, 1=sensor
   int8_t vb_sel_stat_last_; // past value
-  float wrap_hi_amp_;       // Wrap high amplified, V
+  float wrap_hi_volt_;      // Wrap high amplified, V
   float wrap_hi_noa_;       // Wrap high non-amplified, V
-  float wrap_lo_amp_;       // Wrap low amplified, V
+  float wrap_lo_volt_;      // Wrap low amplified, V
   float wrap_lo_noa_;       // Wrap low non-amplified, V
 };
 

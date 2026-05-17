@@ -51,6 +51,8 @@
 // Faults
 #define FAKE_FAULTS           true    // What to do with faults, T=detect and display them but don't change signals
 #define CC_DIFF_SOC_DIS_THRESH  0.5   // Signal selection threshold for Coulomb counter EKF disagree test (0.2, 0.1 too small on truck)
+#define FI_NOM 2. // Hi wrap threshold nominal scalar (1.0)  // Fi
+#define FO_NOM 2. // Lo wrap threshold nominal scalar (1.0)  // Fo
 
 // ekf tune
 #define WRAP_SOC_HI_OFF     0.94        // Disable e_wrap_hi when saturated (0.94)

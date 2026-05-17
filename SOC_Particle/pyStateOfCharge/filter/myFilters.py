@@ -426,6 +426,20 @@ class LagExp(DiscreteFilter):
         self.out_ = self.state
         return self.out_
 
+    def calculate_seeded(self, in_, _out_init, reset, dt, rmax=None, rmin=None, text=''):
+        self.in_ = in_
+        self.reset = reset
+        if self.reset:
+            self.state = _out_init
+            self.rstate = self.in_
+        self.calc_all(self.in_, dt, rmax, rmin)
+        self.out_ = self.state
+        if False and self.reset and text == 'Amp':
+            print(text + " seed    r{:3d}".format(self.reset), "                                             ib       {:7.5f}".format(in_),
+                  "   ib_dyn    {:7.5f}".format(self.out_),
+                  "       ib_init {:7.5f}".format(in_), "    ib_dyn_init {:7.5f}".format(_out_init), "dt {:5.3f}".format(dt))
+        return self.out_
+
     def calculate_tau(self, in_, reset, dt, tau_):
         self.reset = reset
         self.in_ = in_

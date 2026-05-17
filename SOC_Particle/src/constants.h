@@ -123,7 +123,6 @@ const float T_DESAT =         20;       // De-saturation time, sec
 #endif
 #define CC_DIFF_LO_SOC_SLR    4.        // Large to disable cc_diff
 #define TAU_ERR_FILT          5.        // Current sensor difference filter time constant, s (5.)
-#define MAX_ERR_T             10.       // Maximum update time allowed to avoid instability, s (10.)
 #define IB_LO_ACTIVE_SET      0.2       // Ib low range sensor is in-range persistence, s (0.2)
 #define IB_LO_ACTIVE_RES      0.4       // Ib low range sensor is in-range reset persistence, s (0.4)
 #define VB_MAX                17.       // Signal selection hard fault threshold, V (17. < VB_CONV_GAIN*4095)
@@ -154,10 +153,10 @@ const float WRAP_LO_SET =      9.;      // Wrap low failure set time, sec (9) //
 const float WRAP_LO_RES = (WRAP_LO_SET/2.); // Wrap low failure reset time, sec ('up 1, down 2')
 const float WRAP_HI_SET = WRAP_LO_SET;      // Wrap high failure set time, sec (WRAP_LO_SET)
 const float WRAP_HI_RES = (WRAP_HI_SET/2.); // Wrap high failure reset time, sec ('up 1, down 2')
-#define WRAP_HI_AMP     3.2             // Wrap high voltage threshold amplified, A (3.2)
-#define WRAP_LO_AMP     -4.             // Wrap low voltage threshold amplified, A (-4)
-#define WRAP_HI_NOA     6.4             // Wrap high voltage threshold non-amplified, A (32 after testing; 16=0.2v)
-#define WRAP_LO_NOA     -8.             // Wrap low voltage threshold non-amplified, A (-40, -20 too small on truck -16=-0.2v, -32 marginal)
+#define WRAP_HI_VOLT     1.5            // Wrap high voltage threshold amplified, V (1.5)
+#define WRAP_LO_VOLT    -1.5            // Wrap low voltage threshold amplified, V (-1.5)
+#define WRAP_HI_NOV      0.8            // Wrap high voltage threshold non-amplified, V (0.8)
+#define WRAP_LO_NOV     -0.8            // Wrap low voltage threshold non-amplified, V (-0.8)
 #define WRAP_HI_SETAT_MARG  0.2         // Wrap voltage margin to saturation, V (0.2)
 #define WRAP_HI_SETAT_SLR   2.0         // Wrap voltage margin scalar when saturated (2.0)
 #ifdef HDWE_IB_HI_LO
@@ -400,6 +399,12 @@ const float QUIET_RES (QUIET_SET/10.);  // Quiet reset persistence, sec ('up 1 d
 #endif
 #if !defined(IN_SERVICE)
     #define IN_SERVICE      true // In service flag for testing (true)
+#endif
+#if !defined(TB_HDWE_MIN)
+    #define TB_HDWE_MIN   -20.0
+#endif
+#if !defined(TB_HDWE_MAX)   
+    #define TB_HDWE_MAX   150.0
 #endif
 
 // Conversion gains

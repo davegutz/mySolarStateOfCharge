@@ -104,13 +104,13 @@ class BatteryConstants:
     VOC_STAT_FILT = 100.
     WN_Y_FILT = 1.
     WRAP_ERR_FILT = 100.
-    WRAP_HI_AMP = 10.0
-    WRAP_HI_NOA = 10.0
+    WRAP_HI_VOLT = 1.
+    WRAP_LO_VOLT = -1.
+    WRAP_HI_NOV = 1.
+    WRAP_LO_NOV = -1.
     WRAP_HI_RES = 4.5
     WRAP_HI_SET = 9.0
     WRAP_HI_SETAT_MARG = 0.05
-    WRAP_LO_AMP = -10.0
-    WRAP_LO_NOA = -10.0
     WRAP_LO_RES = 4.5
     WRAP_LO_SET = 9.0
     WRAP_MOD_C_RATE = 0.02

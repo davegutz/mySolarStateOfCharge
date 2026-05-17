@@ -224,8 +224,8 @@ Sensors::Sensors(double T, double T_temp, Pins *pins, Sync *ReadSensors, Sync *R
   AmpFilt = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*ap.nS()*ap.nP(), NOM_UNIT_CAP*ap.nS()*ap.nP());
   NoaFilt = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*ap.nS()*ap.nP(), NOM_UNIT_CAP*ap.nS()*ap.nP());
   SelFiltCal = new LagExp(T, AMP_FILT_TAU, -NOM_UNIT_CAP*ap.nS()*ap.nP(), NOM_UNIT_CAP*ap.nS()*ap.nP());
-  TbHdweFilt = new LagExp(double(READ_DELAY)/1000., ap.Tb_filt(), -20.0, 150.);
-  TbModelFilt = new LagExp(double(READ_DELAY)/1000., ap.Tb_filt(), -20.0, 150.);
+  TbHdweFilt = new LagExp(double(READ_DELAY)/1000., ap.Tb_filt(), TB_HDWE_MIN, TB_HDWE_MAX);
+  TbModelFilt = new LagExp(double(READ_DELAY)/1000., ap.Tb_filt(), TB_HDWE_MIN, TB_HDWE_MAX);
   VbFilt = new LagExp(T, AMP_FILT_TAU, 0., NOMINAL_VB*2.5);
   Vb_read_ = new AnalogReadP2(pins->Vb_pin);
   Tb_read_ = new AnalogReadP2(pins->VTb_pin);

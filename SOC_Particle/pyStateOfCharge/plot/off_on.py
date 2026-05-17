@@ -153,8 +153,8 @@ def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.smv, 'time', S.smv, 'sat_s', add=2, color='red', linestyle=':')
         plt.legend(loc=2)
         plt.subplot(325)
-        ymax = max([max(sublist) for sublist in [S.mr.Tb_rap, S.mr.Tb, S.mv.Tb, S.mr.Tb_f, S.mr.Tb_f, S.smv.Tb_f_s]])
-        ymin = min([min(sublist) for sublist in [S.mr.Tb_rap, S.mr.Tb, S.mv.Tb, S.mr.Tb_f, S.mr.Tb_f, S.smv.Tb_f_s]])
+        ymax = max([max(sublist) for sublist in [S.mr.Tb, S.mv.Tb, S.mr.Tb_f, S.mr.Tb_f, S.smv.Tb_f_s]])
+        ymin = min([min(sublist) for sublist in [S.mr.Tb, S.mv.Tb, S.mr.Tb_f, S.mr.Tb_f, S.smv.Tb_f_s]])
         ymin_int = int(ymin)
         f_add = 2
         f_add_str = str(f_add)
@@ -164,8 +164,6 @@ def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
         plq(plt, S.mv, 'time', S.mv, 'Tb_hdwe', color='green', linestyle='--')
         plq(plt, S.smv, 'time', S.smv, 'Tb_s', color='cyan', linestyle='-.')
         # plq(plt, S.mr, 'time', S.mr, 'Tb_rap', color='green', linestyle='--', label='Tb_mon' + run_str)
-        plq(plt, S.mr, 'time', S.mr, 'Tb_f_rap', add=f_add, color='blue', linestyle='-')
-        plq(plt, S.mv, 'time', S.mv, 'Tb_f_rap', add=f_add, color='magenta', linestyle='--')
         plq(plt, S.mr, 'time_t', S.mr, 'Tb_f', add=f_add, color='black', linestyle='-.', stairs=True)
         plq(plt, S.mv, 'time', S.mv, 'Tb_f', add=f_add, color='orange', linestyle=':', stairs=True)
         plq(plt, S.sr, 'time', S.sr, 'Tb_f_s', add=f_add+.1, color='blue', linestyle='-')
@@ -180,13 +178,9 @@ def off_on_plots(S:PlotOptions, fig_files=None, fig_list=None):
         import numpy as np
         S.mr.reset_temp_scl = np.array(S.mr.reset_temp) * Battery.T_RLIM
         S.mv.reset_temp_scl = np.array(S.mv.reset_temp) * Battery.T_RLIM
-        plq(plt, S.mr, 'time', S.mr, 'Tb_f_rate_rap', add=0.004, color='cyan', linestyle='-', stairs=True)
-        plq(plt, S.mv, 'time', S.mv, 'Tb_f_rate_rap', add=0.004, color='orange', linestyle='--', stairs=True)
         plq(plt, S.mr, 'time_t', S.mr, 'Tb_f_rate', add=0.002, color='red', linestyle='-', stairs=True)
-        plq(plt, S.mv, 'time', S.mv, 'Tb_f_rate_rap', add=0.004, color='orange', linestyle='--', stairs=True)
         plq(plt, S.mv, 'time', S.mv, 'Tb_f_rate', add=0.002, color='blue', linestyle='--', stairs=True)
         plq(plt, S.mr, 'time_t', S.mr, 'Tb_hdwe_filt_rate', color='black', linestyle='-', stairs=True)
-        plq(plt, S.mv, 'time', S.mv, 'Tb_f_rate_rap', add=0.004, color='orange', linestyle='--', stairs=True)
         plq(plt, S.mv, 'time', S.mv, 'Tb_hdwe_filt_rate', color='green', linestyle='--', stairs=True)
         plq(plt, S.mr, 'time', S.mr, 'reset_temp_scl', add=-0.002, color='black', linestyle='-')
         plq(plt, S.mv, 'time', S.mv, 'reset_temp_scl', add=-0.002, color='green', linestyle='--')

@@ -24,7 +24,7 @@ from Coulombs import Coulombs, Chemistry
 from hysteresis.Hysteresis import Hysteresis
 import matplotlib.pyplot as plt
 from filter.TFDelay import TFDelay
-from filter.myFilters import LagTustin, LagExp, General2Pole, SlidingDeadband, TustinIntegrator
+from filter.myFilters import LagExp, General2Pole, SlidingDeadband, TustinIntegrator
 from filter.Scale import ScaleSelector
 from plot.plq import plq
 import sys
@@ -286,8 +286,8 @@ class BatteryMonitor(Battery, EKF1x1):
         self.soc_s = 0.  # Model information
         self.EKF_converged = TFDelay(False, Battery.EKF_T_CONV, Battery.EKF_T_RES, Battery.EKF_NOM_DT)
         self.voc_stat_filt = LagExp(self.EKF_NOM_DT, self.VOC_STAT_FILT, self.VB_MIN, self.VB_MAX)  # Lag to be run on saturation to produce ib_lag.  T and tau set at run time
-        self.y_ekf_filt_lag = LagTustin(0.1, Battery.TAU_Y_FILT, Battery.MIN_Y_FILT, Battery.MAX_Y_FILT)
-        self.WrapErrFilt = LagTustin(0.1, Battery.WRAP_ERR_FILT, -Battery.MAX_WRAP_ERR_FILT, Battery.MAX_WRAP_ERR_FILT)
+        self.y_ekf_filt_lag = LagExp(0.1, Battery.TAU_Y_FILT, Battery.MIN_Y_FILT, Battery.MAX_Y_FILT)
+        self.WrapErrFilt = LagExp(0.1, Battery.WRAP_ERR_FILT, -Battery.MAX_WRAP_ERR_FILT, Battery.MAX_WRAP_ERR_FILT)
         self.y_filt = 0.
         self.ChargeTransfer = LagExp(dt=Battery.EKF_NOM_DT, max_=Battery.NOM_UNIT_CAP*scale,
                                      min_=-Battery.NOM_UNIT_CAP*scale, tau=self.chemistry.tau_ct)
@@ -345,10 +345,10 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap_n_rate = None
         self.e_wrap_m_rate = None
         self.disable_amp_fault = False
-        self.LoopIbAmp = Looparound(Mon_=self, wrap_hi_amp=Battery.WRAP_HI_AMP, wrap_lo_amp=Battery.WRAP_LO_AMP,
+        self.LoopIbAmp = Looparound(Mon_=self, wrap_hi_volt=Battery.WRAP_HI_VOLT, wrap_lo_volt=Battery.WRAP_LO_VOLT,
                                     max_err=Battery.MAX_WRAP_ERR_FILT/(Battery.IB_ABS_MAX_NOA/Battery.IB_ABS_MAX_AMP),
                                     name="Amp")
-        self.LoopIbNoa = Looparound(Mon_=self, wrap_hi_amp=Battery.WRAP_HI_NOA, wrap_lo_amp=Battery.WRAP_LO_NOA,
+        self.LoopIbNoa = Looparound(Mon_=self, wrap_hi_volt=Battery.WRAP_HI_NOV, wrap_lo_volt=Battery.WRAP_LO_NOV,
                                     max_err=Battery.MAX_WRAP_ERR_FILT, name="Noa")
         self.ewnhi_thr = 0.
         self.ewnlo_thr = 0.
@@ -671,8 +671,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.y_ekf_f_state = self.y_ekf_filt_lag.state
             # EKF convergence
             conv = abs(self.y_filt) < Battery.EKF_CONV
-            self.EKF_converged.calculate(conv, Battery.EKF_T_CONV, Battery.EKF_T_RES,
-                                         min(self.dt_eframe, Battery.EKF_T_RES), self.reset_ekf)
+            self.EKF_converged.calculate(conv, Battery.EKF_T_CONV, Battery.EKF_T_RES, self.dt_eframe, self.reset_ekf)
             # print(f"{reset_ekf=} {self.soc_ekf} {self.x=} {self.voc_stat_ekf=}")
         self.eframe += 1
         if self.reset_ekf or self.eframe >= self.ap_eframe_mult:  # '>=' ensures reset with changes on the fly
@@ -1355,7 +1354,7 @@ class Diff:
 class Looparound:
     """Compare predicted voltage to actual and track toward zero to eliminate biases """
 
-    def __init__(self, Mon_, wrap_hi_amp=0., wrap_lo_amp=0., max_err=None, name=''):
+    def __init__(self, Mon_, wrap_hi_volt=0., wrap_lo_volt=0., max_err=None, name=''):
         self.Mon = Mon_
         self.reset = True
         self.dt = 0.
@@ -1365,8 +1364,8 @@ class Looparound:
         self.e_wrap_filt = 0.
         self.e_wrap_rate = 0.
         self.ib_dyn = 0.
-        self.wrap_hi_amp = wrap_hi_amp
-        self.wrap_lo_amp = wrap_lo_amp
+        self.wrap_hi_volt = wrap_hi_volt
+        self.wrap_lo_volt = wrap_lo_volt
         self.e_wrap_trim = 0.
         self.e_wrap_trimmed = 0.
         self.hi_fail = False
@@ -1387,7 +1386,7 @@ class Looparound:
         self.vb = 0.
         self.voc = 0.
         self.voc_soc = 0.
-        self.WrapErrFilt = LagTustin(dt=2., min_=-max_err, max_=max_err, tau=Battery.WRAP_ERR_FILT)
+        self.WrapErrFilt = LagExp(dt=2., min_=-max_err, max_=max_err, tau=Battery.WRAP_ERR_FILT)
         self.WrapHi = TFDelay(dt=2., in_=False, t_true=Battery.WRAP_HI_SET, t_false=Battery.WRAP_HI_RES)
         self.WrapLo = TFDelay(dt=2., in_=False, t_true=Battery.WRAP_LO_SET, t_false=Battery.WRAP_LO_RES)
         self.name = name
@@ -1430,15 +1429,13 @@ class Looparound:
                                                     min_=-self.ewhi_thr_base * Battery.EWHI_TRM_SLR)
         self.e_wrap_trimmed = self.e_wrap + self.e_wrap_trim
         self.e_wrap_filt = self.WrapErrFilt.calculate_seeded(in_=self.e_wrap_trimmed, _out_init=e_wrap_filt_init,
-                                                             reset=self.reset,
-                                                             dt=min(dt_into_wrap, Battery.F_MAX_T_WRAP),
-                                                             text=self.name)
+                                                             reset=self.reset, dt=dt_into_wrap, text=self.name)
         self.e_wrap_rate = self.WrapErrFilt.rate
 
         # Thresholds. Scalars are calculated by Flt->wrap_scalars()
-        self.ewhi_thr_base = self.Mon.chemistry.r_ss * self.wrap_hi_amp * Battery.ap_ewhi_slr
+        self.ewhi_thr_base = self.wrap_hi_volt * Battery.ap_ewhi_slr
         self.ewhi_thr = self.ewhi_thr_base * ewsat_slr * ewmin_slr
-        self.ewlo_thr_base = self.Mon.chemistry.r_ss * self.wrap_lo_amp * Battery.ap_ewlo_slr
+        self.ewlo_thr_base = self.wrap_lo_volt * Battery.ap_ewlo_slr
         self.ewlo_thr = self.ewlo_thr_base * ewsat_slr * ewmin_slr
 
         # sat logic screens out voc jump when ib>0 when saturated

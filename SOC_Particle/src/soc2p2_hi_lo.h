@@ -57,6 +57,8 @@
 #define CC_DIFF_SOC_DIS_THRESH  0.5   // Signal selection threshold for Coulomb counter EKF disagree test (0.2, 0.1 too small on truck)
 #define DISAB_VB_FA_LT true
 #define DISAB_TB_FA true          // Had high out of range failure.  Want to keep running without latch on the truck
+#define FI_NOM 2. // Hi wrap threshold nominal scalar (1.0)  // Fi
+#define FO_NOM 2. // Lo wrap threshold nominal scalar (1.0)  // Fo
 
 // ekf tune
 #define WRAP_SOC_HI_OFF     0.94        // Disable e_wrap_hi when saturated (0.94)
