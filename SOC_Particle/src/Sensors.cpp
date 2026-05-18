@@ -653,13 +653,13 @@ void Sensors::Tb_load(const uint16_t tb_pin, const bool reset)
   //   Serial.printf(" Tb_raw_ %d Tb_volt_ %7.3f res %7.3f lnres %7.3f hdwe_add %7.3f Tb_hdwe_ %7.3f mod_add %7.3f Tb_model_ %7.3f\n",
   //     Tb_raw_, Tb_volt_, res, lnres, hdwe_add, Tb_hdwe_, mod_add, Tb_model_);
   // }
-  Tb_hdwe_f_ = TbHdweFilt->calculate(Tb_hdwe_, reset || Flt->Tb_fa() || sp.mod_tb_dscn(), ap.Tb_filt(), T_, T_RLIM, -T_RLIM);
+  Tb_hdwe_f_ = TbHdweFilt->calculate(Tb_hdwe_, reset || Flt->Tb_fa() || sp.mod_tb_dscn(), ap.Tb_filt(), T_, -T_RLIM, T_RLIM);
   Tb_hdwe_f_dt_ = TbHdweFilt->T();
   Tb_hdwe_f_tau_ = TbHdweFilt->tau();
   Tb_hdwe_f_rate_ = TbHdweFilt->rate();
   Tb_hdwe_f_rstate_ = TbHdweFilt->rstate();
   Tb_hdwe_f_lstate_ = TbHdweFilt->lstate();
-  Tb_model_f_ = TbModelFilt->calculate(Tb_model_, reset || Flt->Tb_fa(), ap.Tb_filt(), T_, T_RLIM, -T_RLIM);
+  Tb_model_f_ = TbModelFilt->calculate(Tb_model_, reset || Flt->Tb_fa(), ap.Tb_filt(), T_, -T_RLIM, T_RLIM);
   Tb_model_f_dt_ = TbModelFilt->T();
   Tb_model_f_tau_ = TbModelFilt->tau();
   Tb_model_f_rate_ = TbModelFilt->rate();

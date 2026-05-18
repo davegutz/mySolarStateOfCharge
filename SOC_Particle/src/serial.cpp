@@ -131,8 +131,8 @@ void print_battery_header()
   Serial.printf("NOA_WRAP_TRIM_GAIN, NOMINAL_TB, NOMINAL_VB, NOM_UNIT_CAP, NP, NS, RATED_TEMP, SHUNT_AMP_GAIN, SHUNT_NOA_GAIN,");
   Serial.printf("sp_cutback_gain_slr, sp_Dw, sp_ib_disch_slr, sp_s_cap_mon, sp_s_cap_sim, sp_vsat_add, TAU_Y_FILT, TB_FILT,");
   Serial.printf("TB_MAX, TB_MIN, TCHARGE_DISPLAY_DEADBAND, TMAX_FILT, T_RLIM, VB_DC_DC, VB_MAX, VB_MIN,");
-  Serial.printf("VOC_STAT_FILT, WN_Y_FILT, WRAP_ERR_FILT, WRAP_HI_VOLT, WRAP_HI_NOV, WRAP_HI_RES, WRAP_HI_SET, WRAP_HI_SETAT_MARG,");
-  Serial.printf("WRAP_LO_VOLT, WRAP_LO_NOV, WRAP_LO_RES, WRAP_LO_SET, WRAP_MOD_C_RATE, WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR,");
+  Serial.printf("VOC_STAT_FILT, WN_Y_FILT, WRAP_ERR_FILT, WRAP_HI_AMPV, WRAP_HI_NOAV, WRAP_HI_RES, WRAP_HI_SET, WRAP_HI_SETAT_MARG,");
+  Serial.printf("WRAP_LO_AMPV, WRAP_LO_NOAV, WRAP_LO_RES, WRAP_LO_SET, WRAP_MOD_C_RATE, WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR,");
   Serial.printf("WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_SOC_MOD_OFF, ZETA_Y_FILT,");
   Serial.printf("\n");
 }
@@ -182,7 +182,7 @@ void print_battery_serial()
   Serial.printf("%s", pr.buff);
 
   sprintf(pr.buff, "%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",
-    WRAP_ERR_FILT, WRAP_HI_VOLT, WRAP_HI_NOV, WRAP_HI_RES, WRAP_HI_SET, WRAP_HI_SETAT_MARG, WRAP_LO_VOLT, WRAP_LO_NOV);
+    WRAP_ERR_FILT, WRAP_HI_AMPV, WRAP_HI_NOAV, WRAP_HI_RES, WRAP_HI_SET, WRAP_HI_SETAT_MARG, WRAP_LO_AMPV, WRAP_LO_NOAV);
   Serial.printf("%s", pr.buff);
 
   sprintf(pr.buff, "%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,%10.7f,",

@@ -229,7 +229,7 @@ void initialize_all(BatteryMonitor *Mon, Sensors *Sen, const float soc_in, const
 
 // Load high fidelity signals; filtered in hardware the same bandwidth, sampled the same
 // Outputs:   Sen->Ib_model_in, Sen->Ib_hdwe, 
-void load_ib_vb_tb(const bool reset, const bool reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon)
+void load_ib_vb_tb(const bool reset, const bool reset_temp, const bool reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon)
 {
   // Load shunts Ib
   // Outputs:  Sen->Ib_model_in, Sen->Ib_hdwe, Sen->Vb, Sen->Wb
@@ -297,7 +297,7 @@ void sense_synth_select(const bool reset, const bool reset_temp, const bool rese
 
   // Load Ib and Vb
   // Outputs: Sen->Ib_model_in, Sen->Ib, Sen->Vb
-  load_ib_vb_tb(reset, reset_kf, Sen, myPins, Mon);
+  load_ib_vb_tb(reset, reset_temp, reset_kf, Sen, myPins, Mon);
 
   // Sim initialize as needed from memory
   if ( reset_temp )

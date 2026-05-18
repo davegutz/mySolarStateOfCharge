@@ -345,10 +345,12 @@ class BatteryMonitor(Battery, EKF1x1):
         self.e_wrap_n_rate = None
         self.e_wrap_m_rate = None
         self.disable_amp_fault = False
-        self.LoopIbAmp = Looparound(Mon_=self, wrap_hi_volt=Battery.WRAP_HI_VOLT, wrap_lo_volt=Battery.WRAP_LO_VOLT,
+        self.LoopIbAmp = Looparound(Mon_=self, wrap_hi_volt=Battery.WRAP_HI_AMPV,
+                                    wrap_lo_volt=Battery.WRAP_LO_AMPV,
                                     max_err=Battery.MAX_WRAP_ERR_FILT/(Battery.IB_ABS_MAX_NOA/Battery.IB_ABS_MAX_AMP),
                                     name="Amp")
-        self.LoopIbNoa = Looparound(Mon_=self, wrap_hi_volt=Battery.WRAP_HI_NOV, wrap_lo_volt=Battery.WRAP_LO_NOV,
+        self.LoopIbNoa = Looparound(Mon_=self, wrap_hi_volt=Battery.WRAP_HI_NOAV,
+                                    wrap_lo_volt=Battery.WRAP_LO_NOAV,
                                     max_err=Battery.MAX_WRAP_ERR_FILT, name="Noa")
         self.ewnhi_thr = 0.
         self.ewnlo_thr = 0.
@@ -510,10 +512,10 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_lo_limited_lo = False
         self.ib_lo_limited_hi = False
         self.ib_lo_active = True
-        self.IbLoLimitedLo = TFDelay(in_=False, t_true=BatteryConstants.IB_LO_ACTIVE_SET,
-                                     t_false=BatteryConstants.IB_LO_ACTIVE_RES, dt=0.1)
-        self.IbLoLimitedHi = TFDelay(in_=False, t_true=BatteryConstants.IB_LO_ACTIVE_SET,
-                                     t_false=BatteryConstants.IB_LO_ACTIVE_RES, dt=0.1)
+        self.IbLoLimitedLo = TFDelay(in_=False, t_true=Battery.IB_LO_ACTIVE_SET,
+                                     t_false=Battery.IB_LO_ACTIVE_RES, dt=0.1)
+        self.IbLoLimitedHi = TFDelay(in_=False, t_true=Battery.IB_LO_ACTIVE_SET,
+                                     t_false=Battery.IB_LO_ACTIVE_RES, dt=0.1)
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -973,11 +975,11 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_amp_lo = self.ib_amp <= Battery.HDWE_IB_HI_LO_AMP_LO
             self.ib_noa_hi = self.ib_noa >= Battery.HDWE_IB_HI_LO_NOA_HI
             self.ib_noa_lo = self.ib_noa <= Battery.HDWE_IB_HI_LO_NOA_LO
-            self.ib_lo_limited_lo = self.IbLoLimitedLo.calculate(self.ib_amp_lo, BatteryConstants.IB_LO_ACTIVE_SET,
-                                                                 BatteryConstants.IB_LO_ACTIVE_RES, dt=dt_local,
+            self.ib_lo_limited_lo = self.IbLoLimitedLo.calculate(self.ib_amp_lo, Battery.IB_LO_ACTIVE_SET,
+                                                                 Battery.IB_LO_ACTIVE_RES, dt=dt_local,
                                                                  reset=self.e_wrap_m_reset)
-            self.ib_lo_limited_hi = self.IbLoLimitedHi.calculate(self.ib_amp_hi, BatteryConstants.IB_LO_ACTIVE_SET,
-                                                                 BatteryConstants.IB_LO_ACTIVE_RES, dt=dt_local,
+            self.ib_lo_limited_hi = self.IbLoLimitedHi.calculate(self.ib_amp_hi, Battery.IB_LO_ACTIVE_SET,
+                                                                 Battery.IB_LO_ACTIVE_RES, dt=dt_local,
                                                                  reset=self.e_wrap_m_reset)
             self.ib_lo_active = not self.ib_lo_limited_hi and not self.ib_lo_limited_lo
             self.disable_amp_fault = (self.ib_amp_hi and self.ib_noa_hi) or (self.ib_amp_lo and self.ib_noa_lo)

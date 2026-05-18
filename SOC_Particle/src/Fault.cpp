@@ -177,8 +177,8 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
   latch_fake_(false), rate_amp_(false), rate_noa_(false), reset_all_faults_(false),
   reset_all_faults_print_(false), sp_preserving_(preserving), splrr_amp_(false), splrr_noa_(false),
   tb_sel_stat_(TB_SEL_STAT_DEF), tb_sel_stat_last_(TB_SEL_STAT_DEF), vb_sel_stat_(VB_SEL_STAT_DEF),
-  vb_sel_stat_last_(VB_SEL_STAT_DEF), wrap_hi_volt_(WRAP_HI_VOLT), wrap_hi_noa_(WRAP_HI_NOV),
-  wrap_lo_volt_(WRAP_LO_VOLT), wrap_lo_noa_(WRAP_LO_NOV)
+  vb_sel_stat_last_(VB_SEL_STAT_DEF), wrap_hi_volt_(WRAP_HI_AMPV), wrap_hi_noa_(WRAP_HI_NOAV),
+  wrap_lo_volt_(WRAP_LO_AMPV), wrap_lo_noa_(WRAP_LO_NOAV)
 {
   IbDiffFilt = new LagExp(T, TAU_ERR_FILT, -IBATT_DISAGREE_THRESH*1.5, IBATT_DISAGREE_THRESH*1.5);  // actual update time provided run time
   IbdPosPer = new TFDelay(false, IBATT_INST_DIFF_SET, IBATT_INST_DIFF_RES, T);
