@@ -507,6 +507,13 @@ class BatteryMonitor(Battery, EKF1x1):
         self.y_ekf_f_tau = 0.
         self.y_ekf_f_state = 0.
         self.Tb_fa = False
+        self.ib_lo_limited_lo = False
+        self.ib_lo_limited_hi = False
+        self.ib_lo_active = True
+        self.IbLoLimitedLo = TFDelay(in_=False, t_true=BatteryConstants.IB_LO_ACTIVE_SET,
+                                     t_false=BatteryConstants.IB_LO_ACTIVE_RES, dt=0.1)
+        self.IbLoLimitedHi = TFDelay(in_=False, t_true=BatteryConstants.IB_LO_ACTIVE_SET,
+                                     t_false=BatteryConstants.IB_LO_ACTIVE_RES, dt=0.1)
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -941,7 +948,7 @@ class BatteryMonitor(Battery, EKF1x1):
                                      dt=dt_local, ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
                                      ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
                                      e_wrap_filt_init=SN.mon_run.e_wrap_n_filt[G.i],
-                                     e_wrap_trim_init=SN.mon_run.e_wrap_n_trim[G.i])
+                                     e_wrap_trim_init=SN.mon_run.e_wrap_n_trim[G.i], freeze=False)
             self.ib_dyn_T_n = self.LoopIbNoa.ChargeTransfer.dt
             self.e_wrap_n = self.LoopIbNoa.e_wrap
             self.e_wrap_n_filt = self.LoopIbNoa.e_wrap_filt
@@ -966,16 +973,20 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_amp_lo = self.ib_amp <= Battery.HDWE_IB_HI_LO_AMP_LO
             self.ib_noa_hi = self.ib_noa >= Battery.HDWE_IB_HI_LO_NOA_HI
             self.ib_noa_lo = self.ib_noa <= Battery.HDWE_IB_HI_LO_NOA_LO
-            if self.ib_noa_lo:
-                pass
+            self.ib_lo_limited_lo = self.IbLoLimitedLo.calculate(self.ib_amp_lo, BatteryConstants.IB_LO_ACTIVE_SET,
+                                                                 BatteryConstants.IB_LO_ACTIVE_RES, dt=dt_local,
+                                                                 reset=self.e_wrap_m_reset)
+            self.ib_lo_limited_hi = self.IbLoLimitedHi.calculate(self.ib_amp_hi, BatteryConstants.IB_LO_ACTIVE_SET,
+                                                                 BatteryConstants.IB_LO_ACTIVE_RES, dt=dt_local,
+                                                                 reset=self.e_wrap_m_reset)
+            self.ib_lo_active = not self.ib_lo_limited_hi and not self.ib_lo_limited_lo
             self.disable_amp_fault = (self.ib_amp_hi and self.ib_noa_hi) or (self.ib_amp_lo and self.ib_noa_lo)
-            # print(f"ib_amp_hi/lo, ib_noa_hi/lo = {self.ib_amp_hi} {self.ib_amp_lo} {self.ib_noa_hi} {self.ib_noa_lo}")
-            self.e_wrap_m_reset = reset or self.disable_amp_fault
+            self.e_wrap_m_reset = reset
             self.LoopIbAmp.calculate(reset=self.e_wrap_m_reset, rp=rp, ib=ibamp, loop_gain=Battery.AMP_WRAP_TRIM_GAIN,
                                      dt=dt_local, ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
                                      ib_dyn_init=SN.LoopAmp.ib_dyn[G.i],
                                      e_wrap_filt_init=SN.mon_run.e_wrap_m_filt[G.i],
-                                     e_wrap_trim_init=SN.mon_run.e_wrap_m_trim[G.i])
+                                     e_wrap_trim_init=SN.mon_run.e_wrap_m_trim[G.i], freeze=not self.ib_lo_active)
             self.ib_dyn_T_m = self.LoopIbAmp.ChargeTransfer.dt
             self.ewmhi_thr = self.LoopIbAmp.ewhi_thr
             self.ewmlo_thr = self.LoopIbAmp.ewlo_thr
@@ -1341,7 +1352,7 @@ class Diff:
 
         self.ib_diff = ib_amp - ib_noa
         if disable_amp_fault:
-            self.ib_diff = 0.
+            self.ib_diff = self.ib_diff  # lgv
         elif self.ib_lo_limited_hi:
             self.ib_diff = max(0., self.ib_diff)
         elif self.ib_lo_limited_lo:
@@ -1394,7 +1405,8 @@ class Looparound:
     # Update the loop
     # needs to be called twice with reset=True to initialize properly
     def calculate(self, reset=True, rp=None, ib=0., loop_gain=0., dt=None, ewsat_slr=1., ewmin_slr=1.,
-                  ib_dyn_init=0., e_wrap_filt_init=0., e_wrap_trim_init=0.):
+                  ib_dyn_init=0., e_wrap_filt_init=0., e_wrap_trim_init=0., freeze=False):
+        frozen = 1. - float(freeze)
         self.reset = reset
         self.dt = dt
         self.ib = ib
@@ -1422,14 +1434,18 @@ class Looparound:
         # Trimmer using past values
         trim_rate_lim = max(min(self.e_wrap_filt * loop_gain, Battery.MAX_TRIM_RATE),
                             -Battery.MAX_TRIM_RATE)
-        self.e_wrap_trim = -self.Trim.calculate_lim(in_=trim_rate_lim, dt=min(dt_into_wrap,
+        self.e_wrap_trim = -self.Trim.calculate_lim(in_=trim_rate_lim*frozen, dt=min(dt_into_wrap,
                                                     Battery.F_MAX_T_WRAP),
                                                     reset=self.reset, init_value = -e_wrap_trim_init,
                                                     max_=-self.ewlo_thr_base * Battery.EWLO_TRM_SLR,
                                                     min_=-self.ewhi_thr_base * Battery.EWHI_TRM_SLR)
         self.e_wrap_trimmed = self.e_wrap + self.e_wrap_trim
+        e_wrap_filt_rate = 1e300
+        if freeze:
+            e_wrap_filt_rate = 0.
         self.e_wrap_filt = self.WrapErrFilt.calculate_seeded(in_=self.e_wrap_trimmed, _out_init=e_wrap_filt_init,
-                                                             reset=self.reset, dt=dt_into_wrap, text=self.name)
+                                                             reset=self.reset, dt=dt_into_wrap, text=self.name,
+                                                             rmin=-e_wrap_filt_rate, rmax=e_wrap_filt_rate)
         self.e_wrap_rate = self.WrapErrFilt.rate
 
         # Thresholds. Scalars are calculated by Flt->wrap_scalars()

@@ -367,7 +367,7 @@ void print_signal_sel_header(void)
   Serial.printf("  vc_sum, voc_soc, e_wrap, e_wrap_filt, ib_dyn_m, dv_dyn_m, e_wrap_m, e_wrap_m_reset, e_wrap_m_filt, e_wrap_m_trim, ib_dyn_n, dv_dyn_n, e_wrap_n, e_wrap_n_filt, e_wrap_n_trim, ");
   Serial.printf("  ib_sel_stat, ib_choice, vc_h,ib_h, ib_s, mib,ib, vb_sel, vb_hdwe, vb_s, mvb,vb,  mtb, ");
   Serial.printf("  ib_rate, ib_quiet, ib_really_quiet, tb_sel, ccd_thr, ewmhi_thr, ewmlo_thr, ewnhi_thr, ewnlo_thr, ibd_thr, ibq_thr, preserving,ff,y_ekf,y_ekf_f,ib_dec, ");
-  Serial.printf("  ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rstate_m, ib_dyn_lstate_m, ");
+  Serial.printf("  ib_dyn_T_m, ib_dyn_tau_m, ib_dyn_rstate_m, ib_dyn_lstate_m, ib_lo_active, ");
   Serial.printf("  ib_dyn_T_n, ib_dyn_tau_n, ib_dyn_rstate_n, ib_dyn_lstate_n, ");
   Serial.printf("  ib_wrp_T_n, ib_wrp_tau_n, ib_wrp_rate_n, ib_wrp_state_n, disable_amp_fault, ");
   Serial.printf("  ib_wrp_reset_m, ib_wrp_reset_n, ib_wrp_T_m, ib_wrp_tau_m, ib_wrp_rate_m, ib_wrp_state_m, ib_amp, ib_noa, ");
@@ -414,9 +414,9 @@ void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon
         ap.fake_faults(), Mon->y_ekf(), Mon->y_ekf_f(), Sen->Flt->ib_decision());
     Serial.printf("%s", pr.buff);
 
-    sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,%9.6f,",
+    sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,%9.6f,%d,",
         Sen->Flt->LoopIbAmp->ib_dyn_T(), Sen->Flt->LoopIbAmp->ib_dyn_tau(),
-        Sen->Flt->LoopIbAmp->ib_dyn_rstate(), Sen->Flt->LoopIbAmp->ib_dyn_lstate());
+        Sen->Flt->LoopIbAmp->ib_dyn_rstate(), Sen->Flt->LoopIbAmp->ib_dyn_lstate(), Sen->Flt->ib_lo_active());
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,%9.6f,",

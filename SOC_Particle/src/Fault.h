@@ -288,6 +288,7 @@ public:
   float ib_dyn_n() { return LoopIbNoa->ib_dyn(); };
   bool ib_is_functional() { return ib_is_functional_; };
   bool ib_is_quiet() { return ib_is_quiet_; };
+  bool ib_lo_active() { return ib_lo_active_; };
   void ib_logic(const bool reset, Sensors *Sen, BatteryMonitor *Mon);
   bool ib_noa_bare() { return faultRead(IB_NOA_BARE); };
   bool ib_noa_fa() { return failRead(IB_NOA_FA); };

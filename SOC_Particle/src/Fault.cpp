@@ -67,6 +67,7 @@ Looparound::Looparound(BatteryMonitor *Mon, Sensors *Sen, const float wrap_hi_vo
 void Looparound::calculate(const bool reset, const bool disable_fault, const float ib, Sensors *Sen, const bool freeze)
 {
   reset_ = reset || Sen_->Flt->reset_all_faults();
+  double frozen = 1. - double(freeze);
   ib_ = ib;
   vb_ = Mon_->vb();
   voc_soc_ = Mon_->voc_soc();
@@ -88,7 +89,6 @@ void Looparound::calculate(const bool reset, const bool disable_fault, const flo
   if ( wrap_trim_gain_ > 0. )
   {
     trim_init = -(Mon_->vb() - Mon_->voc_soc() - dv_dyn_);
-    double frozen = 1. - double(freeze);
     trim_rate_lim = max(min(e_wrap_filt_*wrap_trim_gain_*frozen, MAX_TRIM_RATE), -MAX_TRIM_RATE);
     e_wrap_trim_ = -Trim_->calculate(trim_rate_lim, min(Sen_->T(), F_MAX_T_WRAP), reset_, trim_init,
                                       -ewhi_thr_base_*EWHI_TRM_SLR, -ewlo_thr_base_*EWLO_TRM_SLR);
@@ -128,8 +128,8 @@ void Looparound::calculate(const bool reset, const bool disable_fault, const flo
   if ( !disable_fault )  // freeze fail
     lo_fail_ = WrapLo_->calculate(lo_fault_, WRAP_LO_SET, WRAP_LO_RES, Sen_->T(), reset_) && !Sen_->Flt->vb_fa_lt();  // not latched
 
-  if ( sp.debug()==71 ) Serial.printf("ib%7.3f reset%d ewlo_thr/e_wrap_filt/ewhi_thr  %7.3f/%7.3f/%7.3f trim%7.3f vb_fa_lt %d lo_fault/fail %d/%d hi_fault/fail %d/%d\n",
-   ib_, reset_, ewlo_thr_, e_wrap_filt_, ewhi_thr_, e_wrap_trim_, Sen_->Flt->vb_fa_lt(), lo_fault_, lo_fail_, hi_fault_, hi_fail_);
+  if ( sp.debug()==71 ) Serial.printf("ib%7.3f reset%2d frz%4.1f ewlo_thr/e_wrap_filt/ewhi_thr  %7.3f/%7.3f/%7.3f trim%7.3f vb_fa_lt %d lo_fault/fail %d/%d hi_fault/fail %d/%d\n",
+   ib_, reset_, frozen, ewlo_thr_, e_wrap_filt_, ewhi_thr_, e_wrap_trim_, Sen_->Flt->vb_fa_lt(), lo_fault_, lo_fail_, hi_fault_, hi_fail_);
   ib_past_ = ib_;
 }
 
@@ -231,7 +231,7 @@ void Fault::cc_diff(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
 void Fault::ib_diff(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
 {
   bool reset_loc = reset || reset_all_faults_;
-  if ( disable_amp_fault_ ) ib_diff_ = 0.;
+  if ( disable_amp_fault_ ) ib_diff_ = ib_diff_;
   else if ( ib_lo_limited_hi_ ) ib_diff_ = max(0., ib_diff_);  // limit error when low amp is pegged high
   else if ( ib_lo_limited_lo_ ) ib_diff_ = min(0., ib_diff_);  // limit error when low amp is pegged low
   ib_diff_f_ = IbDiffFilt->calculate(ib_diff_, reset_loc || disable_amp_fault_ || ib_lo_limited_hi_ || ib_lo_limited_lo_, Sen->T());
@@ -418,7 +418,7 @@ void Fault::ib_wrap(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
   // HI_LO-Only Logic
   #ifdef HDWE_IB_HI_LO
     LoopIbNoa->calculate(reset_loc, false, Sen->ib_noa(), Sen, false);
-    LoopIbAmp->calculate(reset_loc || disable_amp_fault_, disable_amp_fault_, Sen->ib_amp(), Sen, !ib_lo_active_);
+    LoopIbAmp->calculate(reset_loc, disable_amp_fault_, Sen->ib_amp(), Sen, !ib_lo_active_);
     faultAssign( LoopIbAmp->hi_fault(), WRAP_HI_M_FLT);
     failAssign( LoopIbAmp->hi_fail(), WRAP_HI_M_FA);  // WRAP_HI_M_FA not latched
     faultAssign( LoopIbAmp->lo_fault(), WRAP_LO_M_FLT);

@@ -405,7 +405,7 @@ class LagExp(DiscreteFilter):
 
     def calc_states(self, in_, rmax, rmin):
         self.rate = self.c * (self.a * self.rstate + self.b * in_ - self.state)
-        if rmax and rmin:
+        if rmax is not None and rmin is not None:
             self.rate = max(min(self.rate, rmax), rmin)
         if not self.reset:
             self.rstate = in_
