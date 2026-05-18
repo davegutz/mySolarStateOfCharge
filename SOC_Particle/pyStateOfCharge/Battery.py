@@ -946,7 +946,7 @@ class BatteryMonitor(Battery, EKF1x1):
                 ibnoa = self.ib_noa_pst
             self.LoopIbNoa.calculate(reset=reset, rp=rp, ib=ibnoa, loop_gain=Battery.NOA_WRAP_TRIM_GAIN,
                                      dt=dt_local, ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_dyn_init=SN.LoopNoa.ib_dyn[G.i],
+                                     ib_dyn_init=SN.WrapLoopNoa.ib_dyn[G.i],
                                      e_wrap_filt_init=SN.mon_run.e_wrap_n_filt[G.i],
                                      e_wrap_trim_init=SN.mon_run.e_wrap_n_trim[G.i], freeze=False)
             self.ib_dyn_T_n = self.LoopIbNoa.ChargeTransfer.dt
@@ -984,7 +984,7 @@ class BatteryMonitor(Battery, EKF1x1):
             self.e_wrap_m_reset = reset
             self.LoopIbAmp.calculate(reset=self.e_wrap_m_reset, rp=rp, ib=ibamp, loop_gain=Battery.AMP_WRAP_TRIM_GAIN,
                                      dt=dt_local, ewmin_slr=ewmin_slr, ewsat_slr=ewsat_slr,
-                                     ib_dyn_init=SN.LoopAmp.ib_dyn[G.i],
+                                     ib_dyn_init=SN.WrapLoopAmp.ib_dyn[G.i],
                                      e_wrap_filt_init=SN.mon_run.e_wrap_m_filt[G.i],
                                      e_wrap_trim_init=SN.mon_run.e_wrap_m_trim[G.i], freeze=not self.ib_lo_active)
             self.ib_dyn_T_m = self.LoopIbAmp.ChargeTransfer.dt
@@ -1337,7 +1337,7 @@ class Diff:
 
     # Update the loop
     # needs to be called twice with reset=True to initialize properly
-    def calculate(self, reset=True, dt=None, ib_amp=None, ib_noa=None, disable_amp_fault=False):
+    def calculate(self, reset=True, dt=None, ib_amp=None, ib_noa=None):
         self.reset = reset
         self.dt = dt
 
@@ -1350,9 +1350,14 @@ class Diff:
                                                     t_false=Battery.IB_LO_ACTIVE_RES*Battery.cp_ts,
                                                     dt=self.dt, reset=self.reset)  # non-latching
 
+        # Match C++ Fault::ib_logic(): disable when both sensors simultaneously at same limit
+        ib_noa_hi = ib_noa >= Battery.HDWE_IB_HI_LO_NOA_HI
+        ib_noa_lo = ib_noa <= Battery.HDWE_IB_HI_LO_NOA_LO
+        disable_amp_fault = (ib_amp_hi and ib_noa_hi) or (ib_amp_lo and ib_noa_lo)
+
         self.ib_diff = ib_amp - ib_noa
         if disable_amp_fault:
-            self.ib_diff = self.ib_diff  # lgv
+            pass  # both sensors pegged together: keep raw diff (lgv)
         elif self.ib_lo_limited_hi:
             self.ib_diff = max(0., self.ib_diff)
         elif self.ib_lo_limited_lo:

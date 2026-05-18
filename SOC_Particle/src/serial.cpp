@@ -396,9 +396,9 @@ void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon
 
     sprintf(pr.buff, "   %8.6f,%7.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%2d,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,%8.6f,",
         Sen->Vc_hdwe_sum(), Mon->voc_soc(), Sen->Flt->e_wrap(), Sen->Flt->e_wrap_filt(), Sen->Flt->ib_dyn_m(), Sen->Flt->dv_dyn_m(),
-        Sen->Flt->e_wrap_m(), Sen->Flt->e_wrap_m_r(), Sen->Flt->e_wrap_m_filt(), Sen->Flt->LoopIbAmp->e_wrap_trim(),
+        Sen->Flt->e_wrap_m(), Sen->Flt->e_wrap_m_r(), Sen->Flt->e_wrap_m_filt(), Sen->Flt->WrapLoopAmp->e_wrap_trim(),
         Sen->Flt->ib_dyn_n(), Sen->Flt->dv_dyn_n(), Sen->Flt->e_wrap_n(), Sen->Flt->e_wrap_n_filt(),
-        Sen->Flt->LoopIbNoa->e_wrap_trim());
+        Sen->Flt->WrapLoopNoa->e_wrap_trim());
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "  %d,%d,%8.6f,%8.6f,%8.6f, %d,%8.6f,  %d,%8.6f,%8.6f, %d,%8.6f,  %d, ",
@@ -409,43 +409,43 @@ void print_signal_sel_serial(const bool reset, Sensors *Sen, BatteryMonitor *Mon
 
     sprintf(pr.buff, "%10.6f, %10.6f, %d, %d, %9.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%10.6f,%d,%d,%8.6f,%8.6f,%d,",
         Sen->Flt->ib_rate(), Sen->Flt->ib_quiet(), Sen->Flt->ib_really_quiet(), Sen->Flt->tb_sel_status(),
-        Sen->Flt->cc_diff_thr(), Sen->Flt->LoopIbAmp->ewhi_thr(), Sen->Flt->LoopIbAmp->ewlo_thr(), Sen->Flt->LoopIbNoa->ewhi_thr(),
-        Sen->Flt->LoopIbNoa->ewlo_thr(), Sen->Flt->ib_diff_thr(), Sen->Flt->ib_quiet_thr(), Sen->Flt->preserving(),
+        Sen->Flt->cc_diff_thr(), Sen->Flt->WrapLoopAmp->ewhi_thr(), Sen->Flt->WrapLoopAmp->ewlo_thr(), Sen->Flt->WrapLoopNoa->ewhi_thr(),
+        Sen->Flt->WrapLoopNoa->ewlo_thr(), Sen->Flt->ib_diff_thr(), Sen->Flt->ib_quiet_thr(), Sen->Flt->preserving(),
         ap.fake_faults(), Mon->y_ekf(), Mon->y_ekf_f(), Sen->Flt->ib_decision());
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,%9.6f,%d,",
-        Sen->Flt->LoopIbAmp->ib_dyn_T(), Sen->Flt->LoopIbAmp->ib_dyn_tau(),
-        Sen->Flt->LoopIbAmp->ib_dyn_rstate(), Sen->Flt->LoopIbAmp->ib_dyn_lstate(), Sen->Flt->ib_lo_active());
+        Sen->Flt->WrapLoopAmp->ib_dyn_T(), Sen->Flt->WrapLoopAmp->ib_dyn_tau(),
+        Sen->Flt->WrapLoopAmp->ib_dyn_rstate(), Sen->Flt->WrapLoopAmp->ib_dyn_lstate(), Sen->Flt->ib_lo_active());
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,%9.6f,",
-        Sen->Flt->LoopIbNoa->ib_dyn_T(), Sen->Flt->LoopIbNoa->ib_dyn_tau(),
-        Sen->Flt->LoopIbNoa->ib_dyn_rstate(), Sen->Flt->LoopIbNoa->ib_dyn_lstate());
+        Sen->Flt->WrapLoopNoa->ib_dyn_T(), Sen->Flt->WrapLoopNoa->ib_dyn_tau(),
+        Sen->Flt->WrapLoopNoa->ib_dyn_rstate(), Sen->Flt->WrapLoopNoa->ib_dyn_lstate());
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,%9.6f,%d,",
-        Sen->Flt->LoopIbNoa->ib_wrp_T(), Sen->Flt->LoopIbNoa->ib_wrp_tau(),
-        Sen->Flt->LoopIbNoa->ib_wrp_rate(), Sen->Flt->LoopIbNoa->ib_wrp_state(),
+        Sen->Flt->WrapLoopNoa->ib_wrp_T(), Sen->Flt->WrapLoopNoa->ib_wrp_tau(),
+        Sen->Flt->WrapLoopNoa->ib_wrp_rate(), Sen->Flt->WrapLoopNoa->ib_wrp_state(),
         Sen->Flt->disable_amp_fault());
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%d,%d,%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,",
-        Sen->Flt->LoopIbAmp->reset(), Sen->Flt->LoopIbNoa->reset(), Sen->Flt->LoopIbAmp->ib_wrp_T(),
-        Sen->Flt->LoopIbAmp->ib_wrp_tau(),
-        Sen->Flt->LoopIbAmp->ib_wrp_rate(), Sen->Flt->LoopIbAmp->ib_wrp_state(), Sen->ib_amp(), Sen->ib_noa());
+        Sen->Flt->WrapLoopAmp->reset(), Sen->Flt->WrapLoopNoa->reset(), Sen->Flt->WrapLoopAmp->ib_wrp_T(),
+        Sen->Flt->WrapLoopAmp->ib_wrp_tau(),
+        Sen->Flt->WrapLoopAmp->ib_wrp_rate(), Sen->Flt->WrapLoopAmp->ib_wrp_state(), Sen->ib_amp(), Sen->ib_noa());
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%d,%d,%d,%d,%9.6f,%d,%9.6f,%9.6f,%9.6f,%9.6f,",
         Sen->Flt->ib_amp_lo(), Sen->Flt->ib_amp_hi(), Sen->Flt->ib_noa_lo(), Sen->Flt->ib_noa_hi(),
         Sen->ShuntNoAmp->ishunt_cal_kf(), cp.kf_reset_print,
-        Sen->ShuntAmp->kf_v(), Sen->ShuntNoAmp->kf_v(), Sen->Flt->LoopIbAmp->e_wrap_trimmed(),
-        Sen->Flt->LoopIbNoa->e_wrap_trimmed());
+        Sen->ShuntAmp->kf_v(), Sen->ShuntNoAmp->kf_v(), Sen->Flt->WrapLoopAmp->e_wrap_trimmed(),
+        Sen->Flt->WrapLoopNoa->e_wrap_trimmed());
     Serial.printf("%s", pr.buff);
 
     sprintf(pr.buff, "%9.6f,%9.6f,%9.6f,%9.6f,%9.6f,%d,%d,%d,",
-      Sen->Flt->LoopIbAmp->vb(), Sen->Flt->LoopIbAmp->voc(), Sen->Flt->LoopIbAmp->voc_soc(),
-      Sen->Flt->LoopIbNoa->voc(), Sen->Flt->LoopIbNoa->voc_soc(),
+      Sen->Flt->WrapLoopAmp->vb(), Sen->Flt->WrapLoopAmp->voc(), Sen->Flt->WrapLoopAmp->voc_soc(),
+      Sen->Flt->WrapLoopNoa->voc(), Sen->Flt->WrapLoopNoa->voc_soc(),
       Sen->Flt->wrap_m_and_n_fa(), Sen->Flt->ib_is_functional(),
       Mon->voltage_low());
     Serial.printf("%s", pr.buff);

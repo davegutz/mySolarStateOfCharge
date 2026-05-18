@@ -246,16 +246,16 @@ public:
   bool disable_amp_fault() { return disable_amp_fault_; };
   bool dscn_fa() { return failRead(IB_DSCN_FA); };
   bool dscn_flt() { return faultRead(IB_DSCN_FLT); };
-  float dv_dyn_m() { return LoopIbAmp->dv_dyn(); };
-  float dv_dyn_n() { return LoopIbNoa->dv_dyn(); };
+  float dv_dyn_m() { return WrapLoopAmp->dv_dyn(); };
+  float dv_dyn_n() { return WrapLoopNoa->dv_dyn(); };
   float e_wrap() { return e_wrap_; };
   float e_wrap_filt() { return e_wrap_filt_; };
-  float e_wrap_m() { return LoopIbAmp->e_wrap(); };
-  float e_wrap_m_filt() { return LoopIbAmp->e_wrap_filt(); };
-  bool e_wrap_m_r() { return LoopIbAmp->reset(); };
-  float e_wrap_m_trim() { return LoopIbAmp->e_wrap_trim(); };
-  float e_wrap_n() { return LoopIbNoa->e_wrap(); };
-  float e_wrap_n_filt() { return LoopIbNoa->e_wrap_filt(); };
+  float e_wrap_m() { return WrapLoopAmp->e_wrap(); };
+  float e_wrap_m_filt() { return WrapLoopAmp->e_wrap_filt(); };
+  bool e_wrap_m_r() { return WrapLoopAmp->reset(); };
+  float e_wrap_m_trim() { return WrapLoopAmp->e_wrap_trim(); };
+  float e_wrap_n() { return WrapLoopNoa->e_wrap(); };
+  float e_wrap_n_filt() { return WrapLoopNoa->e_wrap_filt(); };
   float e_wrap_rate() { return e_wrap_rate_; };
   float ewmin_slr() { return ewmin_slr_; };
   float ewsat_slr() { return ewsat_slr_; };
@@ -284,8 +284,8 @@ public:
   float ib_diff_thr_;     // Threshold current difference faults, A
   bool ib_dscn_fa() { return failRead(IB_DSCN_FA); };
   bool ib_dscn_flt() { return faultRead(IB_DSCN_FLT); };
-  float ib_dyn_m() { return LoopIbAmp->ib_dyn(); };
-  float ib_dyn_n() { return LoopIbNoa->ib_dyn(); };
+  float ib_dyn_m() { return WrapLoopAmp->ib_dyn(); };
+  float ib_dyn_n() { return WrapLoopNoa->ib_dyn(); };
   bool ib_is_functional() { return ib_is_functional_; };
   bool ib_is_quiet() { return ib_is_quiet_; };
   bool ib_lo_active() { return ib_lo_active_; };
@@ -312,8 +312,8 @@ public:
   void latch_fake(const bool cmd) { latch_fake_ = cmd; };
   int8_t latched_fail() { return latch_; };
   void latched_fail(const bool cmd) { latch_ = cmd; };
-  Looparound *LoopIbAmp;    // Looparound for Ib amp
-  Looparound *LoopIbNoa;    // Looparound for Ib noa
+  Looparound *WrapLoopAmp;    // Looparound for Ib amp
+  Looparound *WrapLoopNoa;    // Looparound for Ib noa
   bool no_fails() { return !latch_; };
   bool no_fails_fake() { return !latch_fake_; };
   bool preserving() { return *sp_preserving_; };

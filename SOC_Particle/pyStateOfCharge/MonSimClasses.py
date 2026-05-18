@@ -101,9 +101,9 @@ class Sensors:
             self.Tb_f_rate_past = self.mon_run.Tb_f_rate[0]
             self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
             self.TbModelFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
-            self.LoopAmp = SensorLooparound(self.mon_run.ib_amp_hdwe, self.mon_run.ib_dyn_m, self.mon_run.e_wrap_m_trim,
+            self.WrapLoopAmp = SensorLooparound(self.mon_run.ib_amp_hdwe, self.mon_run.ib_dyn_m, self.mon_run.e_wrap_m_trim,
                                             self.mon_run.e_wrap_m_filt)
-            self.LoopNoa = SensorLooparound(self.mon_run.ib_noa_hdwe, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_n_trim,
+            self.WrapLoopNoa = SensorLooparound(self.mon_run.ib_noa_hdwe, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_n_trim,
                                             self.mon_run.e_wrap_n_filt)
             self.Battery = Battery
             if hasattr(self.mon_run, 'vovcm'):
@@ -191,11 +191,11 @@ class Sensors:
             self.TbModelFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
             self.TbSenseFilt = LagExp(0, Battery.TB_FILT, Battery.TB_MIN, Battery.TB_MAX)
 
-            self.LoopAmp = SensorLooparound(self.mon_run.ib_amp_hdwe_f, self.mon_run.ib_dyn_m, self.mon_run.e_wrap_m_trim,
+            self.WrapLoopAmp = SensorLooparound(self.mon_run.ib_amp_hdwe_f, self.mon_run.ib_dyn_m, self.mon_run.e_wrap_m_trim,
                                             self.mon_run.e_wrap_m_filt)
             if not hasattr(self.mon_run, 'e_wrap_n_trim'):  # for old config that didn't have n_trim
                 self.mon_run.e_wrap_n_trim = self.mon_run.e_wrap_m_trim.copy()*0.
-            self.LoopNoa = SensorLooparound(self.mon_run.ib_noa_hdwe_f, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_n_trim,
+            self.WrapLoopNoa = SensorLooparound(self.mon_run.ib_noa_hdwe_f, self.mon_run.ib_dyn_n, self.mon_run.e_wrap_n_trim,
                                             self.mon_run.e_wrap_n_filt)
             self.ib_amp = self.mon_run.ib_amp_hdwe_f
             self.ib_noa = self.mon_run.ib_noa_hdwe_f
@@ -436,8 +436,8 @@ class Sensors:
 
     def update_ib_vb(self, i):
         self.i = min(max(i, 0), len(self.mon_run.time)-1)
-        self.LoopAmp.update(i)
-        self.LoopNoa.update(i)
+        self.WrapLoopAmp.update(i)
+        self.WrapLoopNoa.update(i)
 
         if hasattr(self.mon_run, 'kfres') and self.mon_run.kfres is not None:
             self.reset_kf = bool(self.mon_run.kfres[i])

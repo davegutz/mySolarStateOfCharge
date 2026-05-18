@@ -203,9 +203,9 @@ Fault::Fault(const double T, uint8_t *preserving, BatteryMonitor *Mon, Sensors *
   WrapLo = new TFDelay(false, WRAP_LO_SET, WRAP_LO_RES, EKF_NOM_DT);  // Wrap test persistence.  Initializes false
   QuietFilt = new General2_Pole(T, WN_Q_FILT, ZETA_Q_FILT, MIN_Q_FILT, MAX_Q_FILT);  // actual update time provided run time
   QuietRate = new RateLagExp(T, TAU_Q_FILT, MIN_Q_FILT, MAX_Q_FILT);
-  LoopIbAmp = new Looparound(Mon, Sen, wrap_hi_volt_, wrap_lo_volt_, AMP_WRAP_TRIM_GAIN, -IB_ABS_MAX_AMP, IB_ABS_MAX_AMP,
+  WrapLoopAmp = new Looparound(Mon, Sen, wrap_hi_volt_, wrap_lo_volt_, AMP_WRAP_TRIM_GAIN, -IB_ABS_MAX_AMP, IB_ABS_MAX_AMP,
                               MAX_WRAP_ERR_FILT/(IB_ABS_MAX_NOA/IB_ABS_MAX_AMP));
-  LoopIbNoa = new Looparound(Mon, Sen, wrap_hi_noa_, wrap_lo_noa_, NOA_WRAP_TRIM_GAIN, -IB_ABS_MAX_NOA, IB_ABS_MAX_NOA,
+  WrapLoopNoa = new Looparound(Mon, Sen, wrap_hi_noa_, wrap_lo_noa_, NOA_WRAP_TRIM_GAIN, -IB_ABS_MAX_NOA, IB_ABS_MAX_NOA,
                               MAX_WRAP_ERR_FILT);
 }
 
@@ -417,23 +417,23 @@ void Fault::ib_wrap(const bool reset, Sensors *Sen, BatteryMonitor *Mon)
   // ib section of wrap logic - separate because has multiple sensors and complex selection logic
   // HI_LO-Only Logic
   #ifdef HDWE_IB_HI_LO
-    LoopIbNoa->calculate(reset_loc, false, Sen->ib_noa(), Sen, false);
-    LoopIbAmp->calculate(reset_loc, disable_amp_fault_, Sen->ib_amp(), Sen, !ib_lo_active_);
-    faultAssign( LoopIbAmp->hi_fault(), WRAP_HI_M_FLT);
-    failAssign( LoopIbAmp->hi_fail(), WRAP_HI_M_FA);  // WRAP_HI_M_FA not latched
-    faultAssign( LoopIbAmp->lo_fault(), WRAP_LO_M_FLT);
-    failAssign( LoopIbAmp->lo_fail(), WRAP_LO_M_FA);  // WRAP_LO_M_FA not latched
-    faultAssign( LoopIbNoa->hi_fault(), WRAP_HI_N_FLT);
-    failAssign( LoopIbNoa->hi_fail(), WRAP_HI_N_FA);  // WRAP_HI_N_FA not latched
-    faultAssign( LoopIbNoa->lo_fault(), WRAP_LO_N_FLT);
-    failAssign( LoopIbNoa->lo_fail(), WRAP_LO_N_FA);  // WRAP_LO_N_FA not latched
+    WrapLoopNoa->calculate(reset_loc, false, Sen->ib_noa(), Sen, false);
+    WrapLoopAmp->calculate(reset_loc, disable_amp_fault_, Sen->ib_amp(), Sen, !ib_lo_active_);
+    faultAssign( WrapLoopAmp->hi_fault(), WRAP_HI_M_FLT);
+    failAssign( WrapLoopAmp->hi_fail(), WRAP_HI_M_FA);  // WRAP_HI_M_FA not latched
+    faultAssign( WrapLoopAmp->lo_fault(), WRAP_LO_M_FLT);
+    failAssign( WrapLoopAmp->lo_fail(), WRAP_LO_M_FA);  // WRAP_LO_M_FA not latched
+    faultAssign( WrapLoopNoa->hi_fault(), WRAP_HI_N_FLT);
+    failAssign( WrapLoopNoa->hi_fail(), WRAP_HI_N_FA);  // WRAP_HI_N_FA not latched
+    faultAssign( WrapLoopNoa->lo_fault(), WRAP_LO_N_FLT);
+    failAssign( WrapLoopNoa->lo_fail(), WRAP_LO_N_FA);  // WRAP_LO_N_FA not latched
   #endif
 
   // Overall wrap logic (separates amp/noa and hi/lo)
   #ifdef HDWE_IB_HI_LO
-    e_wrap_ = scale_select(Sen->Ib_noa_hdwe(), Sen->sel_brk_hdwe, LoopIbAmp->e_wrap(), LoopIbNoa->e_wrap());
-    e_wrap_filt_ = scale_select(Sen->Ib_noa_hdwe(), Sen->sel_brk_hdwe, LoopIbAmp->e_wrap_filt(), LoopIbNoa->e_wrap_filt());
-    e_wrap_rate_ = scale_select(Sen->Ib_noa_hdwe(), Sen->sel_brk_hdwe, LoopIbAmp->e_wrap_rate(), LoopIbNoa->e_wrap_rate());
+    e_wrap_ = scale_select(Sen->Ib_noa_hdwe(), Sen->sel_brk_hdwe, WrapLoopAmp->e_wrap(), WrapLoopNoa->e_wrap());
+    e_wrap_filt_ = scale_select(Sen->Ib_noa_hdwe(), Sen->sel_brk_hdwe, WrapLoopAmp->e_wrap_filt(), WrapLoopNoa->e_wrap_filt());
+    e_wrap_rate_ = scale_select(Sen->Ib_noa_hdwe(), Sen->sel_brk_hdwe, WrapLoopAmp->e_wrap_rate(), WrapLoopNoa->e_wrap_rate());
     faultAssign( ( wrap_hi_m_flt() && wrap_hi_n_flt() && !Mon->sat() ), WRAP_HI_FLT);
     faultAssign( ( wrap_lo_m_flt() && wrap_lo_n_flt() ), WRAP_LO_FLT);
     failAssign( ( wrap_hi_m_fa() && wrap_hi_n_fa() && !Mon->sat() ), WRAP_HI_FA);
@@ -464,12 +464,12 @@ void Fault::pretty_print(Sensors *Sen, BatteryMonitor *Mon)
 
   txBuf = String::format("\nLooparound Amp:\n");
   sendTxBuf(txBuf, true, IN_SERVICE);
-  txBuf = LoopIbAmp->pretty_print(Sen);
+  txBuf = WrapLoopAmp->pretty_print(Sen);
   sendTxBuf(txBuf, true, IN_SERVICE);
 
   txBuf = String::format("\nLooparound Noa:\n");
   sendTxBuf(txBuf, true, IN_SERVICE);
-  txBuf = LoopIbNoa->pretty_print(Sen);
+  txBuf = WrapLoopNoa->pretty_print(Sen);
   sendTxBuf(txBuf, true, IN_SERVICE);
 
   txBuf = String::format("\nFault:\n") +
