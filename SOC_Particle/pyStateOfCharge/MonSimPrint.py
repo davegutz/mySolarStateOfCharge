@@ -268,7 +268,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
             vv_warning_printed = True
             print(Colors.reset, end='')
         return None
-    hdr = "  i  time     r r_t  i_e  r_e  c_e   dt_ekf         sa        voc_stat              voc_stat_past       bms_off_past  volt_low       bms_off     frz     ib_charge                   soc                    soc_ekf                 x_ekf                    y                          y_ekf_f                    y_ekf_f_T                  y_ekf_f_tau                y_ekf_f_state              z                            hx                     voc_ekf                Tb_f                     x_prior                  x                        x_for_hx                     x_post                    Tb_f                  tb_f_for_hx                hx                        u_ekf                      voc_stat_f              voc_soc                z                          P                              P_post                       P_prior                       Fx                        Bu                        H                          R                     S                    K                         Q                         R                         voc_stat_f_rstate     voc_stat_f_lstate       voc_stat_f_T"
+    hdr = "  i  time     r r_t    dt             i_e  r_e  c_e   dt_ekf         sa        voc_stat              voc_stat_past       bms_off_past  volt_low       bms_off     frz     ib_charge                   soc                    soc_ekf                 x_ekf                    y                          y_ekf_f                    y_ekf_f_T                  y_ekf_f_tau                y_ekf_f_state              z                            hx                     voc_ekf                Tb_f                     x_prior                  x                        x_for_hx                     x_post                    Tb_f                      tb_f_for_hx                hx                        u_ekf                      voc_stat_f              voc_soc                z                          P                              P_post                       P_prior                       Fx                        Bu                         H                          R                     S                    K                         Q                         R                         voc_stat_f_rstate     voc_stat_f_lstate       voc_stat_f_T"
     i_ekf = max(i_ekf, 0)
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
@@ -287,6 +287,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
         print(Colors.fg.red, end='')
 
     print("{:4d}".format(G.i), "{:7.3f}".format(t[G.i]), "{:2.0f}".format(mon.reset), "{:2.0f}".format(mon.reset_temp),
+          "{:9.3f}".format(SN.mon_run.dt[G.i]), "{:6.3f}".format(mon.dt),
           "{:4d}".format(i_ekf), "{:4d}".format(mon.reset_ekf), "{:4d}".format(calc_ekf),
           "{:9.3f}".format(SN.mon_run.dt_ekf[i_ekf]), "{:6.3f}".format(mon.dt_eframe),
           "{:4.0f}".format(SN.mon_run.sat[G.i]), "{:2.0f}".format(mon.sat),
@@ -304,7 +305,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
           "{:13.8f}".format(SN.mon_run.y_ekf_f[G.i]), "{:12.8f}".format(mon.y_ekf_f),
           "{:13.8f}".format(SN.mon_run.y_ekf_f_T[G.i]), "{:12.8f}".format(mon.y_ekf_f_T),
           "{:13.8f}".format(SN.mon_run.y_ekf_f_tau[G.i]), "{:12.8f}".format(mon.y_ekf_f_tau),
-          "{:13.8f}".format(SN.mon_run.y_ekf_f_state[G.i]), "{:12.8f}".format(mon.y_ekf_f_state),
+          "{:13.8f}".format(SN.mon_run.y_ekf_f_lstate[G.i]), "{:12.8f}".format(mon.y_ekf_f_state),
           "{:12.6f}".format(SN.mon_run.z[i_ekf]), "{:13.6f}".format(mon.z),
           "{:14.6f}".format(SN.mon_run.hx[i_ekf]), "{:9.6f}".format(mon.hx),
           "{:11.5f}".format(SN.mon_run.voc_ekf[G.i]), "{:9.5f}".format(mon.voc_ekf),
@@ -314,7 +315,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
           "{:15.10f}".format(SN.mon_run.x_for_hx[i_ekf]), "{:12.10f}".format(mon.x_for_hx),
           "{:13.8f}".format(SN.mon_run.x_post[i_ekf]), "{:10.8f}".format(mon.x_post),
           "{:14.7f}".format(SN.mon_run.Tb_f[G.i]), "{:10.7f}".format(mon.Tb_f),
-          "{:14.7f}".format(SN.mon_run.Tb_f_for_hx[i_ekf]), "{:10.7f}".format(mon.tb_f_for_hx),
+          "{:14.7f}".format(SN.mon_run.tb_f_for_hx[i_ekf]), "{:10.7f}".format(mon.tb_f_for_hx),
           "{:14.6f}".format(SN.mon_run.hx[i_ekf]), "{:9.6f}".format(mon.hx),
           "{:14.6f}".format(SN.mon_run.u[i_ekf]), "{:12.6f}".format(mon.u_ekf),
           "{:14.6f}".format(SN.mon_run.z[i_ekf]), "{:9.6f}".format(mon.voc_stat_f),
@@ -325,7 +326,7 @@ def print_ekf_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_ekf, calc_temp):
           "{:14.11f}".format(SN.mon_run.P_prior[i_ekf]), "{:12.11f}".format(mon.P_prior),
           "{:13.9f}".format(SN.mon_run.Fx[i_ekf]), "{:11.9f}".format(mon.Fx),
           "{:13.9f}".format(SN.mon_run.Bu[i_ekf]), "{:11.9f}".format(mon.Bu),
-          "{:13.7f}".format(SN.mon_run.H[i_ekf]), "{:10.7f}".format(mon.H),
+          "{:14.7f}".format(SN.mon_run.H[i_ekf]), "{:11.7f}".format(mon.H),
           "{:11.6f}".format(SN.mon_run.R[i_ekf]), "{:9.6f}".format(mon.R),
           "{:11.6f}".format(SN.mon_run.S[i_ekf]), "{:9.6f}".format(mon.S),
           "{:13.9f}".format(SN.mon_run.K[i_ekf]), "{:10.9f}".format(mon.K),

@@ -250,7 +250,7 @@ class Battery(BatteryConstants, Coulombs):
 class BatteryMonitor(Battery, EKF1x1):
     """Extend Battery class to make a monitor"""
     def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600,
-                 t_rated=BatteryConstants.RATED_TEMP, temp_rlim=0.017, scale=1.,
+                 t_rated=Battery.RATED_TEMP, temp_rlim=0.017, scale=1.,
                  Tb_f=Battery.NOMINAL_TB, tweak_test=False, dvoc=0.,
                  mod_code=0, vsat_add=0.):
         ref = None
@@ -512,10 +512,10 @@ class BatteryMonitor(Battery, EKF1x1):
         self.ib_lo_limited_lo = False
         self.ib_lo_limited_hi = False
         self.ib_lo_active = True
-        self.IbLoLimitedLo = TFDelay(in_=False, t_true=Battery.IB_LO_ACTIVE_SET,
-                                     t_false=Battery.IB_LO_ACTIVE_RES, dt=0.1)
-        self.IbLoLimitedHi = TFDelay(in_=False, t_true=Battery.IB_LO_ACTIVE_SET,
-                                     t_false=Battery.IB_LO_ACTIVE_RES, dt=0.1)
+        self.IbLoLimitedLo = TFDelay(in_=False, t_true=Battery.IB_LO_ACTIVE_SET*Battery.cp_ts,
+                                     t_false=Battery.IB_LO_ACTIVE_RES*Battery.cp_ts, dt=0.1)
+        self.IbLoLimitedHi = TFDelay(in_=False, t_true=Battery.IB_LO_ACTIVE_SET*Battery.cp_ts,
+                                     t_false=Battery.IB_LO_ACTIVE_RES*Battery.cp_ts, dt=0.1)
 
     def __str__(self, prefix=''):
         """Returns representation of the object"""
@@ -673,8 +673,8 @@ class BatteryMonitor(Battery, EKF1x1):
             self.soc_ekf = self.x  # x = Vsoc (0-1 ideal capacitor voltage) proxy for soc
             self.y_ekf = self.y
             self.q_ekf = self.soc_ekf * self.q_capacity
-            self.y_ekf_f = self.y_ekf_filt_lag.calculate(in_=self.y_ekf, dt=min(self.dt_eframe, Battery.EKF_T_RES),
-                                                         reset=self.reset_ekf)
+            self.y_ekf_f = self.y_ekf_filt_lag.calculate_seeded(in_=self.y_ekf, _out_init=OPT.mon_run.y_ekf_f[G.i],
+                                                                dt=self.dt_eframe, reset=self.reset_temp)
             self.y_ekf_f_T = self.y_ekf_filt_lag.dt
             self.y_ekf_f_tau = self.y_ekf_filt_lag.tau
             self.y_ekf_f_state = self.y_ekf_filt_lag.state
@@ -975,11 +975,11 @@ class BatteryMonitor(Battery, EKF1x1):
             self.ib_amp_lo = self.ib_amp <= Battery.HDWE_IB_HI_LO_AMP_LO
             self.ib_noa_hi = self.ib_noa >= Battery.HDWE_IB_HI_LO_NOA_HI
             self.ib_noa_lo = self.ib_noa <= Battery.HDWE_IB_HI_LO_NOA_LO
-            self.ib_lo_limited_lo = self.IbLoLimitedLo.calculate(self.ib_amp_lo, Battery.IB_LO_ACTIVE_SET,
-                                                                 Battery.IB_LO_ACTIVE_RES, dt=dt_local,
+            self.ib_lo_limited_lo = self.IbLoLimitedLo.calculate(self.ib_amp_lo, Battery.IB_LO_ACTIVE_SET*Battery.cp_ts,
+                                                                 Battery.IB_LO_ACTIVE_RES*Battery.cp_ts, dt=dt_local,
                                                                  reset=self.e_wrap_m_reset)
-            self.ib_lo_limited_hi = self.IbLoLimitedHi.calculate(self.ib_amp_hi, Battery.IB_LO_ACTIVE_SET,
-                                                                 Battery.IB_LO_ACTIVE_RES, dt=dt_local,
+            self.ib_lo_limited_hi = self.IbLoLimitedHi.calculate(self.ib_amp_hi, Battery.IB_LO_ACTIVE_SET*Battery.cp_ts,
+                                                                 Battery.IB_LO_ACTIVE_RES*Battery.cp_ts, dt=dt_local,
                                                                  reset=self.e_wrap_m_reset)
             self.ib_lo_active = not self.ib_lo_limited_hi and not self.ib_lo_limited_lo
             self.disable_amp_fault = (self.ib_amp_hi and self.ib_noa_hi) or (self.ib_amp_lo and self.ib_noa_lo)
@@ -1012,7 +1012,7 @@ class BatterySim(Battery):
     """Extend Battery class to make a model"""
 
     def __init__(self, OPT=None, SN=None, q_cap_rated=Battery.NOM_UNIT_CAP*3600,
-                 t_rated=BatteryConstants.RATED_TEMP, temp_rlim=0.017, scale=1.,
+                 t_rated=Battery.RATED_TEMP, temp_rlim=0.017, scale=1.,
                  Tb_f=Battery.NOMINAL_TB, tweak_test=False, mod_code=0, vsat_add=0.):
         Battery.__init__(self, OPT=OPT, q_cap_rated=q_cap_rated, t_rated=t_rated, temp_rlim=temp_rlim, Tb_f=Tb_f,
                          tweak_test=tweak_test, dvoc=OPT.add_voc_sim, mod_code=mod_code, scale_cap=scale, mon=False,

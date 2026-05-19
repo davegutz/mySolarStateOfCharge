@@ -202,7 +202,7 @@ void print_ekf_header(void)
   Serial.printf("unit_e,c_time_e,dt_ekf,Fx_, Bu_, Q_, R_, P_, S_, K_, u_, x_, y_, z_,");
   Serial.printf("x_prior_, P_prior_, x_post_, P_post_, hx_, H_, frz_, tb_f_hx_, x_for_hx_,");
   Serial.printf("  voc_stat_f_T, voc_stat_f_tau, voc_stat_f_rstate, voc_stat_f_lstate,");
-  Serial.printf("y_ekf_f_T, y_ekf_f_tau, y_ekf_f_state,");
+  Serial.printf("y_ekf_f_T, y_ekf_f_tau, y_ekf_f_lstate,");
   Serial.printf("\n");
 }
 
@@ -224,7 +224,7 @@ void EKF_1x1::print_ekf_serial(BatteryMonitor *Mon)
     Mon->vocStatFilt_rstate(), Mon->vocStatFilt_lstate());
 
   Serial.printf("%9.6f,%9.6f,%9.6f,",
-    Mon->y_ekf_f_T(), Mon->y_ekf_f_tau(), Mon->y_ekf_f_state());
+    Mon->y_ekf_f_T(), Mon->y_ekf_f_tau(), Mon->y_ekf_f_lstate());
 
   Serial.printf("\n");
 }

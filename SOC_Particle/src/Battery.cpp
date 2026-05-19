@@ -155,7 +155,7 @@ BatteryMonitor::BatteryMonitor(const float dx_voc, const float dy_voc, const flo
     amp_hrs_remaining_ekf_(0.), amp_hrs_remaining_soc_(0.), eframe_(0), ekf_conv_(false),
     ib_charge_(0.), ib_past_(0.), q_ekf_(NOM_UNIT_CAP*3600.), soc_ekf_(1.0), tcharge_(0.),
     tcharge_ekf_(0.), vb_model_rev_(NOMINAL_VB), voc_dead_(NOMINAL_VB), voc_stat_f_(NOMINAL_VB),
-    y_ekf_(0.), y_ekf_f_(0.), y_ekf_f_T_(0.), y_ekf_f_tau_(0.), y_ekf_f_state_(0.)
+    y_ekf_(0.), y_ekf_f_(0.), y_ekf_f_T_(0.), y_ekf_f_tau_(0.), y_ekf_f_lstate_(0.)
 {
     voc_dead_ = calc_vsat() - HDB_VB;
     // EKF
@@ -318,7 +318,7 @@ float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool 
         y_ekf_f_ = Yfilt->calculate(y_ekf_, reset_temp, dt_ekf_);
         y_ekf_f_T_ = Yfilt->T();
         y_ekf_f_tau_ = Yfilt->tau();
-        y_ekf_f_state_ = Yfilt->state();
+        y_ekf_f_lstate_ = Yfilt->lstate();
         // EKF convergence.  Audio industry found that detection of quietness requires no more than
         // second order filter of the signal.   Anything more is 'gilding the lily'
         bool conv = abs(y_ekf_f_)<ap.ekf_conv() && !cp.soft_reset && !cp.ekf_reset;  // Initialize false

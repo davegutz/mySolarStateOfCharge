@@ -211,7 +211,7 @@ public:
   float y_ekf_f() { return y_ekf_f_; };
   float y_ekf_f_T() { return y_ekf_f_T_; };
   float y_ekf_f_tau() { return y_ekf_f_tau_; };
-  float y_ekf_f_state() { return y_ekf_f_state_; };
+  float y_ekf_f_lstate() { return y_ekf_f_lstate_; };
 protected:
   LagExp *Yfilt = new LagExp(EKF_NOM_DT, TAU_Y_FILT, MIN_Y_FILT, MAX_Y_FILT);  // actual update time provided run time
   SlidingDeadband *SdVb_;  // Sliding deadband filter for Vb
@@ -237,7 +237,7 @@ protected:
   void ekf_update(double *hx, double *H, double *x, double *Tb_f);
   float y_ekf_f_T_;        // EKF filter
   float y_ekf_f_tau_;      // EKF filter
-  float y_ekf_f_state_;    // EKF filter
+  float y_ekf_f_lstate_;   // EKF filter
 };
 
 

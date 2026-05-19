@@ -327,7 +327,7 @@ def main():  # Example usage.  ok on 20260217
         8:  vb_wrap
         9:  dyn_n
     """
-    data_file='/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/ampHiEmptFail_soc3p2_hi_lo_bb.csv'
+    data_file = '/home/daveg/.local/SOC_Particle/plink/dataReduction/g20250612a/offLowSoc_soc3p2_hi_lo_bb.csv'
     unit_key = 'g20250612a_soc3p2_hi_lo_bb'
     time_end = None
     compare_run_ver = True
@@ -337,7 +337,7 @@ def main():  # Example usage.  ok on 20260217
     verbose = False
     scale_batt = 1.0
     slr_hys_sim = 1.0
-    request_history = 4
+    request_history = 1
     init_time = None
     time_shift = None
     strict_overplot = True

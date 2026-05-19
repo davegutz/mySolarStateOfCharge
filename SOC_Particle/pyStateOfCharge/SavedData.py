@@ -74,7 +74,7 @@ class SavedData:
                     if self.zero_end == len(self.ib) - 1:
                         print(Colors.fg.red, f"\n\nLikely ib is zero throughout the data.  Check setup and retry\n\n",
                               Colors.reset)
-                        self.zero_end = 0
+                        self.zero_end = 2
                     elif self.zero_end == -1:
                         print(Colors.fg.red, f"\n\nLikely ib is noisy throughout the data.  Check setup and retry\n\n",
                               Colors.reset)
