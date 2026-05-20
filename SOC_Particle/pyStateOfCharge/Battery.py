@@ -204,6 +204,16 @@ class Battery(BatteryConstants, Coulombs):
         s += Coulombs.__str__(self, prefix + 'Battery:')
         return s
 
+    def append_to(self, sv):
+        """Append all scalar members of self to corresponding list members of sv (a Saved instance).
+        If the attribute does not yet exist in sv, create it as a new list with the first value."""
+        for key, val in vars(self).items():
+            if isinstance(val, (bool, int, float, np.generic)) or val is None:
+                if hasattr(sv, key):
+                    getattr(sv, key).append(val)
+                else:
+                    setattr(sv, key, [val])
+
     def assign_tb(self, tb):
         self.Tb = tb
 
@@ -227,18 +237,9 @@ class Battery(BatteryConstants, Coulombs):
             print("soc=", soc, "tb_f=", tb_f, "dvoc=", self.dvoc, "voc=", voc)
         return voc, dv_dsoc
 
-    def append_to(self, sv):
-        """Append all scalar members of self to corresponding list members of sv (a Saved instance).
-        If the attribute does not yet exist in sv, create it as a new list with the first value."""
-        for key, val in vars(self).items():
-            if isinstance(val, (bool, int, float, np.generic)) or val is None:
-                if hasattr(sv, key):
-                    getattr(sv, key).append(val)
-                else:
-                    setattr(sv, key, [val])
-
-    def calculate(self, chem, tb, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
-                  q_capacity=None, rp=None, reset_ekf=None, soc=None, saturated_init=None, i=None, i_ekf=None):
+    def calculate(self, chem, Tb, Tb_f, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
+                  q_capacity=None, rp=None, soc=None, saturated_init=None, reset_ekf=None, i=None,
+                  i_ekf=None):
         # Battery
         raise NotImplementedError
 
@@ -924,15 +925,20 @@ class BatteryMonitor(Battery, EKF1x1):
         elif self.soc <= max(self.soc_min+Battery.WRAP_SOC_LO_OFF_REL, Battery.WRAP_SOC_LO_OFF_ABS):
             ewsat_slr = 1.
             ewmin_slr = Battery.WRAP_SOC_LO_SLR
-        elif (self.voc_soc > (self.vsat - Battery.WRAP_HI_SETAT_MARG) or
-            (self.voc_stat > (self.vsat-Battery.WRAP_HI_SETAT_MARG) and
-             self.ib / Battery.NOM_UNIT_CAP > Battery.WRAP_MOD_C_RATE and
-             self.soc > Battery.WRAP_SOC_MOD_OFF)):
-            ewsat_slr = Battery.WRAP_SOC_HI_SLR
+            #  else if ( Mon->voc_soc()>(Mon->vsat()-WRAP_HI_SETAT_MARG) ||
+#          ( Mon->voc_stat()>(Mon->vsat()-WRAP_HI_SETAT_MARG) && Mon->C_rate()>WRAP_MOD_C_RATE && Mon->soc()>WRAP_SOC_MOD_OFF) ) // Use voc_stat to get some anticipation
+
+        elif (
+                self.voc_soc > (self.vsat - Battery.WRAP_HI_SETAT_MARG) or
+                ((self.voc_stat > (self.vsat-Battery.WRAP_HI_SETAT_MARG)) and (self.ib / Battery.NOM_UNIT_CAP > Battery.WRAP_MOD_C_RATE) and
+                    (self.soc > Battery.WRAP_SOC_MOD_OFF))
+            ):
+            ewsat_slr = Battery.WRAP_HI_SETAT_SLR
             ewmin_slr = 1.
         else:
             ewsat_slr = 1.
             ewmin_slr = 1.
+        print(f"{self.voc_soc=} {self.vsat=} {self.voc_stat=} {self.ib / Battery.NOM_UNIT_CAP=} {self.soc=} {ewmin_slr=} {ewsat_slr=}")
 
         # Individual wrap logic
         if ib_noa is not None:
@@ -1126,15 +1132,15 @@ class BatterySim(Battery):
         return s
 
     # BatterySim::calculate()
-    def calculate(self, chem, tb, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
-                  q_capacity=None, rp=None, reset_ekf=None, soc=None,
-                  saturated_init=None, i=None, i_ekf=None):
+    def calculate(self, chem, Tb, Tb_f, vb, ib, dt, reset, calc_ekf, dt_ekf, SN, OPT,
+                  q_capacity=None, rp=None, soc=None, saturated_init=None, reset_ekf=None, i=None,
+                  i_ekf=None):
         self.reset = reset
         if self.chm != chem:
             self.chemistry.assign_all_mod(chem, self.unit)
             self.chm = chem
 
-        self.Tb = tb
+        self.Tb = Tb
         self.dt_past = self.dt
         self.dt = dt
         self.ib_in = ib
@@ -1458,6 +1464,7 @@ class Looparound:
         # Thresholds. Scalars are calculated by Flt->wrap_scalars()
         self.ewhi_thr_base = self.wrap_hi_volt * Battery.ap_ewhi_slr
         self.ewhi_thr = self.ewhi_thr_base * ewsat_slr * ewmin_slr
+        print(f'{self.wrap_hi_volt=} {Battery.ap_ewhi_slr=} {self.ewhi_thr_base=} {ewsat_slr=} {ewmin_slr=}')
         self.ewlo_thr_base = self.wrap_lo_volt * Battery.ap_ewlo_slr
         self.ewlo_thr = self.ewlo_thr_base * ewsat_slr * ewmin_slr
 

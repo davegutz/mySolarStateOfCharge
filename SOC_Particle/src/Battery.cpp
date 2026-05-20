@@ -930,6 +930,7 @@ void BatterySim::pretty_print(void)
     Serial.printf("  sat_ib_null%7.3f, A\n", sat_ib_null_);
     Serial.printf(" *ap_s_cap_sim%7.3f Slr\n", ap.s_cap_sim());
     hys_->pretty_print(0., 0., 0.);
+    this->Battery::Coulombs::pretty_print();
 #else
      Serial.printf("BatterySim: silent DEPLOY\n");
 #endif

@@ -133,7 +133,7 @@ void print_battery_header()
   Serial.printf("TB_MAX, TB_MIN, TCHARGE_DISPLAY_DEADBAND, TMAX_FILT, T_RLIM, VB_DC_DC, VB_MAX, VB_MIN,");
   Serial.printf("VOC_STAT_FILT, WN_Y_FILT, WRAP_ERR_FILT, WRAP_HI_AMPV, WRAP_HI_NOAV, WRAP_HI_RES, WRAP_HI_SET, WRAP_HI_SETAT_MARG,");
   Serial.printf("WRAP_LO_AMPV, WRAP_LO_NOAV, WRAP_LO_RES, WRAP_LO_SET, WRAP_MOD_C_RATE, WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR,");
-  Serial.printf("WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_SOC_MOD_OFF, ZETA_Y_FILT,");
+  Serial.printf("WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL, WRAP_SOC_LO_SLR, WRAP_SOC_MOD_OFF, ZETA_Y_FILT,WRAP_HI_SETAT_SLR,");
   Serial.printf("\n");
 }
 
@@ -189,8 +189,8 @@ void print_battery_serial()
     WRAP_LO_RES, WRAP_LO_SET, WRAP_MOD_C_RATE, WRAP_SOC_HI_OFF, WRAP_SOC_HI_SLR, WRAP_SOC_LO_OFF_ABS, WRAP_SOC_LO_OFF_REL);
   Serial.printf("%s", pr.buff);
 
-  sprintf(pr.buff, "%10.7f,%10.7f,%10.7f, ",
-    WRAP_SOC_LO_SLR, WRAP_SOC_MOD_OFF, ZETA_Y_FILT);
+  sprintf(pr.buff, "%10.7f,%10.7f,%10.7f,%10.7f, ",
+    WRAP_SOC_LO_SLR, WRAP_SOC_MOD_OFF, ZETA_Y_FILT, WRAP_HI_SETAT_SLR);
   Serial.printf("%s", pr.buff);
 
   Serial.printf("\n");

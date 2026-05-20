@@ -743,6 +743,13 @@ The device hasn't synchronized since last power up. Use the 'UT' function across
 This is normal for temperature.   Modeled Tb is very simple = to a constant + bias.   So I chose to display what is actually used in the model rather than what is actually used in signal selection.
 
 
+### Prolem:  GTK memory warning in Python
+```bash
+"(gnome-terminal-server:76607): Gtk-CRITICAL **:  10:00:24.194: gtk_distribute_natural_allocation: assertion 'extra_space >= 0' failed"              
+```
+This is a harmless TK warning that can be ignored.  Masking it in settings will only hide real problems.
+
+
 ## Author: Dave Gutz davegutz@alum.mit.edu  repository GITHUB myStateOfCharge
 
 

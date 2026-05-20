@@ -128,7 +128,7 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
             vv_warning_printed = True
             print(Colors.reset, end='')
         return None
-    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                           ibmh                        ibmm                    ib_amp_lo     ib_amp_hi      ib_lo_active      dis_amp_flt   dt                    ib_amp                    ib_dyn_T_m          ib_dyn_rstate_m                ib_dyn_lstate_m                      ib_dyn_m                vb                     dv_dyn_m             vb_m                      voc_m                     voc_soc               voc_soc_m                   e_wrap_m                  e_wrap_m_trim        e_wrap_trimmed_m         e_wrap_m_T           e_wrap_m_rate            e_wrap_m_reset       e_wrap_m_state         e_wrap_m_filt        ewmhi_thr            ewmlo_thr           e_wrap_m_flt   e_wrap_m_fa    disable_amp_fault      ib_amp_lo     e_wrap_m_reset  fltw   falw"
+    hdr = "  i   time     r       rt   rk   it   ct      re   ie  ce    reset  reset_temp     reset_all_faults   soft_reset  soft_reset_sim  init_mon     init_sim     sa      dt                vb                           ibmh                        ibmm                    ib_amp_lo     ib_amp_hi      ib_lo_active     dis_amp_flt   dt                    ib_amp                    ib_dyn_T_m          ib_dyn_rstate_m                ib_dyn_lstate_m                      ib_dyn_m                vb                     dv_dyn_m             vb_m                      voc_m                     voc_soc               voc_soc_m                   e_wrap_m                  e_wrap_m_trim        e_wrap_trimmed_m         e_wrap_m_T           e_wrap_m_rate            e_wrap_m_reset       e_wrap_m_state         e_wrap_m_filt        voc_soc                   voc_stat              vsat                      ib                      soc                       ewmhi_thr            ewmlo_thr           e_wrap_m_flt   e_wrap_m_fa    disable_amp_fault      ib_amp_lo     e_wrap_m_reset  fltw   falw"
     if (calc_temp or calc_ekf) and count_since_last_header > HDR_SPREAD:
         print(hdr)
         count_since_last_header = 0
@@ -177,6 +177,11 @@ def print_dyn_m_RunSim(SN, i_temp, i_ekf, t, mon, sim, calc_temp, calc_ekf):
           "{:12d}".format(bool(SN.mon_run.ib_wrp_reset_m[G.i])), "{:9d}".format(bool(mon.LoopIbAmp.WrapErrFilt.reset)),
           "{:12.6f}".format(SN.mon_run.ib_wrp_state_m[G.i]), "{:9.6f}".format(mon.LoopIbAmp.WrapErrFilt.state),
           "{:11.5f}".format(SN.mon_run.e_wrap_m_filt[G.i]), "{:8.5f}".format(mon.e_wrap_m_filt),
+          "{:13.6f}".format(SN.mon_run.voc_soc[G.i]), "{:12.6f}".format(mon.voc_soc),
+          "{:11.5f}".format(SN.mon_run.voc_stat[G.i]), "{:9.5f}".format(mon.voc_stat),
+          "{:11.5f}".format(SN.mon_run.vsat[G.i]), "{:9.5f}".format(mon.vsat),
+          "{:14.5f}".format(SN.mon_run.ib[G.i]), "{:12.5f}".format(mon.ib),
+          "{:13.8f}".format(SN.mon_run.soc[G.i]), "{:10.8f}".format(mon.soc),
           "{:11.5f}".format(SN.mon_run.ewmhi_thr[G.i]), "{:8.5f}".format(mon.ewmhi_thr),
           "{:11.5f}".format(SN.mon_run.ewmlo_thr[G.i]), "{:8.5f}".format(mon.ewmlo_thr),
           "{:8d}".format(SN.mon_run.wrap_hi_m_flt[G.i]), "{:4d}".format(mon.wrap_hi_m_flt),

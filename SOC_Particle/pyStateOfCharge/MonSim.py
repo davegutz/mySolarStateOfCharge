@@ -284,7 +284,7 @@ def replicate(OPT: UserOptions):
         else:
             _chm_s = OPT.Bsim
 
-        sim.calculate(_chm_s, Tb_s[G.i], vb_, ib_in_s, SN.dt_s[G.i], reset, None, None, SN, OPT,
+        sim.calculate(_chm_s, Tb_s[G.i], Tb_f_s[G.i], vb_, ib_in_s, SN.dt_s[G.i], reset, None, None, SN, OPT,
                       soc=sim.soc, q_capacity=sim.q_capacity, rp=rp, saturated_init=sat_s_init)
 
         sim.count_coulombs(OPT, SN, chem=_chm_s, reset_temp=reset, tb_f=Tb_f_s[G.i], charge_curr=sim.ib_charge,
@@ -342,6 +342,7 @@ def replicate(OPT: UserOptions):
         # Firmware uses monitor's NOMINAL_TB q_capacity for soc_s during Tb_fa; mirror that here so soc_s tracks soc.
         if hasattr(OPT.mon_run, 'Tb_fa') and bool(OPT.mon_run.Tb_fa[G.i]) and mon.q_capacity and mon.q_capacity != 0.:
             sim.soc = (mon.q_capacity + sim.delta_q) / mon.q_capacity
+            print(f'{mon.soc=} {mon.q_capacity=} {mon.delta_q=} {sim.q_capacity=} {sim.delta_q=} {sim.soc=}')
         mon.assign_soc_s(sim.soc)
 
         # Break if data integrity questionable

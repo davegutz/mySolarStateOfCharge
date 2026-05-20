@@ -110,7 +110,8 @@ class BatteryConstants:
     WRAP_LO_NOAV = -1.5
     WRAP_HI_RES = 4.5
     WRAP_HI_SET = 9.0
-    WRAP_HI_SETAT_MARG = 0.05
+    WRAP_HI_SETAT_MARG = 0.2
+    WRAP_HI_SETAT_SLR = 2.0
     WRAP_LO_RES = 4.5
     WRAP_LO_SET = 9.0
     WRAP_MOD_C_RATE = 0.02

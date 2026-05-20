@@ -10,7 +10,7 @@
 #define SOFT_SBAUD              460800      // Default Serial baud when able (don't think this does anything)
 #define HDWE_IB_HI_LO
 // #define SOFT_DEBUG_QUEUE
-// #define DEBUG_INIT                    // Use this to debug initialization using 'vv-1;'
+#define DEBUG_INIT                    // Use this to debug initialization using 'vv-1;'
 // #define LOGHANDLE
 
 // Miscellaneous
