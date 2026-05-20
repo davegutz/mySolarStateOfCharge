@@ -1728,11 +1728,11 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                                            message="Please wait until terminal is READY or run the START HERE button.")
                 return False
         else:
-            print("Plink already open. Skipping restart.")
-            if command_to_paste:
-                print(f"Plink already open. CANNOT automatically paste command: {command_to_paste}")
-                print("Please paste it manually into the terminal.")
-            return True
+            print("Plink already open. Killing and restarting as commanded.")
+            kill_plink(platform.system())
+            tksleep(0.5)
+            empty_file(plink_test_csv_path.get())
+            # Proceed to restart logic below
 
     enter_size = plink_size()
     if enter_size >= 64:

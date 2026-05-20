@@ -130,7 +130,7 @@ def load_off_nominal_battery(Battery_to_add=None):
         # Scroll through all off-nominals make dictionary
         Battery_off_dict = {}
         for field_name in Battery_to_add.dtype.names:
-            print(f"field_name {field_name}  ", end='')
+            # print(f"field_name {field_name}  ", end='')
             try:
                 Battery_off_dict[field_name] = Battery_to_add[field_name][0]  # Use first entry only.  Discard the rest
             except IndexError:
@@ -138,12 +138,12 @@ def load_off_nominal_battery(Battery_to_add=None):
                 print(f"Battery_off field_name {field_name}   value {Battery_to_add[field_name]}")
         # print(self.Battery_off_dict)
         # Print affected values
-        print(f"dictionary to apply to Battery class")
-        if Battery_off_dict:
-            for key in dir(Battery_to_add):
-                if key in Battery_off_dict and not key.startswith('__'):
-                    print(f"Battery.{key} {getattr(Battery_to_add, key)} --> ", end='')
-                    print("Battery.{:s} = {:8.6g}".format(key, Battery_off_dict[key]))
+        # print(f"dictionary to apply to Battery class")
+        # if Battery_off_dict:
+        #     for key in dir(Battery_to_add):
+        #         if key in Battery_off_dict and not key.startswith('__'):
+        #             print(f"Battery.{key} {getattr(Battery_to_add, key)} --> ", end='')
+        #             print("Battery.{:s} = {:8.6g}".format(key, Battery_off_dict[key]))
         return Battery_off_dict
     else:
         return None
@@ -165,5 +165,5 @@ def apply_off_nominal_battery(Battery_, Battery_off_dict):
         # Make translation
         for key in dir(Battery_):
             if key in Battery_off_dict and not key.startswith('__'):
-                print(f"Battery.{key} {getattr(Battery_, key)} --> ", end='')
+                # print(f"Battery.{key} {getattr(Battery_, key)} --> ", end='')
                 setattr(Battery_, key, Battery_off_dict[key])

@@ -163,7 +163,9 @@ void loop()
   now = (uint64_t) millis();
   bool chitchat = false;
   static Sync *Talk = new Sync(TALK_DELAY);
-  static Sync *NoSaveWarn = new Sync(NO_SAVE_WARN);
+  #if IN_SERVICE
+    static Sync *NoSaveWarn = new Sync(NO_SAVE_WARN);
+  #endif
   bool read = false;
   static Sync *ReadSensors = new Sync(READ_DELAY);
   bool read_temp = false;
@@ -205,10 +207,6 @@ void loop()
   read_temp = ReadTemp->update(now, reset);
   read = ReadSensors->update(now, reset);
   chitchat = Talk->update(now, reset);
-  if ( NoSaveWarn->update(now, reset) && sp.dirty() )
-  {
-    sendTxBuf("WARNING: unsaved Retained parameter.  Enter 'w' to save.\n", true, IN_SERVICE);
-  }
   elapsed = ReadSensors->now() - start;
   elapsed_reset = ReadSensors->now() - start_reset;
   display_and_remember = DisplayUserSync->update(now, reset);
@@ -219,6 +217,14 @@ void loop()
 
   if ( read )
   {
+    // Warn if parameters have been changed but not saved
+    #if IN_SERVICE
+      if ( NoSaveWarn->update(now, reset) && sp.dirty() )
+      {
+        sendTxBuf("WARNING: unsaved Retained parameter.  Enter 'w' to save.\n", true, IN_SERVICE);
+      }
+    #endif
+
     // Sample Ib
     if ( reset_kf ) sendTxBuf(" SOC_Particle:  reseting kfs\n", true, IN_SERVICE);
     Sen->ShuntAmp->sample(reset_kf);
