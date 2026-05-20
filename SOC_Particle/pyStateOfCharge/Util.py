@@ -21,7 +21,8 @@ def rename(ra, targ, repl):
             setattr(ra, repl, val)
             delattr(ra, targ)
         elif hasattr(ra, repl):
-            print(f"rename: {repl} already translated")
+            # print(f"rename: {repl} already translated")
+            pass
         else:
             print(f"rename:  neither {targ} nor {repl} found")
     return ra

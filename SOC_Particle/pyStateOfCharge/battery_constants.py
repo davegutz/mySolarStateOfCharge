@@ -157,7 +157,8 @@ def apply_off_nominal_battery(Battery_, Battery_off_dict):
         for key in Battery_off_dict:
             if not np.isnan(Battery_off_dict[key]):
                 if not key.startswith('__')  and  key in dir(Battery_):
-                    print(f"Battery.{key} = {getattr(Battery_, key)} to be replaced")
+                    # print(f"Battery.{key} = {getattr(Battery_, key)} to be replaced")
+                    pass
                 else:
                     print(f"{key} MISSING  *****************")
                     # exit(1)

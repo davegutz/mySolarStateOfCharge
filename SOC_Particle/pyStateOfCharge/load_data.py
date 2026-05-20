@@ -146,7 +146,7 @@ def load_data(path_to_data, skip, unit_key, zero_zero, time_end, rated_batt_cap=
         batt.sp_vsat_add = Battery_off_dict['sp_vsat_add']
         f = add_stuff_f(f_raw, batt, ib_band=IB_BAND, ap_ib_diff_slr=Battery_off_dict['ap_ib_diff_slr'],
                         ap_ib_quiet_slr=Battery_off_dict['ap_ib_quiet_slr'])
-        print("\nload_data:  f:\n", f, "\n")
+        # print("\nload_data:  f:\n", f, "\n")
         f = filter_Tb(f, 20., batt, tb_band=100., rated_batt_cap=rated_batt_cap)
         f.str = ''
     else:
