@@ -140,15 +140,12 @@ class Exec:
         if self.version is None:
             self.version = 'undefined'
         self.version_path = str(PurePosixPath(self.dataReduction_folder or '.') / (self.version or 'undefined'))
-        if not Path(self.version_path).is_dir():
+        try:
+            os.makedirs(self.version_path, exist_ok=True)
+        except OSError:
             tk.messagebox.showerror(title="Error",
                                     message=self.version_path + " unavailable. Abort opening\nTurn on Drive & refresh" +
                                                                 " dataReduction Folder.")
-        else:
-            try:
-                os.makedirs(self.version_path, exist_ok=True)
-            except OSError:
-                tk.messagebox.showerror(title="Error", message="check " + self.version_path + " available")
         # Following need explicit shallow copy lines
         self.folder_button = myButton(master, text=self.dataReduction_folder[-20:],
                                       command=self.enter_data_reduction_folder, fg="blue", bg=bg_color)
@@ -795,6 +792,7 @@ def _cancel_monitor_plink():
 def monitor_plink_done():
     global _monitor_after_id
     _monitor_after_id = None
+    done_detected = False
     if Path(plink_test_csv_path.get()).is_file():
         try:
             with open(plink_test_csv_path.get(), 'rb') as f:
@@ -808,11 +806,13 @@ def monitor_plink_done():
                     print(f"***DONE*** detected in {plink_test_csv_path.get()}  elapsed={elapsed:.1f}s")
                     if auto_running:
                         return  # AUTO's check_completion owns this path
-                    save_data()
-                    tk.messagebox.showinfo(title='Done ' + start_button.cget('text'), message='Run Complete')
-                    return
+                    done_detected = True
         except Exception as e:
             print(f"Error monitoring plink file: {e}")
+    if done_detected:
+        save_data()
+        tk.messagebox.showinfo(title='Done ' + start_button.cget('text'), message='Run Complete')
+        return
     _monitor_after_id = master.after(1000, monitor_plink_done)
 
 
@@ -852,6 +852,7 @@ def grab_start():
     start_button.config(bg='yellow', activebackground='yellow', fg='black', activeforeground='black')
     start_timer()
     _cancel_monitor_plink()
+    empty_file(plink_test_csv_path.get())  # clear stale DONE before monitoring new run
     monitor_plink_done()
 
 
@@ -977,6 +978,7 @@ def handle_auto_overwrite(*_args):
     cf.save_to_file()
 
 
+
 def handle_test_battery(*_args):
     Test.battery = test_battery.get()
     Test.update_battery_stuff()
@@ -1051,7 +1053,7 @@ def kill_plink(sys_=None, silent=True):
     # If we reached here, either plink_pid was None or we want to be sure
     command = ''
     if sys_ == 'Linux':
-        command = 'pkill -e plink; pkill -f "gnome-terminal --zoom=0.8"'
+        command = 'pkill -e plink; pkill -f "gnome-terminal --zoom=0.8"; pkill -f "qterminal -e bash"'
     elif sys_ == 'Windows':
         command = 'taskkill /f /im plink.exe'
     elif sys_ == 'Darwin':
@@ -1776,7 +1778,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                     if out:
                         plink_pid = int(out)
                 except Exception:
-                    plink_pid = proc.pid
+                    pass  # plink_pid stays None; kill_plink falls back to pkill
                 
                 # Get the parent PID using ps
                 ppid = "Unknown"
@@ -1791,7 +1793,8 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                     print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
             elif 'xterm' in term:
                 # xterm -bg black -fg green -fs 10 (assuming default is ~12)
-                cmd = [term, '-T', 'plink-terminal-server', '-bg', bg_color, '-fg', fg_color, '-fs', '10', '-e', f"bash -c '{plink_cmd}'"]
+                # Pass bash -c args separately so single quotes inside plink_cmd don't break the shell
+                cmd = [term, '-T', 'plink-terminal-server', '-bg', bg_color, '-fg', fg_color, '-fs', '10', '-e', 'bash', '-c', plink_cmd]
                 print(f"Running command: {shlex.join(cmd)}")
                 proc = subprocess.Popen(cmd)
                 tksleep(1.0) # Wait for terminal to spawn plink
@@ -1809,7 +1812,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                     if out:
                         plink_pid = int(out)
                 except Exception:
-                    plink_pid = proc.pid
+                    pass  # plink_pid stays None; kill_plink falls back to pkill
                 
                 # Get the parent PID using ps
                 ppid = "Unknown"
@@ -1823,7 +1826,10 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                 if auto_running:
                     print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
             else:
-                cmd = [term, '-e', f"bash -c 'printf \"\\e]0;plink-terminal-server\\a\"; {plink_cmd}'"]
+                # qterminal / x-terminal-emulator: pass bash -c args separately to avoid single-quote
+                # conflicts when plink_cmd contains quoted strings, and use OSC sequences for colors
+                full_bash_cmd = f"echo -e '\\e]11;{bg_color}\\a\\e]10;{fg_color}\\a\\e]0;plink-terminal-server\\a'; clear; {plink_cmd}"
+                cmd = [term, '-e', 'bash', '-c', full_bash_cmd]
                 print(f"Running command: {shlex.join(cmd)}")
                 proc = subprocess.Popen(cmd)
                 tksleep(1.0) # Wait for terminal to spawn plink
@@ -1841,7 +1847,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                     if out:
                         plink_pid = int(out)
                 except Exception:
-                    plink_pid = proc.pid
+                    pass  # plink_pid stays None; kill_plink falls back to pkill
                 
                 # Get the parent PID using ps
                 ppid = "Unknown"
@@ -1916,7 +1922,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                     if len(parts) > 1:
                         plink_pid = int(parts[1].strip('"'))
             except Exception:
-                plink_pid = proc.pid
+                pass  # plink_pid stays None; kill_plink falls back to taskkill /im plink.exe
             print(f"Spawned plink PID: {plink_pid}  cmd window PID: {cmd_window_pid}")
             if auto_running:
                 print(f"AUTO running case No. {auto_case_index + 1} of {auto_case_total}")
@@ -1940,7 +1946,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                  if out:
                      plink_pid = int(out)
              except Exception:
-                 plink_pid = proc.pid
+                 pass  # plink_pid stays None; kill_plink falls back to pkill
              
              # Get the parent PID using ps
              ppid = "Unknown"
@@ -2232,6 +2238,10 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     auto_plink_entry = tk.Entry(auto_group, textvariable=auto_plink_path_var, state='readonly',
                                 font=label_font_gentle, readonlybackground=bg_color, relief='sunken')
     auto_plink_entry.pack(padx=5, pady=(0, 4), fill='x')
+    documentation = tk.BooleanVar(master, cf['others'].get('documentation', 'False') == 'True')
+    documentation_button = tk.Checkbutton(option_panel_right, text='Documentation', variable=documentation,
+                                          onvalue=True, offvalue=False)
+    documentation_button.pack(pady=2, fill='x')
     timer_val = tk.IntVar(master, 0)
 
     # macro panel
@@ -2266,11 +2276,12 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
                                fg="blue", bg=bg_color)
     get_time_button.pack(pady=2)
 
-    # Note panel
-    note_sep_panel = tk.Frame(master)
+    # Note panel (hidden unless Documentation checkbox is checked)
+    note_container = tk.Frame(master)
+    note_sep_panel = tk.Frame(note_container)
     note_sep_panel.pack(expand=True, fill='x')
     tk.Label(note_sep_panel, text=' ', font=("Courier", 2), bg='darkgray').pack(expand=True, fill='x')
-    note_panel = tk.Frame(master)
+    note_panel = tk.Frame(note_container)
     note_panel.pack(expand=True, fill='both')
     note_panel_left = tk.Frame(note_panel)
     note_panel_left.pack(side='left', fill='x')
@@ -2286,6 +2297,14 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     ev3_label.pack(padx=5, pady=5, anchor='w')
     ev4_label = tk.Label(note_panel_ctr, text='', wraplength=wrap_length_note, justify='left', font=note_font)
     ev4_label.pack(padx=5, pady=5, anchor='w')
+
+    def toggle_documentation():
+        cf['others']['documentation'] = str(documentation.get())
+        cf.save_to_file()
+        if documentation.get():
+            note_container.pack(before=sav_panel, expand=True, fill='both')
+        else:
+            note_container.pack_forget()
 
     # Save row
     sav_panel = tk.Frame(master)
@@ -2328,6 +2347,8 @@ if __name__ == '__main__':  # Example usage.  Ran ok 20260217
     hardcopy_button = tk.Checkbutton(sav_panel, text='hardcopy', variable=hardcopy, onvalue=True, offvalue=False)
     hardcopy_button.pack(side='left', pady=2, fill='x')
     hardcopy.trace_add('write', handle_hardcopy)
+    documentation.trace_add('write', lambda *_: toggle_documentation())
+    toggle_documentation()  # apply initial state from config
 
     clear_data_button = myButton(sav_panel, text='clear', command=clear_data_verbose, fg="red", bg=bg_color,
                                  wraplength=wrap_length, justify='right')

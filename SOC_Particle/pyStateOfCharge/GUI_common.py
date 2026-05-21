@@ -341,6 +341,7 @@ def contain_all(testpath):
 
 
 def copy_clean(src, dst):
+    Path(dst).parent.mkdir(parents=True, exist_ok=True)
     with open(src, 'r') as file_in:
         data = file_in.read()
     with open(dst, 'w') as file_out:
