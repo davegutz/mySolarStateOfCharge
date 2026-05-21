@@ -1053,7 +1053,7 @@ def kill_plink(sys_=None, silent=True):
     # If we reached here, either plink_pid was None or we want to be sure
     command = ''
     if sys_ == 'Linux':
-        command = 'pkill -e plink; pkill -f "gnome-terminal --zoom=0.8"; pkill -f "qterminal -e bash"'
+        command = 'pkill -e plink; pkill -f "plink-terminal-server"'
     elif sys_ == 'Windows':
         command = 'taskkill /f /im plink.exe'
     elif sys_ == 'Darwin':
