@@ -106,6 +106,7 @@ os.makedirs(_log_dir, exist_ok=True)
 _log_file = open(os.path.join(_log_dir, "GUI_TestSOC.log"), 'a', buffering=1)
 
 plink_pid = None
+linux_terminal_pid = None  # Linux: terminal process (xterm/qterminal) — killed explicitly on stop
 cmd_window_pid = None  # Windows: cmd.exe /k window that hosts plink — killed separately on stop
 cmd_window_title_prefix = 'plink-terminal-server'  # Unique title set in bat file; used as taskkill fallback
 cmd_window_pids = set()  # Windows: every cmd.exe window we ever spawned this session (belt+suspenders)
@@ -1010,7 +1011,7 @@ def _close_all_plink_windows_windows(silent=True):
 
 
 def kill_plink(sys_=None, silent=True):
-    global plink_pid, cmd_window_pid
+    global plink_pid, cmd_window_pid, linux_terminal_pid
     command = ''
     if plink_pid:
         if sys_ == 'Windows':
@@ -1045,10 +1046,19 @@ def kill_plink(sys_=None, silent=True):
             try:
                 run_shell_cmd(command, silent=silent)
                 plink_pid = None
-                return 0
             except Exception as e:
                 print(f"Error killing PID {plink_pid}: {e}")
                 plink_pid = None
+
+            # Kill the terminal window itself — qterminal and similar don't auto-close when bash dies
+            if linux_terminal_pid:
+                try:
+                    subprocess.run(['kill', '-9', str(linux_terminal_pid)], check=False)
+                    print(f"Killed terminal PID: {linux_terminal_pid}")
+                except Exception as e:
+                    print(f"Error killing terminal PID {linux_terminal_pid}: {e}")
+                linux_terminal_pid = None
+            return 0
 
     # If we reached here, either plink_pid was None or we want to be sure
     command = ''
@@ -1708,7 +1718,7 @@ def is_plink_ready():
 
 
 def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, fg_color='#00ff00', bg_color='#000000'):
-    global plink_pid, cmd_window_pid, cmd_window_pids
+    global plink_pid, cmd_window_pid, cmd_window_pids, linux_terminal_pid
     lookup_test()
     if look_plink(platform.system()):
         if force_kill:
@@ -1762,6 +1772,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                        f"echo -e '\\e]11;{bg_color}\\a\\e]10;{fg_color}\\a\\e]0;plink-terminal-server\\a'; clear; {plink_cmd}"]
                 print(f"Running command: {shlex.join(cmd)}")
                 proc = subprocess.Popen(cmd)
+                linux_terminal_pid = proc.pid
                 tksleep(1.0) # Wait for terminal to spawn plink
                 try:
                     # Debug: Print full result of pgrep and ps -ef | grep plink
@@ -1797,6 +1808,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                 cmd = [term, '-T', 'plink-terminal-server', '-bg', bg_color, '-fg', fg_color, '-fs', '10', '-e', 'bash', '-c', plink_cmd]
                 print(f"Running command: {shlex.join(cmd)}")
                 proc = subprocess.Popen(cmd)
+                linux_terminal_pid = proc.pid
                 tksleep(1.0) # Wait for terminal to spawn plink
                 try:
                     # Debug: Print full result of pgrep and ps -ef | grep plink
@@ -1832,6 +1844,7 @@ def start_plink(command_to_paste=None, force_if_ready=False, force_kill=False, f
                 cmd = [term, '-e', 'bash', '-c', full_bash_cmd]
                 print(f"Running command: {shlex.join(cmd)}")
                 proc = subprocess.Popen(cmd)
+                linux_terminal_pid = proc.pid
                 tksleep(1.0) # Wait for terminal to spawn plink
                 try:
                     # Debug: Print full result of pgrep and ps -ef | grep plink
