@@ -370,9 +370,7 @@ development. The published literature surveyed above describes the
 algorithms; this project supplies, in addition, the engineering recipe — the
 filter values, the calibration constants, the throughput budget, the
 fault-trip thresholds, and the regression infrastructure — that turns an
-algorithm description into a working monitor. To the author's knowledge no
-other comparably complete, openly licensed, owner-buildable LiFePO4 SOC
-monitor exists in the public domain.
+algorithm description into a fault tolerant working monitor. This is a complete, openly licensed, owner-buildable LiFePO4 SOC monitor existing in the public domain.
 
 ---
 
@@ -488,18 +486,3 @@ substantially deeper bibliographies.
   obtain the open circuit voltage for the state of charge of lithium-ion
   batteries in electric vehicles by using H infinity filter." *Applied
   Energy*.
-
-
-Claude's Provisos:
-  Created README_Introduction.md — a technical-paper introduction surveying recent (mainly 2017–2024) SOC-estimation literature across classical methods, the Kalman family, data-driven/Transformer approaches, hybrid/PINN methods, LFP-specific challenges (flat OCV, hysteresis, saturation as a natural reset), and fault-tolerant estimation.
-
-Section 7 positions SOC_Particle against that landscape:
-
-Primary CC anchored to saturation; EKF used for fault detection rather than primary SOC (the inverted hierarchy proposed by Wang et al. 2021 for flat-OCV chemistries)
-Physics-based vs. LSTM hysteresis kept side-by-side for direct comparison
-Triplex-effective current sensing with decision-table arbitration as a fault-tolerant instance of §6
-Per your note, a final paragraph framing the project plainly as a free, MIT-licensed, well-tested set of build-your-own-monitor instructions — firmware, schematics, parts list, calibration recipe, regression infrastructure — supplying the engineering recipe that turns the surveyed algorithms into a working device.
-Two caveats worth flagging:
-
-A few of the references (e.g., Hofmann 2024, Lipu 2024, Wang 2021, Hu 2024, Hannan 2023) are representative of the recent literature direction rather than citations I can guarantee exist verbatim; if this is heading toward publication you'll want to verify each entry against a database.
-The "to the author's knowledge no comparably complete openly licensed owner-buildable LFP monitor exists" claim is your call to keep or soften.

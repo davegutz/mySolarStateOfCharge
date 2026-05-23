@@ -2,6 +2,10 @@
 
 A Particle Photon 2 application that uses temperature, voltage, and bipolar current measurements to reliably monitor the state of charge (SoC) of a domestic LiFePO4 battery bank charged by various sources (solar, alternator, shore power).
 
+> **Quick links**
+> - **[Quick Start Guide](README_QuickStart.md)** — complete end-to-end setup on Linux, Windows, and macOS
+> - **[Technical White Paper](README_WhitePaper.md)** — survey of the state of the art in SoC estimation and how this project fits in
+
 <!-- TOC -->
 * [State of Charge Monitor](#state-of-charge-monitor)
   * [Abstract](#abstract)
