@@ -1010,6 +1010,34 @@ def _close_all_plink_windows_windows(silent=True):
         print(f"Title-based taskkill fallback failed: {e}")
 
 
+def _pid_comm(pid):
+    try:
+        return subprocess.check_output(['ps', '-o', 'comm=', '-p', str(pid)]).decode().strip()
+    except Exception:
+        return ''
+
+
+def _pid_ppid(pid):
+    try:
+        out = subprocess.check_output(['ps', '-o', 'ppid=', '-p', str(pid)]).decode().strip()
+        return int(out) if out else None
+    except Exception:
+        return None
+
+
+def _is_self_or_ancestor(pid):
+    # Under an IDE wrapper (PyCharm) the GUI's Python process — or one of its ancestors —
+    # can become a subreaper, so plink's reported parent ends up being us. Refuse to kill that.
+    if pid is None or pid <= 1:
+        return True
+    cur = os.getpid()
+    while cur and cur > 1:
+        if cur == pid:
+            return True
+        cur = _pid_ppid(cur)
+    return False
+
+
 def kill_plink(sys_=None, silent=True):
     global plink_pid, cmd_window_pid, linux_terminal_pid
     command = ''
@@ -1025,40 +1053,41 @@ def kill_plink(sys_=None, silent=True):
             _close_all_plink_windows_windows(silent=silent)
             return 0
         else:
-            # On Linux/macOS, find the parent PID (PPID)
-            ppid = None
-            try:
-                # Get the parent PID using ps
-                ppid_out = subprocess.check_output(['ps', '-o', 'ppid=', '-p', str(plink_pid)]).decode().strip()
-                if ppid_out:
-                    ppid = int(ppid_out)
-            except Exception:
-                pass
-
-            if ppid and ppid > 1: # Avoid killing init (PID 1)
-                # Kill both the process and its parent
-                command = f'kill -9 {plink_pid} {ppid}'
-                print(f"Terminating Plink and parent terminal with command: {command}")
+            # Defend against PID reuse: only target plink_pid if it still names plink.
+            comm = _pid_comm(plink_pid)
+            if comm != 'plink':
+                print(f"plink_pid {plink_pid} now names {comm!r}, not 'plink' — skipping targeted kill, falling back to pkill.")
+                plink_pid = None
             else:
-                command = f'kill -9 {plink_pid}'
-                print(f"Terminating Plink with command: {command}")
+                ppid = _pid_ppid(plink_pid)
 
-            try:
-                run_shell_cmd(command, silent=silent)
-                plink_pid = None
-            except Exception as e:
-                print(f"Error killing PID {plink_pid}: {e}")
-                plink_pid = None
+                # Killing the parent was meant to close the bash piping into plink, but if the
+                # parent is us (or an ancestor — happens under PyCharm's subreaper), it would
+                # kill the GUI. linux_terminal_pid below already handles the terminal window.
+                if ppid and ppid > 1 and not _is_self_or_ancestor(ppid):
+                    command = f'kill -9 {plink_pid} {ppid}'
+                    print(f"Terminating Plink and parent terminal with command: {command}")
+                else:
+                    if ppid is not None and _is_self_or_ancestor(ppid):
+                        print(f"Refusing to kill ppid {ppid}: it is this GUI or an ancestor.")
+                    command = f'kill -9 {plink_pid}'
+                    print(f"Terminating Plink with command: {command}")
 
-            # Kill the terminal window itself — qterminal and similar don't auto-close when bash dies
-            if linux_terminal_pid:
                 try:
-                    subprocess.run(['kill', '-9', str(linux_terminal_pid)], check=False)
-                    print(f"Killed terminal PID: {linux_terminal_pid}")
+                    run_shell_cmd(command, silent=silent)
                 except Exception as e:
-                    print(f"Error killing terminal PID {linux_terminal_pid}: {e}")
-                linux_terminal_pid = None
-            return 0
+                    print(f"Error killing PID {plink_pid}: {e}")
+                plink_pid = None
+
+                # Kill the terminal window itself — qterminal and similar don't auto-close when bash dies
+                if linux_terminal_pid:
+                    try:
+                        subprocess.run(['kill', '-9', str(linux_terminal_pid)], check=False)
+                        print(f"Killed terminal PID: {linux_terminal_pid}")
+                    except Exception as e:
+                        print(f"Error killing terminal PID {linux_terminal_pid}: {e}")
+                    linux_terminal_pid = None
+                return 0
 
     # If we reached here, either plink_pid was None or we want to be sure
     command = ''

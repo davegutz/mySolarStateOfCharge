@@ -62,7 +62,7 @@ unit_list = [
     ]
 battery_list = ['bb', 'chg']
 sel_list = [
-    'custom', 'ampHiEmptFail', 'ampHiFail', 'noaHiFail', 'rapidTweakRegression',
+    'custom', 'zero_with_pc', 'ampHiEmptFail', 'ampHiFail', 'noaHiFail', 'rapidTweakRegression',
     'pulseSoft', 'pulseHard', 'rapidTweakRegressionH0', 'offLowSoc', 'offSitBmsBB',
     'offSitBmsCHG', 'triTweakDisch', 'ampHiFailFf', 'ampLoFail', 'ampLoFullFail', 'noaLoFail', 'noaLoFullFail',
     'ampHiFailNoise', 'noaHiFailNoise',
@@ -72,7 +72,7 @@ sel_list1 = [
     'flatSit', 'offSitBmsNoiseBB', 'offSitBmsNoiseCHG', 'ampHiFailSlow',
     'noaHiFailSlow', 'noaHiFailSlower', 'noaHiFailSlowest', 'vHiFail', 'vHiFailNoise', 'vHiFailFf',
     'pulseHard', 'tLoFailModel', 'tHiFailModel', 'tLoFailHdwe', 'tHiFailHdwe', 'faultParade', 'stepDown', 'stepUp',
-    'zero_with_pc',
+    'ibDualMid', 'ibDualFlat',
     ]
 
 # Default content for auto_plink.csv (analogous to default_dict for the .ini file)
@@ -83,13 +83,13 @@ default_auto = (
      {**_auto_row, 'macro': 'ampHiFail'},
      {**_auto_row, 'macro': 'noaHiFail'}] +
     [{**_auto_row, 'macro': m} for m in sel_list[sel_list.index('rapidTweakRegression'):]] +
-    [{**_auto_row, 'macro': m} for m in sel_list1[:sel_list1.index('zero_with_pc') + 1]]
+    [{**_auto_row, 'macro': m} for m in sel_list1[:sel_list1.index('ibDualFlat') + 1]]
 )
 
 macro_sel_list = [
     'end_early', 'hdwNoVbPcMidInit', 'modHalfInit', 'modHalfInit230', 'modHalfInit239', 'modEmptInitBB', 'modEmptInitCHG',
     'noisePackage', 'silentPackage', 'quiet', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
-    'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50',
+    'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50', 'cmn50'
     'c00', 'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50', 'zeroPrepHdweNoVb', 'zero_set_hdwe_no_Vb',
     'noaHiFail', 'noaHiFailNoise',
     ]
@@ -97,6 +97,7 @@ macro_sel_list = [
 # Macro
 satInit = 'Dh;*W;*vv0;*XS;*Ca1;BZ;Ff0;DP1;HR;Rf;'
 hdwNoVbPcMidInit = 'vv0;Xm2;Ca0.50;BZ;Ff0;W20;DP1;HR;Rf;'
+modFlatInit = 'vv0;Xm247;Ca0.90;BZ;Ff0;DP1;HR;Rf;'
 modFullInit = 'vv0;Xm247;Ca0.93;BZ;Ff0;DP1;HR;Rf;'  # kickers off 0.94
 modLoInit = 'vv0;Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;'
 modHalfInit = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;'
@@ -136,6 +137,8 @@ c50 = time_stamp + 'Dm50;Dn0.0001;'  # 0.0001 helps saturation logic behave corr
 d50 = time_stamp + 'Dn50;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
 cm50 = time_stamp + 'Dm-50;Dn0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation
 dm50 = time_stamp + 'Dn-50;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation50
+dmn50 = time_stamp + 'Dn-50;Dm-50;'
+cmn50 = time_stamp + 'Dn50;Dm50;'
 sc50 = time_stamp + 'DI50;'  # 50 amp discharge
 sd50 = time_stamp + 'DI-50;'  # 50 amp discharge
 c00 = 'Pf;W2;Dm;Dn;Rf;W50;'
@@ -158,7 +161,8 @@ lookup = {
                     quiet + cleanup + '<XD;',
                     ('All the best transients BB', "Must have same 'vv*' throughout", "")),
         'doNothing': (34, 'vv0;DP1;vv4;W50;vv0;W2;Hd;<XD;', ("Do nothing", "--", "--", "--")),
-        # Begin actual cases here
+        'zero_with_pc': (120, hdwNoVbPcMidInit + zeroPrepHdweNoVb + 'vv4;W17;' + 'XQ25000;' + 'vv99;Xm2;XQ15000;' + quiet  + cleanup + '<XD;', ("Hardware zero_with_pc run", "", "", "")),
+        # Begin actual regression cases here
         'ampHiEmptFail': (130, modLoInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
         'ampHiFail': (130, modHalfInit + tranPrep + c50 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
         'noaHiFail': (130, modHalfInit + tranPrep + d50 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 50A into amp. With ib_diff only nothing changes then should isolate to the noa by wrap and choose amp.", "'diff' will be displayed then ib_fail due to wrap of noa", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen).", "Loss of ib set 'accy' because loss of current sensing at high currents.")),
@@ -200,7 +204,8 @@ lookup = {
         'tHiFailHdwe': (275, modHalfInit230 + tranPrep + 'XY;W10;Dt+50;XQ120000;' + 'Dt;Rf;W50;' + cleanup + '<W50;' + quietwait + '<Pf;<XD;', ("Simulates open thermistor.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
         'stepDown': (165, modHalfInit + tranPrep + sd50 + 'XQ25000;' + s00 + quiet + cleanup + '<XD;', ("Should be normal hard discharge step", "", "", "")),
         'stepUp': (165, modHalfInit + tranPrep + sc50 + 'XQ25000;' + s00 + quiet + cleanup + '<XD;', ("Should be normal hard charge step", "", "", "")),
-        'zero_with_pc': (120, hdwNoVbPcMidInit + zeroPrepHdweNoVb + 'vv4;W17;' + 'XQ25000;' + 'vv99;Xm2;XQ15000;' + quiet  + cleanup + '<XD;', ("Hardware zero_with_pc run", "", "", "")),
+        'ibDualMid': (130, modHalfInit + tranPrep + cmn50 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
+        'ibDualFlat': (130, modFlatInit + tranPrep + cmn50 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
         }
 
 # Lookup keys for which compare_run_sim should be called with shift_soc_s=False
@@ -244,6 +249,7 @@ macro_lookup = {
         'c50': (5, c50, ('', '', '', '')),
         'd50': (5, d50, ('', '', '', '')),
         'cm50': (5, cm50, ('', '', '', '')),
+        'cmn50': (5, cmn50, ('', '', '', '')),
         'c00': (5, c00, ('', '', '', '')),
         'dv0': (5, dv0, ('', '', '', '')),
         'twitch': (5, twitch, ('', '', '', '')),

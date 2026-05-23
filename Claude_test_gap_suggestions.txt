@@ -3,6 +3,9 @@
   macros to test the app using Talk function in the app and GUI_Plink to exercise a replecant.  Evaluate GUI_common test cases and suggest more tests for     
   better test coverage of the critical path.  Present results as list of macros, the signal path it tests, and the failure  mode or function it covers.       
   
+  
+  Document section about tuning for a battery type:  Randles, voc_soc
+  
 ● I'll start by exploring the source structure to understand the app before diving into test coverage.
 
   Searched for 4 patterns, read 2 files (ctrl+o to expand)

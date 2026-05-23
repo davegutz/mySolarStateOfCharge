@@ -273,7 +273,13 @@ void  monitor(const bool reset, const bool reset_temp, const bool reset_ekf, con
   Sen->saturated(Is_sat_delay->calculate(Sen->sat(), T_SAT*ap.s_t_sat(), T_DESAT*ap.s_t_sat(), min(Sen->T(), T_SAT/2.), reset));
 
   // Memory store
-  Mon->count_coulombs(Sen, reset_temp, Mon->ib_charge(), Sen->sat(), Sen->saturated());
+  // Both ib sensors hard-failed: force 0 into the Coulomb counter (the EKF was
+  // already fed 0 inside Mon->calculate above). Belt-and-suspenders behind the
+  // UsingNone selection upstream and the zeroing inside BatteryMonitor::calculate.
+  float cc_ib_in = Mon->ib_charge();
+  if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() && !ap.fake_faults() )
+    cc_ib_in = 0.;
+  Mon->count_coulombs(Sen, reset_temp, cc_ib_in, Sen->sat(), Sen->saturated());
 
   // Charge charge time for display
   Mon->calc_charge_time(Mon->q(), Mon->q_capacity(), Sen->ib(), Mon->soc());

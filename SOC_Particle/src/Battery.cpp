@@ -257,6 +257,15 @@ float BatteryMonitor::calculate(Sensors *Sen, const bool reset_temp, const bool 
     Sen->bms_off(bms_off_);
     ib_charge_ = ib_;
     float ib_charge_ekf = ib_charge_;
+    // Both ib sensors hard-failed: take both signals off-line and feed 0 to both
+    // the Coulomb counter and the EKF. Belt-and-suspenders behind the UsingNone
+    // selection upstream — ensures correct behavior even if selection lags a frame.
+    if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() && !ap.fake_faults() )
+    {
+        ib_ = 0.;
+        ib_charge_ = 0.;
+        ib_charge_ekf = 0.;
+    }
     if ( bms_off_ && !bms_charging_ && sp.mod_vb())  // Don't let a single hard vb fail ruin count
         ib_charge_ = 0.;
     if ( bms_off_ && voltage_low_ )

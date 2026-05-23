@@ -774,15 +774,18 @@ void Fault::ib_decision_active_standby(Sensors *Sen)
 void Fault::ib_decision_hi_lo(Sensors *Sen)
 {
   bool latch_last = latch_;
-  if ( latch_ )
-    // ib_decision_ = xx;   lgv
-    {}
-  else if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() )  // these separate inputs don't latch
+  // Dual hard-fail takes precedence over a prior single-failure latch: if the survivor
+  // also fails hard, take both ib signals off-line (UsingNone) so downstream stages
+  // zero ib into the Coulomb counter and the EKF.
+  if ( Sen->Flt->ib_amp_fa() && Sen->Flt->ib_noa_fa() )  // these separate inputs don't latch
   {
     ib_choice_ = UsingNone;
     latch_ = true;
     ib_decision_ = 1;
   }
+  else if ( latch_ )
+    // ib_decision_ = xx;   lgv
+    {}
   else if ( sp.ib_force()>0 && !Sen->Flt->ib_noa_fa() )
   {
     ib_choice_ = UsingAmp;

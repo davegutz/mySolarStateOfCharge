@@ -374,6 +374,16 @@ The EKF embeds the same Randles dynamics so that the model's transfer function f
 
 Whether the Randles dynamics earn their keep in this application is an open question. SoC is the integral of `ib` over hours; that integration is itself a very slow low-pass filter that absorbs most of the small-signal behavior the Randles model captures. The dynamics matter for the EKF's `vb` prediction during fast charge swings, but if EKF tuning is forgiving (large `R`), they may not. The honest test: run the Sim with the Monitor's Randles model disabled, run a `Tweak` regression, and see whether tweak behavior changes. Until that study is done, the Randles model stays in.
 
+### Tuning the Dynamic Randles Model
+
+If you have a Battleborn battery or a CHINS battery  you are in luck.  The models herein are already tuned for those (r0, rc_t, tau_ct).  And they scale properly for number of series or parallel batteries.
+
+If you have a new type, some testing is needed.
+
+The r0 parameter is probably easiest to tune.   For large steps in current you should see no instantaneous change in voc_stat.  Usually a single value for r0 works well, even at other temperatures.
+
+The rc_t and tau_ct then are tuned to match long transients following steps. The values of tau_ct are typically 20 sec - 180 sec so steps followed by dwells up to 10 minutes will tease out the value of tau_ct.  The value of r_ct is the leakage decay of the battery and may not need tuning ever from the typical values used herein.  Remember this system counts on periodic saturation.
+
 
 ## Dynamic Hysteresis Model
 
