@@ -309,14 +309,17 @@ void Sensors::ib_choose_hi_lo()
     dt_ib_hdwe_ = ShuntAmp->dt_ms();
     Flt->ib_sel_stat(1);
   }
+  // UsingNone: both ib sensors hard-failed. Zero the current channels (so the EKF
+  // and Coulomb counter integrate 0), but keep timing alive from ShuntAmp because
+  // dt_ib_hdwe_=0 would zero T_ and corrupt now_/ctime_, stopping serial output.
   else
   {
     Ib_hdwe_ = 0.;
     Ib_hdwe_f_ = 0.;
     Ib_hdwe_kf_ = 0.;
     Ib_hdwe_model_ = 0.;
-    sample_time_ib_hdwe_ = 0ULL;
-    dt_ib_hdwe_ = 0ULL;
+    sample_time_ib_hdwe_ = ShuntAmp->sample_time();
+    dt_ib_hdwe_ = ShuntAmp->dt_ms();
     Flt->ib_sel_stat(0);
   }
 }
