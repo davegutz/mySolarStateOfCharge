@@ -72,7 +72,7 @@ sel_list1 = [
     'flatSit', 'offSitBmsNoiseBB', 'offSitBmsNoiseCHG', 'ampHiFailSlow',
     'noaHiFailSlow', 'noaHiFailSlower', 'noaHiFailSlowest', 'vHiFail', 'vHiFailNoise', 'vHiFailFf',
     'pulseHard', 'tLoFailModel', 'tHiFailModel', 'tLoFailHdwe', 'tHiFailHdwe', 'faultParade', 'stepDown', 'stepUp',
-    'ibDualMid', 'ibDualFlat',
+    'ibDualMid', 'ibDualFlat', 'vcFlat',
     ]
 
 # Default content for auto_plink.csv (analogous to default_dict for the .ini file)
@@ -83,13 +83,14 @@ default_auto = (
      {**_auto_row, 'macro': 'ampHiFail'},
      {**_auto_row, 'macro': 'noaHiFail'}] +
     [{**_auto_row, 'macro': m} for m in sel_list[sel_list.index('rapidTweakRegression'):]] +
-    [{**_auto_row, 'macro': m} for m in sel_list1[:sel_list1.index('ibDualFlat') + 1]]
+    [{**_auto_row, 'macro': m} for m in sel_list1[:sel_list1.index('vcFlat') + 1]]
 )
 
 macro_sel_list = [
     'end_early', 'hdwNoVbPcMidInit', 'modHalfInit', 'modHalfInit230', 'modHalfInit239', 'modEmptInitBB', 'modEmptInitCHG',
     'noisePackage', 'silentPackage', 'quiet', 'cleanup', 'tempCleanup', 'tranPrep', 'synced_slow', 'slow',
-    'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50', 'cmn50'
+    'slowTwitchDef', 'fastTwitchDef', 'c06', 'd06', 'c08', 'd05', 'd08', 'c10', 'd10', 'c18', 'd18', 'c50', 'cm50',
+    'cmn50', 'dmn50', 'cmn100', 'dmn100',
     'c00', 'dv0', 'twitch', 'time_stamp', 's00', 'sd50', 'sc50', 'zeroPrepHdweNoVb', 'zero_set_hdwe_no_Vb',
     'noaHiFail', 'noaHiFailNoise',
     ]
@@ -98,6 +99,7 @@ macro_sel_list = [
 satInit = 'Dh;*W;*vv0;*XS;*Ca1;BZ;Ff0;DP1;HR;Rf;'
 hdwNoVbPcMidInit = 'vv0;Xm2;Ca0.50;BZ;Ff0;W20;DP1;HR;Rf;'
 modFlatInit = 'vv0;Xm247;Ca0.90;BZ;Ff0;DP1;HR;Rf;'
+modFlatInitHi = 'vv0;Xm3;Ca0.90;BZ;Ff0;DP1;HR;Rf;'
 modFullInit = 'vv0;Xm247;Ca0.93;BZ;Ff0;DP1;HR;Rf;'  # kickers off 0.94
 modLoInit = 'vv0;Xm247;Ca0.17;BZ;Ff0;DP1;HR;Rf;'
 modHalfInit = 'vv0;Xm247;Ca0.50;BZ;Ff0;DP1;HR;Rf;'
@@ -139,6 +141,8 @@ cm50 = time_stamp + 'Dm-50;Dn0.0001;'  # 0.0001 helps saturation logic behave co
 dm50 = time_stamp + 'Dn-50;Dm0.0001;'  # 0.0001 helps saturation logic behave correctly in a quiet simulation50
 dmn50 = time_stamp + 'Dn-50;Dm-50;'
 cmn50 = time_stamp + 'Dn50;Dm50;'
+dmn100 = time_stamp + 'Dn-100;Dm-100;'
+cmn100 = time_stamp + 'Dn100;Dm100;'
 sc50 = time_stamp + 'DI50;'  # 50 amp discharge
 sd50 = time_stamp + 'DI-50;'  # 50 amp discharge
 c00 = 'Pf;W2;Dm;Dn;Rf;W50;'
@@ -204,8 +208,9 @@ lookup = {
         'tHiFailHdwe': (275, modHalfInit230 + tranPrep + 'XY;W10;Dt+50;XQ120000;' + 'Dt;Rf;W50;' + cleanup + '<W50;' + quietwait + '<Pf;<XD;', ("Simulates open thermistor.", "To diagnose, begin with 'Ult 1'.   Look for e_wrap to go through ewlo_thr.", "You may have to increase magnitude of injection (Dv).  The threshold is 32 * r_ss.", "There MUST be no SATURATION")),
         'stepDown': (165, modHalfInit + tranPrep + sd50 + 'XQ25000;' + s00 + quiet + cleanup + '<XD;', ("Should be normal hard discharge step", "", "", "")),
         'stepUp': (165, modHalfInit + tranPrep + sc50 + 'XQ25000;' + s00 + quiet + cleanup + '<XD;', ("Should be normal hard charge step", "", "", "")),
-        'ibDualMid': (130, modHalfInit + tranPrep + cmn50 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
-        'ibDualFlat': (130, modFlatInit + tranPrep + cmn50 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 50A into amp.  Should detect and switch amp current failure", "'diff' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen). Will see 'diff' flashing on display soon after fault cleared automatically (lost redundancy).  Also will see verification imbedded model respond to the bad current signal by elevating vb, an effect that won't appear in data from app.", "Loss of ibm set 'accy' because loss of most accurate sensor.")),
+        'ibDualMid': (130, modHalfInit + tranPrep + cmn100 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 100A into amp and noa simultaneously.  Should detect and switch dual amp current failure set Ib=0", "'*fail' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen).")),
+        'ibDualFlat': (130, modFlatInit + tranPrep + cmn100 + 'XQ25000;' + c00 + quiet + cleanup + '<XD;', ("Inject 100A into amp and noa simultaneously.  Should detect and switch dual amp current failure set Ib=0", "'*fail' will be displayed. After a bit more, current display will change to 0.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen).")),
+        'vcFlat': (130, modFlatInitHi + tranPrep + 'D30.6;' + 'XQ25000;' + 'Pf;W2;D3;Rf;W50;' + quiet + cleanup + '<XD;', ("Inject 0.6V into sensed Vc (normally 1.65).  Should fail both currents.", "To evaluate plots, start looking at 'Ult 1'. Fault record (frozen).")),
         }
 
 # Lookup keys for which compare_run_sim should be called with shift_soc_s=False
@@ -250,6 +255,9 @@ macro_lookup = {
         'd50': (5, d50, ('', '', '', '')),
         'cm50': (5, cm50, ('', '', '', '')),
         'cmn50': (5, cmn50, ('', '', '', '')),
+        'dmn50': (5, dmn50, ('', '', '', '')),
+        'cmn100': (5, cmn100, ('', '', '', '')),
+        'dmn100': (5, dmn100, ('', '', '', '')),
         'c00': (5, c00, ('', '', '', '')),
         'dv0': (5, dv0, ('', '', '', '')),
         'twitch': (5, twitch, ('', '', '', '')),

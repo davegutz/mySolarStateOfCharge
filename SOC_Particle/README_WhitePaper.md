@@ -359,7 +359,7 @@ publicly licensed (MIT), end-to-end and well-tested set of instructions for
 building your own LiFePO4 SOC monitor. The repository contains the firmware,
 the schematics, the parts list, the bench-calibration procedure, the
 post-installation calibration checklist, the regression scripts, and the
-field-validated decision tables used to detect and isolate sensor faults
+field-validated decision tables used to detect and isolate sensor faults — together with the test-coverage matrix that maps each macro to the failure mode it exercises ([Fault_Tests.md](Fault_Tests.md))
 ([Off-the-Shelf Hardware Description](README.md#off-the-shelf-hardware-description),
 [Calibration](README.md#calibration),
 [Boot Checklist](README.md#boot-checklist),

@@ -252,7 +252,7 @@ This is real-time scheduling, not clock time.
 
 ## Fault Detection and Reliability
 
-See [DecisionTables.md](DecisionTables.md) for the full decision tables that drive sensor selection and annunciation. The Hi-Lo strategy (high-gain amp + wide-range no-amp) is the active selection scheme; an Active-Standby scheme is kept in source for reference.
+See [DecisionTables.md](DecisionTables.md) for the full decision tables that drive sensor selection and annunciation, and [Fault_Tests.md](Fault_Tests.md) for the regression macros that exercise the critical-signal failure paths and the documented coverage gaps. The Hi-Lo strategy (high-gain amp + wide-range no-amp) is the active selection scheme; an Active-Standby scheme is kept in source for reference.
 
 **Concept.** A failed sensor either has obviously out-of-range output (easy) or quietly returns wrong numbers (hard). The first is caught by range checks. The second is caught by *cross-checks against redundant signals*. With one voltage sensor, one temperature sensor, and two current sensors:
 
@@ -726,6 +726,7 @@ Two main repositories:
 - **Solar Systems spreadsheet** — parts manifest, settings, hardware schematics, calibration tables, RC filter selection: <https://docs.google.com/spreadsheets/d/1iI1kAzSHorZm2llb0ujyfut2skdUSZOoQhHEv8_PG2I/edit?gid=189116584>
 - **Google Drive (public)** — Rigol scope captures, LTSpice runs, calibration data: <https://drive.google.com/drive/folders/18fIvROXNu0uYROZtEv8_GKwCV2ZaOCT3>
 - **Decision Tables** — [DecisionTables.md](DecisionTables.md)
+- **Fault Test Coverage** — [Fault_Tests.md](Fault_Tests.md)
 - **Test SOC Guide** — [doc/TestSOC.md](doc/TestSOC.md)
 
 ---
