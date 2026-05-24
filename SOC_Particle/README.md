@@ -81,6 +81,8 @@ Fault outcomes feed decision tables (see `DecisionTables.md`) that select the ac
 
 The application runs on a Particle **Photon 2** programmable logic controller (PLC). Buy the developer kit — it comes with headers, USB, and the peripherals you need. The custom interface board is built on 0.1-inch Stripboard with vertical copper traces underneath and bus-bar jumpers on top for `V+` and ground rails.
 
+For the full parts list (with working supplier links) and the hand-drawn schematic sketches, see [parts_list_schematic.md](parts_list_schematic.md).
+
 ![Fig.1 — State of Charge Wiring Diagram Board Layout](doc/schematics1.png)
 **Fig.1** — State of Charge wiring diagram board layout.
 
@@ -723,6 +725,7 @@ Two main repositories:
 
 ## Appendix 2: Links
 
+- **Parts list and hand schematics (in-repo)** — [parts_list_schematic.md](parts_list_schematic.md) (source: [parts_list_schematic.ods](parts_list_schematic.ods))
 - **Solar Systems spreadsheet** — parts manifest, settings, hardware schematics, calibration tables, RC filter selection: <https://docs.google.com/spreadsheets/d/1iI1kAzSHorZm2llb0ujyfut2skdUSZOoQhHEv8_PG2I/edit?gid=189116584>
 - **Google Drive (public)** — Rigol scope captures, LTSpice runs, calibration data: <https://drive.google.com/drive/folders/18fIvROXNu0uYROZtEv8_GKwCV2ZaOCT3>
 - **Decision Tables** — [DecisionTables.md](DecisionTables.md)
