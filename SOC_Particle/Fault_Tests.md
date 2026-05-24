@@ -1,51 +1,4 @@
-❯ You are a reviewer. Consider the SOC_Particle.ino app, source in ../src/.  Its critical inputs are Vb and Ib_amp and Ib_noa.  Tb is secondary.  Its         
-  critical outputs are soc and correct sensor selection.  Consider failure modes and path coverage, showing your work as you proceed.  The GUI_common have    
-  macros to test the app using Talk function in the app and GUI_Plink to exercise a replecant.  Evaluate GUI_common test cases and suggest more tests for     
-  better test coverage of the critical path.  Present results as list of macros, the signal path it tests, and the failure  mode or function it covers.       
-  
-  
-  Document section about tuning for a battery type:  Randles, voc_soc
-  
-● I'll start by exploring the source structure to understand the app before diving into test coverage.
-
-  Searched for 4 patterns, read 2 files (ctrl+o to expand)
-
-● Now let me read the critical sensor, fault, and battery source files.
-
-  Read 2 files (ctrl+o to expand)
-
-● Now let me read the key implementation files — Fault.cpp, Sensors.cpp (selection logic), and subs.cpp.
-
-  Read 2 files (ctrl+o to expand)
-
-● Now let me read the sense_synth_select and monitor functions in subs.cpp, and also look at the Sensors.cpp selection logic.
-
-  Searched for 2 patterns, read 2 files (ctrl+o to expand)
-
-● Now let me look at the Talk command definitions and constants to understand the injection/test commands.
-
-  Searched for 3 patterns, read 2 files (ctrl+o to expand)
-
-● Now let me look at the Sensors.cpp select_volt_and_current_and_temp remainder and the faultParade entry.
-
-  Searched for 3 patterns, read 2 files (ctrl+o to expand)
-
-● I have enough context now to do a comprehensive analysis. Let me compile the complete picture.
-
-  Searched for 3 patterns (ctrl+o to expand)
-
-● Bash(sed -n '230,260p' /home/daveg/Documents/GitHub/mySolarStateOfCharge/SOC_Particle/src/subs.cpp)
-  ⎿  // Load high fidelity signals; filtered in hardware the same bandwidth, sampled the same
-     // Outputs:   Sen->Ib_model_in, Sen->Ib_hdwe,
-     void load_ib_vb_tb(const bool reset, const bool reset_temp, const bool reset_kf, Sensors *Sen, Pins *myPins, BatteryMonitor *Mon)
-     … +27 lines (ctrl+o to expand)
-
-  Searched for 2 patterns (ctrl+o to expand)
-
-● I have all the context I need. Here is the full analysis.
-
-  ---
-  SOC_Particle Critical Path & Test Coverage Review
+SOC_Particle Critical Path & Test Coverage Review
 
   Architecture Summary
 
@@ -100,11 +53,11 @@
 
   Tier 2 — Soft Current Failure (wrap/diff isolation → WRAP_*_FA, IB_DIFF_*_FA)
 
-  ┌─────────────────┬──────────────────────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────┐
-  │      Macro       │                          Signal Path Exercised                           │             Failure Mode / Function Covered             │
-  ├──────────────────┼──────────────────────────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────┤
-  │                  │ Dn50 → ib_diff_ = Ib_amp − Ib_noa = −50A → IB_DIFF_LO_FLT/FA;            │ Noa positive bias; wrap+diff dual confirmation → latch  │
-  │ noaHiFail        │ simultaneously WrapLoopNoa: e_wrap_n↓ ≤ ewlo_thr_ → WRAP_LO_N_FA;        │ on amp; verifies WRAP_LO_N_FA path in hi-lo mode        │
+  ┌──────────────────┬───────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────┐
+  │      Macro       │                          Signal Path Exercised                        │             Failure Mode / Function Covered                │
+  ├──────────────────┼───────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+  │                  │ Dn50 → ib_diff_ = Ib_amp − Ib_noa = −50A → IB_DIFF_LO_FLT/FA;         │ Noa positive bias; wrap+diff dual confirmation → latch     │
+  │ noaHiFail        │ simultaneously WrapLoopNoa: e_wrap_n↓ ≤ ewlo_thr_ → WRAP_LO_N_FA;     │ on amp; verifies WRAP_LO_N_FA path in hi-lo mode           │
   │                  │ decision #6 → UsingAmp                                                │                                                            │
   ├──────────────────┼───────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
   │ noaHiFailNoise   │ Same + DM.75;DN6 PRBS noise                                           │ Same isolation path under noise; tests KF filter           │
@@ -230,17 +183,11 @@
   │     │                      │                                                            │ current                                                    │
   ├─────┼──────────────────────┼────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
   │ G2  │ Dual sensor total    │ ib_amp_fa && ib_noa_fa → decision #1 → UsingNone (hi-lo)   │ No test verifies the app responds correctly when both      │
-  │ G2  │ failure              │ or ib_sel_stat=0 (active/standby) → SOC integration        │ sensors fail; behavior at Ib=0 indefinitely                │
+  │   │ failure              │ or ib_sel_stat=0 (active/standby) → SOC integration        │ sensors fail; behavior at Ib=0 indefinitely                │
   │     │                      │ halted                                                     │                                                            │
   ├─────┼──────────────────────┼────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
   │     │ Disconnected shunt   │ ib_quiet → IB_DSCN_FLT after QUIET_SET=60s → IB_DSCN_FA;   │ False IB_DSCN_FA during legitimate zero-current sleep; also│
   │     │                      │ WRAP_VB_FA                                                 │                                                            │
-  ├─────┼──────────────────────┼────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
-  │ G4  │ Vb LOW with nonzero  │ vb_check: (Vb_hdwe ≤ VB_MIN=2V) && (Ib_hdwe × nP >         │ offLowSoc uses Dv-12 from empty where Ib≈0; the IB_MIN_UP  │
-  │     │ current              │ IB_MIN_UP=0.2A) → VB_FLT                                   │ guard is never specifically validated                      │
-  ├─────┼──────────────────────┼────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
-  │ G5  │ Forced-noa via si-1  │ Decision branch 3 (hi-lo) / branch 4 (active/standby):     │ Only ib_force>0 (forced amp) is tested; no regression for  │
-  │     │ / ib_force<0         │ manual forced selection to noa, latched                    │ forced-noa override behavior                               │
   ├─────┼──────────────────────┼────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
   │     │ Hi-lo transition     │ scale_select() partial weighting: ib_sel_stat=0            │ SOC integrates a blended current value in transition; not  │
   │ G6  │ zone blending        │ (transition) when Ib_noa is between n_hi and p_lo          │ validated, particularly near zero current                  │
@@ -253,10 +200,6 @@
   │ G8  │ regression           │ CC accuracy at ≈−20°C                                      │ behavior (large capacity and internal resistance changes)  │
   │     │                      │                                                            │ untested                                                   │
   ├─────┼──────────────────────┼────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
-  │     │                      │ Listed in sel_list1 and therefore included in              │                                                            │
-  │ G9  │ faultParade macro    │ default_auto, but has no entry in lookup dict — will       │ Dead/broken entry in automated test list                   │
-  │     │                      │ cause a KeyError at runtime                                │                                                            │
-  └─────┴──────────────────────┴────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────┘
 
   ---
   Proposed New Macros
@@ -299,29 +242,6 @@
        "Verify ib_is_quiet, ib_dscn_flt, ib_dscn_fa all set after ~60s.",
        "Also confirm wrap_vb_fa does NOT latch (ib_really_quiet_ guards it during quiet state).")),
 
-  # G4 — Vb LOW with nonzero current (validates IB_MIN_UP=0.2A guard in vb_check low side)
-  'vLoFail': (120,
-      modHalfInit +
-      tranPrep +
-      'XY;' + c10 + 'Dv-14;XQ40000;' +  # 10A + push Vb below VB_MIN=2V: Dv-14 at ~12.6V nominal = ~-1.4V net
-      dv0 + quiet + cleanup + '<XD;',
-      ("Vb injected below VB_MIN=2V while Ib>IB_MIN_UP=0.2A → VB_FLT/FA.",
-       "Distinct from offLowSoc where Ib≈0. Validates the IB_MIN_UP current guard on vb_check low side.",
-       "Expect VB_FA_LT to latch, vb_sel_stat=0, model Vb substitution.")),
-
-  # G5 — Forced noa selection (ib_force<0 path via si-1 command)
-  # Tests decision branch 3 (hi-lo) / branch 4 (active/standby): forced noa, latched
-  'forcedNoa': (120,
-      modHalfInit +
-      tranPrep +
-      'si-1;' +                    # Force ib_force=-1 → UsingNoa / ib_sel_stat=-1
-      c18 +                        # 18A charge to confirm noa is integrating soc
-      'XQ30000;' +
-      'si0;' + c00 + quiet + cleanup + '<XD;',
-      ("Force current selection to noa via si-1; confirm ib_sel_stat=-1 / UsingNoa latches.",
-       "SOC should integrate on noa only, amp ignored. Verify decision branch 3/4.",
-       "Then si0 + Rf to confirm reset restores auto selection.")),
-
   # G6 — Hi-lo transition zone (scale_select blending; ib_sel_stat=0 expected)
   # Drive Ib_noa through the transition band between n_hi and p_lo breakpoints.
   # Observe ib_sel_stat transitions through 0 (blending) at breakpoints.
@@ -356,20 +276,6 @@
        "No faults should trip. Check soc accuracy and e_wrap behavior at low Tb.",
        "Occasional ib_sel_stat jumps at zero crossing are normal.")),
 
-  # G9 — faultParade fix (placeholder → implement or remove from sel_list1)
-  # Currently listed in sel_list1 / default_auto but missing from lookup dict → KeyError at runtime.
-  # Proposed content: sequential exercise of each fault type in one run.
-  'faultParade': (600,
-      modHalfInit + tranPrep +
-      c50 + 'XQ15000;' + c00 + 'W5;Rf;W5;' +   # ampHiFail
-      d50 + 'XQ15000;' + c00 + 'W5;Rf;W5;' +   # noaHiFail
-      'Dv0.82;XQ15000;' + dv0 + 'W5;Rf;W5;' +  # vHiFail
-      'D^-113;XQ15000;D^;W5;Rf;W5;' +           # tLoFailModel
-      quiet + cleanup + '<XD;',
-      ("Sequential parade of each major fault type in one run.",
-       "Verifies each fault detect-and-recover cycle: ampHi, noaHi, vbHi, tLo.",
-       "Also fixes missing-from-lookup KeyError that breaks default_auto automation.")),
-
   ---
   Coverage Summary
 
@@ -378,34 +284,28 @@
   ├──────────────────────────────────┼────────────┼─────────────────────────┼─────────────────┤
   │ Hard Ib range fail (amp/noa OOR) │ 6          │ —                       │ ✅  Well covered │
   ├──────────────────────────────────┼────────────┼─────────────────────────┼─────────────────┤
-  │ Soft Ib wrap/diff isolation      │ 6          │ G7 (hi-lo cc_diff only) │ ⚠️ Partial      │
+  │ Soft Ib wrap/diff isolation      │ 6          │ G7 (hi-lo cc_diff only) │ ⚠️ Partial       │
   ├──────────────────────────────────┼────────────┼─────────────────────────┼─────────────────┤
   │ Fake faults (Ff1)                │ 2          │ —                       │ ✅  Covered      │
-  ├──────────────────────────────────┼────────────┼─────────────────────────┼─────────────────┤
-  │ Vb failure (high/shutoff)        │ 7          │ G4 (low-side guard)     │ ⚠️ Minor gap    │
   ├──────────────────────────────────┼────────────┼─────────────────────────┼─────────────────┤
   │ Tb failure                       │ 4          │ —                       │ ✅  Covered      │
   ├──────────────────────────────────┼────────────┼─────────────────────────┼─────────────────┤
   │ Vc failure                       │ 0          │ G1                      │ 🔴 Untested      │
-  ├──────────────────────────────────┼────────────┼─────────────────────────┼──────────────────┤
+  ├──────────────────────────────────┼────────────┼─────────────────────────┼─────────────────┤
   │ Dual sensor failure              │ 0          │ G2                      │ 🔴 Untested      │
-  ├──────────────────────────────────┼────────────┼─────────────────────────┼──────────────────┤
+  ├──────────────────────────────────┼────────────┼─────────────────────────┼─────────────────┤
   │ Quiet/disconnect detection       │ 0          │ G3                      │ 🔴 Untested      │
-  ├──────────────────────────────────┼────────────┼─────────────────────────┼──────────────────┤
-  │ Forced selection (noa)           │ 0          │ G5                      │ ⚠️ Minor gap     │
-  ├──────────────────────────────────┼────────────┼─────────────────────────┼──────────────────┤
+  ├──────────────────────────────────┼────────────┼─────────────────────────┼─────────────────┤
   │ Hi-lo transition zone            │ 0          │ G6                      │ ⚠️ Minor gap     │
-  ├──────────────────────────────────┼────────────┼─────────────────────────┼──────────────────┤
+  ├──────────────────────────────────┼────────────┼─────────────────────────┼─────────────────┤
   │ Cold temperature regression      │ 0          │ G8                      │ ⚠️ Minor gap     │
-  ├──────────────────────────────────┼────────────┼─────────────────────────┼──────────────────┤
-  │ Regression / false-trip          │ 8          │ —                       │ ✅  Well covered  │
-  ├──────────────────────────────────┼────────────┼─────────────────────────┼──────────────────┤
-  │ SOC accuracy / saturation        │ 4          │ —                       │ ✅  Covered       │
-  ├──────────────────────────────────┼────────────┼─────────────────────────┼──────────────────┤
-  │ faultParade (broken entry)       │ 0          │ G9                      │ 🔴 Runtime error │
-  └──────────────────────────────────┴────────────┴─────────────────────────┴──────────────────┘
+  ├──────────────────────────────────┼────────────┼─────────────────────────┼─────────────────┤
+  │ Regression / false-trip          │ 8          │ —                       │ ✅  Well covered │
+  ├──────────────────────────────────┼────────────┼─────────────────────────┼─────────────────┤
+  │ SOC accuracy / saturation        │ 4          │ —                       │ ✅  Covered      │
+  ├──────────────────────────────────┼────────────┼─────────────────────────┼─────────────────┤
 
-  Priority fixes: G9 (breaks automation immediately), G1 and G2 (complete failure modes with no coverage), G3 (the ib_really_quiet_ guard on WRAP_VB_FA is
+  Priority fixes: G1 and G2 (complete failure modes with no coverage), G3 (the ib_really_quiet_ guard on WRAP_VB_FA is
   logic that protects against false latching during BMS shutoff — currently relied upon in offSitBms* tests but never directly validated).
 
 ---
@@ -433,4 +333,4 @@ Three new macros now close the highest-priority gaps identified above (G1, G2). 
 - `ampHiFailFf` — fake-fault mode confirms detect-without-switch path.
 - `vHiFail` — Vb (not Vc) sensor hard fail.
 
-Remaining gaps not yet addressed: G3 (disconnected-shunt `ib_quiet`), G4 (Vb low-side with nonzero Ib), G5 (forced-noa via `si-1`), G6 (hi-lo blend zone), G7 (CC_DIFF in hi-lo mode), G8 (cold temperature regression), G9 (`faultParade` lookup entry).
+Remaining gaps not yet addressed: G3 (disconnected-shunt `ib_quiet`), G6 (hi-lo blend zone), G7 (CC_DIFF in hi-lo mode), G8 (cold temperature regression)
